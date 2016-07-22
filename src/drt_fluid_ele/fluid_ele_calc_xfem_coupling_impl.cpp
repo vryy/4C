@@ -4,8 +4,10 @@
 
 \brief Classes for interface coupling in the XFEM
 
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse /Benedikt Schott
+\maintainer Benedikt Schott
             kruse@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -771,7 +773,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
     case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
     case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
     {
-      NIT_Stab_Penalty_MasterTerms(
+      NIT_Stab_Penalty(
         funct_m,
         NIT_stab_fac_conv,
         timefacfac
@@ -1030,7 +1032,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   if(do_projected_split)
   {
     //Normal Terms!
-    Do_NIT_Stab_Penalty_Terms_Projected(
+    NIT_Stab_Penalty_Projected(
         funct_m,
         proj_normal_,
         velint_diff_proj_normal_,
@@ -1038,7 +1040,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         timefacfac);
 
     //Tangential Terms!
-    Do_NIT_Stab_Penalty_Terms_Projected(
+    NIT_Stab_Penalty_Projected(
         funct_m,
         proj_tangential_,
         velint_diff_proj_tangential_,
@@ -1047,7 +1049,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   }
   else
   {
-    Do_NIT_Stab_Penalty_Terms(
+    NIT_Stab_Penalty(
         funct_m,
         stabnit_n,
         timefacfac);
@@ -1162,7 +1164,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
      }
      else
      {
-       Do_NIT_visc_Adjoint_MasterTerms(
+       NIT_visc_AdjointConsistency_MasterTerms(
            funct_m,                      ///< funct * timefacfac
            derxy_m,                      ///< spatial derivatives of coupling master shape functions
            normal,                       ///< normal-vector
@@ -1251,7 +1253,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     }
     else
     {
-      Do_NIT_visc_Adjoint_MasterTerms(
+      NIT_visc_AdjointConsistency_MasterTerms(
           funct_m,                      ///< funct * timefacfac
           derxy_m,                      ///< spatial derivatives of coupling master shape functions
           normal,                       ///< normal-vector
@@ -2412,9 +2414,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_S
 
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsistency_MasterTerms(
-  const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-  const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
-  const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
+    const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+    const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
+    const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
+    const double &                                km_viscm_fac                  ///< scaling factor
 )
 {
     /*                                \       /                             i   \
@@ -2424,7 +2427,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   // +1.0 symmetric
   // -1.0 antisymmetric
 
-  normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_km, half_normal_); //half_normal(k)*derxy_m(k,ic)*viscm*km
+  //-----------------------------------------------------------------
+  // viscous adjoint consistency term
+
+  double tmp_fac = adj_visc_scale_*km_viscm_fac;
+  derxy_m_viscm_timefacfac_.Update(tmp_fac,derxy_m); //2 * mu_m * timefacfac * derxy_m(k,ic)
+
+  normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_, half_normal_); //half_normal(k)*derxy_m(k,ic)*viscm*km
 
   // here we use a non-optimal order to assemble the values into C_umum
   // however for this term we have to save operations
@@ -2434,7 +2443,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
 
     for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
     {
-      const double tmp_derxy_m = derxy_m_viscm_timefacfac_km(jvel,ir);
+      const double tmp_derxy_m = derxy_m_viscm_timefacfac_(jvel,ir);
       for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
       {
         const unsigned row = mIndex(ir,ivel);
@@ -2475,7 +2484,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   {
     for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
     {
-      const double derxy_m_viscm_timefacfac_km_half_tmp = derxy_m_viscm_timefacfac_km(jvel,ir)*0.5;
+      const double derxy_m_viscm_timefacfac_km_half_tmp = derxy_m_viscm_timefacfac_(jvel,ir)*0.5;
 
       for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
       {
@@ -3347,9 +3356,11 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Projected(
-  const LINALG::Matrix<nen_,1>&                 funct_m,           ///< funct
-  const double &                                stabfac,           ///< stabilization factor
-  const double &                                timefacfac         ///< time integration factor
+  const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct
+  const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
+  const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
+  const double &                                stabfac,                      ///< stabilization factor
+  const double &                                timefacfac                    ///< time integration factor
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_Stab_Penalty");
@@ -3378,6 +3389,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
   /*             i                                                                         \
 - |   [v]  ,  [ u ] ( gamma_comb_n P_n + {mu} * gamma*h_E/(gamma*h_E+epsilon) * P_t )      |  =
   \                                                                                       */
+
+  velint_diff_proj_matrix_ = velint_diff_proj_matrix;
+  proj_matrix_ = projection_matrix;
 
   const double stabfac_timefacfac = stabfac * timefacfac;
   velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac, velint_diff_proj_matrix_, 0.0);
@@ -3477,109 +3491,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
       rhC_us_(sIndex(ir,ivel),0) += tmp_val*velint_diff_timefacfac_stabfac_(ivel);
     }
   }
-
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_MasterTerms(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                     ///< funct * timefacfac
-  const double &                                stabfac,                      ///< stabilization factor
-  const double &                                timefacfac                    ///< time integration factor
-)
-
-{
-  const double stabfac_timefacfac = stabfac * timefacfac;
-
-  velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac, velint_diff_, 0.0);
-
-  for (unsigned ic=0; ic<nen_; ++ic)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      const unsigned col = mIndex(ic,ivel);
-      // + gamma*mu/h_K (vm, um))
-      for (unsigned ir=0; ir<nen_; ++ir)
-      {
-        C_umum_(mIndex(ir,ivel),col) += funct_m_m_dyad_(ir,ic) * stabfac_timefacfac;
-      }
-    }
-  }
-
-  // + gamma*mu/h_K (vm, um))
-  for (unsigned ir=0; ir<nen_; ++ir)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      // +(stab * vm, u_DBC) (weak dirichlet case) or from
-      // +(stab * vm, u_s)
-       rhC_um_(mIndex(ir,ivel),0) -= funct_m(ir) * velint_diff_timefacfac_stabfac_(ivel);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_MasterTerms_Projected(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                     ///< funct * timefacfac
-  const double &                                stabfac,                      ///< stabilization factor in normal direction
-  const double &                                timefacfac                    ///< time integration factor
-)
-{
-  //1) (No split):
-  /*                                           \
-+ |   v^m  , ( {mu}/( gamma*h_E ) u^m  )       |  =
-  \                                           */
-
-  /*           i                                   \
-- |   v^m  , u^m ( {mu}/( gamma*h_E )  )            |
-  \                                               */
-
-  //2) (Normal - Tangential split):
-  /*                                   \
-+ |   v^m  ,  u^m ( stabfac * P )       |  =
-  \                                   */
-
-  /*            i                        \
-- |   v^m  ,  (u^m-u_0) ( stabfac * P )   |
-  \                                     */
-
-  const double stabfac_timefacfac = stabfac * timefacfac;
-  velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac, velint_diff_proj_matrix_, 0.0);
-
-  for (unsigned ic=0; ic<nen_; ++ic)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      const unsigned col = mIndex(ic,ivel);
-      // + gamma*mu/h_K (vm, um))
-      for (unsigned ir=0; ir<nen_; ++ir)
-      {
-        const double funct_m_m_dyad_iric = funct_m_m_dyad_(ir,ic);
-
-        for (unsigned jvel=0; jvel < nsd_; ++jvel)
-        {
-          C_umum_(mIndex(ir,jvel),col) += funct_m_m_dyad_iric*stabfac_timefacfac*proj_matrix_(ivel,jvel);
-        }
-      }
-    }
-  }
-
-  // + gamma*mu/h_K (vm, um))
-  for (unsigned ir=0; ir<nen_; ++ir)
-  {
-    const double funct_m_ir = funct_m(ir);
-
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      // +(stab * vm, u_DBC) (weak dirichlet case) or from
-      // +(stab * vm, u_s)
-       rhC_um_(mIndex(ir,ivel),0) -= funct_m_ir * velint_diff_timefacfac_stabfac_(ivel);
-    }
-  }
-
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4168,85 +4080,6 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::HybridLM_buildFinalCo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_Stab_Penalty_Terms_Projected(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-  const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
-  const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
-  const double &                                stabfac,                      ///< stabilization factor in normal direction
-  const double &                                timefacfac                    ///< time integration factor
-)
-{
-
-  velint_diff_proj_matrix_ = velint_diff_proj_matrix;
-  proj_matrix_ = projection_matrix;
-
-  //-----------------------------------------------------------------
-  // viscous stability term
-  // REMARK: this term includes also inflow coercivity in case of XFSI
-  // with modified stabfac (see NIT_ComputeStabfac)
-  if ( !eval_coupling_ )
-  {
-    NIT_Stab_Penalty_MasterTerms_Projected(
-      funct_m,
-      stabfac,
-      timefacfac
-    );
-  }
-  else
-  {
-    // XFSI, XTPF and XFF should all enter here.
-    //Takes care of weighting (appears in the viscosity)
-    NIT_Stab_Penalty_Projected(
-      funct_m,
-      stabfac,
-      timefacfac
-    );
-  }
-
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_Stab_Penalty_Terms(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-  const double &                                stabfac,                      ///< stabilization factor in normal direction
-  const double &                                timefacfac                    ///< time integration factor
-)
-{
-//  //maybe change to velint_diff_proj_matrix -> less variables!
-//  velint_diff_ = velint_diff_proj_matrix;
-
-  //-----------------------------------------------------------------
-  // viscous stability term
-  // REMARK: this term includes also inflow coercivity in case of XFSI
-  // with modified stabfac (see NIT_ComputeStabfac)
-  if ( !eval_coupling_ )
-  {
-    NIT_Stab_Penalty_MasterTerms(
-      funct_m,
-      stabfac,
-      timefacfac
-    );
-  }
-  else
-  {
-    // XFSI, XTPF and XFF should all enter here.
-    //Takes care of weighting (appears in the viscosity)
-    NIT_Stab_Penalty(
-      funct_m,
-      stabfac,
-      timefacfac
-    );
-  }
-
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
   const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
   const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
@@ -4326,36 +4159,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
   }
   //-----------------------------------------------------------------
 #endif   // ENFORCE_URQUIZA_GNBC
-
-  return;
-
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_MasterTerms(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-  const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
-  const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-  const double &                                km_viscm_fac                  ///< scaling factor
-)
-{
-  //-----------------------------------------------------------------
-  // viscous adjoint consistency term
-
-  double tmp_fac = adj_visc_scale_*km_viscm_fac;
-  derxy_m_viscm_timefacfac_.Update(tmp_fac,derxy_m); //2 * mu_m * timefacfac * derxy_m(k,ic)
-
-  // normal_deriv_m_viscm_km_ = alpha * half_normal(k)* 2 * mu_m * timefacfac * derxy_m(k,IX)
-  //                          = alpha * mu_m * timefacfac * c(IX)
-//  normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_, half_normal_);
-
-  NIT_visc_AdjointConsistency_MasterTerms(
-      derxy_m_viscm_timefacfac_,
-      funct_m,
-      normal);
-  //-----------------------------------------------------------------
 
   return;
 

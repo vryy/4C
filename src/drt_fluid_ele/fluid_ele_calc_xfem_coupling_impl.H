@@ -4,8 +4,10 @@
 
 \brief Classes for interface coupling in the XFEM
 
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse /Benedikt Schott
+\maintainer Benedikt Schott
             kruse@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -444,9 +446,10 @@ namespace DRT
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_AdjointConsistency_MasterTerms(
-          const LINALG::Matrix<nsd_,nen_> &         derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
-          const LINALG::Matrix<nsd_,1> &            normal                         ///< normal vector
+            const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+            const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
+            const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
+            const double &                                km_viscm_fac                  ///< scaling factor
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
@@ -534,23 +537,11 @@ namespace DRT
 
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty_Projected(
-            const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
-            const double &                         stabfac,         ///< stabilization factor
-            const double &                         timefacfac       ///< time integration factor
-        );
-
-        //!  evaluate only the master side's part of Nitsche's penalty term
-        void NIT_Stab_Penalty_MasterTerms(
-          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
-          const double &                           stabfac,         ///< Nitsche stabilization factor
-          const double &                           timefacfac       ///< time integration scaling
-        );
-
-        //!  evaluate only the master side's part of Nitsche's penalty term
-        void NIT_Stab_Penalty_MasterTerms_Projected(
-          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
-          const double &                           stabfac,         ///< Nitsche stabilization factor
-          const double &                           timefacfac       ///< time integration scaling
+            const LINALG::Matrix<nen_,1>&          funct_m,                      ///< funct
+            const LINALG::Matrix<nsd_,nsd_>&       projection_matrix,            ///< projection_matrix
+            const LINALG::Matrix<nsd_,1>&          velint_diff_proj_matrix,      ///< velocity difference projected
+            const double &                         stabfac,                      ///< stabilization factor
+            const double &                         timefacfac                    ///< time integration factor
         );
 
         //! evaluate viscous penalty for the Neumann terms of the Robin-condition
@@ -601,13 +592,6 @@ namespace DRT
           const double &                                timefacfac                    ///< time integration factor
           );
 
-        //! Do Nitsche penalty terms < [|v|] , [|u|] >
-        void Do_NIT_Stab_Penalty_Terms(
-          const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-          const double &                                stabfac,                      ///< stabilization factor in normal direction
-          const double &                                timefacfac                    ///< time integration factor
-          );
-
         //! Do Nitsche consistency and adjoint consistency terms with projection
         void Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
             const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
@@ -624,13 +608,6 @@ namespace DRT
             const bool &                                  sliplength_not_zero           ///< eval Robin-terms
         );
 
-        //! Do Nitsche consistency and adjoint consistency terms
-        void Do_NIT_visc_Adjoint_MasterTerms(
-            const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-            const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
-            const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-            const double &                                km_viscm_fac                  ///< scaling factor
-          );
 
       private:
 
