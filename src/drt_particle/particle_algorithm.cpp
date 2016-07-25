@@ -291,6 +291,7 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
+
   CalculateAndApplyForcesToParticles();
 
   if(particlewalldis_ != Teuchos::null)

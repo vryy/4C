@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file particle_mat.cpp
 
-\brief TODO Georg. I think that this file defines which are the material properties of the particles
+\brief TODO Georg. I think that this file defines the material properties of the particles
 
 \level 2
 

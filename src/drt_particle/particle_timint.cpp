@@ -94,6 +94,7 @@ PARTICLE::TimInt::TimInt
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
   density_(Teuchos::null),
+  initDensity_(-1.0),
   CPS_(-1.0),
   CPL_(-1.0),
   SL_latent_heat_max_(-1.0),
@@ -222,7 +223,8 @@ void PARTICLE::TimInt::SetInitialFields()
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
 
   // all particles have identical specific heats
-  density_->PutScalar(actmat->density_);
+  initDensity_ = actmat->density_;
+  density_->PutScalar(initDensity_);
 
   double initial_radius = actmat->initialradius_;
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");

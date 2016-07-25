@@ -295,20 +295,24 @@ namespace PARTICLE
     //! Return density
     virtual Teuchos::RCP<const Epetra_Vector> Density() { return density_; }
 
+    //! Return initial density
+    virtual const double initDensity() { return initDensity_; }
+
     //! extract heat source - constant pressure - solid state
-    virtual double CPS() { return CPS_; }
+    virtual const double CPS() { return CPS_; }
 
     //! extract heat source - constant pressure - liquid state
-    virtual double CPL() { return CPL_; }
+    virtual const double CPL() { return CPL_; }
 
     //! Return specific latent heat - solid <-> liquid
-    virtual double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
+    virtual const double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
+
+    //! transition temperature - solid <-> liquid
+    virtual const double SL_TransitionTemperature() {return SL_transitionTemperature_; }
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
 
-    //! transition temperature - solid <-> liquid
-    virtual const double SL_TransitionTemperature() {return SL_transitionTemperature_; }
 
     //@}
 
@@ -477,6 +481,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> orient_;
     //! density of each particle at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> density_;
+    //! initial density
+    double initDensity_;
     //! specific heat - constant pressure - solid state
     double CPS_;
     //! specific heat - constant pressure - liquid state

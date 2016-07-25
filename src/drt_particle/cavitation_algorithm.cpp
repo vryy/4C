@@ -2688,7 +2688,9 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
-  Teuchos::RCP<const Epetra_Vector> density = particles_->Density();
+  Teuchos::RCP<Epetra_Vector> density = particles_->WriteAccessDensity();
+
+  const double initDensity = particles_->initDensity();
 
   double gamma = 0.0;
   double pvapor = 0.0;
@@ -2803,6 +2805,7 @@ void CAVITATION::Algorithm::ParticleInflow()
 
       // assumption of constant mass (-> no mass transfer) todo: verify modification on mass
       // const double mass = density * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
+      (*density)[lid] = initDensity;
       (*massn)[lid] = (*density)[lid] * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
 
       // start with a small radius that is blended to the actual value
