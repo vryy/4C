@@ -107,74 +107,6 @@ void PARTICLE::ParticleCollisionHandlerBase::SetState(
 }
 
 
-/*----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::GetNeighbouringParticlesAndWalls(
-    DRT::Node* particle,
-    std::vector<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls)
-{
-  if (particle->NumElement() != 1)
-    dserror("More than one element for this particle");
-
-  DRT::Element** CurrentBin = particle->Elements();
-  const int binId = CurrentBin[0]->Id();
-
-  int ijk[3];
-  particle_algorithm_->ConvertGidToijk(binId,ijk);
-
-  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
-  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
-  std::vector<int> binIds;
-  binIds.reserve(27);
-
-  // do not check on existence here -> shifted to GetBinContent
-  particle_algorithm_->GidsInijkRange(ijk_range,binIds,false);
-
-  GetBinContent(neighboring_particles, neighboring_walls, binIds);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | get particles and wall elements in given bins           ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::GetBinContent(
-  std::vector<DRT::Node*> &particles,
-  std::set<DRT::Element*> &walls,
-  std::vector<int> &binIds
-  )
-{
-  // loop over all bins
-  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
-  {
-    // extract bins from discretization after checking on existence
-    const int lid = discret_->ElementColMap()->LID(*bin);
-    if(lid<0)
-      continue;
-
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(discret_->lColElement(lid));
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(discret_->lColElement(lid));
-
-    // gather wall elements
-    DRT::Element** walleles = neighboringbin->AssociatedWallEles();
-    const int numwalls = neighboringbin->NumAssociatedWallEle();
-    for(int iwall=0;iwall<numwalls; ++iwall)
-      walls.insert(walleles[iwall]);
-
-    // gather particles
-    DRT::Node** nodes = neighboringbin->Nodes();
-    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
-  }
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | read initial contact parameters and validate them       ghamm 09/13  |
  *----------------------------------------------------------------------*/
@@ -572,7 +504,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
 
-    GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
 
     DRT::Node **NodesInCurrentBin = CurrentBin->Nodes();
     const int numparticle = CurrentBin->NumNode();
@@ -2273,7 +2205,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     std::set<DRT::Element*> neighbouring_walls;
 
     // gather all neighboring particles and wall elements
-    GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighbouring_walls);
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighbouring_walls);
 
     DRT::Node** particles = currbin->Nodes();
     for(int iparticle=0; iparticle<currbin->NumNode(); ++iparticle)
@@ -2368,7 +2300,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   //
   // searching for new collisions for the first particle of the last collision
   //
-  GetNeighbouringParticlesAndWalls(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
+  particle_algorithm_->GetNeighbouringParticlesAndWalls(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
 
   // particle-particle collision
   for (std::vector<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
@@ -2412,7 +2344,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     // reuse neighborhood in case both particles reside in the same bin
     if(lastevent->particle_1->Elements()[0]->Id() != lastevent->particle_2->Elements()[0]->Id())
     {
-      GetNeighbouringParticlesAndWalls(lastevent->particle_2, neighbouring_particles, neighbouring_walls);
+      particle_algorithm_->GetNeighbouringParticlesAndWalls(lastevent->particle_2, neighbouring_particles, neighbouring_walls);
     }
 
     // particle-particle collision

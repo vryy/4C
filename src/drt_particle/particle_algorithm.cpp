@@ -2111,6 +2111,71 @@ int PARTICLE::Algorithm::ComputeSemiLengthInParticlesForParticleDismemberer(cons
   return (oldRadius-semiStep)/(2 * semiStep) + 2; /// +2 is just to be sure that everything is included
 }
 
+/*----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
+    DRT::Node* particle,
+    std::vector<DRT::Node*>& neighboring_particles,
+    std::set<DRT::Element*>& neighboring_walls)
+{
+  if (particle->NumElement() != 1)
+    dserror("More than one element for this particle");
+
+  DRT::Element** CurrentBin = particle->Elements();
+  const int binId = CurrentBin[0]->Id();
+
+  int ijk[3];
+  ConvertGidToijk(binId,ijk);
+
+  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
+  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
+  std::vector<int> binIds;
+  binIds.reserve(27);
+
+  // do not check on existence here -> shifted to GetBinContent
+  GidsInijkRange(ijk_range,binIds,false);
+
+  GetBinContent(neighboring_particles, neighboring_walls, binIds);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | get particles and wall elements in given bins           ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetBinContent(
+  std::vector<DRT::Node*> &particles,
+  std::set<DRT::Element*> &walls,
+  std::vector<int> &binIds
+  )
+{
+  // loop over all bins
+  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  {
+    // extract bins from discretization after checking on existence
+    const int lid = particledis_->ElementColMap()->LID(*bin);
+    if(lid<0)
+      continue;
+
+#ifdef DEBUG
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(discret_->lColElement(lid));
+    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lColElement(lid));
+
+    // gather wall elements
+    DRT::Element** walleles = neighboringbin->AssociatedWallEles();
+    const int numwalls = neighboringbin->NumAssociatedWallEle();
+    for(int iwall=0;iwall<numwalls; ++iwall)
+      walls.insert(walleles[iwall]);
+
+    // gather particles
+    DRT::Node** nodes = neighboringbin->Nodes();
+    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | heat source                                             catta 06/16  |

@@ -75,20 +75,6 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> mass
       );
 
-    /// get bins in range and call FindNeighbors
-    void GetNeighbouringParticlesAndWalls(
-      DRT::Node* CurrentParticle,
-      std::vector<DRT::Node*>& neighboring_particles,
-      std::set<DRT::Element*>& neighboring_walls
-      );
-
-    /// get particles and wall elements in given bins
-    virtual void GetBinContent(
-      std::vector<DRT::Node*>& particles,
-      std::set<DRT::Element*>& walls,
-      std::vector<int>& binIds
-      );
-
     /// read initial contact parameters and validate them
     virtual void ReadContactParameters(double density);
 

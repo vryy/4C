@@ -21,6 +21,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "binning_strategy.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_element.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -111,6 +112,20 @@ namespace PARTICLE
 
     /// list of heat sources
     const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
+
+    /// get bins in range and call FindNeighbors
+    void GetNeighbouringParticlesAndWalls(
+      DRT::Node* CurrentParticle,
+      std::vector<DRT::Node*>& neighboring_particles,
+      std::set<DRT::Element*>& neighboring_walls
+      );
+
+    /// get particles and wall elements in given bins
+    virtual void GetBinContent(
+      std::vector<DRT::Node*>& particles,
+      std::set<DRT::Element*>& walls,
+      std::vector<int>& binIds
+      );
 
   protected:
 
