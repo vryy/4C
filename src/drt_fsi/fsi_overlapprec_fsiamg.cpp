@@ -4,11 +4,9 @@
 
 \brief Special version of block matrix that includes the FSI block preconditioner
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -1301,7 +1299,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
 
   // run FSIAMG
-  if (strategy_==INPAR::FSI::FSIAMG)
+  switch (strategy_)
+  {
+  case INPAR::FSI::FSIAMG:
   {
     int myrank = X.Comm().MyPID();
     std::vector<int> Vsweeps(minnlevel_,1);
@@ -1377,8 +1377,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
                       Aff_,const_cast<std::vector<MLAPI::Operator>& >(Pff_),const_cast<std::vector<MLAPI::Operator>& >(Rff_),
                       Aaa_,const_cast<std::vector<MLAPI::Operator>& >(Paa_),const_cast<std::vector<MLAPI::Operator>& >(Raa_),
                       ASF_,AFS_,AFA_,AAF_,true,false,true);
+    break;
   }
-  else if (strategy_==INPAR::FSI::PreconditionedKrylov)
+  case INPAR::FSI::PreconditionedKrylov:
   {
     int myrank = X.Comm().MyPID();
     std::vector<int> Vsweeps(3,1);
@@ -1430,9 +1431,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
                        Aaa_,const_cast<std::vector<MLAPI::Operator>& >(Paa_),const_cast<std::vector<MLAPI::Operator>& >(Raa_),
                        ASF_,AFS_,AFA_,AAF_,true,false,true);
 
-
+    break;
   }
-  else dserror("Unknown type of preconditioner choice");
+  default:
+  {
+    dserror("Unknown type of preconditioner choice");
+    break;
+  }
+  }
 
   // Note that mlsy, mlfy, mlay are views of sy, fy, ay, respectively.
   if (hybridPrec_ == NULL)
