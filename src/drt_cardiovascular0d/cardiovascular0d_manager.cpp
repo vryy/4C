@@ -266,8 +266,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     vn_->Update(1.0,*v_,0.0);
     cv0ddofn_->Update(1.0,*cv0ddof_,0.0);
 
-//    strparams_ = strparams;
-//    cv0dparams_ = cv0dparams;
+    strparams_ = strparams;
+    cv0dparams_ = cv0dparams;
 
   }
 

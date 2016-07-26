@@ -417,4 +417,4 @@ namespace UTILS
     INPAR::STR::IntegrationStrategy intstrat_; ///< structural time-integration strategy (old vs. standard)
   }; //class
 }
-#endif /*0DCARDIOVASCULAR_MANAGER_H*/
+#endif /*CARDIOVASCULAR0D_MANAGER_H*/
