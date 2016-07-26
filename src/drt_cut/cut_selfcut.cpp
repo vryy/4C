@@ -4,7 +4,8 @@
  \brief class that provides all routines to handle cutsides which cut each other
 
  <pre>
- Maintainer: Andy Wirtz
+\level 3
+\maintainer Andy Wirtz
  wirtz@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
  089 - 289-15270
@@ -18,6 +19,8 @@
 #include "cut_triangulateFacet.H"
 #include "cut_side.H"
 #include "cut_pointpool.H"
+
+#include "../drt_geometry/searchtree.H"
 
 #include "cut_selfcut.H"
 
@@ -129,60 +132,53 @@ void GEO::CUT::SelfCut::FindCuttingSides()
 {
 
   const std::map<plain_int_set, Teuchos::RCP<Side> > & cutsides = mesh_.Sides();
-#ifdef DEBUG_SELFCUT
-  {
-    plain_int_set debugsideids;
-    debugsideids.insert(-1584);
-    debugsideids.insert(77181);
-    debugsideids.insert(77183);
-    std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = cutsides.find(
-        debugsideids);
-    Side * cutside = &*i->second;
-#else
-  for (std::map<plain_int_set, Teuchos::RCP<Side> >::const_iterator i =
-      cutsides.begin(); i != cutsides.end(); ++i)
-  {
-    Side * cutside = &*i->second;
+  const std::map<int, LINALG::Matrix<3,2> > & selfcutbvs = mesh_.SelfCutBvs();
+  const Teuchos::RCP<GEO::SearchTree> & selfcuttree = mesh_.SelfCutTree();
+  const std::map<int, Side* > & shadowsides = mesh_.ShadowSides();
 
-#endif
-    BoundingBox cutsidebox(*cutside);
-    for (std::map<plain_int_set, Teuchos::RCP<Side> >::const_iterator i =
-        cutsides.begin(); i != cutsides.end(); ++i)
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::const_iterator i = cutsides.begin();
+      i != cutsides.end(); ++i)
+  {
+    Side* cutside = &*i->second;
+    LINALG::Matrix<3, 2> cutsideBV =
+        cutside->GetBoundingVolume().GetBoundingVolume();
+    if (selfcutbvs.size() != 0) // ******************************************************* possible in case of parallel computing and using only relevant elements
     {
-      Side* side = &*i->second;
-
-      if( side->Id() == cutside->Id() )
-        continue;
-
-      BoundingBox sidebox;
-      sidebox.Assign(*side);
-
-      // Two sides falling on the bounding box has common nodes means
-      // both sides are connected in the mesh
-      if (sidebox.Within(1.0, cutsidebox)
-          and not cutside->HaveCommonNode(*side))
+      std::set<int> collisions;
+      // search collision between cutside and elements in the static search tree
+      selfcuttree->searchCollisions(selfcutbvs, cutsideBV, 0, collisions);
+      // add the cutside to all the elements which have been found
+      for (std::set<int>::iterator ic = collisions.begin();
+          ic != collisions.end(); ++ic)
       {
-        // if "side" and "cutside" has two nodes at the same position, we merge them
-        // if these two sides overlap within BB only because of coinciding nodes,
-        // we do not take this as self-cut
-        if( MergeCoincidingNodes( cutside, side ) )
+        int collisionid = *ic;
+        std::map<int, Side* >::const_iterator is = shadowsides.find(
+            collisionid);
+        if (is != shadowsides.end())
         {
-          // even after merging nodes, if two sides not have a common node --> self-cut possible
-          if( not cutside->HaveCommonNode(*side) )
+          Side * s = is->second;
+          if (not cutside->HaveCommonNode(*s))
           {
-            cutside->GetCuttingSide(side);
+            // if "side" and "cutside" has two nodes at the same position, we merge them
+            // if these two sides overlap within BB only because of coinciding nodes,
+            // we do not take this as self-cut
+            if (MergeCoincidingNodes(cutside, s))
+            {
+              // even after merging nodes, if two sides not have a common node --> self-cut possible
+              if (not cutside->HaveCommonNode(*s))
+              {
+                cutside->GetCuttingSide(s);
+              }
+            }
+            else
+            {
+              cutside->GetCuttingSide(s);
+            }
           }
-        }
-        else
-        {
-          cutside->GetCuttingSide(side);
         }
       }
     }
   }
-#ifdef DEBUG_SELFCUT
-  Debug("FindCuttingSides");
-#endif
 
 }
 

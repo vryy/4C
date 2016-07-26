@@ -4,7 +4,8 @@
 \brief class that holds information about a mesh that is cut or about a cutmesh that cuts another mesh
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -181,8 +182,8 @@ public:
   //! @name Basic routines to run the collision detection
   /*========================================================================*/
 
-  /// build the static search tree for the collision detection
-  void BuildBVTree();
+  /// build the static search tree for the collision detection in the self cut
+  void BuildSelfCutTree();
 
   /// build the static search tree for the collision detection
   void BuildStaticSearchTree();
@@ -458,6 +459,15 @@ public:
   /// Returns all sides of the cutmesh
   const std::map<plain_int_set, Teuchos::RCP<Side> > & Sides() const { return sides_; }
 
+  /// Returns of search tree all sides of the cutmesh
+  const Teuchos::RCP<GEO::SearchTree> & SelfCutTree() const { return  selfcuttree_; }
+
+  /// Returns the bounding volumes of all sides of the cutmesh
+  const std::map<int, LINALG::Matrix<3,2> > & SelfCutBvs() const { return selfcutbvs_; }
+
+  /// Returns the map of all sides of the cutmesh
+  const std::map<int, Side* > & ShadowSides() const { return shadow_sides_; }
+
   /// Returns all nodes of the cutmesh
   const std::map<int, Teuchos::RCP<Node> > & Nodes() const { return nodes_; }
 
@@ -517,8 +527,11 @@ private:
   /// (output) flag for cut mesh
   bool cutmesh_;
 
-  /// the bounding volume hierarchy for a fast collision detection in the context of the selfcut
-//  Teuchos::RCP<GEO::BVTree> bvtree_;
+  /// the spatial partitioning octree for a fast collision detection in the self cut
+  Teuchos::RCP<GEO::SearchTree> selfcuttree_;
+
+  /// the bounding volumes for a fast collision detection in the self cut
+  std::map<int, LINALG::Matrix<3,2> > selfcutbvs_;
 
   /// the spatial partitioning octree for a fast collision detection
   Teuchos::RCP<GEO::SearchTree> searchtree_;
@@ -559,6 +572,11 @@ private:
   /// these nodes are not erased in shadow_nodes_
   /// so don't use the shadow_nodes_ of the cut mesh
   std::map<plain_int_set, Node*> shadow_nodes_;
+
+  // unique map between int ( < 0 ) and element; int is not eid and not parentid
+  // we need this for the search tree in the self cut
+  // is not erased during self cut!!!
+  std::map<int, Side* > shadow_sides_;
 
   /// new: unique map between int ( < 0 ) and element; int is not eid and not parentid
   std::map<int, Teuchos::RCP<Element> > shadow_elements_;

@@ -4,7 +4,8 @@
 \brief class that holds information about a mesh that is cut or about a cutmesh that cuts another mesh
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -515,20 +516,39 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
 }
 
 /*------------------------------------------------------------------------------------------------*
- * build the bounding volume tree for the collision detection in the context of the selfcut       *
- *                                                                                    wirtz 09/14 *
+ * build the static search tree for the collision detection in the self cut           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::BuildBVTree()
+void GEO::CUT::Mesh::BuildSelfCutTree()
 {
 
-  // constructor for the bounding volume tree of the cut mesh
-//  bvtree_ = Teuchos::rcp(new GEO::BVTree());
+  // constructor for the search tree of the background mesh
+  selfcuttree_ = Teuchos::rcp(new GEO::SearchTree(5));   // tree_depth_ 4 is reasonable, 5 is possible
 
-  // initializes the bounding volume tree of the cut mesh
-//  bvtree_->InitializeBVTree();
+  // extent the bounding volume of the root of the search tree to prevent symmetry issues
+  LINALG::Matrix<3,2> boundingvolume = bb_.GetBoundingVolume();
+//  boundingvolume(0,1) += 1e-4;
+//  boundingvolume(1,1) += 1e-4;
+//  boundingvolume(2,1) += 1e-4;
 
-  // builds the bounding volume tree of the cut mesh
-//  bvtree_->BuildBVTree();
+  // initializes the search tree of the background mesh
+  selfcuttree_->initializeTree(boundingvolume, GEO::TreeType(GEO::OCTTREE));
+
+  // inserts all linear elements into the search tree of the cutter mesh
+  for ( std::map<int, Side* >::iterator i=shadow_sides_.begin();
+        i!=shadow_sides_.end();
+        ++i )
+  {
+    int sid = i->first;
+    Side* s = i->second;
+    selfcuttree_->insertElement(sid);
+    selfcutbvs_[sid] = s->GetBoundingVolume().GetBoundingVolume();  // better kdop?
+  }
+
+  // builds the static search tree of the background mesh
+  if (selfcutbvs_.size() != 0) // *********************************************************** possible in case of parallel computing and using only relevant elements
+  {
+    selfcuttree_->buildStaticSearchTree(selfcutbvs_);
+  }
 
 }
 
@@ -2815,6 +2835,9 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
     throw std::runtime_error( "unsupported side topology" );
   }
   sides_[nids] = Teuchos::rcp( s );
+  int seid = - shadow_sides_.size() - 1;
+  // Remark: the seid of a shadow node is not unique over processors, consequently numbered with negative integers on each proc
+  shadow_sides_[seid] = s;
   return s;
 }
 

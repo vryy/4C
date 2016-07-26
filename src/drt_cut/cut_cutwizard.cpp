@@ -4,7 +4,8 @@
 \brief class that provides the common functionality for a mesh cut based on a level set field or on surface meshes
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -325,8 +326,8 @@ void GEO::CutWizard::Prepare()
   AddBackgroundElements();
 
 
-  // build the bounding volume tree for the collision detection in the context of the selfcut
-  //  cut_->BuildBVTree();
+  // build the static search tree for the collision detection in the self cut
+  intersection_->BuildSelfCutTree();
 
   // build the static search tree for the collision detection
   intersection_->BuildStaticSearchTree();

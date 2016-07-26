@@ -4,7 +4,8 @@
 \brief provides the specific functionality for cutting a mesh with other meshes
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -67,8 +68,8 @@ public:
   /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
-  /// build the bounding volume tree for the collision detection in the context of the selfcut
-  void BuildBVTree();
+  /// build the static search tree for the collision detection in the self cut
+  void BuildSelfCutTree();
 
   /// build the static search tree for the collision detection
   void BuildStaticSearchTree();

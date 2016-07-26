@@ -4,7 +4,8 @@
 \brief provides the specific functionality for cutting a mesh with other meshes
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -115,15 +116,14 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
 }
 
 /*------------------------------------------------------------------------------------------------*
- * build the bounding volume tree for the collision detection in the context of the selfcut       *
- *                                                                                    wirtz 09/14 *
+ * build the static search tree for the collision detection in the self cut           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::BuildBVTree()
+void GEO::CUT::MeshIntersection::BuildSelfCutTree()
 {
 
   Mesh & cm = CutMesh();
 
-  cm.BuildBVTree();
+  cm.BuildSelfCutTree();
 
 }
 
@@ -155,6 +155,9 @@ void GEO::CUT::MeshIntersection::CutTest_Cut(
     bool do_Cut_Positions_Dofsets)
 {
   Status();
+
+  // build the static search tree for the collision detection in the self cut
+  BuildSelfCutTree();
 
   // build the static search tree for the collision detection
   BuildStaticSearchTree();
