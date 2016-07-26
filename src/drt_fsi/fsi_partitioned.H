@@ -3,11 +3,12 @@
  * \file fsi_partitioned.H
 \brief Partitioned FSI base
 
-<pre>
-Maintainer: Matthias Mayr
+\level 1
+
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -74,10 +75,13 @@ public:
   /// compute FSI interface residual S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
+  /// return true if nodes at interface are matching
   bool matchingnodes() {return matchingnodes_; }
 
+  /// Open door in the time loop for sliding ale algo to do remeshing
   virtual void Remeshing();
 
+  /// Setup of coupling at fsi interface
   virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
 
   /// Perform all operations related to updating FSI interface for FSI-crack problem
@@ -165,6 +169,9 @@ protected:
   /// extract idispn_ iveln_
   virtual void ExtractPreviousInterfaceSolution();
 
+  /// return the generic user defined line search factory
+  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> GetLineSearchFactory(){return linesearchfactory_;}
+
 private:
 
   /// create linear solver framework
@@ -224,6 +231,9 @@ protected:
 private:
   /// special debugging output
   Teuchos::RCP<UTILS::DebugWriter> debugwriter_;
+
+  /// the generic line search factory
+  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory_;
 };
 
 }

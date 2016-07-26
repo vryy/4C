@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file fsi_partitioned.H
+ * \file fsi_partitioned.cpp
 \brief Partitioned FSI base
 
-<pre>
-Maintainer: Matthias Mayr
+\level 1
+
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -196,10 +197,9 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
         Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-        Teuchos::rcp(new NOX::FSI::AitkenFactory());
+      linesearchfactory_ = Teuchos::rcp(new NOX::FSI::AitkenFactory());
       lineSearchParams.set("Method","User Defined");
-      lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory_);
 
       lineSearchParams.sublist("Aitken").set("max step size", fsipart.get<double>("MAXOMEGA"));
       break;
@@ -216,10 +216,9 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
         Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
-        Teuchos::rcp(new NOX::FSI::SDFactory());
+      linesearchfactory_ = Teuchos::rcp(new NOX::FSI::SDFactory());
       lineSearchParams.set("Method","User Defined");
-      lineSearchParams.set("User Defined Line Search Factory", sdfactory);
+      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory_);
       break;
     }
     case fsi_iter_stagg_NLCG:
@@ -432,7 +431,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // Begin Nonlinear Solver ************************************
 
-    // Get initial guess.
+    // Get initial guess
     Teuchos::RCP<Epetra_Vector> soln = InitialGuess();
 
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);

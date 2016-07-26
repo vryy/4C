@@ -67,6 +67,26 @@ void immersed_problem_drt()
     {
     case prb_immersed_fsi:
     {
+      // SAFETY FIRST
+      {
+        // check if INODE is defined in input file
+        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
+        IMMERSED::ImmersedNode* inode =
+            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
+
+            if(inode == NULL)
+              dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                      "Make sure you defined INODE instead of NODE in your input file.");
+      }
+
+      {
+        // check if structural predictor ConstVel is chosen in input file
+        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstVel")
+          dserror("Invalid structural predictor for immersed fsi!\n"
+                  "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
+                  "Structural velocity projected onto fluid in new time step should be the same as in previous time step.");
+      }
+
       // fill discretizations
       problem->GetDis("structure")->FillComplete();
       problem->GetDis("fluid")    ->FillComplete();
@@ -78,17 +98,6 @@ void immersed_problem_drt()
       {
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
-      }
-
-      {
-        // check if INODE is defined in input file
-        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
-        IMMERSED::ImmersedNode* inode =
-            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
-
-            if(inode == NULL)
-              dserror("dynamic cast from Node to ImmersedNode failed.\n"
-                      "Make sure you defined INODE instead of NODE in your input file.");
       }
 
       // PARTITIONED FSI ALGORITHM
@@ -119,6 +128,29 @@ void immersed_problem_drt()
     }// case prb_immersed_fsi
     case prb_immersed_ale_fsi:
     {
+      // SAFETY FIRST
+      {
+        // check if INODE is defined in input file
+        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
+        if(gid!=-1)
+        {
+          IMMERSED::ImmersedNode* inode =
+              dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
+
+            if(inode == NULL)
+              dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                      "Make sure you defined INODE instead of NODE in your input file.");
+        }
+      }
+
+      {
+        // check if structural predictor ConstVel is chosen in input file
+        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstVel")
+          dserror("Invalid structural predictor for immersed fsi!\n"
+                  "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
+                  "Structural velocity projected onto fluid in new time step should be the same as in previous time step.");
+      }
+
       // fill discretizations
       problem->GetDis("structure")->FillComplete();
       problem->GetDis("fluid")    ->FillComplete();
@@ -153,20 +185,6 @@ void immersed_problem_drt()
       {
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
-      }
-
-      {
-        // check if INODE is defined in input file
-        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
-        if(gid!=-1)
-        {
-          IMMERSED::ImmersedNode* inode =
-              dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
-
-            if(inode == NULL)
-              dserror("dynamic cast from Node to ImmersedNode failed.\n"
-                      "Make sure you defined INODE instead of NODE in your input file.");
-        }
       }
 
       // PARTITIONED FSI ALGORITHM

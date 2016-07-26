@@ -3,26 +3,22 @@
 
 \brief partitioned immersed fsi subclass
 
-<pre>
-Maintainers: Andreas Rauch
+\level 1
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "fsi_partitioned_immersed.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-// relaxation related
-#include "../drt_fsi/fsi_nox_aitken.H"
-#include "../drt_fsi/fsi_nox_fixpoint.H"
-
-#include "../drt_inpar/inpar_fsi.H"
 
 FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm)
   : Partitioned(comm)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   SetupCoupling(fsidyn,comm);
 }
 

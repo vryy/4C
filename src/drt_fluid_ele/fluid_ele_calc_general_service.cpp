@@ -3747,6 +3747,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   // cast fluid element to immersed element to get/store immersed information
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
+  // do only if immersed ele is cut by boundary
   if(immersedele->IsBoundaryImmersed())
   {
   // get global problem

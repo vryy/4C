@@ -3,22 +3,20 @@
 
 \brief base class for all immersed algorithms
 
-<pre>
-Maintainers: Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_BASE_H
 #define IMMERSED_BASE_H
 
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_so3/so_hex8.H"
+
 #include "../drt_fluid_ele/fluid_ele_immersed_base.H"
 #include "../drt_immersed_problem/immersed_node.H"
-#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_calc_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -41,22 +39,58 @@ namespace DRT{
   class Discretization;
 }
 
+
 namespace IMMERSED{
 
 class ImmersedBase
 {
 public:
 
-  /// setup base class for all immersed algorithms
-  explicit ImmersedBase();
 
-  void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
+  /*!
+  \brief constructor
 
-  void CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis,
-                             std::vector<int> dvol_fenode,
-                             DRT::Condition::ConditionType condtype,
-                             std::string condname);
+  */
+  ImmersedBase();
 
+
+  /*!
+  \brief ghost the discretization redundandtly on all procs
+
+  \author rauch
+  \date 05/14
+
+  \param distobeghosted (in) : pointer to discretization that is to be ghosted
+
+  */
+  void CreateGhosting(const Teuchos::RCP<DRT::Discretization>& distobeghosted);
+
+
+  /*!
+  \brief create a volume condition on the fly
+
+  \author rauch
+  \date 05/14
+
+  \param dis         (in) : discretization on which condition is to be constructed
+  \param dvol_fenode (in) : nodes to be conditioned
+  \param condtype    (in) : type of condition
+  \param condname    (in) : condition name
+
+  */
+  void CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
+                             const std::vector<int> dvol_fenode,
+                             const DRT::Condition::ConditionType condtype,
+                             const std::string condname);
+
+
+  /*!
+  \brief specialized evaluate for immersed algorithm
+
+  \author rauch
+  \date 05/14
+
+  */
   void EvaluateImmersed(Teuchos::ParameterList& params,
                         Teuchos::RCP<DRT::Discretization> dis,
                         DRT::AssembleStrategy* strategy,
@@ -66,6 +100,14 @@ public:
                         int action,
                         bool evaluateonlyboundary=false);
 
+
+  /*!
+  \brief specialized evaluate for immersed algorithm without assembly
+
+  \author rauch
+  \date 05/14
+
+  */
   void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
                                   Teuchos::RCP<DRT::Discretization> dis,
                                   std::map<int,std::set<int> >* elementstoeval,
@@ -74,6 +116,14 @@ public:
                                   int action
                                    );
 
+
+  /*!
+  \brief specialized evaluate for immersed algorithm allowing communication on element level
+
+  \author rauch
+  \date 05/14
+
+  */
   void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
                                                const Teuchos::RCP<const DRT::Discretization> idis,
                                                DRT::AssembleStrategy* strategy,
@@ -83,10 +133,14 @@ public:
                                                Teuchos::ParameterList& params,
                                                bool evaluateonlyboundary=false);
 
-  /*----------------------------------------------------------------------*
-   * considering the need of communication inside the loop over all       |
-   * conditioned elements                                     rauch 05/14 |
-   *----------------------------------------------------------------------*/
+
+  /*!
+  \brief specialized evaluate for immersed algorithm considering the need of communication inside the loop over all conditioned elements
+
+  \author rauch
+  \date 05/14
+
+  */
   void EvaluateInterpolationCondition
   (
       Teuchos::RCP<DRT::Discretization> evaldis,
@@ -96,10 +150,14 @@ public:
       const int condid
   );
 
-  /*----------------------------------------------------------------------*
-   * search in search tree for background elements in radius              |
-   *                                                          rauch 09/15 |
-   *----------------------------------------------------------------------*/
+
+  /*!
+  \brief search in search tree for background elements in given radius
+
+  \author rauch
+  \date 09/15
+
+  */
   void SearchPotentiallyCoveredBackgrdElements(
           std::map<int,std::set<int> >* current_subset_tofill,
           Teuchos::RCP<GEO::SearchTree> backgrd_SearchTree,
@@ -109,6 +167,14 @@ public:
           const double radius,
           const int label);
 
+
+  /*!
+  \brief evaluate a given subset of elements
+
+  \author rauch
+  \date 09/15
+
+  */
   void EvaluateSubsetElements(Teuchos::ParameterList& params,
                               Teuchos::RCP<DRT::Discretization> dis,
                               std::map<int,std::set<int> >& elementstoeval,
@@ -118,18 +184,23 @@ public:
 };// class ImmersedBase
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*!
+\brief interpolate quantity from the background field to a given immersed point
+
+\author rauch
+\date 09/15
+
+*/
   template < DRT::Element::DiscretizationType sourcedistype,
              DRT::Element::DiscretizationType targetdistype >
   int InterpolateToImmersedIntPoint(const Teuchos::RCP<DRT::Discretization> sourcedis,
-                                                            const Teuchos::RCP<DRT::Discretization> targetdis,
-                                                            DRT::Element& targetele,
-                                                            const std::vector<double>& targetxi,
-                                                            const std::vector<double>& targetedisp,
-                                                            int action,
-                                                            std::vector<double>& targetdata
-                                                            )
+                                    const Teuchos::RCP<DRT::Discretization> targetdis,
+                                    DRT::Element& targetele,
+                                    const std::vector<double>& targetxi,
+                                    const std::vector<double>& targetedisp,
+                                    int action,
+                                    std::vector<double>& targetdata
+                                                                    )
   {
     //////////////////////////////////////////////////////////////////////////////////
     ///////
@@ -618,629 +689,13 @@ public:
   };
 
 
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-//  template < DRT::Element::DiscretizationType sourcedistype,
-//  DRT::Element::DiscretizationType targetdistype >
-//  int InterpolateToBackgrdIntPoint(const Teuchos::RCP<DRT::Discretization> sourcedis,
-//      const Teuchos::RCP<DRT::Discretization> targetdis,
-//      DRT::Element& targetele,
-//      const std::vector<double>& targetxi,
-//      const std::vector<double>& targetedisp,
-//      const std::string action,
-//      std::vector<double>& targetdata,
-//      bool& match
-//  )
-//  {
-//    //////////////////////////////////////////////////////////////////////////////////
-//    ///////
-//    ///////  SOURCE  -->  TARGET
-//    ///////  $$ generalized version of InterpolateToImmersedIntPoint; search in discretization $$
-//    ///////  $$ instead of geometry; gets string action instead of int;                        $$
-//    ///////
-//    ///////  maps source values to target discretization.
-//    ///////
-//    ///////  comments on parallelism:
-//    ///////
-//    ///////  every proc needs to enter this routine to make communication work.
-//    ///////  in the extreme scenario where a proc owns no target elements at all
-//    ///////  no evaluate will be called and this proc doesn't enter this routine
-//    ///////  which means in turn, that a Barrier() would never be reached. in
-//    ///////  this case the attempt to communicate would definitely fail.
-//    ///////  so make sure, that each proc owns at least one target element and/or
-//    ///////  it is also to be assured by external measures, that each proc
-//    ///////  reenters this routine until the last element on every proc is
-//    ///////  evaluated (e.g. dummy call of Evaluate(...)).
-//    ///////
-//    /////////////////////////////////////////////////////////////////////////////////
-//
-//    // error flag
-//    int err = 0;
-//
-//    // get communicator
-//    const Epetra_Comm& comm = sourcedis->Comm();
-//    //std::cout<<"PROC "<<comm.MyPID()<<std::endl;
-//    // get the global problem
-//    DRT::Problem* problem = DRT::Problem::Instance();
-//
-//    // dimension of global problem
-//    const int globdim = problem->NDim();
-//
-//    // pointer to background element
-//    DRT::Element* sourceele;
-//
-//    // declare vector of global current coordinates
-//    double x [globdim];
-//
-//    // dimension of source discretization
-//    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-//
-//    // declarations and definitions for round robin loop
-//    const int numproc  = comm.NumProc();
-//    const int myrank   = comm.MyPID();                     // myrank
-//    const int torank   = (myrank + 1) % numproc;           // sends to
-//    const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
-//
-//    DRT::Exporter exporter(comm);
-//
-//    Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->GetState("displacement");
-//    DRT::Element::LocationArray la(sourcedis->NumDofSets());
-//
-//    // get current global coordinates of the given point xi of the target dis
-//    MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(targetele,globdim,&targetxi[0],targetedisp,&x[0]);
-//    std::vector<double> xvec(globdim);
-//    xvec[0]=x[0];
-//    xvec[1]=x[1];
-//    xvec[2]=x[2];
-//
-//    // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
-//    Teuchos::RCP<Epetra_SerialDenseVector> vectofill = Teuchos::rcp(new Epetra_SerialDenseVector(4));
-//    (*vectofill)(0)=-1234.0;
-//    if(match) // was already matched, add no contribution
-//    {(*vectofill)(0)=0.0;
-//    (*vectofill)(1)=0.0;
-//    (*vectofill)(2)=0.0;}
-//
-//    // save parameter space coordinate in serial dense vector
-//    Teuchos::RCP<Epetra_SerialDenseVector> xi_dense = Teuchos::rcp(new Epetra_SerialDenseVector(source_dim));
-//
-//    /////////////////////////////////////////////////////////////////////////////////////////////
-//    //////
-//    //////     round robin loop
-//    //////
-//    ////// in this loop every processor sends the current coordinates of the given target
-//    ////// point xi to his neighbors and checks whether the recieved coordinates lie within
-//    ////// one of the rank's searchbox elements.
-//    //////
-//    ////// if so, this neighbor interpolates the necessary quantities to this point.
-//    ////// the results, along with the information whether the point has already been
-//    ////// matched and with the id of the rank who requested the data originally is sent
-//    ////// around.
-//    //////
-//    ////// when the loop ends, all information are back on the proc who requested the data
-//    ////// originally and for every point the data should be stored in rdata.
-//    //////
-//    //////
-//    ////// --> loop from 0 to numproc instead of (numproc-1) is chosen intentionally.
-//    //////
-//    //////////////////////////////////////////////////////////////////////////////////////////////
-//    // given point already matched?
-//    int matched = 0;
-//    if(match == true)
-//      matched = 1;
-//
-//    // owner of given point
-//    int owner = myrank;
-//    // length of vectofill
-//    int datalength = (int)vectofill->Length();
-//
-//    for (int irobin = 0; irobin < numproc; ++irobin)
-//    {
-//      std::vector<char> sdata;
-//      std::vector<char> rdata;
-//
-//      //////////////////////////////////////////////////////////////////////
-//      // loop over all source elements
-//      //
-//      // determine source element in which the given point lies.
-//      //
-//      // if the current proc can already match the given point xi (xvec)
-//      //
-//      /////////////////////////////////////////////////////////////////////
-//      const Epetra_Map* source_elecolmap = sourcedis->ElementColMap();
-//      int mynumcolele = source_elecolmap->NumMyElements();
-//      LINALG::Matrix<source_dim,1> xi(true);
-//      if(matched == 0)
-//      {
-//        for (int colele=0; colele < mynumcolele; ++colele)
-//        {
-//          bool converged = false;
-//          sourceele = sourcedis->gElement(source_elecolmap->GID(colele));
-//
-//          // get parameter space coords xi in source element
-//          sourceele->LocationVector(*sourcedis,la,false);
-//          std::vector<double> mydispnp(la[0].lm_.size());
-//          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
-//
-//          std::vector<double> targeteleposition1(3);
-//          targeteleposition1[0]=(targetele.Nodes())[1]->X()[0];
-//          targeteleposition1[1]=(targetele.Nodes())[1]->X()[1];
-//          targeteleposition1[2]=(targetele.Nodes())[1]->X()[2];
-//
-//          std::vector<double> targeteleposition7(3);
-//          targeteleposition7[0]=(targetele.Nodes())[7]->X()[0];
-//          targeteleposition7[1]=(targetele.Nodes())[7]->X()[1];
-//          targeteleposition7[2]=(targetele.Nodes())[7]->X()[2];
-//
-//          double diagonaltargetelelength = sqrt(pow(targeteleposition1[0]-targeteleposition7[0],2)+pow(targeteleposition1[1]-targeteleposition7[1],2)+pow(targeteleposition1[2]-targeteleposition7[2],2));
-//
-//          std::vector<double> sourceeleposition1(3);
-//          sourceeleposition1[0]=(sourceele->Nodes())[1]->X()[0] + mydispnp[1*3+0];
-//          sourceeleposition1[1]=(sourceele->Nodes())[1]->X()[1] + mydispnp[1*3+1];
-//          sourceeleposition1[2]=(sourceele->Nodes())[1]->X()[2] + mydispnp[1*3+2];
-//
-//          // distance between given point of target dis and sourceelenode 1
-//          double dist = sqrt(pow(xvec[0]-sourceeleposition1[0],2)+pow(xvec[1]-sourceeleposition1[1],2)+pow(xvec[2]-sourceeleposition1[2],2));
-//
-//          // only try to match given target point and sourceele if sourceele is in vicinity of target point
-//          if(dist < 1.6*diagonaltargetelelength)
-//          {
-//            MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mydispnp[0],&xvec[0],&xi(0),converged);
-//            if(converged==false)
-//            {
-//              xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;
-//            }
-//          }
-//          else
-//          {
-//            xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;
-//          }
-//
-//# ifdef DEBUG
-//          if(!converged)
-//          { std::vector<double> sourceeleposition1(3);
-//          sourceeleposition1[0]=(sourceele->Nodes())[1]->X()[0] + mydispnp[1*3+0];
-//          sourceeleposition1[1]=(sourceele->Nodes())[1]->X()[1] + mydispnp[1*3+1];;
-//          sourceeleposition1[2]=(sourceele->Nodes())[1]->X()[2] + mydispnp[1*3+2];;
-//
-//          std::vector<double> sourceeleposition7(3);
-//          sourceeleposition7[0]=(sourceele->Nodes())[7]->X()[0];
-//          sourceeleposition7[1]=(sourceele->Nodes())[7]->X()[1];
-//          sourceeleposition7[2]=(sourceele->Nodes())[7]->X()[2];
-//
-//          double diagonalsourcelength = sqrt(pow(sourceeleposition1[0]-sourceeleposition7[0],2)+pow(sourceeleposition1[1]-sourceeleposition7[1],2)+pow(sourceeleposition1[2]-sourceeleposition7[2],2));
-//          double distance = sqrt(pow(xvec[0]-sourceeleposition7[0],2)+pow(xvec[1]-sourceeleposition7[1],2)+pow(xvec[2]-sourceeleposition7[2],2));
-//
-//          //              std::cout<<"UNCONVERGED MAPPING : (maybe not critical)"<<std::endl;
-//          //              std::cout<<"Global coordinate of target point : "<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<std::endl;
-//          //              std::cout<<"Global coordinate of source node1 : "<<sourceeleposition1[0]<<" "<<sourceeleposition1[1]<<" "<<sourceeleposition1[2]<<std::endl;
-//          //              std::cout<<"Diagonal length of source element : "<<diagonalsourcelength<<std::endl;
-//          //              std::cout<<"Distance between target point and source node 7 : "<<distance<<std::endl;
-//
-//          if(distance < 5*diagonalsourcelength)
-//            dserror("MAPPING FROM SOURCE POINT TO TARGET DID NOT CONVERGE");
-//          else
-//          {
-//            xi(0)=-1234.0; xi(1)=-1234.0; xi(2)=-1234.0;
-//          }
-//          }
-//# endif
-//          /////////////////////////////////////////////////
-//          ////
-//          ////     MATCH
-//          ////
-//          /////////////////////////////////////////////////
-//          double tol = 1e-11;
-//          if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
-//          { // given point lies in element curr
-//            matched = 1;
-//            match = true;
-//
-//            // parameter list
-//            Teuchos::ParameterList params;
-//            params.set<std::string>("action", action);
-//            // fill locationarray
-//            DRT::Element::LocationArray la(1);
-//            sourceele->LocationVector(*sourcedis,la,false);
-//
-//            (*xi_dense)(0)=xi(0);
-//            (*xi_dense)(1)=xi(1);
-//            (*xi_dense)(2)=xi(2);
-//
-//            Epetra_SerialDenseMatrix dummy1;
-//            Epetra_SerialDenseMatrix dummy2;
-//            Epetra_SerialDenseVector dummy3;
-//
-//            // evaluate and perform action handed in to this function
-//            sourceele->Evaluate(params,*sourcedis,la,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
-//
-//            break; // break loop over all source elements
-//          }// if match
-//
-//          if(colele==(mynumcolele-1) and matched == 0 and irobin == (numproc-1)) // this point lies not within discretization at all
-//          {(*vectofill)(0)=0.0;(*vectofill)(1)=0.0;(*vectofill)(2)=0.0;(*vectofill)(3)=0.0;}
-//        }// loop over all seachbox elements
-//      }// enter loop only if point not yet matched
-//      /////////////////////////////////////////////////////////////////////
-//
-//      if(numproc>1)
-//      {
-//        // ---- pack data for sending -----
-//        {
-//          DRT::PackBuffer data;
-//          data.StartPacking();
-//          {
-//            data.AddtoPack(matched);
-//            data.AddtoPack(owner);
-//            data.AddtoPack((int)vectofill->Length());
-//
-//            // point coordinate
-//            for(int dim=0;dim<globdim;++dim)
-//            {
-//              data.AddtoPack(xvec[dim]);
-//            }
-//
-//            if(matched==1)
-//            {
-//              for(int dim=0;dim<(int)vectofill->Length();++dim)
-//              {
-//                data.AddtoPack((*vectofill)(dim));
-//              }
-//            }
-//          }
-//          std::swap(sdata, data());
-//        }
-//        //---------------------------------
-//
-//        // ---- send ----
-//        MPI_Request request;
-//        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
-//
-//        // ---- receive ----
-//        int length = rdata.size();
-//        int tag = -1;
-//        int from = -1;
-//        exporter.ReceiveAny(from,tag,rdata,length);
-//        if (tag != 1234 or from != fromrank)
-//          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
-//
-//        // ---- unpack data -----
-//        std::vector<char>::size_type position = 0;
-//        matched    = DRT::ParObject::ExtractInt(position,rdata);
-//        owner      = DRT::ParObject::ExtractInt(position,rdata);
-//        datalength = DRT::ParObject::ExtractInt(position,rdata);
-//
-//        for(int i=0;i<globdim;++i)
-//          xvec[i] = DRT::ParObject::ExtractDouble(position,rdata);
-//
-//        if(matched == 1)
-//        {
-//          for(int dim=0;dim<datalength;++dim)
-//            (*vectofill)(dim) = DRT::ParObject::ExtractDouble(position,rdata);
-//        }
-//
-//        // wait for all communication to finish
-//        exporter.Wait(request);
-//        comm.Barrier();
-//      } // only if numproc > 1
-//
-//    } // end for irobin
-//
-//#ifdef DEBUG
-//    if(owner != comm.MyPID())
-//      dserror("after round robin every proc should have recieved his original data");
-//#endif
-//
-//    // now every proc should store the requested quantities in vectofill for his targetxi
-//    // time to return that stuff
-//    for(int dim=0;dim<datalength;++dim)
-//      targetdata[dim]=(*vectofill)(dim);
-//
-//
-//    return err;
-//  };
+  /*!
+  \brief interpolate quantity from the immersed field to a given background point
 
+  \author rauch
+  \date 09/15
 
-//  /*----------------------------------------------------------------------*/
-//  /* Analogous to InterpolateToImmersedIntPoint() but no evaluate is      */
-//  /* called.                                                              */
-//  /*----------------------------------------------------------------------*/
-//  template < DRT::Element::DiscretizationType sourcedistype,
-//  DRT::Element::DiscretizationType targetdistype >
-//  int DetermineBackgrdElementsWithImmersedBoundary(const Teuchos::RCP<DRT::Discretization> sourcedis,
-//      const Teuchos::RCP<DRT::Discretization> targetdis,
-//      DRT::Element& targetele,
-//      const std::vector<double>& targetxi,
-//      const std::vector<double>& targetedisp
-//  )
-//  {
-//    // error flag
-//    int err = 0;
-//
-//    // get communicator
-//    const Epetra_Comm& comm = sourcedis->Comm();
-//
-//    // get the global problem
-//    DRT::Problem* problem = DRT::Problem::Instance();
-//
-//    // dimension of global problem
-//    const int globdim = problem->NDim();
-//
-//    // pointer to background element
-//    DRT::Element* sourceele;
-//
-//    // declare vector of global current coordinates
-//    double x [globdim];
-//
-//    // dimension of source discretization
-//    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-//    static const int target_dim = DRT::UTILS::DisTypeToDim<targetdistype>::dim;
-//
-//    // declarations and definitions for round robin loop
-//    const int numproc  = comm.NumProc();
-//    const int myrank   = comm.MyPID();                     // myrank
-//    const int torank   = (myrank + 1) % numproc;           // sends to
-//    const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
-//
-//    DRT::Exporter exporter(comm);
-//
-//    // get current global coordinates of the given point xi of the target dis
-//    MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(targetele,globdim,&targetxi[0],targetedisp,&x[0]);
-//    std::vector<double> xvec(globdim);
-//    xvec[0]=x[0];
-//    xvec[1]=x[1];
-//    xvec[2]=x[2];
-//
-//    // save parameter space coordinate in serial dense vector
-//    Teuchos::RCP<Epetra_SerialDenseVector> xi_dense = Teuchos::rcp(new Epetra_SerialDenseVector(source_dim));
-//    Teuchos::RCP<Epetra_SerialDenseVector> targetxi_dense = Teuchos::rcp(new Epetra_SerialDenseVector(target_dim));
-//
-//    Teuchos::RCP<Epetra_SerialDenseVector> normal_at_targetpoint = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-//    std::vector<double> normal_vec(3);// normal_vec[0]=0.0;normal_vec[1]=0.0; normal_vec[2]=0.0;
-//
-//    Epetra_SerialDenseMatrix dummy1;
-//    Epetra_SerialDenseMatrix dummy2;
-//    Epetra_SerialDenseVector dummy3;
-//
-//    Teuchos::ParameterList params;
-//
-//    params.set<std::string>("action", "calc_cur_normal_at_point");
-//    for(int i=0; i<target_dim;++i)
-//      (*targetxi_dense)(i) = targetxi[i];
-//
-//    DRT::Element::LocationArray targetla(1);
-//    targetele.LocationVector(*targetdis,targetla,false);
-//
-//    targetele.Evaluate(params,*targetdis,targetla,dummy1,dummy2,*normal_at_targetpoint,*targetxi_dense,dummy3);
-//    normal_at_targetpoint->Scale(1.0/(normal_at_targetpoint->Norm2()));
-//    normal_vec[0] = (*normal_at_targetpoint)(0);
-//    normal_vec[1] = (*normal_at_targetpoint)(1);
-//    normal_vec[2] = (*normal_at_targetpoint)(2);
-//
-//    /////////////////////////////////////////////////////////////////////////////////////////////
-//    //////
-//    //////     round robin loop
-//    //////
-//    //////////////////////////////////////////////////////////////////////////////////////////////
-//    // given point already matched?
-//    int matched = 0;
-//    // owner of given point
-//    int owner = myrank;
-//
-//    // get possible elements being intersected by immersed structure
-//    DRT::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
-//    std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
-//
-//    for (int irobin = 0; irobin < numproc; ++irobin)
-//    {
-//      std::vector<char> sdata;
-//      std::vector<char> rdata;
-//
-//      //////////////////////////////////////////////////////////////////////
-//      // loop over all background elements
-//      //
-//      // determine background element in which the given point lies.
-//      //
-//      // if the current proc can already match the given point xi (xvec)
-//      //
-//      /////////////////////////////////////////////////////////////////////
-//      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-//      LINALG::Matrix<source_dim,1> xi(true);
-//      if(!matched)
-//      {
-//        // every proc that has searchboxgeom elements
-//        for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
-//        {
-//          bool converged = false;
-//
-//          // get parameter space coords xi in source element
-//          MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
-//
-////# ifdef DEBUG
-////          if(!converged)
-////          {
-////            dserror("MAPPING FROM SOURCE POINT TO TARGET DID NOT CONVERGE");
-////          }
-////# endif
-//          /////////////////////////////////////////////////
-//          ////
-//          ////     MATCH
-//          ////
-//          /////////////////////////////////////////////////
-//          double tol = 1e-12;
-//          if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
-//          { // given point lies in element curr
-//
-//            bool validsource = true;
-//            double scalarproduct= 0.0;
-//            Teuchos::RCP<Epetra_SerialDenseVector> vector;
-//
-//            sourceele = curr->second.getRawPtr();
-//
-//            // fill locationarray
-//            DRT::Element::LocationArray sourcela(1);
-//            sourceele->LocationVector(*sourcedis,sourcela,false);
-//
-//            (*xi_dense)(0)=xi(0);
-//            (*xi_dense)(1)=xi(1);
-//            (*xi_dense)(2)=xi(2);
-//
-//            // does targetpoint lie on an element edge?
-//            // only the sourceele located outward from the boundary should interpolate
-//            if( (abs(xi(0))<(1.0+tol) and abs(xi(0))>(1.0-tol)) or (abs(xi(1))<(1.0+tol) and abs(xi(1))>(1.0-tol)) or (abs(xi(2))<(1.0+tol) and abs(xi(2))>(1.0-tol)))
-//            {
-//              //              // calc sourcele diagonal length
-//              //              const double* X0 = sourceele->Nodes()[0]->X();
-//              //              const double* X6 = sourceele->Nodes()[1]->X();
-//              //              double srcelediaglength = sqrt(pow(X0[0]-X6[0],2)+pow(X0[1]-X6[1],2)+pow(X0[2]-X6[2],2));
-//
-//              // get nodal coords of source ele
-//              vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-//              std::vector<double> distances(sourceele->NumNode());
-//              for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
-//              {
-//                const double* X;
-//                X = sourceele->Nodes()[sourcenode]->X();
-//
-//                distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
-//
-//              }
-//
-//              // get max. distance and corresponding index of src node
-//              int maxdistanceindex = -1;
-//              double maxvalue = 0.0;
-//              for(int i=0; i<(int)distances.size();++i)
-//              {
-//                if(distances[i]>maxvalue)
-//                {
-//                  maxvalue = distances[i];
-//                  maxdistanceindex = i;
-//                }
-//              }
-//
-//              const double* X;
-//              X = sourceele->Nodes()[maxdistanceindex]->X();
-//              // build vector directed from targetele point (xvec) to sourceel node (X)
-//              // xvec should not lie at same ele surface as sourcenode
-//              (*vector)(0) = X[0]-xvec[0];
-//              (*vector)(1) = X[1]-xvec[1];
-//              (*vector)(2) = X[2]-xvec[2];
-//              vector->Scale(vector->Norm2());
-//
-//              // build scalar product between normal and vector
-//              scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] + (*vector)(2) * normal_vec[2];
-//
-//              if(scalarproduct > 0.0)
-//                validsource = true;
-//              else
-//                validsource = false;
-//
-//#ifdef DEBUG
-//              if(abs(scalarproduct) < 1e-13 and validsource)
-//              {
-//                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-//                dserror("normal vec and vec from point to node perpendicular.\n"
-//                        "no robust determination of outward lying src ele possible");
-//              }
-//              if(abs(scalarproduct) < -1e-12 and validsource)
-//              {
-//                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-//                dserror("normal vec and vec from point to node have no sharp angle.\n"
-//                        "no robust determination of outward laying src ele possible");
-//              }
-//#endif
-//
-//              //count++;
-//            } // if on element edge
-//
-//            if(validsource)
-//            {
-//              matched = 1;
-//
-//              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetBoundaryIsImmersed(1);
-//
-//              DRT::Node** nodes = curr->second->Nodes();
-//              for(int node=0;node<curr->second->NumNode();++node)
-//                static_cast<IMMERSED::ImmersedNode* >(nodes[node])->SetBoundaryIsImmersed(1);
-//
-//              break; // break loop over all source eles
-//            }
-//            else
-//              matched = 0;
-//
-//          }// if match
-//        }// loop over all seachbox elements
-//      }// enter loop only if point not yet matched
-//      /////////////////////////////////////////////////////////////////////
-//
-//
-//      if(numproc>1)
-//      {
-//        // ---- pack data for sending -----
-//        {
-//          DRT::PackBuffer data;
-//          data.StartPacking();
-//          {
-//            data.AddtoPack(matched);
-//            data.AddtoPack(owner);
-//
-//            // point coordinate
-//            for(int dim=0;dim<globdim;++dim)
-//            {
-//              data.AddtoPack(xvec[dim]);
-//            }
-//
-//            // normal vector
-//            for(int dim=0;dim<globdim;++dim)
-//            {
-//              data.AddtoPack(normal_vec[dim]);
-//            }
-//
-//            std::swap(sdata, data());
-//          }
-//        }
-//        //---------------------------------
-//
-//        // ---- send ----
-//        MPI_Request request;
-//        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
-//
-//        // ---- receive ----
-//        int length = rdata.size();
-//        int tag = -1;
-//        int from = -1;
-//        exporter.ReceiveAny(from,tag,rdata,length);
-//        if (tag != 1234 or from != fromrank)
-//          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
-//
-//        // ---- unpack data -----
-//        std::vector<char>::size_type position = 0;
-//        matched    = DRT::ParObject::ExtractInt(position,rdata);
-//        owner      = DRT::ParObject::ExtractInt(position,rdata);
-//
-//        for(int i=0;i<globdim;++i)
-//          xvec[i] = DRT::ParObject::ExtractDouble(position,rdata);
-//
-//        for(int i=0;i<globdim;++i)
-//          normal_vec[i] = DRT::ParObject::ExtractDouble(position,rdata);
-//
-//        // wait for all communication to finish
-//        exporter.Wait(request);
-//        comm.Barrier();
-//      } // only if parallel simulation (numproc > 1)
-//    } // end for irobin
-//
-//#ifdef DEBUG
-//    if(owner != comm.MyPID())
-//      dserror("after round robin every proc should have recieved his original data");
-//#endif
-//
-//    return err;
-//  };
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
+  */
   template < DRT::Element::DiscretizationType sourcedistype,
   DRT::Element::DiscretizationType targetdistype >
   int InterpolateToBackgrdPoint(
@@ -1589,392 +1044,397 @@ public:
   };
 
 
-  /*-----------------------------------------------------------------------------*
-   | Find Closest Structure Surface Point                          rauch 07/2015 |
-   *-----------------------------------------------------------------------------*/
-  //////////////////////////////////////////////////////////////////////////////////
-  ///////
-  /////// Find the closest point on the structural surface for every fluid node of
-  /////// a cut fluid element that is not covered  by the structure. This structure
-  /////// point has to lie inside the element of the searching fluid node to
-  /////// enable later weighting via shape functions. Store velocity and local
-  /////// position of closest structure surface point.
-  ///////
-  /////////////////////////////////////////////////////////////////////////////////
+  /*!
+  \brief Find Closest Structure Surface Point
 
-    template < DRT::Element::DiscretizationType structdistype,
-    DRT::Element::DiscretizationType fluiddistype >
-    int FindClosestStructureSurfacePoint(
-        std::map<int,std::set<int> >& curr_subset_of_structdis,   // Input
-        const Teuchos::RCP<DRT::Discretization> structdis,        // Input
-        const Teuchos::RCP<DRT::Discretization> fluiddis,         // Input
-        DRT::Element& fluidele,                                   // Input
-        const std::vector<double>& fluidxi,                       // Input
-        const std::vector<double>& fluideledisp,                  // Input
-        const std::string action,                                 // Input
-        std::vector<double>& target_vel_data,                     // Output
-        std::vector<double>& target_pos_data,                     // Output
-        bool& match,                                              // Output
-        bool doCommunication = true                               // Input
-    )
+   Find the closest point on the structural surface for every fluid node of
+   a cut fluid element that is not covered  by the structure. This structure
+   point has to lie inside the element of the searching fluid node to
+   enable later weighting via shape functions. Store velocity and local
+   position of closest structure surface point.
+
+  \author rauch
+  \date 07/2015
+
+   */
+  template < DRT::Element::DiscretizationType structdistype,
+  DRT::Element::DiscretizationType fluiddistype >
+  int FindClosestStructureSurfacePoint(
+      std::map<int,std::set<int> >& curr_subset_of_structdis,   // Input
+      const Teuchos::RCP<DRT::Discretization> structdis,        // Input
+      const Teuchos::RCP<DRT::Discretization> fluiddis,         // Input
+      DRT::Element& fluidele,                                   // Input
+      const std::vector<double>& fluidxi,                       // Input
+      const std::vector<double>& fluideledisp,                  // Input
+      const std::string action,                                 // Input
+      std::vector<double>& target_vel_data,                     // Output
+      std::vector<double>& target_pos_data,                     // Output
+      bool& match,                                              // Output
+      bool doCommunication = true                               // Input
+  )
+  {
+
+    // error flag
+    int err = 0;
+
+    // get communicator
+    const Epetra_Comm& comm = structdis->Comm();
+
+    // get the global problem
+    DRT::Problem* problem = DRT::Problem::Instance();
+
+    // dimension of global problem
+    const int globdim = problem->NDim();
+
+    // declare vector of global current coordinates of fluid node
+    double x_fluid_node[globdim];
+
+    // dimension of structure and fluid discretization
+    static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
+    static const int fluid_dim = DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
+
+    // get integration rule of structural surface element
+    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_quad_36point);
+
+    // initialize structural shape functions matrix
+    LINALG::Matrix<4,1> shapefcts(true);
+
+    // declarations and definitions for round robin loop
+    int numproc  = comm.NumProc();
+    const int myrank   = comm.MyPID();                     // myrank
+    const int torank   = (myrank + 1) % numproc;           // sends to
+    const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
+
+    if(numproc == 1)
+      doCommunication=false;
+
+    if(doCommunication==false)
+      numproc=1;
+
+    DRT::Node** fluidnode = fluidele.Nodes();
+    double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0]-fluidnode[7]->X()[0],2)+pow(fluidnode[1]->X()[1]-fluidnode[7]->X()[1],2)+pow(fluidnode[1]->X()[2]-fluidnode[7]->X()[2],2));
+
+    // get current displacements and velocities of structure discretization
+    Teuchos::RCP<const Epetra_Vector> dispnp = structdis->GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> velnp = structdis->GetState("velocity");
+    DRT::Element::LocationArray la(structdis->NumDofSets());
+
+    // get current global coordinates of the given fluid node fluid_xi
+    MORTAR::UTILS::LocalToCurrentGlobal<fluiddistype>(fluidele,globdim,&fluidxi[0],fluideledisp,&x_fluid_node[0]);
+    // get as vector
+    std::vector<double> fluid_node_glob_coord(globdim);
+    for(int idim=0; idim<3;++idim)
+      fluid_node_glob_coord[idim] = x_fluid_node[idim];
+
+    // initialize vectors to fill
+    Teuchos::RCP<Epetra_SerialDenseVector> velnp_at_struct_point = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    Teuchos::RCP<Epetra_SerialDenseVector> xi_pos_of_struct_point = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    (*velnp_at_struct_point)(0) = -1234.0;
+    (*xi_pos_of_struct_point)(0) = -1234.0;
+
+    // given point already matched?
+    int matched = 0;
+    if(match == true)
     {
+      // do nothing if node is already matched
+      matched = 1;
+      match = false;
+    }
 
-      // error flag
-      int err = 0;
+    // store current smallest distance to check each point
+    double stored_dist = 100000.0;
+    // store vel and pos for current closest structure point
+    std::vector<double> pos_to_store(globdim);
+    std::vector<double> vel_to_store(globdim);
 
-      // get communicator
-      const Epetra_Comm& comm = structdis->Comm();
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    //////
+    //////     round robin loop
+    //////
+    ////// in this loop every processor sends the current coordinates of the given target
+    ////// point xi to his neighbors and checks whether the recieved coordinates lie within
+    ////// one of the rank's searchbox elements.
+    //////
+    ////// if so, this neighbor interpolates the necessary quantities to this point.
+    ////// the results, along with the information whether the point has already been
+    ////// matched and with the id of the rank who requested the data originally is sent
+    ////// around.
+    //////
+    ////// when the loop ends, all information are back on the proc who requested the data
+    ////// originally and for every point the data should be stored in rdata.
+    //////
+    //////
+    ////// --> loop from 0 to numproc instead of (numproc-1) is chosen intentionally.
+    //////
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
-      // get the global problem
-      DRT::Problem* problem = DRT::Problem::Instance();
+    // owner of given point
+    int owner = myrank;
+    // length of velnp_at_struct_point
+    int datalength = (int)velnp_at_struct_point->Length();
 
-      // dimension of global problem
-      const int globdim = problem->NDim();
+    // loop over all procs
+    for (int irobin = 0; irobin < numproc; ++irobin)
+    {
+      std::vector<char> sdata;
+      std::vector<char> rdata;
 
-      // declare vector of global current coordinates of fluid node
-      double x_fluid_node[globdim];
+      // local coordinates of structrual surface point in parameter space of the fluid element
+      LINALG::Matrix<fluid_dim,1> fluid_xi(true);
 
-      // dimension of structure and fluid discretization
-      static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
-      static const int fluid_dim = DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
-
-      // get integration rule of structural surface element
-      const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_quad_36point);
-
-      // initialize structural shape functions matrix
-      LINALG::Matrix<4,1> shapefcts(true);
-
-      // declarations and definitions for round robin loop
-            int numproc  = comm.NumProc();
-      const int myrank   = comm.MyPID();                     // myrank
-      const int torank   = (myrank + 1) % numproc;           // sends to
-      const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
-
-      if(numproc == 1)
-        doCommunication=false;
-
-      if(doCommunication==false)
-        numproc=1;
-
-      DRT::Node** fluidnode = fluidele.Nodes();
-      double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0]-fluidnode[7]->X()[0],2)+pow(fluidnode[1]->X()[1]-fluidnode[7]->X()[1],2)+pow(fluidnode[1]->X()[2]-fluidnode[7]->X()[2],2));
-
-      // get current displacements and velocities of structure discretization
-      Teuchos::RCP<const Epetra_Vector> dispnp = structdis->GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> velnp = structdis->GetState("velocity");
-      DRT::Element::LocationArray la(structdis->NumDofSets());
-
-      // get current global coordinates of the given fluid node fluid_xi
-      MORTAR::UTILS::LocalToCurrentGlobal<fluiddistype>(fluidele,globdim,&fluidxi[0],fluideledisp,&x_fluid_node[0]);
-      // get as vector
-      std::vector<double> fluid_node_glob_coord(globdim);
-      for(int idim=0; idim<3;++idim)
-        fluid_node_glob_coord[idim] = x_fluid_node[idim];
-
-      // initialize vectors to fill
-      Teuchos::RCP<Epetra_SerialDenseVector> velnp_at_struct_point = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-      Teuchos::RCP<Epetra_SerialDenseVector> xi_pos_of_struct_point = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-      (*velnp_at_struct_point)(0) = -1234.0;
-      (*xi_pos_of_struct_point)(0) = -1234.0;
-
-      // given point already matched?
-      int matched = 0;
-      if(match == true)
+      // loop over points that are not yet matched
+      if(matched == 0)
       {
-        // do nothing if node is already matched
-        matched = 1;
-        match = false;
-      }
-
-      // store current smallest distance to check each point
-      double stored_dist = 100000.0;
-      // store vel and pos for current closest structure point
-      std::vector<double> pos_to_store(globdim);
-      std::vector<double> vel_to_store(globdim);
-
-      /////////////////////////////////////////////////////////////////////////////////////////////
-      //////
-      //////     round robin loop
-      //////
-      ////// in this loop every processor sends the current coordinates of the given target
-      ////// point xi to his neighbors and checks whether the recieved coordinates lie within
-      ////// one of the rank's searchbox elements.
-      //////
-      ////// if so, this neighbor interpolates the necessary quantities to this point.
-      ////// the results, along with the information whether the point has already been
-      ////// matched and with the id of the rank who requested the data originally is sent
-      ////// around.
-      //////
-      ////// when the loop ends, all information are back on the proc who requested the data
-      ////// originally and for every point the data should be stored in rdata.
-      //////
-      //////
-      ////// --> loop from 0 to numproc instead of (numproc-1) is chosen intentionally.
-      //////
-      //////////////////////////////////////////////////////////////////////////////////////////////
-
-      // owner of given point
-      int owner = myrank;
-      // length of velnp_at_struct_point
-      int datalength = (int)velnp_at_struct_point->Length();
-
-      // loop over all procs
-      for (int irobin = 0; irobin < numproc; ++irobin)
-      {
-        std::vector<char> sdata;
-        std::vector<char> rdata;
-
-        // local coordinates of structrual surface point in parameter space of the fluid element
-        LINALG::Matrix<fluid_dim,1> fluid_xi(true);
-
-        // loop over points that are not yet matched
-        if(matched == 0)
+        // loop over closeele set
+        for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_structdis.begin(); closele != curr_subset_of_structdis.end(); closele++)
         {
-          // loop over closeele set
-          for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_structdis.begin(); closele != curr_subset_of_structdis.end(); closele++)
+          // loop over all searchbox elements
+          for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
           {
-            // loop over all searchbox elements
-            for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
-            {
-              // only surface elements (with immersed coupling condition) are relevant to find closest structure point
-              std::vector<Teuchos::RCP<DRT::Element> > surface_eles = structdis->gElement(*eleIter)->Surfaces();
+            // only surface elements (with immersed coupling condition) are relevant to find closest structure point
+            std::vector<Teuchos::RCP<DRT::Element> > surface_eles = structdis->gElement(*eleIter)->Surfaces();
 
-              // loop over surface element, find the elements with IMMERSEDCoupling condition
-              for (std::vector<Teuchos::RCP<DRT::Element> >::iterator surfIter = surface_eles.begin(); surfIter != surface_eles.end(); ++surfIter)
+            // loop over surface element, find the elements with IMMERSEDCoupling condition
+            for (std::vector<Teuchos::RCP<DRT::Element> >::iterator surfIter = surface_eles.begin(); surfIter != surface_eles.end(); ++surfIter)
+            {
+              // pointer to current surface element
+              DRT::Element* structele  = surfIter->getRawPtr();
+
+              // pointer to nodes of current surface element
+              DRT::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
+
+              int numfsinodes = 0;
+
+              // loop over all nodes of current surface element
+              for (int surfnode = 0; surfnode < structele->NumNode(); ++surfnode)
               {
-                // pointer to current surface element
-                DRT::Element* structele  = surfIter->getRawPtr();
+                DRT::Node* checkNode = NodesPtr[surfnode];
+                // check whether a IMMERSEDCoupling condition is active on this node
+                if (checkNode->GetCondition("IMMERSEDCoupling") != NULL)
+                  ++numfsinodes;
+              }
 
-                // pointer to nodes of current surface element
-                DRT::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
+              // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of this element have fsi condition)
+              if (numfsinodes==structele->NumNode())
+              {
+                // get displacements and velocities of structure dis
+                structele->LocationVector(*structdis,la,false);
+                std::vector<double> mydispnp(la[0].lm_.size());
+                DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
+                std::vector<double> myvelnp(la[0].lm_.size());
+                DRT::UTILS::ExtractMyValues(*velnp,myvelnp,la[0].lm_);
 
-                int numfsinodes = 0;
-
-                // loop over all nodes of current surface element
-                for (int surfnode = 0; surfnode < structele->NumNode(); ++surfnode)
+                // 1.) check if closest point is a node
+                // loop over all nodes of structural surface element
+                for (int inode = 0; inode < structele->NumNode(); ++inode)
                 {
-                  DRT::Node* checkNode = NodesPtr[surfnode];
-                  // check whether a IMMERSEDCoupling condition is active on this node
-                  if (checkNode->GetCondition("IMMERSEDCoupling") != NULL)
-                    ++numfsinodes;
-                }
+                  // get current global position of structure node
+                  std::vector<double> struct_node_postion(3);
+                  for(int idim=0; idim<3;++idim)
+                    struct_node_postion[idim]=(structele->Nodes())[inode]->X()[idim] + mydispnp[inode*3+idim];
 
-                // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of this element have fsi condition)
-                if (numfsinodes==structele->NumNode())
-                {
-                  // get displacements and velocities of structure dis
-                  structele->LocationVector(*structdis,la,false);
-                  std::vector<double> mydispnp(la[0].lm_.size());
-                  DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
-                  std::vector<double> myvelnp(la[0].lm_.size());
-                  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,la[0].lm_);
+                  // distance between fluid node and given structure node
+                  double dist = sqrt(pow(fluid_node_glob_coord[0]-struct_node_postion[0],2)+pow(fluid_node_glob_coord[1]-struct_node_postion[1],2)+pow(fluid_node_glob_coord[2]-struct_node_postion[2],2));
 
-                  // 1.) check if closest point is a node
-                  // loop over all nodes of structural surface element
-                  for (int inode = 0; inode < structele->NumNode(); ++inode)
+                  // only store point information, if distance is smallest so far
+                  if (dist<stored_dist)
                   {
-                    // get current global position of structure node
-                    std::vector<double> struct_node_postion(3);
+                    // update distance, velocity and position
+                    stored_dist = dist;
+                    for (int idim=0; idim<3;++idim)
+                    {
+                      vel_to_store[idim] = myvelnp[inode*3+idim];
+                      pos_to_store[idim] = struct_node_postion[idim];
+                    }
+                  }
+                } // end loop over nodes
+
+                // 2.) check if closest point is an integration point of the structural surface element
+                // loop over all int points of structural surface element
+                for (int igp = 0; igp <intpoints.IP().nquad; ++igp)
+                {
+                  // get local coordinates of gp
+                  std::vector<double> struct_xsi(struct_dim);
+                  struct_xsi[0] = intpoints.IP().qxg[igp][0];
+                  struct_xsi[1] = intpoints.IP().qxg[igp][1];
+
+                  // get local coordinates of gp as matrix
+                  LINALG::Matrix<struct_dim,1> struct_xi(true);
+                  for(int i=0;i<struct_dim;++i)
+                    struct_xi(i) = struct_xsi[i];
+
+                  // declare vector of global current coordinates
+                  double structsurf_gp_glob_coord[globdim];
+
+                  // get current global position of the given int point xi on the structural surface
+                  MORTAR::UTILS::LocalToCurrentGlobal<structdistype>(*(structele),globdim,&struct_xsi[0],mydispnp,&structsurf_gp_glob_coord[0]);
+
+                  // distance between fluid node and given structure gp
+                  double dist = sqrt(pow(fluid_node_glob_coord[0]-structsurf_gp_glob_coord[0],2)+pow(fluid_node_glob_coord[1]-structsurf_gp_glob_coord[1],2)+pow(fluid_node_glob_coord[2]-structsurf_gp_glob_coord[2],2));
+
+                  // only store point information, if distance is smallest so far
+                  if (dist<stored_dist)
+                  {
+                    // update distance
+                    stored_dist = dist;
+
+                    // evaluate shape functions of structure dis at gp
+                    DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi,shapefcts);
+                    LINALG::Matrix<4,3> myvelocitynp(true);
+                    for(int node=0;node<4;++node)
+                      for(int dim=0;dim<3;++dim)
+                        myvelocitynp(node,dim) = myvelnp[node*3+dim];
+
+                    // calculate velocity in gp
+                    LINALG::Matrix<3,1> vel_at_gp(true);
+                    vel_at_gp.MultiplyTN(myvelocitynp,shapefcts);
+
+                    // update velocity and position
                     for(int idim=0; idim<3;++idim)
-                      struct_node_postion[idim]=(structele->Nodes())[inode]->X()[idim] + mydispnp[inode*3+idim];
-
-                    // distance between fluid node and given structure node
-                    double dist = sqrt(pow(fluid_node_glob_coord[0]-struct_node_postion[0],2)+pow(fluid_node_glob_coord[1]-struct_node_postion[1],2)+pow(fluid_node_glob_coord[2]-struct_node_postion[2],2));
-
-                    // only store point information, if distance is smallest so far
-                    if (dist<stored_dist)
                     {
-                      // update distance, velocity and position
-                      stored_dist = dist;
-                      for (int idim=0; idim<3;++idim)
-                      {
-                        vel_to_store[idim] = myvelnp[inode*3+idim];
-                        pos_to_store[idim] = struct_node_postion[idim];
-                      }
+                      vel_to_store[idim] = vel_at_gp(idim,0);
+                      pos_to_store[idim] = structsurf_gp_glob_coord[idim];
                     }
-                  } // end loop over nodes
 
-                  // 2.) check if closest point is an integration point of the structural surface element
-                  // loop over all int points of structural surface element
-                  for (int igp = 0; igp <intpoints.IP().nquad; ++igp)
-                  {
-                    // get local coordinates of gp
-                    std::vector<double> struct_xsi(struct_dim);
-                    struct_xsi[0] = intpoints.IP().qxg[igp][0];
-                    struct_xsi[1] = intpoints.IP().qxg[igp][1];
+                  }
+                } // end loop over int points
+              } // end if fsi coupling
+            } // end loop over all surface elements
+          }// loop over all seachbox elements
+        }// loop over closeele set
 
-                    // get local coordinates of gp as matrix
-                    LINALG::Matrix<struct_dim,1> struct_xi(true);
-                    for(int i=0;i<struct_dim;++i)
-                      struct_xi(i) = struct_xsi[i];
+        // global position of closest point (that is now found) as vector
+        std::vector<double> xvec(globdim);
+        for(int idim=0; idim<3;++idim)
+          xvec[idim] = pos_to_store[idim];
 
-                    // declare vector of global current coordinates
-                    double structsurf_gp_glob_coord[globdim];
+        bool converged = false;
+        double residual = -1234.0;
 
-                    // get current global position of the given int point xi on the structural surface
-                    MORTAR::UTILS::LocalToCurrentGlobal<structdistype>(*(structele),globdim,&struct_xsi[0],mydispnp,&structsurf_gp_glob_coord[0]);
-
-                    // distance between fluid node and given structure gp
-                    double dist = sqrt(pow(fluid_node_glob_coord[0]-structsurf_gp_glob_coord[0],2)+pow(fluid_node_glob_coord[1]-structsurf_gp_glob_coord[1],2)+pow(fluid_node_glob_coord[2]-structsurf_gp_glob_coord[2],2));
-
-                    // only store point information, if distance is smallest so far
-                    if (dist<stored_dist)
-                    {
-                      // update distance
-                      stored_dist = dist;
-
-                      // evaluate shape functions of structure dis at gp
-                      DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi,shapefcts);
-                      LINALG::Matrix<4,3> myvelocitynp(true);
-                      for(int node=0;node<4;++node)
-                        for(int dim=0;dim<3;++dim)
-                          myvelocitynp(node,dim) = myvelnp[node*3+dim];
-
-                      // calculate velocity in gp
-                      LINALG::Matrix<3,1> vel_at_gp(true);
-                      vel_at_gp.MultiplyTN(myvelocitynp,shapefcts);
-
-                      // update velocity and position
-                      for(int idim=0; idim<3;++idim)
-                      {
-                        vel_to_store[idim] = vel_at_gp(idim,0);
-                        pos_to_store[idim] = structsurf_gp_glob_coord[idim];
-                      }
-
-                    }
-                  } // end loop over int points
-                } // end if fsi coupling
-              } // end loop over all surface elements
-            }// loop over all seachbox elements
-          }// loop over closeele set
-
-          // global position of closest point (that is now found) as vector
-          std::vector<double> xvec(globdim);
-          for(int idim=0; idim<3;++idim)
-            xvec[idim] = pos_to_store[idim];
-
-          bool converged = false;
-          double residual = -1234.0;
-
-          if(stored_dist < 1.5*char_fld_ele_length)
-          {
-            // get local coordinates of closest structural surface point in fluid element parameter space
-            if(problem->ProblemType()==prb_immersed_ale_fsi)
-              MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(fluidele,&fluideledisp[0],&xvec[0],&fluid_xi(0),converged,residual);
-            else
-              MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele,&xvec[0],&fluid_xi(0),converged);
-
-            if(converged==false)
-            {
-              std::cout<<"WARNING!! GlobalToCurrentLocal() did not converge in FindClosestStructureSurfacePoint( \n"
-                  "xi="<<fluid_xi<<std::endl;
-              fluid_xi(0) = 2.0; fluid_xi(1) = 2.0; fluid_xi(2) = 2.0;
-            }
-          }
+        if(stored_dist < 1.5*char_fld_ele_length)
+        {
+          // get local coordinates of closest structural surface point in fluid element parameter space
+          if(problem->ProblemType()==prb_immersed_ale_fsi)
+            MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(fluidele,&fluideledisp[0],&xvec[0],&fluid_xi(0),converged,residual);
           else
+            MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele,&xvec[0],&fluid_xi(0),converged);
+
+          if(converged==false)
           {
+            std::cout<<"WARNING!! GlobalToCurrentLocal() did not converge in FindClosestStructureSurfacePoint( \n"
+                "xi="<<fluid_xi<<std::endl;
             fluid_xi(0) = 2.0; fluid_xi(1) = 2.0; fluid_xi(2) = 2.0;
           }
-
-          // check if closest point lies in current fluid element
-          double tol = 1e-13;
-          if ( abs(fluid_xi(0))<(1.0+tol) and abs(fluid_xi(1))<(1.0+tol) and abs(fluid_xi(2))<(1.0+tol) )
-          { // given point lies current fluid element
-            matched = 1;
-            match = true;
-            // give back velocity and local coordinates of closest point
-            for (int dim=0;dim<3;++dim)
-            {
-              (*velnp_at_struct_point)(dim) = vel_to_store[dim];
-              (*xi_pos_of_struct_point)(dim) = fluid_xi(dim);
-            }
-
-          }// if match
-        }// enter loop only if node not yet matched
-
-        if(doCommunication)
+        }
+        else
         {
-          DRT::Exporter exporter(comm);
-          // ---- pack data for sending -----
+          fluid_xi(0) = 2.0; fluid_xi(1) = 2.0; fluid_xi(2) = 2.0;
+        }
+
+        // check if closest point lies in current fluid element
+        double tol = 1e-13;
+        if ( abs(fluid_xi(0))<(1.0+tol) and abs(fluid_xi(1))<(1.0+tol) and abs(fluid_xi(2))<(1.0+tol) )
+        { // given point lies current fluid element
+          matched = 1;
+          match = true;
+          // give back velocity and local coordinates of closest point
+          for (int dim=0;dim<3;++dim)
           {
-            DRT::PackBuffer data;
-            data.StartPacking();
+            (*velnp_at_struct_point)(dim) = vel_to_store[dim];
+            (*xi_pos_of_struct_point)(dim) = fluid_xi(dim);
+          }
+
+        }// if match
+      }// enter loop only if node not yet matched
+
+      if(doCommunication)
+      {
+        DRT::Exporter exporter(comm);
+        // ---- pack data for sending -----
+        {
+          DRT::PackBuffer data;
+          data.StartPacking();
+          {
+            data.AddtoPack(matched);
+            data.AddtoPack(owner);
+            data.AddtoPack((int)velnp_at_struct_point->Length());
+
+            // point coordinate
+            for(int dim=0;dim<globdim;++dim)
             {
-              data.AddtoPack(matched);
-              data.AddtoPack(owner);
-              data.AddtoPack((int)velnp_at_struct_point->Length());
+              data.AddtoPack(fluid_node_glob_coord[dim]);
+            }
 
-              // point coordinate
-              for(int dim=0;dim<globdim;++dim)
+            if(matched==1)
+            {
+              for(int dim=0;dim<(int)velnp_at_struct_point->Length();++dim)
               {
-                data.AddtoPack(fluid_node_glob_coord[dim]);
-              }
-
-              if(matched==1)
-              {
-                for(int dim=0;dim<(int)velnp_at_struct_point->Length();++dim)
-                {
-                  data.AddtoPack((*velnp_at_struct_point)(dim));
-                }
+                data.AddtoPack((*velnp_at_struct_point)(dim));
               }
             }
-            std::swap(sdata, data());
           }
-          //---------------------------------
+          std::swap(sdata, data());
+        }
+        //---------------------------------
 
-          // ---- send ----
-          MPI_Request request;
-          exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+        // ---- send ----
+        MPI_Request request;
+        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
 
-          // ---- receive ----
-          int length = rdata.size();
-          int tag = -1;
-          int from = -1;
-          exporter.ReceiveAny(from,tag,rdata,length);
-          if (tag != 1234 or from != fromrank)
-            dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+        // ---- receive ----
+        int length = rdata.size();
+        int tag = -1;
+        int from = -1;
+        exporter.ReceiveAny(from,tag,rdata,length);
+        if (tag != 1234 or from != fromrank)
+          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
 
-          // ---- unpack data -----
-          std::vector<char>::size_type position = 0;
-          matched    = DRT::ParObject::ExtractInt(position,rdata);
-          owner      = DRT::ParObject::ExtractInt(position,rdata);
-          datalength = DRT::ParObject::ExtractInt(position,rdata);
+        // ---- unpack data -----
+        std::vector<char>::size_type position = 0;
+        matched    = DRT::ParObject::ExtractInt(position,rdata);
+        owner      = DRT::ParObject::ExtractInt(position,rdata);
+        datalength = DRT::ParObject::ExtractInt(position,rdata);
 
-          for(int i=0;i<globdim;++i)
-            fluid_node_glob_coord[i] = DRT::ParObject::ExtractDouble(position,rdata);
+        for(int i=0;i<globdim;++i)
+          fluid_node_glob_coord[i] = DRT::ParObject::ExtractDouble(position,rdata);
 
-          if(matched == 1)
-          {
-            for(int dim=0;dim<datalength;++dim)
-              (*velnp_at_struct_point)(dim) = DRT::ParObject::ExtractDouble(position,rdata);
-          }
+        if(matched == 1)
+        {
+          for(int dim=0;dim<datalength;++dim)
+            (*velnp_at_struct_point)(dim) = DRT::ParObject::ExtractDouble(position,rdata);
+        }
 
-          // wait for all communication to finish
-          exporter.Wait(request);
-          comm.Barrier();
-        } // only if numproc > 1
+        // wait for all communication to finish
+        exporter.Wait(request);
+        comm.Barrier();
+      } // only if numproc > 1
 
-      } // loop over all procs
+    } // loop over all procs
 
-  #ifdef DEBUG
-      if(owner != comm.MyPID())
-        dserror("after round robin every proc should have received his original data");
-  #endif
+#ifdef DEBUG
+    if(owner != comm.MyPID())
+      dserror("after round robin every proc should have received his original data");
+#endif
 
-      // now every proc should store the requested quantities in velnp_at_struct_point for his fluidxi
-      // time to return that stuff
-      for(int dim=0;dim<datalength;++dim)
-      {
-        target_vel_data[dim] = (*velnp_at_struct_point)(dim);
-        target_pos_data[dim] = (*xi_pos_of_struct_point)(dim);
-      }
+    // now every proc should store the requested quantities in velnp_at_struct_point for his fluidxi
+    // time to return that stuff
+    for(int dim=0;dim<datalength;++dim)
+    {
+      target_vel_data[dim] = (*velnp_at_struct_point)(dim);
+      target_pos_data[dim] = (*xi_pos_of_struct_point)(dim);
+    }
 
-      return err;
-    };
+    return err;
+  };
 
 
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
+  /*!
+  \brief Find the intersection of a line normal to a given surface point with the same surface but on the opposite side
+
+  \author rauch
+  \date 2015
+
+   */
   template < DRT::Element::DiscretizationType sourcedistype,
   DRT::Element::DiscretizationType targetdistype >
   double IntersectLineWithBoundary

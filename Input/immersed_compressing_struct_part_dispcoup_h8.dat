@@ -53,7 +53,7 @@ ITERNORM                        L2
 DIVERCONT                       stop
 NLNSOL                          fullnewton
 MATERIALTANGENT                 analytical
-PREDICT                         ConstDis
+PREDICT                         ConstVel
 LINEAR_SOLVER                   1
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -96,10 +96,10 @@ DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------FSI DYNAMIC
-COUPALGO                        iter_stagg_AITKEN_rel_param
+COUPALGO                        iter_stagg_fixed_rel_param
 DEBUGOUTPUT                     No
 SECONDORDER                     No
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 NUMSTEP                         3
 TIMESTEP                        0.01
@@ -107,7 +107,7 @@ MAXTIME                         0.03
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE                    Displacement
+COUPVARIABLE                    Force
 COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-09

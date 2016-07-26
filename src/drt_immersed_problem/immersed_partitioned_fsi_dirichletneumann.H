@@ -53,7 +53,17 @@ public:
 
 protected:
 
-  /// composed FSI operator
+  /*!
+  \brief composed FSI operator
+
+  \note Relaxation for displacement coupled scheme is just experimental. By default displacement coupling + relaxation invokes a dserror.
+        NOX relaxes the vector x which is supposed to be the vector that is handed over to the other field. Since x in our case is the
+        boundary displacement (in displacement coupled scheme) of the immersed structure but the vector applied to the fluid field is the
+        volume Dirichlet stored in the vector fluid_artifical_velocity_, relaxation of x has no effect. That is why we get the factory from
+        the fsi partitioned base class to extract the relaxation parameter from there. Now we are able to relax our artificial velocity in
+        this class. This does not seem to work properly. For force coupled immersed fsi, everything works fine.
+
+  */
   virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// interface fluid operator
@@ -108,21 +118,40 @@ protected:
   /// calc the fsi residual
   virtual int CalcResidual(Epetra_Vector &F, const Teuchos::RCP<Epetra_Vector> newstate , const Teuchos::RCP<Epetra_Vector> oldstate);
 
-  /// calc the current fluid tractions interpolated to the structural surface
+  /*!
+  \brief calc the current fluid tractions integrated over structural surface
+
+  Calc new tractions on immersed boundary. After leaving this method the vector struct_bdry_traction_
+  contains the current tractions on the immersed boundary.
+
+  */
   virtual void CalcFluidTractionsOnStructure();
+
+  /// calc the current artifical velocity by projection from structure onto fluid
+  virtual void CalcArtificialVelocity();
+
+  /// apply given vector as Dirichlet to artificial fluid domain
+  virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
+
+  /// improve quality of solution near the interface
+  virtual void CorrectInterfaceVelocity();
+
+  /// reset immersed information in fluid dis
+  /// e.g. isimmersed_, isboundaryimmersed_
+  virtual void ResetImmersedInformation();
 
 
   //! @name Various global forces
   //@{
-  Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;     //!< bdry traction rhs on struct FSI surface
-  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
-  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_old_;//!< background velocity interpolated from immersed dis
-  Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
-  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;       //!< search tree for fluid domain
-  Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;   //!< search tree for structure domain
-  std::map<int,std::set<int> > curr_subset_of_fluiddis_;    //!< fluid elements to evaluate the dirichlet interpolation
-  std::map<int,LINALG::Matrix<3,1> > currpositions_struct_; //!< map of vectors for search tree containing current structural positions
-  std::map<int,LINALG::Matrix<3,1> > currpositions_fluid_;  //!< map of vectors for search tree containing current fluid positions
+  Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;           //!< bdry traction rhs on struct FSI surface
+  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;      //!< background velocity interpolated from immersed dis (new (un-relaxed) state, also used to store increment)
+  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_state_;//!< background velocity interpolated from immersed (current (relaxed) state)
+  Teuchos::RCP<Epetra_Map> dbcmap_immersed_;                   //!< dirichlet bc map of immersed values
+  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;             //!< search tree for fluid domain
+  Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;         //!< search tree for structure domain
+  std::map<int,std::set<int> > curr_subset_of_fluiddis_;       //!< fluid elements to evaluate the dirichlet interpolation
+  std::map<int,LINALG::Matrix<3,1> > currpositions_struct_;    //!< map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> > currpositions_fluid_;     //!< map of vectors for search tree containing current fluid positions
   //@}
 
   //! @name  basic information for parallelism
@@ -136,11 +165,18 @@ protected:
   //! @name various bools and switches
   //@{
   bool displacementcoupling_;
-  bool multibodysimulation_;
-  bool output_evry_nlniter_;
-  int coupalgo_;
-  int correct_boundary_velocities_;
-  int degree_gp_fluid_bound_;
+  bool multibodysimulation_;         //!< true if more than one body is present. Each body needs to be labeled with "ImmersedSearchbox" condition
+  bool output_evry_nlniter_;         //!< true if output after every iteration of the outer fsi loop. Useful for debugging.
+  int coupalgo_;                     //!< here we store the coupalgo
+  int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested
+  int degree_gp_fluid_bound_;        //!< determines number of gp in fluid elements cut by boundary. gps covered by structure are "compressible" gps.
+  //@}
+
+  //! @name various validation switches
+  //@{
+  bool artificial_velocity_isvalid_; //!< this flag is true if the current vel. in artificial fluid domain is consistent with current state of structure
+  bool boundary_traction_isvalid_;   //!< this flag is true if the current bdry. traction on the structure is consistent with current state of fluid
+  bool immersed_info_isvalid_;       //!< true if struct. configuration and fluid configuration are consistently reflected in immersed infos, like e.g. isimmersed_
   //@}
 
   //! @name pointer to discretizations
