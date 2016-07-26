@@ -266,8 +266,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     vn_->Update(1.0,*v_,0.0);
     cv0ddofn_->Update(1.0,*cv0ddof_,0.0);
 
-    strparams_ = strparams;
-    cv0dparams_ = cv0dparams;
+//    strparams_ = strparams;
+//    cv0dparams_ = cv0dparams;
 
   }
 
@@ -286,6 +286,9 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     Teuchos::RCP<LINALG::SparseOperator> stiff,
     Teuchos::ParameterList scalelist)
 {
+
+  const bool evalstiff = stiff!=Teuchos::null;
+  const bool evalforce = fint!=Teuchos::null;
 
   double sc_strtimint = scalelist.get("scale_timint",1.0);
   double ts_size = scalelist.get("time_step_size",1.0);
@@ -414,14 +417,14 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   mat_dcardvasc0d_dd_->Complete(*cardiovascular0dmap_,*dofrowmap);
   mat_dstruct_dcv0ddof_->Complete(*cardiovascular0dmap_,*dofrowmap);
 
-  stiff->UnComplete(); // sparsity pattern might change
+  //stiff->UnComplete(); // sparsity pattern might change
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
   EvaluateNeumannCardiovascular0DCoupling(p,cv0ddofnredundant,fint,stiff);
 
-  stiff->Complete(); // sparsity pattern might have changed
+  //stiff->Complete(); // sparsity pattern might have changed
 
 
 //  std::cout << *fint << std::endl;
@@ -438,7 +441,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   switch (intstrat_)
   {
     case INPAR::STR::int_standard:
-      PrintNewton(fint);
+      if (evalstiff and evalforce) PrintNewton(fint);
       break;
     case INPAR::STR::int_old:
       break;
@@ -574,6 +577,9 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
     )
 {
 
+  const bool assvec = systemvector!=Teuchos::null;
+  const bool assmat = systemmatrix!=Teuchos::null;
+
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<DRT::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
@@ -634,10 +640,10 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       curr->second->EvaluateNeumann(params,*actdisc_,*coupcond,lm,elevector,&elematrix);
       // minus sign here since we sum into fint_ !!
       elevector.Scale(-1.0);
-      LINALG::Assemble(*systemvector,elevector,lm,lmowner);
+      if (assvec) LINALG::Assemble(*systemvector,elevector,lm,lmowner);
       // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus puts a minus infront of the load linearization matrix !!
       elematrix.Scale(1.0);
-      systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
+      if (assmat) systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
 
 
     }
