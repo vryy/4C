@@ -121,10 +121,6 @@ namespace ADAPTER
     virtual bool HaveConstraint()
     { return structure_->HaveConstraint(); }
 
-    /// are there any 0D cardiovascular coupling bcs?
-    virtual bool HaveCardiovascular0D()
-    { return structure_->HaveCardiovascular0D(); }
-
     /// are there any spring dashpot BCs?
     virtual bool HaveSpringDashpot()
     { return structure_->HaveSpringDashpot(); }
@@ -140,10 +136,6 @@ namespace ADAPTER
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::SpringDashpotManager> GetSpringDashpotManager()
     { return structure_->GetSpringDashpotManager(); }
-
-    /// get 0D cardiovascular manager defined in the structure
-    virtual const Teuchos::RCP< UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
-    { return structure_->GetCardiovascular0DManager(); }
 
     /// get plasticity manager defined in the structure
     virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()

@@ -786,9 +786,6 @@ namespace STR
     //! are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
-    //! are there any Cardiovascular0D BCs?
-    virtual bool HaveCardiovascular0D() = 0;
-
     //! are there any spring dashpot BCs?
     virtual bool HaveSpringDashpot() = 0;
 
@@ -797,9 +794,6 @@ namespace STR
 
     //! get spring dashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
-
-    //! get Cardiovascular0D manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager() = 0;
 
     //! get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;

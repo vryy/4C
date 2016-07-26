@@ -198,9 +198,6 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
-    /// are there any Cardiovascular0D bcs?
-    virtual bool HaveCardiovascular0D() = 0;
-
     /// are there any spring dashpot bcs?
     virtual bool HaveSpringDashpot() = 0;
 
@@ -212,9 +209,6 @@ namespace ADAPTER {
 
     /// get SpringDashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
-
-    /// get Cardiovascular0D manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager() = 0;
 
     /// get plasticity manager defined in the structure
     virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() = 0;

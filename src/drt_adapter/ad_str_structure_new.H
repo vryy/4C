@@ -476,20 +476,12 @@ namespace ADAPTER {
     /// @name Currently unused functions, which will be deleted in the near future,
     /// if they stay unnecessary.
     ///@{
-    /// are there any Cardiovascular0D bcs?
-    virtual bool HaveCardiovascular0D()
-    { dserror("This function seems to be unused!"); return false; }
-
     /// are there any spring dashpot bcs?
     virtual bool HaveSpringDashpot()
     { dserror("This function seems to be unused!"); return false; }
 
     /// get SpringDashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager()
-    { dserror("This function seems to be unused!"); return Teuchos::null; }
-
-    /// get Cardiovascular0D manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     { dserror("This function seems to be unused!"); return Teuchos::null; }
 
     ///@}
