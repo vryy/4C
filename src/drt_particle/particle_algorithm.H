@@ -116,15 +116,8 @@ namespace PARTICLE
     /// get bins in range and call FindNeighbors
     void GetNeighbouringParticlesAndWalls(
       DRT::Node* CurrentParticle,
-      std::vector<DRT::Node*>& neighboring_particles,
+      std::list<DRT::Node*>& neighboring_particles,
       std::set<DRT::Element*>& neighboring_walls
-      );
-
-    /// get particles and wall elements in given bins
-    virtual void GetBinContent(
-      std::vector<DRT::Node*>& particles,
-      std::set<DRT::Element*>& walls,
-      std::vector<int>& binIds
       );
 
   protected:
@@ -226,6 +219,13 @@ namespace PARTICLE
 
     /// small function for the dismember
     virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep);
+
+    /// get particles and wall elements in given bins
+    void GetBinContent(
+      std::list<DRT::Node*>& particles,
+      std::set<DRT::Element*>& walls,
+      std::vector<int>& binIds
+      );
 
     //! @name particle related stuff
     //@{

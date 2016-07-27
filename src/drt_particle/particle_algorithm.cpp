@@ -2039,8 +2039,8 @@ void PARTICLE::Algorithm::ParticleDismemberer()
     DRT::Node* currParticle_new = particledis_->lRowNode(lidNode_new);
     const int lidDof_new = particledis_->DofRowMap()->LID(particledis_->Dof(currParticle_new, 0));
 
-    const int lidNode_old = (*iNodeList).lidNode_old;
-    const int lidDof_old = (*iNodeList).lidDof_old;
+    const int lidNode_old = iNodeList->lidNode_old;
+    const int lidDof_old = iNodeList->lidDof_old;
 
     // check
     if (lidNode_new == -1)
@@ -2114,7 +2114,7 @@ int PARTICLE::Algorithm::ComputeSemiLengthInParticlesForParticleDismemberer(cons
 /*----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
     DRT::Node* particle,
-    std::vector<DRT::Node*>& neighboring_particles,
+    std::list<DRT::Node*>& neighboring_particles,
     std::set<DRT::Element*>& neighboring_walls)
 {
   if (particle->NumElement() != 1)
@@ -2143,7 +2143,7 @@ void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
  | get particles and wall elements in given bins           ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetBinContent(
-  std::vector<DRT::Node*> &particles,
+  std::list<DRT::Node*> &particles,
   std::set<DRT::Element*> &walls,
   std::vector<int> &binIds
   )

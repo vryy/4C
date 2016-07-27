@@ -475,9 +475,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   std::set<int> examinedbins;
 
   // list of all particles in the neighborhood of currparticle
-  std::vector<DRT::Node*> neighboring_particles;
-  //  estimate upper limit for no. of neighbors
-  neighboring_particles.reserve(64);
+  std::list<DRT::Node*> neighboring_particles;
 
   // loop over all particles
   for(int i=0; i<numcolparticles; ++i)
@@ -634,7 +632,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::PreFetchCollData(
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
   DRT::Node* particle_i,
   const ParticleCollData& data_i,
-  const std::vector<DRT::Node*>& neighboring_particles,
+  const std::list<DRT::Node*>& neighboring_particles,
   const bool havepbc,
   const double dt,
   const Teuchos::RCP<Epetra_Vector>& f_contact,
@@ -649,7 +647,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
   // have a lower or equal ID than particle i (--> ignoring self-contact)
   const int gid_i = particle_i->Id();
 
-  for(std::vector<DRT::Node*>::const_iterator j=neighboring_particles.begin(); j!=neighboring_particles.end(); ++j)
+  for(std::list<DRT::Node*>::const_iterator j=neighboring_particles.begin(); j!=neighboring_particles.end(); ++j)
   {
     DRT::Node* neighborparticle = (*j);
     const int gid_j = neighborparticle->Id();
@@ -1675,7 +1673,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     GetCollisionData(currparticle, currposition, currvelocity, currradius, currtime);
 
     // gather all particles and walls in the vicinity of currparticle
-    std::vector<DRT::Node*> neighboring_particles;
+    std::list<DRT::Node*> neighboring_particles;
     std::set<DRT::Element*> neighboring_walls;
     GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
 
@@ -2176,9 +2174,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
   // setup of initial event queue
   std::set<int> examinedbins;
   // list of all particles in the neighborhood of currparticle
-  std::vector<DRT::Node*> neighboring_particles;
-  //  estimate upper limit for no. of neighbors
-  neighboring_particles.reserve(64);
+  std::list<DRT::Node*> neighboring_particles;
 
   for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
   {
@@ -2213,7 +2209,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
       DRT::Node* currnode = particles[iparticle];
 
       // loop over all neighboring particles and check if they collide with currnode
-      for (std::vector<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
+      for (std::list<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
       {
         // in order to avoid double evaluation of the same contact, only search for contact when id_1 < id_2
         if (currnode->Id() > (*iter)->Id())
@@ -2294,7 +2290,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerMD::UpdatdingEventqueue");
 
-  std::vector<DRT::Node*> neighbouring_particles;
+  std::list<DRT::Node*> neighbouring_particles;
   std::set<DRT::Element*> neighbouring_walls;
 
   //
@@ -2303,7 +2299,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   particle_algorithm_->GetNeighbouringParticlesAndWalls(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
 
   // particle-particle collision
-  for (std::vector<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
+  for (std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
   {
     // IMPORTANT: first particle must be the particle, that collided in this time step
     Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_1, *iter, dt-lastevent->time);
@@ -2348,7 +2344,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     }
 
     // particle-particle collision
-    for(std::vector<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
+    for(std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
     {
       // IMPORTANT: first particle must be the particle, that collided in this time step
       Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_2, *iter, dt-lastevent->time);

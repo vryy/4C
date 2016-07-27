@@ -282,7 +282,7 @@ namespace PARTICLE
   virtual void CalcNeighboringParticlesContact(
     DRT::Node* particle_i,
     const ParticleCollData& data_i,
-    const std::vector<DRT::Node*>& neighboring_particles,
+    const std::list<DRT::Node*>& neighboring_particles,
     const bool havepbc,
     const double dt,
     const Teuchos::RCP<Epetra_Vector>& f_contact,
