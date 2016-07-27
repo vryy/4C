@@ -13,6 +13,8 @@
 
      and a stationary solver.
 
+\level 1
+
 \maintainer Benjamin Krank & Volker Gravemeier
              {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
@@ -438,9 +440,9 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
       discret_->SetState("dispnp", dispnp_);
     }
 
-    impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
+    impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, dta_) );
     impedancebc_optimization_ = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_, *output_, impedancebc_, dta_) );
-    isimpedancebc_ = true; //Set bool to ture since there is an impedance BC
+    isimpedancebc_ = true; //Set bool to true since there is an impedance BC
 
     //Test if also AVM3 is used
     fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
@@ -1246,11 +1248,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     if (alefluid_)
       discret_->SetState("dispnp", dispn_);
 
-    //Do actual calculations
-    impedancebc_->FlowRateCalculation(time_);
-    impedancebc_->OutflowBoundary(time_,dta_);
     // update residual and sysmat with impedance boundary conditions
-    impedancebc_->UpdateResidual(residual_,sysmat_);
+    impedancebc_->AddImpedanceBCToResidualAndSysmat(time_,dta_,residual_,sysmat_);
+
+    discret_->ClearState();
   }
 
   //----------------------------------------------------------------------
@@ -3773,12 +3774,14 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     if (isimpedancebc_)
     {
       if (alefluid_)
-            discret_->SetState("dispnp", dispn_);
+        discret_->SetState("dispnp", dispn_);
 
       // also read impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->ReadRestart(reader);
       impedancebc_optimization_->ReadRestart(reader);
+
+      discret_->ClearState();
     }
   }
 

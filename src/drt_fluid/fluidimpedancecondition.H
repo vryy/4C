@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
 \file fluidimpedancecondition.H
-\brief Method to deal with inpediance bc applied to vascular outflow bcs
+
+\brief Method to deal with windkessel and other vascular BCs
+
+\level 3
 
 <pre>
-Maintainer: Christiane Förster
-            foerster@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\maintainer  Moritz Thon
+             thon@mhpc.mw.tum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -53,38 +54,12 @@ public:
   */
   FluidImpedanceWrapper(
       const Teuchos::RCP<DRT::Discretization> actdis,
-      const IO::DiscretizationWriter& output,
       const double dta);
 
   /*!
   \brief Destructor
   */
-  virtual ~FluidImpedanceWrapper();
-
-  /*!
-  \brief Wrapper for FluidImpedanceBc::FlowRateCalculation
-  */
-  void FlowRateCalculation(const double time);
-
-  /*!
-  \brief Wrapper for FluidImpedacnceBc::OutflowBoundary
-  */
-  void OutflowBoundary(const double time, const double dta);
-
-  /*!
-    \brief Wrapper for FluidImpedacnceBc::TimeUpdateImpedance
-    */
-  void PrepareTimeStepImpedances(const double time);
-
-  /*!
-  \brief Wrap for time update of impedance conditions
-  */
-  void TimeUpdateImpedances(const double time, const double dta);
-
-  /*!
-  \brief Wrapper for FluidImpedacnceBc::Impedances
-  */
-  void Impedances();
+  virtual ~FluidImpedanceWrapper(){};
 
   /*!
     \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
@@ -95,9 +70,19 @@ public:
                       bool                             splitmatrix);
 
   /*!
-  \brief Wrapper for FluidImpedacnceBc::UpdateResidual
+    \brief Wrapper for FluidImpedacnceBc::TimeUpdateImpedance
+    */
+  void PrepareTimeStepImpedances(const double time);
+
+  /*!
+  \brief Calculate impedance tractions and add it to fluid residual and linearisation
   */
-  void UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
+  void AddImpedanceBCToResidualAndSysmat(const double time, const double dta, Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
+
+  /*!
+  \brief Wrap for time update of impedance conditions
+  */
+  void TimeUpdateImpedances(const double time, const double dta);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::WriteRestart
@@ -113,6 +98,13 @@ public:
   \brief return vector of relative pressure errors of last cycle
   */
   std::vector<double> getWKrelerrors( );
+
+
+  ///Windkessel optimization related function:
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::Impedances
+  */
+  void Impedances();
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
@@ -134,12 +126,6 @@ private:
   \brief all single impedance conditions
   */
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc> > impmap_;
-
-  //! fluid discretization
-  const Teuchos::RCP<DRT::Discretization> discret_;
-
-  //! the output writer
-  const IO::DiscretizationWriter& output_;
 
 }; // class FluidImpedanceWrapper
 
@@ -164,10 +150,9 @@ public:
   */
   FluidImpedanceBc(
       const Teuchos::RCP<DRT::Discretization> actdis,
-      const IO::DiscretizationWriter& output,
       const double dta,
       const int condid,
-      const int numcond );
+      DRT::Condition* impedancecond );
 
   /*!
   \brief Empty Constructor
@@ -203,14 +188,13 @@ protected:
     to elements
   */
   double OutflowBoundary(
-      const double time,
       const double dta,
       const int condid );
 
   /*!
     \brief Update flowrate and pressure vector
   */
-  void TimeUpdateImpedance(const double time, const double pressure);
+  void TimeUpdateImpedance(const double time);
 
   /*!
     \brief Time update impedance conditions
@@ -243,7 +227,7 @@ protected:
   /*!
   \brief Update of residual vector and its linearization
   */
-  void UpdateResidual( Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
+  void UpdateResidualAndSysmat( Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
 
 private:
   /*!
@@ -307,7 +291,7 @@ private:
   /*!
   \brief return relative error of last cycle
   */
-  double getWKrelerror(){return WKrelerror_;}
+  double getWKrelerror(){return dP_/P_0_;}
 
   /*!
   \brief interpolate Vector1 to get Vector2
@@ -321,32 +305,30 @@ private:
 
 private:
 
+  //! fluid discretization
+  const Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! the processor ID from the communicator
+  const int myrank_;
+
+
   Teuchos::RCP<Epetra_Vector> impedancetbc_;
 
   Teuchos::RCP<LINALG::SparseOperator> impedancetbcsysmat_;
 
   //! time period of present cyclic problem
-  double period_;
+  const double period_;
   //! truncation radius at leafs of the tree
-  double termradius_;
+  const double termradius_;
   //! condition type ( lung / artery / kidney / ... )
   //! implemented so far: lung, artery, windkessel
-  std::string treetype_;
+  const std::string treetype_;
 
   //! 'material' parameters required for artery tree
   double R1_, R2_, C_, E_, H1_, H2_, H3_;
 
   //! time step size
   double dta_;
-
-  //! the processor ID from the communicator
-  int myrank_;
-
-  //! fluid discretization
-  const Teuchos::RCP<DRT::Discretization> discret_;
-
-  //! the output writer
-  const IO::DiscretizationWriter& output_;
 
   //! Flowrate array for impedance conditions
   Teuchos::RCP<std::vector<double> > flowrates_;
@@ -368,32 +350,29 @@ private:
   std::vector<double> impvalues_;   // real impedance values
 
   //! Information associated with frequency independent windkessel
-  //! Flow in at time step n+1
-  double Qin_np_;
+  //! Pressure at time step n+1
+  double P_np_;
 
-  //! Pressure in at time step n+1
-  double Pin_np_;
+  //! Pressure at time step n
+  double P_n_;
 
-  //! Pressure in at time step n
-  double Pin_n_;
-
-  //! Capcitors Pressure in at time step n+1
+  //! Capcitors Pressure at time step n+1
   double Pc_np_;
 
-  //! Capcitors Pressure in at time step n
+  //! Capcitors Pressure at time step n
   double Pc_n_;
 
-  //! Flag which indicated whether precalibrating bc is defined
-  bool   IsPrecalibrated_;
+  //! Flux at time step n+1
+  double Q_np_;
 
-  //! variable discribing the value difference between pressure at (n+1)T and at (n)T
-  double dP_;
+  //! Flux at time step n
+  double Q_n_;
 
   //! variable describing the relative error between pressure at (n+1)T and at (n)T
-  double WKrelerror_;
+  double dP_;
 
-  //! Flag indicating the end of a cardiac cycle
-  bool   endOfCycle_;
+  //! Pressure at beginning of the period
+  double P_0_;
 
 };  // class FluidImpedanceBc
 

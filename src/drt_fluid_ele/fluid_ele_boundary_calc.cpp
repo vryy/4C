@@ -2160,7 +2160,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
 {
   const double tfacrhs = fldparatimint_->TimeFacRhs();
 
-  const double pressure = params.get<double>("ConvolutedPressure");
+  const double pressure = params.get<double>("WindkesselPressure");
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);

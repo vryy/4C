@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_coupling_red_models.cpp
+
 \brief evaluation of 3D/redD coupled vascular bc
 
+\level 3
 <pre>
-Maintainer: Mahmoud Ismail
+\maintainer Mahmoud Ismail
             ismail@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15268
@@ -137,7 +139,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(Teuchos::RCP<DR
       }
       int thisN_iter = (couplingcond[i])->GetInt("MaximumIterations");
       if (thisN_iter != N_iter)
-	dserror("all maximum number of iterations on the coupling boundary between 3-D and reduced-D boundary should be the same!!!");
+  dserror("all maximum number of iterations on the coupling boundary between 3-D and reduced-D boundary should be the same!!!");
 
 
       // ------------------------------------------------------------------
@@ -151,7 +153,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(Teuchos::RCP<DR
       // -----------------------------------------------------------------
       bool inserted = coup_map3D_.insert( std::make_pair( condid, couplingbc ) ).second;
       if ( !inserted )
-	dserror("There are more than one 3D-to-OneD coupling condition lines with the same ID. This can not yet be handled.");
+  dserror("There are more than one 3D-to-OneD coupling condition lines with the same ID. This can not yet be handled.");
     } // end loop over condition lines from input
 
     // -------------------------------------------------------------------
@@ -1075,7 +1077,7 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
   eleparams.set("total time",time);
   eleparams.set("delta time",dta);
   eleparams.set("thsl",theta*dta);
-  eleparams.set("ConvolutedPressure",pressure);
+  eleparams.set("WindkesselPressure",pressure);
 
   if (myrank_ == 0)
   printf("3D/reduced-D coupling condition Id: %d Pressure %f at time %f\n",condid,pressure,time);

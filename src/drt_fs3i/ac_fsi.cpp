@@ -191,9 +191,12 @@ void FS3I::ACFSI::Timeloop()
   SetVelocityFields(); //doing this we can use the flag SKIPINITDER
 
   // output of initial state
-  fsi_->PrepareOutput();
-  FsiOutput();
-  ScatraOutput();
+  if (step_ == 0)
+  {
+    fsi_->PrepareOutput();
+    FsiOutput();
+    ScatraOutput();
+  }
 
   // do time loop
   while (NotFinished())
