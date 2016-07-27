@@ -1,3 +1,17 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_edge.H
+
+ \brief class representing a geometrical edge
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_EDGE_H
 #define CUT_EDGE_H
 
@@ -218,8 +232,11 @@ public:
   /// Returns the selfcutposition of this edge
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
 
-  /// Gives this edge a selfcutposition and spread the positional information
+  /// Gives this edge a selfcutposition and spreads the positional information
   void SelfCutPosition( Point::PointPosition p );
+
+  /// Changes the selfcutposition of this edge and spreads the positional information
+  void ChangeSelfCutPosition( Point::PointPosition p );
 
   /// Erase the cutside from this edge because it is deleted in the selfcut
   void EraseCutSide( Side * cutside ){ sides_.erase( cutside ); }

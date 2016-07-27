@@ -1,3 +1,17 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_edge.cpp
+
+ \brief class representing a geometrical edge
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #include "cut_position.H"
 #include "cut_intersection.H"
 #include "cut_facet.H"
@@ -462,8 +476,8 @@ void GEO::CUT::Edge::RectifyCutNumerics()
 }
 
 /*------------------------------------------------------------------------*
- *  Gives this edge a selfcutposition and spread the positional information
- *                                                              wirtz 05/13
+ *  Gives this edge a selfcutposition and spreads the positional
+ *  information                                                 wirtz 05/13
  *------------------------------------------------------------------------*/
 void GEO::CUT::Edge::SelfCutPosition( Point::PointPosition pos )
 {
@@ -500,6 +514,30 @@ void GEO::CUT::Edge::SelfCutPosition( Point::PointPosition pos )
       }
     }
   }
+}
+
+/*------------------------------------------------------------------------*
+ *  Changes the selfcutposition of this edge and spreads the positional
+ *  information                                                 wirtz 07/16
+ *------------------------------------------------------------------------*/
+void GEO::CUT::Edge::ChangeSelfCutPosition( Point::PointPosition pos )
+{
+
+  if ( selfcutposition_ != pos )
+  {
+    selfcutposition_ = pos;
+    for ( std::vector<Node*>::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+    {
+      Node * n = *i;
+      n->ChangeSelfCutPosition( pos );
+    }
+    for ( plain_side_set::iterator i=sides_.begin(); i!=sides_.end(); ++i )
+    {
+      Side * s = *i;
+      s->ChangeSelfCutPosition( pos );
+    }
+  }
+
 }
 
 /*------------------------------------------------------------------------*

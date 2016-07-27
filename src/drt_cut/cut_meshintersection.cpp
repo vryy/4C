@@ -200,6 +200,8 @@ void GEO::CUT::MeshIntersection::Cut_SelfCut( bool include_inner,bool screenoutp
 
   SelfCut selfcut( CutMesh() );
 
+  selfcut.PerformSelfCut();
+
 }
 
 /*------------------------------------------------------------------------------------------------*

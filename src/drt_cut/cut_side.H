@@ -1,3 +1,17 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_side.H
+
+ \brief class representing a geometrical side
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_SIDE_H
 #define CUT_SIDE_H
 
@@ -343,8 +357,11 @@ public:
     self_cut_triangles_.push_back(selfcuttriangle);
   }
 
-  /// Gets the selfcutposition of this cutside and spread the positional information
+  /// Gets the selfcutposition of this cutside and spreads the positional information
   void GetSelfCutPosition(Point::PointPosition p);
+
+  /// Changes the selfcutposition of this cutside and spreads the positional information
+  void ChangeSelfCutPosition(Point::PointPosition p);
 
   /// Erase a cuttingside from this cutside because the bounding box found too much
   void EraseCuttingSide(Side * nocuttingside)

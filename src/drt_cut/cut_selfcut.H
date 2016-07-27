@@ -4,7 +4,8 @@
  \brief class that provides all routines to handle cutsides which cut each other
 
  <pre>
- Maintainer: Andy Wirtz
+\level 3
+\maintainer Andy Wirtz
  wirtz@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
  089 - 289-15270
@@ -39,14 +40,19 @@ public:
   //! @name Main routines to run the self cut
   /*========================================================================*/
 
+  void PerformSelfCut();
+
   /// detects cutsides which cut each other by finding the respective cutpoints
-  void CollisionDetection();
+  bool CollisionDetection();
 
   /// replaces cutted sides by creating new nodes, edges and sides
   void MeshIntersection();
 
   /// erases nodes, edges and sides which lies inside a structure body by locating there position
   void ElementSelection();
+
+  /// repair the mesh from potential islands
+  void MeshCorrection();
 
   /// represents the result by using text viewer or gmsh
   void StatusInspection();
@@ -115,6 +121,15 @@ public:
   /// erases nodes which lies inside a structure body by locating there position
   void EraseInsideNodes();
 
+  /// construct the connectivity of the nodes toi find potential islands in the cut mesh
+  void ConstructConnectivity();
+
+  /// find the next node for the construction of the connectivity
+  void NextNode(Node * node, plain_node_set & remainingnodes, int count);
+
+  /// identify the islands
+  void FindIslands();
+
   /*========================================================================*/
   //! @name Basic routines to run the status inspection
   /*========================================================================*/
@@ -133,6 +148,9 @@ public:
 
   /// Status of the cutmesh in gmsh
   void WallGmsh(const std::string & name);
+
+  /// Status of the selfcut objects in gmsh
+  void SCObjectsGmsh(const std::string & name);
 
   /// Status of the cutmesh in gmsh for my CMGM (old)
   void SCmgmGmsh(const std::string & name);
@@ -202,6 +220,8 @@ private:
   std::map<plain_int_set, Teuchos::RCP<Edge> > selfcut_edges_;
 
   std::map<int, Teuchos::RCP<Node> > selfcut_nodes_;
+
+  std::map<int, plain_node_set > selfcut_connectivity_;
 
 };
 

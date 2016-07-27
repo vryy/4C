@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_side.cpp
+
+ \brief class representing a geometrical side
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "cut_position.H"
 #include "cut_position2d.H"
@@ -1230,7 +1243,7 @@ std::ostream & operator<<( std::ostream & stream, GEO::CUT::Side & s )
 }
 
 /*-----------------------------------------------------------------------------------------*
- *  Gets the selfcutposition and spread the positional information              wirtz 05/13
+ *  Gets the selfcutposition and spreads the positional information              wirtz 05/13
  *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Side::GetSelfCutPosition( Point::PointPosition position )
 {
@@ -1246,6 +1259,24 @@ void GEO::CUT::Side::GetSelfCutPosition( Point::PointPosition position )
       {
         e->SelfCutPosition( position );
       }
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------------------*
+ *  Changes the selfcutposition of this cutside and spreads the positional information
+ *                                                                               wirtz 07/16
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::Side::ChangeSelfCutPosition( Point::PointPosition position )
+{
+  if ( selfcutposition_ != position )
+  {
+    selfcutposition_ = position;
+
+    for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+    {
+      Edge * e = *i;
+      e->ChangeSelfCutPosition( position );
     }
   }
 }

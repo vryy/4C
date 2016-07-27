@@ -1,3 +1,17 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_node.cpp
+
+ \brief class representing a geometrical node
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #include "cut_element.H"
 #include "cut_volumecell.H"
 
@@ -725,7 +739,7 @@ void GEO::CUT::Node::BuildDOFCellSets(
 
 
 /*-----------------------------------------------------------------------------------------*
- *  Gives this node a selfcutposition and spread the positional information     wirtz 05/13
+ *  Gives this node a selfcutposition and spreads the positional information    wirtz 05/13
  *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
 {
@@ -757,6 +771,23 @@ void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
           e->SelfCutPosition( pos );
         }
       }
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------------------*
+ *  Changes the selfcutposition of this node and spreads the positional information
+ *                                                                               wirtz 07/16
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::Node::ChangeSelfCutPosition( Point::PointPosition pos )
+{
+  if ( selfcutposition_ != pos )
+  {
+    selfcutposition_ = pos;
+    for (plain_edge_set::iterator i = edges_.begin(); i != edges_.end(); ++i)
+    {
+      Edge * e = *i;
+      e->ChangeSelfCutPosition(pos);
     }
   }
 }

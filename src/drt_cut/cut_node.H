@@ -1,3 +1,17 @@
+/*!-----------------------------------------------------------------------------------------------*
+ \file cut_node.H
+
+ \brief class representing a geometrical node
+
+ <pre>
+\level 3
+\maintainer Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_NODE_H
 #define CUT_NODE_H
 
@@ -238,8 +252,11 @@ public:
   /// Returns the selfcutposition of this node
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
 
-  /// Gives this node a selfcutposition and spread the positional information
+  /// Gives this node a selfcutposition and spreads the positional information
   void SelfCutPosition( Point::PointPosition p );
+
+  /// Changes the selfcutposition of this node and spreads the positional information
+  void ChangeSelfCutPosition( Point::PointPosition p );
 
   /// Erase the cutsideedge from this node because it is deleted in the selfcut
   void EraseCutSideEdge( Edge * cutsideedge ){ edges_.erase( cutsideedge ); }
