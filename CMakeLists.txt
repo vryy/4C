@@ -1731,7 +1731,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/binning_strategy.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp
-  src/drt_particle/meshfree_dynamics.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
 )
