@@ -4,11 +4,9 @@
 
 \brief Special version of block matrix that includes the FSI block preconditioner
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -31,9 +29,9 @@ namespace FSI
 {
 
 
-  /// special version of block matrix that includes the FSI block preconditioner
-  /*!
-      This one does coupling of coarse grids for fluid and structure
+  /*! \brief Special version of block matrix that includes the FSI block preconditioner
+   *
+   *  This one does coupling of coarse grids for fluid and structure
    */
   class OverlappingBlockMatrixFSIAMG : public OverlappingBlockMatrix
   {
@@ -171,38 +169,55 @@ namespace FSI
                                  const bool structuresplit);
 
 
-    // methods for performance analysis of FSIAMG preconditioner
+    //! methods for performance analysis of FSIAMG preconditioner
     inline bool Analyze() { return (bool)analyze_; }
 
+    //! Operator to analyze multigrid settings of a single field
     class AnalyzeBest
     {
-     public:
-       AnalyzeBest(const int nlevel) :
-       nlevel_(nlevel),
-       besttype_(6,""),
-       bestdamp_(6,1.0),
-       bestpoly_(6,1),
-       bestsweeps_(6,1),
-       S_(7,Teuchos::null)
-       {
-         if (nlevel-1>6) dserror("Can only analyze V cycles upto 7 levels");
-       }
-       inline int             Nlevel() { return nlevel_; }
-       inline std::vector<std::string>& Type()   { return besttype_; }
-       inline std::vector<double>& Damp()   { return bestdamp_; }
-       inline std::vector<int>&    Poly()   { return bestpoly_; }
-       inline std::vector<int>&    Sweeps() { return bestsweeps_; }
-       inline std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S() { return S_; }
-     private:
-       int                                       nlevel_;
-       std::vector<std::string>                  besttype_;
-       std::vector<double>                       bestdamp_;
-       std::vector<int>                          bestpoly_;
-       std::vector<int>                          bestsweeps_;
-       std::vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
+      public:
+        //! constructor
+        AnalyzeBest(const int nlevel) :
+        nlevel_(nlevel),
+        besttype_(6,""),
+        bestdamp_(6,1.0),
+        bestpoly_(6,1),
+        bestsweeps_(6,1),
+        S_(7,Teuchos::null)
+        {
+          if (nlevel-1>6) dserror("Can only analyze V cycles upto 7 levels");
+          return;
+        }
+
+        //! Return number of levels
+        inline int Nlevel() { return nlevel_; }
+
+        //! Return set of optimal algorithm types
+        inline std::vector<std::string>& Type() { return besttype_; }
+
+        //! Return set of optimal damping paramters
+        inline std::vector<double>& Damp() { return bestdamp_; }
+
+        //! Return set of optimal polynomial degrees
+        inline std::vector<int>& Poly() { return bestpoly_; }
+
+        //! Return set of optimal number of sweeps
+        inline std::vector<int>& Sweeps() { return bestsweeps_; }
+
+        //! Access the underlying algorithmic operator
+        inline std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S() { return S_; }
+
+      private:
+
+        int nlevel_; ///< number of levels
+        std::vector<std::string> besttype_; //< best set of algorithms
+        std::vector<double> bestdamp_; ///< best set of damping parameters
+        std::vector<int> bestpoly_; ///< best set of polynomial degrees
+        std::vector<int> bestsweeps_; ///< best set of number of sweeps
+        std::vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
     };
 
-    // main routine analysis of FSIAMG
+    //! main routine analysis of FSIAMG
     void AnalyzeFSIAMG(const int myrank,
                        const int snlevel,
                        const int fnlevel,
@@ -224,7 +239,7 @@ namespace FSI
                        ML* fml,
                        ML* aml);
 
-    // analyze a single field
+    //! analyze a single field
     void Analyse_SingleField(
                              const std::string fieldname,
                              const int myrank,
@@ -236,7 +251,7 @@ namespace FSI
                              std::vector<MLAPI::Operator>& R,
                              AnalyzeBest& best);
 
-    // analyse BGS(AMG)
+    //! analyse BGS(AMG)
     void Analyse_BGSAMG(
                        const int myrank,
                        AnalyzeBest& sbest,
@@ -254,7 +269,7 @@ namespace FSI
                        std::vector<MLAPI::Operator>& Aaf
                        );
 
-    // analyse AMG(BGS)
+    //! analyse AMG(BGS)
     void Analyse_AMGBGS(
                        const int myrank,
                        AnalyzeBest& sbest,
@@ -272,7 +287,7 @@ namespace FSI
                        std::vector<MLAPI::Operator>& Aaf
                        );
 
-
+    //! Compute rate of residual reduction
     double Rate(const int myrank,
                 double t, double r, double initr, double l) const
     {
@@ -290,7 +305,7 @@ namespace FSI
     }
 
 
-    // a single field single level Richardson iteration with smoother
+    //! a single field single level Richardson iteration with smoother
     double RichardsonS(
                     const std::string field,
                     const int myrank,
@@ -305,7 +320,7 @@ namespace FSI
                     bool analysis=false,
                     bool silent=true) const;
 
-    // a non-Trilinos preconditioner Richardson
+    //! a non-Trilinos preconditioner Richardson
     double RichardsonMixed(
                     const std::string field,
                     const int myrank,
@@ -323,7 +338,7 @@ namespace FSI
                     bool silent=true) const;
 
 
-    // a single field V cycle analysis Richardson iteration
+    //! a single field V cycle analysis Richardson iteration
     double RichardsonV(
                     const std::string field,
                     const int myrank,
@@ -343,7 +358,7 @@ namespace FSI
                     bool analysis=false,
                     bool silent=false) const;
 
-    // a single field V cycle
+    //! a single field V cycle
     void Vcycle(
                 const std::string field,
                 const int myrank,
@@ -360,8 +375,9 @@ namespace FSI
 
 
 
-    // BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
-    // and V cycle (V) for individual fields
+    /*! BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
+     *  and V cycle (V) for individual fields
+     */
     double RichardsonBGS_V(
                           const int myrank,
                           const int sweeps,
@@ -392,8 +408,9 @@ namespace FSI
                           bool silent=false
                           ) const;
 
-    // BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
-    // and V cycle (V) or other for individual fields
+    /*! BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
+     *  and V cycle (V) or other for individual fields
+     */
     double RichardsonBGS_Mixed(
                           const int myrank,
                           const int sweeps,
@@ -427,8 +444,9 @@ namespace FSI
                           bool silent=false
                           ) const;
 
-    // Richardson iteration with Block Gauss Seidel (BGS)
-    // and Smoother (S) or Vcycle (V) for individual fields
+    /*! Richardson iteration with Block Gauss Seidel (BGS)
+     *  and Smoother (S) or Vcycle (V) for individual fields
+     */
     double RichardsonBGS_SV(
                             const int myrank,
                             const int sweeps,
@@ -460,8 +478,9 @@ namespace FSI
                             bool silent=false
                             ) const;
 
-    // Richardson iteration with Schurcomplement preconditioner
-    // for structure split case
+    /*! Richardson iteration with Schurcomplement preconditioner
+     *  for structure split case
+     */
     double RichardsonSchurStructureSplit_S(
                             const int myrank,
                             const int sweeps,
@@ -493,8 +512,9 @@ namespace FSI
                             bool silent=false
                             ) const;
 
-    // Richardson iteration with Schurcomplement preconditioner
-    // for fluid split case
+    /*! Richardson iteration with Schurcomplement preconditioner
+     *  for fluid split case
+     */
     double RichardsonSchurFluidSplit_S(
                             const int myrank,
                             const int sweeps,
@@ -526,7 +546,7 @@ namespace FSI
                             bool silent=false
                             ) const;
 
-    // AMG(BGS) Richardson iteration with block V cycle for FSI
+    //! AMG(BGS) Richardson iteration with block V cycle for FSI
     double Richardson_BlockV(
                              const int myrank,
                              const int sweeps,
@@ -562,7 +582,7 @@ namespace FSI
                              bool analysis=false,
                              bool silent=false) const;
 
-    // AMG(BGS) block V cycle for FSI
+    //! AMG(BGS) block V cycle for FSI
     void BlockVcycle(
                      const int myrank,
                      std::vector<int>& Vsweeps,
@@ -596,32 +616,39 @@ namespace FSI
                      std::vector<MLAPI::Operator>& Aaf) const;
 
     /// @name Access routines
+    //!{
+
+    //! Does solid use AMG?
     inline const bool& SisAMG() const { return sisml_; }
+
+    //! Does fluid use AMG?
     inline const bool& FisAMG() const { return fisml_; }
+
+    //! Does ALE use AMG?
     inline const bool& AisAMG() const { return aisml_; }
     //@}
 
-    bool                                 sisml_;
-    bool                                 fisml_;
-    bool                                 aisml_;
-    int                                  srun_;
-    int                                  frun_;
-    int                                  arun_;
+    bool sisml_; ///< solid uses AMG (true/false)
+    bool fisml_; ///< fluid uses AMG (true/false)
+    bool aisml_; ///< ALE uses AMG (true/false)
+    int srun_;
+    int frun_;
+    int arun_;
 
-    int                                  minnlevel_;      ///< min of the below nlevel_
-    int                                  maxnlevel_;      ///< max of the below nlevel_
-    int                                  analyze_;        ///< run analysis of FSIAMG
-    INPAR::FSI::LinearBlockSolver        strategy_;       ///< type of preconditioner  to run: BGS(AMG) or AMG(BGS)
-    std::vector<std::string>             blocksmoother_;  ///< type of inter-field block smoother
-    std::vector<double>                  schuromega_;     ///< damping factor for construction of Schur complement
-    std::vector<double>                  pcomega_;
-    std::vector<int>                     pciter_;
-    std::vector<double>                  somega_;
-    std::vector<int>                     siterations_;
-    std::vector<double>                  fomega_;
-    std::vector<int>                     fiterations_;
-    std::vector<double>                  aomega_;
-    std::vector<int>                     aiterations_;
+    int minnlevel_; ///< min of the below nlevel_
+    int maxnlevel_; ///< max of the below nlevel_
+    int analyze_; ///< run analysis of FSIAMG
+    INPAR::FSI::LinearBlockSolver strategy_; ///< type of preconditioner  to run: BGS(AMG) or AMG(BGS)
+    std::vector<std::string> blocksmoother_; ///< type of inter-field block smoother
+    std::vector<double> schuromega_; ///< damping factor for construction of Schur complement
+    std::vector<double> pcomega_;
+    std::vector<int> pciter_;
+    std::vector<double> somega_; ///< damping factors for solid AMG hierarchy
+    std::vector<int> siterations_; ///< number of sweeps for solid AMG hierarchy
+    std::vector<double> fomega_; ///< damping factors for fluid AMG hierarchy
+    std::vector<int> fiterations_; ///< number of sweeps for fluid AMG hierarchy
+    std::vector<double> aomega_; ///< damping factors for ALE AMG hierarchy
+    std::vector<int> aiterations_; ///< number of sweeps for ALE AMG hierarchy
 
     const INPAR::FSI::Verbosity verbosity_; ///< verbosity level of FSI algorithm
 
@@ -629,44 +656,48 @@ namespace FSI
     OverlappingBlockMatrixHybridSchwarz* hybridPrec_;
 
     /// @name AMG for structure
-    int                                  snlevel_;   ///< num level in structure AMG
-    Teuchos::ParameterList               sparams_;
+    int snlevel_;///< num level in structure AMG
+    Teuchos::ParameterList sparams_; ///< parameter list
     mutable std::vector<MLAPI::Operator> Ass_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
-    std::vector<MLAPI::Operator>         Pss_;
-    std::vector<MLAPI::Operator>         Rss_;
+    std::vector<MLAPI::Operator> Pss_; ///< prolongation operators of solid AMG hierarchy
+    std::vector<MLAPI::Operator> Rss_; ///< restriction operators of solid AMG hierarchy
     //@}
 
     /// @name AMG for fluid
-    int                                  fnlevel_;   ///< num level in fluid AMG
-    Teuchos::ParameterList               fparams_;
+    int fnlevel_;///< num level in fluid AMG
+    Teuchos::ParameterList fparams_;
     mutable std::vector<MLAPI::Operator> Aff_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
     mutable std::vector<MLAPI::Operator> Schurff_;
-    std::vector<MLAPI::Operator>         Pff_;
-    std::vector<MLAPI::Operator>         Rff_;
+    std::vector<MLAPI::Operator> Pff_; ///< prolongation operators of fluid AMG hierarchy
+    std::vector<MLAPI::Operator> Rff_; ///< restriction operators of fluid AMG hierarchy
     //@}
 
     /// @name AMG for ale
-    int                                  anlevel_;   ///< num level in ale AMG
-    Teuchos::ParameterList               aparams_;
+    int anlevel_;///< num level in ale AMG
+    Teuchos::ParameterList aparams_;
     mutable std::vector<MLAPI::Operator> Aaa_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
-    std::vector<MLAPI::Operator>         Paa_;
-    std::vector<MLAPI::Operator>         Raa_;
+    std::vector<MLAPI::Operator> Paa_; ///< prolongation operators of ALE AMG hierarchy
+    std::vector<MLAPI::Operator> Raa_; ///< restriction operators of ALE AMG hierarchy
     //@}
 
-    // these are for implicit off-diagonal in block smoother
-    mutable MLAPI::Operator              Asf_;
-    mutable MLAPI::Operator              Afs_;
-    mutable MLAPI::Operator              Afa_;
-    mutable MLAPI::Operator              Aaf_;
+    //! @name implicit off-diagonal blocks in block smoother
+    //@{
+    mutable MLAPI::Operator Asf_;
+    mutable MLAPI::Operator Afs_;
+    mutable MLAPI::Operator Afa_;
+    mutable MLAPI::Operator Aaf_;
+    //@}
 
-    // these are for explicit coarse off-diagonals in block smoother
+    //! @name explicit coarse off-diagonal blocks in block smoother
+    //@{
     mutable std::vector<MLAPI::Operator> ASF_;
     mutable std::vector<MLAPI::Operator> AFS_;
     mutable std::vector<MLAPI::Operator> AFA_;
     mutable std::vector<MLAPI::Operator> AAF_;
+    //@}
 
   };
 
