@@ -1843,8 +1843,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AddNamedReal(m,"PRESTRETCHELASTINCIR","circumferential prestretch of elastin matrix",false);
      AddNamedReal(m,"PRESTRETCHELASTINAX","axial prestretch of elastin matrix",false);
      AddNamedInt(m,"DAMAGE","1: elastin damage after prestressing,0: no elastin damage",false);
-     AddNamedInt(m,"GROWTHTYPE","flag to decide what type of collagen growth is used: 1: anisotropic growth; 2: isotropic growth",false);
-
+     AddNamedInt(m,"GROWTHTYPE","flag to decide what type of collagen growth is used: 1: anisotropic growth; 0: isotropic growth",false);
+     AddNamedInt(m,"LOCTIMEINT","flag to decide what type of local time integration scheme is used: 1: Backward Euler Method; 0: Forward Euler Method",false);
      AppendMaterialDefinition(matlist,m);
    }
 

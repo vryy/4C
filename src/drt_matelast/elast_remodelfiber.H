@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_remodelfiber.H
-\brief the input line should read
-  MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0 COLMASSFRAC 0.5
+\brief the input line should read MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0 COLMASSFRAC 0.5
 
 \level 3
 
-<pre>
-\maintainer Fabian Bräu
-            braeu@lnm.mw.tum.de
-</pre>
+\maintainer Fabian Braeu
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_REMODELFIBER_H_
@@ -60,7 +56,7 @@ namespace ELASTIC
       /// initial mass fraction of each fiber family in constraint mixture
       std::vector<double>* init_w_col_;
 
-      // deposition stretch of collagen fibers
+      /// deposition stretch of collagen fibers
       const double G_;
 
       //@}
@@ -194,16 +190,26 @@ namespace ELASTIC
       const int growthtype                          ///< flag to decide what type of collagen growth is used: 1: anisotropic growth; 2: isotropic growth
       );
 
+    /// Explicit local time integration: updates current collagen density and inelastic fiber stretch
+    virtual void EvaluateGrowthAndRemodelingExpl(
+      const LINALG::Matrix<3,3> defgrd,             ///< deformation gradient
+      const double dt,                              ///< time step size
+      LINALG::Matrix<3,3> iFgM,                     ///< inverse inelastic growth deformation gradient
+      const int gp,                                 ///< current gp
+      const int eleGID                              ///< element ID
+      );
+
     /// prestressing step: evaluate fibers in a "normal" way (no growth and/or remodeling)
-    virtual void EvaluatePrestressing(
+    virtual void EvaluateAnisotropicStressCmat(
       const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
+      const LINALG::Matrix<3,3> iFg,       ///< inverse inelastic growth deformation gradient
       LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
       LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress
       const int gp,                        ///< current gp
       const int eleGID                     ///< element ID
       );
 
-    // Converts matrix in "matrix notation" to "stress-like" Voigt notation
+    /// Converts matrix in "matrix notation" to "stress-like" Voigt notation
     void MatrixtoStressVoigtNotationVector(const LINALG::Matrix<3,3>& in,
                                            LINALG::Matrix<6,1>& out);
 
@@ -224,7 +230,7 @@ namespace ELASTIC
 
     /// add a contribution to the derivative of the PK2 stress with respect to the inelastic growth deformation gradient
     /// in index notation this method does:
-    /// dPK2dFpinv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )
+    /// \f$dPK2dFpinv_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} )\f$
     /// Note that the result is symmetric within the first two indices
     /// Thus the first two indices are stored in stress-like Voigt notation.
     /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
@@ -236,7 +242,7 @@ namespace ELASTIC
 
     /// This function adds the following contribution to the matrix out_ABCD (9x6)
     /// in index notation this method does:
-    /// \f$out_{ABCD} = fac*( A_{AC} * B_{BD} +A_{AD} * B_{BC} )
+    /// \f$out_{ABCD} = fac*( A_{AC} * B_{BD} +A_{AD} * B_{BC} )\f$
     /// Note that the result is symmetric within the last two indices
     /// Thus the last two indices are stored in stress-like Voigt notation.
     /// The 1st index pair has no symmetries and is therefore stored as 9-vector
@@ -261,7 +267,7 @@ namespace ELASTIC
         bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
     )
     {
-//      dserror("RemodelFiber cannot be used with ElastHyper. Use GrowthRemodel_ElastHyper!");
+      anisoprinc = true;
       return;
     }
 
@@ -303,10 +309,10 @@ namespace ELASTIC
     std::vector<LINALG::Matrix<6,1> > Av_;
     std::vector<LINALG::Matrix<6,1> > A_strain_;
 
-    // structural tensor in 9x1 vector-like notation
+    /// structural tensor in 9x1 vector-like notation
     std::vector<LINALG::Matrix<9,1> > A9x1_;
 
-    // orthogonal structural tensor ( 1_{ij} - A_{ij} )
+    /// orthogonal structural tensor ( 1_{ij} - A_{ij} )
     std::vector<LINALG::Matrix<3,3> > AM_orth_;
 
     /// Cauchy prestress of new mass which is deposited during G&R

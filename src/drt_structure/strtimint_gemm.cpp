@@ -546,8 +546,11 @@ void STR::TimIntGEMM::UpdateStepElement()
   //p.set("alpha f", alphaf_);
   p.set("action", "calc_struct_update_istep");
   // go to elements
+  discret_->SetState("displacement",(*dis_)(0));
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
+
+  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*/

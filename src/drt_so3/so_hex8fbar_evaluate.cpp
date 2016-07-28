@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/so3_material.H"
+#include "../drt_mat/growthremodel_elasthyper.H"
 #include "../drt_mat/thermoplastichyperelast.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -305,7 +306,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->Update();
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      Update_element(mydisp,params,Material());
     }
     break;
 
@@ -387,9 +392,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
 
-      // Update constraintmixture material and GrowthRemodel_Elasthyper
-      if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-          (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
+      // Update constraintmixture material
+      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -1659,4 +1663,169 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Update inelastic deformation (G&R)                       braeu 07/16|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
+                                                Teuchos::ParameterList& params,
+                                                Teuchos::RCP<MAT::Material> mat)
+{
+  // Additional update call if material is m_growthremodel_elasthyper (used for the calculation and updating of the inelastic
+  // deformation)
+  if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+  {
+    /* ============================================================================*
+     ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+     ** ============================================================================*/
+    const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+    const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+    const static std::vector<double> gpweights = soh8_weights();
+    /* ============================================================================*/
+
+    // update element geometry
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<NUMNOD_SOH8; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(i,0) = x[0];
+      xrefe(i,1) = x[1];
+      xrefe(i,2) = x[2];
+
+      xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
+      xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
+      xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
+
+      if (pstype_==INPAR::STR::prestress_mulf)
+      {
+        xdisp(i,0) = disp[i*NODDOF_SOH8+0];
+        xdisp(i,1) = disp[i*NODDOF_SOH8+1];
+        xdisp(i,2) = disp[i*NODDOF_SOH8+2];
+      }
+    }
+
+
+    //****************************************************************************
+    // deformation gradient at centroid of element
+    //****************************************************************************
+    double detF_0 = -1.0;
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_0;
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ_0;
+    //element coordinate derivatives at centroid
+    LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+    {
+      //inverse jacobian matrix at centroid
+      LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
+      invJ_0.Multiply(N_rst_0,xrefe);
+      invJ_0.Invert();
+      //material derivatives at centroid
+      N_XYZ_0.Multiply(invJ_0,N_rst_0);
+    }
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      // get Jacobian mapping wrt to the stored configuration
+      // centroid is 9th Gaussian point in storage
+      LINALG::Matrix<3,3> invJdef_0;
+      prestress_->StoragetoMatrix(NUMGPT_SOH8,invJdef_0,prestress_->JHistory());
+      // get derivatives wrt to last spatial configuration
+      LINALG::Matrix<3,8> N_xyz_0;
+      N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) std::cout << invJdef_0;
+
+      // build multiplicative incremental defgrd
+      LINALG::Matrix<3,3> defgrd_0(false);
+      defgrd_0.MultiplyTT(xdisp,N_xyz_0);
+      defgrd_0(0,0) += 1.0;
+      defgrd_0(1,1) += 1.0;
+      defgrd_0(2,2) += 1.0;
+
+      // get stored old incremental F
+      LINALG::Matrix<3,3> Fhist;
+      prestress_->StoragetoMatrix(NUMGPT_SOH8,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::Matrix<3,3> tmp;
+      tmp.Multiply(defgrd_0,Fhist);
+      defgrd_0 = tmp;
+
+      // build inverse and detF
+      invdefgrd_0.Invert(defgrd_0);
+      detF_0=defgrd_0.Determinant();
+    }
+    else // no prestressing
+    {
+      //deformation gradient and its determinant at centroid
+      LINALG::Matrix<3,3> defgrd_0(false);
+      defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+      invdefgrd_0.Invert(defgrd_0);
+      detF_0=defgrd_0.Determinant();
+    }
+
+
+    /* =========================================================================*/
+    /* ================================================= Loop over Gauss Points */
+    /* =========================================================================*/
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+    // build deformation gradient wrt to material configuration
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
+    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    {
+      /* get the inverse of the Jacobian matrix which looks like:
+       **            [ x_,r  y_,r  z_,r ]^-1
+       **     J^-1 = [ x_,s  y_,s  z_,s ]
+       **            [ x_,t  y_,t  z_,t ]
+       */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 * N_rst
+      N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+
+      if (pstype_==INPAR::STR::prestress_mulf)
+      {
+        // get Jacobian mapping wrt to the stored configuration
+        LINALG::Matrix<3,3> invJdef;
+        prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+        // get derivatives wrt to last spatial configuration
+        LINALG::Matrix<3,8> N_xyz;
+        N_xyz.Multiply(invJdef,derivs[gp]);
+
+        // build multiplicative incremental defgrd
+        defgrd.MultiplyTT(xdisp,N_xyz);
+        defgrd(0,0) += 1.0;
+        defgrd(1,1) += 1.0;
+        defgrd(2,2) += 1.0;
+
+        // get stored old incremental F
+        LINALG::Matrix<3,3> Fhist;
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+        // build total defgrd = delta F * F_old
+        LINALG::Matrix<3,3> Fnew;
+        Fnew.Multiply(defgrd,Fhist);
+        defgrd = Fnew;
+      }
+      else // no prestressing
+      {
+        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+        defgrd.MultiplyTT(xcurr,N_XYZ);
+      }
+
+      double detF=defgrd.Determinant();
+
+      // F_bar deformation gradient =(detF_0/detF)^1/3*F
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_bar(defgrd);
+      double f_bar_factor=pow(detF_0/detF,1.0/3.0);
+      defgrd_bar.Scale(f_bar_factor);
+
+      static_cast <MAT::GrowthRemodel_ElastHyper*>(mat.get())->Update(defgrd_bar,gp,params,Id());
+    }
+  }
+
+  SolidMaterial()->Update();
+
+  return;
+}
 

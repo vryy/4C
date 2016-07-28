@@ -473,6 +473,13 @@ protected:
   // compute Jacobian mapping wrt to deformed configuration
   virtual void UpdateJacobianMapping(const std::vector<double>& disp,
                                      DRT::ELEMENTS::PreStress& prestress);
+
+  //! Update history variables at the end of time step (fiber direction, inelastic deformation) (braeu 07/16)
+  void Update_element(
+        std::vector<double>& disp,          // current displacements
+        Teuchos::ParameterList& params,     // algorithmic parameters e.g. time
+        Teuchos::RCP<MAT::Material> mat);   // material
+
   // compute defgrd in all gp for given disp
   virtual void DefGradient(const std::vector<double>& disp,
                            Epetra_SerialDenseMatrix& gpdefgrd,
@@ -540,13 +547,6 @@ protected:
   void soh8_expol(
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
       Epetra_MultiVector& expolstresses);  ///< nodal stresses
-
-  //! remodeling for fibers at the end of time step (st 01/10)
-  void soh8_remodel(
-        std::vector<int>&         lm,             // location matrix
-        std::vector<double>&      disp,           // current displacements
-        Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-        Teuchos::RCP<MAT::Material>        mat);            // material
 
   //! Evaluate Hex8 Shapefcts to keep them static
   const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();

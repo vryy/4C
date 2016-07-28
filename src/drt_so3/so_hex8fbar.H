@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
-\file so_hex8fbarH
+\file so_hex8fbar.H
 
-<pre>
-Maintainer: Alexander Popp
+\brief bla bla bla
+
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SOH8FBAR_H
@@ -235,6 +237,11 @@ protected:
     const INPAR::STR::StressType iostress,  ///< stress output option
     const INPAR::STR::StrainType iostrain,  ///< strain output option
     const INPAR::STR::StrainType ioplstrain);  ///< strain output option
+
+  //! Update history variables at the end of time step (inelastic deformation) (braeu 07/16)
+  void Update_element(std::vector<double>& disp,          // current displacements
+                      Teuchos::ParameterList& params,     // algorithmic parameters e.g. time
+                      Teuchos::RCP<MAT::Material> mat);   // material
 
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();

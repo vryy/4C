@@ -89,11 +89,14 @@ namespace MAT
       /// axial prestretch of elastin matrix
       const double lamb_prestretch_ax_;
 
-      /// flag for turning elastin damage on or off: 1: damage on; 2: damage off
+      /// flag for turning elastin damage on or off: 1: damage on; 0: damage off
       const int damage_;
 
-      /// flag to decide what type of collagen growth is used: 1: anisotropic growth; 2: isotropic growth
+      /// flag to decide what type of collagen growth is used: 1: anisotropic growth; 0: isotropic growth
       const int growthtype_;
+
+      /// flag to decide what type of local time integration scheme is used: 1: Backward Euler Method; 0: Forward Euler Method
+      const int loctimeint_;
 
       //@}
 
@@ -194,7 +197,10 @@ private:
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// update
-    virtual void Update();
+    virtual void Update(const LINALG::Matrix<3,3> defgrd,     ///< Deformation gradient
+                        const int gp,                         ///< Current Gauß-Point
+                        Teuchos::ParameterList& params,       ///< Container for additional information
+                        const int eleGID);                    ///< Element ID
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -216,28 +222,18 @@ private:
         std::string specifier,
         LINALG::Matrix<3,1>& dir);
 
-    /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuant(
-      const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,1>& id,                    ///< Cartesian identity 2-tensor I_{AB}
-      LINALG::Matrix<6,1>& C_stress,              ///< right Cauchy green in stress-like 6-Voigt Voigt notation
-      LINALG::Matrix<6,1>& C_strain,              ///< right Cauchy green in strain-like 6-Voigt Voigt notation
-      LINALG::Matrix<6,1>& iC_stress,             ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
-      LINALG::Matrix<6,6>& id4sharp,              ///< Cartesian identity 4-tensor in 6-Voigt matrix notation
-      LINALG::Matrix<3,1>& prinv);                ///< principal invariants of right Cauchy-Green tensor
-
     virtual void EvaluateKinQuantElast(
         const LINALG::Matrix<3,3>* defgrd,
-        LINALG::Matrix<3,3> iFgM,
+        const LINALG::Matrix<3,3> iFinel,
         const int gp,
-        LINALG::Matrix<6,1>& iCg,
-        LINALG::Matrix<6,1>& iCgCiCg,
+        LINALG::Matrix<6,1>& iCinel,
+        LINALG::Matrix<6,1>& iCinelCiCinel,
         LINALG::Matrix<6,1>& iC,
-        LINALG::Matrix<3,3>& iCgC,
-        LINALG::Matrix<3,3>& iFgCe,
-        LINALG::Matrix<9,1>& CiFg,
-        LINALG::Matrix<9,1>& CiFgCe,
-        LINALG::Matrix<9,1>& CiFgiCe,
+        LINALG::Matrix<3,3>& iCinelC,
+        LINALG::Matrix<3,3>& iFinelCe,
+        LINALG::Matrix<9,1>& CiFinel,
+        LINALG::Matrix<9,1>& CiFinelCe,
+        LINALG::Matrix<9,1>& CiFineliCe,
         LINALG::Matrix<3,1>& prinv);
 
     /// calculate principal invariants
@@ -424,16 +420,22 @@ private:
                                          const LINALG::Matrix<3,3>& B,         ///< Matrix in the above mentioned equation
                                          LINALG::Matrix<9,9>& X_ABCD);         ///< Output (see EvaluateInelasticDefGrad)
 
+    /// build growth deformation gradient
+    void EvaluateGrowthDefGrad(LINALG::Matrix<3,3>& FgM,        ///< Growth deformation gradient
+                               LINALG::Matrix<3,3>& iFgM,       ///< Inverse growth deformation gradient
+                               const int gp);                   ///< Current Gauß-Point
+
     /// convert non-symmetric 2-tensor to 9x1 vector
     void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
 
 
     /// evaluates stress and cmat during prestressing
-    void EvaluateStressCmat(const LINALG::Matrix<3,3>* defgrd,
-                            const int gp,
-                            LINALG::Matrix<6,1>& stressiso,
-                            LINALG::Matrix<6,6>& cmatiso,
-                            const int eleGID
+    void EvaluateStressCmat(const LINALG::Matrix<3,3>* defgrd,     ///< Deformation gradient
+                            const LINALG::Matrix<3,3> Finel,       ///< Inelastic deformation gradient
+                            const int gp,                          ///< Current Gauß-Point
+                            LINALG::Matrix<6,1>& stressiso,        ///< Isotropic stress tensor
+                            LINALG::Matrix<6,6>& cmatiso,          ///< Isotropic stiffness matrix
+                            const int eleGID                       ///< Element ID
                             );
 
     /// my material parameters
@@ -448,10 +450,10 @@ private:
     /// map to ground matrix material summands
     Teuchos::RCP<MAT::ELASTIC::Summand> potsumpenalty_;
 
-    /// current individual mass density of elastin (initially 1)
+    /// current individual mass density of elastin
     std::vector<std::vector<double> > cur_rho_el_;
 
-    /// initial individual mass density of elastin (initially 1)
+    /// initial individual mass density of elastin
     std::vector<double> init_rho_el_;
 
     /// current volume change induced by growth
@@ -483,6 +485,13 @@ private:
 
     /// radial coordinate of each Gauß-Point
     std::vector<double> gp_rad_;
+
+    /// structural tensor of growth direction
+    LINALG::Matrix<3,3> AgM_;
+
+    /// structural tensor of the plane in which all fibers are located
+    LINALG::Matrix<3,3> AplM_;
+
 
     /// wall thickness in reference configuration
     double t_ref_;

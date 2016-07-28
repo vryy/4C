@@ -19,6 +19,7 @@
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/so3_material.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/growthremodel_elasthyper.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplastichyperelast.H"
@@ -411,33 +412,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     //==================================================================================
     case ELEMENTS::struct_calc_update_istep:
     {
-      // determine new fiber directions
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      if (remodel)
-      {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        soh8_remodel(lm,mydisp,params,Material());
-      }
-      // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone)
-      {
-        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        // alphao := alpha
-        switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<double,soh8_easfull, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<double,soh8_easmild, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
-        }
-      }
-      SolidMaterial()->Update();
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      Update_element(mydisp,params,Material());
     }
     break;
     //==================================================================================
@@ -2145,16 +2124,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       break;
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
-    {
-      // gp reference coordinates
-      LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
-      funct = shapefcts[gp];
-      LINALG::Matrix<1,NUMDIM_SOH8> point(true);
-      point.MultiplyTN(funct,xrefe);
-      params.set("gprefecoord",point);
-    }
-
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -2177,7 +2146,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       GetTemperatureForStructuralMaterial(shapefcts[gp],params);
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
@@ -3118,17 +3087,21 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  remodeling of fiber directions (protected)               tinkl 01/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_remodel(
-      std::vector<int>&         lm,             // location matrix
-      std::vector<double>&      disp,           // current displacements
-      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-      Teuchos::RCP<MAT::Material>        mat)            // material
+/*---------------------------------------------------------------------------------------------*
+ |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
+ *---------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
+                                            Teuchos::ParameterList& params,
+                                            Teuchos::RCP<MAT::Material> mat)
 {
-  if (( Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-      ( Material()->MaterialType() == INPAR::MAT::m_elasthyper))
+  bool remodel;
+  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+  remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
+
+  // Calculate current deformation gradient
+  if (( mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+      (mat->MaterialType() == INPAR::MAT::m_elasthyper) ||
+      ( mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
   {
     // in a first step ommit everything with prestress and EAS!!
 
@@ -3162,13 +3135,14 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
 
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
+    params.set<int>("numgp",NUMGPT_SOH8);
     for (int gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       /* get the inverse of the Jacobian matrix which looks like:
-      **            [ x_,r  y_,r  z_,r ]^-1
-      **     J^-1 = [ x_,s  y_,s  z_,s ]
-      **            [ x_,t  y_,t  z_,t ]
-      */
+       **            [ x_,r  y_,r  z_,r ]^-1
+       **     J^-1 = [ x_,s  y_,s  z_,s ]
+       **            [ x_,t  y_,t  z_,t ]
+       */
       // compute derivatives N_XYZ at gp w.r.t. material coordinates
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp],derivs[gp]);
@@ -3201,84 +3175,117 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         defgrd.MultiplyTT(xcurr,N_XYZ);
 
-      // Right Cauchy-Green tensor = F^T * F
-      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd,defgrd);
 
-      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
-      glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-      glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-      glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-      glstrain(3) = cauchygreen(0,1);
-      glstrain(4) = cauchygreen(1,2);
-      glstrain(5) = cauchygreen(2,0);
-
-      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
-      params.set<int>("gp",gp);
-      SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
-      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-      // Cauchy stress
-      const double detF = defgrd.Determinant();
-
-      LINALG::Matrix<3,3> pkstress;
-      pkstress(0,0) = stress(0);
-      pkstress(0,1) = stress(3);
-      pkstress(0,2) = stress(5);
-      pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = stress(1);
-      pkstress(1,2) = stress(4);
-      pkstress(2,0) = pkstress(0,2);
-      pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = stress(2);
-
-      LINALG::Matrix<3,3> temp(true);
-      LINALG::Matrix<3,3> cauchystress(true);
-      temp.Multiply(1.0/detF,defgrd,pkstress);
-      cauchystress.MultiplyNT(temp,defgrd);
-
-      // evaluate eigenproblem based on stress of previous step
-      LINALG::Matrix<3,3> lambda(true);
-      LINALG::Matrix<3,3> locsys(true);
-      LINALG::SYEV(cauchystress,lambda,locsys);
-
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      // call material update if material = m_growthremodel_elasthyper (calculate and update inelastic deformation gradient)
+      if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
       {
-        MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comi->EvaluateFiberVecs(gp,locsys,defgrd);
+        static_cast <MAT::GrowthRemodel_ElastHyper*>(mat.get())->Update(defgrd,gp,params,Id());
       }
-      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
-      {
-        // we only have fibers at element center, thus we interpolate stress and defgrd
-        avg_stress.Update(1.0/NUMGPT_SOH8,cauchystress,1.0);
-        avg_defgrd.Update(1.0/NUMGPT_SOH8,defgrd,1.0);
-      }
-      else dserror("material not implemented for remodeling");
 
+      // determine new fiber directions
+      if (remodel)
+      {
+        // determine new fiber directions
+        // Right Cauchy-Green tensor = F^T * F
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+        cauchygreen.MultiplyTN(defgrd,defgrd);
+
+        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
+        glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+        glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+        glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+        glstrain(3) = cauchygreen(0,1);
+        glstrain(4) = cauchygreen(1,2);
+        glstrain(5) = cauchygreen(2,0);
+
+        // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+        LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+        params.set<int>("gp",gp);
+        SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+        // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+        // Cauchy stress
+        const double detF = defgrd.Determinant();
+
+        LINALG::Matrix<3,3> pkstress;
+        pkstress(0,0) = stress(0);
+        pkstress(0,1) = stress(3);
+        pkstress(0,2) = stress(5);
+        pkstress(1,0) = pkstress(0,1);
+        pkstress(1,1) = stress(1);
+        pkstress(1,2) = stress(4);
+        pkstress(2,0) = pkstress(0,2);
+        pkstress(2,1) = pkstress(1,2);
+        pkstress(2,2) = stress(2);
+
+        LINALG::Matrix<3,3> temp(true);
+        LINALG::Matrix<3,3> cauchystress(true);
+        temp.Multiply(1.0/detF,defgrd,pkstress);
+        cauchystress.MultiplyNT(temp,defgrd);
+
+        // evaluate eigenproblem based on stress of previous step
+        LINALG::Matrix<3,3> lambda(true);
+        LINALG::Matrix<3,3> locsys(true);
+        LINALG::SYEV(cauchystress,lambda,locsys);
+
+        if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+        {
+          MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
+          comi->EvaluateFiberVecs(gp,locsys,defgrd);
+        }
+        else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+        {
+          // we only have fibers at element center, thus we interpolate stress and defgrd
+          avg_stress.Update(1.0/NUMGPT_SOH8,cauchystress,1.0);
+          avg_defgrd.Update(1.0/NUMGPT_SOH8,defgrd,1.0);
+        }
+        else dserror("material not implemented for remodeling");
+      }
     } // end loop over gauss points
 
-    if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+    // determine new fiber directions
+    if (remodel)
     {
-      // evaluate eigenproblem based on stress of previous step
-      LINALG::Matrix<3,3> lambda(true);
-      LINALG::Matrix<3,3> locsys(true);
-      LINALG::SYEV(avg_stress,lambda,locsys);
+      if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        // evaluate eigenproblem based on stress of previous step
+        LINALG::Matrix<3,3> lambda(true);
+        LINALG::Matrix<3,3> locsys(true);
+        LINALG::SYEV(avg_stress,lambda,locsys);
 
-      // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-      double newgamma = atan(lambda(1,1)/lambda(2,2));
-      //compression in 2nd max direction, thus fibers are alligned to max principal direction
-      if (lambda(1,1) < 0) newgamma = 0.0;
+        // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+        double newgamma = atan(lambda(1,1)/lambda(2,2));
+        //compression in 2nd max direction, thus fibers are alligned to max principal direction
+        if (lambda(1,1) < 0) newgamma = 0.0;
 
-      // new fiber vectors
-      MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(mat.get());
-      elast->EvaluateFiberVecs(newgamma,locsys,avg_defgrd);
+        // new fiber vectors
+        MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(mat.get());
+        elast->EvaluateFiberVecs(newgamma,locsys,avg_defgrd);
+      }
     }
   }
+
+  // do something with internal EAS, etc parameters
+  if (eastype_ != soh8_easnone)
+  {
+    Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+    Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+    // alphao := alpha
+    switch(eastype_) {
+    case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<double,soh8_easfull, 1>(*alphao,*alpha); break;
+    case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<double,soh8_easmild, 1>(*alphao,*alpha); break;
+    case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha); break;
+    case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+  }
+  SolidMaterial()->Update();
+
+  return;
 }
 
 
