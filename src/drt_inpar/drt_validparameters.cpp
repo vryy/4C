@@ -60,6 +60,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_ehl.H"
 #include "inpar_ssi.H"
 #include "inpar_fs3i.H"
+#include "inpar_particle.H"
 #include "inpar_cavitation.H"
 #include "inpar_crack.H"
 #include "inpar_levelset.H"

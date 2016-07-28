@@ -89,6 +89,7 @@ namespace INPAR
       m_opti_dens,                             ///< density field for topology optimization
       m_particlemat,                           ///< particle material
       m_particleAMmat,                         ///< particle material, support for thermodynamics
+      m_meshFreeAMmat,                         ///< meshFree material, support for thermodynamics
       m_permeable_fluid,                       ///< permeable fluid
       m_plelasthyper,                          ///< general hyperelastic material for finite strain von-Mises plasticity using a semi-smooth Newton strategy (only in combination with such elements!)
       m_plelasthyperVCU,                       ///< general hyperelastic material for finite strain von-Mises plasticity using a variational constitutive update

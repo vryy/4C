@@ -19,7 +19,7 @@
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_particle.H"
 
 #include "Epetra_MpiComm.h"
 #include <Teuchos_RCP.hpp>

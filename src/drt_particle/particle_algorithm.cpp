@@ -25,7 +25,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_meshfree.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_particle.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../linalg/linalg_utils.H"

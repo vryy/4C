@@ -38,6 +38,7 @@
 #include "inpar_bio.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
+#include "inpar_particle.H"
 #include "inpar_cavitation.H"
 #include "inpar_crack.H"
 

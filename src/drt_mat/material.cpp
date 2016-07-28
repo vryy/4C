@@ -98,6 +98,7 @@
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 #include "particleAMmat.H"
+#include "meshFreeAMmat.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
 #include "activefiber.H"
@@ -692,6 +693,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Spring(curmat));
     MAT::PAR::Spring* params = static_cast<MAT::PAR::Spring*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_meshFreeAMmat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MeshFreeAMMat(curmat));
+    MAT::PAR::MeshFreeAMMat* params = static_cast<MAT::PAR::MeshFreeAMMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_particlemat:

@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
 #include "../drt_lib/drt_element.H"
 #include <Epetra_FEVector.h>
@@ -142,7 +142,6 @@ namespace PARTICLE
     double r_dismember_;
     /// max expected particle velocity
     double v_max_;
-
     /// max allowed relative penetration
     double c_;
     /// critical time step for contact

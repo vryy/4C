@@ -79,7 +79,7 @@ namespace MAT
     public:
 
       //! construct empty ParticleAMmat material
-    ParticleAMmat();
+      ParticleAMmat();
 
       //! construct ParticleAMmat material with specific material parameters
       explicit ParticleAMmat(MAT::PAR::ParticleAMmat* params);

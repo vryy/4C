@@ -4,8 +4,9 @@
 \brief Particle time integration with Runge-Kutta time integration
        scheme of 2nd/4th order (explicit),
 
+\level 3
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -19,7 +20,7 @@ Maintainer: Ursula Rasthofer
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_particle.H"
 
 
 /*----------------------------------------------------------------------*/

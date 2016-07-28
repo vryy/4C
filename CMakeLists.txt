@@ -631,6 +631,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particleAMmat.cpp
+  src/drt_mat/meshFreeAMmat.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
@@ -759,6 +760,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beampotential.cpp
   src/drt_inpar/inpar_bio.cpp
+    src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_combust.cpp
