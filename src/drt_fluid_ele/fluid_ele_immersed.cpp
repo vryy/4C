@@ -3,12 +3,13 @@
 
 \brief specialized immersed element used in immersed fsi
 
-<pre>
-Maintainer:  Andreas Rauch
+\level 1
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 - 15240
-</pre>
+
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele_immersed.H"

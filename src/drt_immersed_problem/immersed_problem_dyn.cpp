@@ -81,10 +81,10 @@ void immersed_problem_drt()
 
       {
         // check if structural predictor ConstVel is chosen in input file
-        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstVel")
+        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
           dserror("Invalid structural predictor for immersed fsi!\n"
-                  "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
-                  "Structural velocity projected onto fluid in new time step should be the same as in previous time step.");
+                  "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
+                  "Structural state projected onto fluid in new time step should be the same as in previous time step.");
       }
 
       // fill discretizations
@@ -101,6 +101,8 @@ void immersed_problem_drt()
       }
 
       // PARTITIONED FSI ALGORITHM
+
+      // read restart step
       const int restart = DRT::Problem::Instance()->Restart();
       if (restart)
       {

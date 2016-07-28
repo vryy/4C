@@ -25,7 +25,6 @@ PROBLEMTYP                      Immersed_FSI
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
-
 -----------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -36,7 +35,7 @@ FLUID_VIS                       yes
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
-PREDICT                         ConstVel
+PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -86,7 +85,7 @@ EVALUATION_MAT                  integration_point
 MAXTIME                         1.5
 TIMESTEP                        0.5
 NUMSTEP                         2000
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 COUPALGO                        iter_stagg_fixed_rel_param
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
@@ -97,7 +96,7 @@ COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-07
 RELAX                           1.0
-MAXOMEGA                        0
+MAXOMEGA                        1.0
 ITEMAX                          100
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
@@ -140,15 +139,15 @@ FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results
-STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 1.22560465136729562e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11918 QUANTITY dispx VALUE 1.22560465136729631e-02   TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11917 QUANTITY dispy VALUE -6.84841584568198110e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11918 QUANTITY dispy VALUE -6.84841584568194467e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 12229 QUANTITY dispx VALUE 2.94005346336161403e-03  TOLERANCE 1e-10
-FLUID DIS fluid NODE 11330 QUANTITY velx VALUE 7.12537151944001357e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 11330 QUANTITY vely VALUE 2.55948196888921009e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 12768 QUANTITY velx VALUE 9.35039003811161534e-02 TOLERANCE 1e-8
-FLUID DIS fluid NODE 12768 QUANTITY vely VALUE 3.22312018046504112e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 1.22535398461963169e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11918 QUANTITY dispx VALUE 1.22535398461963187e-02   TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11917 QUANTITY dispy VALUE -6.85079920317519919e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11918 QUANTITY dispy VALUE -6.85079920317517056e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 12229 QUANTITY dispx VALUE 2.94006059071026844e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11330 QUANTITY velx VALUE 7.12537932789933603e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 11330 QUANTITY vely VALUE 2.55948534832519503e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 12768 QUANTITY velx VALUE 9.35033811921189839e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 12768 QUANTITY vely VALUE 3.22312078132422575e-01 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0

@@ -53,7 +53,7 @@ ITERNORM                        L2
 DIVERCONT                       stop
 NLNSOL                          fullnewton
 MATERIALTANGENT                 analytical
-PREDICT                         ConstVel
+PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0

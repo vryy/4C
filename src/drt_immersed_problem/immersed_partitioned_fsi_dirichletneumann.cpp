@@ -58,7 +58,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   // cast to specialized adapter
   immersedstructure_=Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField());
 
-
   // get coupling variable
   displacementcoupling_ = globalproblem_->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
@@ -72,30 +71,27 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   // set switch for output in every nln. iteration (for debugging)
   output_evry_nlniter_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "OUTPUT_EVRY_NLNITER"));
 
-  // check for unfeasible combination
-  if (correct_boundary_velocities_ and displacementcoupling_)
-    dserror("Interface velocity correction is not possible with displacement coupled Immersed FSI.");
-
   // print acceleration method
   if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
   {
+    is_relaxation_=false;
     coupalgo_= INPAR::IMMERSED::fixed;
     if(myrank_==0)
       std::cout<<"\n Using FIXED relaxation parameter. "<<std::endl;
   }
   else if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
   {
+    is_relaxation_=true;
     coupalgo_ = INPAR::IMMERSED::aitken;
     if(myrank_==0)
       std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
-    if(displacementcoupling_)
-      dserror("Relaxation parameters unequal 1 are not possible in combination with displacement coupling for Immersed FSI.\n"
-              "Set parameters 'COUPVARIABLE' to 'Force' in your input file section ---FSI DYNAMIC/PARTITIONED SOLVER\n "
-              "if you want to use relaxation.");
   }
   else
     dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
 
+  // check for unfeasible combination
+  if (correct_boundary_velocities_ and displacementcoupling_ and is_relaxation_)
+    dserror("Interface velocity correction is not possible with displacement coupled Immersed FSI in combination with relaxation.");
 
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound = globalproblem_->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
@@ -132,11 +128,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 
   // vector with fluid velocities interpolated from structure
   fluid_artificial_velocity_     = Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->FluidField()->DofRowMap()),true));
-  if (displacementcoupling_)
-    fluid_artificial_velocity_state_ = Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->FluidField()->DofRowMap()),true));
-  else
-    fluid_artificial_velocity_state_=Teuchos::null;
-
 
   // build 3D search tree for fluid domain
   fluid_SearchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
@@ -213,33 +204,25 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
 {
   if (displacementcoupling_)
   {
-    // get the current interface displacement state
-    const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
+    // get the current artificial velocity state
+    const Teuchos::RCP<Epetra_Vector> artificial_velocity_n = Teuchos::rcp(new Epetra_Vector(x));
 
     ////////////////////
     // CALL FluidOp
     ////////////////////
-    ResetImmersedInformation();      //!< structure moved; immersed info are invalid -> reset
-    CalcArtificialVelocity();        //!< calc the new velocity in the artificial fluid domain, immersed info are set inside
-    double omega = 1.0;              //!< get relaxation parameter from factory
-    if(Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(GetLineSearchFactory())!=Teuchos::null)
-      omega = Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(GetLineSearchFactory())->GetAitken()->getOmega();
-
-    fluid_artificial_velocity_->Update(-1.0,*fluid_artificial_velocity_state_,1.0);  //!< after this line, fluid_artificial_velocity_ contains the increment
-    fluid_artificial_velocity_state_->Update(omega,*fluid_artificial_velocity_,1.0); //!< update fluid artificial velocity state.
-                                                                                     //!< fluid_artificial_velocity_ contains the increment after call of CalcResidual()!
-    FluidOp(fluid_artificial_velocity_state_, fillFlag); //!< solve the fluid
+    FluidOp(artificial_velocity_n, fillFlag); //!< solve the fluid
 
     ////////////////////
     // CALL StructOp
     ////////////////////
     CalcFluidTractionsOnStructure(); //!< calculate new fluid tractions interpolated to structural surface
-    Teuchos::RCP<Epetra_Vector> idispnp =
-    StructOp(immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_), fillFlag);
+    StructOp(immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_), fillFlag); //!< solve the structure
+    ResetImmersedInformation();      //!< structure moved; immersed info are invalid -> reset
+    const Teuchos::RCP<Epetra_Vector> artificial_velocity_np = CalcArtificialVelocity(); //!< calc new projected velocities and update immersed information
 
-  int err = CalcResidual(F,idispnp,idispn);
-  if(err != 0)
-    dserror("Vector update of FSI-residual returned err=%d",err);
+    int err = CalcResidual(F,artificial_velocity_np,artificial_velocity_n);
+    if(err != 0)
+      dserror("Vector update of FSI-residual returned err=%d",err);
   }
   else if(!displacementcoupling_) // FORCE COUPLING
   {
@@ -306,7 +289,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity,
-                               const FillType fillFlag)
+                                                          const FillType fillFlag)
 {
   // print
   FSI::Partitioned::FluidOp(fluid_artificial_velocity,fillFlag);
@@ -371,7 +354,9 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(Teuchos::RCP<Epetra_V
     // we also invalidated the immersed info
     immersed_info_isvalid_ = false;
 
+
     return ExtractInterfaceDispnp();
+
   }
 
 }
@@ -386,7 +371,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::InitialGuess()
     std::cout<<"\n Do Initial Guess."<<std::endl;
 
   if(displacementcoupling_)
-    return immersedstructure_->PredictImmersedInterfaceDispnp();
+    return CalcArtificialVelocity();
   else
     return immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_);
 
@@ -725,6 +710,14 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Ex
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> full_traction_vec)
 {
+  double normorstructbdrytraction;
+  full_traction_vec->Norm2(&normorstructbdrytraction);
+  if(myrank_ == 0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"###   Norm of Boundary Traction:   "<<normorstructbdrytraction<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
   immersedstructure_->ApplyImmersedInterfaceForces(Teuchos::null,full_traction_vec);
 
   return;
@@ -791,18 +784,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
   if(myrank_ == 0)
   {
     std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
+    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions ...              "<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
 
   }
   EvaluateInterpolationCondition( immersedstructure_->Discretization(), params, struct_bdry_strategy, "IMMERSEDCoupling", -1 );
-
-  double normorstructbdrytraction;
-  struct_bdry_traction_->Norm2(&normorstructbdrytraction);
-  if(myrank_ == 0)
-  {
-    std::cout<<"###   Norm of Boundary Traction:   "<<normorstructbdrytraction<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
 
   // we just validate the boundary tractions
   boundary_traction_isvalid_=true;
@@ -820,43 +806,41 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcArtificialVelocity()
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcArtificialVelocity()
 {
-  // calc new velocity in artificial fluid domain.
-  // after leaving the StructOp the vector fluid_artificial_velocity_ contains
-  // the current velocity projected from the structure onto the fluid.
-
-  // reinitialize the transfer vector
-  fluid_artificial_velocity_->Scale(0.0);
-
-  // declare parameter list
-  Teuchos::ParameterList params;
-
-  // provide number of integration points in fluid elements cut by boundary
-  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
-
-  // set the states needed for evaluation
-  SetStatesFluidOP();
-  // update search trees, etc. ...
-  PrepareFluidOp();
-
-  // calc the fluid velocity from the structural displacements
-  DRT::AssembleStrategy fluid_vol_strategy(
-      0,              // struct dofset for row
-      0,              // struct dofset for column
-      Teuchos::null,  // matrix 1
-      Teuchos::null,  //
-      fluid_artificial_velocity_,  // vector 1
-      Teuchos::null,  //
-      Teuchos::null   //
-  );
-
-  if(myrank_ == 0)
+  if(not artificial_velocity_isvalid_)
   {
-    std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Interpolate Dirichlet Values from immersed elements which overlap the "<<MBFluidField()->Discretization()->Name()<<" nodes ..."<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
+    // reinitialize the transfer vector
+    fluid_artificial_velocity_->Scale(0.0);
+
+    // declare parameter list
+    Teuchos::ParameterList params;
+
+    // provide number of integration points in fluid elements cut by boundary
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+
+    // set the states needed for evaluation
+    SetStatesFluidOP();
+    // update search trees, etc. ...
+    PrepareFluidOp();
+
+    // calc the fluid velocity from the structural displacements
+    DRT::AssembleStrategy fluid_vol_strategy(
+        0,              // struct dofset for row
+        0,              // struct dofset for column
+        Teuchos::null,  // matrix 1
+        Teuchos::null,  //
+        fluid_artificial_velocity_,  // vector 1
+        Teuchos::null,  //
+        Teuchos::null   //
+    );
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Interpolate Dirichlet Values from immersed elements which overlap the "<<MBFluidField()->Discretization()->Name()<<" nodes ..."<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
 
     EvaluateImmersed(params,
                      MBFluidField()->Discretization(),
@@ -874,8 +858,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcArtificialVelocity()
     // technically this is not entirely true.
     // see remark in constructor of this class.
     immersed_info_isvalid_=true;
+  }
 
-  return;
+  return fluid_artificial_velocity_;
 }
 
 

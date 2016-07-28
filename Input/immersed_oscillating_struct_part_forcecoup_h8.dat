@@ -45,7 +45,7 @@ TIMESTEP                        0.01
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
-PREDICT                         ConstVel
+PREDICT                         ConstDisVelAcc
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC

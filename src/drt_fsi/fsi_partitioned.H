@@ -169,9 +169,6 @@ protected:
   /// extract idispn_ iveln_
   virtual void ExtractPreviousInterfaceSolution();
 
-  /// return the generic user defined line search factory
-  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> GetLineSearchFactory(){return linesearchfactory_;}
-
 private:
 
   /// create linear solver framework
@@ -232,8 +229,6 @@ private:
   /// special debugging output
   Teuchos::RCP<UTILS::DebugWriter> debugwriter_;
 
-  /// the generic line search factory
-  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory_;
 };
 
 }

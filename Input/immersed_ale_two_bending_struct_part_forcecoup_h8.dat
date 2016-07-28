@@ -60,7 +60,7 @@ SIGMA_LS                        0.0001
 MATERIALTANGENT                 analytical
 LOADLIN                         yes
 MASSLIN                         No
-PREDICT                         ConstVel
+PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 GEOMETRY                        full
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

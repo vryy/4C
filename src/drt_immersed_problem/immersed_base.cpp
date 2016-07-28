@@ -428,7 +428,7 @@ void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretizati
 {
   if(distobeghosted->Comm().MyPID() == 0)
   {
-    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"\n################################################################################################"<<std::endl;
     std::cout<<"###   Ghost discretization "<<distobeghosted->Name()<<" redundantly on all procs ... "<<std::endl;
     std::cout<<"################################################################################################"<<std::endl;
   }
@@ -482,6 +482,9 @@ void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretizati
   distobeghosted->ExportColumnNodes(*newnodecolmap);
   distobeghosted->ExportColumnElements(*newelecolmap);
 
+  // wait for all procs to finish ghosting
+  distobeghosted->Comm().Barrier();
+  // complete the discretization
   distobeghosted->FillComplete();
 
 #ifdef DEBUG

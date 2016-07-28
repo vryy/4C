@@ -197,9 +197,9 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
         Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-      linesearchfactory_ = Teuchos::rcp(new NOX::FSI::AitkenFactory());
+      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory = Teuchos::rcp(new NOX::FSI::AitkenFactory());
       lineSearchParams.set("Method","User Defined");
-      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory_);
+      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
 
       lineSearchParams.sublist("Aitken").set("max step size", fsipart.get<double>("MAXOMEGA"));
       break;
@@ -216,9 +216,9 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
         Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-      linesearchfactory_ = Teuchos::rcp(new NOX::FSI::SDFactory());
+      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory = Teuchos::rcp(new NOX::FSI::SDFactory());
       lineSearchParams.set("Method","User Defined");
-      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory_);
+      lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
       break;
     }
     case fsi_iter_stagg_NLCG:

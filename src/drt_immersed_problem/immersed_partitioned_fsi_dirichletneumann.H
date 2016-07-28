@@ -67,7 +67,7 @@ protected:
   virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// interface fluid operator
-  virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> bforce,
+  virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity,
                                               const FillType fillFlag);
 
   /// interface structural operator
@@ -127,8 +127,20 @@ protected:
   */
   virtual void CalcFluidTractionsOnStructure();
 
-  /// calc the current artifical velocity by projection from structure onto fluid
-  virtual void CalcArtificialVelocity();
+  /*!
+  \brief calc the current artificial velocity by projection from structure velocity onto fluid
+
+  Calc new velocity in artificial fluid domain. After leaving this method the vector fluid_artificial_velocity_
+  contains the current velocity projected from the structure onto the fluid.
+
+   \note Artificial velocity is only projected if the member artificial_velocity_isvalid_ is=false on entry.
+         if artificial_velocity_isvalid_=true the current artificial velocity stored in fluid_artificial_velocity_
+         is returned. This is important when restart is requested since then the we need to perform the projection
+         in the first restart step. This is done in \ref InitialGuess(). In case of no restart, we can just return
+         the velocity since it had recently been projected after the last structural solve. This work would be done
+         twice, else.
+  */
+  virtual Teuchos::RCP<Epetra_Vector> CalcArtificialVelocity();
 
   /// apply given vector as Dirichlet to artificial fluid domain
   virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
@@ -144,8 +156,7 @@ protected:
   //! @name Various global forces
   //@{
   Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;           //!< bdry traction rhs on struct FSI surface
-  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;      //!< background velocity interpolated from immersed dis (new (un-relaxed) state, also used to store increment)
-  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_state_;//!< background velocity interpolated from immersed (current (relaxed) state)
+  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;      //!< background velocity interpolated from immersed dis (current state)
   Teuchos::RCP<Epetra_Map> dbcmap_immersed_;                   //!< dirichlet bc map of immersed values
   Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;             //!< search tree for fluid domain
   Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;         //!< search tree for structure domain
@@ -167,6 +178,7 @@ protected:
   bool displacementcoupling_;
   bool multibodysimulation_;         //!< true if more than one body is present. Each body needs to be labeled with "ImmersedSearchbox" condition
   bool output_evry_nlniter_;         //!< true if output after every iteration of the outer fsi loop. Useful for debugging.
+  bool is_relaxation_;
   int coupalgo_;                     //!< here we store the coupalgo
   int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested
   int degree_gp_fluid_bound_;        //!< determines number of gp in fluid elements cut by boundary. gps covered by structure are "compressible" gps.
