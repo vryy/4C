@@ -99,28 +99,6 @@ public:
   */
   std::vector<double> getWKrelerrors( );
 
-
-  ///Windkessel optimization related function:
-  /*!
-  \brief Wrapper for FluidImpedacnceBc::Impedances
-  */
-  void Impedances();
-
-  /*!
-  \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
-  */
-  void SetWindkesselParams(Teuchos::ParameterList & params, const int condid);
-
-  /*!
-  \brief Wrapper for FluidImpedacnceBc::GetWindkesselParams
-  */
-  void GetWindkesselParams(Teuchos::ParameterList & params, const int condid);
-
- /*!
-  \brief Wrapper for FluidImpedacnceBc::getResultsAtEndOfPeriod
-  */
-  void getResultsOfAPeriod(Teuchos::ParameterList & params);
-
 private:
   /*!
   \brief all single impedance conditions

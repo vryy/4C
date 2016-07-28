@@ -127,22 +127,6 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors( )
  return wk_rel_error;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Returns results of one cardiac period                   ismail 02/10|
- *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
-  Teuchos::ParameterList & params)
-{
-  // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
-
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
-  {
-    mapiter->second->FluidImpedanceBc::getResultsOfAPeriod(params,mapiter->first);
-  }
-}
-
 /*----------------------------------------------------------------------*
  |  Wrap for time step prepare of impedance conditions       Thon 07/15 |
  *----------------------------------------------------------------------*/
@@ -188,56 +172,6 @@ void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time, 
     //update time step
     mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time);
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Wrap impedances calculation                            ismail 02/10 |
- *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::Impedances()
-{
-  // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
-
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
-  {
-    double density=0.0, viscosity=0.0;
-    int    condid = mapiter->first;
-    double area = mapiter->second->FluidImpedanceBc::Area(density,viscosity,condid);
-    mapiter->second->FluidImpedanceBc::Impedances(area,density,viscosity);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Set windkessel parameters                              ismail 02/10 |
- *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::SetWindkesselParams(
-  Teuchos::ParameterList  & params,
-  const int                 condid)
-{
-  // -------------------------------------------------------------------
-  // set the windkessel params associated with the coressponding
-  // condition ID
-  // -------------------------------------------------------------------
-  impmap_[condid]->SetWindkesselParams(params);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Get windkessel parameters                              ismail 02/10 |
- *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::GetWindkesselParams(
-  Teuchos::ParameterList  & params,
-  const int                 condid)
-{
-  // -------------------------------------------------------------------
-  // set the windkessel params associated with the coressponding
-  // condition ID
-  // -------------------------------------------------------------------
-  impmap_[condid]->GetWindkesselParams(params);
-
   return;
 }
 

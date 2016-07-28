@@ -60,7 +60,7 @@
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "fluid_windkessel_optimization.H"
+#include "fluidimpedancecondition.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
@@ -119,7 +119,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   velatmeshfreenodes_(Teuchos::null),
   locsysman_(Teuchos::null),
   impedancebc_(Teuchos::null),
-  impedancebc_optimization_(Teuchos::null),
   isimpedancebc_(false),
   off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
   massmat_(Teuchos::null),
@@ -441,7 +440,6 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
     }
 
     impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, dta_) );
-    impedancebc_optimization_ = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_, *output_, impedancebc_, dta_) );
     isimpedancebc_ = true; //Set bool to true since there is an impedance BC
 
     //Test if also AVM3 is used
@@ -3081,28 +3079,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
 
   if (isimpedancebc_)
   {
-    // -------------------------------------------------------------------
-    // treat impedance BC
-    // note: these methods return without action, if the problem does not
-    //       have impedance boundary conditions
-    // -------------------------------------------------------------------
-    discret_->ClearState();
-    discret_->SetState("velaf",velnp_);
-
-    if (alefluid_)
-      discret_->SetState("dispnp", dispn_);
-
     //do time update of impedance conditions
     impedancebc_->TimeUpdateImpedances(time_,dta_);
-
-    // get the parameters needed to be optimized
-    Teuchos::ParameterList WkOpt_params;
-    WkOpt_params.set<double> ("total time", time_);
-    WkOpt_params.set<double> ("time step size", dta_);
-    impedancebc_->getResultsOfAPeriod(WkOpt_params);
-
-    // update wind kessel optimization condition
-    impedancebc_optimization_->Solve(WkOpt_params);
   }
 }
 
@@ -3622,7 +3600,6 @@ void FLD::FluidImplicitTimeInt::OutputNonlinearBC()
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
     impedancebc_->WriteRestart(*output_);
-    impedancebc_optimization_->WriteRestart(*output_);
   }
 }
 
@@ -3779,7 +3756,6 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
       // also read impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->ReadRestart(reader);
-      impedancebc_optimization_->ReadRestart(reader);
 
       discret_->ClearState();
     }

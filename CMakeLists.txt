@@ -1367,7 +1367,6 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_utils_infnormscaling.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
-  src/drt_fluid/fluid_windkessel_optimization.cpp
   src/drt_fluid/fluid_timint_bdf2.cpp
   src/drt_fluid/fluid_timint_genalpha.cpp
   src/drt_fluid/fluid_timint_loma_genalpha.cpp

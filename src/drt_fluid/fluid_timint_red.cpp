@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_red.cpp
+
 \brief TimIntRedModels
 
+\level 3
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -15,7 +17,6 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #include "fluid_timint_red.H"
 #include "fluid_coupling_red_models.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "fluid_windkessel_optimization.H"
 #include "../drt_art_net/artnetexplicitintegration.H"
 #include "fluid_meshtying.H"
 #include "../drt_lib/drt_locsys.H"

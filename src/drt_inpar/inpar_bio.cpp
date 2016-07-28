@@ -569,36 +569,6 @@ void INPAR::REDAIRWAYS::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
 
   condlist.push_back(art_3d_to_red_bc);
 
-
-  /*--------------------------------------------------------------------*/
-  // 3-D/reduced-D coupling boundary condition
-  Teuchos::RCP<ConditionDefinition> windkessel_optim_bc =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS",
-                                         "Windkessel_Optimization_Cond",
-                                         "windkessel optimization condition",
-                                         DRT::Condition::WindkesselOptimCond,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  windkessel_optim_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-
-
-  windkessel_optim_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("ObjectiveFunction", "Psys_Pdia",
-                                                                              Teuchos::tuple<std::string>("Psys_Pdia","Psys_Pdia_Pavg"),
-                                                                              Teuchos::tuple<std::string>("Psys_Pdia","Psys_Pdia_Pavg"),
-                                                                              true)));
-  windkessel_optim_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("DesignVariables", "R_C",
-                                                                              Teuchos::tuple<std::string>("R_C","R1_R2_C"),
-                                                                              Teuchos::tuple<std::string>("R_C","R1_R2_C"),
-                                                                              true)));
-  AddNamedReal(windkessel_optim_bc,"Psystolic");
-  AddNamedReal(windkessel_optim_bc,"Pdiastolic");
-  AddNamedReal(windkessel_optim_bc,"R1R2_ratio");
-  AddNamedReal(windkessel_optim_bc,"Tolerance");
-
-  condlist.push_back(windkessel_optim_bc);
-
-
   /*--------------------------------------------------------------------*/
   // Coupling of 3D tissue models and reduced-D airway tree
 

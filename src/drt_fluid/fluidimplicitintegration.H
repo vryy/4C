@@ -13,6 +13,8 @@
 
      and a stationary solver.
 
+\level 1
+
 \maintainer Benjamin Krank & Volker Gravemeier
              {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
@@ -94,7 +96,6 @@ namespace UTILS
 {
   class FluidInfNormScaling;
   class FluidImpedanceWrapper;
-  class FluidWkOptimizationWrapper;
   // class StressManager;
 }
 
@@ -1323,7 +1324,6 @@ protected:
 
   /// windkessel (outflow) boundaries
   Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
-  Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> impedancebc_optimization_;
 
   //! Dirichlet BCs with local co-ordinate system
   Teuchos::RCP<FLD::UTILS::StressManager> stressmanager_;
