@@ -78,12 +78,14 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       normcombo_fres_plast_res_(INPAR::STR::bop_and),
       normcombo_disp_plast_incr_(INPAR::STR::bop_and),
       normcombo_fres_disp_(INPAR::STR::bop_and),
-      toltype_constr_res_(INPAR::STR::convnorm_abs),
-      tol_constr_res_(-1.0),
       toltype_cardvasc0d_res_(INPAR::STR::convnorm_abs),
       tol_cardvasc0d_res_(-1.0),
       toltype_cardvasc0d_incr_(INPAR::STR::convnorm_abs),
       tol_cardvasc0d_incr_(-1.0),
+      toltype_constr_res_(INPAR::STR::convnorm_abs),
+      tol_constr_res_(-1.0),
+      toltype_constr_incr_(INPAR::STR::convnorm_abs),
+      tol_constr_incr_(-1.0),
       toltype_contact_res_(INPAR::STR::convnorm_abs),
       tol_contact_res_(-1.0),
       toltype_contact_lm_incr_(INPAR::STR::convnorm_abs),
@@ -92,6 +94,8 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and),
       normcombo_fres_cardvasc0d_res_(INPAR::STR::bop_and),
       normcombo_disp_cardvasc0d_incr_(INPAR::STR::bop_and),
+      normcombo_fres_constr_res_(INPAR::STR::bop_and),
+      normcombo_disp_constr_incr_(INPAR::STR::bop_and),
       rand_tsfac_(1.0),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
@@ -243,6 +247,9 @@ void STR::TIMINT::BaseDataSDyn::Init(
     tol_constr_res_ = sdynparams.get<double>("TOLCONSTR");
     toltype_constr_res_ = INPAR::STR::convnorm_abs;
 
+    tol_constr_incr_ = sdynparams.get<double>("TOLCONSTRINCR");
+    toltype_constr_incr_ = INPAR::STR::convnorm_abs;
+
     tol_cardvasc0d_res_ = DRT::Problem::Instance()->
         Cardiovascular0DStructuralParams().get<double>("TOL_CARDVASC0D_RES");
     toltype_cardvasc0d_res_ = INPAR::STR::convnorm_abs;
@@ -351,6 +358,9 @@ double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
       return tol_cardvasc0d_incr_;
       break;
+    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
+      return tol_constr_incr_;
+      break;
     case NOX::NLN::StatusTest::quantity_plasticity:
       return tol_plast_incr_;
       break;
@@ -430,6 +440,9 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
       return toltype_cardvasc0d_incr_;
       break;
+    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
+      return toltype_constr_incr_;
+      break;
     case NOX::NLN::StatusTest::quantity_plasticity:
       return toltype_plast_incr_;
       break;
@@ -495,6 +508,12 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
        (qtype_1==NOX::NLN::StatusTest::quantity_cardiovascular0d and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_fres_cardvasc0d_res_;
+  // combination: STRUCTURE <--> LAG-PEN-CONSTRAINT
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_lag_pen_constraint) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_lag_pen_constraint and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_constr_res_;
   // no combination was found
   else
     dserror("There is no combination type for the given quantity types! "
@@ -552,6 +571,12 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
        (qtype_1==NOX::NLN::StatusTest::quantity_cardiovascular0d and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_disp_cardvasc0d_incr_;
+  // combination: STRUCTURE <--> LAG-PEN-CONSTRAINT
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_lag_pen_constraint) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_lag_pen_constraint and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_constr_incr_;
   // no combination was found
   else
     dserror("There is no combination type for the given quantity types! "

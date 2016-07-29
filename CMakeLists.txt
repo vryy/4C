@@ -1692,7 +1692,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
   src/drt_structure_new/str_model_evaluator_cardiovascular0d.cpp
-  src/drt_structure_new/str_model_evaluator_constraint.cpp
+  src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
@@ -1883,6 +1883,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
+  src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
 )
 
 set(OBJS_LOCA_CONTINUATION
@@ -1909,6 +1910,7 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint2.cpp
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
+  src/drt_constraint/lagpenconstraint_noxinterface.cpp
   src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
   src/drt_constraint/springdashpot_new.cpp

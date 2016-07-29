@@ -81,7 +81,8 @@ STR::SOLVER::Factory::BuildLinSolvers(
           BuildLagPenConstraintLinSolver(sdyn,actdis);
       break;
     case INPAR::STR::model_cardiovascular0d:
-      (*linsolvers)[*mt_iter] = BuildCardiovascular0DLinSolver(sdyn,actdis);
+      (*linsolvers)[*mt_iter] =
+          BuildCardiovascular0DLinSolver(sdyn,actdis);
       break;
     default:
       dserror("No idea which solver to use for the given model type %s",
@@ -306,7 +307,84 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
 {
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
 
-  dserror("Not yet implemented!");
+  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& strparams = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // solution algorithm - direct, simple or Uzawa
+  INPAR::STR::ConSolveAlgo algochoice = DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(strparams,"UZAWAALGO");
+
+  switch (algochoice)
+  {
+    case INPAR::STR::consolve_direct:
+    {
+      const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
+
+      // build constraint-structural linear solver
+      linsolver =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                             actdis.Comm(),
+                             DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      linsolver->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+
+    }
+    break;
+    case INPAR::STR::consolve_simple:
+    {
+
+      const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
+
+
+      // build constraint-structural linear solver
+      linsolver =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                             actdis.Comm(),
+                             DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      linsolver->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+
+      if(!linsolver->Params().isSublist("Aztec Parameters") &&
+         !linsolver->Params().isSublist("Belos Parameters"))
+      {
+        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        std::cout << "You need a \'CONTACT SOLVER\' block within your dat file with either \'Aztec_MSR\' or \'Belos\' as SOLVER." << std::endl;
+        std::cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' " << std::endl;
+        std::cout << "block for the constraint block" << std::endl;
+        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        dserror("Please edit your dat file");
+      }
+
+
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      switch (prec) {
+      case INPAR::SOLVER::azprec_CheapSIMPLE:
+      case INPAR::SOLVER::azprec_TekoSIMPLE:
+      {
+
+        // add Inverse1 block for velocity dofs
+        // tell Inverse1 block about NodalBlockInformation
+        Teuchos::ParameterList& inv1 = linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+        inv1.sublist("NodalBlockInformation") = linsolver->Params().sublist("NodalBlockInformation");
+
+        // calculate null space information
+        actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+        actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+
+        linsolver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+        linsolver->Params().set("CONSTRAINT",true);
+      }
+      break;
+      default:
+        // do nothing
+        break;
+      }
+    }
+    break;
+    default :
+      dserror("Unknown structural-constraint solution technique!");
+  }
+
+//  dserror("Not yet implemented!");
 
   return linsolver;
 }

@@ -3,12 +3,9 @@
 
 \brief Basic constraint class, dealing with multi point constraints
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\level 2
+
+\maintainer Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
@@ -64,7 +61,7 @@ namespace UTILS
     void SetConstrState
     (
       const std::string& state,  ///< name of state to set
-      Teuchos::RCP<Epetra_Vector> V  ///< values to set
+      Teuchos::RCP<const Epetra_Vector> V  ///< values to set
     );
 
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning

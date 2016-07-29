@@ -118,13 +118,14 @@ namespace Interface {
 
     //! Returns the constraint right-hand-side norms
     double GetConstraintRHSNorms(
-        const NOX::NLN::StatusTest::QuantityType& chQ) const
-    { return GetConstraintRHSNorms(chQ,NOX::Abstract::Vector::TwoNorm,false); };
+        const Epetra_Vector& F,const NOX::NLN::StatusTest::QuantityType& chQ) const
+    { return GetConstraintRHSNorms(F,chQ,NOX::Abstract::Vector::TwoNorm,false); };
     double GetConstraintRHSNorms(
-        const NOX::NLN::StatusTest::QuantityType& chQ,
+        const Epetra_Vector& F,const NOX::NLN::StatusTest::QuantityType& chQ,
         const NOX::Abstract::Vector::NormType& type) const
-    { return GetConstraintRHSNorms(chQ,type,false); };
+    { return GetConstraintRHSNorms(F,chQ,type,false); };
     virtual double GetConstraintRHSNorms(
+        const Epetra_Vector& F,
         const NOX::NLN::StatusTest::QuantityType& chQ,
         const NOX::Abstract::Vector::NormType& type,
         const bool& isScaled) const = 0;

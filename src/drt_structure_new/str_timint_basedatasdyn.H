@@ -754,11 +754,6 @@ namespace TIMINT {
 
     /// @name constraint variables
     ///@{
-    /// tolerance type for the convergence check of the constraint residual
-    enum INPAR::STR::ConvNorm toltype_constr_res_;
-
-    /// tolerance constraint residual
-    double tol_constr_res_;
 
     /// tolerance type for the convergence check of the 0D cardiovascular residual
     enum INPAR::STR::ConvNorm toltype_cardvasc0d_res_;
@@ -771,6 +766,18 @@ namespace TIMINT {
 
     /// tolerance 0D cardiovascular dof increment
     double tol_cardvasc0d_incr_;
+
+    /// tolerance type for the convergence check of the constraint residual
+    enum INPAR::STR::ConvNorm toltype_constr_res_;
+
+    /// tolerance constraint residual
+    double tol_constr_res_;
+
+    /// tolerance type for the convergence check of the constraint LM increment
+    enum INPAR::STR::ConvNorm toltype_constr_incr_;
+
+    /// tolerance constraint LM increment
+    double tol_constr_incr_;
 
     /// tolerance type for the convergence check of the contact residual
     enum INPAR::STR::ConvNorm toltype_contact_res_;
@@ -795,6 +802,12 @@ namespace TIMINT {
 
     /// type of combination of the displacement and the 0D cardiovascular model dof increment test
     enum INPAR::STR::BinaryOp normcombo_disp_cardvasc0d_incr_;
+
+    /// type of combination of the force and the constraint residual
+    enum INPAR::STR::BinaryOp normcombo_fres_constr_res_;
+
+    /// type of combination of the displacement and the 0D cardiovascular model dof increment test
+    enum INPAR::STR::BinaryOp normcombo_disp_constr_incr_;
 
     /// random factor for modifying time-step size in case this way of continuing non-linear iteration was chosen
     double rand_tsfac_;

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_cardiovascular0d.cpp
+\file str_model_evaluator_lagpenconstraint.cpp
 
-\brief Evaluation and assembly of all 0D cardiovascular model terms
+\brief Evaluation and assembly of all constraint terms
 
 \maintainer Marc Hirschvogel
 
@@ -13,7 +13,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "str_model_evaluator_cardiovascular0d.H"
+#include "str_model_evaluator_lagpenconstraint.H"
 
 #include "str_timint_base.H"
 #include "str_utils.H"
@@ -32,22 +32,21 @@
 
 #include "../drt_io/io.H"
 
+#include "../drt_constraint/lagpenconstraint_noxinterface.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
-    : n_conds_(0),
-      disnp_ptr_(Teuchos::null),
+STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
+    : disnp_ptr_(Teuchos::null),
       stiff_ptr_(Teuchos::null)
 {
-  std::cout << "STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D() ############## ..." << std::endl;
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
+void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 {
-  std::cout << "Setup Cardio ############## ..." << std::endl;
 
   CheckInit();
 
@@ -56,16 +55,10 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
 
-  Teuchos::RCP<LINALG::Solver> dummysolver;
-
-  // initialize 0D cardiovascular manager
-  cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis,
-                                                        disnp_ptr_,
-                                                        DRT::Problem::Instance()->StructuralDynamicParams(),
-                                                        DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
-                                                        *dummysolver));
-
-  cardvasc0dman_->PrintNewtonHeader();
+  // initialize constraint manager
+  constrman_ = Teuchos::rcp(new UTILS::ConstrManager(dis,
+                                                 disnp_ptr_,
+                                                 DRT::Problem::Instance()->StructuralDynamicParams()));
 
   // set flag
   issetup_ = true;
@@ -73,7 +66,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForce(
+bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForce(
     const Epetra_Vector& x,
     Epetra_Vector& f)
 {
@@ -81,21 +74,23 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForce(
   CheckInitSetup();
   Reset(x);
 
+  // get structural displacement DOFs
   Teuchos::RCP<Epetra_Vector> block_vec_ptr =
         Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
 
-  // dummy matrix - only forces are evaluated!
+  // dummy matrix
   Teuchos::RCP<LINALG::SparseMatrix> dummat = Teuchos::null;
 
-  //std::cout << "vorher " << *jac_dd << std::endl;
   double time_np = GState().GetTimeNp();
-  Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  Teuchos::ParameterList pcon;
+  pcon.set("total time", time_np);
 
-  // only forces are evaluated!
-  cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_, block_vec_ptr, dummat, pcardvasc0d);
+  Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
+//  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
 
-  // assemble 0D model contribution to structural rhs (Neumann-like load)
+  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, block_vec_ptr, dummat, pcon);
+
+  // assemble constraint contribution to structural rhs
   STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
 
   // reset the block pointer, just to be on the safe side
@@ -109,28 +104,30 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyStiff(const Epetra_Vector& x,
+bool STR::MODELEVALUATOR::LagPenConstraint::ApplyStiff(
+    const Epetra_Vector& x,
     LINALG::SparseOperator& jac)
 {
 
   CheckInitSetup();
-  Reset(x,jac);
+  Reset(x, jac);
 
-  // dummy vector - only stiffnesses are evaluated!
+  // get structural displacement DOFs
   Teuchos::RCP<Epetra_Vector> dumvec = Teuchos::null;
 
   // get structural stiffness matrix
   Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
-      GState().ExtractModelBlock(jac,INPAR::STR::model_cardiovascular0d,
+      GState().ExtractModelBlock(jac,INPAR::STR::model_lag_pen_constraint,
           STR::block_displ_displ);
 
-  //std::cout << "vorher " << *jac_dd << std::endl;
   double time_np = GState().GetTimeNp();
-  Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  Teuchos::ParameterList pcon;
+  pcon.set("total time", time_np);
 
-  // only stiffnesses are evaluated!
-  cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_, dumvec, jac_dd, pcardvasc0d);
+  Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
+//  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
+
+  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, dumvec, jac_dd, pcon);
 
   // --- assemble jacobian matrix ---------------------------------------
   AssembleJacobian(jac);
@@ -140,14 +137,14 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyStiff(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForceStiff(
+bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForceStiff(
     const Epetra_Vector& x,
     Epetra_Vector& f,
     LINALG::SparseOperator& jac)
 {
 
   CheckInitSetup();
-  Reset(x,jac);
+  Reset(x, jac);
 
   // get structural displacement DOFs
   Teuchos::RCP<Epetra_Vector> block_vec_ptr =
@@ -155,16 +152,19 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForceStiff(
 
   // get structural stiffness matrix
   Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
-      GState().ExtractModelBlock(jac,INPAR::STR::model_cardiovascular0d,
+      GState().ExtractModelBlock(jac,INPAR::STR::model_lag_pen_constraint,
           STR::block_displ_displ);
 
   double time_np = GState().GetTimeNp();
-  Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  Teuchos::ParameterList pcon;
+  pcon.set("total time", time_np);
 
-  cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_, block_vec_ptr, jac_dd, pcardvasc0d);
+  Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
+//  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
 
-  // assemble 0D model contribution to structural rhs (Neumann-like load)
+  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, block_vec_ptr, jac_dd, pcon);
+
+  // assemble constraint contribution to structural rhs
   STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
 
   // reset the block pointer, just to be on the safe side
@@ -178,18 +178,20 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::ApplyForceStiff(
   return true;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::AssembleRhs(Epetra_Vector& f) const
+void STR::MODELEVALUATOR::LagPenConstraint::AssembleRhs(Epetra_Vector& f) const
 {
+
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   // assemble 0D model rhs
-  block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
+  block_vec_ptr = constrman_->GetError();
 
   if (block_vec_ptr.is_null())
-    dserror("The 0D cardiovascular model vector is a NULL pointer, although \n"
-        "the structural part indicates, that 0D cardiovascular model contributions \n"
+    dserror("The constraint model vector is a NULL pointer, although \n"
+        "the structural part indicates, that constraint contributions \n"
         "are present!");
 
   STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
@@ -199,31 +201,24 @@ void STR::MODELEVALUATOR::Cardiovascular0D::AssembleRhs(Epetra_Vector& f) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
+void STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
     LINALG::SparseOperator& jac) const
 {
 
   Teuchos::RCP<const LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdz - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetMatDstructDcv0ddof();
-//  std::cout << *block_ptr << std::endl;
-  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_cardiovascular0d,
+  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix()));
+
+  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_lag_pen_constraint,
       STR::block_displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
   // --- Kzd - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
-//  std::cout << *block_ptr << std::endl;
-  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_cardiovascular0d,
+  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix()))->Transpose();
+
+  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_lag_pen_constraint,
       STR::block_lm_displ);
-  // reset the block pointer, just to be on the safe side
-  block_ptr = Teuchos::null;
-  // --- Kzz - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
-//  std::cout << *block_ptr << std::endl;
-  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_cardiovascular0d,
-      STR::block_lm_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
@@ -232,83 +227,58 @@ void STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
+void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const
 {
 
-  iowriter.WriteVector("cvdof",
-                        cardvasc0dman_->Get0DDofVector());
-  iowriter.WriteVector("refvolval",
-                        cardvasc0dman_->GetRefVolValue());
-  iowriter.WriteVector("reffluxval",
-                        cardvasc0dman_->GetRefFluxValue());
-  iowriter.WriteVector("refdfluxval",
-                        cardvasc0dman_->GetRefDFluxValue());
-  iowriter.WriteVector("refddfluxval",
-                        cardvasc0dman_->GetRefDDFluxValue());
-
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::ReadRestart(
+void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(
     IO::DiscretizationReader& ioreader)
 {
 
-  double time_n = GState().GetTimeN();
-  cardvasc0dman_->ReadRestart(ioreader,time_n);
-
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::RecoverState(
+void STR::MODELEVALUATOR::LagPenConstraint::RecoverState(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)
 {
-
-  Teuchos::RCP<Epetra_Vector> cv0d_incr =
+  Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*GetBlockDofRowMapPtr()));
 
-  LINALG::Export(dir,*cv0d_incr);
+  LINALG::Export(dir,*lagmult_incr);
 
-  Teuchos::RCP<Epetra_Vector> dis_incr = GState().ExportModelEntries(INPAR::STR::model_structure,dir);
-
-  cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
-
-  // store for manager-internal monitoring...
-  cardvasc0dman_->StoreCv0dDofIncrement(cv0d_incr);
-  cardvasc0dman_->StoreStructuralDisplIncrement(dis_incr);
+  constrman_->UpdateLagrMult(lagmult_incr);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState()
+void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepState()
 {
-  cardvasc0dman_->UpdateTimeStep();
-  cardvasc0dman_->PrintPresFlux(false);
-
-  return;
+  // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepElement()
+void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepElement()
 {
-  // nothing to do
-  return;
+  // empty
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::DetermineStressStrain()
+void STR::MODELEVALUATOR::LagPenConstraint::DetermineStressStrain()
 {
   // nothing to do
   return;
@@ -316,7 +286,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::DetermineStressStrain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::DetermineEnergy()
+void STR::MODELEVALUATOR::LagPenConstraint::DetermineEnergy()
 {
   // nothing to do
   return;
@@ -324,7 +294,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
+void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
@@ -333,7 +303,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::ResetStepState()
+void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
 {
   CheckInitSetup();
 
@@ -344,7 +314,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::ResetStepState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::Reset(
+void STR::MODELEVALUATOR::LagPenConstraint::Reset(
     const Epetra_Vector& x,
     LINALG::SparseOperator& jac)
 {
@@ -356,7 +326,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Reset(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
@@ -366,18 +336,50 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::
-    GetBlockDofRowMapPtr() const
+const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>&
+    STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePtr()
 {
   CheckInitSetup();
-  return cardvasc0dman_->GetCardiovascular0DMap();
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+  noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface());
+  noxinterface_ptr_->Init(GStatePtr());
+  noxinterface_ptr_->Setup();
+
+  return noxinterface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::
+const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
+    STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePtrPrec()
+{
+  CheckInitSetup();
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
+  noxinterface_ptr_prec_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterfacePrec());
+  noxinterface_ptr_prec_->Init();
+  noxinterface_ptr_prec_->Setup();
+
+  return noxinterface_ptr_prec_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::
+    GetBlockDofRowMapPtr() const
+{
+  CheckInitSetup();
+  return constrman_->GetConstraintMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::
     GetCurrentSolutionPtr() const
 {
   // there are no model specific solution entries
@@ -386,7 +388,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::
     GetLastTimeStepSolutionPtr() const
 {
   // there are no model specific solution entries

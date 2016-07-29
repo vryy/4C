@@ -110,7 +110,7 @@ namespace INPAR
         return "SpringDashpot";
         break;
       case model_lag_pen_constraint :
-        return "Constraint";
+        return "LagPenConstraint";
         break;
       default :
         dserror("Cannot make std::string for model type %d", name);

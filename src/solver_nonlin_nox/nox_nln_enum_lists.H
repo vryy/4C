@@ -61,7 +61,7 @@ namespace NLN {
       return "SpringDashpot";
       break;
     case sol_lag_pen_constraint:
-      return "Constraint";
+      return "LagPenConstraint";
       break;
     case sol_unknown:
     default :
@@ -85,7 +85,7 @@ namespace NLN {
       type = sol_cardiovascular0d;
     else if (boost::iequals(name,"springdashpot"))
       type = sol_springdashpot;
-    else if (boost::iequals(name,"constraint"))
+    else if (boost::iequals(name,"lagpenconstraint"))
       type = sol_lag_pen_constraint;
 
     return type;
@@ -107,6 +107,7 @@ namespace LinSystem {
     linear_system_structure,
     linear_system_structure_contact,
     linear_system_structure_cardiovascular0d,
+    linear_system_structure_lag_pen_constraint,
     linear_system_undefined
   };
 
@@ -123,6 +124,9 @@ namespace LinSystem {
       break;
     case linear_system_structure_cardiovascular0d:
       return "linear_system_structure_cardiovascular0d";
+      break;
+    case linear_system_structure_lag_pen_constraint:
+      return "linear_system_structure_lag_pen_constraint";
       break;
     case linear_system_undefined:
       return "linear_system_undefined";
@@ -213,7 +217,7 @@ namespace StatusTest {
       return "CARDIOVASCULAR0D";
       break;
     case quantity_lag_pen_constraint:
-      return "CONSTRAINT";
+      return "LAG-PEN-CONSTRAINT";
       break;
     case quantity_plasticity:
       return "PLASTICITY";
@@ -247,7 +251,7 @@ namespace StatusTest {
       type = quantity_meshtying;
     else if (boost::iequals(name,"cardiovascular0d"))
       type = quantity_cardiovascular0d;
-    else if (boost::iequals(name,"constraint"))
+    else if (boost::iequals(name,"lag-pen-constraint"))
       type = quantity_lag_pen_constraint;
     else if (boost::iequals(name,"plasticity"))
       type = quantity_plasticity;

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_constraint.H
+\file str_model_evaluator_lagpenconstraint.H
 
 \brief Evaluation and assembly of all constraint terms
 
@@ -13,29 +13,33 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STR_MODEL_EVALUATOR_CONSTRAINT_H
-#define STR_MODEL_EVALUATOR_CONSTRAINT_H
+#ifndef STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
+#define STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
 
 #include "str_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_constraint/constraint.H"
+#include "../drt_constraint/constraint_manager.H"
 
 //forward declaration ...
 namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
+namespace LAGPENCONSTRAINT {
+  class NoxInterface;
+  class NoxInterfacePrec;
+}
 namespace STR{
 namespace MODELEVALUATOR{
 
-  class Constraint : public Generic
+  class LagPenConstraint : public Generic
   {
   public:
     //! constructor
-    Constraint();
+    LagPenConstraint();
 
     //! destructor
-    virtual ~Constraint(){};
+    virtual ~LagPenConstraint(){};
 
     virtual void Setup();
 
@@ -97,28 +101,52 @@ namespace MODELEVALUATOR{
     //! derived
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
 
+//    virtual bool IsSaddlePointSystem() const = 0;
+//
+//    virtual bool IsCondensedSystem() const = 0;
+//
+//    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map> >& maps) const = 0;
+
+    const Teuchos::RCP<UTILS::ConstrManager>& StrategyPtr();
+
+    //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
+    const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& NoxInterfacePtr();
+
+    //! Return the NOX::NLN::CONSTRAINT::Interface::Preconditioner member object
+    const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& NoxInterfacePtrPrec();
+
   protected:
+    //! Returns the underlying contact strategy object
+    UTILS::ConstrManager& Strategy();
+    const UTILS::ConstrManager& Strategy() const;
     //! derived
     virtual void Reset(const Epetra_Vector& x);
     //! derived
     virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
 
+    void AssembleRhs(Epetra_Vector& f) const;
+
+    void AssembleJacobian(LINALG::SparseOperator& jac) const;
+
   private:
     //! all constraint instances
-    std::vector<Teuchos::RCP<UTILS::Constraint> > constraints_;
-
-    //! number of constraint conditions
-    int n_conds_;
+    Teuchos::RCP<UTILS::ConstrManager> constrman_;  //!< Constraint manager
 
     //! structural displacement at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
     //! structural stiffness matrix
     Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr_;
+
+    //! pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
+    Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface> noxinterface_ptr_;
+
+    //! pointer to the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
+    Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_ptr_prec_;
   };
 
 } // namespace ModelEvaluator
 } // namespace STR
 
 
-#endif /* STR_MODEL_EVALUATOR_CONSTRAINT_H */
+#endif /* STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H */

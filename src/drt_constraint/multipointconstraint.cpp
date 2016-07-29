@@ -2,12 +2,10 @@
 \file multipointconstraint.cpp
 
 \brief Basic constraint class, dealing with multi point constraints
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
-</pre>
+
+\level 2
+
+\maintainer Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
@@ -55,7 +53,7 @@ UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
 void UTILS::MPConstraint::SetConstrState
 (
   const std::string& state,  ///< name of state to set
-  Teuchos::RCP<Epetra_Vector> V  ///< values to set
+  Teuchos::RCP<const Epetra_Vector> V  ///< values to set
 )
 {
   if (constrtype_!=none)

@@ -1,27 +1,30 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_noxinterface.H
+\file lagpenconstraint_noxinterface.H
 
 \brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Marc Hirschvogel
 
-\date May 2, 2016
+\date July 29, 2016
 
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_CONTACT_CONTACT_NOXINTERFACE_H_
-#define SRC_DRT_CONTACT_CONTACT_NOXINTERFACE_H_
+#ifndef SRC_DRT_LAGPENCONSTRAINT_LAGPENCONSTRAINT_NOXINTERFACE_H_
+#define SRC_DRT_LAGPENCONSTRAINT_LAGPENCONSTRAINT_NOXINTERFACE_H_
 
 
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
 
-namespace CONTACT {
-  class CoAbstractStrategy;
+#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+
+
+namespace LAGPENCONSTRAINT {
 
   class NoxInterface : public NOX::NLN::CONSTRAINT::Interface::Required
   {
@@ -33,7 +36,7 @@ namespace CONTACT {
     virtual ~NoxInterface() {};
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr);
+    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -69,19 +72,6 @@ namespace CONTACT {
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const NOX::Abstract::Vector::NormType& type,
         const bool& isScaled) const;
-
-    /// Returns the active set info [derived]
-    virtual enum NOX::StatusTest::StatusType GetActiveSetInfo(
-        const enum NOX::NLN::StatusTest::QuantityType& qt,
-        int& activesetsize) const;
-
-    /// Returns the current active set map
-    virtual Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
-        const enum NOX::NLN::StatusTest::QuantityType& qt) const;
-
-    /// Returns the old active set map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-        const enum NOX::NLN::StatusTest::QuantityType& qt) const;
     /// @}
 
   protected:
@@ -107,11 +97,71 @@ namespace CONTACT {
         dserror("Call Init() and Setup() first!");
     };
 
-    /// Access the underlying strategy
-    const CONTACT::CoAbstractStrategy& Strategy() const
+
+  protected:
+    /// flag indicating if Init() has been called
+    bool isinit_;
+
+    /// flag indicating if Setup() has been called
+    bool issetup_;
+
+  private:
+
+    //! global state data container
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+  };
+
+
+  class NoxInterfacePrec : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
+  {
+  public:
+    /// constructor
+    NoxInterfacePrec();
+
+    /// destructor
+    virtual ~NoxInterfacePrec() {};
+
+    /// initialize important member variables
+    void Init();
+
+    /** \brief Setup important new member variables
+     *
+     *  Supposed to be overloaded by derived classes. */
+    virtual void Setup();
+
+
+    virtual bool IsSaddlePointSystem() const;
+
+    virtual bool IsCondensedSystem() const;
+
+    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map> >& maps) const;
+
+    virtual bool computePreconditioner(const Epetra_Vector& x,
+        Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+    /// @}
+
+  protected:
+    /// get the init indicator state
+    inline const bool& IsInit() const
+    { return isinit_; };
+
+    /// get the setup indicator state
+    inline const bool& IsSetup() const
+    { return issetup_; };
+
+    /// Check if Init() has been called
+    inline void CheckInit() const
     {
-      CheckInit();
-      return *strategy_ptr_;
+      if (not IsInit())
+        dserror("Call Init() first!");
+    };
+
+    /// Check if Init() and Setup() have been called, yet.
+    inline void CheckInitSetup() const
+    {
+      if (not IsInit() or not IsSetup())
+        dserror("Call Init() and Setup() first!");
     };
 
   protected:
@@ -122,12 +172,10 @@ namespace CONTACT {
     bool issetup_;
 
   private:
-    Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
-
-    std::vector<Teuchos::RCP<Epetra_Map> > cycling_maps_;
 
   };
-} // namespace CONTACT
+
+} // namespace LAGPENCONSTRAINT
 
 
-#endif /* SRC_DRT_CONTACT_CONTACT_NOXINTERFACE_H_ */
+#endif /* SRC_DRT_LAGPENCONSTRAINT_LAGPENCONSTRAINT_NOXINTERFACE_H_ */

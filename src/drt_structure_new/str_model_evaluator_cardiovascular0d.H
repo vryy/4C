@@ -19,7 +19,6 @@
 #include "str_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_cardiovascular0d/cardiovascular0d.H"
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 
 //forward declaration ...
@@ -109,8 +108,6 @@ namespace MODELEVALUATOR{
     void AssembleJacobian(LINALG::SparseOperator& jac) const;
 
   private:
-    //! all 0D cardiovascular instances
-    std::vector<Teuchos::RCP<UTILS::Cardiovascular0D> > cardiovascular0dmodels_;
 
     Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 

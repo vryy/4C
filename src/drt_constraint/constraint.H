@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file constraint.H
 
-\brief Basic constraint class, dealing with constraints living on boundaries
+\brief Basic constraint class, dealing with constraints living on boundaries, code originally by Thomas Kloeppel
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 

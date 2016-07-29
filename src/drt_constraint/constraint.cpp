@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file constraint.cpp
 
-\brief Basic constraint class, dealing with constraints living on boundaries
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
-</pre>
+\brief Basic constraint class, dealing with constraints living on boundaries, code originally by Thomas Kloeppel
+
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -73,7 +71,7 @@ UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
 actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname,constrcond_);
-  
+
   if (constrcond_.size())
   {
     constrtype_=GetConstrType(conditionname);

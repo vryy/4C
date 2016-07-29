@@ -132,7 +132,9 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
         NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
     Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
         GetConstraintInterfacePtr(soltype);
-    rval = constrptr->GetConstraintRHSNorms(chQ[i],type[i],
+//    rval = constrptr->GetConstraintRHSNorms(chQ[i],type[i],
+//        (*scale)[i]==NOX::StatusTest::NormF::Scaled);
+    rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(),chQ[i],type[i],
         (*scale)[i]==NOX::StatusTest::NormF::Scaled);
     if (rval>=0.0)
       norms->push_back(rval);

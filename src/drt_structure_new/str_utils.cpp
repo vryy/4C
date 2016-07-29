@@ -17,9 +17,10 @@
 #include "str_utils.H"
 #include "str_integrator.H"
 #include "str_model_evaluator_contact.H"
-
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_noxinterface.H"
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/lagpenconstraint_noxinterface.H"
 
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
@@ -29,6 +30,7 @@
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
+#include "str_model_evaluator_lagpenconstraint.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -128,7 +130,6 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
       // -----------------------------------
       case NOX::NLN::sol_meshtying:
       case NOX::NLN::sol_lag_pen_constraint:
-      //case NOX::NLN::sol_cardiovascular0d:
         opttype = NOX::NLN::opt_equality_constrained;
         break;
       // -----------------------------------
@@ -172,15 +173,16 @@ void STR::NLN::CreateConstraintInterfaces(
             contact_model.StrategyPtr()->NoxInterfacePtr();
         break;
       }
-      case NOX::NLN::sol_cardiovascular0d:
+      case NOX::NLN::sol_lag_pen_constraint:
       {
-//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetLagPenConstrManager();
-//        break;
+        STR::MODELEVALUATOR::Generic& model =
+            integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
+        STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
+            dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
+        iconstr[NOX::NLN::sol_lag_pen_constraint] =
+            lagpenconstraint_model.NoxInterfacePtr();
         break;
       }
-      case NOX::NLN::sol_lag_pen_constraint:
-//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetLagPenConstrManager();
-//        break;
       default:
         break;
     }
@@ -216,14 +218,13 @@ void STR::NLN::CreateConstraintPreconditioner(
         iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
         break;
       }
-      case NOX::NLN::sol_cardiovascular0d:
-      {
-        // FixMe add something, if necessary
-        break;
-      }
       case NOX::NLN::sol_lag_pen_constraint:
       {
-        // FixMe add something, if necessary
+        STR::MODELEVALUATOR::Generic& model =
+            integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
+        STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
+            dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
+        iconstr_prec[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePtrPrec();
         break;
       }
       default:

@@ -152,13 +152,13 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
       qt.push_back(NOX::NLN::StatusTest::quantity_meshtying);
       break;
     }
-    // --- 0D cardiovascular model case -----------------------------------------------------
+    // --- 0D cardiovascular model case ----------------------------------------
     case INPAR::STR::model_cardiovascular0d:
     {
       qt.push_back(NOX::NLN::StatusTest::quantity_cardiovascular0d);
       break;
     }
-    // --- Lagrangian/penalty case ---------------------------------------------
+    // --- Lagrangian/penalty case constraint ----------------------------------
     case INPAR::STR::model_lag_pen_constraint:
     {
       qt.push_back(NOX::NLN::StatusTest::quantity_lag_pen_constraint);
@@ -295,6 +295,14 @@ void STR::NLN::SOLVER::SetStatusTestParams(
   {
     SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
         NOX::NLN::StatusTest::quantity_lag_pen_constraint,opt_count,"NormF");
+    ++opt_count;
+
+    // ---------------------------------------------------------------------------
+    // | lvl. 1: combo AND - Test OPTIONAL:
+    // | Tests the constraint model NormUpdate
+    // ---------------------------------------------------------------------------
+    SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
+        NOX::NLN::StatusTest::quantity_lag_pen_constraint,opt_count,"NormUpdate");
     ++opt_count;
   }
 

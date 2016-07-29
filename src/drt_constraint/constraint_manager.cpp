@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file constraint_manager.cpp
 
-\brief Class controlling constraints and containing the necessary data
+\brief Class controlling constraints and containing the necessary data, code originally by Thomas Kloeppel
 
 \maintainer Marc Hirschvogel
 
@@ -31,7 +31,7 @@
 UTILS::ConstrManager::ConstrManager
 (
   Teuchos::RCP<DRT::Discretization> discr,
-  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::RCP<const Epetra_Vector> disp,
   Teuchos::ParameterList params):
 actdisc_(discr)
 {
@@ -163,6 +163,7 @@ actdisc_(discr)
     monitortypes_ = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
     BuildMoniType();
   }
+
   return;
 }
 
@@ -173,8 +174,8 @@ actdisc_(discr)
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::EvaluateForceStiff(
         const double time,
-        Teuchos::RCP<Epetra_Vector> displast,
-        Teuchos::RCP<Epetra_Vector> disp,
+        Teuchos::RCP<const Epetra_Vector> displast,
+        Teuchos::RCP<const Epetra_Vector> disp,
         Teuchos::RCP<Epetra_Vector> fint,
         Teuchos::RCP<LINALG::SparseOperator> stiff,
         Teuchos::ParameterList scalelist)

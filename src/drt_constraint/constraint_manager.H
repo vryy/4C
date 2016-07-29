@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file constraint_manager.H
 
-\brief Class controlling constraints and containing the necessary data
+\brief Class controlling constraints and containing the necessary data, code originally by Thomas Kloeppel
 
 \maintainer Marc Hirschvogel
 
@@ -17,7 +17,6 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
-
 
 
 namespace DRT
@@ -58,7 +57,7 @@ namespace UTILS
     ConstrManager
     (
       Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
-      Teuchos::RCP<Epetra_Vector> disp,  ///< current displacement
+      Teuchos::RCP<const Epetra_Vector> disp,  ///< current displacement
       Teuchos::ParameterList param  ///<  parameterlist from time integration algorithm
     );
     /*!
@@ -70,6 +69,7 @@ namespace UTILS
         return;
     };
 
+
     /*!
       \brief Change stiffness matrix and force vector according to the constraints.
       Values of lagrange multiplier are taken from intern variable.
@@ -78,8 +78,8 @@ namespace UTILS
     void EvaluateForceStiff
     (
       const double time,  ///< time at end of time step
-      Teuchos::RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
-      Teuchos::RCP<Epetra_Vector> disp,  ///< displacement at end of time step
+      Teuchos::RCP<const Epetra_Vector> displast,  ///< displacement at beginning of time step
+      Teuchos::RCP<const Epetra_Vector> disp,  ///< displacement at end of time step
       Teuchos::RCP<Epetra_Vector> fint,  ///< vector of internal forces
       Teuchos::RCP<LINALG::SparseOperator> stiff,  ///< stiffness matrix
       Teuchos::ParameterList scalelist

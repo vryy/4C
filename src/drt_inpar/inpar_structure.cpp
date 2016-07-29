@@ -281,6 +281,10 @@ namespace INPAR
                     "tolerance in the constr error norm for the newton iteration",
                     &sdyn);
 
+    DoubleParameter("TOLCONSTRINCR",1.0E-08,
+                    "tolerance in the constr lm incr norm for the newton iteration",
+                    &sdyn);
+
     IntParameter("MAXITER",50,
                  "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                  &sdyn);

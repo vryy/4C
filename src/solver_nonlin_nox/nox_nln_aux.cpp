@@ -94,6 +94,9 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
   else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
       and linsolvers.find(NOX::NLN::sol_cardiovascular0d)!=ci_end))
     return NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d;
+  else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
+      and linsolvers.find(NOX::NLN::sol_lag_pen_constraint)!=ci_end))
+    return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
   // --- ToDo has to be extended
   else
     dserror("There is no capable linear system type for the given linear "

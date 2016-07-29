@@ -20,9 +20,9 @@
 // supported model evaluators
 #include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_cardiovascular0d.H"
-#include "str_model_evaluator_constraint.H"
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_lagpenconstraint.H"
 
 
 
@@ -60,7 +60,8 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         break;
       case INPAR::STR::model_meshtying:
       case INPAR::STR::model_lag_pen_constraint:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Constraint());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::LagPenConstraint());
+        break;
       case INPAR::STR::model_cardiovascular0d:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Cardiovascular0D());
         break;

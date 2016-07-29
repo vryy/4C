@@ -61,6 +61,7 @@ void CONTACT::NoxInterface::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetConstraintRHSNorms(
+    const Epetra_Vector& F,
     const NOX::NLN::StatusTest::QuantityType& chQ,
     const NOX::Abstract::Vector::NormType& type,
     const bool& isScaled) const
