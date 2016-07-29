@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_aitken.H
+
+\brief class computing step length for AITKEN relaxation
+
+\maintainer Matthias Mayr
+
+\level 1
+
+*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_AITKEN_H
 #define FSI_NOX_AITKEN_H
 
@@ -50,6 +61,12 @@ namespace NOX {
 
       //! aitken factor
       double nu_;
+
+      //! max step size
+      double maxstep_;
+
+      //! min step size
+      double minstep_;
 
       //! Printing utilities
       Teuchos::RCP<NOX::Utils> utils_;

@@ -146,11 +146,11 @@ void immersed_problem_drt()
       }
 
       {
-        // check if structural predictor ConstVel is chosen in input file
-        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstVel")
+        // check if structural predictor ConstDisVelAcc is chosen in input file
+        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
           dserror("Invalid structural predictor for immersed fsi!\n"
                   "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
-                  "Structural velocity projected onto fluid in new time step should be the same as in previous time step.");
+                  "Structural state projected onto fluid in new time step should be the same as in previous time step.");
       }
 
       // fill discretizations

@@ -202,6 +202,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
 
       lineSearchParams.sublist("Aitken").set("max step size", fsipart.get<double>("MAXOMEGA"));
+      lineSearchParams.sublist("Aitken").set("min step size", fsipart.get<double>("MINOMEGA"));
       break;
     }
     case fsi_iter_stagg_steep_desc:

@@ -2,6 +2,8 @@
 /*!
 \file inpar_fsi.cpp
 
+\level 1
+
 \maintainer Matthias Mayr
 
 \brief Input parameters for fluid structure interaction
@@ -488,6 +490,11 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)",
       &fsipart);
+
+  DoubleParameter("MINOMEGA", -1.0,
+      "smallest omega allowed for Aitken relaxation (default is -1.0)",
+      &fsipart);
+
 
   setStringToIntegralParameter<int>("PARTITIONED","DirichletNeumann",
       "Coupling strategies for partitioned FSI solvers.",

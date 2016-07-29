@@ -1,3 +1,13 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_aitken.cpp
+
+\brief class computing step length for AITKEN relaxation
+
+\maintainer Matthias Mayr
+
+\level 1
+
+*----------------------------------------------------------------------*/
 
 #include "fsi_nox_aitken.H"
 #include "fsi_utils.H"
@@ -22,9 +32,11 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RCP<NOX::Utils>& uti
   Teuchos::ParameterList& p = params.sublist("Aitken");
   nu_ = p.get("Start nu", 0.0);
 
-  double maxstep = p.get("max step size", 0.0);
-  if (maxstep > 0)
-    nu_ = 1-maxstep;
+  maxstep_ = p.get("max step size", 0.0);
+  if (maxstep_ > 0.0)
+    nu_ = 1.0-maxstep_;
+
+  minstep_ = p.get("min step size", -1.0);
 }
 
 
@@ -36,16 +48,13 @@ NOX::FSI::AitkenRelaxation::~AitkenRelaxation()
 bool NOX::FSI::AitkenRelaxation::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                                        Teuchos::ParameterList& params)
 {
-  Teuchos::ParameterList& p = params.sublist("Aitken");
-
-  // do not reset the aitken factor
-  //nu_ = p.get("Start nu", 0.0);
-
   // We might want to constrain the step size of the first relaxation
   // in a new time step.
-  double maxstep = p.get("max step size", 0.0);
-  if (maxstep > 0. && maxstep < 1.-nu_)
-    nu_ = 1.-maxstep;
+  if (maxstep_ > 0.0 && maxstep_ < 1.0-nu_)
+    nu_ = 1.-maxstep_;
+
+  if(minstep_ > 1.0-nu_)
+    nu_=1.0-minstep_;
 
   if (!is_null(del_))
   {
@@ -99,6 +108,15 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   const double den = del2_->innerProduct(*del2_);
 
   nu_ = nu_ + (nu_ - 1.)*top/den;
+
+  // check constraints for step size
+  if (maxstep_ > 0.0 && maxstep_ < 1.0-nu_)
+    nu_ = 1.-maxstep_;
+
+  if(minstep_ > 1.0-nu_)
+    nu_=1.0-minstep_;
+
+  // calc step
   step = 1. - nu_;
 
   utils_->out() << "          RELAX = " << std::setw(5) << step << "\n";
