@@ -198,7 +198,7 @@ void PARTICLE::TimInt::Init()
 }
 
 /*----------------------------------------------------------------------*/
-/* Set intitial fields in structure (e.g. initial velocities */
+/* Set intitial fields in structure (e.g. initial velocities) */
 void PARTICLE::TimInt::SetInitialFields()
 {
   // make sure that a particle material is defined in the dat-file
@@ -230,28 +230,8 @@ void PARTICLE::TimInt::SetInitialFields()
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
   radius_->PutScalar(initial_radius);
 
-  // initialize displacement field, radius, and mass vector
-  for(int n=0; n<discret_->NumMyRowNodes(); ++n)
-  {
-    DRT::Node* actnode = discret_->lRowNode(n);
-    // get the first gid of a node and convert it into a LID
-    int gid = discret_->Dof(actnode, 0);
-    int lid = discret_->DofRowMap()->LID(gid);
-    for (int dim=0; dim<3; ++dim)
-    {
-      if(amplitude)
-      {
-        double randomwert = DRT::Problem::Instance()->Random()->Uni();
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomwert * amplitude * initial_radius;
-      }
-      else
-      {
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
-      }
-    }
-    // mass-vector: m = rho * 4/3 * PI *r^3
-    (*mass_)[n] = (*density_)[n] * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius;
-  }
+  // mass-vector: m = rho * 4/3 * PI *r^3
+  mass_->PutScalar(initDensity_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius);
 
   // set initial radius condition if existing
   std::vector<DRT::Condition*> condition;
@@ -348,6 +328,27 @@ void PARTICLE::TimInt::SetInitialFields()
     else
     {
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+    }
+  }
+
+  // initialize displacement field, radius, and mass vector
+  for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+  {
+    DRT::Node* actnode = discret_->lRowNode(n);
+    // get the first gid of a node and convert it into a LID
+    int gid = discret_->Dof(actnode, 0);
+    int lid = discret_->DofRowMap()->LID(gid);
+    for (int dim=0; dim<3; ++dim)
+    {
+      if(amplitude)
+      {
+        double randomValue = DRT::Problem::Instance()->Random()->Uni();
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomValue * amplitude * initial_radius;
+      }
+      else
+      {
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
+      }
     }
   }
 

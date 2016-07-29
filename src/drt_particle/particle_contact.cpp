@@ -69,12 +69,17 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     //check
     if (id==-1)
       dserror("Could not find particle material or material type - trg_temperature do not match");
+
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+
+    std::cout << "Warning! Initial safety checks for MeshFree still in the TODO list" << std::endl;
+
   }
   // deal with everything except meshFree
   else
   {
     // make sure that a particle material is defined in the dat-file
-
     if (particle_algorithm_->trg_Temperature())
     {
       id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
