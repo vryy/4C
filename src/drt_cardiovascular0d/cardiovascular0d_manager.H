@@ -93,15 +93,6 @@ namespace UTILS
       Teuchos::ParameterList scalelist
     );
 
-    void EvaluateForceStiff2
-    (
-      const double time,  ///< time at end of time step
-      const Teuchos::RCP<const Epetra_Vector> disp,  ///< displacement at end of time step
-      Epetra_Vector& fint,  ///< vector of internal structural forces
-      LINALG::SparseMatrix& stiff,  ///< structural stiffness matrix
-      Teuchos::ParameterList scalelist
-    );
-
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
@@ -179,15 +170,6 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> actpres,
       Teuchos::RCP<Epetra_Vector> systemvector, ///< structural rhs
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix ///< structural stiffness matrix
-    );
-
-    ///
-    void EvaluateNeumannCardiovascular0DCoupling2
-    (
-      Teuchos::ParameterList params,
-      Teuchos::RCP<Epetra_Vector> actpres,
-      Epetra_Vector& systemvector, ///< structural rhs
-      LINALG::SparseMatrix& systemmatrix ///< structural stiffness matrix
     );
 
     /*!
