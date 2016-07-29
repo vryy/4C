@@ -120,12 +120,14 @@ ML_DAMPFINE                     0.67                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END    //surface scatra material
-MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END    // volume scatra material
-MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 10 11 10 NUMREAC 1 REACIDS 20 END    //surface-volume reaction material
+MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END    //surface scatra material (slave)
+MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END    // volume scatra material (master)
+// first slave dofs and then master dofs in reaction list
+MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 11 10 10 NUMREAC 1 REACIDS 20 END    //surface-volume reaction material
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.35 DENS 0.1
 MAT 10 MAT_scatra DIFFUSIVITY 0.1
 MAT 11 MAT_scatra DIFFUSIVITY 0.1
+// first slave dofs and then master dofs in reaction list
 MAT 20 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4

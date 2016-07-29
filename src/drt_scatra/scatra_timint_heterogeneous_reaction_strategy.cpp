@@ -2,7 +2,7 @@
 /*!
  \file scatra_timint_heterogeneous_reaction_strategy.cpp
 
- \brief Solution strategy for heterogeneous reactions
+ \brief Solution strategy for heterogeneous reactions. This is not meshtying!!!
 
  <pre>
     \level 3
@@ -35,7 +35,7 @@
 
 
 /*----------------------------------------------------------------------*
- | constructor                                               fang 12/14 |
+ | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/
 SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
     SCATRA::ScaTraTimIntImpl* scatratimint
@@ -46,9 +46,9 @@ SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
 } // SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy
 
 
-/*----------------------------------------------------------------------*
- | dummy meshtying evaluate for standard scalar transport    fang 12/14 |
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*
+ | evaluate heterogeneous reactions (actually no mesh tying    vuong 06/16 |
+ *------------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 {
 
@@ -93,7 +93,7 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 
 
 /*----------------------------------------------------------------------*
- | initialize meshtying objects                              fang 02/16 |
+ | initialize meshtying objects                              vuong 06/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
 {
