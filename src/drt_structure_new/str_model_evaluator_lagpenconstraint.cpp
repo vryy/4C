@@ -112,7 +112,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::ApplyStiff(
   CheckInitSetup();
   Reset(x, jac);
 
-  // get structural displacement DOFs
+  // dummy vector
   Teuchos::RCP<Epetra_Vector> dumvec = Teuchos::null;
 
   // get structural stiffness matrix
