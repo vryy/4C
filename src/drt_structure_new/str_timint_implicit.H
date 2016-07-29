@@ -103,7 +103,6 @@ namespace TIMINT {
     //! @}
     Teuchos::RCP<const STR::NLN::SOLVER::Generic> GetNlnSolverPtr() const
     {
-      CheckInitSetup();
       return nlnsolver_ptr_;
     };
 

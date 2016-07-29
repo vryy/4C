@@ -145,23 +145,34 @@ namespace IMPLICIT {
     virtual void PostSetup();
 
   private:
-    /*! \brief Calculate the right-hand-side vector at \f$ t_{n+\theta} \f$ (TR-rule)
+    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+     *
+     * \remark The remaining contributions have been considered in the corresponding model
+     *         evaluators. This is due to the fact, that some models use a different
+     *         time integration scheme for their terms (e.g. GenAlpha for the structure
+     *         and OST for the remaining things).
      *
      *  \f[
      *    Res = M . [\theta  * A_{n+1} + (1-\theta) * A_{n}]
      *        + C . [\theta  * V_{n+1} + \(1-\theta) * V_{n}]
      *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
      *  \f] */
-    void EvaluateMidStateForce(Epetra_Vector& f) const;
+    void AddViscoMassContributions(Epetra_Vector& f) const;
 
-    /*! \brief Calculate the structural stiffness block at \f$ t_{n+\theta} \f$ (TR-rule)
+    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+     *
+     *  \remark The remaining blocks have been considered in the corresponding model
+     *          evaluators. This is due to the fact, that some models use a different
+     *          time integration scheme for their terms (e.g. GenAlpha for the structure
+     *          and OST for the remaining things). Furthermore, constraint/Lagrange
+     *          multiplier blocks need no scaling anyway.
      *
      *  \f[
      *    \boldsymbol{K}_{T,effdyn} = (1 - \frac{1}{\theta (\Delta t)^{2}} \boldsymbol{M}
      *                + (1 - \frac{1}{\Delta t} \boldsymbol{C}
      *                + theta  \boldsymbol{K}_{T}
      *  \f] */
-    void EvaluateMidStateJacobian(LINALG::SparseOperator& jac) const;
+    void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
 
   private:
     //! theta factor: feasible interval (0,1]

@@ -33,7 +33,8 @@
 STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
     : n_conds_(0),
       disnp_ptr_(Teuchos::null),
-      stiff_ptr_(Teuchos::null)
+      stiff_spring_ptr_(Teuchos::null),
+      fspring_np_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -50,7 +51,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   Discret().GetCondition("SpringDashpot",springdashpots);
 
   // number of spring dashpot conditions
-  n_conds_ = (int)springdashpots.size();;
+  n_conds_ = (int)springdashpots.size();
 
   // new instance of spring dashpot BC for each condition
   for (int i=0; i<n_conds_; ++i)
@@ -58,6 +59,8 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
+  stiff_spring_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *GState().DofRowMapView(), 81, true, true));
 
   // set flag
   issetup_ = true;
@@ -65,60 +68,97 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::ApplyForce(
-    const Epetra_Vector& x,
-    Epetra_Vector& f)
+void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
-  Reset(x);
+
+  // loop over all spring dashpot conditions and reset them
+  for (int i=0; i<n_conds_; ++i)
+    springs_[i]->ResetNewton();
+
+  // update the structural displacement vector
+  disnp_ptr_ = GState().GetDisNp();
+
+  // Zero out the stiffness contributions matrix
+  stiff_spring_ptr_->Zero();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
+{
+  CheckInitSetup();
 
   // loop over all spring dashpot conditions and evaluate them
+  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   for (int i=0; i<n_conds_; ++i)
-    springs_[i]->EvaluateForce(f, disnp_ptr_);
+    springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_);
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::ApplyStiff(
-    const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
+bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
 {
   CheckInitSetup();
-  Reset(x, jac);
 
-  // dummy vector
-  Teuchos::RCP<Epetra_Vector> f_disp =
-        Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
+  fspring_np_ptr_ =
+        Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView(),true));
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
-    springs_[i]->EvaluateForceStiff(*stiff_ptr_, *f_disp, disnp_ptr_);
+    springs_[i]->EvaluateForceStiff(*stiff_spring_ptr_, *fspring_np_ptr_,
+        disnp_ptr_);
+
+  if (not stiff_spring_ptr_->Filled())
+    stiff_spring_ptr_->Complete();
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::ApplyForceStiff(
-    const Epetra_Vector& x,
-    Epetra_Vector& f,
-    LINALG::SparseOperator& jac)
+bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
 {
   CheckInitSetup();
-  Reset(x, jac);
 
   // get displacement DOFs
-  Teuchos::RCP<Epetra_Vector> f_disp =
+  fspring_np_ptr_ =
       Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
-    springs_[i]->EvaluateForceStiff(*stiff_ptr_, *f_disp, disnp_ptr_);
+    springs_[i]->EvaluateForceStiff(*stiff_spring_ptr_, *fspring_np_ptr_,
+        disnp_ptr_);
 
-  STR::AssembleVector(1.0,f,1.0,*f_disp);
+  if (not stiff_spring_ptr_->Filled())
+    stiff_spring_ptr_->Complete();
 
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::SpringDashpot::AssembleForce(Epetra_Vector& f,
+    const double & timefac_np) const
+{
+  STR::AssembleVector(1.0,f,timefac_np,*fspring_np_ptr_);
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::SpringDashpot::AssembleJacobian(
+    LINALG::SparseOperator& jac,
+    const double & timefac_np) const
+{
+  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
+      GState().ExtractDisplBlock(jac);
+  jac_dd_ptr->Add(*stiff_spring_ptr_,false,timefac_np,1.0);
+  // no need to keep it
+  stiff_spring_ptr_->Zero();
+  // nothing to do
   return true;
 }
 
@@ -170,9 +210,13 @@ void STR::MODELEVALUATOR::SpringDashpot::RecoverState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState()
+void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(
+    const double& timefac_n)
 {
-  // empty
+  // add the old time factor scaled contributions to the residual
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr =
+      GState().GetMutableFstructureOld();
+  fstructold_ptr->Update(timefac_n,*fspring_np_ptr_,1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -245,33 +289,6 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
   dserror("Not yet implemented");
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Reset(
-    const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
-{
-  stiff_ptr_ = GState().ExtractDisplBlock(jac);
-
-  CheckInitSetup();
-
-  Reset(x);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
-{
-  CheckInitSetup();
-
-  // loop over all spring dashpot conditions and reset them
-  for (int i=0; i<n_conds_; ++i)
-    springs_[i]->ResetNewton();
-
-  // update the structural displacement vector
-  disnp_ptr_ = GState().GetDisNp();
 }
 
 /*----------------------------------------------------------------------*

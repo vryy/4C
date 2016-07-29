@@ -61,7 +61,7 @@ namespace NLN {
       return "SpringDashpot";
       break;
     case sol_lag_pen_constraint:
-      return "LagPenConstraint";
+      return "Lag-Pen-Constraint";
       break;
     case sol_unknown:
     default :
@@ -85,7 +85,7 @@ namespace NLN {
       type = sol_cardiovascular0d;
     else if (boost::iequals(name,"springdashpot"))
       type = sol_springdashpot;
-    else if (boost::iequals(name,"lagpenconstraint"))
+    else if (boost::iequals(name,"lag-pen-constraint"))
       type = sol_lag_pen_constraint;
 
     return type;

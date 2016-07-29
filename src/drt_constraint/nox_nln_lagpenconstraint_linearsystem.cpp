@@ -82,10 +82,10 @@ void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
   // This value is specified in the underlying time integrator
   // (i.e. RunPreNoxNlnSolve())
-  int step = p.get<int>("Current Time Step");
+//  int step = p.get<int>("Current Time Step");
   // This value is specified in the PrePostOperator object of
   // the non-linear solver (i.e. runPreIterate())
-  int nlnIter = p.get<int>("Number of Nonlinear Iterations");
+//  int nlnIter = p.get<int>("Number of Nonlinear Iterations");
 
   if (isAdaptiveControl)
   {

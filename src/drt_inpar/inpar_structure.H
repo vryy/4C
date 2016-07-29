@@ -20,6 +20,7 @@
 
 
 #include "inpar_parameterlist_utils.H"
+#include <boost/algorithm/string/predicate.hpp>
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -81,9 +82,10 @@ namespace INPAR
       model_structure,          ///< evaluate the structural model
       model_contact,            ///< evaluate the contact model
       model_meshtying,          ///< evaluate the meshtying model
-      model_cardiovascular0d,         ///< evaluate the windkessel model
+      model_cardiovascular0d,   ///< evaluate the cardiovascular0d model
       model_springdashpot,      ///< evaluate the springdashpot model
-      model_lag_pen_constraint  ///< evaluate the Lagrange or/and penalty enforced constraint models
+      model_lag_pen_constraint, ///< evaluate the Lagrange or/and penalty enforced constraint models
+      model_vague               ///< undefined model type
     };
 
     /// Map model type to string
@@ -110,12 +112,32 @@ namespace INPAR
         return "SpringDashpot";
         break;
       case model_lag_pen_constraint :
-        return "LagPenConstraint";
+        return "Lag-Pen-Constraint";
         break;
       default :
         dserror("Cannot make std::string for model type %d", name);
         return "";
       }
+    };
+
+    //! Map model std::string to enum
+    inline enum ModelType String2ModelType(const std::string& name)
+    {
+      ModelType type = model_vague;
+      if (boost::iequals(name,"structure"))
+        type = model_structure;
+      else if (boost::iequals(name,"contact"))
+        type = model_contact;
+      else if (boost::iequals(name,"meshtying"))
+        type = model_meshtying;
+      else if (boost::iequals(name,"cardiovascular0d"))
+        type = model_cardiovascular0d;
+      else if (boost::iequals(name,"springdashpot"))
+        type = model_springdashpot;
+      else if (boost::iequals(name,"lag-pen-constraint"))
+        type = model_lag_pen_constraint;
+
+      return type;
     };
 
     enum IntegrationStrategy

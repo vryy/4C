@@ -49,6 +49,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       predtype_(INPAR::STR::pred_vague),
       nlnsolvertype_(INPAR::STR::soltech_vague),
       divergenceaction_(INPAR::STR::divcont_stop),
+      maxdivconrefinementlevel_(-1),
       noxparams_(Teuchos::null),
       locaparams_(Teuchos::null),
       ptc_delta_init_(0.0),

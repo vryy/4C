@@ -44,20 +44,29 @@ namespace MODELEVALUATOR{
     virtual void Setup();
 
     //! derived
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f);
+    INPAR::STR::ModelType Type() const
+    { return INPAR::STR::model_lag_pen_constraint; }
+
+    //! reset class variables (without jacobian) [derived]
+    virtual void Reset(const Epetra_Vector& x);
 
     //! derived
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateForce();
 
     //! derived
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateStiff();
+
+    //! derived
+    virtual bool EvaluateForceStiff();
+
+    //! derived
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const;
+
+    //! Assemble the jacobian at \f$t_{n+1}\f$
+    virtual bool AssembleJacobian(
+        LINALG::SparseOperator& jac,
+        const double & timefac_np) const;
 
     //! derived
     virtual void WriteRestart(
@@ -75,7 +84,7 @@ namespace MODELEVALUATOR{
         const Epetra_Vector& xnew);
 
     //! derived
-    virtual void UpdateStepState();
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
     virtual void UpdateStepElement();
@@ -119,14 +128,6 @@ namespace MODELEVALUATOR{
     //! Returns the underlying contact strategy object
     UTILS::ConstrManager& Strategy();
     const UTILS::ConstrManager& Strategy() const;
-    //! derived
-    virtual void Reset(const Epetra_Vector& x);
-    //! derived
-    virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
-
-    void AssembleRhs(Epetra_Vector& f) const;
-
-    void AssembleJacobian(LINALG::SparseOperator& jac) const;
 
   private:
     //! all constraint instances
@@ -136,7 +137,10 @@ namespace MODELEVALUATOR{
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
     //! structural stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr_;
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_constr_ptr_;
+
+    //! constraint contributions to the structural rhs at \f%t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fstrconstr_np_ptr_;
 
     //! pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
     Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface> noxinterface_ptr_;

@@ -110,23 +110,40 @@ namespace IMPLICIT {
     virtual void ResetEvalParams();
 
   private:
-    /*! \brief Calculate the right-hand-side vector at \f$ t_{n+1-\alpha_{f/m}} \f$ (TR-rule)
+    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+     *
+     * \remark The remaining contributions have been considered in the corresponding model
+     *         evaluators. This is due to the fact, that some models use a different
+     *         time integration scheme for their terms (e.g. GenAlpha for the structure
+     *         and OST for the remaining things).
      *
      *  \f[
      *    Res = M . [(1-\alpha_m) * A_{n+1} + \alpha_m * A_{n}]
      *        + C . [(1-\alpha_f) * V_{n+1} + \alpha_f * V_{n}]
      *        + (1-\alpha_f) * Res_{\mathrm{statics},n+1} + \alpha_f * Res_{\mathrm{statics},n}
-     *  \f] */
-    void EvaluateMidStateForce(Epetra_Vector& f) const;
+     *  \f]
+     *
+     *  \author hiermeier
+     *  \date 03/2016 */
+    void AddViscoMassContributions(Epetra_Vector& f) const;
 
-    /*! \brief Calculate the structural stiffness block at \f$ t_{n+1-\alpha_{f/m}} \f$ (TR-rule)
+    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+     *
+     *  \remark The remaining blocks have been considered in the corresponding model
+     *          evaluators. This is due to the fact, that some models use a different
+     *          time integration scheme for their terms (e.g. GenAlpha for the structure
+     *          and OST for the remaining things). Furthermore, constraint/Lagrange
+     *          multiplier blocks need no scaling anyway.
      *
      *  \f[
      *    \boldsymbol{K}_{T,effdyn} = (1 - \frac{\alpha_m}{\beta (\Delta t)^{2}} \boldsymbol{M}
      *                + (1 - \frac{\alpha_f \gamma}{\beta \Delta t} \boldsymbol{C}
      *                + (1 - \alpha_f)  \boldsymbol{K}_{T}
-     *  \f] */
-    void EvaluateMidStateJacobian(LINALG::SparseOperator& jac) const;
+     *  \f]
+     *
+     *  \author hiermeier
+     *  \date 03/2016 */
+    void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
 
     /*! \brief Update constant contributions of the current state for the new time step \f$t_{n+1}\f$
      *
@@ -187,12 +204,6 @@ namespace IMPLICIT {
      *  global state data container and just store a pointer to the global
      *  state variable. */
     //! @{
-    //! viscous force vector F_viscous F_{viscous;n+1}
-    Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
-
-    //! viscous force vector F_viscous F_{viscous;n}
-    Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
-
     /*! \brief Holds the during a time step constant contributions to
      *  the velocity and acceleration state update.
      *
@@ -203,11 +214,17 @@ namespace IMPLICIT {
 
     //! @name pointers to the global state data container content
     //! @{
-    //! pointer to inertial force vector F_{inertial,n} at last time
-    Teuchos::RCP<Epetra_Vector> finertian_ptr_;
+    //! viscous force vector F_viscous F_{viscous;n+1}
+    Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+
+    //! viscous force vector F_viscous F_{viscous;n}
+    Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
 
     //! pointer to inertial force vector F_{inertial,n+1} at new time
     Teuchos::RCP<Epetra_Vector> finertianp_ptr_;
+
+    //! pointer to inertial force vector F_{inertial,n} at last time
+    Teuchos::RCP<Epetra_Vector> finertian_ptr_;
     //! @}
   };
 } // namespace IMPLICIT

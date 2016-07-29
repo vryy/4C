@@ -52,7 +52,7 @@ void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
   if (IsPredictorState())
     return;
 
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExportDisplEntries(x);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
   GlobalState().GetMutableDisNp()->Scale(1.0,*disnp_ptr);
 }
 
@@ -63,7 +63,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x,
 {
   CheckInitSetup();
   ResetEvalParams();
-  return ModelEval().ApplyForce(x,f);
+  return ModelEval().ApplyForce(x,f,1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -73,7 +73,7 @@ bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x,
 {
   CheckInitSetup();
   ResetEvalParams();
-  bool ok =  ModelEval().ApplyStiff(x,jac);
+  bool ok =  ModelEval().ApplyStiff(x,jac,1.0);
   jac.Complete();
   return ok;
 }
@@ -85,7 +85,7 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
 {
   CheckInitSetup();
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac);
+  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1.0);
   jac.Complete();
   return ok;
 }
@@ -196,7 +196,7 @@ void STR::IMPLICIT::Statics::UpdateStepState()
 {
   CheckInitSetup();
   // update model specific variables
-  ModelEval().UpdateStepState();
+  ModelEval().UpdateStepState(0.0);
 }
 
 /*----------------------------------------------------------------------------*

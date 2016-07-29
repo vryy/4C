@@ -24,6 +24,7 @@
 
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
+#include "../solver_nonlin_nox/nox_nln_aux.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -84,14 +85,8 @@ void STR::NLN::ConvertModelType2SolType(
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
   for (mt_iter=modeltypes.begin();mt_iter!=modeltypes.end();++mt_iter)
   {
-    const std::string name = INPAR::STR::ModelTypeString(*mt_iter);
     const enum NOX::NLN::SolutionType soltype =
-        NOX::NLN::String2SolutionType(name);
-
-    // check if the corresponding enum could be found.
-    if (soltype == NOX::NLN::sol_unknown)
-      dserror("The corresponding solution-type was not found. "
-          "Given string: %s", name.c_str());
+        ConvertModelType2SolType(*mt_iter);
 
     soltypes.push_back(soltype);
     // copy the linsolver pointers into the new map
@@ -100,6 +95,51 @@ void STR::NLN::ConvertModelType2SolType(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
+    const enum INPAR::STR::ModelType& modeltype,
+    const bool& do_check)
+{
+  const std::string name = INPAR::STR::ModelTypeString(modeltype);
+  enum NOX::NLN::SolutionType soltype = NOX::NLN::String2SolutionType(name);
+
+  // check if the corresponding enum could be found.
+  if (do_check and soltype == NOX::NLN::sol_unknown)
+    dserror("The corresponding solution-type was not found. "
+        "Given string: %s", name.c_str());
+
+  return soltype;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
+    const enum NOX::NLN::SolutionType& soltype,
+    const bool& do_check)
+{
+  const std::string name = NOX::NLN::SolutionType2String(soltype);
+  enum INPAR::STR::ModelType modeltype = INPAR::STR::String2ModelType(name);
+
+  // check if the corresponding enum could be found.
+  if (do_check and modeltype == INPAR::STR::model_vague)
+    dserror("The corresponding model-type was not found. "
+        "Given string: %s", name.c_str());
+
+  return modeltype;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::ModelType STR::NLN::ConvertQuantityType2ModelType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    const bool& do_check)
+{
+  const NOX::NLN::SolutionType st =
+      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qtype);
+  return ConvertSolType2ModelType(st,do_check);
 }
 
 /*----------------------------------------------------------------------------*
@@ -212,9 +252,9 @@ void STR::NLN::CreateConstraintPreconditioner(
             integrator.Evaluator(INPAR::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
-        /* Actually we use the underlying MORTAR::StrategyBase as
-         * Preconditioner interface. The implementations can be nevertheless
-         * different for the contact/meshtying cases. */
+        /* Actually we use the underlying MORTAR::StrategyBase as Preconditioner
+         * interface. Nevertheless, the implementations can differ for the
+         * contact/meshtying cases. */
         iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
         break;
       }

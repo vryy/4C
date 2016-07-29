@@ -67,6 +67,11 @@ namespace TIMINT {
     //! Set state variables
     virtual void SetState(const Epetra_Vector& x) = 0;
 
+    /*! \brief Reset state variables of all models
+     *
+     *  \param x (in) : current full state vector */
+    void ResetModelStates(const Epetra_Vector& x);
+
     //! Apply the right hand side only
     virtual bool ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f) = 0;

@@ -40,20 +40,28 @@ namespace MODELEVALUATOR{
     virtual void Setup();
 
     //! derived
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f);
+    INPAR::STR::ModelType Type() const
+    { return INPAR::STR::model_cardiovascular0d; }
 
     //! derived
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac);
+    virtual void Reset(const Epetra_Vector& x);
 
     //! derived
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateForce();
+
+    //! derived
+    virtual bool EvaluateStiff();
+
+    //! derived
+    virtual bool EvaluateForceStiff();
+
+    //! derived
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const;
+
+    //! derived
+    virtual bool AssembleJacobian(LINALG::SparseOperator& jac,
+        const double & timefac_np) const;
 
     //! derived
     virtual void WriteRestart(
@@ -71,7 +79,7 @@ namespace MODELEVALUATOR{
         const Epetra_Vector& xnew);
 
     //! derived
-    virtual void UpdateStepState();
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
     virtual void UpdateStepElement();
@@ -97,28 +105,21 @@ namespace MODELEVALUATOR{
     //! derived
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
 
-  protected:
-    //! derived
-    virtual void Reset(const Epetra_Vector& x);
-    //! derived
-    virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
-
-    void AssembleRhs(Epetra_Vector& f) const;
-
-    void AssembleJacobian(LINALG::SparseOperator& jac) const;
-
   private:
 
     Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
     //! number of 0D cardiovascular conditions
-    int n_conds_;
+//    int n_conds_;
 
     //! structural displacement at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
-    //! structural stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr_;
+    //! cardio contributions to the structural stiffness matrix
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_cardio_ptr_;
+
+    //! structural rhs contributions of the cardio model at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fstructcardio_np_ptr_;
   };
 
 } // namespace ModelEvaluator

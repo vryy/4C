@@ -107,7 +107,6 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
 
   // ---------------------------------------------------------------------------
   // (re)set the linear solver parameters
-  // solve the linear system of equations and update the current state
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p =
       NoxParams().sublist("Direction").sublist("Newton").sublist("Linear Solver");
@@ -115,6 +114,10 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   p.set<int>("Current Time Step",GlobalState().GetStepNp());
   // ToDo Get the actual tolerance value
   p.set<double>("Wanted Tolerance",1.0e-6);
+
+  // ---------------------------------------------------------------------------
+  // solve the linear system of equations and update the current state
+  // ---------------------------------------------------------------------------
   // compute the Newton direction
   grp_ptr->computeNewton(p);
   // reset isValid flags
@@ -128,7 +131,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   const NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the active implicit time integrator
-  ImplInt().SetState(x_eptra.getEpetraVector());
+  ImplInt().ResetModelStates(x_eptra.getEpetraVector());
 
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->PutScalar(0.0);

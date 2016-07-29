@@ -18,6 +18,7 @@
 #define STR_MODEL_EVALUATOR_GENERIC_H_
 
 #include <Teuchos_RCP.hpp>
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declaration
 class Epetra_Vector;
@@ -66,11 +67,6 @@ namespace MODELEVALUATOR {
     virtual void Setup() = 0;
 
   protected:
-    //! reset class variables (without jacobian)
-    virtual void Reset(const Epetra_Vector& x) = 0;
-    //! reset jacobian and call Reset(x)
-    virtual void Reset(const Epetra_Vector& x,LINALG::SparseOperator& jac) = 0;
-
     //! Returns true, if Init() has been called
     inline const bool& IsInit() const { return isinit_; };
 
@@ -82,35 +78,78 @@ namespace MODELEVALUATOR {
 
     void CheckInit() const;
 
-    /*! \brief Check the evaluation procedures for possible errors.
-     *
-     *  In the standard case we check for exceptions like overflow, invalid results
-     *  or divide by zero operations. Furthermore, we look for an (optional) parameter
-     *  named ele_eval_error_flag_. This is universal and should be usable by all model
-     *  evaluators.
-     *
-     *  \author hiermeier*/
-    virtual bool EvalErrorCheck() const;
-
   public:
+    virtual INPAR::STR::ModelType Type() const = 0;
 
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f) = 0;
+    /*! \brief reset model specific variables (without jacobian)
+     *
+     *  This function is always called before the actual Evaluate() routine is going to start.
+     *  You can use it to reset model specific stuff at the beginning of a new Evaluate round.
+     *
+     *  \param x   (in) : current full state vector
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
+    virtual void Reset(const Epetra_Vector& x) = 0;
 
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac) = 0;
+    /*! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
+    virtual bool EvaluateForce() = 0;
 
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac) = 0;
+    /*! \brief Evaluate the current tangential stiffness matrix at \f$t_{n+1}\f$
+     *
+     *  \date 07/2016
+     *  \author hiermeier*/
+    virtual bool EvaluateStiff() = 0;
 
+    /*! \brief Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
+    virtual bool EvaluateForceStiff() = 0;
+
+    /*! \brief Assemble the force right-hand-side without
+     *
+     *  After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished we
+     *  start to put everything together. At this point we build the right-hand-side at
+     *  the desired mid-point. The reason why we do it here and not at time integrator level
+     *  is that you have now the possibility to use a different time integration (not the underlying
+     *  structural one). This makes it more flexible. However, the contributions of the old
+     *  time step should be stored in the UpdateStepState() routine. There you can scale the
+     *  old contributions with the time integration factor you like and save them once, thus you just
+     *  have to add them to complete the mid-point right-hand-side.
+     *
+     *  \param f         (out) : Time factor scaled right hand side w/o viscous and/or mass effects
+     *  \param timefac_np (in) : Time factor of the underlying structural time integrator for the new state
+     *                           at \f$t_{n+1}\f$. (To scale the old state of the previous time step see
+     *                           UpdateStepState.)
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const = 0;
+
+    //! Assemble the jacobian
+    virtual bool AssembleJacobian(
+        LINALG::SparseOperator& jac,
+        const double & timefac_np) const = 0;
+
+    /*! \brief write model specific restart
+     *
+     *  \param iowriter            (in) : output writer
+     *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced */
     virtual void WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const = 0;
 
+    /*! \brief read model specific restart information
+     *
+     *  \param ioreader (in) : input reader
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
     virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
     virtual void RecoverState(
@@ -118,7 +157,7 @@ namespace MODELEVALUATOR {
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew) = 0;
 
-    virtual void UpdateStepState() = 0;
+    virtual void UpdateStepState(const double& timefac_n) = 0;
 
     virtual void UpdateStepElement() = 0;
 
@@ -145,6 +184,16 @@ namespace MODELEVALUATOR {
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
     //! @}
   protected:
+    /*! \brief Check the evaluation procedures for possible errors.
+     *
+     *  In the standard case we check for exceptions like overflow, invalid results
+     *  or divide by zero operations. Furthermore, we look for an (optional) parameter
+     *  named ele_eval_error_flag_. This is universal and should be usable by all model
+     *  evaluators.
+     *
+     *  \author hiermeier*/
+    virtual bool EvalErrorCheck() const;
+
     //! @name internal accessors
     //! @{
     //! Returns the model evaluator data container

@@ -222,6 +222,16 @@ public:
     return *inactiverhs_;
   }
 
+  //! Return the structural contact right-hand-side contributions of the current time step \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector>& StrContactRhsPtr() { return strContactRhsPtr_; }
+  Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return strContactRhsPtr_; }
+  Epetra_Vector& StrContactRhs()
+  {
+    if (strContactRhsPtr_.is_null())
+      dserror("The strContactRhsPtr_ is not initialized!");
+    return *strContactRhsPtr_;
+  }
+
   //! return global constraint rhs vector (only for saddlepoint problems)
   Teuchos::RCP<Epetra_Vector>& ConstrRhsPtr() {return constrrhs_; };
   Teuchos::RCP<const Epetra_Vector> ConstrRhsPtr() const {return constrrhs_; };
@@ -444,6 +454,9 @@ private:
 
   //! gloabl inactive rhs vector (formulation with incremental z_ and saddle point system)
   Teuchos::RCP<Epetra_Vector> inactiverhs_;
+
+  //! structural contact right-hand-side vector at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> strContactRhsPtr_;
 
   //! global constraint rhs vector (only for saddlepoint problems)
   Teuchos::RCP<Epetra_Vector> constrrhs_;
@@ -697,7 +710,7 @@ public:
    *  \author hiermeier */
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
      const enum STR::VecBlockType& bt) const
-  { dserror("Not yet implemented!"); return Teuchos::null; };
+  { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! Return the condensed right-hand-side (read-only)
    *
@@ -707,7 +720,7 @@ public:
    *  \date 05/2016
    *  \author hiermeier */
   virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const
-  { dserror("Not yet implemented!"); return Teuchos::null; };
+  { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! \brief Return the desired matrix block pointer (read-only)
    *
@@ -718,17 +731,17 @@ public:
    *
    *  \date 05/2016
    *  \author hiermeier */
-  virtual Teuchos::RCP<const LINALG::SparseMatrix> GetMatrixBlockPtr(
+  virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
       const enum STR::MatBlockType& bt) const
-  { dserror("Not yet implemented!"); return Teuchos::null; };
+  { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! Return the condensed matrix block pointer (read-only)
    *
    *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
    *  contributions are present.
    */
-  virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
-  { dserror("Not yet implemented!"); return Teuchos::null; };
+  virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
+  { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   //! Return global slave node row map
   const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return Data().GSlNodeRowMapPtr(); }
@@ -927,11 +940,14 @@ public:
       Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
       const int step, const int iter, bool predictor = false);
 
-  /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff()
+  /*! \brief Reset the internal state variables
    *
    *  \date 02/2016
    *  \author hiermeier */
-  virtual void Reset(const Epetra_Vector& dis);
+  virtual void Reset(
+      const CONTACT::ParamsInterface& cparams,
+      const Epetra_Vector& dispnp,
+      const Epetra_Vector& xnew);
 
   /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
    *
@@ -1196,10 +1212,11 @@ protected:
 
   /*! \brief Recover the current state
    *
-   *  The main task of this method is to recover/extract the Lagrange multiplier solution.
+   *  The main task of this method is to recover the Lagrange multiplier solution.
    *  The Lagrange multiplier solution will be stored inside the corresponding strategy
    *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
    *  is condensed, this method is the right place to recover it from the displacement solution.
+   *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine instead.
    *
    *  \param cparams (in): parameter interface between the contact objects and the structural time integration
    *  \param xold    (in): old solution vector of the NOX solver
@@ -1212,6 +1229,17 @@ protected:
       const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xold,
       const Epetra_Vector& dir,
+      const Epetra_Vector& xnew);
+
+  /*! \brief Reset the internal stored Lagrange multipliers
+   *
+   *  \param cparams (in): parameter interface between the contact objects and the structural time integration
+   *  \param xnew    (in): new solution vector of the NOX solver
+   *
+   *  \date 07/2016
+   *  \author hiermeier */
+  virtual void ResetLagrangeMultipliers(
+      const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xnew);
 
   //! @}
@@ -1395,6 +1423,7 @@ protected:
     Teuchos::RCP<Epetra_Vector>& g_;                 //!< ref. to global weighted gap vector g
     Teuchos::RCP<Epetra_Vector>& tangrhs_;           //!< ref. to global tangential rhs vector (formulation with incremental z_)
     Teuchos::RCP<Epetra_Vector>& inactiverhs_;       //!< ref. to gloabl inactive rhs vector (formulation with incremental z_ and saddle point system)
+    Teuchos::RCP<Epetra_Vector>& strcontactrhs_;     //!< ref. to global structural contact rhs contributions at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& constrrhs_;         //!< ref. to global constraint rhs vector (only for saddlepoint problems)
 
     Teuchos::RCP<LINALG::SparseMatrix>& lindmatrix_; //!< ref. to global Matrix LinD containing slave fc derivatives

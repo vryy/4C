@@ -580,7 +580,26 @@ public:
   status and thus the LM set is assigned dynamically.
 
   */
-  virtual void UpdateLagMultSets(int offset_if);
+  void UpdateLagMultSets(int offset_if)
+  { UpdateLagMultSets(offset_if,false); };
+  void UpdateLagMultSets(int offset_if, const bool& redistributed);
+
+  /*! \brief Store the unredistributed local slave and lagrange multiplier
+   *   row dof maps
+   *
+   *  \author hiermeier
+   *  \date 07/2016 */
+  void StoreUnredistributedDofRowMaps();
+
+  /*! \brief Redistribute the lagrange multiplier sets in a deterministic way
+   *  in correlation to the redistributed slave dofs.
+   *
+   *  Please note, that this function becomes unnecessary as soon as we use
+   *  dofsets for the Lagrange and displacement dofs!
+   *
+   *  \author hiermeier
+   *  \date 07/2016 */
+  void RedistributeLagMultSets();
 
   /*!
   \brief Initialize / reset mortar interface
@@ -916,6 +935,9 @@ protected:
   Teuchos::RCP<Epetra_Map>           sdofcolmap_;    // column map of all slave dofs
   Teuchos::RCP<Epetra_Map>           mdofrowmap_;    // row map of all master dofs
   Teuchos::RCP<Epetra_Map>           mdofcolmap_;    // column map of all master dofs
+
+  Teuchos::RCP<Epetra_Map>           psdofrowmap_;   // row map of all slave dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>           plmdofmap_;     // row map of all lm dofs before any redistribution took place
 
   Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
   int                                maxdofglobal_;  // maximum dof ID in global discretization

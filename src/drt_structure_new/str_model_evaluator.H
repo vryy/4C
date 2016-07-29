@@ -65,14 +65,35 @@ namespace MODELEVALUATOR {
     //! setup
     void Setup();
 
+    //! @name General evaluate routines
+    //! @{
     //! apply force
-    bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) const;
+    bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f,
+        const double& timefac_np) const;
 
     //! apply stiffness
-    bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) const;
+    bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac,
+        const double& timefac_np) const;
+
+    //! apply model specific stiff
+    bool ApplyStiff(
+        const INPAR::STR::ModelType& mt,
+        const Epetra_Vector& x,
+        LINALG::SparseOperator& jac,
+        const double& timefac_np) const;
 
     //! apply force and stiffness
-    bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) const;
+    bool ApplyForceStiff(const Epetra_Vector& x,
+        Epetra_Vector& f,
+        LINALG::SparseOperator& jac,
+        const double& timefac_np) const;
+
+    //! @}
+
+    /*! \brief reset all model states
+     *
+     *  \param x (in) : current full state vector */
+    void Reset(const Epetra_Vector& x);
 
     //! Write current restart
     void WriteRestart(IO::DiscretizationWriter& iowriter,
@@ -100,7 +121,7 @@ namespace MODELEVALUATOR {
     //! @name Monolithic update routines
     //! @{
     //! Update configuration after time step
-    void UpdateStepState();
+    void UpdateStepState(const double& timefac_n);
 
     //! Update everything on element level after time step and after output
     void UpdateStepElement();

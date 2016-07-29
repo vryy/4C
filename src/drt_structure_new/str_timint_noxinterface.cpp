@@ -19,6 +19,7 @@
 #include "str_timint_base.H"
 #include "str_dbc.H"
 #include "str_impl_generic.H"
+#include "str_utils.H"
 
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 
@@ -103,7 +104,7 @@ bool STR::TIMINT::NoxInterface::computeF(const Epetra_Vector& x,
   if (not implint_ptr_->ApplyForce(x,F))
     return false;
 
-  /* Apply the DBC on the right hand side, since we need the Dirchilet free
+  /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&F,false);
   dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
@@ -185,13 +186,18 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
   CheckInitSetup();
   double rhsnorm = -1.0;
 
+  // convert the given quantity type to a model type
+  const INPAR::STR::ModelType mt =
+      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+
   switch (checkquantity)
   {
     case NOX::NLN::StatusTest::quantity_structure:
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
-      // export the displacement solution if necessary
+      // export the model specific solution if necessary
       Teuchos::RCP<Epetra_Vector> rhs_ptr =
-          gstate_ptr_->ExportDisplEntries(F);
+          gstate_ptr_->ExtractModelEntries(mt,F);
 
       // transform to a NOX::Epetra::Vector
       Teuchos::RCP<const NOX::Epetra::Vector> rhs_nox_ptr =
@@ -201,19 +207,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
       // do the scaling if desired
       if (isscaled)
         rhsnorm /= static_cast<double>(rhs_nox_ptr->length());
-      break;
-    }
-    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
-    {
-      // export the solution if necessary
-      Teuchos::RCP<Epetra_Vector> rhs0d_ptr =
-          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,F);
 
-      // transform to a NOX::Epetra::Vector
-      Teuchos::RCP<const NOX::Epetra::Vector> rhs0d_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(rhs0d_ptr,
-              NOX::Epetra::Vector::CreateView));
-      rhsnorm = rhs0d_nox_ptr->norm(type);
       break;
     }
     default:
@@ -238,19 +232,25 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
 
   double rms = -1.0;
 
+  // convert the given quantity type to a model type
+  const INPAR::STR::ModelType mt =
+      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+
   switch (checkquantity)
   {
     case NOX::NLN::StatusTest::quantity_structure:
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> disincr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExportDisplEntries(xold)));
-      Teuchos::RCP<const Epetra_Vector> disnew_ptr =
-          gstate_ptr_->ExportDisplEntries(xnew);
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt,xold)));
+      Teuchos::RCP<const Epetra_Vector> model_xnew_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xnew);
 
-      disincr_ptr->Update(1.0,*disnew_ptr,-1.0);
-      rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,disnew_ptr,disincr_ptr,
+      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
+      rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
           disable_implicit_weighting);
+
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
@@ -280,40 +280,30 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
 
   double updatenorm = -1.0;
 
+  // convert the given quantity type to a model type
+  const INPAR::STR::ModelType mt =
+      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+
   switch (checkquantity)
   {
     case NOX::NLN::StatusTest::quantity_structure:
-    {
-      // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> disincr_ptr =
-          gstate_ptr_->ExportDisplEntries(xold);
-      Teuchos::RCP<const Epetra_Vector> disnew_ptr =
-          gstate_ptr_->ExportDisplEntries(xnew);
-
-      disincr_ptr->Update(1.0,*disnew_ptr,-1.0);
-      Teuchos::RCP<const NOX::Epetra::Vector> disincr_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(disincr_ptr,NOX::Epetra::Vector::CreateView));
-
-      updatenorm = disincr_nox_ptr->norm(type);
-      // do the scaling if desired
-      if (isscaled)
-        updatenorm /= static_cast<double>(disincr_nox_ptr->length());
-
-      break;
-    }
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
-      // export the solution if necessary
-      Teuchos::RCP<Epetra_Vector> cv0dincr_ptr =
-          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xold);
-      Teuchos::RCP<const Epetra_Vector> cv0dnew_ptr =
-          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xnew);
+      // export the displacement solution if necessary
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xold);
+      Teuchos::RCP<const Epetra_Vector> model_xnew_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xnew);
 
-      cv0dincr_ptr->Update(1.0,*cv0dnew_ptr,-1.0);
-      Teuchos::RCP<const NOX::Epetra::Vector> cv0dincr_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(cv0dincr_ptr,NOX::Epetra::Vector::CreateView));
+      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
+      Teuchos::RCP<const NOX::Epetra::Vector> model_incr_nox_ptr =
+          Teuchos::rcp(new NOX::Epetra::Vector(model_incr_ptr,
+              NOX::Epetra::Vector::CreateView));
 
-      updatenorm = cv0dincr_nox_ptr->norm(type);
+      updatenorm = model_incr_nox_ptr->norm(type);
+      // do the scaling if desired
+      if (isscaled)
+        updatenorm /= static_cast<double>(model_incr_nox_ptr->length());
 
       break;
     }
@@ -352,34 +342,27 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
 
   double xoldnorm = -1.0;
 
+  // convert the given quantity type to a model type
+  const INPAR::STR::ModelType mt =
+      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+
   switch (checkquantity)
   {
     case NOX::NLN::StatusTest::quantity_structure:
-    {
-      // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> disold_ptr =
-          gstate_ptr_->ExportDisplEntries(xold);
-
-      Teuchos::RCP<const NOX::Epetra::Vector> disold_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(disold_ptr,NOX::Epetra::Vector::CreateView));
-
-      xoldnorm = disold_nox_ptr->norm(type);
-      // do the scaling if desired
-      if (isscaled)
-        xoldnorm /= static_cast<double>(disold_nox_ptr->length());
-
-      break;
-    }
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
-      // export the solution if necessary
-      Teuchos::RCP<Epetra_Vector> cv0dold_ptr =
-          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xold);
+      // export the displacement solution if necessary
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xold);
 
-      Teuchos::RCP<const NOX::Epetra::Vector> cv0dold_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(cv0dold_ptr,NOX::Epetra::Vector::CreateView));
+      Teuchos::RCP<const NOX::Epetra::Vector> model_xold_nox_ptr =
+          Teuchos::rcp(new NOX::Epetra::Vector(model_xold_ptr,
+              NOX::Epetra::Vector::CreateView));
 
-      xoldnorm = cv0dold_nox_ptr->norm(type);
+      xoldnorm = model_xold_nox_ptr->norm(type);
+      // do the scaling if desired
+      if (isscaled)
+        xoldnorm /= static_cast<double>(model_xold_nox_ptr->length());
 
       break;
     }
@@ -420,7 +403,7 @@ double STR::TIMINT::NoxInterface::GetObjectiveModelValue(
   {
     // get the current displacement vector
     Teuchos::RCP<const Epetra_Vector> disnp =
-        gstate_ptr_->ExportDisplEntries(x);
+        gstate_ptr_->ExtractDisplEntries(x);
 
     Teuchos::ParameterList p;
     // parameter needed by the elements

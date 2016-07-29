@@ -431,3 +431,48 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetPlasticStrainOutputTyp
   CheckInitSetup();
   return io_ptr_->GetPlasticStrainOutputType();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const bool& STR::MODELEVALUATOR::Data::IsPredictor() const
+{
+  return GState().IsPredict();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int STR::MODELEVALUATOR::Data::GetNlnIter() const
+{
+  if (IsPredictor())
+    return 0;
+
+  bool isnox = false;
+  Teuchos::RCP<const STR::NLN::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  const STR::TIMINT::Implicit* timint_impl_ptr =
+      dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
+  if (timint_impl_ptr!=NULL)
+  {
+    Teuchos::RCP<const STR::NLN::SOLVER::Generic> nlnsolver_ptr =
+        timint_impl_ptr->GetNlnSolverPtr();
+    /* If we are still in the setup process we return -1. This will happen
+     * for the EquilibriateInitialState() call in dynamic simulations. */
+    if (nlnsolver_ptr.is_null())
+      return -1;
+    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::NLN::SOLVER::Nox>(
+        nlnsolver_ptr);
+    if (not nox_nln_ptr.is_null())
+      isnox = true;
+  }
+  if (not isnox)
+    dserror("The GetNlnIter() routine supports only the NOX::NLN "
+        "framework at the moment.");
+
+  return nox_nln_ptr->GetNumNlnIterations();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int STR::MODELEVALUATOR::Data::GetStepNp() const
+{
+  return GState().GetStepNp();
+}

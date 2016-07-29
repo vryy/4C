@@ -97,7 +97,7 @@ double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(
     return -1.0;
 
   Teuchos::RCP<Epetra_Vector> constrRhs =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,F);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,F);
 
   // no constraint contributions present
   if (constrRhs.is_null())
@@ -133,9 +133,9 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,xNew);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,xNew);
 
   lagincr_ptr->Update(1.0,*lagnew_ptr,-1.0);
   Teuchos::RCP<const NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -162,9 +162,9 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,xNew);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,xNew);
 
   lagincr_ptr->Update(1.0,*lagnew_ptr,-1.0);
   Teuchos::RCP<const NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -194,7 +194,7 @@ double LAGPENCONSTRAINT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagold_ptr =
-      gstate_ptr_->ExportModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
+      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint,xOld);
 
   Teuchos::RCP<const NOX::Epetra::Vector> lagold_nox_ptr =
       Teuchos::rcp(new NOX::Epetra::Vector(lagold_ptr,NOX::Epetra::Vector::CreateView));

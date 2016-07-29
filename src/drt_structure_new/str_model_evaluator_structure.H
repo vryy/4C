@@ -21,7 +21,7 @@
 #include "../drt_inpar/inpar_structure.H"      // enumerators
 #include <Teuchos_RCP.hpp>
 
-#include "str_elements_paramsinterface.H"            // interface to the element evaluation
+#include "str_elements_paramsinterface.H"     // interface to the element evaluation
 
 //forward declaration ...
 namespace LINALG {
@@ -43,21 +43,27 @@ namespace MODELEVALUATOR{
 
     //! @name Derived public STR::MODELEVALUATOR::Generic methods
     //! @{
-    //! derived
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f);
 
     //! derived
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac);
+    INPAR::STR::ModelType Type() const
+    { return INPAR::STR::model_structure; }
 
     //! derived
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateForce();
+
+    //! derived
+    virtual bool EvaluateStiff();
+
+    //! derived
+    virtual bool EvaluateForceStiff();
+
+    //! derived
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const;
+
+    //! derived
+    virtual bool AssembleJacobian(LINALG::SparseOperator& jac,
+        const double & timefac_np) const;
 
     //! derived
     virtual void WriteRestart(
@@ -74,7 +80,7 @@ namespace MODELEVALUATOR{
             const Epetra_Vector& xnew);
 
     //! derived
-    virtual void UpdateStepState();
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
     virtual void UpdateStepElement();
@@ -104,8 +110,6 @@ namespace MODELEVALUATOR{
   protected:
     //! derived
     virtual void Reset(const Epetra_Vector& x);
-    //! derived
-    virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
 
   private:
 

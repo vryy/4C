@@ -305,6 +305,16 @@ namespace MODELEVALUATOR {
 
     //! reset the partial update norm value of the current processor
     void ResetMyNorms(const bool& isdefaultstep);
+
+    //! return the stress data (read-only)
+    const std::vector<char>& StressData() const;
+
+    //! return the strain data (read-only)
+    const std::vector<char>& StrainData() const;
+
+    //! return the plastic strain data (read-only)
+    const std::vector<char>& PlasticStrainData() const;
+
     //! @}
 
     //! @name accessors to the remaining data containers
@@ -330,43 +340,44 @@ namespace MODELEVALUATOR {
     //! @{
 
     //! Time integration strategy
-    inline const STR::TIMINT::Base& GetTimInt() const
+    inline const STR::TIMINT::Base& TimInt() const
     {
       CheckInit();
       return *timint_ptr_;
     }
 
     //! Structural dynamic data
-    inline const STR::TIMINT::BaseDataSDyn& GetSDyn() const
+    inline const STR::TIMINT::BaseDataSDyn& SDyn() const
     {
       CheckInit();
       return *sdyn_ptr_;
     }
 
     //! input/ouput parameters
-    inline const STR::TIMINT::BaseDataIO& GetInOutput() const
+    inline const STR::TIMINT::BaseDataIO& InOutput() const
     {
       CheckInit();
       return *io_ptr_;
     }
 
     //! global state variables
-    inline const STR::TIMINT::BaseDataGlobalState& GetGState() const
+    inline const STR::TIMINT::BaseDataGlobalState& GState() const
     {
       CheckInit();
       return *gstate_ptr_;
     }
 
-    //! return the stress data (read-only)
-    const std::vector<char>& StressData() const;
+    //! get the nonlinear iteration number
+    int GetNlnIter() const;
 
-    //! return the strain data (read-only)
-    const std::vector<char>& StrainData() const;
+    //! get the current step counter \f$(n+1)\f$
+    int GetStepNp() const;
 
-    //! return the plastic strain data (read-only)
-    const std::vector<char>& PlasticStrainData() const;
+    //! get the predictor indicator
+    const bool& IsPredictor() const;
 
     //! @}
+
   protected:
     //! returns the isinit_ flag
     inline const bool& IsInit() const
@@ -564,24 +575,36 @@ namespace MODELEVALUATOR {
     };
 
     //! get the nonlinear iteration number
-    int GetNlnIter() const;
+    int GetNlnIter() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetNlnIter();
+    };
 
     //! get the current step counter \f$(n+1)\f$
-    int GetStepNp() const;
+    int GetStepNp() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetStepNp();
+    };
 
-    const bool& IsPredictor() const;
+    const bool& IsPredictor() const
+    {
+      CheckInit();
+      return str_data_ptr_->IsPredictor();
+    };
 
     //! get the current step length [derived]
     virtual inline double GetStepLength() const
     {
-      CheckInitSetup();
+      CheckInit();
       return str_data_ptr_->GetStepLength();
     };
 
     //! get the is_default_step indicator [derived]
     virtual inline bool IsDefaultStep() const
     {
-      CheckInitSetup();
+      CheckInit();
       return str_data_ptr_->IsDefaultStep();
     };
 
@@ -622,31 +645,31 @@ namespace MODELEVALUATOR {
     }
 
     //! Time integration strategy
-    inline const STR::TIMINT::Base& GetTimInt() const
+    inline const STR::TIMINT::Base& TimInt() const
     {
       CheckInit();
-      return str_data_ptr_->GetTimInt();
+      return str_data_ptr_->TimInt();
     }
 
     //! Structural dynamic data
-    inline const STR::TIMINT::BaseDataSDyn& GetSDyn() const
+    inline const STR::TIMINT::BaseDataSDyn& SDyn() const
     {
       CheckInit();
-      return str_data_ptr_->GetSDyn();
+      return str_data_ptr_->SDyn();
     }
 
     //! input/ouput parameters
-    inline const STR::TIMINT::BaseDataIO& GetInOutput() const
+    inline const STR::TIMINT::BaseDataIO& InOutput() const
     {
       CheckInit();
-      return str_data_ptr_->GetInOutput();
+      return str_data_ptr_->InOutput();
     }
 
     //! global state variables
-    inline const STR::TIMINT::BaseDataGlobalState& GetGState() const
+    inline const STR::TIMINT::BaseDataGlobalState& GState() const
     {
       CheckInit();
-      return str_data_ptr_->GetGState();
+      return str_data_ptr_->GState();
     }
 
   private:

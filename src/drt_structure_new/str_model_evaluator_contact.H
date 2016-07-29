@@ -46,20 +46,29 @@ namespace MODELEVALUATOR {
     //! @name Functions which are derived from the base generic class
     //! @{
     //! [derived]
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f);
+    INPAR::STR::ModelType Type() const
+    { return INPAR::STR::model_contact; }
+
+    //! reset class variables (without jacobian) [derived]
+    virtual void Reset(const Epetra_Vector& x);
 
     //! [derived]
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateForce();
 
     //! [derived]
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateStiff();
+
+    //! [derived]
+    virtual bool EvaluateForceStiff();
+
+    //! derived
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const;
+
+    //! Assemble the jacobian at \f$t_{n+1}\f$
+    virtual bool AssembleJacobian(
+        LINALG::SparseOperator& jac,
+        const double & timefac_np) const;
 
     //! [derived]
     virtual void WriteRestart(
@@ -76,7 +85,7 @@ namespace MODELEVALUATOR {
         const Epetra_Vector& xnew);
 
     //! [derived]
-    virtual void UpdateStepState();
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! [derived]
     virtual void UpdateStepElement();
@@ -112,16 +121,6 @@ namespace MODELEVALUATOR {
     //! Returns the underlying contact strategy object
     CONTACT::CoAbstractStrategy& Strategy();
     const CONTACT::CoAbstractStrategy& Strategy() const;
-
-    //! reset class variables (without jacobian) [derived]
-    virtual void Reset(const Epetra_Vector& x);
-
-    //! reset jacobian and call Reset(x) [derived]
-    virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
-
-    void AssembleRhs(Epetra_Vector& f) const;
-
-    void AssembleJacobian(LINALG::SparseOperator& jac) const;
 
     STR::MODELEVALUATOR::ContactData& EvalContact();
 

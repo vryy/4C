@@ -17,6 +17,7 @@
 #include "str_model_evaluator_generic.H"
 #include "str_timint_base.H"
 #include "str_model_evaluator_data.H"
+#include "str_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 

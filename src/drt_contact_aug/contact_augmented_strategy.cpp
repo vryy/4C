@@ -46,7 +46,6 @@ CONTACT::AugStratDataContainer::AugStratDataContainer()
       kappaPtr_(Teuchos::null),
       lmNPtr_(Teuchos::null),
       dLmTLmTRhsPtr_(Teuchos::null),
-      strContactRhsPtr_(Teuchos::null),
       cnPtr_(Teuchos::null),
       uCnPtr_(Teuchos::null),
       gsndofrowmapPtr_(Teuchos::null),
@@ -77,8 +76,8 @@ CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(
       DRT::INPUT::IntegralValue<bool>(params.sublist("AUGMENTED"),
           "PRINT_LINEAR_CONSERVATION");
   Data().PrintAngularMomConservation() =
-        DRT::INPUT::IntegralValue<bool>(params.sublist("AUGMENTED"),
-            "PRINT_ANGULAR_CONSERVATION");
+      DRT::INPUT::IntegralValue<bool>(params.sublist("AUGMENTED"),
+          "PRINT_ANGULAR_CONSERVATION");
 
   // cast to augmented interfaces
   for (int i=0; i<(int) interfaces.size(); ++i)
@@ -389,26 +388,40 @@ void CONTACT::AugmentedLagrangeStrategy::RecoverState(
     const Epetra_Vector& xnew)
 {
   /* Since the augmented Lagrangian strategy does not support any kind
-   * of condensation, the recovery is straight forward. */
-  Teuchos::RCP<Epetra_Vector> znew_ptr =
-      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
-  LINALG::Export(xnew,*znew_ptr);
+   * of condensation, we use this routine just to store the lagrange
+   * multiplier increment. */
   Teuchos::RCP<Epetra_Vector> zdir_ptr =
       Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
   LINALG::Export(dir,*zdir_ptr);
   // get the current step length
   const double stepLength = cparams.GetStepLength();
   // ---------------------------------------------------------------------
-  // Update the current lagrange multiplier
-  // ---------------------------------------------------------------------
-  znew_ptr->ReplaceMap(Data().LmPtr()->Map());
-  Data().LmPtr()->Scale(1.0,*znew_ptr);
-  // ---------------------------------------------------------------------
   // store the SCALED Lagrange multiplier increment in the contact
   // strategy
   // ---------------------------------------------------------------------
   zdir_ptr->ReplaceMap(Data().LmIncrPtr()->Map());
   Data().LmIncrPtr()->Scale(stepLength,*zdir_ptr);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AugmentedLagrangeStrategy::ResetLagrangeMultipliers(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xnew)
+{
+  /* Since the augmented Lagrangian strategy does not support any kind
+   * of condensation, we do not have to check if it is a saddle
+   * point system. */
+  Teuchos::RCP<Epetra_Vector> znew_ptr =
+      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
+  LINALG::Export(xnew,*znew_ptr);
+  // ---------------------------------------------------------------------
+  // Update the current lagrange multiplier
+  // ---------------------------------------------------------------------
+  znew_ptr->ReplaceMap(Data().LmPtr()->Map());
+
+  Data().LmPtr()->Scale(1.0,*znew_ptr);
+
   // ---------------------------------------------------------------------
   // store the new Lagrange multiplier in the nodes
   // ---------------------------------------------------------------------
@@ -761,7 +774,7 @@ void CONTACT::AugmentedLagrangeStrategy::EvalStrContactRHS()
     Data().DMatrix().Multiply(true,*augLmN,*augfs);
     Teuchos::RCP<Epetra_Vector> augfs_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*augfs,*augfs_exp);
-    Data().StrContactRhs().Update(-1.0,*augfs_exp,0.0);
+    Data().StrContactRhs().Scale(-1.0,*augfs_exp);
 
     // Master side
     Teuchos::RCP<Epetra_Vector> augfm = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
@@ -1146,7 +1159,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AugmentedLagrangeStrategy::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
     GetMatrixBlockPtr(const enum STR::MatBlockType& bt) const
 {
   // if there are no active contact contributions

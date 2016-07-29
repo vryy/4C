@@ -64,6 +64,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       g_(Teuchos::null),
       tangrhs_(Teuchos::null),
       inactiverhs_(Teuchos::null),
+      strContactRhsPtr_(Teuchos::null),
       constrrhs_(Teuchos::null),
       lindmatrix_(Teuchos::null),
       linmmatrix_(Teuchos::null),
@@ -140,6 +141,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       g_(data_ptr->WGapPtr()),
       tangrhs_(data_ptr->TangRhsPtr()),
       inactiverhs_(data_ptr->InactiveRhsPtr()),
+      strcontactrhs_(data_ptr->StrContactRhsPtr()),
       constrrhs_(data_ptr->ConstrRhsPtr()),
       lindmatrix_(data_ptr->DLinMatrixPtr()),
       linmmatrix_(data_ptr->MLinMatrixPtr()),
@@ -209,6 +211,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
   // redistribution of slave and master sides)
   if (ParRedist())
   {
+    for (std::size_t i = 0; i < interface_.size(); ++i)
+      interface_[i]->StoreUnredistributedDofRowMaps();
     pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
     pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
     pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
@@ -445,7 +449,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
     // build Lagrange multiplier dof map
-    interface_[i]->UpdateLagMultSets(offset_if);
+    interface_[i]->UpdateLagMultSets(offset_if,redistributed);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
     glmdofrowmap_ = LINALG::MergeMap(LMDoFRowMapPtr(true),
@@ -1830,7 +1834,7 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   if (IsSelfContact())
     zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
-  zold_->Update(1.0, *z_, 0.0);
+  zold_->Scale(1.0, *z_);
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
   StoreDM("old");
 
@@ -1990,7 +1994,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
     dmatrix_ = temp;
   }
 
-  // read restart information on actice set and slip set (leave sets empty
+  // read restart information on active set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(
       new Epetra_Vector(SlRowNodes()));
@@ -2855,9 +2859,13 @@ void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::Reset(const Epetra_Vector& dis)
+void CONTACT::CoAbstractStrategy::Reset(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& dispnp,
+    const Epetra_Vector& xnew)
 {
-  SetState(MORTAR::state_new_displacement, dis);
+  SetState(MORTAR::state_new_displacement, dispnp);
+  ResetLagrangeMultipliers(cparams,xnew);
 
   return;
 }
@@ -2887,6 +2895,22 @@ void CONTACT::CoAbstractStrategy::Evaluate(
     case MORTAR::eval_force_stiff:
     {
       EvalForceStiff(cparams);
+      break;
+    }
+    // -------------------------------------------------------------------
+    // reset internal stored solution quantities (e.g.
+    // displacement state, Lagrange multi.)
+    // -------------------------------------------------------------------
+    case MORTAR::eval_reset:
+    {
+      if (eval_vec.size()!=2)
+        dserror("The \"MORTAR::eval_reset\" action expects \n"
+            "exactly 2 evaluation vector pointers! But you \n"
+            "passed %i vector pointers!",eval_vec.size());
+      const Epetra_Vector& dispnp = *(eval_vec[0]);
+      const Epetra_Vector& xnew   = *(eval_vec[1]);
+      Reset(cparams,dispnp, xnew);
+
       break;
     }
     // -------------------------------------------------------------------
@@ -2950,6 +2974,16 @@ void CONTACT::CoAbstractStrategy::RecoverState(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
+    const Epetra_Vector& xnew)
+{
+  dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
+      "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::ResetLagrangeMultipliers(
+    const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xnew)
 {
   dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "

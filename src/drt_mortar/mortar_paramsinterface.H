@@ -27,7 +27,8 @@ namespace MORTAR {
                                   is negligible. */
     eval_force,              /*!< Evaluation of the contact/meshtying right-hand-side only. Necessary
                                   and meaningful for line search strategies for example. */
-    eval_recover             /*!< recover internal quantities, e.g. Lagrange multipliers */
+    eval_recover,            /*!< recover internal quantities, e.g. Lagrange multipliers */
+    eval_reset               /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers */
   };
 
   static inline const std::string ActionType2String(const enum ActionType& act)

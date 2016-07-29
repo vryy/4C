@@ -117,7 +117,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExportDisplEntries(x);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
   GlobalState().GetMutableDisNp()->Scale(1.0,*disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -191,13 +191,13 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForce(x,f);
+  bool ok = ModelEval().ApplyForce(x,f,theta_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+theta}^{i}
   // ---------------------------------------------------------------------------
-  EvaluateMidStateForce(f);
+  AddViscoMassContributions(f);
 
   return ok;
 }
@@ -215,13 +215,13 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyStiff(x,jac);
+  bool ok = ModelEval().ApplyStiff(x,jac,theta_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+theta}^{i}
   // ---------------------------------------------------------------------------
-  EvaluateMidStateJacobian(jac);
+  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -241,14 +241,14 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac);
+  bool ok = ModelEval().ApplyForceStiff(x,f,jac,theta_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+1-theta}^{i}
+  // add the visco and mass contributions
   // ---------------------------------------------------------------------------
-  EvaluateMidStateForce(f);
-  EvaluateMidStateJacobian(jac);
+  AddViscoMassContributions(f);
+  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -257,15 +257,8 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::EvaluateMidStateForce(Epetra_Vector& f) const
+void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(Epetra_Vector& f) const
 {
-  // structural dofs of the right-hand-side vector at t_{n} (read-only)
-  Teuchos::RCP<const Epetra_Vector> fstructn_ptr =
-      GlobalState().GetFstructureN();
-
-  // structural dofs of the right-hand-side vector at t_{n}
-  STR::AssembleVector(theta_,f,1.0-theta_,*fstructn_ptr);
-
   // viscous damping forces at t_{n}
   STR::AssembleVector(1.0,f,1.0-theta_,*fviscon_ptr_);
   // viscous damping forces at t_{n+1}
@@ -279,7 +272,7 @@ void STR::IMPLICIT::OneStepTheta::EvaluateMidStateForce(Epetra_Vector& f) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::EvaluateMidStateJacobian(
+void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(
     LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr =
@@ -287,11 +280,10 @@ void STR::IMPLICIT::OneStepTheta::EvaluateMidStateJacobian(
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*GlobalState().GetMassMatrix(),false,
-      1.0/(theta_*dt*dt), theta_);
+      1.0/(theta_*dt*dt), 1.0);
   // add Rayleigh damping contributions
   if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
     stiff_ptr->Add(*GlobalState().GetDampMatrix(),false,1.0/dt,1.0);
-
 }
 
 /*----------------------------------------------------------------------------*
@@ -342,9 +334,6 @@ double STR::IMPLICIT::OneStepTheta::GetIntParam() const
 void STR::IMPLICIT::OneStepTheta::UpdateStepState()
 {
   CheckInitSetup();
-  // reset structural right hand side.
-  //  It will be filled within the model evaluators
-  GlobalState().GetMutableFstructureN()->PutScalar(0.0);
   // ---------------------------------------------------------------------------
   // dynamic effects
   // ---------------------------------------------------------------------------
@@ -358,7 +347,7 @@ void STR::IMPLICIT::OneStepTheta::UpdateStepState()
   // ---------------------------------------------------------------------------
   // update model specific variables
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateStepState();
+  ModelEval().UpdateStepState(1-theta_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -390,18 +379,21 @@ void STR::IMPLICIT::OneStepTheta::PredictConstDisConsistVelAcc(
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
   // constant predictor: displacement in domain
-  disnp.Update(1.0,*disn,0.0);
+  disnp.Scale(1.0,*disn);
 
   // consistent velocities
-  velnp.Update(1.0,disnp,-1.0,*disn,0.0);
-  velnp.Update(-(1.0-theta_)/theta_, *veln,
-               1.0/(theta_*dt));
+  /* Since disnp and disn are equal we can skip the current
+   * update part and have to consider only the old state at t_{n}.
+   *           disnp-disn = 0.0                                 */
+  velnp.Scale(-(1.0-theta_)/theta_, *veln);
 
   // consistent accelerations
-  accnp.Update(1.0,disnp,-1.0,*disn,0.0);
+  /* Since disnp and disn are equal we can skip the current
+   * update part and have to consider only the old state at t_{n}.
+   *           disnp-disn = 0.0                                 */
   accnp.Update(-1.0/(theta_*theta_*dt),*veln,
-               -(1.0-theta_)/theta_,*accn,
-                1.0/(theta_*theta_*dt*dt));
+      -(1.0-theta_)/theta_,*accn,
+      0.0);
 
 
   return;
@@ -421,20 +413,20 @@ bool STR::IMPLICIT::OneStepTheta::PredictConstVelConsistAcc(
   Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
-  // extrapolated displacements based upon constant velocities
-  // d_{n+1} = d_{n} + dt * v_{n}
+  /* extrapolated displacements based upon constant velocities
+   * d_{n+1} = d_{n} + dt * v_{n} */
   disnp.Update(1.0,*disn,dt,*veln,0.0);
 
   // consistent velocities
   velnp.Update(1.0,disnp,-1.0,*disn,0.0);
   velnp.Update(-(1.0-theta_)/theta_,*veln,
-                1.0/(theta_*dt));
+      1.0/(theta_*dt));
 
   // consistent accelerations
   accnp.Update(1.0,disnp,-1.0,*disn,0.0);
   accnp.Update(-1.0/(theta_*theta_*dt),*veln,
-               -(1.0-theta_)/theta_,*accn,
-                1.0/(theta_*theta_*dt*dt));
+      -(1.0-theta_)/theta_,*accn,
+      1.0/(theta_*theta_*dt*dt));
 
   return true;
 }
@@ -453,21 +445,21 @@ bool STR::IMPLICIT::OneStepTheta::PredictConstAcc(
   Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
-  // extrapolated displacements based upon constant accelerations
-  // d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n}
+  /* extrapolated displacements based upon constant accelerations
+   * d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n} */
   disnp.Update(1.0,*disn,dt,*veln, 0.0);
   disnp.Update(0.5*dt*dt,*accn,1.0);
 
   // consistent velocities
   velnp.Update(1.0,disnp,-1.0,*disn,0.0);
   velnp.Update(-(1.0-theta_)/theta_,*veln,
-                1.0/(theta_*dt));
+      1.0/(theta_*dt));
 
   // consistent accelerations
   accnp.Update(1.0,disnp,-1.0,*disn,0.0);
   accnp.Update(-1.0/(theta_*theta_*dt),*veln,
-               -(1.0-theta_)/theta_,*accn,
-                1.0/(theta_*theta_*dt*dt));
+      -(1.0-theta_)/theta_,*accn,
+      1.0/(theta_*theta_*dt*dt));
 
   return true;
 }

@@ -2,6 +2,10 @@
 /*!
 \file str_timint_implicitbase.cpp
 
+\brief This class summarizes the functionality which all
+       implicit time integration strategies share and have in
+       common.
+
 \maintainer Michael Hiermeier
 
 \date Dec 16, 2015
@@ -37,7 +41,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
   const NOX::Abstract::Group& solgrp = GetSolutionGroup();
   const NOX::Epetra::Vector& F =
       dynamic_cast<const NOX::Epetra::Vector&>(solgrp.getF());
-  return GetDataGlobalState().ExportDisplEntries(F.getEpetraVector());
+  return GetDataGlobalState().ExtractDisplEntries(F.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*

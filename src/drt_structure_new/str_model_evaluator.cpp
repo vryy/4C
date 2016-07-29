@@ -112,7 +112,18 @@ void STR::ModelEvaluator::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
+void STR::ModelEvaluator::Reset(const Epetra_Vector& x)
+{
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->Reset(x);
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f,
+    const double& timefac_np)
     const
 {
   CheckInitSetup();
@@ -120,9 +131,24 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
+  // ---------------------------------------------------------------------------
+  // evaluate all terms
+  // ---------------------------------------------------------------------------
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+  {
+    // if one model evaluator failed, skip the remaining ones and return false
+    if (not ok) break;
+
+    (*me_iter)->Reset(x);
+    ok = (*me_iter)->EvaluateForce();
+  }
+
+  // ---------------------------------------------------------------------------
+  // put everything together
+  // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*me_iter)->ApplyForce(x,f) : false);
+    ok = (ok ? (*me_iter)->AssembleForce(f,timefac_np) : false);
 
   return ok;
 }
@@ -130,24 +156,68 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
-    LINALG::SparseOperator& jac) const
+    LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
   Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
   jac.Zero();
+  // ---------------------------------------------------------------------------
+  // evaluate all terms
+  // ---------------------------------------------------------------------------
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+  {
+    // if one model evaluator failed, skip the remaining ones and return false
+    if (not ok) break;
+
+    (*me_iter)->Reset(x);
+    ok = (*me_iter)->EvaluateStiff();
+  }
+
+  // ---------------------------------------------------------------------------
+  // put everything together
+  // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*me_iter)->ApplyStiff(x,jac) : false);
+    ok = (ok ? (*me_iter)->AssembleJacobian(jac,timefac_np) : false);
 
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::ModelEvaluator::ApplyStiff(
+    const INPAR::STR::ModelType& mt,
+    const Epetra_Vector& x,
+    LINALG::SparseOperator& jac,
+    const double& timefac_np) const
+{
+  CheckInitSetup();
+  bool ok = true;
+  Teuchos::RCP<STR::MODELEVALUATOR::Generic> model_ptr = me_map_ptr_->at(mt);
+  // initialize stiffness matrix to zero
+  jac.Zero();
+  // ---------------------------------------------------------------------------
+  // evaluate all terms
+  // ---------------------------------------------------------------------------
+  model_ptr->Reset(x);
+  ok = model_ptr->EvaluateStiff();
+
+  // ---------------------------------------------------------------------------
+  // put everything together
+  // ---------------------------------------------------------------------------
+  ok = (ok ? model_ptr->AssembleJacobian(jac,timefac_np) : false);
+
+  return ok;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
-    Epetra_Vector& f, LINALG::SparseOperator& jac) const
+    Epetra_Vector& f, LINALG::SparseOperator& jac,
+    const double& timefac_np) const
 {
   CheckInitSetup();
   Vector::iterator me_iter;
@@ -155,9 +225,27 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
   // initialize stiffness matrix and right hand side to zero
   f.PutScalar(0.0);
   jac.Zero();
+  // ---------------------------------------------------------------------------
+  // evaluate all terms
+  // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+  {
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*me_iter)->ApplyForceStiff(x,f,jac) : false);
+    if (not ok) break;
+
+    (*me_iter)->Reset(x);
+    ok = (*me_iter)->EvaluateForceStiff();
+  }
+
+  // ---------------------------------------------------------------------------
+  // put everything together
+  // ---------------------------------------------------------------------------
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+  {
+    // if one model evaluator failed, skip the remaining ones and return false
+    ok = (ok ? (*me_iter)->AssembleForce(f,timefac_np) : false);
+    ok = (ok ? (*me_iter)->AssembleJacobian(jac,timefac_np) : false);
+  }
 
   return ok;
 }
@@ -262,12 +350,15 @@ const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::UpdateStepState()
+void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
 {
   CheckInitSetup();
+  /* Reset old structural right hand side.
+   * It will be filled within the model evaluators */
+  gstate_ptr_->GetMutableFstructureOld()->Scale(0.0);
   Vector::iterator me_iter;
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-    (*me_iter)->UpdateStepState();
+    (*me_iter)->UpdateStepState(timefac_n);
 }
 
 /*----------------------------------------------------------------------------*

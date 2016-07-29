@@ -35,9 +35,12 @@ STR::IMPLICIT::GenAlpha::GenAlpha()
       alphaf_(-1.0),
       alpham_(-1.0),
       rhoinf_(-1.0),
+      const_vel_acc_update_ptr_(Teuchos::null),
       fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
-      const_vel_acc_update_ptr_(Teuchos::null)
+      finertianp_ptr_(Teuchos::null),
+      finertian_ptr_(Teuchos::null)
+
 {
   // empty constructor
 }
@@ -170,7 +173,7 @@ void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExportDisplEntries(x);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
   GlobalState().GetMutableDisNp()->Scale(1.0,*disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -245,13 +248,13 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForce(x,f);
+  bool ok = ModelEval().ApplyForce(x,f,1-alphaf_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+1-alpha_f}^{i}
+  // add the visco and mass contributions
   // ---------------------------------------------------------------------------
-  EvaluateMidStateForce(f);
+  AddViscoMassContributions(f);
 
   return ok;
 }
@@ -269,13 +272,13 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyStiff(x,jac);
+  bool ok = ModelEval().ApplyStiff(x,jac,1-alphaf_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+1-alpha_f}^{i}
+  // add the visco and mass contributions
   // ---------------------------------------------------------------------------
-  EvaluateMidStateJacobian(jac);
+  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -295,14 +298,14 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac);
+  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1-alphaf_);
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+1-alpha_{f/m}}^{i}
+  // add the visco and mass contributions
   // ---------------------------------------------------------------------------
-  EvaluateMidStateForce(f);
-  EvaluateMidStateJacobian(jac);
+  AddViscoMassContributions(f);
+  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -311,13 +314,8 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::EvaluateMidStateForce(Epetra_Vector& f) const
+void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(Epetra_Vector& f) const
 {
-  // structural dofs of the right-hand-side vector at t_{n} (read-only)
-  Teuchos::RCP<const Epetra_Vector> fstructn_ptr =
-      GlobalState().GetFstructureN();
-  // structural dofs of the right-hand-side vector at t_{n+1-alpha_f}
-  STR::AssembleVector((1-alphaf_),f,alphaf_,*fstructn_ptr);
   // viscous damping forces at t_{n+1-alpha_f}
   STR::AssembleVector(1.0,f,alphaf_,*fviscon_ptr_);
   STR::AssembleVector(1.0,f,1-alphaf_,*fvisconp_ptr_);
@@ -328,7 +326,7 @@ void STR::IMPLICIT::GenAlpha::EvaluateMidStateForce(Epetra_Vector& f) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::EvaluateMidStateJacobian(
+void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(
     LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr =
@@ -336,11 +334,10 @@ void STR::IMPLICIT::GenAlpha::EvaluateMidStateJacobian(
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*GlobalState().GetMassMatrix(),false,
-      (1.0-alpham_)/(beta_*dt*dt),(1.0-alphaf_));
+      (1.0-alpham_)/(beta_*dt*dt),1.0);
   // add Rayleigh damping contributions
   if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
     stiff_ptr->Add(*GlobalState().GetDampMatrix(),false,(1.0-alphaf_)*gamma_/(beta_*dt),1.0);
-
 }
 
 /*----------------------------------------------------------------------------*
@@ -393,7 +390,6 @@ double STR::IMPLICIT::GenAlpha::GetIntParam() const
 void STR::IMPLICIT::GenAlpha::UpdateStepState()
 {
   CheckInitSetup();
-  GlobalState().GetMutableFstructureN()->PutScalar(0.0);
   // ---------------------------------------------------------------------------
   // dynamic effects
   // ---------------------------------------------------------------------------
@@ -407,7 +403,7 @@ void STR::IMPLICIT::GenAlpha::UpdateStepState()
   // ---------------------------------------------------------------------------
   // update model specific variables
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateStepState();
+  ModelEval().UpdateStepState(alphaf_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -439,19 +435,23 @@ void STR::IMPLICIT::GenAlpha::PredictConstDisConsistVelAcc(
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
   // constant predictor: displacement in domain
-  disnp.Update(1.0,*disn,0.0);
+  disnp.Scale(1.0,*disn);
 
   // consistent velocities following Newmark formulas
-  velnp.Update(1.0,disnp,-1.0,*disn,0.0);
+  /* Since disnp and disn are equal we can skip the current
+   * update part and have to consider only the old state at t_{n}.
+   *           disnp-disn = 0.0                                 */
   velnp.Update((beta_-gamma_)/beta_, *veln,
       (2.0*beta_-gamma_)*dt/(2.0*beta_), *accn,
-      gamma_/(beta_*dt));
+      0.0);
 
   // consistent accelerations following Newmark formulas
-  accnp.Update(1.0,disnp,-1.0,*disn,0.0);
+  /* Since disnp and disn are equal we can skip the current
+   * update part and have to consider only the old state at t_{n}.
+   *           disnp-disn = 0.0                                 */
   accnp.Update(-1.0/(beta_*dt),*veln,
-                (2.0*beta_-1.0)/(2.0*beta_),*accn,
-                1.0/(beta_*dt*dt));
+      (2.0*beta_-1.0)/(2.0*beta_),*accn,
+      0.0);
 
   return;
 
@@ -482,14 +482,14 @@ bool STR::IMPLICIT::GenAlpha::PredictConstVelConsistAcc(
   // consistent velocities following Newmark formulas
   velnp.Update(1.0,disnp,-1.0,*disn,0.0);
   velnp.Update((beta_-gamma_)/beta_,*veln,
-                (2.*beta_-gamma_)*dt/(2.*beta_),*accn,
-                gamma_/(beta_*dt));
+      (2.*beta_-gamma_)*dt/(2.*beta_),*accn,
+      gamma_/(beta_*dt));
 
   // consistent accelerations following Newmark formulas
   accnp.Update(1.0,disnp,-1.0,*disn,0.0);
   accnp.Update(-1.0/(beta_*dt),*veln,
-                (2.0*beta_-1.0)/(2.0*beta_),*accn,
-                1./(beta_*dt*dt));
+      (2.0*beta_-1.0)/(2.0*beta_),*accn,
+      1./(beta_*dt*dt));
 
   return true;
 }

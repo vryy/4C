@@ -217,16 +217,6 @@ public:
     return *dLmTLmTRhsPtr_;
   }
 
-  //! Return the structural contact right-hand-side contributions
-  Teuchos::RCP<Epetra_Vector>& StrContactRhsPtr() { return strContactRhsPtr_; }
-  Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return strContactRhsPtr_; }
-  Epetra_Vector& StrContactRhs()
-  {
-    if (strContactRhsPtr_.is_null())
-      dserror("The augStrContactRhsPtr_ is not initialized!");
-    return *strContactRhsPtr_;
-  }
-
   //! Returns the nodal c_n vector
   Teuchos::RCP<Epetra_Vector>& CnPtr() { return cnPtr_; }
   Teuchos::RCP<const Epetra_Vector> CnPtr() const { return cnPtr_; }
@@ -341,9 +331,6 @@ protected:
   //! inactive tangential lagrange multiplier right-hand-side
   Teuchos::RCP<Epetra_Vector> dLmTLmTRhsPtr_;
 
-  //! structural contact right-hand-side vector
-  Teuchos::RCP<Epetra_Vector> strContactRhsPtr_;
-
   //! cn-values of each node
   Teuchos::RCP<Epetra_Vector> cnPtr_;
 
@@ -413,10 +400,8 @@ public:
 
   //! Return the slip node row map of the previous Newton step
   virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-  {
-    dserror("No frictional contact for the augmented Lagrangian contact formulation!");
-    return Teuchos::null;
-  };
+  { dserror("No frictional contact for the augmented Lagrangian contact formulation!");
+    exit(EXIT_FAILURE); };
 
   /*! \brief Return the slave dof row map in normal direction
    *
@@ -456,22 +441,23 @@ public:
     return *SlTangentialDoFRowMapPtr(redist);
   }
 
+  //! derived
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
       const enum STR::VecBlockType& bt) const;
 
   //! Return the condensed right hand side vector (currently unsupported!)
   virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const
   { dserror("There is no condensed rhs pointer in the augmented Lagrangian case!");
-    return Teuchos::null; };
+    exit(EXIT_FAILURE); };
 
   //! Return the desired matrix block pointer
-  virtual Teuchos::RCP<const LINALG::SparseMatrix> GetMatrixBlockPtr(
+  virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
       const enum STR::MatBlockType& bt) const;
 
   //! Return the condensed matrix block pointer (currently unsupported!)
-  virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
+  virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
   { dserror("There is no condensed matrix block in the augmented Lagrangian case!");
-    return Teuchos::null; };
+    exit(EXIT_FAILURE); };
 
   //! Return the contact status of the last nonlinear solver iteration
   bool WasInContactLastIter() const { return Data().WasInContactLastIter(); }
@@ -657,6 +643,17 @@ protected:
       const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xold,
       const Epetra_Vector& dir,
+      const Epetra_Vector& xnew);
+
+  /*! \brief Reset the internal stored Lagrange multipliers
+   *
+   *  \param cparams (in): parameter interface between the contact objects and the structural time integration
+   *  \param xnew    (in): new solution vector of the NOX solver
+   *
+   *  \date 07/2016
+   *  \author hiermeier */
+  virtual void ResetLagrangeMultipliers(
+      const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xnew);
 
   //! \brief Derived function

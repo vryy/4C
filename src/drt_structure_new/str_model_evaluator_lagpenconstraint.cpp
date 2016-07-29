@@ -38,7 +38,8 @@
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
     : disnp_ptr_(Teuchos::null),
-      stiff_ptr_(Teuchos::null)
+      stiff_constr_ptr_(Teuchos::null),
+      fstrconstr_np_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -54,11 +55,15 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
+  fstrconstr_np_ptr_ =
+      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
+  stiff_constr_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *GState().DofRowMapView(), 81, true, true));
 
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new UTILS::ConstrManager(dis,
-                                                 disnp_ptr_,
-                                                 DRT::Problem::Instance()->StructuralDynamicParams()));
+      disnp_ptr_,
+      DRT::Problem::Instance()->StructuralDynamicParams()));
 
   // set flag
   issetup_ = true;
@@ -66,20 +71,21 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForce(
-    const Epetra_Vector& x,
-    Epetra_Vector& f)
+void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
 {
-
   CheckInitSetup();
-  Reset(x);
 
-  // get structural displacement DOFs
-  Teuchos::RCP<Epetra_Vector> block_vec_ptr =
-        Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
+  fstrconstr_np_ptr_->Scale(0.0);
+  stiff_constr_ptr_->Zero();
 
-  // dummy matrix
-  Teuchos::RCP<LINALG::SparseMatrix> dummat = Teuchos::null;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForce()
+{
+  CheckInitSetup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;
@@ -88,37 +94,18 @@ bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForce(
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 //  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
 
-  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, block_vec_ptr, dummat, pcon);
-
-  // assemble constraint contribution to structural rhs
-  STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
-
-  // reset the block pointer, just to be on the safe side
-  block_vec_ptr = Teuchos::null;
-
-  // --- assemble right-hand-side ---------------------------------------
-  AssembleRhs(f);
+  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_,
+      fstrconstr_np_ptr_, Teuchos::null, pcon);
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::ApplyStiff(
-    const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
+bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateStiff()
 {
 
   CheckInitSetup();
-  Reset(x, jac);
-
-  // dummy vector
-  Teuchos::RCP<Epetra_Vector> dumvec = Teuchos::null;
-
-  // get structural stiffness matrix
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
-      GState().ExtractModelBlock(jac,INPAR::STR::model_lag_pen_constraint,
-          STR::block_displ_displ);
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;
@@ -127,33 +114,21 @@ bool STR::MODELEVALUATOR::LagPenConstraint::ApplyStiff(
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 //  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
 
-  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, dumvec, jac_dd, pcon);
+  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, Teuchos::null,
+      stiff_constr_ptr_, pcon);
 
-  // --- assemble jacobian matrix ---------------------------------------
-  AssembleJacobian(jac);
+  if (not stiff_constr_ptr_->Filled())
+    stiff_constr_ptr_->Complete();
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForceStiff(
-    const Epetra_Vector& x,
-    Epetra_Vector& f,
-    LINALG::SparseOperator& jac)
+bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForceStiff()
 {
 
   CheckInitSetup();
-  Reset(x, jac);
-
-  // get structural displacement DOFs
-  Teuchos::RCP<Epetra_Vector> block_vec_ptr =
-        Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
-
-  // get structural stiffness matrix
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
-      GState().ExtractModelBlock(jac,INPAR::STR::model_lag_pen_constraint,
-          STR::block_displ_displ);
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;
@@ -162,18 +137,11 @@ bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForceStiff(
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 //  Teuchos::RCP<const Epetra_Vector> disnp = GState().GetDisNp();
 
-  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, block_vec_ptr, jac_dd, pcon);
+  constrman_->EvaluateForceStiff(time_np, disn,
+      disnp_ptr_, fstrconstr_np_ptr_, stiff_constr_ptr_, pcon);
 
-  // assemble constraint contribution to structural rhs
-  STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
-
-  // reset the block pointer, just to be on the safe side
-  block_vec_ptr = Teuchos::null;
-
-  // --- assemble right-hand-side ---------------------------------------
-  AssembleRhs(f);
-  // --- assemble jacobian matrix ---------------------------------------
-  AssembleJacobian(jac);
+  if (not stiff_constr_ptr_->Filled())
+    stiff_constr_ptr_->Complete();
 
   return true;
 }
@@ -181,8 +149,12 @@ bool STR::MODELEVALUATOR::LagPenConstraint::ApplyForceStiff(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::AssembleRhs(Epetra_Vector& f) const
+bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(Epetra_Vector& f,
+    const double & timefac_np) const
 {
+  if (timefac_np!=1.0)
+    dserror("You have to consider the corresponding time integration"
+      " factors.");
 
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
@@ -194,34 +166,49 @@ void STR::MODELEVALUATOR::LagPenConstraint::AssembleRhs(Epetra_Vector& f) const
         "the structural part indicates, that constraint contributions \n"
         "are present!");
 
+  STR::AssembleVector(1.0,f,1.0,*fstrconstr_np_ptr_);
   STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
 
+  return true;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
-    LINALG::SparseOperator& jac) const
+bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
+    LINALG::SparseOperator& jac,
+    const double & timefac_np) const
 {
+  if (timefac_np!=1.0)
+    dserror("You have to consider the corresponding time integration"
+      " factors.");
 
   Teuchos::RCP<const LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
+  // --- Kdd - block ---------------------------------------------------
+  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
+      GState().ExtractDisplBlock(jac);
+  jac_dd_ptr->Add(*stiff_constr_ptr_,false,timefac_np,1.0);
+  // no need to keep it
+  stiff_constr_ptr_->Zero();
   // --- Kdz - block ---------------------------------------------------
-  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix()));
+  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(
+      constrman_->GetConstrMatrix(),true));
 
-  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_lag_pen_constraint,
+  GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
   // --- Kzd - block ---------------------------------------------------
-  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix()))->Transpose();
+  block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(
+      constrman_->GetConstrMatrix()))->Transpose();
 
-  GState().AssignModelBlock(jac,*block_ptr,INPAR::STR::model_lag_pen_constraint,
+  GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
+  return true;
 }
 
 
@@ -263,7 +250,8 @@ void STR::MODELEVALUATOR::LagPenConstraint::RecoverState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepState()
+void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepState(
+    const double& timefac_n)
 {
   // empty
 }
@@ -311,31 +299,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::Reset(
-    const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
-{
-  CheckInitSetup();
-  Reset(x);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
-{
-  CheckInitSetup();
-
-  // update the structural displacement vector
-  //disnp_ptr_ = GState().GetDisNp();
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

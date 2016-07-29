@@ -69,6 +69,57 @@ namespace NLN {
       const std::set<enum INPAR::STR::ModelType>& modeltypes,
       const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& mlinsolvers);
 
+  /*! \brief Convert the structural model type enumerator to a nox nln solution
+   *  type enumerator
+   *
+   *  \param modeltype (in) : Model type enumerator which has to be converted
+   *  \param do_check  (in) : Check if a corresponding solution type exists */
+  enum NOX::NLN::SolutionType ConvertModelType2SolType(
+      const enum INPAR::STR::ModelType& modeltype,
+      const bool& do_check);
+
+  /*! \brief Convert the structural model type enumerator to a nox nln solution
+   *  type enumerator and check if the conversion was successful
+   *
+   *  \param modeltype (in) : Model type enumerator which has to be converted. */
+  inline enum NOX::NLN::SolutionType ConvertModelType2SolType(
+        const enum INPAR::STR::ModelType& modeltype)
+  { return ConvertModelType2SolType(modeltype,true); }
+
+  /*! \brief Convert the nox nln solution type enumerator to a structural model
+   *  type enumerator
+   *
+   *  \param soltype (in)   : Solution type enumerator which has to be converted.
+   *  \param do_check  (in) : Check if a corresponding model type exists. */
+  enum INPAR::STR::ModelType ConvertSolType2ModelType(
+      const enum NOX::NLN::SolutionType& soltype,
+      const bool& do_check);
+
+  /*! \brief Convert the structural model type enumerator to a nox nln solution
+   *  type enumerator and check if the conversion was successful
+   *
+   *  \param modeltype (in) : Model type enumerator which has to be converted. */
+  inline enum INPAR::STR::ModelType ConvertSolType2ModelType(
+      const enum NOX::NLN::SolutionType& soltype)
+  { return ConvertSolType2ModelType(soltype,true); }
+
+  /*! \brief Convert the nox nln statustest quantity type enumerator to a structural model
+   *  type enumerator
+   *
+   *  \param qtype (in)    : Quantity type enumerator which has to be converted.
+   *  \param do_check (in) : Check if a corresponding model type exists. */
+  enum INPAR::STR::ModelType ConvertQuantityType2ModelType(
+      const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      const bool& do_check);
+
+  /*! \brief Convert the nox nln statustest quantity type enumerator to a structural model
+   *  type enumerator and check if the conversion was successful
+   *
+   *  \param qtype (in) : Quantity type enumerator which has to be converted. */
+  inline enum INPAR::STR::ModelType ConvertQuantityType2ModelType(
+      const enum NOX::NLN::StatusTest::QuantityType& qtype)
+  { return ConvertQuantityType2ModelType(qtype,true); }
+
   //! Returns the optimization type of the underlying structural problem
   enum NOX::NLN::OptimizationProblemType
       OptimizationType(const std::vector<enum NOX::NLN::SolutionType>& soltypes);

@@ -1656,8 +1656,14 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
 /*----------------------------------------------------------------------*
  |  update Lagrange multiplier set (dofs)                     popp 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if)
+void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if,
+    const bool& redistributed)
 {
+  if (redistributed)
+  {
+    RedistributeLagMultSets();
+    return;
+  }
   //********************************************************************
   // LAGRANGE MULTIPLIER DOFS
   //********************************************************************
@@ -1681,7 +1687,7 @@ void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if)
   localnumlmdof[Comm().MyPID()] = sdofrowmap_->NumMyElements();
   Comm().SumAll(&localnumlmdof[0], &globalnumlmdof[0], Comm().NumProc());
 
-  // compute offet for LM dof initialization for all procs
+  // compute offset for LM dof initialization for all procs
   int offset = 0;
   for (int k = 0; k < Comm().MyPID(); ++k)
     offset += globalnumlmdof[k];
@@ -1697,6 +1703,78 @@ void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if)
         new Epetra_Map(-1, (int) lmdof.size(), &lmdof[0], 0, Comm()));
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::StoreUnredistributedDofRowMaps()
+{
+  psdofrowmap_  = Teuchos::rcp(new Epetra_Map(*sdofrowmap_));
+  plmdofmap_ = Teuchos::rcp(new Epetra_Map(*lmdofmap_));
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::RedistributeLagMultSets()
+{
+  if (plmdofmap_.is_null())
+    dserror("The plmdofmap_ is not yet initialized!");
+  if (psdofrowmap_.is_null())
+    dserror("The psdofrowmap_ is not yet initialized!");
+
+  // new lm dofs
+  std::vector<int> lmdof(sdofrowmap_->NumMyElements());
+
+  /* get the initial correlation between the slave dofs
+   * and the lagrange multiplier dofs
+   *
+   * There is always a tuple of two values which correlate
+   * with each other. The first one is the lm-dof, the second
+   * one is the slave dof. */
+  std::vector<int> my_related_gids(2*plmdofmap_->NumMyElements(),-1);
+  for (int i=0;i<plmdofmap_->NumMyElements();++i)
+  {
+    my_related_gids[2*i]   = plmdofmap_->GID(i);
+    my_related_gids[2*i+1] = psdofrowmap_->GID(i);
+  }
+
+  std::vector<int> g_related_gids;
+  Comm().Barrier();
+  for (int p=0; p<Comm().NumProc();++p)
+  {
+    int num_mygids = plmdofmap_->NumMyElements();
+
+    Comm().Broadcast(&num_mygids,1,p);
+    // skip processors which hold no correlation info
+    if (num_mygids == 0)
+      continue;
+    g_related_gids.resize(2*num_mygids);
+
+    /* communicate the correlation list of proc p
+     * to all procs */
+    if (p==Comm().MyPID())
+      for (std::size_t i=0;i<my_related_gids.size();++i)
+        g_related_gids[i] = my_related_gids[i];
+    Comm().Broadcast(&g_related_gids[0],2*num_mygids,p);
+
+    for (int i=0;i<num_mygids;++i)
+    {
+      /* check in the already redistributed sdofrowmap on
+       * each processor which one holds the current gid */
+      int my_sllid = sdofrowmap_->LID(g_related_gids[2*i+1]);
+      /* on the proc holding the gid, we store the corresponding
+       * lm-dof-gid as well at the same lid. */
+      if (my_sllid!=-1)
+        lmdof[my_sllid] = g_related_gids[2*i];
+    }
+    // wait for the arrival of all procs
+    Comm().Barrier();
+  }
+
+  // create deterministic interface LM map
+  lmdofmap_ = Teuchos::rcp(
+      new Epetra_Map(-1, (int) lmdof.size(), &lmdof[0], 0, Comm()));
 }
 
 /*----------------------------------------------------------------------*

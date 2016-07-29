@@ -41,20 +41,30 @@ namespace MODELEVALUATOR{
     virtual void Setup();
 
     //! derived
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f);
+    INPAR::STR::ModelType Type() const
+    { return INPAR::STR::model_springdashpot; }
 
     //! derived
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac);
+    virtual void Reset(const Epetra_Vector& x);
 
     //! derived
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac);
+    virtual bool EvaluateForce();
+
+    //! derived
+    virtual bool EvaluateStiff();
+
+    //! derived
+    virtual bool EvaluateForceStiff();
+
+
+    //! derived
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const double & timefac_np) const;
+
+    //! Assemble the jacobian at \f$t_{n+1}\f$
+    virtual bool AssembleJacobian(
+        LINALG::SparseOperator& jac,
+        const double & timefac_np) const;
 
     //! derived
     virtual void WriteRestart(
@@ -72,7 +82,7 @@ namespace MODELEVALUATOR{
         const Epetra_Vector& xnew);
 
     //! derived
-    virtual void UpdateStepState();
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
     virtual void UpdateStepElement();
@@ -98,12 +108,6 @@ namespace MODELEVALUATOR{
     //! derived
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
 
-  protected:
-    //! derived
-    virtual void Reset(const Epetra_Vector& x);
-    //! derived
-    virtual void Reset(const Epetra_Vector& x, LINALG::SparseOperator& jac);
-
   private:
     //! all spring dashpot instances
     std::vector<Teuchos::RCP<UTILS::SpringDashpotNew> > springs_;
@@ -115,7 +119,11 @@ namespace MODELEVALUATOR{
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
     //! structural stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr_;
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_spring_ptr_;
+
+    //! spring forces at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fspring_np_ptr_;
+
   };
 
 } // namespace ModelEvaluator

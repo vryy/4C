@@ -86,26 +86,29 @@ namespace TIMINT {
     /// setup the multi map extractor for saddle point problems
     void SetupMultiMapExtractor();
 
-    /// Get the part of a vector which belongs to the displacement dofs. If
-    /// it is a pure structural problem a pointer to a copy of the input vector is returned.
-    Teuchos::RCP<Epetra_Vector> ExportDisplEntries(
+    /* \brief Extract the part of a vector which belongs to the displacement dofs.
+     *
+     * \param source (in) : full vector to extract from. */
+    Teuchos::RCP<Epetra_Vector> ExtractDisplEntries(
         const Epetra_Vector& source) const;
 
-    /// Get the part of a vector which belongs to the model dofs. If
-    /// it is a pure structural problem a pointer to a copy of the input vector is returned.
-    Teuchos::RCP<Epetra_Vector> ExportModelEntries(
+    /* \brief Extract the part of a vector which belongs to the model dofs.
+     *
+     * \param mt (in)     : model type of the desired block.
+     * \param source (in) : full vector to extract from. */
+    Teuchos::RCP<Epetra_Vector> ExtractModelEntries(
         const INPAR::STR::ModelType& mt,
         const Epetra_Vector& source) const;
-
-    Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
-        LINALG::SparseOperator& jac,
-        const INPAR::STR::ModelType& mt) const;
 
     /// Get the block of the stiffness matrix which belongs to the displacement dofs.
     Teuchos::RCP<LINALG::SparseMatrix> ExtractDisplBlock(
         LINALG::SparseOperator& jac) const;
 
-    /// Get the block of the desired model which belongs to the given block type.
+    /* \brief Get the block of the desired model which belongs to the given block type.
+     *
+     * \param jac (in) : Full jacobian to extract from.
+     * \param mt (in)  : Model type of the desired block.
+     * \param bt (in)  : Desired matrix block type.  */
     Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
         LINALG::SparseOperator& jac,
         const INPAR::STR::ModelType& mt,
@@ -136,6 +139,10 @@ namespace TIMINT {
     /// Get the displacement block of the global jacobian matrix in the global
     /// state data container.
     Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianDisplBlock() const;
+
+    /// Get the displacement block of the global jacobian matrix in the global
+    /// state data container.
+    Teuchos::RCP<LINALG::SparseMatrix> JacobianDisplBlock();
 
     /// Create the global solution vector
     Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector() const;
@@ -396,11 +403,14 @@ namespace TIMINT {
     }
 
 
-    /// Return entire force \f$fstructure_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> GetFstructureN() const
+    /** \brief Return entire force \f$fstructure_{old}\f$
+     *
+     *  Please note that this old structural residual is already scaled by the
+     *  different time integration factors! */
+    Teuchos::RCP<const Epetra_Vector> GetFstructureOld() const
     {
       CheckInitSetup();
-      return fstructn_;
+      return fstructold_;
     }
     ///@}
 
@@ -701,11 +711,14 @@ namespace TIMINT {
       return fvisconp_;
     }
 
-    /// Return entire force \f$fstructure_{n}\f$
-    Teuchos::RCP<Epetra_Vector>& GetMutableFstructureN()
+    /** \brief Return entire force \f$fstructure_{old}\f$
+     *
+     *  Please note that this old structural residual is already scaled by the
+     *  different time integration factors! */
+    Teuchos::RCP<Epetra_Vector>& GetMutableFstructureOld()
     {
       CheckInitSetup();
-      return fstructn_;
+      return fstructold_;
     }
 
     ///@}
@@ -713,7 +726,7 @@ namespace TIMINT {
     /// @name Get mutable system matrices
     ///@{
     /// returns the entire structural jacobian
-    Teuchos::RCP<LINALG::SparseOperator> GetMutableJacobian()
+    Teuchos::RCP<LINALG::SparseOperator>& GetMutableJacobian()
     {
       CheckInitSetup();
       return jac_;
@@ -831,13 +844,17 @@ namespace TIMINT {
     /// global viscous force vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> fvisconp_;
 
-    /** \brief structural right hand side of the previous time step
+    /** \brief dynamic structural right hand side of the previous time step
      *
-     *  The vector fstructn holds the structural right hand side without dynamic effects
-     *  at \f$t_{n}\f$:
+     *  The vector fstructold holds the structural right hand side without dynamic mass and viscous contributions
+     *  at \f$t_{n + timefac_n}\f$:
      *
-     *  f_{struct,n} = f_{int,n} - f_{ext,n} + f_{contact,n} + ... */
-    Teuchos::RCP<Epetra_Vector> fstructn_;
+     *  f_{struct,n} = a_n * f_{int,n} - a_n * f_{ext,n} + b_n * f_{contact,n} + c_n * f_{cardio,n} ...,
+     *  where
+     *      a_n, b_n, c_n represent different time integration factors.
+     *
+     *  */
+    Teuchos::RCP<Epetra_Vector> fstructold_;
     ///@}
     /// @name System matrices
     ///@{
