@@ -51,19 +51,21 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("MAXTIME",5.0,"maximum time",&particledyn);
 
    setStringToIntegralParameter<int>(
-                               "CONTACT_STRATEGY","None",
-                               "Contact strategies for particle problems",
+                               "PARTICLE_INTERACTION","None",
+                               "Interaction types for particle or meshfree problems",
                                tuple<std::string>(
                                  "None",
                                  "NormalContact_DEM",
                                  "NormalContact_MD",
-                                 "NormalAndTangentialContact_DEM"
+                                 "NormalAndTangentialContact_DEM",
+                                 "MeshFree"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::None,
                                  INPAR::PARTICLE::Normal_DEM,
                                  INPAR::PARTICLE::Normal_MD,
-                                 INPAR::PARTICLE::NormalAndTang_DEM
+                                 INPAR::PARTICLE::NormalAndTang_DEM,
+                                 INPAR::PARTICLE::MeshFree
                                  ),
                                &particledyn);
 
@@ -87,6 +89,17 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  INPAR::PARTICLE::Tsuji
                                  ),
                                &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "WEIGHT_FUNCTION","Exponential","weight function for meshFree contact dynamics",
+                               tuple<std::string>(
+                                 "Exponential"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::Exponential
+                                 ),
+                               &particledyn);
+
    DoubleParameter("DISMEMBER_RADIUS",-1.0,"particle radius used during dismembering (it shall be smaller than the radius of the old particle)",&particledyn);
    BoolParameter("TRG_TEMPERATURE","no","switch on/off thermodynamics equations",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);

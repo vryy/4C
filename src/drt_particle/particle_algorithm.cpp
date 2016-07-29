@@ -599,8 +599,8 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
 {
   // rough safety check whether bin size is large enough for proper contact detection
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ContactStrategy contact_strategy =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
+  INPAR::PARTICLE::ParticleInteractions contact_strategy =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
   if(contact_strategy != INPAR::PARTICLE::None)
   {
     double extrema[2] = {0.0, 0.0};

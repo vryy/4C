@@ -59,7 +59,7 @@ TIMESTEP                        0.5E-5
 NUMSTEP                         4000
 MAXTIME                         0.5
 GRAVITY_ACCELERATION            0.0 0.0 0.0
-CONTACT_STRATEGY                NormalAndTangentialContact_DEM
+PARTICLE_INTERACTION            NormalAndTangentialContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01

@@ -75,9 +75,6 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> mass
       );
 
-    /// read initial contact parameters and validate them
-    virtual void ReadContactParameters(double density);
-
     /// assemble energies of particles
     virtual double EnergyAssemble(double owner_i, double owner_j);
 
@@ -124,7 +121,7 @@ namespace PARTICLE
     //@{
 
     /// overall contact strategy
-    INPAR::PARTICLE::ContactStrategy contact_strategy_;
+    INPAR::PARTICLE::ParticleInteractions particle_interaction_type_;
 
     /// normal contact model
     INPAR::PARTICLE::NormalContact normal_contact_;

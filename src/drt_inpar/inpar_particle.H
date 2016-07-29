@@ -33,7 +33,7 @@ namespace INPAR
     };
 
     /// Contact type for particles
-    enum ContactStrategy
+    enum ParticleInteractions
     {
       None,
       Normal_DEM,
@@ -68,6 +68,12 @@ namespace INPAR
       particle_2Dx,
       particle_2Dy,
       particle_2Dz
+    };
+
+    /// Weight function for MeshFree contact dynamics
+    enum WeightFunction
+    {
+      Exponential
     };
 
     /// set the particle parameters

@@ -35,7 +35,7 @@ TYPE                            Particle
 CUTOFF_RADIUS                   0.03
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-CONTACT_STRATEGY                NormalContact_DEM
+PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpring
 MIN_RADIUS                      0.9e-5
 MAX_RADIUS                      2.5e-5

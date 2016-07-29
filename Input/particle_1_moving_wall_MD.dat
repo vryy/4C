@@ -57,7 +57,7 @@ RESTARTEVRY                     1000000
 TIMESTEP                        0.5
 NUMSTEP                         6
 GRAVITY_ACCELERATION 0.0 0.0 0.0
-CONTACT_STRATEGY                NormalContact_MD
+PARTICLE_INTERACTION            NormalContact_MD
 NORMAL_CONTACT_LAW              LinearSpring
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01

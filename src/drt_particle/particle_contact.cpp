@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/particleAMmat.H"
+#include "../drt_mat/meshFreeAMmat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
@@ -57,30 +58,317 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   velncol_(Teuchos::null),
   ang_velncol_(Teuchos::null)
 {
-  // make sure that a particle material is defined in the dat-file
+  // extract input parameters
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+  particle_interaction_type_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
   int id = -1;
-  if (particle_algorithm_->trg_Temperature())
+  // deal with the meshFree interaction
+  if (particle_interaction_type_ == INPAR::PARTICLE::MeshFree)
   {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_meshFreeAMmat);
+    //check
+    if (id==-1)
+      dserror("Could not find particle material or material type - trg_temperature do not match");
   }
+  // deal with everything except meshFree
   else
   {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+    // make sure that a particle material is defined in the dat-file
+
+    if (particle_algorithm_->trg_Temperature())
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+    }
+    else
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+    }
+
+    if (id==-1)
+      dserror("Could not find particle material or material type - trg_temperature do not match");
+
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+
+    // currently all particles have identical density and radius
+    double density = actmat->density_;
+    nue_ = actmat->poissonratio_;
+    young_ = actmat->young_;
+
+    //find the normal contact type
+    normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");
+
+    if(particle_interaction_type_ != INPAR::PARTICLE::None)
+    {
+      r_min_ = particleparams.get<double>("MIN_RADIUS");
+      r_max_ = particleparams.get<double>("MAX_RADIUS");
+      v_max_ = particleparams.get<double>("MAX_VELOCITY");
+      c_ = particleparams.get<double>("REL_PENETRATION");
+      e_ = particleparams.get<double>("COEFF_RESTITUTION");
+      e_wall_ = particleparams.get<double>("COEFF_RESTITUTION_WALL");
+      mu_wall_ = particleparams.get<double>("FRICT_COEFF_WALL");
+      mu_ = particleparams.get<double>("FRICT_COEFF");
+      tension_cutoff_ = (DRT::INPUT::IntegralValue<int>(particleparams,"TENSION_CUTOFF") == 1);
+
+      if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0 or young_<0.0)
+        dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION, YOUNG's modulus have to be larger than zero)");
+
+      if(r_min_>r_max_)
+        dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
+
+      int id = -1;
+      if (particle_algorithm_->trg_Temperature())
+      {
+        id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+      }
+      else
+      {
+        id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+      }
+      // check
+      if (id==-1)
+      {
+        dserror("Could not find particle material or material type - trg_temperature do not match");
+      }
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+
+      if (actmat->initialradius_ < r_min_)
+        dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
+
+      if (actmat->initialradius_ > r_max_)
+        dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
+
+      if(particle_algorithm_->trg_Temperature())
+      {
+        r_dismember_ = particleparams.get<double>("DISMEMBER_RADIUS");
+        if (r_dismember_ < 0)
+          dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
+        if (r_dismember_ < r_min_)
+          dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
+
+        if (r_dismember_ > r_max_)
+                dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
+      }
+
+
+      if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_interaction_type_==INPAR::PARTICLE::Normal_MD))
+        dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
+
+      // no further information necessary for MD like contact
+      if(particle_interaction_type_ == INPAR::PARTICLE::Normal_MD)
+        return;
+
+      // data for critical time step computation for DEM like contact
+      const double mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
+
+      double k_tkrit = 0.0;
+
+      const double G = young_ / (2.0*(1.0+nue_));
+
+      // kappa - tangential to normal stiffness ratio
+      kappa_ = (1.0-nue_)/(1.0-0.5*nue_);
+
+      if(particle_algorithm_->WallDiscret() != Teuchos::null)
+      {
+        if(e_wall_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_interaction_type_==INPAR::PARTICLE::Normal_MD))
+          dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
+
+        // wall material properties are always taken from the first available St. Venant Kirchhoff material
+        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
+        if (id==-1)
+          dserror("Could not find wall material which is assumed to be the first St. Venant Kirchhoff material");
+        Teuchos::RCP<MAT::StVenantKirchhoff> wallmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(id));
+
+        const double G_wall = wallmat->ShearMod();
+        const double nue_wall = wallmat->PoissonRatio();
+        if(G_wall<0.0)
+          dserror("Wall shear modulus has to be larger than zero");
+
+        // kappa - tangential to normal stiffness ratio
+        kappa_wall_ = ( (1.0-nue_)/G + (1.0-nue_wall)/G_wall ) / ( (1.0-0.5*nue_)/G + (1.0-0.5*nue_wall)/G_wall );
+      }
+
+      //------------stiffness----------------------------
+      switch(normal_contact_)
+      {
+      case INPAR::PARTICLE::LinSpring:
+      case INPAR::PARTICLE::LinSpringDamp:
+      {
+        // stiffness calculated from relative penetration and some other input parameters (linear spring)
+        k_normal_ = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+        // for tangential contact same stiffness is used
+        k_tang_ = kappa_ * k_normal_;
+        k_tang_wall_ = kappa_wall_ * k_normal_;
+        k_tkrit = k_normal_;
+
+        double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
+        if(user_normal_stiffness > 0.0)
+        {
+          // if user specifies normal stiffness, this stiffness will be used as normal and tangential stiffness for simulation
+          k_normal_ = user_normal_stiffness;
+          // for tangential contact same stiffness is used
+          k_tang_ =kappa_ * k_normal_;
+          k_tang_wall_ =kappa_wall_ * k_normal_;
+          // stiffness used for calculation of critical time step
+          k_tkrit = k_normal_;
+
+          std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
+        }
+      }
+      break;
+      case INPAR::PARTICLE::Hertz:
+      case INPAR::PARTICLE::LeeHerrmann:
+      case INPAR::PARTICLE::KuwabaraKono:
+      case INPAR::PARTICLE::Tsuji:
+      {
+        if(particle_interaction_type_==INPAR::PARTICLE::NormalAndTang_DEM)
+          dserror("tangential contact only with linear normal model implemented");
+
+        // stiffness calculated from relative penetration and some other input parameters (Hertz)
+        k_normal_ = 10.0/3.0 * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.0*c_,2.5);
+        // stiffness used for calculation of critical time step (linear spring stiffness needed!)
+        k_tkrit = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+
+        double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
+        if(user_normal_stiffness > 0.0)
+        {
+          // if user specifies normal stiffness, this stiffness will be used as normal stiffness for simulation
+          k_normal_ = user_normal_stiffness;
+          // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
+          // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
+          const double value = 2048.0/1875.0 * density * v_max_ * v_max_ * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
+          // stiffness used for calculation of critical time step (linear spring stiffness needed!)
+          k_tkrit = pow(value,0.2);
+
+          std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
+        }
+      }
+      break;
+      default:
+        dserror("normal contact law does not exist");
+      break;
+      }
+      //---------------------------------------------------------
+
+      //------------------damping--------------------------------
+      d_normal_ = -1.0;
+      d_tang_ = -1.0;
+
+      if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+      {
+        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
+        if(user_normal_damping >= 0.0)
+        {
+          dserror("Invalid input parameter NORMAL_DAMP for this kind of contact law");
+        }
+        double user_tang_damping = particleparams.get<double>("TANG_DAMP");
+        if(user_tang_damping >= 0.0)
+        {
+          dserror("Invalid input parameter TANG_DAMP for this kind of contact law");
+        }
+      }
+
+      if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
+          normal_contact_ == INPAR::PARTICLE::Tsuji)
+      {
+        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
+        if(user_normal_damping >= 0.0)
+        {
+          // user has to specify normal damping coefficient
+          d_normal_ = user_normal_damping;
+        }
+        else
+        {
+          dserror("For this kind of contact law the input parameter NORMAL_DAMP is invalid");
+        }
+        double user_tang_damping = particleparams.get<double>("TANG_DAMP");
+        if(user_tang_damping >= 0.0)
+        {
+          // user has to specify tangential damping coefficient
+          d_tang_ = user_tang_damping;
+        }
+        else
+        {
+          if(particle_interaction_type_==INPAR::PARTICLE::NormalAndTang_DEM)
+            dserror("For this kind of contact law the input parameter TANG_DAMP is invalid");
+        }
+      }
+      //------------------damping (wall)--------------------------------
+      if(particle_algorithm_->WallDiscret() != Teuchos::null)
+      {
+        d_normal_wall_ = -1.0;
+        d_tang_wall_ = -1.0;
+
+        if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+        {
+          double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
+          if(user_normal_damping >= 0.0)
+          {
+            dserror("Invalid input parameter NORMAL_DAMP_WALL for this kind of contact law");
+          }
+          double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
+          if(user_tang_damping >= 0.0)
+          {
+            dserror("Invalid input parameter TANG_DAMP_WALL for this kind of contact law");
+          }
+        }
+
+        if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
+            normal_contact_ == INPAR::PARTICLE::Tsuji)
+        {
+          double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
+          if(user_normal_damping >= 0.0)
+          {
+            // user has to specify normal damping coefficient
+            d_normal_wall_ = user_normal_damping;
+          }
+          else
+          {
+            dserror("For this kind of contact law the input parameter NORMAL_DAMP_WALL is invalid");
+          }
+          double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
+          if(user_tang_damping >= 0.0)
+          {
+            // user has to specify tangential damping coefficient
+            d_tang_wall_ = user_tang_damping;
+          }
+          else
+          {
+            if(particle_interaction_type_==INPAR::PARTICLE::NormalAndTang_DEM)
+              dserror("For this kind of contact law the input parameter TANG_DAMP_WALL is invalid");
+          }
+        }
+      }
+      //---------------------------------------------------------------
+
+      double factor = 0.0;
+      double safety = 0.75;
+
+      // initialize factor
+      if(particle_interaction_type_==INPAR::PARTICLE::Normal_DEM)
+      { factor = 0.34; }
+      if(particle_interaction_type_==INPAR::PARTICLE::NormalAndTang_DEM)
+      { factor = 0.22; }
+
+      // calculate critical time step for DEM like contact
+      dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
+
+      double dt = particleparams.get<double>("TIMESTEP");
+      if(dt>dt_krit_ and myrank_==0)
+      {
+        std::cout << "\n\nW A R N I N G : time step larger than critical time step!" << std::endl;
+        std::cout << "W A R N I N G : calculated critical time step: "<<dt_krit_<<" !\n\n" << std::endl;
+      }
+
+      // check frictional coefficient
+      if(particle_interaction_type_ == INPAR::PARTICLE::NormalAndTang_DEM)
+      {
+        if(mu_<=0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_<=0.0))
+         dserror("Friction coefficient invalid");
+      }
+    }
   }
-
-  if (id==-1)
-    dserror("Could not find particle material or material type - trg_temperature do not match");
-
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-
-  // currently all particles have identical density and radius
-  double density = actmat->density_;
-  nue_ = actmat->poissonratio_;
-  young_ = actmat->young_;
-
-  ReadContactParameters(density);
-
   return;
 }
 
@@ -102,291 +390,6 @@ void PARTICLE::ParticleCollisionHandlerBase::SetState(
   disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
   velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
   ang_velncol_ = discret_->GetState("bubbleangvel");
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | read initial contact parameters and validate them       ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double density)
-{
-  // extract input parameters
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  contact_strategy_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
-  normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");
-
-  if(contact_strategy_ != INPAR::PARTICLE::None)
-  {
-    r_min_ = particleparams.get<double>("MIN_RADIUS");
-    r_max_ = particleparams.get<double>("MAX_RADIUS");
-    v_max_ = particleparams.get<double>("MAX_VELOCITY");
-    c_ = particleparams.get<double>("REL_PENETRATION");
-    e_ = particleparams.get<double>("COEFF_RESTITUTION");
-    e_wall_ = particleparams.get<double>("COEFF_RESTITUTION_WALL");
-    mu_wall_ = particleparams.get<double>("FRICT_COEFF_WALL");
-    mu_ = particleparams.get<double>("FRICT_COEFF");
-    tension_cutoff_ = (DRT::INPUT::IntegralValue<int>(particleparams,"TENSION_CUTOFF") == 1);
-
-    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0 or young_<0.0)
-      dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION, YOUNG's modulus have to be larger than zero)");
-
-    if(r_min_>r_max_)
-      dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
-
-    int id = -1;
-    if (particle_algorithm_->trg_Temperature())
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
-    }
-    else
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-    }
-    // check
-    if (id==-1)
-    {
-      dserror("Could not find particle material or material type - trg_temperature do not match");
-    }
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-
-    if (actmat->initialradius_ < r_min_)
-      dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
-
-    if (actmat->initialradius_ > r_max_)
-      dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
-
-    if(particle_algorithm_->trg_Temperature())
-    {
-      r_dismember_ = particleparams.get<double>("DISMEMBER_RADIUS");
-      if (r_dismember_ < 0)
-        dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
-      if (r_dismember_ < r_min_)
-        dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
-
-      if (r_dismember_ > r_max_)
-              dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
-    }
-
-
-    if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or contact_strategy_==INPAR::PARTICLE::Normal_MD))
-      dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
-
-    // no further information necessary for MD like contact
-    if(contact_strategy_ == INPAR::PARTICLE::Normal_MD)
-      return;
-
-    // data for critical time step computation for DEM like contact
-    const double mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
-
-    double k_tkrit = 0.0;
-
-    const double G = young_ / (2.0*(1.0+nue_));
-
-    // kappa - tangential to normal stiffness ratio
-    kappa_ = (1.0-nue_)/(1.0-0.5*nue_);
-
-    if(particle_algorithm_->WallDiscret() != Teuchos::null)
-    {
-      if(e_wall_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or contact_strategy_==INPAR::PARTICLE::Normal_MD))
-        dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
-
-      // wall material properties are always taken from the first available St. Venant Kirchhoff material
-      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
-      if (id==-1)
-        dserror("Could not find wall material which is assumed to be the first St. Venant Kirchhoff material");
-      Teuchos::RCP<MAT::StVenantKirchhoff> wallmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(id));
-
-      const double G_wall = wallmat->ShearMod();
-      const double nue_wall = wallmat->PoissonRatio();
-      if(G_wall<0.0)
-        dserror("Wall shear modulus has to be larger than zero");
-
-      // kappa - tangential to normal stiffness ratio
-      kappa_wall_ = ( (1.0-nue_)/G + (1.0-nue_wall)/G_wall ) / ( (1.0-0.5*nue_)/G + (1.0-0.5*nue_wall)/G_wall );
-    }
-
-    //------------stiffness----------------------------
-    switch(normal_contact_)
-    {
-    case INPAR::PARTICLE::LinSpring:
-    case INPAR::PARTICLE::LinSpringDamp:
-    {
-      // stiffness calculated from relative penetration and some other input parameters (linear spring)
-      k_normal_ = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
-      // for tangential contact same stiffness is used
-      k_tang_ = kappa_ * k_normal_;
-      k_tang_wall_ = kappa_wall_ * k_normal_;
-      k_tkrit = k_normal_;
-
-      double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
-      if(user_normal_stiffness > 0.0)
-      {
-        // if user specifies normal stiffness, this stiffness will be used as normal and tangential stiffness for simulation
-        k_normal_ = user_normal_stiffness;
-        // for tangential contact same stiffness is used
-        k_tang_ =kappa_ * k_normal_;
-        k_tang_wall_ =kappa_wall_ * k_normal_;
-        // stiffness used for calculation of critical time step
-        k_tkrit = k_normal_;
-
-        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
-      }
-    }
-    break;
-    case INPAR::PARTICLE::Hertz:
-    case INPAR::PARTICLE::LeeHerrmann:
-    case INPAR::PARTICLE::KuwabaraKono:
-    case INPAR::PARTICLE::Tsuji:
-    {
-      if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
-        dserror("tangential contact only with linear normal model implemented");
-
-      // stiffness calculated from relative penetration and some other input parameters (Hertz)
-      k_normal_ = 10.0/3.0 * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.0*c_,2.5);
-      // stiffness used for calculation of critical time step (linear spring stiffness needed!)
-      k_tkrit = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
-
-      double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
-      if(user_normal_stiffness > 0.0)
-      {
-        // if user specifies normal stiffness, this stiffness will be used as normal stiffness for simulation
-        k_normal_ = user_normal_stiffness;
-        // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
-        // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
-        const double value = 2048.0/1875.0 * density * v_max_ * v_max_ * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
-        // stiffness used for calculation of critical time step (linear spring stiffness needed!)
-        k_tkrit = pow(value,0.2);
-
-        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
-      }
-    }
-    break;
-    default:
-      dserror("normal contact law does not exist");
-    break;
-    }
-    //---------------------------------------------------------
-
-    //------------------damping--------------------------------
-    d_normal_ = -1.0;
-    d_tang_ = -1.0;
-
-    if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
-    {
-      double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
-      if(user_normal_damping >= 0.0)
-      {
-        dserror("Invalid input parameter NORMAL_DAMP for this kind of contact law");
-      }
-      double user_tang_damping = particleparams.get<double>("TANG_DAMP");
-      if(user_tang_damping >= 0.0)
-      {
-        dserror("Invalid input parameter TANG_DAMP for this kind of contact law");
-      }
-    }
-
-    if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
-        normal_contact_ == INPAR::PARTICLE::Tsuji)
-    {
-      double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
-      if(user_normal_damping >= 0.0)
-      {
-        // user has to specify normal damping coefficient
-        d_normal_ = user_normal_damping;
-      }
-      else
-      {
-        dserror("For this kind of contact law the input parameter NORMAL_DAMP is invalid");
-      }
-      double user_tang_damping = particleparams.get<double>("TANG_DAMP");
-      if(user_tang_damping >= 0.0)
-      {
-        // user has to specify tangential damping coefficient
-        d_tang_ = user_tang_damping;
-      }
-      else
-      {
-        if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
-          dserror("For this kind of contact law the input parameter TANG_DAMP is invalid");
-      }
-    }
-    //------------------damping (wall)--------------------------------
-    if(particle_algorithm_->WallDiscret() != Teuchos::null)
-    {
-      d_normal_wall_ = -1.0;
-      d_tang_wall_ = -1.0;
-
-      if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
-      {
-        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
-        if(user_normal_damping >= 0.0)
-        {
-          dserror("Invalid input parameter NORMAL_DAMP_WALL for this kind of contact law");
-        }
-        double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
-        if(user_tang_damping >= 0.0)
-        {
-          dserror("Invalid input parameter TANG_DAMP_WALL for this kind of contact law");
-        }
-      }
-
-      if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
-          normal_contact_ == INPAR::PARTICLE::Tsuji)
-      {
-        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
-        if(user_normal_damping >= 0.0)
-        {
-          // user has to specify normal damping coefficient
-          d_normal_wall_ = user_normal_damping;
-        }
-        else
-        {
-          dserror("For this kind of contact law the input parameter NORMAL_DAMP_WALL is invalid");
-        }
-        double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
-        if(user_tang_damping >= 0.0)
-        {
-          // user has to specify tangential damping coefficient
-          d_tang_wall_ = user_tang_damping;
-        }
-        else
-        {
-          if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
-            dserror("For this kind of contact law the input parameter TANG_DAMP_WALL is invalid");
-        }
-      }
-    }
-    //---------------------------------------------------------------
-
-    double factor = 0.0;
-    double safety = 0.75;
-
-    // initialize factor
-    if(contact_strategy_==INPAR::PARTICLE::Normal_DEM)
-    { factor = 0.34; }
-    if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
-    { factor = 0.22; }
-
-    // calculate critical time step for DEM like contact
-    dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
-
-    double dt = particleparams.get<double>("TIMESTEP");
-    if(dt>dt_krit_ and myrank_==0)
-    {
-      std::cout << "\n\nW A R N I N G : time step larger than critical time step!" << std::endl;
-      std::cout << "W A R N I N G : calculated critical time step: "<<dt_krit_<<" !\n\n" << std::endl;
-    }
-
-    // check frictional coefficient
-    if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
-    {
-      if(mu_<=0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_<=0.0))
-       dserror("Friction coefficient invalid");
-    }
-  }
 
   return;
 }
@@ -715,7 +718,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, data_i.owner, data_j.owner);
 
       // calculation of tangential contact force
-      if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
+      if(particle_interaction_type_ == INPAR::PARTICLE::NormalAndTang_DEM)
       {
         // velocity v_rel = v_i - v_j + omega_i x (r'_i n) + omega_j x (r'_j n)
         static LINALG::Matrix<3,1> v_rel_rot;
@@ -780,7 +783,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       LINALG::Assemble(*f_contact, val_j, data_j.lm, lmowner_j);
 
     }
-    else if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
+    else if(particle_interaction_type_==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
     {
       // erase entry in history if still existing
       std::map<int, PARTICLE::Collision>::iterator it = history_particle.find(gid_j);
@@ -1054,7 +1057,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // normal contact force between particle and wall (note: owner_j = -1)
     CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, owner_i, -1);
 
-    if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
+    if(particle_interaction_type_ == INPAR::PARTICLE::NormalAndTang_DEM)
     {
       // velocity v_rel = v_i + omega_i x (r'_i n) - v_wall = (v_i - v_wall) + omega_i x (r'_i n)
       static LINALG::Matrix<3,1> v_rel_rot;
@@ -1131,7 +1134,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     }
   } // end for contact points on surfaces
 
-  if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
+  if(particle_interaction_type_ == INPAR::PARTICLE::NormalAndTang_DEM)
   {
     //delete those entries in history_wall_ which are no longer in contact with particle_i in current time step
     for(std::set<DRT::Element*>::const_iterator w=neighboring_walls.begin(); w != neighboring_walls.end(); ++w)

@@ -26,7 +26,7 @@ TIMESTEP                        5e-5
 NUMSTEP                         5000
 MAXTIME                         100
 GRAVITY_ACCELERATION            0 0 -9.81
-CONTACT_STRATEGY                NormalContact_DEM
+PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 TRG_TEMPERATURE                 yes
 DISMEMBER_RADIUS                0.003

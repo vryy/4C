@@ -62,7 +62,7 @@ RESTARTEVRY                     77
 TIMESTEP                        1.0E-3
 NUMSTEP                         190
 MAXTIME                         0.2
-CONTACT_STRATEGY                NormalContact_MD
+PARTICLE_INTERACTION            NormalContact_MD
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      1.0E-3
 MAX_RADIUS                      1.0E-3

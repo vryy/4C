@@ -4,8 +4,10 @@
 \brief Particle time integration with Forward Euler time integration
        scheme of 1st order (explicit),
 
+\level 3
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -48,7 +50,7 @@ void PARTICLE::TimIntExplEuler::Init()
 {
   // decide whether there is particle contact
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ContactStrategy contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
+  INPAR::PARTICLE::ParticleInteractions contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
 
   switch(contact_strategy)
   {

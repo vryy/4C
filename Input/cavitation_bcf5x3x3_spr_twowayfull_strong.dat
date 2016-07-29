@@ -38,7 +38,7 @@ CUTOFF_RADIUS                   5.0
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -980.0
-CONTACT_STRATEGY                NormalContact_DEM
+PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      0.7
 MAX_RADIUS                      0.8

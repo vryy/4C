@@ -30,7 +30,7 @@ TIMESTEP                        1.e-4
 NUMSTEP                         3000
 MAXTIME                         0.3
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
-CONTACT_STRATEGY                NormalContact_DEM
+PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpring
 MIN_RADIUS                      0.005
 MAX_RADIUS                      0.015
