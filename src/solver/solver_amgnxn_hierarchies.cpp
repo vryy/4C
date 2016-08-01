@@ -26,6 +26,7 @@ Created on: Aug 11, 2014
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_hierarchies.H"
 #include "solver_amgnxn_vcycle.H"
+#include "../linalg/linalg_multiply.H"
 
 
 /*------------------------------------------------------------------------------*/

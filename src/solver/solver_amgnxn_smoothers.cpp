@@ -25,6 +25,7 @@ Created on: Feb 27, 2014
 #include <MueLu_EpetraOperator.hpp>
 #include "EpetraExt_RowMatrixOut.h"
 #include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_multiply.H"
 #include "solver_amgnxn_smoothers.H"
 #include "solver_amgnxn_hierarchies.H"
 #include "solver_amgnxn_preconditioner.H"

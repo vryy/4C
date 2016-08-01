@@ -20,6 +20,7 @@
 #include <EpetraExt_Transpose_RowMatrix.h>
 
 #include "linalg_multiply.H"
+#include "linalg_sparsematrix.H"
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|

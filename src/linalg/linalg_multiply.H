@@ -15,12 +15,11 @@
 
 #include <Epetra_CrsMatrix.h>
 
-#include "linalg_sparsematrix.H"
-
 namespace LINALG
 {
 // forward declarations
 
+class SparseMatrix;
 class SparseOperator;
 
 
