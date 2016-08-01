@@ -3,6 +3,8 @@
 
 \brief Standard solution strategy for standard scalar transport problems (without meshtying)
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -17,6 +19,7 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*

@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file gen_inv_analysis.cpp
+\file gen_inv_analysis.cpp
 
-<pre>
+\brief ToDo Add meaningful comment.
+
+\level 2
+
 \maintainer Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/gee
-            089 - 289-15239
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -60,6 +59,7 @@
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_stru_multi/microstatic.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "Epetra_SerialDenseMatrix.h"

@@ -31,6 +31,7 @@
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
+#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
 

@@ -69,6 +69,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_multiply.H"
 
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_ssn_plast_eletypes.H"

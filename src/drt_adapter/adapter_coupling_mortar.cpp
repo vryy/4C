@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_fluid.H"

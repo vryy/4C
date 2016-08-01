@@ -3,12 +3,9 @@
 \file fsi_lung_overlapprec.cpp
 \brief BGS preconditioner for volume-coupled FSI
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\maintainer Lena Yoshihara
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 
@@ -18,6 +15,7 @@ Maintainer: Lena Yoshihara
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 

@@ -24,12 +24,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
 
-
-#include "../solver/solver_solvertype.H"
-#include "../solver/solver_preconditionertype.H"
-
-#include "linalg_multiply.H"  // contains MLMultiply
-
 // forward declarations
 class Epetra_LinearProblem;
 
@@ -40,6 +34,10 @@ class SparseOperator;
 class DownwindMatrix;
 class KrylovProjector;
 
+namespace SOLVER
+{
+  class SolverType;
+}
 
 /*!
 \brief A general solver interface to Trilinos solvers and spooles

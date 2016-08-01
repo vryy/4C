@@ -41,6 +41,8 @@
 #include "../solver/solver_directsolver.H"
 #include "../solver/solver_aztecsolver.H"
 #include "../solver/solver_stratimikossolver.H"
+#include "../solver/solver_solvertype.H"
+#include "../solver/solver_preconditionertype.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

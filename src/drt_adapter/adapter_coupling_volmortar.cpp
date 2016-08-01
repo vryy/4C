@@ -23,6 +23,7 @@
 #include "../drt_volmortar/volmortar_coupling.H"
 #include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_particle/binning_strategy.H"

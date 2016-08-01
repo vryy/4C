@@ -5,12 +5,9 @@
 \brief Solve FSI problem with sliding grids using a monolithic scheme
 with condensed fluid interface velocities
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 2
+
+\maintainer Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -34,6 +31,7 @@ Maintainer: Andy Wirtz
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_ale/ale_utils_mapextractor.H"

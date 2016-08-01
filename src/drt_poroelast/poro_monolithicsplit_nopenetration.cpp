@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_monolithicsplit_nopenetration.cpp
+\file poro_monolithicsplit_nopenetration.cpp
 
- \brief
+\brief ToDo Add meaningful comment.
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -39,6 +36,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_blocksparsematrix.H"

@@ -26,6 +26,7 @@
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 
+#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*

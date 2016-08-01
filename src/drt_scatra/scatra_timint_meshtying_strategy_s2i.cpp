@@ -40,6 +40,7 @@
 
 #include "../drt_volmortar/volmortar_shape.H"
 
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*

@@ -40,6 +40,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"    // helper functions (linear Algebra related)
 #include "../linalg/linalg_downwindmatrix.H"
+#include "../linalg/linalg_multiply.H"
 
 #include "solver_cheapsimplepreconditioner.H"
 

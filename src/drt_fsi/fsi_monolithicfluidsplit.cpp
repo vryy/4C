@@ -37,6 +37,8 @@ with condensed fluid interface velocities
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
+#include "../linalg/linalg_multiply.H"
+
 #include "fsi_nox_group.H"
 
 #include "../drt_constraint/constraint_manager.H"
