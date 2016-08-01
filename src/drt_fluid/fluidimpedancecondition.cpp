@@ -305,8 +305,8 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
 
   Q_np_ = flowrate;
 
-  if (myrank_ == 0)
-    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
+//  if (myrank_ == 0)
+//    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
 
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
@@ -363,10 +363,8 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
 
   eleparams.set("WindkesselPressure",pressure);
 
-  if (myrank_ == 0)
-  {
-    std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure: "<<pressure<<std::endl;
-  }
+//  if (myrank_ == 0)
+//    std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure: "<<pressure<<std::endl;
 
 
   impedancetbc_->PutScalar(0.0);
