@@ -88,7 +88,7 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   DRT::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond",ImpCond);
   for (unsigned int i=0; i<ImpCond.size(); i++)
   {
-    const double thisperiod = (ImpCond[i])->GetDouble("timeperiod");
+    const double thisperiod = (ImpCond[i])->GetDouble("TIMEPERIOD");
 
     if (thisperiod != fsiperiod_)
     {
@@ -151,6 +151,9 @@ void FS3I::ACFSI::ReadRestart()
       IO::DiscretizationReader fluidreader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
       meanmanager_->ReadRestart(fluidreader);
 
+      fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
+      scatraisperiodic_ = (bool)fluidreader.ReadInt("scatra_periodic_flag");
+
       //reconstruct WallShearStress_lp_
       const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(fsi_->FluidField()->Step(),fsi_->FluidField()->Time());
       IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),beginnperiodstep);
@@ -172,12 +175,9 @@ void FS3I::ACFSI::ReadRestart()
       IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
       reader.ReadVector(WallShearStress_lp_, "wss");
     }
-
-    //recover IsPeriodic flags by recalculating them
-    IsFsiPeriodic();
-    //Note: this does not work for the scatra test  since we havn't called SetupSystem() jet
-    //IsScatraPeriodic();
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -191,7 +191,7 @@ void FS3I::ACFSI::Timeloop()
   SetVelocityFields(); //doing this we can use the flag SKIPINITDER
 
   // output of initial state
-  if (step_ == 0)
+//  if (step_ == 0)
   {
     fsi_->PrepareOutput();
     FsiOutput();
@@ -813,6 +813,9 @@ void FS3I::ACFSI::FsiOutput()
     Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
 //    fluiddiskwriter->WriteVector("wss", WallShearStress_lp_);
     meanmanager_->WriteRestart(fluiddiskwriter);
+
+    fluiddiskwriter->WriteInt("fsi_periodic_flag",(int)fsiisperiodic_);
+    fluiddiskwriter->WriteInt("scatra_periodic_flag",(int)scatraisperiodic_);
   }
 
   //ale output

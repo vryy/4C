@@ -439,7 +439,7 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
       discret_->SetState("dispnp", dispnp_);
     }
 
-    impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, dta_) );
+    impedancebc_ = Teuchos::rcp( new UTILS::FluidImpedanceWrapper(discret_) );
     isimpedancebc_ = true; //Set bool to true since there is an impedance BC
 
     //Test if also AVM3 is used
@@ -692,17 +692,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
      turbulent_inflow_condition_->Transfer(trueresidual_,trueresidual_,time_);
      xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_);
    }
-
-  // ----------------------------------------------------------------
-  // Prepare time step for impedance conditions
-  // ----------------------------------------------------------------
-  if (nonlinearbc_)
-  {
-    if (isimpedancebc_)
-    {
-      impedancebc_->PrepareTimeStepImpedances(time_);
-    }
-  }
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -1247,7 +1236,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->SetState("dispnp", dispn_);
 
     // update residual and sysmat with impedance boundary conditions
-    impedancebc_->AddImpedanceBCToResidualAndSysmat(time_,dta_,residual_,sysmat_);
+    impedancebc_->AddImpedanceBCToResidualAndSysmat(dta_,residual_,sysmat_);
 
     discret_->ClearState();
   }
@@ -3080,7 +3069,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
   if (isimpedancebc_)
   {
     //do time update of impedance conditions
-    impedancebc_->TimeUpdateImpedances(time_,dta_);
+    impedancebc_->TimeUpdateImpedances(time_);
   }
 }
 
@@ -3750,14 +3739,9 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
     if (isimpedancebc_)
     {
-      if (alefluid_)
-        discret_->SetState("dispnp", dispn_);
-
       // also read impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->ReadRestart(reader);
-
-      discret_->ClearState();
     }
   }
 

@@ -867,44 +867,16 @@ void INPAR::REDAIRWAYS::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
                                          DRT::Condition::Surface));
 
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  AddNamedReal(impedancebc,"timeperiod");
-  impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung",
-                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp","resistive"),
-                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp","resistive"),
+
+  impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("TYPE", "windkessel",
+                                                                      Teuchos::tuple<std::string>("windkessel","resistive"),
+                                                                      Teuchos::tuple<std::string>("windkessel","resistive"),
                                                                       true)));
-  AddNamedReal(impedancebc,"termradius");
   AddNamedReal(impedancebc,"R1");
   AddNamedReal(impedancebc,"R2");
   AddNamedReal(impedancebc,"C");
-  AddNamedReal(impedancebc,"stiffness");
-  AddNamedReal(impedancebc,"H1");
-  AddNamedReal(impedancebc,"H2");
-  AddNamedReal(impedancebc,"H3");
+  AddNamedReal(impedancebc,"TIMEPERIOD");
 
   condlist.push_back(impedancebc);
-
-  /*--------------------------------------------------------------------*/
-  // Frequency indipendent precalibrated impedance condition
-
-  Teuchos::RCP<ConditionDefinition> impedance_calb_bc =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS",
-                                         "ImpedanceCalbCond",
-                                         "Impedance calibration boundary condition",
-                                         DRT::Condition::Impedance_Calb_Cond,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  impedance_calb_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  impedance_calb_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "windkessel_freq_indp",
-                                                                            Teuchos::tuple<std::string>("windkessel_freq_indp"),
-                                                                            Teuchos::tuple<std::string>("windkessel_freq_indp"),
-                                                                            true)));
-  AddNamedReal(impedance_calb_bc,"Pin_n");
-  AddNamedReal(impedance_calb_bc,"Pin_np");
-  AddNamedReal(impedance_calb_bc,"Pc_n");
-  AddNamedReal(impedance_calb_bc,"Pc_np");
-
-  condlist.push_back(impedance_calb_bc);
-
 }
 
