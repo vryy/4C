@@ -74,9 +74,9 @@ namespace MODELEVALUATOR {
     inline const bool& IsSetup() const { return issetup_; };
 
     //! Checks, if Init() and Setup() have been called
-    void CheckInitSetup() const;
+    virtual void CheckInitSetup() const;
 
-    void CheckInit() const;
+    virtual void CheckInit() const;
 
   public:
     virtual INPAR::STR::ModelType Type() const = 0;

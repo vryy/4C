@@ -59,7 +59,8 @@ namespace Abstract {
   }
   \endcode
 
-  <li> Create the appropriate entries in the linear solver parameter list which belongs to the current direction method, as follows.
+  <li> Create the appropriate entries in the linear solver parameter list which belongs to
+  the current direction method, as follows.
 
   \code
   Teuchos::RCP<Foo> foo = Teuchos::rcp(new Foo);

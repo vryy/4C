@@ -86,8 +86,8 @@ void STR::Integrator::Setup()
   // ---------------------------------------------------------------------------
   modelevaluator_ptr_ =
       Teuchos::rcp(new STR::ModelEvaluator());
-  modelevaluator_ptr_->Init(sdyn_ptr_->GetModelTypes(),eval_data_ptr_,
-      gstate_ptr_,io_ptr_,Teuchos::rcp(this,false),timint_ptr_);
+  modelevaluator_ptr_->Init(eval_data_ptr_,sdyn_ptr_,gstate_ptr_,io_ptr_,
+      Teuchos::rcp(this,false),timint_ptr_);
   modelevaluator_ptr_->Setup();
 
   // the issetup_ flag is not set here!!!

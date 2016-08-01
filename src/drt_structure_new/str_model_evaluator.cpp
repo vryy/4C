@@ -31,10 +31,10 @@
 STR::ModelEvaluator::ModelEvaluator()
     : isinit_(false),
       issetup_(false),
-      modeltypes_ptr_(Teuchos::null),
       me_map_ptr_(Teuchos::null),
       me_vec_ptr_(Teuchos::null),
       eval_data_ptr_(Teuchos::null),
+      sdyn_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
       gio_ptr_(Teuchos::null),
       int_ptr_(Teuchos::null),
@@ -61,8 +61,9 @@ void STR::ModelEvaluator::CheckInit() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::Init(const std::set<enum INPAR::STR::ModelType>& mt,
+void STR::ModelEvaluator::Init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
@@ -70,8 +71,8 @@ void STR::ModelEvaluator::Init(const std::set<enum INPAR::STR::ModelType>& mt,
 {
   issetup_ = false;
 
-  modeltypes_ptr_ = Teuchos::rcp(&mt,false);
   eval_data_ptr_ = eval_data_ptr;
+  sdyn_ptr_ = sdyn_ptr;
   gstate_ptr_ = gstate_ptr;
   gio_ptr_ = gio_ptr;
   int_ptr_ = int_ptr;
@@ -88,7 +89,8 @@ void STR::ModelEvaluator::Setup()
   CheckInit();
 
   me_map_ptr_ =
-      STR::MODELEVALUATOR::BuildModelEvaluators(*modeltypes_ptr_);
+      STR::MODELEVALUATOR::BuildModelEvaluators(sdyn_ptr_->GetModelTypes(),
+          sdyn_ptr_->CouplingModelPtr());
   std::vector<enum INPAR::STR::ModelType> sorted_modeltypes(0);
 
   me_vec_ptr_ = Sort(*me_map_ptr_,sorted_modeltypes);

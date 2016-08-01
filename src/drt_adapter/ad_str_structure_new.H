@@ -519,7 +519,55 @@ namespace ADAPTER {
     /// setup structure algorithm of STR::TimInt::Implicit or STR::TimInt::Explicit type
     void SetupTimInt();
 
-    /// Set all found model types. This is e.g. necessary for the model evaluator.
+    /** \brief Set all model types. This is necessary for the model evaluation.
+     *
+     *  The inherent structural models are identified by the corresponding conditions and/or
+     *  other unique criteria. If your intention is to solve a partitioned coupled problem and
+     *  you need to modify the structural right-hand-side in any way, then you have to implement
+     *  your own concrete implementation of a STR::MODELEVALUATOR::Generic class and register it
+     *  as a Teuchos::RCP<STR::MODELEVALUATOR::Generic> pointer in your problem dynamic parameter-
+     *  list. For partitioned problems you have to use the parameter-name
+     *  \"Partitioned Coupling Model\".
+     *
+     *  For example: To create and use a coupling model evaluator for the partitioned FSI you
+     *  have to insert the object as follows:
+     *
+     *  <ol>
+     *
+     *  <li> Create a model evaluator that derives from
+     *  STR::MODELEVALUATOR::Generic. For example, the model evaluator
+     *  \c FSI_Partitioned might be defined as shown below.
+     *
+     *  \code
+     *  class FSI_Partitioned : public STR::MODELEVALUATOR::Generic
+     *  {
+     *  // Insert class definition here
+     *  }
+     *  \endcode
+     *
+     *  <li> Create the appropriate entries in your problem dynamic parameter-list \c prbdyn
+     *  and initialize member variables, if desired (optional):
+     *
+     *  \code
+     *  Teuchos::RCP<FSI_Partitioned> fsi_model_ptr = Teuchos::rcp(new FSI_Partitioned());
+     *  // optional: call of your own 2-nd Init() method
+     *  fsi_model_ptr->Init(stuff_you_need_inside_the_model_evaluator);
+     *  prbdyn.set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
+     *      fsi_model_ptr);
+     *  \endcode
+     *
+     *  </ol>
+     *
+     *  \remark Please keep in mind, that the prescribed Generic::Init() and Generic::Setup()
+     *  methods will be called automatically in the STR::ModelEvaluator::Setup() routine. If
+     *  you need a different Init() method, just define a second Init() function with different
+     *  input variables in your concrete class implementation and call it somewhere in your code
+     *  (see upper example code).
+     *  The constructor is supposed to stay empty. If you need a safety check, you can overload
+     *  the Generic::CheckInit() and Generic::CheckInitSetup() routines, instead.
+     *
+     *  \author hiermeier
+     *  \date 09/16 */
     void SetModelTypes(
         std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 

@@ -35,6 +35,9 @@ namespace DRT {
   class Discretization;
 } // namespace DRT
 namespace STR {
+namespace MODELEVALUATOR {
+  class Generic;
+} // namespace MODELEVALUATOR
 namespace TIMINT {
   /** \brief Structural dynamics data container for the structural (time) integration
    *
@@ -543,6 +546,12 @@ namespace TIMINT {
       CheckInitSetup();
       return *eletechs_;
     };
+
+    /// Return a pointer to the coupling model evaluator
+    const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& CouplingModelPtr()
+    {
+      return coupling_model_ptr_;
+    }
     ///@}
   protected:
     /** \brief returns the structural dynamics parameter list (internal use only!)
@@ -615,6 +624,9 @@ namespace TIMINT {
 
     /// current active element technologies
     Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs_;
+
+    /// pointer to the coupling model evaluator object
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> coupling_model_ptr_;
 
     ///@}
 

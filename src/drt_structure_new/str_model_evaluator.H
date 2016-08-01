@@ -34,6 +34,7 @@ namespace STR {
   class Integrator;
 namespace TIMINT {
   class Base;
+  class BaseDataSDyn;
   class BaseDataGlobalState;
   class BaseDataIO;
 } // namespace TIMINT
@@ -55,8 +56,8 @@ namespace MODELEVALUATOR {
     virtual ~ModelEvaluator() {};
 
     //! initialize
-    void Init(const std::set<enum INPAR::STR::ModelType>& mt,
-        const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+    void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<STR::Integrator>& int_ptr,
@@ -172,13 +173,13 @@ namespace MODELEVALUATOR {
 
     bool issetup_;
 
-    Teuchos::RCP<const std::set<enum INPAR::STR::ModelType> > modeltypes_ptr_;
-
     Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;
 
     Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr_;
 
     Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
+
+    Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn_ptr_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 

@@ -40,6 +40,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       lumpmass_(false),
       modeltypes_(Teuchos::null),
       eletechs_(Teuchos::null),
+      coupling_model_ptr_(Teuchos::null),
       dyntype_(INPAR::STR::dyna_statics),
       stcscale_(INPAR::STR::stc_none),
       itermin_(-1),
@@ -156,6 +157,12 @@ void STR::TIMINT::BaseDataSDyn::Init(
   {
     modeltypes_ = modeltypes;
     eletechs_   = eletechs;
+    if (modeltypes_->find(INPAR::STR::model_partitioned_coupling)!=
+        modeltypes->end())
+    {
+      coupling_model_ptr_ = sdynparams.
+          get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model");
+    }
   }
   // ---------------------------------------------------------------------------
   // initialize implicit variables

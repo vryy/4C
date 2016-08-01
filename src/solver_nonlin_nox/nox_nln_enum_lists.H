@@ -34,8 +34,6 @@ namespace NLN {
     sol_meshtying,
     // 0D cardiovascular quantities
     sol_cardiovascular0d,
-    // spring dashpot quantities
-    sol_springdashpot,
     // Lagrange or/and penalty enforced constraint quantities
     sol_lag_pen_constraint
   };
@@ -56,9 +54,6 @@ namespace NLN {
       break;
     case sol_cardiovascular0d:
       return "Cardiovascular0D";
-      break;
-    case sol_springdashpot:
-      return "SpringDashpot";
       break;
     case sol_lag_pen_constraint:
       return "Lag-Pen-Constraint";
@@ -83,8 +78,6 @@ namespace NLN {
       type = sol_meshtying;
     else if (boost::iequals(name,"cardiovascular0d"))
       type = sol_cardiovascular0d;
-    else if (boost::iequals(name,"springdashpot"))
-      type = sol_springdashpot;
     else if (boost::iequals(name,"lag-pen-constraint"))
       type = sol_lag_pen_constraint;
 

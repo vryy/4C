@@ -79,13 +79,14 @@ namespace INPAR
     /// necessary for the model evaluator
     enum ModelType
     {
-      model_structure,          ///< evaluate the structural model
-      model_contact,            ///< evaluate the contact model
-      model_meshtying,          ///< evaluate the meshtying model
-      model_cardiovascular0d,   ///< evaluate the cardiovascular0d model
-      model_springdashpot,      ///< evaluate the springdashpot model
-      model_lag_pen_constraint, ///< evaluate the Lagrange or/and penalty enforced constraint models
-      model_vague               ///< undefined model type
+      model_structure,            ///< evaluate the structural model
+      model_contact,              ///< evaluate the contact model
+      model_meshtying,            ///< evaluate the meshtying model
+      model_cardiovascular0d,     ///< evaluate the cardiovascular0d model
+      model_springdashpot,        ///< evaluate the springdashpot model
+      model_lag_pen_constraint,   ///< evaluate the Lagrange or/and penalty enforced constraint models
+      model_partitioned_coupling, ///< evaluate any partitioned coupling contributions
+      model_vague                 ///< undefined model type
     };
 
     /// Map model type to string
@@ -114,6 +115,8 @@ namespace INPAR
       case model_lag_pen_constraint :
         return "Lag-Pen-Constraint";
         break;
+      case model_partitioned_coupling:
+        return "Partitioned-Coupling";
       default :
         dserror("Cannot make std::string for model type %d", name);
         return "";
@@ -136,6 +139,8 @@ namespace INPAR
         type = model_springdashpot;
       else if (boost::iequals(name,"lag-pen-constraint"))
         type = model_lag_pen_constraint;
+      else if (boost::iequals(name,"partitioned-coupling"))
+        type = model_partitioned_coupling;
 
       return type;
     };

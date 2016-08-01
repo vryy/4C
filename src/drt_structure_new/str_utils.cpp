@@ -103,13 +103,34 @@ enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
     const enum INPAR::STR::ModelType& modeltype,
     const bool& do_check)
 {
-  const std::string name = INPAR::STR::ModelTypeString(modeltype);
-  enum NOX::NLN::SolutionType soltype = NOX::NLN::String2SolutionType(name);
-
-  // check if the corresponding enum could be found.
-  if (do_check and soltype == NOX::NLN::sol_unknown)
-    dserror("The corresponding solution-type was not found. "
-        "Given string: %s", name.c_str());
+  enum NOX::NLN::SolutionType soltype = NOX::NLN::sol_unknown;
+  switch (modeltype)
+  {
+    case INPAR::STR::model_structure:
+    case INPAR::STR::model_springdashpot:
+    case INPAR::STR::model_partitioned_coupling:
+      soltype = NOX::NLN::sol_structure;
+      break;
+    case INPAR::STR::model_contact:
+      soltype = NOX::NLN::sol_contact;
+      break;
+    case INPAR::STR::model_meshtying:
+      soltype = NOX::NLN::sol_meshtying;
+      break;
+    case INPAR::STR::model_cardiovascular0d:
+      soltype = NOX::NLN::sol_cardiovascular0d;
+      break;
+    case INPAR::STR::model_lag_pen_constraint:
+      soltype = NOX::NLN::sol_lag_pen_constraint;
+      break;
+    default:
+      // check if the corresponding enum could be found.
+      if (do_check)
+          dserror("The corresponding solution-type was not found. "
+              "Given string: %s",
+              INPAR::STR::ModelTypeString(modeltype).c_str());
+      break;
+  }
 
   return soltype;
 }
@@ -120,13 +141,32 @@ enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
     const enum NOX::NLN::SolutionType& soltype,
     const bool& do_check)
 {
-  const std::string name = NOX::NLN::SolutionType2String(soltype);
-  enum INPAR::STR::ModelType modeltype = INPAR::STR::String2ModelType(name);
-
-  // check if the corresponding enum could be found.
-  if (do_check and modeltype == INPAR::STR::model_vague)
-    dserror("The corresponding model-type was not found. "
-        "Given string: %s", name.c_str());
+  enum INPAR::STR::ModelType modeltype = INPAR::STR::model_vague;
+  switch (soltype)
+  {
+    case NOX::NLN::sol_structure:
+      modeltype = INPAR::STR::model_structure;
+      break;
+    case NOX::NLN::sol_contact:
+      modeltype = INPAR::STR::model_contact;
+      break;
+    case NOX::NLN::sol_meshtying:
+      modeltype = INPAR::STR::model_meshtying;
+      break;
+    case NOX::NLN::sol_cardiovascular0d:
+      modeltype = INPAR::STR::model_cardiovascular0d;
+      break;
+    case NOX::NLN::sol_lag_pen_constraint:
+      modeltype = INPAR::STR::model_lag_pen_constraint;
+      break;
+    default:
+      // check if the corresponding enum could be found.
+      if (do_check)
+        dserror("The corresponding model-type was not found. "
+            "Given string: %s",
+            NOX::NLN::SolutionType2String(soltype).c_str());
+      break;
+  }
 
   return modeltype;
 }
@@ -178,7 +218,6 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
       // no saddle point structure
       // -----------------------------------
       case NOX::NLN::sol_structure:
-      case NOX::NLN::sol_springdashpot:
       case NOX::NLN::sol_cardiovascular0d:
       default:
         break;

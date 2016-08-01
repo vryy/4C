@@ -37,8 +37,9 @@ STR::MODELEVALUATOR::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
-    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes
-    ) const
+    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes,
+        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr
+        ) const
 {
   // create a new standard map
   Teuchos::RCP<STR::ModelEvaluator::Map> model_map =
@@ -58,13 +59,20 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
       case INPAR::STR::model_contact:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
         break;
-      case INPAR::STR::model_meshtying:
       case INPAR::STR::model_lag_pen_constraint:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::LagPenConstraint());
         break;
       case INPAR::STR::model_cardiovascular0d:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Cardiovascular0D());
         break;
+      case INPAR::STR::model_partitioned_coupling:
+      {
+        if (coupling_model_ptr.is_null())
+          dserror("The partitioned coupling model evaluator is not defined.");
+        (*model_map)[*mt_iter] = coupling_model_ptr;
+        break;
+      }
+      case INPAR::STR::model_meshtying:
       default:
         dserror("Not yet implemented!");
         break;
@@ -78,9 +86,9 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::
-    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes
-    )
+    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes,
+        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr)
 {
   Factory factory;
-  return factory.BuildModelEvaluators(modeltypes);
+  return factory.BuildModelEvaluators(modeltypes,coupling_model_ptr);
 }

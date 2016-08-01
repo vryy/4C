@@ -378,6 +378,47 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   actdis_->GetCondition("SpringDashpot",sdp_cond);
   if (sdp_cond.size())
     modeltypes.insert(INPAR::STR::model_springdashpot);
+  // ---------------------------------------------------------------------------
+  // check for coupled problems
+  // ---------------------------------------------------------------------------
+  // get the problem instance
+  DRT::Problem* problem = DRT::Problem::Instance();
+  // what's the current problem type?
+  PROBLEM_TYP probtype = problem->ProblemType();
+  switch (probtype)
+  {
+    case prb_fsi:
+    case prb_immersed_fsi:
+    case prb_immersed_ale_fsi:
+    case prb_fsi_redmodels:
+    case prb_fsi_lung:
+    case prb_gas_fsi:
+    case prb_ac_fsi:
+    case prb_biofilm_fsi:
+    case prb_thermo_fsi:
+    case prb_fsi_xfem:
+    case prb_fsi_crack:
+    {
+      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+          isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Partitioned Coupling Model"))
+      {
+        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =
+          prbdyn_->INVALID_TEMPLATE_QUALIFIER
+          get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model");
+        if (coupling_model_ptr.is_null())
+          dserror("The partitioned coupling model pointer is not allowed to be Teuchos::null!");
+        // set the model type
+        modeltypes.insert(INPAR::STR::model_partitioned_coupling);
+        // copy the coupling model object pointer into the (temporal) sdyn parameter list
+        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
+            coupling_model_ptr);
+      }
+      break;
+    }
+    default:
+      // do nothing
+      break;
+  } // switch (probtype)
 
   // hopefully we haven't forgotten anything
   return;

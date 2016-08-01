@@ -58,6 +58,7 @@ STR::SOLVER::Factory::BuildLinSolvers(
     {
     case INPAR::STR::model_structure:
     case INPAR::STR::model_springdashpot:
+    case INPAR::STR::model_partitioned_coupling:
     {
       /* Check if the structural linear solver was already added and skip
        * if true. */
