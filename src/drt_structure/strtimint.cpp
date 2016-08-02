@@ -2468,7 +2468,7 @@ void STR::TimInt::OutputRestart
   // Cardiovascular0D
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("cvdof",
+    output_->WriteVector("cv0ddof",
                           cardvasc0dman_->Get0DDofVector());
     output_->WriteVector("refvolval",
                           cardvasc0dman_->GetRefVolValue());
