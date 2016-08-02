@@ -20,15 +20,12 @@
 #ifndef PARTFS3I_H
 #define PARTFS3I_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include "../drt_inpar/drt_validparameters.H"
-
 
 #include "fs3i.H"
+#include <Teuchos_ParameterList.hpp>
+
 
 // forward declarations
-
 namespace ADAPTER
 {
   class Coupling;
@@ -120,7 +117,7 @@ namespace FS3I
     void SetWallShearStresses();
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
+    virtual void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
     Teuchos::ParameterList& ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn);
 

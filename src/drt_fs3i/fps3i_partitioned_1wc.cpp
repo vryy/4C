@@ -33,6 +33,7 @@
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_fpsi/fpsi_utils.H"
 #include "../drt_fpsi/fpsi_monolithic.H"
+#include "../drt_fpsi/fpsi_monolithic_plain.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"

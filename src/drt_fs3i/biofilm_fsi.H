@@ -20,15 +20,20 @@
 #ifndef FSI_BIOFILM_GROWTH_H
 #define FSI_BIOFILM_GROWTH_H
 
+
 #include "../drt_fs3i/fs3i_partitioned_1wc.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+
 
 // forward declarations
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace ADAPTER
 {
+  class AleFsiWrapper;
   class StructureBio;
-
   class FSIStructureWrapper;
 }
 

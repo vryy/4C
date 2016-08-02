@@ -19,17 +19,26 @@
 #include "ac_fsi.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
+
+#include "../drt_inpar/inpar_fs3i.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_scatra.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_ac_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
+
 #include "../drt_fsi/fsi_monolithic.H"
+
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 
 /*!
  * What does the problem type Atherosclerosis_Fluid_Structure_Interaction?
@@ -42,7 +51,7 @@
  * peridodic results. Afterwards we continue the small time scale but do not solve the fsi subproblem anymore. Instead
  * we peridically repeat it by calling suitable restarts. When the fluid scatra subproblem gets periodic
  * at the FS3I interface we stop the small time scale and switch to the large time scale
- *   Now we higer dt_ and only solve the structure scatra problem. We thereby use the WSS and interface
+ *   Now we higher dt_ and only solve the structure scatra problem. We thereby use the WSS and interface
  * concentrations of the small time scale. Each time when there as been 'created' enough growth inducing mass we
  * do a growth update. If we have finally grew to much, we go back to the small time scale. And so on, and so on,...
  */
@@ -155,7 +164,7 @@ void FS3I::ACFSI::ReadRestart()
       scatraisperiodic_ = (bool)fluidreader.ReadInt("scatra_periodic_flag");
 
       //reconstruct WallShearStress_lp_
-      const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(fsi_->FluidField()->Step(),fsi_->FluidField()->Time());
+      const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(fsi_->FluidField()->Step(),fsi_->FluidField()->Time(),fsi_->FluidField()->Dt());
       IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),beginnperiodstep);
 
       fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_, "SumWss");
@@ -410,7 +419,8 @@ void FS3I::ACFSI::IsFsiPeriodic()
     for (unsigned int i=0; i<wk_rel_errors.size(); i++)
     {
       if (Comm().MyPID()==0)
-        std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has a relative error of      "<<abs(wk_rel_errors[i])<<std::endl;
+        std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has a relative error of      "<<abs(wk_rel_errors[i])
+                 <<"  ( tol "<<wk_rel_tol<<" )"<<std::endl;
 
       if ( abs(wk_rel_errors[i]) > wk_rel_tol)
         fsiisperiodic_ = false;
@@ -442,7 +452,8 @@ void FS3I::ACFSI::IsFsiPeriodic()
 
     if (Comm().MyPID()==0)
     {
-      std::cout<<std::scientific<<std::setprecision(2)<<"The wall shear stresses have a relative error of "<<wss_rel_error<<std::endl;
+      std::cout<<std::scientific<<std::setprecision(2)<<"The wall shear stresses have a relative error of "<<wss_rel_error
+               <<"  ( tol "<<wss_rel_tol<<" )"<<std::endl;
     }
 
     WallShearStress_lp_->Update(1.0,*(meanmanager_->GetMeanValue("mean_wss")),0.0); //Update
@@ -502,7 +513,8 @@ void FS3I::ACFSI::IsScatraPeriodic( )
 
     if (Comm().MyPID()==0)
     {
-      std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th fluid-scatra has a relative error of    "<<ith_fluid_scatra_rel_error<<std::endl;
+      std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th fluid-scatra has a relative error of    "<<ith_fluid_scatra_rel_error
+               <<"  ( tol "<<fluid_scatra_rel_tol<<" )"<<std::endl;
     }
 
     if (ith_fluid_scatra_rel_error > fluid_scatra_rel_tol)
@@ -637,12 +649,13 @@ double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep,con
 /*--------------------------------------------------------------------------------------*
  | Get step number of the beginning of this cycle                            Thon /15 |
  *--------------------------------------------------------------------------------------*/
-double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actstep,const double acttime)
+double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actstep, const double acttime, const double dt)
 {
-  if ( not ModuloIsRealtiveZero(fsiperiod_,dt_,fsiperiod_) )
+  if ( not ModuloIsRealtiveZero(fsiperiod_,dt,fsiperiod_) )
     dserror("PERIODICITY should be an multiple of TIMESTEP!");
 
-  const int beginnperiodstep = actstep - round((fmod(acttime+1e-14,fsiperiod_)-1e-14)/dt_ ); //here we assume a constant timestep over the last period
+  const double beginnperiodtime = acttime - (fmod(acttime+1e-14,fsiperiod_)-1e-14);
+  const int teststep = actstep - round((fmod(acttime+1e-14,fsiperiod_)-1e-14)/dt ); //here we assume a constant timestep over the last period
 
   //Is this the right step? Let's check:
   {
@@ -650,23 +663,32 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actst
     DRT::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
 
     //get filename in which the equivalent step of the last period is written
-    std::string filename = GetFileName(beginnperiodstep);
+    std::string filename = GetFileName(teststep);
     //we always have to recreate the InputControl() since our Inputfile (=Outputfile) has changed in since the last reading (new timestep written)
     Teuchos::RCP<IO::InputControl> inputreader = Teuchos::rcp( new IO::InputControl(filename, Comm()) );
     //overwrite existing InputControl()
     DRT::Problem::Instance()->SetInputControlFile(inputreader);
 
     //AC-FSI specific input
-    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),beginnperiodstep);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),teststep);
 
-    double beginnperiodtime = reader.ReadDouble("time");
+    double testtime = reader.ReadDouble("time");
+
+    if ( testtime - beginnperiodtime > 1e-10 )
+    {
+      return GetStepOfBeginnOfThisPeriodAndPrepareReading(teststep,testtime,0.5*dt);
+    }
+    else if ( beginnperiodtime - testtime > 1e-10 )
+    {
+      return GetStepOfBeginnOfThisPeriodAndPrepareReading(actstep,acttime,2*dt);
+    }
 
     //Now check if the candidate is right
-    if ( not ModuloIsRealtiveZero(beginnperiodtime,fsiperiod_,beginnperiodtime) )
-      dserror("You can't change your TIMESTEP when you are within the FSI PERIODIC cycle!");
+    if ( not ModuloIsRealtiveZero(testtime,fsiperiod_,testtime) )
+      dserror("Why is the time not a multiple of FSI PERIODIC cycle??");
   }
 
-  return beginnperiodstep;
+  return teststep;
 }
 
 /*--------------------------------------------------------------------------------------*

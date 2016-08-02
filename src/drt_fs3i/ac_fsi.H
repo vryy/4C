@@ -19,11 +19,19 @@
 #define AC_FSI_H
 
 #include "fs3i_partitioned_1wc.H"
+#include "../drt_lib/drt_dserror.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_inpar/inpar_fs3i.H"
-#include "../drt_io/io.H"
+//forward declarations
+namespace LINALG
+{
+  class MapExtractor;
+}
 
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}
 
 namespace FS3I
 {
@@ -90,7 +98,7 @@ namespace FS3I
     double GetStepOfOnePeriodAgoAndPrepareReading(const int step_,const double time);
 
     ///Get step number of the beginning of this cycle
-    double GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actstep,const double acttime);
+    double GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actstep, const double acttime, const double dt);
 
     ///Get filename in which the equivalent step of the last period is written
     std::string GetFileName(const int step);

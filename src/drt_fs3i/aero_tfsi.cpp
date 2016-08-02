@@ -17,6 +17,7 @@
  *----------------------------------------------------------------------*/
 #include "aero_tfsi.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_thermo.H"

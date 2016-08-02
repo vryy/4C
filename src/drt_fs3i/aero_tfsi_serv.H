@@ -23,13 +23,9 @@
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../headers/definitions.h"
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_MpiComm.h>
-#include <map>
-#include <vector>
 
 
 /*----------------------------------------------------------------------*

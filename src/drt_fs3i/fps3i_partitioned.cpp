@@ -24,6 +24,7 @@
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_fsi/fsi_matrixtransform.H"
+#include "../drt_fpsi/fpsi_monolithic_plain.H"
 #include "../drt_fpsi/fpsi_utils.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"

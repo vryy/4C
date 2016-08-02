@@ -18,13 +18,13 @@
 #ifndef FS3I_H
 #define FS3I_H
 
+
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 
 // forward declarations
-
 namespace ADAPTER
 {
   class Coupling;

@@ -32,6 +32,7 @@
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"

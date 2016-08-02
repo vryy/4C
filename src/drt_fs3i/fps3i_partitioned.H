@@ -20,15 +20,15 @@
 #ifndef PARTFPS3I_H
 #define PARTFPS3I_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 
-#include "../drt_fpsi/fpsi.H"
-#include "../drt_fpsi/fpsi_monolithic_plain.H"
 #include "fs3i.H"
 
 
 // forward declarations
+namespace FPSI
+{
+  class Monolithic_Plain;
+}
 
 namespace ADAPTER
 {
