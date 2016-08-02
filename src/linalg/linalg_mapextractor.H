@@ -289,6 +289,12 @@ namespace LINALG
     /// L2-norm of one block only
     double Norm2( const Epetra_Vector& full, int block ) const;
 
+    /// Scale one block only
+    void Scale( Epetra_Vector& full, int block, double scalar ) const;
+
+    /// Scale one block only
+    void Scale( Epetra_MultiVector& full, int block, double scalar ) const;
+
   private:
 
     /// the full row map

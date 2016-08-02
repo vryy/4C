@@ -274,7 +274,7 @@ void LINALG::MultiMapExtractor::PutScalar( Epetra_Vector& full, int block, doubl
     int lid = fm.LID( v[i] );
     if ( lid==-1 )
       dserror( "maps do not match" );
-    full[lid] = 0;
+    full[lid] = scalar;
   }
 }
 
@@ -303,6 +303,37 @@ double LINALG::MultiMapExtractor::Norm2( const Epetra_Vector& full, int block ) 
   double global_norm = 0;
   fm.Comm().SumAll( &local_norm, &global_norm, 1 );
   return std::sqrt( global_norm );
+}
+
+
+/*----------------------------------------------------------------------*
+ | Scale one block only                                      fang 08/16 |
+ *----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::Scale( Epetra_Vector& full, int block, double scalar ) const
+{
+  const Epetra_Map& bm = *Map( block );
+  const Epetra_Map& fm = *FullMap();
+
+  int numv = bm.NumMyElements();
+  int * v = bm.MyGlobalElements();
+
+  for ( int i=0; i<numv; ++i )
+  {
+    int lid = fm.LID( v[i] );
+    if ( lid==-1 )
+      dserror( "maps do not match" );
+    full[lid] *= scalar;
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | Scale one block only                                      fang 08/16 |
+ *----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::Scale( Epetra_MultiVector& full, int block, double scalar ) const
+{
+  for ( int i=0; i<full.NumVectors(); ++i )
+    Scale( *full(i), block, scalar );
 }
 
 
