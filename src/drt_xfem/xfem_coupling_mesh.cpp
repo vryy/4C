@@ -4,8 +4,10 @@
 \brief manages the different types of mesh based coupling conditions and thereby builds the bridge between the
 xfluid class and the cut-library
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -642,6 +644,9 @@ XFEM::MeshCouplingWeakDirichlet::MeshCouplingWeakDirichlet(
 
   // set the initial interface velocities also to iveln
   iveln_->Update(1.0,*ivelnp_,0.0);
+
+  // initialize the configuration map
+  InitConfigurationMap();
 }
 
 /*--------------------------------------------------------------------------*
@@ -685,6 +690,24 @@ void XFEM::MeshCouplingWeakDirichlet::PrepareSolve()
 
   // set or compute the current prescribed interface velocities, just for XFEM WDBC
   SetInterfaceVelocity();
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingWeakDirichlet::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -748,6 +771,9 @@ XFEM::MeshCouplingNavierSlip::MeshCouplingNavierSlip(
 
   // set the initial interface velocities also to iveln
   iveln_->Update(1.0,*ivelnp_,0.0);
+
+  // initialize the configuration map
+  InitConfigurationMap();
 }
 
 void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
@@ -1014,7 +1040,29 @@ void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(
   }
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNavierSlip::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
 
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+  return;
+}
 
 //! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
@@ -1028,6 +1076,9 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
 {
   SetConditionSpecificParameters(cond_name);
   InitStateVectors_FSI();
+
+  // initialize the configuration map
+  InitConfigurationMap();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1326,6 +1377,29 @@ void XFEM::MeshCouplingFSI::LiftDrag(
 }
 
 /*--------------------------------------------------------------------------*
+ * first version without possibility to use Navier Slip
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+  return;
+}
+
+/*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 //! constructor
 XFEM::MeshCouplingFSICrack::MeshCouplingFSICrack(
@@ -1478,6 +1552,9 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 
   DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->CheckParameterConsistencyForAveragingStrategy(bg_dis->Comm().MyPID(),
     GetAveragingStrategy());
+
+  // initialize the configuration map
+  InitConfigurationMap();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1851,5 +1928,29 @@ void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(
 
   // update the estimate of the maximal eigenvalues in the parameter list to access on element level
   DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Update_TraceEstimate_MaxEigenvalue(ele_to_max_eigenvalue);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+  return;
 }
 

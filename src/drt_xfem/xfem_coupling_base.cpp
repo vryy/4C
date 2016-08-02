@@ -4,8 +4,10 @@
 \brief is the base for the different types of mesh and level-set based coupling conditions and thereby builds the bridge between the
 xfluid class and the cut-library
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -38,6 +40,104 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
   //else dserror("condition type not supported: %s", condname.c_str());
 
   return INPAR::XFEM::CouplingCond_NONE;
+}
+
+/*--------------------------------------------------------------------------*
+* constructor
+*--------------------------------------------------------------------------*/
+XFEM::CouplingBase::CouplingBase(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
+    const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
+    const int                           coupling_id,///< id of composite of coupling conditions
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) :
+bg_dis_(bg_dis),
+cond_name_(cond_name),
+cond_dis_(cond_dis),
+coupling_id_(coupling_id),
+cutter_dis_(Teuchos::null),
+coupl_dis_(Teuchos::null),
+averaging_strategy_(INPAR::XFEM::invalid),
+myrank_(bg_dis_->Comm().MyPID()),
+dt_(-1.0),
+time_(time),
+step_(step)
+{
+  // initialize element level configuration map (no evaluation)
+  InitConfigurationMap();
+}
+
+/*--------------------------------------------------------------------------*
+ * Initialize Configuration Map --> No Terms are evaluated at the interface
+ *--------------------------------------------------------------------------*/
+void XFEM::CouplingBase::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  //all components:
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(false,0.0);
+  //normal terms:
+  configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_n_Col] = std::pair<bool,double>(false,0.0);
+  //tangential terms:
+  configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Con_t_Col] = std::pair<bool,double>(false,0.0);
+
+  //Configuration of Adjount Consistency Terms
+  //all components:
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Adj_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Adj_Col] = std::pair<bool,double>(false,0.0);
+  //normal terms:
+  configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Adj_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Adj_n_Col] = std::pair<bool,double>(false,0.0);
+  //tangential terms:
+  configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+
+  //Configuration of Penalty Terms
+  //all components:
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Pen_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Pen_Col] = std::pair<bool,double>(false,0.0);
+  //normal terms:
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Pen_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Pen_n_Col] = std::pair<bool,double>(false,0.0);
+  //tangential terms:
+  configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+
+  return;
 }
 
 

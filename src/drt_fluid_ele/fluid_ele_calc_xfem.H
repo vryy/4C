@@ -4,8 +4,10 @@
 
 \brief Internal implementation of XFluid element interface coupling
 
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse /Benedikt Schott
+\maintainer Benedikt Schott
             kruse@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de

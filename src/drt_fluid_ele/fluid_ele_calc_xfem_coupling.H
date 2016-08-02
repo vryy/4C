@@ -5,9 +5,11 @@
 \brief Factory class for providing an implementation for coupling with
        Mixed/Stress/Hybrid methods or Nitsche's method to enforce
        interface conditions in the XFEM weakly
+
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse / Benedikt Schott
-            kruse@lnm.mw.tum.de
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
@@ -307,7 +309,8 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
           const double &                    sliplength,             ///< prescribed slip length for Robin type BC
-          const bool                        is_traction_jump        ///< is it a normal traction jump or calculated throw laplace-beltrami
+          const bool                        is_traction_jump,        ///< is it a normal traction jump or calculated throw laplace-beltrami
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
@@ -327,6 +330,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap, ///< Interface Terms configuration map
           const double                             NIT_full_stab_facn = 0.0 ///< full Nitsche's penalty term scaling (viscous+convective part)
         ) = 0;
 

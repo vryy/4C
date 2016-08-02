@@ -1,10 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file xfem_coupling_levelset.H
 
-\brief
+\brief manages the different types of level-set based coupling conditions and thereby builds the bridge between the
+xfluid class and the cut-library
+
+\level 2
 
 <pre>
-Maintainer: Benedikt Schott, Magnus Winter
+\maintainer Benedikt Schott, Magnus Winter
             {schott,winter}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -163,7 +166,10 @@ public:
       const double                        time,      ///< time
       const int                           step       ///< time step
   ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
-  {}
+  {
+    // initialize the configuration map
+    InitConfigurationMap();
+  }
 
 
   //! destructor
@@ -188,6 +194,9 @@ public:
       const DRT::Condition* cond
   );
 
+protected:
+
+  void InitConfigurationMap();
 };
 
 
@@ -257,6 +266,8 @@ public:
     if(has_neumann_jump_)
       SetElementSpecificConditions(cutterele_cond_robin_neumann_,"XFEMRobinNeumannVol",robin_neumann_id_);
 
+    // initialize the configuration map
+    InitConfigurationMap();
   }
 
 
@@ -559,6 +570,8 @@ protected:
       std::vector<DRT::Condition*> & mynewcond
   );
 
+  void InitConfigurationMap();
+
 private:
 
   bool forcetangvel_;
@@ -593,7 +606,10 @@ public:
       surfacetension_init_(false),
       surftensapprox_(INPAR::TWOPHASE::surface_tension_approx_none),
       laplacebeltrami_(INPAR::TWOPHASE::matrix_mixed_smoothed)
-  {}
+  {
+    // initialize the configuration map
+    InitConfigurationMap();
+  }
 
   virtual ~LevelSetCouplingTwoPhase()
   {}
@@ -919,6 +935,10 @@ public:
       const int step,
       const int lsc_idx = 0
   );
+
+protected:
+
+  void InitConfigurationMap();
 
 private:
 

@@ -1,10 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file xfem_coupling_base.H
 
-\brief
+\brief is the base for the different types of mesh and level-set based coupling conditions and thereby builds the bridge between the
+xfluid class and the cut-library
+
+\level 2
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -58,20 +61,7 @@ public:
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) :
-  bg_dis_(bg_dis),
-  cond_name_(cond_name),
-  cond_dis_(cond_dis),
-  coupling_id_(coupling_id),
-  cutter_dis_(Teuchos::null),
-  coupl_dis_(Teuchos::null),
-  averaging_strategy_(INPAR::XFEM::invalid),
-  myrank_(bg_dis_->Comm().MyPID()),
-  dt_(-1.0),
-  time_(time),
-  step_(step)
-  {
-  }
+  );
 
   //! destructor
   virtual ~CouplingBase()
@@ -203,7 +193,29 @@ public:
     slipcoeff = 0.0;
   }
 
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap()
+  {
+    #ifdef DEBUG
+    //Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
+
+    // At the moment you cannot use different consistent constraints between Adjoint and Penalty terms
+    //Check if we need a more general implementation (If constraints between Adjoint and Penalty are not the same!)
+    if(fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16 ||
+       fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16 ||
+       fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+      dserror("Your consistent constraint for Penalty and Adjoint term is not equal, go to element level and split up velint_diff_ for penalty and adjoint!");
+
+    //At the moment you cannot use different consistent constraints for normal or full direction!
+    if(fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second - configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second) > 1e-16)
+      dserror("Your consistent constraint for Adjoint in normal and full direction are different, this is an issure for the pressure adjoint term, fix velint_diff_ used for this term!; ");
+    #endif
+    return configuration_map_;
+  }
+
 protected:
+
+  virtual void InitConfigurationMap();
 
   void SetElementConditions();
 
@@ -283,6 +295,9 @@ protected:
   double time_;
 
   int step_;
+
+  ///< map which configures element level (which terms are evaluated & scaled with which value)
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> > configuration_map_;
 
 };
 

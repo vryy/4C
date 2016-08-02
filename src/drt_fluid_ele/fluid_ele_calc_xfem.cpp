@@ -4,9 +4,10 @@
 
 \brief Internal implementation of XFluid element interface coupling
 
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse /Benedikt Schott
-            kruse@lnm.mw.tum.de
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
@@ -2048,6 +2049,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             // (these are Nitsche-terms! find best settings for Nitsche's method first!)
             LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
             LINALG::Matrix<my::nsd_,1> itractionn_jump(true);
+
+            //Get Configuration Map (finally we should modify the configuration map here in a way that it fits hybrid LM approach)
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap();
+
             si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
               normal,
               surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
@@ -2064,6 +2069,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               my::velintn_,                // bg u^n
               ivelintn_jump,
               itractionn_jump,
+              configmap_n,
               INPAR::XFEM::PreviousState_only_consistency
             );
           }
@@ -3615,6 +3621,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         {
           TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::NIT_evaluateCoupling" );
 
+          //Get Configuration Map
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap = coupling->GetConfigurationmap();
+
           //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
           // (or embedded element through current side)
@@ -3644,7 +3653,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             itraction_jump_,             // prescribed interface traction, jump height for coupled problems
             itraction_jump_matrix_,      // prescribed interface traction matrix for Laplace-Beltrami projection
             slipcoeff,                   // prescribed slip length for Robin type BC
-            is_traction_jump
+            is_traction_jump,
+            configmap                     // Configuration Map
           );
 
           if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3728,6 +3738,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               );
             }
 
+            //Get Configuration Map
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap();
+
             const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(
               normal_,
@@ -3745,6 +3758,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::velintn_,                 // bg u^n
               ivelintn_jump_,               // velocity jump at interface (i.e. [| u |])
               itractionn_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
+              configmap_n,
               NIT_full_stab_fac_n           // penalty parameter at n
             );
           }

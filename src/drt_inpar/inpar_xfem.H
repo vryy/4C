@@ -2,8 +2,12 @@
 /*!
 \file inpar_xfem.H
 
+\brief Input parameters for XFEM
+
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -189,6 +193,60 @@ namespace INPAR
       Proj_smoothed,
       Proj_normal_smoothed_comb,
       Proj_normal_phi
+    };
+
+    enum CoupTerm
+    {
+      //Row Scalings
+      F_Con_Row,
+      F_Con_n_Row,
+      F_Con_t_Row,
+      X_Con_Row,
+      X_Con_n_Row,
+      X_Con_t_Row,
+      F_Adj_Row,
+      F_Adj_n_Row,
+      F_Adj_t_Row,
+      X_Adj_Row,
+      X_Adj_n_Row,
+      X_Adj_t_Row,
+      F_Pen_Row,
+      F_Pen_n_Row,
+      F_Pen_t_Row,
+      X_Pen_Row,
+      X_Pen_n_Row,
+      X_Pen_t_Row,
+      //Col Scalings
+      F_Con_Col,
+      F_Con_n_Col,
+      F_Con_t_Col,
+      X_Con_Col,
+      X_Con_n_Col,
+      X_Con_t_Col,
+      F_Adj_Col,
+      F_Adj_n_Col,
+      F_Adj_t_Col,
+      X_Adj_Col,
+      X_Adj_n_Col,
+      X_Adj_t_Col,
+      F_Pen_Col,
+      F_Pen_n_Col,
+      F_Pen_t_Col,
+      X_Pen_Col,
+      X_Pen_n_Col,
+      X_Pen_t_Col,
+      FStr_Adj_Col,
+      FStr_Adj_n_Col,
+      FStr_Adj_t_Col,
+      XStr_Adj_Col,
+      XStr_Adj_n_Col,
+      XStr_Adj_t_Col,
+      FStr_Pen_Col,//All these F/X-Str_Pen... Terms below will dissapear a bit later again as they are similar to the consistency terms
+      FStr_Pen_n_Col,
+      FStr_Pen_t_Col,
+      XStr_Pen_Col,
+      XStr_Pen_n_Col,
+      XStr_Pen_t_Col
     };
 
     /// set the xfem parameters

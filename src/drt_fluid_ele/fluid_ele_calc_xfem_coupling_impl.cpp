@@ -8,7 +8,6 @@
 
 <pre>
 \maintainer Benedikt Schott
-            kruse@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
@@ -851,7 +850,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
   const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
   const double &                    sliplength,             ///< prescribed slip length for Robin type BC
-  const bool                        is_traction_jump       ///< is it a normal traction jump or calculated throw laplace-beltrami
+  const bool                        is_traction_jump,       ///< is it a normal traction jump or calculated throw laplace-beltrami
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_evaluateCoupling");
@@ -869,10 +869,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   //--------------------------------------------
   //HARD CODED VARIABLES! PROVIDE FROM INPUT!
-
-  //bool do_projected_split;
-
-
   //--------------------------------------------
 
   // plausibility check
@@ -882,7 +878,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // check if this is a one-sided background fluid-master approach
   const bool full_mastersided(fabs(kappa_m-1.0) < 1.e-14);
   // check if this is a slave-sided (embedded-sided approach)
-  const bool full_slavesided(fabs(kappa_s-1.0) < 1.e-14);
+  //const bool full_slavesided(fabs(kappa_s-1.0) < 1.e-14);
 
   // check the weights
   if (fabs(kappa_m + kappa_s -1.0) > 1.e-14)
@@ -923,7 +919,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   bool sliplength_not_zero = (( sliplength_ == 0.0 ) ? false : true);
 
   // Do different scaling of the penalty parameter in tangential and normal directions?
-  bool do_projected_split = sliplength_not_zero;
+  //bool do_projected_split = sliplength_not_zero;
 
   //Safety check,
   if(sliplength_not_zero and !full_mastersided)
@@ -932,6 +928,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 //---------------------------------------Parameters created
 
   //Stabilization parameters for normal and tangential direction
+  double stabnit    = 0.0;
+
   double stabnit_n    = 0.0;
   double stabepsnit_n = 0.0;
   double stabadj_n    = 0.0;
@@ -942,7 +940,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   double stabadj_t    = 0.0;
   double stabepsadj_t = 0.0;
 
-  if(do_projected_split)
+  if(configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
   {
     //Normal direction stabilization parameters
     GetStabilizationParameters(
@@ -954,7 +952,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         stabepsadj_n,
         false
     );
+  }
 
+  if(configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
+  {
     //Tangential direction stabilization parameters
     GetStabilizationParameters(
         NIT_full_stab_fac,
@@ -966,13 +967,11 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         sliplength_not_zero
     );
   }
-  else
+
+  if(configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
   {
     //If normal WDBC -> use full-scaling (only Nitsche term needed!).
-    stabnit_n      = NIT_full_stab_fac;
-    stabepsnit_n   = 0.0;
-    stabadj_n      = 1.0;
-    stabepsadj_n   = 0.0;
+    stabnit      = NIT_full_stab_fac;
   }
 //-------------------------------------------- Stab-parameters created
 
@@ -984,31 +983,60 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // interface velocity vector in gausspoint
   velint_s_.Clear();
 
-  if(eval_coupling_)
+  if(configmap.at(INPAR::XFEM::X_Adj_Col).first || configmap.at(INPAR::XFEM::X_Pen_Col).first ||
+     configmap.at(INPAR::XFEM::X_Adj_n_Col).first || configmap.at(INPAR::XFEM::X_Pen_n_Col).first ||
+     configmap.at(INPAR::XFEM::X_Adj_t_Col).first || configmap.at(INPAR::XFEM::X_Pen_t_Col).first)
     this->GetInterfaceVelnp(velint_s_);
 
-  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
-  velint_s_.Update(1.0, ivelint_jump, 1.0);
+  //Calc full veldiff
+  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
+  {
+    velint_diff_.Update(configmap.at(INPAR::XFEM::F_Adj_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_.Update(-1.0,ivelint_jump,1.0);
 
-  velint_diff_.Update(1.0, velint_m, -1.0, velint_s_, 0.0);
+    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
+      LINALG::Matrix<nsd_,1> tmp_pval;
+      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
+      //  Useful if smoothed normals are used (performs better for rotating cylinder case).
+      velint_diff_pres_timefacfac_ = velint_diff_.Dot(tmp_pval);
+    #else
+      velint_diff_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
+    #endif
+  }
 
-#ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-  LINALG::Matrix<nsd_,1> tmp_pval;
-  tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
-  //Project the velocity jump [|u|] in the pressure term with the projection matrix.
-  //  Useful if smoothed normals are used (performs better for rotating cylinder case).
-  velint_diff_normal_pres_timefacfac_ = velint_diff_.Dot(tmp_pval);
-#else
-  velint_diff_normal_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
-#endif
+  //Calc normal-veldiff
+  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
+  {
+    // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
+    // (([|u|]-u_0)*P^n) Apply from right for consistency
+    velint_diff_normal_.Update(configmap.at(INPAR::XFEM::F_Adj_n_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_n_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_normal_.Update(-1.0,ivelint_jump,1.0);
+    velint_diff_proj_normal_.MultiplyTN(proj_normal_,velint_diff_normal_);
 
-  //Create members for GNBC condition:
-  // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
-  // (([|u|]-u_0)*P^n) Apply from right for consistency
-  velint_diff_proj_normal_.MultiplyTN(proj_normal_,velint_diff_);
-  // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
-  // (([|u|]-u_0)*P^t) Apply from right for consistency
-  velint_diff_proj_tangential_.MultiplyTN(proj_tangential_,velint_diff_);
+    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
+      LINALG::Matrix<nsd_,1> tmp_pval;
+      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
+      //  Useful if smoothed normals are used (performs better for rotating cylinder case).
+      velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(tmp_pval);
+    #else
+      velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(normal_pres_timefacfac_);
+    #endif
+  }
+
+  //Calc tangential-veldiff
+  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
+  {
+    // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
+    // (([|u|]-u_0)*P^t) Apply from right for consistency
+    velint_diff_tangential_.Update(configmap.at(INPAR::XFEM::F_Adj_t_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_t_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_tangential_.Update(-1.0,ivelint_jump,1.0);
+    velint_diff_proj_tangential_.MultiplyTN(proj_tangential_,velint_diff_tangential_);
+  }
 
   // funct_s * timefac * fac
   funct_s_.Clear();
@@ -1029,7 +1057,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // REMARK: this term includes also inflow coercivity in case of XFSI
   // with modified stabfac (see NIT_ComputeStabfac)
 
-  if(do_projected_split)
+  if(configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
   {
     //Normal Terms!
     NIT_Stab_Penalty_Projected(
@@ -1038,7 +1066,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         velint_diff_proj_normal_,
         stabnit_n,
         timefacfac);
+  }
 
+  if(configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
+  {
     //Tangential Terms!
     NIT_Stab_Penalty_Projected(
         funct_m,
@@ -1047,15 +1078,17 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         stabnit_t,
         timefacfac);
   }
-  else
+
+  if(configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
   {
     NIT_Stab_Penalty(
         funct_m,
-        stabnit_n,
+        stabnit,
         timefacfac);
   }
 
   // add averaged term (TODO: For XFF? How does this work for non-master coupled? @Benedikt?)
+  //Todo: is not handled by configmap yet as it has the shape of a penalty term and therefore will be evaluated there at the end!
   if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
       fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged )
   {
@@ -1067,70 +1100,89 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
       timefacfac
     );
   }
-//-------------------------------------------- Nitsche-Stab penalty added
-
-  // 2 * mu_m * timefacfac
-  const double viscm_fac = 2.0 * timefacfac * visceff_m;
-
-  half_normal_deriv_m_viscm_timefacfac_km_.MultiplyTN(derxy_m, half_normal_); // 0.5*normal(k)*derxy_m(k,ic)
-  vderxy_m_normal_.Multiply(vderxy_m, half_normal_);
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxy_m, half_normal_);
-  // 0.5* (\nabla u + (\nabla u)^T) * normal
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
-
+  //-------------------------------------------- Nitsche-Stab penalty added
   //-----------------------------------------------------------------
 
   // evaluate the terms, that contribute to the background fluid
   // system - standard Dirichlet case/pure xfluid-sided case
+  // AND
+  // system - two-sided or xfluid-sided:
 
-  if (!eval_coupling_ || full_mastersided)
+  // 2 * mu_m * kappa_m * timefac * fac
+  const double km_viscm_fac = 2.0 * timefacfac * visceff_m * kappa_m;
+  half_normal_viscm_timefacfac_km_.Update(km_viscm_fac,half_normal_,0.0);
+
+  half_normal_deriv_m_viscm_timefacfac_km_.MultiplyTN(derxy_m, half_normal_); // 0.5*normal(k)*derxy_m(k,ic)
+  half_normal_deriv_m_viscm_timefacfac_km_.Scale(km_viscm_fac);
+
+  // 0.5* (\nabla u + (\nabla u)^T) * normal
+  vderxy_m_normal_.Multiply(vderxy_m, half_normal_);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxy_m, half_normal_);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
+
+  normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
+
+  //-----------------------------------------------------------------
+  // pressure consistency term
+  if ( configmap.at(INPAR::XFEM::F_Con_Col).first || configmap.at(INPAR::XFEM::F_Con_n_Col).first)
   {
-
-    half_normal_viscm_timefacfac_km_.Update(viscm_fac,half_normal_,0.0); //0.5*2.0 * timefacfac * visceff_m*normal
-    half_normal_deriv_m_viscm_timefacfac_km_.Scale(viscm_fac);        // 2.0 * timefacfac * visceff_m*(0.5*normal(k)*derxy_m(k,ic))
-    // 2.0 * timefacfac * visceff_m * 0.5* (\nabla u + (\nabla u)^T) * normal
-    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_fac);
-
-    //-----------------------------------------------------------------
-    // pressure consistency term
     NIT_p_Consistency_MasterTerms(
       pres_m,
       funct_m,
-      normal_pres_timefacfac_
+      normal_pres_timefacfac_km_
     );
+  }
 
-    //-----------------------------------------------------------------
-    // viscous consistency term
-#ifndef ENFORCE_URQUIZA_GNBC
-    NIT_visc_Consistency_MasterTerms(
-        derxy_m,
-        funct_m);
-#else
-
-    // 2.0 * timefacfac * visceff_m * k_m * [\nabla N^(IX)]_k P^t_{kj}
-    proj_matrix_derxy_m_.MultiplyTN(proj_normal_,derxy_m);    //Apply from right for consistency
-    proj_matrix_derxy_m_.Scale(viscm_fac);
-
-    NIT_visc_Consistency_MasterTerms_Projected(
+  //-----------------------------------------------------------------
+  // viscous consistency term
+  if(configmap.at(INPAR::XFEM::F_Con_Col).first)
+  {
+    #ifndef ENFORCE_URQUIZA_GNBC
+        //Comment: Here half_normal_deriv_m_viscm_timefacfac_km_ is used!
+        NIT_visc_Consistency_MasterTerms(
             derxy_m,
-            funct_m,
-            proj_normal_);
-#endif
+            funct_m);
+    #else
+
+        // 2.0 * timefacfac * visceff_m * k_m * [\nabla N^(IX)]_k P^t_{kj}
+        proj_matrix_derxy_m_.MultiplyTN(proj_normal_,derxy_m);    //Apply from right for consistency
+        proj_matrix_derxy_m_.Scale(km_viscm_fac);
+
+        NIT_visc_Consistency_MasterTerms_Projected(
+                derxy_m,
+                funct_m,
+                proj_normal_);
+    #endif
+    }
+    if(configmap.at(INPAR::XFEM::F_Con_n_Col).first)
+      dserror("F_Con_n_Col will come soon");
+    if(configmap.at(INPAR::XFEM::F_Con_t_Col).first)
+      dserror("F_Con_t_Col will come soon");
 
     //-----------------------------------------------------------------
     // pressure adjoint consistency term
-    // +++ qnuP option added! +++
-    NIT_p_AdjointConsistency_MasterTerms(
-      funct_m,
-      normal_pres_timefacfac_,
-      velint_diff_normal_pres_timefacfac_
-    );
+    if(configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+    {
+      double velint_diff_normal_pres_timefacfac_km = 0.0;
+      if (configmap.at(INPAR::XFEM::F_Adj_Row).first)
+        velint_diff_normal_pres_timefacfac_km += velint_diff_pres_timefacfac_ * kappa_m;
+      if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+        velint_diff_normal_pres_timefacfac_km += velint_diff_normal_pres_timefacfac_ * kappa_m;
+      //-----------------------------------------------------------------
+      // +++ qnuP option added! +++
+      NIT_p_AdjointConsistency_MasterTerms(
+        funct_m,
+        normal_pres_timefacfac_km_,
+        velint_diff_normal_pres_timefacfac_km
+      );
+    }
 
-     const double km_viscm_fac = viscm_fac; // kappa_m = 1.0
-
-     if(do_projected_split)
-     {
-       //Normal Terms!
+    //-----------------------------------------------------------------
+    // viscous adjoint consistency term (and for NavierSlip Penalty Term ([v],{sigma}))
+    //Normal Terms!
+    if(configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+    {
        Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
            funct_m,                      ///< funct * timefacfac
            derxy_m,                      ///< spatial derivatives of coupling master shape functions
@@ -1146,231 +1198,176 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
            false                         ///< eval Robin-terms (NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)
        );
 
-       //Tangential Terms!
-       Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
-           funct_m,                      ///< funct * timefacfac
-           derxy_m,                      ///< spatial derivatives of coupling master shape functions
-           vderxy_m,                     ///< coupling master spatial velocity derivatives
-           proj_tangential_,            ///< projection_matrix
-           velint_diff_proj_tangential_, ///< velocity difference projected
-           normal,                       ///< normal-vector
-           stabepsnit_t,                 ///< stabilization factor NIT_Penalty Neumann
-           stabadj_t,                ///< stabilization factor Adjoint
-           stabepsadj_t,             ///< stabilization factor Adjoint Neumann
-           km_viscm_fac,
-           itraction_jump,               ///< traction jump
-           sliplength_not_zero           ///< eval Robin-terms
-       );
-     }
-     else
-     {
-       NIT_visc_AdjointConsistency_MasterTerms(
-           funct_m,                      ///< funct * timefacfac
-           derxy_m,                      ///< spatial derivatives of coupling master shape functions
-           normal,                       ///< normal-vector
-           km_viscm_fac                  ///< scaling factor
-       );
-     }
+    }
+    if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first || configmap.at(INPAR::XFEM::FStr_Pen_n_Col).first || configmap.at(INPAR::XFEM::XStr_Pen_n_Col).first)
+       dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
 
-    return;
-  }
+    //Tangential Terms!
+    if(configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::FStr_Pen_t_Col).first)
+    {
+      Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
+         funct_m,                      ///< funct * timefacfac
+         derxy_m,                      ///< spatial derivatives of coupling master shape functions
+         vderxy_m,                     ///< coupling master spatial velocity derivatives
+         proj_tangential_,            ///< projection_matrix
+         velint_diff_proj_tangential_, ///< velocity difference projected
+         normal,                       ///< normal-vector
+         stabepsnit_t,                 ///< stabilization factor NIT_Penalty Neumann
+         stabadj_t,                ///< stabilization factor Adjoint
+         stabepsadj_t,             ///< stabilization factor Adjoint Neumann
+         km_viscm_fac,
+         itraction_jump,               ///< traction jump
+         sliplength_not_zero           ///< eval Robin-terms
+      );
+    }
 
-  // 2 * mu_m * kappa_m * timefac * fac
-  const double km_viscm_fac = viscm_fac * kappa_m;
+   if(configmap.at(INPAR::XFEM::F_Adj_Row).first)
+   {
+     NIT_visc_AdjointConsistency_MasterTerms(
+         funct_m,                      ///< funct * timefacfac
+         derxy_m,                      ///< spatial derivatives of coupling master shape functions
+         normal,                       ///< normal-vector
+         km_viscm_fac                  ///< scaling factor
+     );
+   }
 
-  half_normal_viscm_timefacfac_km_.Update(km_viscm_fac,half_normal_,0.0);
-  half_normal_deriv_m_viscm_timefacfac_km_.Scale(km_viscm_fac);
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
+   if ((configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first ||
+       configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first) &&
+       kappa_s != 0.0)
+   {
 
-  normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
 
-  //-----------------------------------------------------------------
 
-  // evaluate the terms, that contribute to the background fluid
-  // system - two-sided or xfluid-sided:
+    //TODO: @Christoph:
+    //--------------------------------------------------------------------------------
+    //This part needs to be adapted if a Robin-condition needs to be applied not only
+    //  xfluid_sided (i.e. kappa^m =/= 1.0).
+    //Should be more or less analogue to the above implementation.
+    //--------------------------------------------------------------------------------
 
-  if (! full_slavesided)
-  {
+    //-----------------------------------------------------------------
+    // the following quantities are only required for two-sided coupling
+    // kappa_s > 0.0
+
+    // 2 * mu_s * kappa_s * timefac * fac
+    const double ks_viscs_fac = 2.0 * kappa_s * visceff_s * timefacfac;
+
+    half_normal_viscs_timefacfac_ks_.Update(ks_viscs_fac,half_normal_,0.0);
+    normal_pres_timefacfac_ks_.Update(kappa_s,normal_pres_timefacfac_,0.0);
+
     //-----------------------------------------------------------------
     // pressure consistency term
-    NIT_p_Consistency_MasterTerms(
-      pres_m,
-      funct_m,
-      normal_pres_timefacfac_km_
-    );
+
+    double pres_s = 0.0;
+    // must use this-pointer because of two-stage lookup!
+    this->GetInterfacePresnp(pres_s);
+
+    if(configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first)
+    {
+      NIT_p_Consistency_SlaveTerms(
+          pres_s,
+          funct_m,
+          normal_pres_timefacfac_ks_);
+    }
 
     //-----------------------------------------------------------------
     // pressure adjoint consistency term
-    const double velint_diff_normal_pres_timefacfac_km = velint_diff_normal_pres_timefacfac_ * kappa_m;
-    NIT_p_AdjointConsistency_MasterTerms(
-        funct_m,
-        normal_pres_timefacfac_km_,
-        velint_diff_normal_pres_timefacfac_km
-        );
+    // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
+    if(configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
+    {
+      double velint_diff_normal_pres_timefacfac_ks = 0.0;
+      if (configmap.at(INPAR::XFEM::X_Adj_Row).first)
+        velint_diff_normal_pres_timefacfac_ks += velint_diff_pres_timefacfac_ * kappa_s;
+      if (configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
+        velint_diff_normal_pres_timefacfac_ks += velint_diff_normal_pres_timefacfac_ * kappa_s;
+
+      NIT_p_AdjointConsistency_SlaveTerms(
+          normal_pres_timefacfac_ks_,
+          velint_diff_normal_pres_timefacfac_ks);
+    }
 
     //-----------------------------------------------------------------
     // viscous consistency term
-    NIT_visc_Consistency_MasterTerms(
-        derxy_m,
-        funct_m);
+
+    // Shape function derivatives for slave side
+    LINALG::Matrix<nsd_,slave_nen_> derxy_s;
+    this->GetSlaveFunctDeriv(derxy_s);
+
+    // Spatial velocity gradient for slave side
+    LINALG::Matrix<nsd_,nsd_> vderxy_s;
+    this->GetInterfaceVelGradnp(vderxy_s);
+
+    half_normal_deriv_s_viscs_timefacfac_ks_.MultiplyTN(derxy_s, half_normal_); // half_normal(k)*derxy_s(k,ic);
+    half_normal_deriv_s_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
+    vderxy_s_normal_.Multiply(vderxy_s, half_normal_);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxy_s, half_normal_);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
+
+    if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+    {
+      NIT_visc_Consistency_SlaveTerms(
+          derxy_s,
+          funct_m);
+    }
+    if(configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first)
+      dserror("Want to implement projected slave consistency?");
 
     //-----------------------------------------------------------------
     // viscous adjoint consistency term
 
-    if(do_projected_split)
-    {
-      //Normal Terms!
-      Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
-          funct_m,                      ///< funct * timefacfac
-          derxy_m,                      ///< spatial derivatives of coupling master shape functions
-          vderxy_m,                     ///< coupling master spatial velocity derivatives
-          proj_normal_,                 ///< projection_matrix
-          velint_diff_proj_normal_,     ///< velocity difference projected
-          normal,                       ///< normal-vector
-          stabepsnit_n,                 ///< stabilization factor in normal direction
-          stabadj_n,                    ///< stabilization factor in normal direction
-          stabepsadj_n,                 ///< stabilization factor in normal direction
-          km_viscm_fac,
-          itraction_jump,               ///< traction jump
-          false                         ///< eval Robin-terms (NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)
-      );
+    LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
+    derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
 
-      //Tangential Terms!
-      Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
-          funct_m,                      ///< funct * timefacfac
-          derxy_m,                      ///< spatial derivatives of coupling master shape functions
-          vderxy_m,                     ///< coupling master spatial velocity derivatives
-          proj_tangential_,            ///< projection_matrix
-          velint_diff_proj_tangential_, ///< velocity difference projected
-          normal,                       ///< normal-vector
-          stabepsnit_t,                 ///< stabilization factor in normal direction
-          stabadj_t,                ///< stabilization factor in normal direction
-          stabepsadj_t,             ///< stabilization factor in normal direction
-          km_viscm_fac,
-          itraction_jump,               ///< traction jump
-          sliplength_not_zero           ///< eval Robin-terms
+    //TODO: Needs added Projection. (If deemed necessary!)
+    if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+    {
+      NIT_visc_AdjointConsistency_SlaveTerms(
+          funct_m,
+          derxy_s_viscs_timefacfac_ks,
+          normal
       );
     }
-    else
+    if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first)
+      dserror("Want to  implement projected slave adjoint consistency?");
+
+    //-----------------------------------------------------------------
+    // standard consistency traction jump term
+    // Only needed for XTPF
+    if( eval_coupling_ and is_traction_jump)
     {
-      NIT_visc_AdjointConsistency_MasterTerms(
-          funct_m,                      ///< funct * timefacfac
-          derxy_m,                      ///< spatial derivatives of coupling master shape functions
-          normal,                       ///< normal-vector
-          km_viscm_fac                  ///< scaling factor
+      // funct_s * timefac * fac * kappa_m
+      funct_s_timefacfac_km_.Update(kappa_m * timefacfac, funct_s_, 0.0);
+
+      // funct_m * timefac * fac * kappa_s
+      funct_m_timefacfac_ks_.Update(kappa_s * timefacfac, funct_m, 0.0);
+
+      NIT_Traction_Consistency_Term(
+        funct_m_timefacfac_ks_,
+        funct_s_timefacfac_km_,
+        itraction_jump
       );
     }
 
+    //-----------------------------------------------------------------
+    // projection matrix approach (Laplace-Beltrami)
+    if( eval_coupling_ and  (!is_traction_jump) )
+    {
+      LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
+      derxy_s_timefacfac_km.Scale(kappa_m*timefacfac);
+
+      LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
+      derxy_m_timefacfac_ks.Scale(kappa_s*timefacfac);
+
+      NIT_Projected_Traction_Consistency_Term(
+      derxy_m_timefacfac_ks,
+      derxy_s_timefacfac_km,
+      itraction_jump_matrix);
+    }
+    //-------------------------------------------- Traction-Jump added (XTPF)
   }
 
-  //TODO: @Christoph:
-  //--------------------------------------------------------------------------------
-  //This part needs to be adapted if a Robin-condition needs to be applied not only
-  //  xfluid_sided (i.e. kappa^m =/= 1.0).
-  //Should be more or less analogue to the above implementation.
-  //--------------------------------------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // the following quantities are only required for two-sided coupling
-  // kappa_s > 0.0
-
-  // 2 * mu_s * kappa_s * timefac * fac
-  const double ks_viscs_fac = 2.0 * kappa_s * visceff_s * timefacfac;
-
-  half_normal_viscs_timefacfac_ks_.Update(ks_viscs_fac,half_normal_,0.0);
-  normal_pres_timefacfac_ks_.Update(kappa_s,normal_pres_timefacfac_,0.0);
-
-  //-----------------------------------------------------------------
-  // pressure consistency term
-
-  double pres_s = 0.0;
-  // must use this-pointer because of two-stage lookup!
-  this->GetInterfacePresnp(pres_s);
-
-  NIT_p_Consistency_SlaveTerms(
-      pres_s,
-      funct_m,
-      normal_pres_timefacfac_ks_);
-
-  //-----------------------------------------------------------------
-  // pressure adjoint consistency term
-  const double velint_diff_normal_pres_timefacfac_ks = velint_diff_normal_pres_timefacfac_ * kappa_s;
-  // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
-  NIT_p_AdjointConsistency_SlaveTerms(
-      normal_pres_timefacfac_ks_,
-      velint_diff_normal_pres_timefacfac_ks);
-
-  //-----------------------------------------------------------------
-  // viscous consistency term
-
-  // Shape function derivatives for slave side
-  LINALG::Matrix<nsd_,slave_nen_> derxy_s;
-  this->GetSlaveFunctDeriv(derxy_s);
-
-  // Spatial velocity gradient for slave side
-  LINALG::Matrix<nsd_,nsd_> vderxy_s;
-  this->GetInterfaceVelGradnp(vderxy_s);
-
-  half_normal_deriv_s_viscs_timefacfac_ks_.MultiplyTN(derxy_s, half_normal_); // half_normal(k)*derxy_s(k,ic);
-  half_normal_deriv_s_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
-  vderxy_s_normal_.Multiply(vderxy_s, half_normal_);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxy_s, half_normal_);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
-
-  NIT_visc_Consistency_SlaveTerms(
-      derxy_s,
-      funct_m);
-
-  //-----------------------------------------------------------------
-  // viscous adjoint consistency term
-
-  LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
-  derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
-
-  //TODO: Needs added Projection. (If deemed necessary!)
-  NIT_visc_AdjointConsistency_SlaveTerms(
-      funct_m,
-      derxy_s_viscs_timefacfac_ks,
-      normal
-  );
-
-  //-----------------------------------------------------------------
-  // standard consistency traction jump term
-  // Only needed for XTPF
-  if( eval_coupling_ and is_traction_jump)
-  {
-    // funct_s * timefac * fac * kappa_m
-    funct_s_timefacfac_km_.Update(kappa_m * timefacfac, funct_s_, 0.0);
-
-    // funct_m * timefac * fac * kappa_s
-    funct_m_timefacfac_ks_.Update(kappa_s * timefacfac, funct_m, 0.0);
-
-    NIT_Traction_Consistency_Term(
-      funct_m_timefacfac_ks_,
-      funct_s_timefacfac_km_,
-      itraction_jump
-    );
-  }
-
-  //-----------------------------------------------------------------
-  // projection matrix approach (Laplace-Beltrami)
-  if( eval_coupling_ and  (!is_traction_jump) )
-  {
-    LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
-    derxy_s_timefacfac_km.Scale(kappa_m*timefacfac);
-
-    LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
-    derxy_m_timefacfac_ks.Scale(kappa_s*timefacfac);
-
-    NIT_Projected_Traction_Consistency_Term(
-    derxy_m_timefacfac_ks,
-    derxy_s_timefacfac_km,
-    itraction_jump_matrix);
-  }
-  //-------------------------------------------- Traction-Jump added (XTPF)
-
-
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1378,7 +1375,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOldState(
   const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-  const double &                           timefacfacn,             ///< dt*(1-theta)*fac
+  const double &                           timefacfac,             ///< dt*(1-theta)*fac
   bool                                     isImplPressure,          ///< flag for implicit pressure treatment
   const double &                           visceff_m,               ///< viscosity in coupling master fluid
   const double &                           visceff_s,               ///< viscosity in coupling slave fluid
@@ -1387,11 +1384,12 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   const double &                           density_m,               ///< fluid density (master) USED IN XFF
   const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
-  const LINALG::Matrix<nsd_,nsd_> &        vderxyn_m,               ///< coupling master spatial velocity derivatives
-  const double &                           presn_m,                 ///< coupling master pressure
-  const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
-  const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-  const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
+  const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,               ///< coupling master spatial velocity derivatives
+  const double &                           pres_m,                 ///< coupling master pressure
+  const LINALG::Matrix<nsd_,1> &           velint_m,               ///< coupling master interface velocity
+  const LINALG::Matrix<nsd_,1> &           ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+  const LINALG::Matrix<nsd_,1> &           itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap, ///< Interface Terms configuration map
   const double                             NIT_full_stab_facn       ///< full Nitsche's penalty term scaling (viscous+convective part)
 )
 {
@@ -1426,23 +1424,69 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
 
   half_normal_.Update(0.5,normal,0.0);
-  normal_pres_timefacfac_.Update(timefacfacn,normal,0.0);
-
-  //--------------------------------------------
+  normal_pres_timefacfac_.Update(timefacfac,normal,0.0);
 
   // get velocity at integration point
   // (values at n)
   // interface velocity vector in gausspoint
   velint_s_.Clear();
-  if (eval_coupling_)
+
+  if(configmap.at(INPAR::XFEM::X_Adj_Col).first || configmap.at(INPAR::XFEM::X_Pen_Col).first ||
+     configmap.at(INPAR::XFEM::X_Adj_n_Col).first || configmap.at(INPAR::XFEM::X_Pen_n_Col).first ||
+     configmap.at(INPAR::XFEM::X_Adj_t_Col).first || configmap.at(INPAR::XFEM::X_Pen_t_Col).first)
     this->GetInterfaceVeln(velint_s_);
 
-  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
-  velint_s_.Update(1.0, ivelintn_jump, 1.0);
+  //Calc full veldiff
+  velint_diff_pres_timefacfac_ = 0.0;
+  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
+  {
+    velint_diff_.Update(configmap.at(INPAR::XFEM::F_Adj_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_.Update(-1.0,ivelint_jump,1.0);
 
-  velint_diff_.Update(1.0, velintn_m, -1.0, velint_s_, 0.0);
+//    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results with this commit
+//      LINALG::Matrix<nsd_,1> tmp_pval;
+//      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+//      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
+//      //  Useful if smoothed normals are used (performs better for rotating cylinder case).
+//      velint_diff_pres_timefacfac_ = velint_diff_.Dot(tmp_pval);
+//    #else
+      velint_diff_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
+//    #endif
+  }
 
-  velint_diff_normal_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
+  //Calc normal-veldiff
+  velint_diff_normal_pres_timefacfac_ = 0.0;
+  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
+  {
+    // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
+    // (([|u|]-u_0)*P^n) Apply from right for consistency
+    velint_diff_normal_.Update(configmap.at(INPAR::XFEM::F_Adj_n_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_n_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_normal_.Update(-1.0,ivelint_jump,1.0);
+    velint_diff_proj_normal_.MultiplyTN(proj_normal_,velint_diff_normal_);
+
+//    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results with this commit
+//      LINALG::Matrix<nsd_,1> tmp_pval;
+//      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+//      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
+//      //  Useful if smoothed normals are used (performs better for rotating cylinder case).
+//      velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(tmp_pval);
+//    #else
+      velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(normal_pres_timefacfac_);
+//    #endif
+  }
+
+  //Calc tangential-veldiff
+  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
+  {
+    // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
+    // (([|u|]-u_0)*P^t) Apply from right for consistency
+    velint_diff_tangential_.Update(configmap.at(INPAR::XFEM::F_Adj_t_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_t_Col).second, velint_s_, 0.0);
+    // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+    velint_diff_tangential_.Update(-1.0,ivelint_jump,1.0);
+    velint_diff_proj_tangential_.MultiplyTN(proj_tangential_,velint_diff_tangential_);
+  }
 
   // funct_s * timefac * fac
   funct_s_.Clear();
@@ -1458,244 +1502,249 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // funct_s * funct_m (dyadic product)
   funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
 
-  //-----------------------------------------------------------------
-  // standard consistency traction jump term
-  if( eval_coupling_ )
+  // penalty term
+  if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
   {
-    // funct_s * timefac * fac * kappa_m
-    funct_s_timefacfac_km_.Update(kappa_m * timefacfacn,funct_s_,0.0);
-
-    // funct_m * timefac * fac * kappa_s
-    funct_m_timefacfac_ks_.Update(kappa_s * timefacfacn, funct_m, 0.0);
-
-    NIT_Traction_Consistency_Term(
-      funct_m_timefacfac_ks_,
-      funct_s_timefacfac_km_,
-      itractionn_jump
-    );
-  }
-
-  // 2 * mu_m * timefacfacn
-  const double viscm_facn = 2.0 * timefacfacn * visceff_m;
-
-  vderxy_m_normal_.Multiply(vderxyn_m, half_normal_);
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxyn_m, half_normal_);
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
-
-  //-----------------------------------------------------------------
-
-  // evaluate the terms, that contribute to the background fluid
-  // system - standard Dirichlet case/pure xfluid-sided case
-
-  if (!eval_coupling_ || full_mastersided)
-  {
-    if (not isImplPressure)
+    if(configmap.at(INPAR::XFEM::F_Pen_Row).first && full_mastersided) //Todo: Just to make commit not change any results!
     {
-      //-----------------------------------------------------------------
-      // pressure consistency term
-      NIT_p_Consistency_MasterRHS(
-          presn_m,
-          funct_m,
-          normal_pres_timefacfac_
-      );
-    }
-
-    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_facn);
-
-    //-----------------------------------------------------------------
-    // viscous consistency term
-    NIT_visc_Consistency_MasterRHS(
-        funct_m);
-
-    // done, if only consistency terms are evaluated for previos time step
-    if (fldparaxfem_.InterfaceTermsPreviousState() != INPAR::XFEM::PreviousState_full)
-      return;
-
-    //-----------------------------------------------------------------
-    // viscous adjoint consistency term
-
-    LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn(derxy_m);
-    derxy_m_viscm_timefacfacn.Scale(adj_visc_scale_*viscm_facn);
-    NIT_visc_AdjointConsistency_MasterRHS(
-      velintn_m,
-      velint_s_,
-      derxy_m_viscm_timefacfacn,
-      normal
-    );
-
-    //-----------------------------------------------------------------
-    // penalty term
-
-    NIT_Stab_Penalty_MasterRHS(
+      NIT_Stab_Penalty_MasterRHS(
       funct_m,
       NIT_full_stab_facn,
-      timefacfacn
-    );
-
-    if (not isImplPressure)
-    {
-      //-----------------------------------------------------------------
-      // pressure adjoint consistency term
-
-      NIT_p_AdjointConsistency_MasterRHS(
-          velint_diff_normal_pres_timefacfac_,
-          funct_m
+      timefacfac
       );
     }
 
-    // we are done here!
-    return;
+    if(configmap.at(INPAR::XFEM::X_Pen_Row).first && !(!eval_coupling_ || full_mastersided)) //Todo: Just to make commit not change any results!
+    {
+      NIT_Stab_Penalty_SlaveRHS(
+        NIT_full_stab_facn,
+        timefacfac
+      );
+    }
+
+    // add averaged term
+    if ((fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
+        fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged) &&
+        !(!eval_coupling_ || full_mastersided)) //Todo: just to keep results the same, not sure if this is what we actually want?
+    {
+      NIT_Stab_Inflow_AveragedTermRHS(
+        funct_m,
+        velint_m,
+        normal,
+        density_m,
+        timefacfac
+      );
+    }
   }
 
   //-----------------------------------------------------------------
+  // evaluate the terms, that contribute to the background fluid
+  // system - standard Dirichlet case/pure xfluid-sided case
+  // AND
+  // system - two-sided or xfluid-sided:
 
   // 2 * mu_m * kappa_m * timefac * fac
-  const double km_viscm_facn = viscm_facn * kappa_m;
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_facn);
-  normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
+  const double km_viscm_fac = 2.0 * timefacfac * visceff_m * kappa_m;
+  half_normal_viscm_timefacfac_km_.Update(km_viscm_fac,half_normal_,0.0);
 
+  // 0.5* (\nabla u + (\nabla u)^T) * normal
+  vderxy_m_normal_.Multiply(vderxy_m, half_normal_);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxy_m, half_normal_);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
+  vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
+
+  normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
 
   // evaluate the terms, that contribute to the background fluid
   // system - two-sided or xfluid-sided:
-
   if (! full_slavesided)
   {
-    if (not isImplPressure)
+    //-----------------------------------------------------------------
+    // pressure consistency term
+    if ( configmap.at(INPAR::XFEM::F_Con_Col).first || configmap.at(INPAR::XFEM::F_Con_n_Col).first)
     {
-      //-----------------------------------------------------------------
-      // pressure consistency term
-      NIT_p_Consistency_MasterRHS(
-          presn_m,
-          funct_m,
-          normal_pres_timefacfac_km_
-      );
+      if (not isImplPressure)
+      {
+        NIT_p_Consistency_MasterRHS(
+            pres_m,
+            funct_m,
+            normal_pres_timefacfac_km_
+        );
+      }
     }
 
     //-----------------------------------------------------------------
     // viscous consistency term
-    NIT_visc_Consistency_MasterRHS(
-        funct_m);
+    if(configmap.at(INPAR::XFEM::F_Con_Col).first)
+    {
+      #ifndef ENFORCE_URQUIZA_GNBC
+      NIT_visc_Consistency_MasterRHS(
+          funct_m);
+      #else
+        dserror("ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?"); //@Magnus: What should we do here?
+      #endif
+    }
+    if(configmap.at(INPAR::XFEM::F_Con_n_Col).first)
+      dserror("F_Con_n_Col will come soon");
+    if(configmap.at(INPAR::XFEM::F_Con_t_Col).first)
+      dserror("F_Con_t_Col will come soon");
 
     if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
     {
-      if (not isImplPressure)
+      //-----------------------------------------------------------------
+      // pressure adjoint consistency term
+      if(configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
       {
-        const double velint_diff_normal_pres_timefacfac_km = velint_diff_normal_pres_timefacfac_ * kappa_m;
-        //-----------------------------------------------------------------
-        // pressure adjoint consistency term
-        NIT_p_AdjointConsistency_MasterRHS(
-            velint_diff_normal_pres_timefacfac_km,
-            funct_m
-        );
+        if (not isImplPressure)
+        {
+          double velint_diff_normal_pres_timefacfac_km = 0.0;
+          if (configmap.at(INPAR::XFEM::F_Adj_Row).first)
+            velint_diff_normal_pres_timefacfac_km += velint_diff_pres_timefacfac_ * kappa_m;
+          if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+            velint_diff_normal_pres_timefacfac_km += velint_diff_normal_pres_timefacfac_ * kappa_m;
+          //-----------------------------------------------------------------
+          NIT_p_AdjointConsistency_MasterRHS(
+              velint_diff_normal_pres_timefacfac_km,
+              funct_m
+          );
+        }
       }
+
+      //Normal Terms!
+      if(configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+        dserror("Implement normal Adjoint Consistency term RHS for NEW OST !");
+      if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first || configmap.at(INPAR::XFEM::FStr_Pen_n_Col).first || configmap.at(INPAR::XFEM::XStr_Pen_n_Col).first)
+        dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
+      if(configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::FStr_Pen_t_Col).first)
+        dserror("Implement tangential Adjoint Consistency term RHS for NEW OST !");
 
       //-----------------------------------------------------------------
       // viscous adjoint consistency term
-
-      LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn_km(derxy_m);
-      derxy_m_viscm_timefacfacn_km.Scale(adj_visc_scale_*kappa_m*viscm_facn);
-      NIT_visc_AdjointConsistency_MasterRHS(
-          velintn_m,
-          velint_s_,
-          derxy_m_viscm_timefacfacn_km,
-          normal
-      );
+      if(configmap.at(INPAR::XFEM::F_Adj_Row).first)
+      {
+        LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_km(derxy_m);
+        derxy_m_viscm_timefacfac_km.Scale(adj_visc_scale_*km_viscm_fac);
+        NIT_visc_AdjointConsistency_MasterRHS(
+            velint_m,
+            velint_s_,
+            derxy_m_viscm_timefacfac_km,
+            normal
+        );
+      }
     }
   }
 
   //-----------------------------------------------------------------
   // the following quantities are only required for two-sided coupling
   // kappa_s > 0.0
-
-  //-----------------------------------------------------------------
-  // pressure consistency term
-
-  if (not isImplPressure)
-  {
-    double presn_s = 0.0;
-    // must use this-pointer because of two-stage lookup!
-    this->GetInterfacePresn(presn_s);
-
-    normal_pres_timefacfac_ks_.Update(kappa_s,normal_pres_timefacfac_,0.0);
-
-    NIT_p_Consistency_SlaveRHS(
-        presn_s,
-        funct_m,
-        normal_pres_timefacfac_ks_);
-  }
-
-  //-----------------------------------------------------------------
-  // viscous consistency term
-
-  // Spatial velocity gradient for slave side
-  LINALG::Matrix<nsd_,nsd_> vderxyn_s;
-  this->GetInterfaceVelGradn(vderxyn_s);
-
-  // 2 * mu_s * kappa_s * timefac * fac
-  const double ks_viscs_facn = 2.0 * kappa_s * visceff_s * timefacfacn;
-
-  vderxy_s_normal_.Multiply(vderxyn_s, half_normal_);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxyn_s, half_normal_);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
-  vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_facn);
-
-  NIT_visc_Consistency_SlaveRHS(
-      funct_m);
-
-  // consistency terms evaluated
-  if (fldparaxfem_.InterfaceTermsPreviousState() != INPAR::XFEM::PreviousState_full)
-    return;
-
-  if (not isImplPressure)
+  if ((configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first ||
+      configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first) &&
+      kappa_s != 0.0)
   {
     //-----------------------------------------------------------------
-    // pressure adjoint consistency term
+    // pressure consistency term
+    if(configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first)
+    {
+      if (not isImplPressure)
+      {
+        double presn_s = 0.0;
+        // must use this-pointer because of two-stage lookup!
+        this->GetInterfacePresn(presn_s);
 
-    const double velint_diff_normal_pres_timefacfac_ks = velint_diff_normal_pres_timefacfac_ * kappa_s;
+        normal_pres_timefacfac_ks_.Update(kappa_s,normal_pres_timefacfac_,0.0);
 
-    NIT_p_AdjointConsistency_SlaveRHS(
-        velint_diff_normal_pres_timefacfac_ks);
+        NIT_p_Consistency_SlaveRHS(
+            presn_s,
+            funct_m,
+            normal_pres_timefacfac_ks_);
+      }
+    }
+
+    //-----------------------------------------------------------------
+    // viscous consistency term
+
+    // Spatial velocity gradient for slave side
+    LINALG::Matrix<nsd_,nsd_> vderxyn_s;
+    this->GetInterfaceVelGradn(vderxyn_s);
+
+    // 2 * mu_s * kappa_s * timefac * fac
+    const double ks_viscs_fac = 2.0 * kappa_s * visceff_s * timefacfac;
+
+    vderxy_s_normal_.Multiply(vderxyn_s, half_normal_);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxyn_s, half_normal_);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
+    vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
+
+    if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+    {
+      NIT_visc_Consistency_SlaveRHS(
+      funct_m);
+    }
+    if(configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first)
+      dserror("Want to implement projected slave consistency?");
+
+    // consistency terms evaluated
+    if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+    {
+      if (not isImplPressure)
+      {
+        //-----------------------------------------------------------------
+        // pressure adjoint consistency term
+        if(configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
+        {
+          double velint_diff_normal_pres_timefacfac_ks = 0.0;
+          if (configmap.at(INPAR::XFEM::X_Adj_Row).first)
+            velint_diff_normal_pres_timefacfac_ks += velint_diff_pres_timefacfac_ * kappa_s;
+          if (configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
+            velint_diff_normal_pres_timefacfac_ks += velint_diff_normal_pres_timefacfac_ * kappa_s;
+
+
+          NIT_p_AdjointConsistency_SlaveRHS(
+              velint_diff_normal_pres_timefacfac_ks);
+        }
+      }
+
+      //-----------------------------------------------------------------
+      // viscous adjoint consistency term
+      // Shape function derivatives for slave side
+      LINALG::Matrix<nsd_,slave_nen_> derxyn_s;
+      this->GetSlaveFunctDeriv(derxyn_s);
+
+      LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfac_ks(derxyn_s);
+      derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
+      if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+      {
+        NIT_visc_AdjointConsistency_SlaveRHS(
+            velint_m,
+            velint_s_,
+            derxy_s_viscs_timefacfac_ks,
+            normal
+        );
+      }
+      if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first)
+        dserror("Want to  implement projected slave adjoint consistency?");
+    }
   }
 
   //-----------------------------------------------------------------
-  // viscous adjoint consistency term
-  // Shape function derivatives for slave side
-  LINALG::Matrix<nsd_,slave_nen_> derxyn_s;
-  this->GetSlaveFunctDeriv(derxyn_s);
-
-  LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfacn_ks(derxyn_s);
-  derxy_s_viscs_timefacfacn_ks.Scale(adj_visc_scale_*ks_viscs_facn);
-
-  NIT_visc_AdjointConsistency_SlaveRHS(
-      velintn_m,
-      velint_s_,
-      derxy_s_viscs_timefacfacn_ks,
-      normal
-  );
-
-  //-----------------------------------------------------------------
-  // penalty term
-
-  NIT_Stab_Penalty_SlaveRHS(
-    NIT_full_stab_facn,
-    timefacfacn
-  );
-
-  // add averaged term
-  if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
-      fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
+  // standard consistency traction jump term
+  if( eval_coupling_ )
   {
-    NIT_Stab_Inflow_AveragedTermRHS(
-      funct_m,
-      velintn_m,
-      normal,
-      density_m,
-      timefacfacn
+    // funct_s * timefac * fac * kappa_m
+    funct_s_timefacfac_km_.Update(kappa_m * timefacfac,funct_s_,0.0);
+
+    // funct_m * timefac * fac * kappa_s
+    funct_m_timefacfac_ks_.Update(kappa_s * timefacfac, funct_m, 0.0);
+
+    NIT_Traction_Consistency_Term(
+      funct_m_timefacfac_ks_,
+      funct_s_timefacfac_km_,
+      itraction_jump
     );
   }
+
+  return;
 }
-
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

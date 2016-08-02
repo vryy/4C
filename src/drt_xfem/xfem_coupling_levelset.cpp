@@ -4,8 +4,10 @@
 \brief manages the different types of level-set based coupling conditions and thereby builds the bridge between the
 xfluid class and the cut-library
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott & Magnus Winter
+\maintainer Benedikt Schott & Magnus Winter
             {schott, winter}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -753,6 +755,24 @@ void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
   itraction.Clear();
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingWeakDirichlet::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+  return;
+}
+
 void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
     LINALG::Matrix<3,1>& ivel,
     LINALG::Matrix<3,1>& itraction,
@@ -924,6 +944,30 @@ void XFEM::LevelSetCouplingNavierSlip::GetConditionByRobinId(
     if(id == coupling_id)
       mynewcond.push_back(cond);
   }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingNavierSlip::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1121,4 +1165,28 @@ void XFEM::LevelSetCouplingTwoPhase::ReadRestart(
   if (not (cutter_dis_->NodeRowMap())->SameAs(phinp_->Map()))
     dserror("Global node numbering in maps does not match");
 
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::InitConfigurationMap()
+{
+  //Configuration of Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Adjount Consistency Terms
+  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+  return;
 }

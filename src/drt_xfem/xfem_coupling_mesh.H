@@ -312,6 +312,10 @@ public:
 
   virtual void PrepareSolve();
 
+protected:
+
+  void InitConfigurationMap();
+
 };
 
 /*!
@@ -430,6 +434,8 @@ protected:
       std::map< int ,DRT::Condition* > &     conditionsmap_robin
       );
 
+  void InitConfigurationMap();
+
 private:
 
   // Condition map. Corelating robin_id from Navier Slip condition and
@@ -525,6 +531,8 @@ protected:
   void SetConditionSpecificParameters(
       const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
   );
+
+  void InitConfigurationMap();
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -683,6 +691,10 @@ public:
   {
     return moving_interface_;
   }
+
+protected:
+
+  void InitConfigurationMap();
 
 private:
 
