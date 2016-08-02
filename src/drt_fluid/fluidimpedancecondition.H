@@ -15,16 +15,26 @@
 #ifndef FLUIDIMPEDANCECONDITION_H
 #define FLUIDIMPEDANCECONDITION_H
 
-#include "../drt_lib/drt_discret.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+
 
 //forward declarations
+namespace DRT
+{
+  class Discretization;
+  class Condition;
+}
 namespace IO
 {
   class DiscretizationReader;
+  class DiscretizationWriter;
 }
 namespace LINALG
 {
   class MultiMapExtractor;
+  class SparseOperator;
 }
 
 

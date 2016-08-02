@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_topopt.cpp
+
 \brief TimIntTopOpt
 
+\level 2
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -19,6 +21,7 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/optimization_density.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*

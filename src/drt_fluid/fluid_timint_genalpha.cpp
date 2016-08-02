@@ -1,14 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_genalpha.cpp
+
 \brief Generalized-alpha time-integration scheme
 
-<pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\level 2
+
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -17,7 +19,9 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_fluid_turbulence/boxfilter.H"
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*

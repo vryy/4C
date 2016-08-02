@@ -25,29 +25,25 @@
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
-#include "Epetra_MpiComm.h"
 
+#include "Epetra_MpiComm.h"
 #include <ctime>
-#include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_Map.h>
+
+#include "../drt_fluid/fluid_timint.H"
+
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
-#include "fluid_utils_mapextractor.H" // should go away
-#include "fluid_utils.H"
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_fluid/fluid_timint.H"
+
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
+
 #include "../linalg/linalg_blocksparsematrix.H"
 
 
 //forward declarations
-
 namespace DRT
 {
   class Discretization;
@@ -96,7 +92,7 @@ namespace UTILS
 {
   class FluidInfNormScaling;
   class FluidImpedanceWrapper;
-  // class StressManager;
+  class StressManager;
 }
 
 /*!

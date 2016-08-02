@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_stat.cpp
+
 \brief solution algorithm for stationary problems
 
+\level 2
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -21,6 +23,8 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
+
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |

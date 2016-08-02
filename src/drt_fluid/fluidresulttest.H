@@ -2,10 +2,12 @@
 /*!
 \file fluidresulttest.H
 
-\brief tesing of fluid calculation results
+\brief testing of fluid calculation results
+
+\level 1
 
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235

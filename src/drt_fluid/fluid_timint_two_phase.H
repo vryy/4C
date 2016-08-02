@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_two_phase.H
-\brief
 
+\brief TimIntTwoPhase
+
+\level 2
 <pre>
-Maintainers: Magnus Winter & Martin Kronbichler
+\maintainer Magnus Winter & Martin Kronbichler
              {winter,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-235
@@ -17,7 +19,6 @@ Maintainers: Magnus Winter & Martin Kronbichler
 
 #include "fluidimplicitintegration.H"
 
-#include "../linalg/linalg_utils.H"
 
 namespace FLD
 {

@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_utils_mapextractor.H
+
 \brief extracting maps of fluid discretizations
 
+\level 1
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -13,8 +15,9 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #ifndef FLUID_UTILS_MAPEXTRACTOR_H
 #define FLUID_UTILS_MAPEXTRACTOR_H
 
+
 #include "../linalg/linalg_mapextractor.H"
-#include "../drt_xfem/dof_management.H"
+
 
 namespace DRT
 {

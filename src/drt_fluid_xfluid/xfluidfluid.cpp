@@ -29,6 +29,9 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_fluid/fluid_utils.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"

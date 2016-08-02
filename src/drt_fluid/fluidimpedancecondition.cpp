@@ -24,6 +24,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |

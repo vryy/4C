@@ -2,14 +2,14 @@
 /*!
 \file fluidresulttest.cpp
 
-\brief tesing of fluid calculation results
+\brief testing of fluid calculation results
 
-<pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\level 1
+
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -20,6 +20,7 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "fluidimplicitintegration.H"
+#include "fluid_utils.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

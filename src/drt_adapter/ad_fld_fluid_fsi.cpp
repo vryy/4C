@@ -6,11 +6,11 @@
 
 Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
-<pre>
-Maintainer: Matthias Mayr
+\level 2
+
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fsi.H"
@@ -18,6 +18,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"

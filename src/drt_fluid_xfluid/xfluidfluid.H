@@ -15,10 +15,10 @@
 #ifndef XFLUIDFLUID_H_
 #define XFLUIDFLUID_H_
 
+
 #include "xfluid.H"
 #include "xfluidfluid_state.H"
 
-#include "../drt_fluid/fluidimplicitintegration.H"
 
 namespace XFEM
 {

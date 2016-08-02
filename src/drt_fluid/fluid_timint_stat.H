@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_stat.H
-\brief
 
+\brief solution algorithm for stationary problems
+
+\level 2
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -14,9 +16,8 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #ifndef FLD_TIMINT_STAT_H
 #define FLD_TIMINT_STAT_H
 
-#include "fluidimplicitintegration.H"
 
-#include "../linalg/linalg_utils.H"
+#include "fluidimplicitintegration.H"
 
 
 namespace FLD

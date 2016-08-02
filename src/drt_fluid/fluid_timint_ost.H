@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_ost.H
-\brief
 
+\brief One-Step-Theta time-integration scheme
+
+\level 2
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -14,11 +16,8 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 #ifndef FLUID_TIMINT_OST_H
 #define FLUID_TIMINT_OST_H
 
+
 #include "fluidimplicitintegration.H"
-
-
-
-#include "../linalg/linalg_utils.H"
 
 
 namespace FLD
