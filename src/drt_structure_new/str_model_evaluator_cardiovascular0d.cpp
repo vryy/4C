@@ -35,13 +35,10 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
-    : //n_conds_(0),
-      disnp_ptr_(Teuchos::null),
+    : disnp_ptr_(Teuchos::null),
       stiff_cardio_ptr_(Teuchos::null),
       fstructcardio_np_ptr_(Teuchos::null)
 {
-  std::cout << "STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D() ############## ..."
-      << std::endl;
   // empty
 }
 
@@ -49,7 +46,6 @@ STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
-  std::cout << "Setup Cardio ############## ..." << std::endl;
 
   CheckInit();
 
@@ -58,8 +54,11 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
 
+  // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ =
       Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
+  stiff_cardio_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *GState().DofRowMapView(), 81, true, true));
 
   Teuchos::RCP<LINALG::Solver> dummysolver;
 
@@ -70,7 +69,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
       DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
       *dummysolver));
 
-  cardvasc0dman_->PrintNewtonHeader();
+//  cardvasc0dman_->PrintNewtonHeader();
 
   // set flag
   issetup_ = true;
@@ -82,7 +81,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  // zero out the stiffness contribution matrix
+  fstructcardio_np_ptr_->Scale(0.0);
   stiff_cardio_ptr_->Zero();
 
   return;
@@ -94,17 +93,13 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::EvaluateForce()
 {
   CheckInitSetup();
 
-  // dummy matrix - only forces are evaluated!
-  Teuchos::RCP<LINALG::SparseMatrix> dummat = Teuchos::null;
-
-  //std::cout << "vorher " << *jac_dd << std::endl;
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcardvasc0d;
   pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
 
   // only forces are evaluated!
   cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_,
-      fstructcardio_np_ptr_, dummat, pcardvasc0d);
+      fstructcardio_np_ptr_, Teuchos::null, pcardvasc0d);
 
   return true;
 }
@@ -155,6 +150,9 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
     Epetra_Vector& f,const double & timefac_np)
     const
 {
+
+  STR::AssembleVector(1.0,f,1.0,*fstructcardio_np_ptr_);
+
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
   if (timefac_np!=1.0)
     dserror("You have to consider the corresponding time integration"
@@ -191,21 +189,21 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
   stiff_cardio_ptr_->Zero();
   // --- Kdz - block ---------------------------------------------------
   block_ptr = cardvasc0dman_->GetMatDstructDcv0ddof();
-  //  std::cout << *block_ptr << std::endl;
+
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
   // --- Kzd - block ---------------------------------------------------
   block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
-  //  std::cout << *block_ptr << std::endl;
+
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
   // --- Kzz - block ---------------------------------------------------
   block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
-  //  std::cout << *block_ptr << std::endl;
+
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_lm_lm);
   // reset the block pointer, just to be on the safe side
@@ -221,7 +219,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
         const bool& forced_writerestart) const
 {
 
-  iowriter.WriteVector("cvdof",
+  iowriter.WriteVector("cv0ddof",
                         cardvasc0dman_->Get0DDofVector());
   iowriter.WriteVector("refvolval",
                         cardvasc0dman_->GetRefVolValue());

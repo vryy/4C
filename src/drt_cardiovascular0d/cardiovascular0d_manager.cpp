@@ -287,9 +287,6 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     Teuchos::ParameterList scalelist)
 {
 
-  const bool evalstiff = stiff!=Teuchos::null;
-  const bool evalforce = fint!=Teuchos::null;
-
   double sc_strtimint = scalelist.get("scale_timint",1.0);
   double ts_size = scalelist.get("time_step_size",1.0);
   double theta = theta_;
@@ -417,43 +414,13 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   mat_dcardvasc0d_dd_->Complete(*cardiovascular0dmap_,*dofrowmap);
   mat_dstruct_dcv0ddof_->Complete(*cardiovascular0dmap_,*dofrowmap);
 
-  //stiff->UnComplete(); // sparsity pattern might change
-
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
   EvaluateNeumannCardiovascular0DCoupling(p,cv0ddofnredundant,fint,stiff);
 
-  //stiff->Complete(); // sparsity pattern might have changed
-
-
-//  std::cout << *fint << std::endl;
-//  std::cout << *cardiovascular0drhsm_ << std::endl;
-
-//  LINALG::SparseMatrix* lalala = dynamic_cast<LINALG::SparseMatrix*>(&(*stiff));
-//  std::cout << *lalala << std::endl;
-
-//  std::cout << *mat_dstruct_dcv0ddof_ << std::endl;
-//  std::cout << *mat_dcardvasc0d_dd_->Transpose() << std::endl;
-//  std::cout << *cardiovascular0dstiffness_ << std::endl;
-
-  // print Newton norm output for structure and 0D model separately and neatly arranged (no f***ing NOX output)
-  switch (intstrat_)
-  {
-    case INPAR::STR::int_standard:
-      if (evalstiff and evalforce) PrintNewton(fint);
-      break;
-    case INPAR::STR::int_old:
-      break;
-    default:
-      dserror("Unknown integration strategy!");
-      break;
-  }
-
   return;
 }
-
-
 
 
 
@@ -564,10 +531,6 @@ void UTILS::Cardiovascular0DManager::SetRefDDFluxValue(Teuchos::RCP<Epetra_Vecto
 
 
 
-
-
-
-
 /*----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
     Teuchos::ParameterList params,
@@ -645,16 +608,12 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       elematrix.Scale(1.0);
       if (assmat) systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
 
-
     }
 
   }
 
   return;
 }
-
-
-
 
 
 
@@ -952,10 +911,6 @@ int UTILS::Cardiovascular0DManager::Solve
   blockmat->Assign(1,1,LINALG::View,*mat_cardvasc0dstiff);
   blockmat->Complete();
 
-  //std::cout << "" << *mat_cardvasc0dstiff << std::endl;
-  //std::cout << "" << *mat_dcardvasc0d_dd << std::endl;
-  //std::cout << "" << *mat_dstruct_dcv0ddof << std::endl;
-
   // export 0D part of rhs
   LINALG::Export(*rhscardvasc0d,*mergedrhs);
   //make the 0D part of the rhs negative
@@ -999,7 +954,6 @@ int UTILS::Cardiovascular0DManager::Solve
 
   cv0ddofincrement_->Update(1.,*cv0ddofincr,0.);
 
-  //std::cout << "" << *dofincr << std::endl;
   counter_++;
 
   // update 0D cardiovascular dofs
