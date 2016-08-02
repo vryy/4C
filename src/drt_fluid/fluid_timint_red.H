@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_red.H
-\brief
 
+\brief TimIntRedModels
+
+\level 3
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer Benjamin Krank & Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -16,8 +18,6 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 
 
 #include "fluidimplicitintegration.H"
-
-#include "../linalg/linalg_utils.H"
 
 namespace ART
 {
@@ -39,6 +39,7 @@ namespace UTILS
   class FluidVolumetricSurfaceFlowWrapper;
   class TotalTractionCorrector;
   class Fluid_couplingWrapperBase;
+  class VolumetricFlowMapExtractor;
   template <class red_D_time_int>
   class Fluid_couplingWrapper;
 }
