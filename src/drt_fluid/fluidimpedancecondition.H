@@ -153,7 +153,7 @@ protected:
   /*!
     \brief Update flowrate and pressure vector
   */
-  void TimeUpdateImpedance(const double time);
+  void TimeUpdateImpedance(const double time, const int condid);
 
   /*!
   \brief write flowrates_ and flowratespos_ to result files

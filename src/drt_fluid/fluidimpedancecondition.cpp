@@ -122,7 +122,7 @@ void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time)
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
     //update time step
-    mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time);
+    mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time,mapiter->first);
   }
   return;
 }
@@ -450,14 +450,20 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
 /*----------------------------------------------------------------------*
  |  Update flowrate and pressure vector                       Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time)
+void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const int condid)
 {
   const double actpressure = P_np_;
 
-  if ( (fmod(time+1e-14,period_)-1e-14) < 1e-8*time) //iff we are at the beginning of a new period
+  if ( (fmod(time+1e-8,period_)-1e-8) < 1e-8*time) //iff we are at the beginning of a new period
   {
     WKrelerror_ = fabs((actpressure - P_0_)/actpressure);
     P_0_ = actpressure;
+
+    if (myrank_ == 0)
+    {
+      std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure: "<<actpressure<<std::endl;
+//      std::cout<<"Impedance condition Id: "<<condid<<", Relative windkessel error: "<<WKrelerror_<<std::endl;
+    }
   }
 
   //shift time step
@@ -573,7 +579,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( const int condid )
   discret_->Comm().SumAll(&actarea,&pararea,1);
 
 //  if (myrank_ == 0)
-//    std::cout << "Impedance condition Id: " << condid << ", Area = " << pararea << std::endl;
+//    std::cout << "Impedance condition Id: " << condid << ", Area: " << pararea << std::endl;
 
   return pararea;
 }//FluidImplicitTimeInt::Area
