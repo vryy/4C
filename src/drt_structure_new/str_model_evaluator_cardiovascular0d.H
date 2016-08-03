@@ -109,9 +109,6 @@ namespace MODELEVALUATOR{
 
     Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
-    //! number of 0D cardiovascular conditions
-//    int n_conds_;
-
     //! structural displacement at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
@@ -120,6 +117,7 @@ namespace MODELEVALUATOR{
 
     //! structural rhs contributions of the cardio model at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> fstructcardio_np_ptr_;
+
   };
 
 } // namespace ModelEvaluator

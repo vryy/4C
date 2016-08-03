@@ -47,22 +47,22 @@ SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
-TIMINT_THETA                    1.0
+TIMINT_THETA                    0.5
 TOL_CARDVASC0D_RES              1e-06
-TOL_CARDVASC0D_DOFINCR          1e-08
+TOL_CARDVASC0D_DOFINCR          1e-06
 SOLALGORITHM                    direct
 RESTART_WITH_CARDVASC0D         No
 LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 -------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
 LINEAR_SOLVER                   1
@@ -73,7 +73,7 @@ MAXTIME                         1.0
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
-NLNSOL                          fullnewton
+NLNSOL                          newtonlinuzawa
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -92,27 +92,14 @@ RESULTSEVRY                     1
 STC_LAYER                       1
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08
-TOLDISP                         1e-07
+TOLDISP                         1e-06
 TOLINCO                         1e-08
 TOLPRE                          1e-08
-TOLRES                          1e-05
+TOLRES                          1e-06
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
-------------------------------------------------STRUCT NOX/Printing
-Error                           = Yes
-Warning                         = No
-Outer Iteration                 = Yes
-Inner Iteration                 = No
-Parameters                      = No
-Details                         = No
-Outer Iteration StatusTest      = No
-Linear Solver Details           = No
-Test Details                    = No
-Debug                           = No
----------------------------------------------STRUCT NOX/Status Test
-XML File                        = cardiovascular0d_new_struc.xml
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -134,9 +121,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 15.0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -3.83488662832948690e-01 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE -8.24556323798925246e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -6.60808136158144988e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -2.35921093210501032e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE -7.49662115025704397e-03 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -5.51297445282896287e-02 TOLERANCE 1e-5
 -------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

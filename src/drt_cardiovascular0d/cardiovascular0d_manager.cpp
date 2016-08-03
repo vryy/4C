@@ -370,8 +370,6 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
 
   // end of Cardiovascular0D time integration: now we have values for cv0ddofm_, dcv0ddofm_, qm_, dqm, ddqm and can proceed
 
-  //std::cout << *cv0ddof_;
-
   LINALG::Export(*cv0ddof_,*cv0ddofredundant);
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
   LINALG::Export(*cv0ddofm_,*cv0ddofmredundant);
@@ -415,7 +413,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   mat_dstruct_dcv0ddof_->Complete(*cardiovascular0dmap_,*dofrowmap);
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
-  // since the external load vector will be set to the generalized mid-point by the respective time integrator!
+  // since fint will be set to the generalized mid-point by the respective structural time-integrator!
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
   EvaluateNeumannCardiovascular0DCoupling(p,cv0ddofnredundant,fint,stiff);
 

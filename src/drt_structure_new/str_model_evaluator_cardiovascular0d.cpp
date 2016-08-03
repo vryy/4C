@@ -69,8 +69,6 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
       DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
       *dummysolver));
 
-//  cardvasc0dman_->PrintNewtonHeader();
-
   // set flag
   issetup_ = true;
 }
@@ -135,8 +133,8 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::EvaluateForceStiff()
   Teuchos::ParameterList pcardvasc0d;
   pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
 
-  cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_, fstructcardio_np_ptr_,
-      stiff_cardio_ptr_, pcardvasc0d);
+  cardvasc0dman_->EvaluateForceStiff(time_np, disnp_ptr_,
+      fstructcardio_np_ptr_, stiff_cardio_ptr_, pcardvasc0d);
 
   if (not stiff_cardio_ptr_->Filled())
     stiff_cardio_ptr_->Complete();
@@ -147,18 +145,15 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::EvaluateForceStiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
-    Epetra_Vector& f,const double & timefac_np)
+    Epetra_Vector& f, const double& timefac_np)
     const
 {
-
-  STR::AssembleVector(1.0,f,1.0,*fstructcardio_np_ptr_);
-
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (timefac_np!=1.0)
-    dserror("You have to consider the corresponding time integration"
-        " factors.");
 
-  // assemble 0D model rhs
+  // assemble and scale with str time-integrator dependent value
+  STR::AssembleVector(1.0,f,timefac_np,*fstructcardio_np_ptr_);
+
+  // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
 
   if (block_vec_ptr.is_null())
@@ -166,7 +161,12 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
         "the structural part indicates, that 0D cardiovascular model contributions \n"
         "are present!");
 
-  STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
+  const int elements_f = f.Map().NumGlobalElements();
+  const int max_gid = GetBlockDofRowMapPtr()->MaxAllGID();
+  // only call when f is the full rhs of the coupled problem (not for structural
+  // equilibriate initial state call)
+  if (elements_f==max_gid+1)
+    STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
 
   return true;
 }
@@ -174,36 +174,35 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double & timefac_np) const
+    LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<const LINALG::SparseMatrix> block_ptr = Teuchos::null;
-  if (timefac_np!=1.0)
-    dserror("You have to consider the corresponding time integration"
-        " factors.");
+  Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
-  // --- Kdd - block ---------------------------------------------------
+  // --- Kdd - block - scale with str time-integrator dependent value---
   Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
       GState().ExtractDisplBlock(jac);
-  jac_dd_ptr->Add(*stiff_cardio_ptr_,false,1.0,1.0);
+  jac_dd_ptr->Add(*stiff_cardio_ptr_,false,timefac_np,1.0);
   // no need to keep it
   stiff_cardio_ptr_->Zero();
+
   // --- Kdz - block ---------------------------------------------------
   block_ptr = cardvasc0dman_->GetMatDstructDcv0ddof();
-
+  // scale with str time-integrator dependent value
+  block_ptr->Scale(timefac_np);
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
-  // --- Kzd - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
 
+  // --- Kzd - block - already scaled with 0D theta by 0D model !-------
+  block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
-  // --- Kzz - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
 
+  // --- Kzz - block - already scaled with 0D theta by 0D model !-------
+  block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
   GState().AssignModelBlock(jac,*block_ptr,Type(),
       STR::block_lm_lm);
   // reset the block pointer, just to be on the safe side
@@ -255,14 +254,8 @@ void STR::MODELEVALUATOR::Cardiovascular0D::RecoverState(
 
   Teuchos::RCP<Epetra_Vector> cv0d_incr = GState().ExtractModelEntries(
       INPAR::STR::model_cardiovascular0d,dir);
-  Teuchos::RCP<Epetra_Vector> dis_incr = GState().ExtractModelEntries(
-      INPAR::STR::model_structure,dir);
 
   cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
-
-  // store for manager-internal monitoring...
-  cardvasc0dman_->StoreCv0dDofIncrement(cv0d_incr);
-  cardvasc0dman_->StoreStructuralDisplIncrement(dis_incr);
 
   return;
 }
@@ -274,6 +267,15 @@ void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(
 {
   cardvasc0dman_->UpdateTimeStep();
   cardvasc0dman_->PrintPresFlux(false);
+
+  // add the 0D cardiovascular force contributions to the old structural
+  // residual state vector
+  if (not fstructcardio_np_ptr_.is_null())
+  {
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr =
+        GState().GetMutableFstructureOld();
+    fstructold_ptr->Update(timefac_n,*fstructcardio_np_ptr_,1.0);
+  }
 
   return;
 }
