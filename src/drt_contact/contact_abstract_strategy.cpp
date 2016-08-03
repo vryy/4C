@@ -511,7 +511,13 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // setup combined global slave and master dof map
   // setup global displacement dof map
   gsmdofrowmap_ = LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
-  gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
+  gdisprowmap_  = LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
+
+  // due to boundary modification we have to extend master map to slave dofs
+  if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+  {
+    gmdofrowmap_ = LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
+  }
 
   // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())
@@ -2577,9 +2583,6 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         if (Dim()==2 && abs(jumpteta)>0.0001)
         dserror("Error: Jumpteta should be zero for 2D");
 
-        // compute weighted wear
-        if (weightedwear_) wear = frinode->WearData().WeightedWear();
-
         // store node id
         lnid.push_back(gid);
 
@@ -2755,11 +2758,20 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   int slipnodes = 0;
   int gslipnodes = 0;
 
+  // counters for non-smooth contact
+  int surfacenodes = 0;
+  int gsurfacenodes= 0;
+  int edgenodes = 0;
+  int gedgenodes = 0;
+  int cornernodes = 0;
+  int gcornernodes = 0;
+
+  // nonsmooth contact active?
+  bool nonsmooth = DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES");
+
   // loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
-    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -2772,7 +2784,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       if (cnode->Active()) activenodes   += 1;
-      else                                       inactivenodes += 1;
+      else                 inactivenodes += 1;
 
       // increase friction counters
       if (friction_)
@@ -2781,6 +2793,17 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         if (cnode->Active() && frinode->FriData().Slip())
           slipnodes += 1;
       }
+
+      // get nonsmooth contact states
+      if(nonsmooth)
+      {
+        if(cnode->Active() && cnode->IsOnEdge() && !cnode->IsOnCorner())
+          edgenodes += 1;
+        if(cnode->Active() && cnode->IsOnCorner())
+          cornernodes += 1;
+        if(cnode->Active() && !cnode->IsOnCornerEdge())
+          surfacenodes += 1;
+      }
     }
   }
 
@@ -2788,11 +2811,25 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   Comm().SumAll(&activenodes, &gactivenodes, 1);
   Comm().SumAll(&inactivenodes, &ginactivenodes, 1);
   Comm().SumAll(&slipnodes, &gslipnodes, 1);
+  Comm().SumAll(&edgenodes, &gedgenodes, 1);
+  Comm().SumAll(&cornernodes, &gcornernodes, 1);
+  Comm().SumAll(&surfacenodes, &gsurfacenodes, 1);
 
   // print active set information
   if (Comm().MyPID() == 0)
   {
-    if (friction_)
+    if(nonsmooth)
+    {
+      std::cout << BLUE2_LIGHT << "Total ACTIVE SURFACE nodes:\t" << gsurfacenodes
+          << END_COLOR << std::endl;
+      std::cout << BLUE2_LIGHT << "Total    ACTIVE EDGE nodes:\t" << gedgenodes
+          << END_COLOR << std::endl;
+      std::cout << BLUE2_LIGHT << "Total  ACTIVE CORNER nodes:\t" << gcornernodes
+          << END_COLOR << std::endl;
+      std::cout << RED_LIGHT   << "Total       INACTIVE nodes:\t" << ginactivenodes
+          << END_COLOR << std::endl;
+    }
+    else if (friction_)
     {
       std::cout << BLUE2_LIGHT << "Total     SLIP nodes:\t" << gslipnodes
           << END_COLOR << std::endl;

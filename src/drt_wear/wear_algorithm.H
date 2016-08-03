@@ -5,12 +5,12 @@
 \brief Basis of all WEAR algorithms that perform a coupling between the
        structural field equation and ALE field equations
 
-<pre>
-Maintainer: Philipp Farah
+\level 2
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 */
 
 
@@ -42,7 +42,6 @@ namespace ADAPTER
   class Structure;
   class FSIStructureWrapper;
   class AleWearWrapper;
-  class coupling;
 }
 
 namespace ALE

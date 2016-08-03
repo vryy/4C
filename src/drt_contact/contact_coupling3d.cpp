@@ -183,7 +183,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin)
+    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() &&
+        lmtype==INPAR::MORTAR::lagmult_pwlin)
     {
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual
@@ -1235,6 +1236,8 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling(
     // special treatment of boundary elements
     ConsistDualShape();
 
+    // TODO modification of boundary shapes!
+
     // integrate cells
     for (int i=0; i<(int)Coupling().size(); ++i)
     {
@@ -1567,6 +1570,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling(
 
   return true;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|

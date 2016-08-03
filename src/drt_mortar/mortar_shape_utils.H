@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file mortar_shape_utils.H
 
-<pre>
-Maintainer: Philipp Farah
+\brief file for mortar shape utils --> shape calculations
+
+\level 1
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
-
 *-----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -261,7 +262,8 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
 
   // dual LM shape functions or not
   bool dual = false;
-  if (lmtype==INPAR::MORTAR::shape_dual || lmtype==INPAR::MORTAR::shape_petrovgalerkin)
+  if (lmtype==INPAR::MORTAR::shape_dual ||
+      lmtype==INPAR::MORTAR::shape_petrovgalerkin)
     dual = true;
 
   // get node number and node pointers
@@ -281,39 +283,13 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (valdim!=2) dserror("ERROR: Inconsistency in EvaluateShape");
-    // check for boundary nodes
-    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
-    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
-    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    bool isonbound0 = mymrtrnode0->IsOnBound();
-    bool isonbound1 = mymrtrnode1->IsOnBound();
+    if (valdim!=2)
+      dserror("ERROR: Inconsistency in EvaluateShape");
 
-    // both nodes are interior: use unmodified dual shape functions
-    if (!isonbound0 && !isonbound1)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::lindual1D);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::lin1D);
-    }
-
-    // node 0 is on boundary: modify dual shape functions
-    else if (isonbound0 && !isonbound1)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::lindual1D_edge0);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::lin1D_edge0);
-    }
-
-    // node 1 is on boundary: modify dual shape functions
-    else if (!isonbound0 && isonbound1)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::lindual1D_edge1);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::lin1D_edge1);
-    }
-
-    // both nodes are on boundary: infeasible case
+    if (dual)
+      mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::lindual1D);
     else
-      dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes!");
+      mortar_shape_function_1D(val,xi[0],MortarElement::lin1D);
 
     break;
   }
@@ -321,47 +297,13 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsistency in EvaluateShape");
-    // check for boundary nodes
-    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
-    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
-    MortarNode* mymrtrnode2 = dynamic_cast<MortarNode*> (mynodes[2]);
-    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    if (!mymrtrnode2) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    bool isonbound0 = mymrtrnode0->IsOnBound();
-    bool isonbound1 = mymrtrnode1->IsOnBound();
-    bool isonbound2 = mymrtrnode2->IsOnBound();
+    if (valdim!=3)
+      dserror("ERROR: Inconsistency in EvaluateShape");
 
-    // all 3 nodes are interior: use unmodified dual shape functions
-    if (!isonbound0 && !isonbound1 && !isonbound2)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::quaddual1D);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::quad1D);
-    }
-
-    // node 0 is on boundary: modify dual shape functions
-    else if (isonbound0 && !isonbound1 && !isonbound2)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::quaddual1D_edge0);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::quad1D_edge0);
-    }
-
-    // node 1 is on boundary: modify dual shape functions
-    else if (!isonbound0 && isonbound1 && !isonbound2)
-    {
-      if (dual) mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::quaddual1D_edge1);
-      else      mortar_shape_function_1D(val,xi[0],MortarElement::quad1D_edge1);
-    }
-
-    // node 2 is on boundary: infeasible case
-    else if (isonbound2)
-      dserror("ERROR: EvaluateShapeLagMult: Middle boundary node");
-
-    // nodes 0 and 1 are on boundary: infeasible case
+    if (dual)
+      mortar_dualshape_function_1D(val,ele,xi[0],MortarElement::quaddual1D);
     else
-      dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes");
-
+      mortar_shape_function_1D(val,xi[0],MortarElement::quad1D);
     break;
   }
 

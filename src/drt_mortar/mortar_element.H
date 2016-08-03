@@ -134,6 +134,12 @@ public:
   virtual Teuchos::RCP<LINALG::SerialDenseMatrix>& DualShape() {return dualshapecoeff_; }
 
   /*!
+  \brief Return trafo matrix for boundary modification
+
+  */
+  virtual Teuchos::RCP<LINALG::SerialDenseMatrix>& Trafo() {return trafocoeff_; }
+
+  /*!
   \brief Return directional derivative of matrix of dual shape function coefficients
 
   */
@@ -179,6 +185,9 @@ protected:
 
   // derivative of coefficient matrix for dual shape functions
   Teuchos::RCP<GEN::pairedvector<int,Epetra_SerialDenseMatrix> > derivdualshapecoeff_;
+
+  // coefficient matrix for boundary trafo
+  Teuchos::RCP<LINALG::SerialDenseMatrix> trafocoeff_;
 
   // Displacement of Parent Element
   std::vector<double> parentdisp_;
@@ -607,6 +616,11 @@ public:
   virtual void ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens);
 
   /*!
+  \brief Compute averaged nodal normal at local coordinate xi
+  */
+  virtual double ComputeAveragedUnitNormalAtXi(double* xi, double* n);
+
+  /*!
   \brief Compute unit element normal at local coordinate xi
          This function is a real stand-alone function to be called
          for a CElement in order to compute a unit normal at any point.
@@ -716,7 +730,8 @@ public:
   */
   virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
                                     const double* xi, LINALG::SerialDenseVector& val,
-                                    LINALG::SerialDenseMatrix& deriv, const int& valdim);
+                                    LINALG::SerialDenseMatrix& deriv, const int& valdim,
+                                    bool boundtrafo = true);
 
   /*!
   \brief Evaluate Lagrange multiplier shape functions and derivatives

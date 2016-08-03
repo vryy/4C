@@ -302,9 +302,13 @@ void ADAPTER::CouplingMortar::SetupInterface(
   else
     input.set<bool>("NURBS",false);
 
-  // check for invalid parameter values
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
-    if(myrank== 0) dserror("Mortar coupling adapter only works for dual shape functions");
+  // set valid parameter values
+  input.set<std::string>("LM_SHAPEFCN","dual");
+  input.set<std::string>("LM_DUAL_CONSISTENT","none");
+  input.set<std::string>("PARALLEL_REDIST","none");
+  input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
+
+  // check validity
   if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
     if(myrank== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 

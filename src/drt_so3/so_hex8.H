@@ -423,6 +423,7 @@ protected:
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
     calc_global_gpstresses_map, //! basically calc_struct_stress but with assembly of global gpstresses map
     interpolate_velocity_to_point, //! interpolate the structural velocity to a given point
+    calc_struct_mass_volume, //! calculate mass and volume for reference, material and spatial conf.
   };
 
   /*!

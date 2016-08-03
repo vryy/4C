@@ -104,9 +104,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     else if (action=="calc_struct_inversedesign_switch")            act = ELEMENTS::inversedesign_switch;
     else if (action=="calc_global_gpstresses_map")                  act = ELEMENTS::struct_calc_global_gpstresses_map;
     else if (action=="interpolate_velocity_to_given_point")         act = ELEMENTS::struct_interpolate_velocity_to_point;
+    else if (action=="calc_struct_mass_volume")                     act = ELEMENTS::struct_calc_mass_volume;
     else dserror("Unknown type of action for So_hex8: %s", action.c_str());
   }
-  // check for patient specific data
+
+// check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
   PATSPEC::GetLocalRadius(Id(),params,discretization);
   PATSPEC::GetInnerRadius(Id(),params,discretization);
@@ -217,6 +219,143 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       break;
     }
+    //==================================================================================
+    case struct_calc_mass_volume:
+    {
+      // declaration of variables
+      double volume_ref = 0.0;
+      double volume_mat = 0.0;
+      double volume_cur = 0.0;
+      double mass_ref = 0.0;
+      double mass_mat = 0.0;
+      double mass_cur = 0.0;
+      double density  = Material()->Density();
+
+      // get displacements and extract values of this element
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
+      // reference and current geometry (nodal positions)
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xref;  // reference coord. of element
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcur;  // current  coord. of element
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xmat;  // mat  coord. of element
+
+      for (int k=0; k<NUMNOD_SOH8; ++k)
+      {
+        xref(k,0) = Nodes()[k]->X()[0];
+        xref(k,1) = Nodes()[k]->X()[1];
+        xref(k,2) = Nodes()[k]->X()[2];
+        xcur(k,0) = xref(k,0) + mydisp[k*NODDOF_SOH8+0];
+        xcur(k,1) = xref(k,1) + mydisp[k*NODDOF_SOH8+1];
+        xcur(k,2) = xref(k,2) + mydisp[k*NODDOF_SOH8+2];
+
+        // material displacements for structure with ale
+        if(structale_ == true)
+        {
+          xmat(k,0)  = xref(k,0) + mydispmat[k*NODDOF_SOH8+0];
+          xmat(k,1)  = xref(k,1) + mydispmat[k*NODDOF_SOH8+1];
+          xmat(k,2)  = xref(k,2) + mydispmat[k*NODDOF_SOH8+2];
+        }
+      }
+
+      const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+      const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+      const static std::vector<double> gpweights = soh8_weights();
+
+      //MAT ------------------------
+      // build new jacobian mapping with respect to the material configuration
+      if (structale_==true)
+        InitJacobianMapping(mydispmat);
+
+      std::vector<double> detJmat = detJ_;
+      std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > invJmat = invJ_;
+
+      InitJacobianMapping(mydisp);
+
+      std::vector<double> detJcur = detJ_;
+      std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > invJcur = invJ_;
+
+      InitJacobianMapping();
+
+      std::vector<double> detJref = detJ_;
+      std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > invJref = invJ_;
+
+
+      LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
+
+      //----------------------------------------------------------------
+      // loop over all Gauss points
+      //----------------------------------------------------------------
+      for (int ip=0; ip<NUMGPT_SOH8; ++ip)
+      {
+        const double wgt = gpweights[ip];
+
+        /*------------------------------------ integration factor  -------*/
+        double fac = wgt * detJref[ip] ;
+        volume_ref+=fac;
+        fac = wgt * detJref[ip] * density;
+        mass_ref+=fac;
+
+        //MAT ------------------------
+        if(structale_)
+        {
+          fac = wgt * detJmat[ip] ;
+          volume_mat+=fac;
+          fac = wgt * detJmat[ip] * density;
+          mass_mat+=fac;
+
+          N_XYZ.Multiply(invJmat[ip],derivs[ip]);
+          defgrd.MultiplyTT(xcur,N_XYZ);
+          double detFmat = defgrd.Determinant();
+
+          /*------------------------------------ integration factor  -------*/
+          fac = wgt * detJcur[ip] ;
+          volume_cur+=fac;
+          fac = wgt * detJcur[ip] * density * 1/detFmat;
+          mass_cur+=fac;
+        }
+        else
+        {
+          N_XYZ.Multiply(invJref[ip],derivs[ip]);
+          defgrd.MultiplyTT(xcur,N_XYZ);
+          double detFref = defgrd.Determinant();
+
+          /*------------------------------------ integration factor  -------*/
+          fac = wgt * detJcur[ip] ;
+          volume_cur+=fac;
+          fac = wgt * detJcur[ip] * density * 1/detFref;
+          mass_cur+=fac;
+        }
+      }
+
+      //----------------------------------------------------------------
+
+      // return results
+      if(!structale_)
+      {
+        volume_mat = volume_ref;
+        mass_mat   = mass_ref;
+      }
+
+      elevec1(0) = volume_ref;
+      elevec1(1) = volume_mat;
+      elevec1(2) = volume_cur;
+      elevec1(3) = mass_ref;
+      elevec1(4) = mass_mat;
+      elevec1(5) = mass_cur;
+
+      break;
+    }
+
     //==================================================================================
     // nonlinear stiffness, internal force vector (GEMM)
     case ELEMENTS::struct_calc_nlnstiff_gemm:

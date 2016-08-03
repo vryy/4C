@@ -6,10 +6,8 @@
 
 \level 1
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_INTERFACE_H
@@ -697,10 +695,6 @@ public:
   */
   virtual void AssembleM(LINALG::SparseMatrix& mglobal);
 
-  virtual void AssembleDMnts(LINALG::SparseMatrix& dglobal,
-                          LINALG::SparseMatrix& mglobal,
-                          bool onlyD=false);
-
   /*!
   \brief Assemble matrix of normals N
 
@@ -774,6 +768,24 @@ protected:
   virtual void EvaluateNTS();
 
   /*!
+  \brief Evaluate line-to-segment coupling
+
+  */
+  virtual void EvaluateLTS();
+
+  /*!
+  \brief Evaluate line-to-segment coupling
+
+  */
+  virtual void EvaluateLTL();
+
+  /*!
+  \brief Evaluate segment-to-line coupling
+
+  */
+  virtual void EvaluateSTL();
+
+  /*!
   \brief Binary tree search algorithm for potentially coupling
          slave / master pairs (element-based algorithm)
 
@@ -844,6 +856,12 @@ protected:
 
   */
   virtual void InitializeDataContainer();
+
+  /*!
+  \brief check and init possible corner/edge modification
+
+  */
+  virtual void InitializeCornerEdge();
 
   /*!
   \brief Set element areas

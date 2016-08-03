@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file contact_interpolator.cpp
 
-<pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief file for mortar and contact interpolator. This is required for NTS
+       algorithms
+
+\level 2
+
+\maintainer Philipp Farah
 
 *-----------------------------------------------------------------------*/
 
@@ -115,10 +115,10 @@ void NTS::CoInterpolator::Interpolate2D(MORTAR::MortarNode& snode,
 
   // calculate area -- simplified version
   double area = 0.0;
-  for (int ele=0;ele<snode.NumElement();++ele)
-    area+=dynamic_cast<CONTACT::CoElement*>(snode.Elements()[ele])->MoData().Area();
-
-  area=area/snode.NumElement();
+//  for (int ele=0;ele<snode.NumElement();++ele)
+//    area+=dynamic_cast<CONTACT::CoElement*>(snode.Elements()[ele])->MoData().Area();
+//
+//  area=area/snode.NumElement();
 
   // get first element (this is a dummy to use established algorithms)
   MORTAR::MortarElement* sele =
@@ -144,7 +144,9 @@ void NTS::CoInterpolator::Interpolate2D(MORTAR::MortarNode& snode,
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
     MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectNodalNormal(
-        snode, *meles[nummaster], mxi);
+        snode,
+        *meles[nummaster],
+        mxi);
 
     // node on mele?
     if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
@@ -223,17 +225,25 @@ void NTS::CoInterpolator::Interpolate2D(MORTAR::MortarNode& snode,
 
       // calculate node-wise wear
       if(wear)
+      {
+        dserror("stop");
         nwWear2D(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
                  lagmult,lid,linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
+      }
 
       // calculate node-wise slip
       if(pwslip_)
+      {
         nwSlip2D(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
                  lid, linsize, dmxi);
+      }
 
       // calculate node-wise wear (prim. var.)
       if(weartype_ == INPAR::WEAR::wear_primvar)
+      {
+        dserror("stop");
         nwTE2D(mynode, area, jumpval, dslipmatrix);
+      }
     }//End hit ele
   }//End Loop over all Master Elements
 
@@ -260,13 +270,6 @@ void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
   }
 
   bool kink_projection=false;
-
-  // calculate area -- simplified version
-  double area = 0.0;
-  for (int ele=0;ele<snode.NumElement();++ele)
-    area+=dynamic_cast<CONTACT::CoElement*>(snode.Elements()[ele])->MoData().Area();
-
-  area=area/snode.NumElement();
 
   // get first element (this is a dummy to use established algorithms)
   MORTAR::MortarElement* sele =
@@ -961,15 +964,6 @@ void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode,
                                    double* gpn)
 {
   const int ncol = mele.NumNode();
-  double alpha = 1.0 - mynode.CoData().GetAlphaN();//(mynode.CoData().GetAlpha()[0])[sele.Id()];
-
-  double area = 0.0;
-  for (int ele=0;ele<mynode.NumElement();++ele)
-    area+=dynamic_cast<CONTACT::CoElement*>(mynode.Elements()[ele])->MoData().Area();
-
-  area=area/mynode.NumElement();
-  alpha*=area;
-
   double sgpx[3] = {0.0, 0.0, 0.0};
   double mgpx[3] = {0.0, 0.0, 0.0};
 
@@ -1006,10 +1000,7 @@ void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode,
   // **************************
   // add to node
   // **************************
-  gap *= alpha;
-  mynode.AddgValue(gap);
-
-//  mynode.AddntsGapValue(gap);
+  mynode.AddntsGapValue(gap);
 
   // **************************
   // linearization
@@ -1043,12 +1034,11 @@ void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode,
     }
   }
 
-  std::map<int,double>& dgmap = mynode.CoData().GetDerivG();
+  std::map<int,double>& dgmap = mynode.CoData().GetDerivGnts();
 
   // (1) Lin(g) - gap function
-  double fac = alpha;
   for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-    dgmap[p->first] += fac*(p->second);
+    dgmap[p->first] += (p->second);
 
   return;
 }
@@ -1102,7 +1092,7 @@ void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode,
   // **************************
   // add to node
   // **************************
-  mynode.AddgValue(gap);
+  mynode.AddntsGapValue(gap);
 
   // **************************
   // linearization
@@ -1144,7 +1134,7 @@ void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode,
     }
   }
 
-  std::map<int,double>& dgmap = mynode.CoData().GetDerivG();
+  std::map<int,double>& dgmap = mynode.CoData().GetDerivGnts();
 
   // (1) Lin(g) - gap function
   double fac = 1.0;
@@ -1213,14 +1203,6 @@ void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode,
                                    GEN::pairedvector<int,double>& dmxi)
 {
   const int ncol = mele.NumNode();
-  double alpha = 1.0 - mynode.CoData().GetAlphaN();//(mynode.CoData().GetAlpha()[0])[sele.Id()];
-  double area = 0.0;
-  for (int ele=0;ele<mynode.NumElement();++ele)
-    area+=dynamic_cast<CONTACT::CoElement*>(mynode.Elements()[ele])->MoData().Area();
-
-  area=area/mynode.NumElement();
-  alpha*=area;
-
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // node-wise M value
@@ -1229,7 +1211,7 @@ void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode,
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[k]);
 
     // multiply the two shape functions
-    double prod = mval[k]*alpha;
+    double prod = mval[k];
 
     if(abs(prod)>MORTARINTTOL) mynode.AddMntsValue(mnode->Id(),prod);
     if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
@@ -1237,10 +1219,11 @@ void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode,
 
   // integrate dseg
   // multiply the two shape functions
-  double prod = 1.0*alpha;
-
-    if(abs(prod)>MORTARINTTOL) mynode.AddDntsValue(mynode.Id(),prod);
-    if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
+  double prod = 1.0;
+  if(abs(prod)>MORTARINTTOL)
+    mynode.AddDntsValue(mynode.Id(),prod);
+  if(abs(prod)>MORTARINTTOL)
+    mynode.AddSNode(mynode.Id()); // only for friction!
 
   // integrate LinM
   for (int k=0; k<ncol; ++k)
@@ -1250,10 +1233,10 @@ void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode,
     double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int,double>& dmmap_jk = mynode.CoData().GetDerivM()[mgid];
+    std::map<int,double>& dmmap_jk = mynode.CoData().GetDerivMnts()[mgid];
 
     // (3) Lin(NMaster) - master GP coordinates
-    fac = mderiv(k, 0) * alpha;
+    fac = mderiv(k, 0);
     for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
       dmmap_jk[p->first] += fac*(p->second);
   } // loop over master nodes
@@ -1283,15 +1266,14 @@ void NTS::CoInterpolator::nwDM3D(CONTACT::CoNode& mynode,
     // multiply the two shape functions
     double prod = mval[k];
 
-    if(abs(prod)>MORTARINTTOL) mynode.AddMValue(mnode->Id(),prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddMntsValue(mnode->Id(),prod);
     if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
   }
 
   // integrate dseg
   // multiply the two shape functions
   double prod = 1.0;
-
-  if(abs(prod)>MORTARINTTOL) mynode.AddDValue(mynode.Id(),prod);
+  if(abs(prod)>MORTARINTTOL) mynode.AddDntsValue(mynode.Id(),prod);
   if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
 
   // integrate LinM
@@ -1302,7 +1284,7 @@ void NTS::CoInterpolator::nwDM3D(CONTACT::CoNode& mynode,
     double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int,double>& dmmap_jk = mynode.CoData().GetDerivM()[mgid];
+    std::map<int,double>& dmmap_jk = mynode.CoData().GetDerivMnts()[mgid];
 
     fac = mderiv(k, 0);
     for (_CI p=dmxi[0].begin(); p!=dmxi[0].end(); ++p)

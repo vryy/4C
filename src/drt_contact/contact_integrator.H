@@ -168,6 +168,30 @@ public:
       double* auxn);
 
   /*!
+   \brief ....
+
+   */
+  void IntegrateDerivCell3DAuxPlaneLTS(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& lsele,
+       MORTAR::MortarElement& mele,
+       Teuchos::RCP<MORTAR::IntCell> cell,
+       double* auxn,
+       const Epetra_Comm& comm);
+
+  /*!
+   \brief ....
+
+   */
+  void IntegrateDerivCell3DAuxPlaneSTL(
+       MORTAR::MortarElement& mele,
+       MORTAR::MortarElement& lele,
+       MORTAR::MortarElement& sele,
+       Teuchos::RCP<MORTAR::IntCell> cell,
+       double* auxn,
+       const Epetra_Comm& comm);
+
+  /*!
    \brief Compute penalty scaling factor kappa on slave element
 
    */
@@ -370,16 +394,17 @@ protected:
    \brief lin D/M-matrix entries at GP for bound case
 
    */
-  void inline GP_DM_Lin_bound(
-      int& iter,
+  void inline GP_2D_DM_Lin_bound(
       MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
       LINALG::SerialDenseVector& lmval,
       LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& mderiv,
       LINALG::SerialDenseMatrix& lmderiv,
       double& jac,
       double& wgt,
-      double& sxi,
       const GEN::pairedvector<int, double>& derivjac,
       std::vector<GEN::pairedvector<int,double> >& derivsxi,
       std::vector<GEN::pairedvector<int,double> >& derivmxi,
@@ -427,7 +452,7 @@ protected:
       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
-   \brief lin D/M-matrix entries at GP for bound case
+   \brief lin D/M-matrix entries at GP
 
    */
   void inline GP_3D_DM_Lin(
@@ -444,6 +469,26 @@ protected:
       std::vector<GEN::pairedvector<int, double> >& dsxigp,
       std::vector<GEN::pairedvector<int, double> >& dmxigp,
       GEN::pairedvector<int, double>& jacintcellmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
+
+  /*!
+   \brief lin D/M-matrix entries at GP for bound case
+
+   */
+  void inline GP_3D_DM_Lin_bound(
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& lmderiv,
+      LINALG::SerialDenseMatrix& mderiv,
+      double& jac,
+      double& wgt,
+      const GEN::pairedvector<int, double>& derivjac,
+      std::vector<GEN::pairedvector<int,double> >& dsxigp,
+      std::vector<GEN::pairedvector<int,double> >& dmxigp,
       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!

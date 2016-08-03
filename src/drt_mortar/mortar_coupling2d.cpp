@@ -64,18 +64,16 @@ bool MORTAR::Coupling2d::RoughCheckOrient()
   { 0.0, 0.0 };
 
   // compute the unit normal vector at the slave element center
-  double nsc[3] =
-  { 0.0, 0.0, 0.0 };
+  double nsc[3] = { 0.0, 0.0, 0.0 };
   SlaveElement().ComputeUnitNormalAtXi(loccenter, nsc);
 
   // compute the unit normal vector at the master element center
-  double nmc[3] =
-  { 0.0, 0.0, 0.0 };
+  double nmc[3] = { 0.0, 0.0, 0.0 };
   MasterElement().ComputeUnitNormalAtXi(loccenter, nmc);
 
   // check orientation of the two normals
   double dot = nsc[0] * nmc[0] + nsc[1] * nmc[1] + nsc[2] * nmc[2];
-  if (dot < -1.0e-12)
+  if (dot < -0.1)//-1.0e-12)
     return true;
   else
     return false;
@@ -151,8 +149,7 @@ bool MORTAR::Coupling2d::Project()
   for (int i = 0; i < 2; ++i)
   {
     MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mymnodes[i]);
-    double xi[2] =
-    { 0.0, 0.0 };
+    double xi[2] = { 0.0, 0.0 };
 
     if (MasterElement().Shape()==DRT::Element::nurbs3)
     {
@@ -178,7 +175,6 @@ bool MORTAR::Coupling2d::Project()
       MORTAR::MortarNode tmp_node(mnode->Id(),&(xm[0]),mnode->Owner(),2,mdofs,false);
       MORTAR::MortarProjector::Impl(SlaveElement())->ProjectElementNormal(tmp_node,
               SlaveElement(), xi);
-
     }
     else
     {
@@ -820,9 +816,11 @@ bool MORTAR::Coupling2d::DetectOverlap()
 
     if ((sxia < -1.0) || (sxib > 1.0) || (mxia < -1.0) || (mxib > 1.0))
     {
-      std::cout << "Slave: " << sxia << " " << sxib << std::endl;
-      std::cout << "Master: " << mxia << " " << mxib << std::endl;
-      dserror("ERROR: IntegrateOverlap: Determined infeasible limits!");
+//      std::cout << "Slave: " << sxia << " " << sxib << std::endl;
+//      std::cout << "Master: " << mxia << " " << mxib << std::endl;
+//      dserror("ERROR: IntegrateOverlap: Determined infeasible limits!");
+      std::cout << "WARNING: IntegrateOverlap: Determined infeasible limits!" << std::endl;
+      overlap = false;
     }
   }
 

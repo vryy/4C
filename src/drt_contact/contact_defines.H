@@ -3,12 +3,9 @@
 
 \brief A set of preprocessor defines for contact methods
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #ifndef CONTACT_DEFINES_H
@@ -38,6 +35,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
+//#define CONTACTFDALPHA            /* flag for FD check of scaling factor alpha*/
 //#define CONTACTFDSLIPINCR         /* flag for FD check of weighted obj.-var. slip */
 
 // LAGRANGE DEBUGGING OPTIONS

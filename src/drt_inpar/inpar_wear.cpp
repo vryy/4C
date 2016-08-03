@@ -4,11 +4,11 @@
 
 \brief Input parameters for wear
 
-<pre>
-Maintainer: Philipp Farah
+\level 2
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -39,6 +39,8 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                  wear_none, wear_none,
                  wear_archard, wear_archard),
       &wear);
+
+  BoolParameter("MATCHINGGRID","Yes","is matching grid",&wear);
 
   setStringToIntegralParameter<int>("WEARCOEFF_CONF","material","configuration in which wcoeff is defined",
       tuple<std::string>("material","mat",

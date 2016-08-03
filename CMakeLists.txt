@@ -2092,6 +2092,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_noxinterface.cpp
   src/drt_contact/contact_coupling2d.cpp
   src/drt_contact/contact_coupling3d.cpp
+  src/drt_contact/contact_line_coupling.cpp
   src/drt_contact/contact_integrator.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp

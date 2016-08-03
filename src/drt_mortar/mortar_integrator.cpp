@@ -6,10 +6,7 @@ of two MortarElements in 1D and 2D
 
 \level 1
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
@@ -534,9 +531,20 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
   {
     // set default value for segment-based version first
     DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_tri_7point;
-
+    if(integrationtype==INPAR::MORTAR::inttype_segments)
+    {
+      if (numgp>0)
+      switch(numgp)
+      {
+      case 7 : mygaussrule=DRT::UTILS::intrule_tri_7point;  break;
+      case 12: mygaussrule=DRT::UTILS::intrule_tri_12point; break;
+      case 16: mygaussrule=DRT::UTILS::intrule_tri_16point; break;
+      case 37: mygaussrule=DRT::UTILS::intrule_tri_37point; break;
+      default: dserror("unknown tri gauss rule");           break;
+      }
+    }
     // GP switch if element-based version and non-zero value provided by user
-    if (integrationtype == INPAR::MORTAR::inttype_elements
+    else if (integrationtype == INPAR::MORTAR::inttype_elements
         || integrationtype == INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp > 0)
@@ -606,6 +614,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
         }
       }
     }
+    else
+      dserror("ERROR: unknown integration type!");
 
     const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
@@ -627,7 +637,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
   case DRT::Element::nurbs9:
   {
     // set default value for segment-based version first
-    DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_quad_9point;
+    DRT::UTILS::GaussRule2D mygaussrule = DRT::UTILS::intrule_quad_25point;
 
     // GP switch if element-based version and non-zero value provided by user
     if (integrationtype == INPAR::MORTAR::inttype_elements
@@ -910,14 +920,41 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
+  //---------------------------------
+  // do trafo for bound elements
+  LINALG::SerialDenseMatrix trafo(nrow, nrow,true);
   bool bound = false;
-  for (int k = 0; k < nrow; ++k)
+
+  // get number of bound nodes
+  std::vector<int> ids;
+  for(int i = 0; i<nrow;++i)
   {
-    MORTAR::MortarNode* mymrtrnode =
-        dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode)
-      dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
-    bound += mymrtrnode->IsOnBound();
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    if(mymrtrnode->IsOnBoundorCE())
+    {
+      // get local bound id
+      ids.push_back(i);
+      bound = true;
+    }
+  }
+
+  int numbound = (int)ids.size();
+
+  // if all bound: error
+  if((nrow-numbound)<1e-12)
+    return;
+
+  const double factor = 1.0/(nrow-numbound);
+  // row loop
+  for(int i = 0; i<nrow;++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    if (!mymrtrnode->IsOnBoundorCE())
+    {
+      trafo(i,i)=1.0;
+      for(int j = 0; j<(int)ids.size();++j)
+        trafo(i,ids[j]) = factor;
+    }
   }
 
   // decide whether linear LM are used for quadratic FE here
@@ -961,6 +998,18 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
       UTILS::EvaluateShape_LM_Lin(shapefcn_, sxi, lmval, sele, nrow);
     else
       UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
+
+    // transform shape functions for bound case
+    if(bound)
+    {
+      LINALG::SerialDenseVector tempval(nrow,true);
+      for(int i = 0; i < nrow; ++i)
+        for(int j = 0; j < nrow; ++j)
+          tempval(i) += trafo(i,j)*lmval(j);
+
+      for(int i = 0; i < nrow; ++i)
+        lmval(i) = tempval(i);
+    }
 
     // evaluate trace space shape functions (on both elements)
     UTILS::EvaluateShape_Displ(sxi, sval, sele, false);
@@ -1028,7 +1077,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
       if (cnode->Owner() != comm.MyPID())
         continue;
 
-      if (cnode->IsOnBound())
+      if (cnode->IsOnBoundorCE())
         continue;
 
       // integrate mseg
@@ -1053,7 +1102,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
         // multiply the two shape functions
         double prod = lmval(j) * sval(k) * jac * wgt;
 
-        if (snode->IsOnBound())
+        if (snode->IsOnBoundorCE())
         {
           if (abs(prod) > MORTARINTTOL)
             cnode->AddMValue(snode->Id(), -prod);
@@ -1068,7 +1117,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
   }
   // dual shape functions
   else if (shapefcn_ == INPAR::MORTAR::shape_dual
-      || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
+        || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
   {
     for (int j = 0; j < nrow; ++j)
     {
@@ -1077,8 +1126,9 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
       if (cnode->Owner() != comm.MyPID())
         continue;
 
-      if (cnode->IsOnBound())
+      if (cnode->IsOnBoundorCE())
         continue;
+
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
@@ -1098,13 +1148,13 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
       // integrate dseg (boundary modification)
       if (bound)
       {
-        bool j_boundnode = cnode->IsOnBound();
+        bool j_boundnode = cnode->IsOnBoundorCE();
 
         for (int k = 0; k < nrow; ++k)
         {
           MORTAR::MortarNode* mnode =
               dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-          bool k_boundnode = mnode->IsOnBound();
+          bool k_boundnode = mnode->IsOnBoundorCE();
 
           // do not assemble off-diagonal terms if j,k are both non-boundary nodes
           if (!j_boundnode && !k_boundnode && (j != k))
@@ -1116,7 +1166,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
           // isolate the dseg entries to be filled
           // (both the main diagonal and every other secondary diagonal)
           // and add current Gauss point's contribution to dseg
-          if (mnode->IsOnBound())
+          if (mnode->IsOnBoundorCE())
           {
             if (abs(prod) > MORTARINTTOL)
               cnode->AddMValue(mnode->Id(), -prod);
@@ -1168,6 +1218,8 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      if(cnode->IsOnBoundorCE())
+        continue;
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
@@ -1191,7 +1243,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
         // multiply the two shape functions
         double prod = lmval[j] * sval(k) * jac * wgt;
 
-        if (snode->IsOnBound())
+        if (snode->IsOnBoundorCE())
         {
           if (abs(prod) > MORTARINTTOL)
             cnode->AddMValue(snode->Id(), -prod);
@@ -1694,6 +1746,43 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   static LINALG::Matrix<nm_,1> mval;
   static LINALG::Matrix<ns_,1> lmval;
 
+  //---------------------------------
+  // do trafo for bound elements
+  LINALG::SerialDenseMatrix trafo(nrow, nrow,true);
+  bool bound = false;
+
+  // get number of bound nodes
+  std::vector<int> ids;
+  for(int i = 0; i<nrow;++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    if(mymrtrnode->IsOnBoundorCE())
+    {
+      // get local bound id
+      ids.push_back(i);
+      bound = true;
+    }
+  }
+
+  int numbound = (int)ids.size();
+
+  // if all bound: error
+  if((nrow-numbound)<1e-12)
+    return;
+
+  const double factor = 1.0/(nrow-numbound);
+  // row loop
+  for(int i = 0; i<nrow;++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    if (!mymrtrnode->IsOnBoundorCE())
+    {
+      trafo(i,i)=1.0;
+      for(int j = 0; j<(int)ids.size();++j)
+        trafo(i,ids[j]) = factor;
+    }
+  }
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -1765,6 +1854,19 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     // evaluate Lagrange mutliplier shape functions (on slave element)
     UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
 
+    // transform shape functions for bound case
+    if(bound)
+    {
+      LINALG::SerialDenseVector tempval(nrow,true);
+      for(int i = 0; i < nrow; ++i)
+        for(int j = 0; j < nrow; ++j)
+          tempval(i) += trafo(i,j)*lmval(j);
+
+      for(int i = 0; i < nrow; ++i)
+        lmval(i) = tempval(i);
+    }
+
+
     // evaluate trace space shape functions (on both elements)
     UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
     UTILS::EvaluateShape_Displ(mxi, mval,mele, false);
@@ -1773,7 +1875,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     double jac = cell->Jacobian(eta);
 
     // compute cell D/M matrix *******************************************
-    bool bound =false;
     GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound,comm);
 
     // compute nodal scaling factor **************************************
@@ -1808,6 +1909,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   //check for problem dimension
   if (ndim_!=3)
     dserror("ERROR: 3D integration method called for non-3D problem");
+
+  if(cell->Shape()!=DRT::Element::tri3)
+    dserror("ERROR: wrong cell shape!");
 
   // discretization type of slave and master IntElement
   DRT::Element::DiscretizationType sdt = sintele.Shape();
@@ -1851,7 +1955,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
         dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode)
       dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
-    bound += mymrtrnode->IsOnBound();
+    bound += mymrtrnode->IsOnBoundorCE();
   }
 
   // decide whether displacement shape fct. modification has to be considered or not
@@ -2007,9 +2111,19 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    if (bound)
+//    if (bound)
+//    {
+//      sele.EvaluateShapeLagMultLin(shapefcn_, psxi, lmval, lmderiv, nrow);
+//    }
+//    else
+//    {
+//      sele.EvaluateShapeLagMult(shapefcn_, psxi, lmval, lmderiv, nrow);
+//      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv, nintrow);
+//    }
+
+    if(bound)
     {
-      sele.EvaluateShapeLagMultLin(shapefcn_, psxi, lmval, lmderiv, nrow);
+      sele.EvaluateShapeLagMult(shapefcn_, psxi, lmval, lmderiv, nrow);
     }
     else
     {

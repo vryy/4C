@@ -1141,6 +1141,13 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   }
 #endif // #ifdef CONTACTFDGAP
 
+#ifdef CONTACTFDALPHA
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckAlphaDeriv();
+  }
+#endif // #ifdef CONTACTFDGAP
+
 #ifdef CONTACTFDSLIPINCR
   // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1319,7 +1326,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   }
 
   // shape function
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
   // do reagularization scaling
   if(regularized_)
@@ -2028,6 +2036,13 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   }
 #endif // #ifdef CONTACTFDGAP
 
+#ifdef CONTACTFDALPHA
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckAlphaDeriv();
+  }
+#endif // #ifdef CONTACTFDGAP
 #ifdef CONTACTFDTANGLM
   // FD check of tangential LM derivatives (frictionless condition)
   for (int i=0; i<(int)interface_.size();++i)
@@ -2592,7 +2607,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-            double ct = Params().get<double>("SEMI_SMOOTH_CT");
+            double ct = interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
             double frbound = interface_[i]->IParams().get<double>("FRBOUND");
@@ -2625,7 +2640,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-            double ct = Params().get<double>("SEMI_SMOOTH_CT");
+            double ct = interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
             double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
@@ -2819,7 +2834,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         // (Remark: Semi-smooth Newton has no problems in this case, as it
         // updates the active set after EACH Newton step, see below, and thus
         // would always set the corresponding nodes to INACTIVE.)
-        if (cnode->Active() && !cnode->HasSegment())
+        if (cnode->Active() && !cnode->HasSegment() && !cnode->IsOnBoundorCE())
           dserror("ERROR: Active node %i without any segment/cell attached",cnode->Id());
       }
     }
@@ -2830,14 +2845,13 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   INPAR::CONTACT::FrictionType ftype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
-  // read weighting factor cn
-  // (this is necessary in semi-smooth Newton case, as the search for the
-  // active set is now part of the Newton iteration. Thus, we do not know
-  // the active / inactive status in advance and we can have a state in
-  // which both the condition znormal = 0 and wgap = 0 are violated. Here
-  // we have to weigh the two violations via cn!
-  double cn_input = Params().get<double>("SEMI_SMOOTH_CN");
-  double ct_input = Params().get<double>("SEMI_SMOOTH_CT");
+//  // read weighting factor cn
+//  // (this is necessary in semi-smooth Newton case, as the search for the
+//  // active set is now part of the Newton iteration. Thus, we do not know
+//  // the active / inactive status in advance and we can have a state in
+//  // which both the condition znormal = 0 and wgap = 0 are violated. Here
+//  // we have to weigh the two violations via cn!
+//  const double ct_input = Params().get<double>("SEMI_SMOOTH_CT");
 
   // this is the complementarity parameter we use for the decision.
   // it might be scaled with a mesh-size dependent factor
@@ -2868,6 +2882,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
+      cn = interface_[i]->GetCnRef()[interface_[i]->GetCnRef().Map().LID(cnode->Id())];
+      if(friction_)
+        ct = interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(cnode->Id())];
+
       // get scaling factor
       double scalefac=1.;
       if (scale==true && cnode->MoData().GetScale() != 0.)
@@ -2886,9 +2904,9 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       }
 
       // calculate mesh-size scaled version of cn
-      cn = cn_input;
-      ct = ct_input;
+
       if (adaptive_cn || adaptive_ct)
+      {
         if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
         {
           // row sum of D matrix
@@ -2902,6 +2920,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (adaptive_ct && mesh_h != 0.)
             ct /= mesh_h;
         }
+      }
 
       // friction
       std::vector<double> tz (Dim()-1,0);
@@ -2949,11 +2968,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
-        // check for fulfilment of contact condition
-        //if (abs(nz) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << std::endl;
-
         // check for penetration and/or tensile contact forces
         if (nz - cn*wgap > 0) // no averaging of Lagrange multipliers
         //if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
@@ -2973,11 +2987,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       // check nodes of active set ***************************************
       else
       {
-        // check for fulfillment of contact condition
-        //if (abs(wgap) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << std::endl;
-
         //adhesion modification
         nz+=adhbound;
 
@@ -3082,7 +3091,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 //            std::cout << "NTS" << std::endl;
 //          else
 //            std::cout << "MIXED" << std::endl;
-
       }
 
     } // loop over all slave nodes
@@ -3246,6 +3254,26 @@ void CONTACT::CoLagrangeStrategy::CheckConservationLaws(const Epetra_Vector& fs,
   for (int i=0;i<fm.GlobalLength();++i) msum+=(*tmpFm)[i];
   std::cout << "MASTER:  " << std::setw(14) << msum << std::endl;
   std::cout << "Balance: " << std::setw(14) << ssum+msum << std::endl;
+
+  // write linear momentum conservation in xxx.lmom
+  FILE* MyFile = NULL;
+  std::ostringstream filename;
+  const std::string filebase = "xxx";
+  filename << filebase <<".lmom";
+  MyFile = fopen(filename.str().c_str(), "at+");
+
+  // store data
+  if (MyFile)
+  {
+    fprintf(MyFile, "%g\t", ssum);
+    fprintf(MyFile, "%g\t", msum);
+    fprintf(MyFile, "%g\n", ssum+msum);
+    fclose(MyFile);
+  }
+  else
+    dserror("ERROR: File could not be opened.");
+
+
 
   /*-------------------------------*
    | ANGULAR MOMENTUM CONSERVATION |

@@ -21,6 +21,7 @@
 #include "contact_coupling2d.H"
 #include "contact_coupling3d.H"
 #include "contact_defines.H"
+#include "contact_line_coupling.H"
 #include "friction_node.H"
 #include "selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
@@ -33,6 +34,8 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_adapter/adapter_coupling.H"
 
+#include "../drt_mortar/mortar_coupling3d_classes.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
@@ -44,6 +47,7 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
     : MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
       selfcontact_(selfcontact),
       friction_(false),
+      nonSmoothContact_(DRT::INPUT::IntegralValue<int>(icontact,"NONSMOOTH_GEOMETRIES")),
       constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS")),
       activenodes_(Teuchos::null),
       activedofs_(Teuchos::null),
@@ -54,6 +58,8 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
       nextendedghosting_(Teuchos::null),
       eextendedghosting_(Teuchos::null),
       binarytreeself_(Teuchos::null),
+      cnValues_(Teuchos::null),
+      ctValues_(Teuchos::null),
       smpairs_(0),
       smintpairs_(0),
       intcells_(0)
@@ -78,6 +84,84 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
   // init extended ghosting for RR loop
   eextendedghosting_ = Teuchos::null;
   nextendedghosting_ = Teuchos::null;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  create and fill cn vector                                farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::SetCnCtValues()
+{
+  // get cn from the input file
+  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  const double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+
+  // set all nodal cn-values to the input value
+  GetCn() = LINALG::CreateVector(*SlaveRowNodes(),true);
+  int err = GetCn()->PutScalar(cn);
+  if(err!=0)
+    dserror("ERROR: cn definition failed!");
+
+  // set all nodal ct-values to the input value
+  if(friction_)
+  {
+    GetCt() = LINALG::CreateVector(*SlaveRowNodes(),true);
+    err = GetCt()->PutScalar(ct);
+    if(err!=0)
+      dserror("ERROR: cn definition failed!");
+  }
+
+
+//  // modification for edge/corner nodes
+//  for(int i = 0; i<SlaveRowNodes()->NumMyElements();++i)
+//  {
+//    int gid = SlaveRowNodes()->GID(i);
+//    DRT::Node* node = Discret().gNode(gid);
+//    if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
+//    CoNode* cnode = dynamic_cast<CoNode*>(node);
+//
+//    // calculate characteristic edge length:
+//    DRT::Element* ele = cnode->Elements()[0];
+//    CoElement* cele = dynamic_cast<CoElement*>(ele);
+//    double pos1[3] = {0.0,0.0,0.0};
+//    double pos2[3] = {0.0,0.0,0.0};
+//    double vec[3]  = {0.0,0.0,0.0};
+//
+//    pos1[0] = dynamic_cast<CoNode*>(cele->Nodes()[0])->X()[0];
+//    pos1[1] = dynamic_cast<CoNode*>(cele->Nodes()[0])->X()[1];
+//    pos1[2] = dynamic_cast<CoNode*>(cele->Nodes()[0])->X()[2];
+//
+//    pos2[0] = dynamic_cast<CoNode*>(cele->Nodes()[1])->X()[0];
+//    pos2[1] = dynamic_cast<CoNode*>(cele->Nodes()[1])->X()[1];
+//    pos2[2] = dynamic_cast<CoNode*>(cele->Nodes()[1])->X()[2];
+//
+//    vec[0] = pos1[0]-pos2[0];
+//    vec[1] = pos1[1]-pos2[1];
+//    vec[2] = pos1[2]-pos2[2];
+//
+//    const double length = sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+//    if(length<1e-12)
+//    {
+//      std::cout << "*** WARNING *** element edge nearly zero" << std::endl;
+//      continue;
+//    }
+//
+//    if(cnode->IsOnEdge())
+//    {
+//      GetCnRef()[GetCnRef().Map().LID(cnode->Id())] = cn * (length*length);
+//      if(friction_)
+//        GetCtRef()[GetCtRef().Map().LID(cnode->Id())] = ct * (length*length);
+//    }
+//
+//    if(cnode->IsOnCorner())
+//    {
+//      GetCnRef()[GetCnRef().Map().LID(cnode->Id())] = cn * (length*length*length*length);
+//      if(friction_)
+//        GetCtRef()[GetCtRef().Map().LID(cnode->Id())] = ct * (length*length*length*length);
+//    }
+//  }
 
   return;
 }
@@ -1154,6 +1238,26 @@ void CONTACT::CoInterface::InitializeDataContainer()
     }
   }
 
+  // ==================
+  // non-smooth contact:
+  // we need this master node data container to create an averaged
+  // nodal normal field on the master side for the smoothed cpp
+  // normal field!
+  if(nonSmoothContact_)
+  {
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
+
+    for (int i = 0; i < masternodes->NumMyElements(); ++i)
+    {
+      int gid = masternodes->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %i", gid);
+      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+      mnode->InitializeDataContainer();
+    }
+  }
+
   return;
 }
 
@@ -1196,11 +1300,19 @@ void CONTACT::CoInterface::Initialize()
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal Mortar maps
+    // for sts
     cnode->MoData().GetD().clear();
     cnode->MoData().GetM().clear();
+    cnode->MoData().GetMmod().clear();
+    // for nts
     cnode->MoData().GetDnts().clear();
     cnode->MoData().GetMnts().clear();
-    cnode->MoData().GetMmod().clear();
+    // for lts
+    cnode->MoData().GetDlts().clear();
+    cnode->MoData().GetMlts().clear();
+    // for ltl
+    cnode->MoData().GetDltl().clear();
+    cnode->MoData().GetMltl().clear();
 
     // reset nodal scaling factor
     cnode->MoData().GetScale()=0.0;
@@ -1221,13 +1333,27 @@ void CONTACT::CoInterface::Initialize()
 
     // reset derivative map of Mortar matrices
     (cnode->CoData().GetDerivD()).clear();
+    (cnode->CoData().GetDerivDlts()).clear();
+    (cnode->CoData().GetDerivDltl()).clear();
     (cnode->CoData().GetDerivM()).clear();
+    (cnode->CoData().GetDerivMnts()).clear();
+    (cnode->CoData().GetDerivMlts()).clear();
+    (cnode->CoData().GetDerivMltl()).clear();
 
     // reset nodal weighted gap and derivative
     cnode->CoData().Getg() = 1.0e12;
     cnode->CoData().Getgnts() = 1.0e12;
+    cnode->CoData().Getglts() = 1.0e12;
+    cnode->CoData().Getgltl() = 1.0e12;
 
     (cnode->CoData().GetDerivG()).clear();
+    (cnode->CoData().GetDerivGnts()).clear();
+    (cnode->CoData().GetDerivGlts()).clear();
+    (cnode->CoData().GetDerivGltl()).clear();
+
+    // hybrid formulation
+    cnode->CoData().GetAlphaN() = -1.0;
+    cnode->CoData().GetAlpha().clear();
 
     // reset derivative map of lagrange multipliers
     for (int j=0; j<(int)((cnode->CoData().GetDerivZ()).size()); ++j)
@@ -1330,7 +1456,7 @@ void CONTACT::CoInterface::SetElementAreas()
   // same time we initialize the element data containers for self contact.
   // This is due to the fact that self contact search is NOT parallelized.
   //**********************************************************************
-  if (SelfContact())
+  if (SelfContact() or nonSmoothContact_)
   {
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
@@ -1379,8 +1505,11 @@ void CONTACT::CoInterface::PreEvaluate()
   fclose(fp);
 #endif // #ifdef MORTARGMSHCELLS
 
-  // TODO introduce flag for nonsmooth contact
-  if(false)
+  // set global vector of cn values
+  SetCnCtValues();
+
+  // smooth or non-smooth contact?
+  if(nonSmoothContact_)
   {
     // detect nonsmooth geometries, calc normals
     // and weighting factors
@@ -1388,13 +1517,23 @@ void CONTACT::CoInterface::PreEvaluate()
   }
   else
   {
-    // evaluate averaged nodal normals on slave side
-    EvaluateNodalNormals();
+    if(DRT::INPUT::IntegralValue<int>(IParams(),"CPP_NORMALS"))
+    {
+      dserror("ERROR");
+      // evaluate cpp nodal normals on slave side
+      EvaluateCPPNormalsForAll();
+    }
+    else
+    {
+      // evaluate averaged nodal normals on slave side
+      EvaluateNodalNormals();
 
-    // export nodal normals to slave node column map
-    // this call is very expensive and the computation
-    // time scales directly with the proc number !
-    ExportNodalNormals();
+      // export nodal normals to slave node column map
+      // this call is very expensive and the computation
+      // time scales directly with the proc number !
+      ExportNodalNormals();
+    }
+
   }
 
   // bye bye
@@ -1403,21 +1542,457 @@ void CONTACT::CoInterface::PreEvaluate()
 
 
 /*----------------------------------------------------------------------*
+ |  store nts values into sts data container for assembly   farah 07/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::StoreNTSvalues()
+{
+  // create iterators for data types
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator          CImap;
+
+  // loop over all possibly non smooth nodes
+  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // check if integration is done
+    if (cnode->MoData().GetDnts().size()<1)
+      continue;
+
+    // if nonsmooth contact is activated and the node is no corner node continue
+    // if non-smooth contact is not activated go on
+    if(!cnode->IsOnCorner() and nonSmoothContact_)
+      continue;
+
+    //-------------------------------------------------------------------------------------
+    // store D matrix entries
+    // resize pairedvector to nts size
+    if ((int)cnode->MoData().GetD().size()==0)
+      cnode->MoData().GetD().resize(cnode->MoData().GetDnts().size());
+
+    for (CI p=cnode->MoData().GetDnts().begin();p!=cnode->MoData().GetDnts().end();++p)
+      cnode->MoData().GetD()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store M matrix entries
+    for (CImap p=cnode->MoData().GetMnts().begin();p!=cnode->MoData().GetMnts().end();++p)
+      cnode->MoData().GetM()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap
+    cnode->CoData().Getg() = cnode->CoData().Getgnts();
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap linearization
+    for (CImap p=cnode->CoData().GetDerivGnts().begin();p!=cnode->CoData().GetDerivGnts().end();++p)
+      cnode->CoData().GetDerivG()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store D deriv
+    // --> No D linearization!
+
+    //-------------------------------------------------------------------------------------
+    // store M deriv
+    {
+      // Mortar M derivatives
+      std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivMnts();
+
+      // get sizes and iterator start
+      int mastersize = (int)mntsderiv.size();
+      std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
+
+      /********************************************** LinMMatrix **********/
+      // loop over all master nodes in the DerivM-map of the current LM slave node
+      for (int l=0;l<mastersize;++l)
+      {
+        int mgid = mntscurr->first;
+        ++mntscurr;
+
+        // Mortar matrix M derivatives
+        std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivMnts()[mgid];
+        std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivM()[mgid];
+
+        int mapsize = (int)(thismderivnts.size());
+
+        std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          thismderivmortar[mcolcurr->first] += (mcolcurr->second);
+          ++mcolcurr;
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderivnts.end())
+          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+      }
+    }
+  }// end node loop
+
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  store lts values into sts data container for assembly   farah 07/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::StoreLTSvalues()
+{
+  // create iterators for data types
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator          CImap;
+
+  // loop over all possibly non smooth nodes
+  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // check if this is an edge or a corner and nonsmooth contact is activated
+    if(!cnode->IsOnEdge() and nonSmoothContact_)
+      continue;
+    if(cnode->IsOnCorner() and nonSmoothContact_)
+      continue;
+
+    // check if integration is done
+    if (cnode->MoData().GetDlts().size()<1)
+      continue;
+
+    //-------------------------------------------------------------------------------------
+    // store D matrix entries
+    // resize pairedvector to nts size
+    if ((int)cnode->MoData().GetD().size()==0)
+      cnode->MoData().GetD().resize(cnode->MoData().GetDlts().size());
+
+    for (CI p=cnode->MoData().GetDlts().begin();p!=cnode->MoData().GetDlts().end();++p)
+      cnode->MoData().GetD()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store M matrix entries
+    for (CImap p=cnode->MoData().GetMlts().begin();p!=cnode->MoData().GetMlts().end();++p)
+      cnode->MoData().GetM()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap
+    cnode->CoData().Getg() = cnode->CoData().Getglts();
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap linearization
+    for (CImap p=cnode->CoData().GetDerivGlts().begin();p!=cnode->CoData().GetDerivGlts().end();++p)
+      cnode->CoData().GetDerivG()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store D deriv
+    {
+      // Mortar M derivatives
+      std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivDlts();
+
+      // get sizes and iterator start
+      int mastersize = (int)mntsderiv.size();
+      std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
+
+      /********************************************** LinMMatrix **********/
+      // loop over all master nodes in the DerivM-map of the current LM slave node
+      for (int l=0;l<mastersize;++l)
+      {
+        int mgid = mntscurr->first;
+        ++mntscurr;
+
+        // Mortar matrix M derivatives
+        std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivDlts()[mgid];
+        std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivD()[mgid];
+
+        int mapsize = (int)(thismderivnts.size());
+
+        std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          thismderivmortar[mcolcurr->first] += (mcolcurr->second);
+          ++mcolcurr;
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderivnts.end())
+          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+      }
+    }
+
+    //-------------------------------------------------------------------------------------
+    // store M deriv
+    {
+      // Mortar M derivatives
+      std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivMlts();
+
+      // get sizes and iterator start
+      int mastersize = (int)mntsderiv.size();
+      std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
+
+      /********************************************** LinMMatrix **********/
+      // loop over all master nodes in the DerivM-map of the current LM slave node
+      for (int l=0;l<mastersize;++l)
+      {
+        int mgid = mntscurr->first;
+        ++mntscurr;
+
+        // Mortar matrix M derivatives
+        std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivMlts()[mgid];
+        std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivM()[mgid];
+
+        int mapsize = (int)(thismderivnts.size());
+
+        std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          thismderivmortar[mcolcurr->first] += (mcolcurr->second);
+          ++mcolcurr;
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderivnts.end())
+          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+      }
+    }
+  }// end node loop
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  store lts values into sts data container for assembly   farah 07/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::StoreLTLvalues()
+{
+  // create iterators for data types
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator          CImap;
+
+  // loop over all possibly non smooth nodes
+  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    if(!cnode->IsOnEdge())
+      continue;
+    if(cnode->IsOnCorner())
+      continue;
+
+    // check if integration is done
+    if (cnode->MoData().GetDltl().size()<1)
+      continue;
+
+    //-------------------------------------------------------------------------------------
+    // store D matrix entries
+    // resize pairedvector to nts size
+    if ((int)cnode->MoData().GetD().size()==0)
+      cnode->MoData().GetD().resize(cnode->MoData().GetDltl().size());
+
+    for (CI p=cnode->MoData().GetDltl().begin();p!=cnode->MoData().GetDltl().end();++p)
+      cnode->MoData().GetD()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store M matrix entries
+    for (CImap p=cnode->MoData().GetMltl().begin();p!=cnode->MoData().GetMltl().end();++p)
+      cnode->MoData().GetM()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap
+    cnode->CoData().Getg() = cnode->CoData().Getgltl();
+
+    //-------------------------------------------------------------------------------------
+    // store weighted gap linearization
+    for (CImap p=cnode->CoData().GetDerivGltl().begin();p!=cnode->CoData().GetDerivGltl().end();++p)
+      cnode->CoData().GetDerivG()[p->first] += (p->second);
+
+    //-------------------------------------------------------------------------------------
+    // store D deriv
+    {
+      // Mortar M derivatives
+      std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivDltl();
+
+      // get sizes and iterator start
+      int mastersize = (int)mntsderiv.size();
+      std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
+
+      /********************************************** LinMMatrix **********/
+      // loop over all master nodes in the DerivM-map of the current LM slave node
+      for (int l=0;l<mastersize;++l)
+      {
+        int mgid = mntscurr->first;
+        ++mntscurr;
+
+        // Mortar matrix M derivatives
+        std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivDltl()[mgid];
+        std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivD()[mgid];
+
+        int mapsize = (int)(thismderivnts.size());
+
+        std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          thismderivmortar[mcolcurr->first] += (mcolcurr->second);
+          ++mcolcurr;
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderivnts.end())
+          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+      }
+    }
+
+    //-------------------------------------------------------------------------------------
+    // store M deriv
+    {
+      // Mortar M derivatives
+      std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivMltl();
+
+      // get sizes and iterator start
+      int mastersize = (int)mntsderiv.size();
+      std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
+
+      /********************************************** LinMMatrix **********/
+      // loop over all master nodes in the DerivM-map of the current LM slave node
+      for (int l=0;l<mastersize;++l)
+      {
+        int mgid = mntscurr->first;
+        ++mntscurr;
+
+        // Mortar matrix M derivatives
+        std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivMltl()[mgid];
+        std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivM()[mgid];
+
+        int mapsize = (int)(thismderivnts.size());
+
+        std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          thismderivmortar[mcolcurr->first] += (mcolcurr->second);
+          ++mcolcurr;
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderivnts.end())
+          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+      }
+    }
+  }// end node loop
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  post evaluate to scale calculated terms                 farah 02/16 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
 {
-  // TODO introduce flaf for nonsmooth contact
-  if(false)
+  // nonsmooth contact
+  if(nonSmoothContact_)
   {
     //1. scale all terms and linearizations
-    ScaleTerms();
+//    ScaleTerms();
 
-    //2. add scale linearization itself
+    // store lts into mortar data container
+    StoreLTSvalues();
+
+    // store ltl into mortar data container
+    StoreLTLvalues();
+
+    // store nts into mortar data container
+    StoreNTSvalues();
   }
+  // node assemble of terms
   else
   {
-    // nothing to do for ordinary mortar contact
+    // decide which type of coupling should be evaluated
+    INPAR::MORTAR::AlgorithmType algo =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+
+    // smooth contact
+    switch(algo)
+    {
+    //*********************************
+    // Mortar Coupling (STS)    (2D/3D)
+    // Gauß-Point-To-Segment (GPTS)
+    //*********************************
+    case INPAR::MORTAR::algorithm_mortar:
+    case INPAR::MORTAR::algorithm_gpts:
+    {
+      // already stored
+      return;
+      break;
+    }
+    //*********************************
+    // Line-to-Segment Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_lts:
+    {
+      // store lts into mortar data container
+      StoreLTSvalues();
+      break;
+    }
+    //*********************************
+    // Node-to-Segment Coupling (2D/3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_nts:
+    {
+      // store nts into mortar data container
+      StoreNTSvalues();
+      break;
+    }
+    //*********************************
+    // line-to-line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_ltl:
+    {
+      StoreLTSvalues();
+      break;
+    }
+    //*********************************
+    // Node-to-Line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_ntl:
+    {
+      dserror("ERROR: not yet implemented!");
+      break;
+    }
+    //*********************************
+    // Segment-to-Line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_stl:
+    {
+      // store lts into mortar data container
+      StoreLTSvalues();
+      break;
+    }
+    //*********************************
+    // Default case
+    //*********************************
+    default:
+    {
+      dserror("ERROR: Unknown discr. type for constraints!");
+      break;
+    }
+    }
   }
 
   // TODO: maybe we can remove this debug functionality
@@ -1456,15 +2031,42 @@ void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  scale calculated entries for nts, mortar etc...         farah 02/16 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::ScaleTerms()
 {
+  if(Dim()==2)
+    ScaleTerms2D();
+  else if(Dim() == 3)
+    ScaleTerms3D();
+  else
+    dserror("ERROR: Wrong dimension!");
+}
+
+/*----------------------------------------------------------------------*
+ |  scale calculated entries for nts, mortar etc...         farah 02/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ScaleTerms2D()
+{
   // create iterators for data types
   typedef GEN::pairedvector<int,double>::const_iterator CI;
-  typedef std::map<int,double>::const_iterator CImap;
+  typedef std::map<int,double>::const_iterator          CImap;
+
+  // loop over all possibly non smooth nodes
+  // safety
+  for(int i=0; i<smoothnodes_->NumMyElements();++i)
+  {
+    int gid = smoothnodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // get scale factor alpha
+    if(cnode->CoData().GetAlphaN()>0.0)
+      dserror("Alpha value is only defined for nonsmooth nodes!");
+  }
 
   // loop over all possibly non smooth nodes
   for(int i=0; i<nonsmoothnodes_->NumMyElements();++i)
@@ -1475,29 +2077,385 @@ void CONTACT::CoInterface::ScaleTerms()
       dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    // get scale factor alpha
-    double alpha = cnode->CoData().GetAlphaN();
+    // check if integration is done
+    if (cnode->MoData().GetD().size()<1)
+      continue;
 
-    // scale D matrix entries for mortar data
-    for (CI p=cnode->MoData().GetD().begin();p!=cnode->MoData().GetD().end();++p)
-      cnode->MoData().GetD()[p->first] = alpha*(p->second);
+    // ############################################################
+    //                   create aux terms
+    // ############################################################
+    std::map<int, double> derivg_sts =
+        cnode->CoData().GetDerivG();
+
+    std::map<int, std::map<int, double> >derivm_sts =
+        cnode->CoData().GetDerivM();
+
+    std::map<int, std::map<int, double> > derivd_sts =
+        cnode->CoData().GetDerivD();
+
+    double g_sts = cnode->CoData().Getg();
+
+    std::map<int, double> m_sts =
+        cnode->MoData().GetM();
+
+    GEN::pairedvector<int, double> d_sts =
+        cnode->MoData().GetD();
+
+    // ############################################################
+    //                   scale mortar terms:
+    // ############################################################
+    {
+      // get scale factor alpha
+      double alpha = cnode->CoData().GetAlphaN();
+      if(alpha<0.0)
+        dserror("Alpha value has to be larger than 0.0!");
+
+      //-------------------------------------------------------------------------------------
+      // scale M matrix entries for mortar data
+      for (CImap p=m_sts.begin();p!=m_sts.end();++p)
+        cnode->MoData().GetM()[p->first] = alpha*(p->second);
+
+      //-------------------------------------------------------------------------------------
+      // scale weighted gap
+      cnode->CoData().Getg() = alpha * g_sts;
+
+      //-------------------------------------------------------------------------------------
+      // scale M deriv
+      {
+        // Mortar M derivatives
+        std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
+
+        // get sizes and iterator start
+        int mastersize = (int)mderiv.size();
+        std::map<int,std::map<int,double> >::iterator mcurr = mderiv.begin();
+
+        /********************************************** LinMMatrix **********/
+        // loop over all master nodes in the DerivM-map of the current LM slave node
+        for (int l=0;l<mastersize;++l)
+        {
+          int mgid = mcurr->first;
+          ++mcurr;
+
+          // Mortar matrix M derivatives
+          std::map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+          std::map<int,double>&auxderiv   = derivm_sts[mgid];
+
+          int mapsize = (int)(thismderiv.size());
+
+          // inner product M_{jl,c} * z_j for index j
+          for (int prodj=0;prodj<Dim();++prodj)
+          {
+            std::map<int,double>::iterator mcolcurr    = thismderiv.begin();
+            std::map<int,double>::iterator mcolcurraux = auxderiv.begin();
+
+            // loop over all directional derivative entries
+            for (int c=0;c<mapsize;++c)
+            {
+              mcolcurr->second = alpha * (mcolcurraux->second);
+              ++mcolcurr;
+            }
+
+            // check for completeness of DerivM-Derivatives-iteration
+            if (mcolcurr!=thismderiv.end())
+              dserror("ERROR: ScaleTerms: Not all derivative entries of DerivM considered!");
+          }
+        }
+      }
+
+      //-------------------------------------------------------------------------------------
+      // scale alpha lin TODO check this
+      {
+        for (CI p=cnode->CoData().GetAlpha().begin();p!=cnode->CoData().GetAlpha().end();++p)
+        {
+          for (CImap pp=m_sts.begin();pp!=m_sts.end();++pp)
+          {
+            (cnode->CoData().GetDerivM()[pp->first])[p->first] += (p->second) * (pp->second);
+          }
+        }
+      }
+
+      //-------------------------------------------------------------------------------------
+      // scale gap derivative entries for mortar data
+      for (CImap p=derivg_sts.begin();p!=derivg_sts.end();++p)
+        cnode->CoData().GetDerivG()[p->first] = (p->second)*alpha;
+
+      //-------------------------------------------------------------------------------------
+      // scale gap derivative with lin alpha entries for mortar data
+      for (CI p=cnode->CoData().GetAlpha().begin();p!=cnode->CoData().GetAlpha().end();++p)
+      {
+        cnode->CoData().GetDerivG()[p->first] += g_sts *(p->second);
+      }
+    }// end mortar
+
+    // ############################################################
+    //scale nts terms and add to mortar terms:
+    // ############################################################
+    {
+      // get scale factor alpha
+      double alpha = 1.0 - cnode->CoData().GetAlphaN();
+
+      if(cnode->MoData().GetD().size()>1)
+        dserror("ERROR: D matrix must be diagonal!");
+
+      //-------------------------------------------------------------------------------------
+      double dvalue = d_sts.begin()->second;
+
+      //-------------------------------------------------------------------------------------
+      // scale M matrix entries for mortar data --> Ntilde * D * (1-a)
+      for (CImap p=cnode->MoData().GetMnts().begin();p!=cnode->MoData().GetMnts().end();++p)
+        cnode->MoData().GetM()[p->first] += alpha*(p->second)*dvalue;
+
+      //-------------------------------------------------------------------------------------
+      // scale weighted gap
+      cnode->CoData().Getg() += alpha *  cnode->CoData().Getgnts() * dvalue;
+
+      //-------------------------------------------------------------------------------------
+      // Mortar matrix D and M derivatives
+      std::map<int,std::map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+
+      // get sizes and iterator start
+      int slavesize = (int)dderiv.size();
+      if (slavesize>1)
+        dserror("wrong dlin dimension");
+
+      std::map<int,std::map<int,double> >::iterator scurr = dderiv.begin();
+
+      /********************************************** LinDMatrix **********/
+      // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
+      for (int k=0;k<slavesize;++k)
+      {
+        int sgid = scurr->first;
+        ++scurr;
+
+        DRT::Node* snode = idiscret_->gNode(sgid);
+        if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+
+        // Mortar matrix D derivatives
+        std::map<int,double>& thisdderivD        = derivd_sts[sgid];
+        std::map<int,double>& thismderivmortarM  = cnode->CoData().GetDerivM()[sgid];
+
+        int mapsize = (int)(thisdderivD.size());
+
+        // inner product D_{jk,c} * z_j for index j
+//        for (int prodj=0;prodj<Dim();++prodj)
+//        {
+          std::map<int,double>::iterator scolcurrD = thisdderivD.begin();
+
+          // loop over all directional derivative entries
+          for (int c=0;c<mapsize;++c)
+          {
+            // derivG
+            cnode->CoData().GetDerivG()[scolcurrD->first] += alpha*(scolcurrD->second)*cnode->CoData().Getgnts();
+
+            //derivM with delta D
+            for (CImap p=cnode->MoData().GetMnts().begin();p!=cnode->MoData().GetMnts().end();++p)
+              thismderivmortarM[scolcurrD->first] += alpha*(scolcurrD->second) * p->second;
+            ++scolcurrD;
+          }
+
+          // check for completeness of DerivD-Derivatives-iteration
+          if (scolcurrD!=thisdderivD.end())
+            dserror("ERROR: ScaleTerms: Not all derivative entries of DerivD considered!");
+        //}
+      }
 
 
-    // scale M matrix entries for mortar data
-    for (CImap p=cnode->MoData().GetM().begin();p!=cnode->MoData().GetM().end();++p)
-      cnode->MoData().GetM()[p->first] = alpha*(p->second);
+      //-------------------------------------------------------------------------------------
+      // scale M NTS deriv
+      {
+        // Mortar M derivatives
+        std::map<int,std::map<int,double> >& mntsderiv = cnode->CoData().GetDerivMnts();
 
-    // scale gap derivative entries for mortar data
-    for (CImap p=cnode->CoData().GetDerivG().begin();p!=cnode->CoData().GetDerivG().end();++p)
-      cnode->CoData().GetDerivG()[p->first] = alpha*(p->second);
+        // get sizes and iterator start
+        int mastersize = (int)mntsderiv.size();
+        std::map<int,std::map<int,double> >::iterator mntscurr = mntsderiv.begin();
 
-    // scale weighted gap
-    cnode->CoData().Getg() *= alpha;
+        /********************************************** LinMMatrix **********/
+        // loop over all master nodes in the DerivM-map of the current LM slave node
+        for (int l=0;l<mastersize;++l)
+        {
+          int mgid = mntscurr->first;
+          ++mntscurr;
+
+          // Mortar matrix M derivatives
+          std::map<int,double>&thismderivnts    = cnode->CoData().GetDerivMnts()[mgid];
+          std::map<int,double>&thismderivmortar = cnode->CoData().GetDerivM()[mgid];
+
+          int mapsize = (int)(thismderivnts.size());
+
+          // inner product M_{jl,c} * z_j for index j
+//          for (int prodj=0;prodj<Dim();++prodj)
+//          {
+            std::map<int,double>::iterator mcolcurr = thismderivnts.begin();
+
+            // loop over all directional derivative entries
+            for (int c=0;c<mapsize;++c)
+            {
+              thismderivmortar[mcolcurr->first] += alpha * (mcolcurr->second) * dvalue;
+              ++mcolcurr;
+            }
+
+            // check for completeness of DerivM-Derivatives-iteration
+            if (mcolcurr!=thismderivnts.end())
+              dserror("ERROR: ScaleTerms: Not all derivative entries of DerivM considered!");
+//          }
+        }
+      }
+
+
+      //-------------------------------------------------------------------------------------
+      // scale alpha lin TODO check this
+      {
+        for (CI p=cnode->CoData().GetAlpha().begin();p!=cnode->CoData().GetAlpha().end();++p)
+        {
+          for (CImap pp=cnode->MoData().GetMnts().begin();pp!=cnode->MoData().GetMnts().end();++pp)
+          {
+            (cnode->CoData().GetDerivM()[pp->first])[p->first] -= (p->second) * (pp->second) * dvalue;
+          }
+        }
+      }
+
+      //-------------------------------------------------------------------------------------
+      // scale gap derivative entries for mortar data
+      for (CImap p=cnode->CoData().GetDerivGnts().begin();p!=cnode->CoData().GetDerivGnts().end();++p)
+        cnode->CoData().GetDerivG()[p->first] += alpha*(p->second)*dvalue;
+
+      //-------------------------------------------------------------------------------------
+      // scale gap derivative with lin alpha entries for mortar data
+      for (CI p=cnode->CoData().GetAlpha().begin();p!=cnode->CoData().GetAlpha().end();++p)
+      {
+        cnode->CoData().GetDerivG()[p->first] -= cnode->CoData().Getgnts()* dvalue *(p->second);
+      }
+    }// end scale nts
   }
 
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  protected evaluate routine                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+{
+  // ask if nonsmooth contact is activated!
+  if(nonSmoothContact_)
+  {
+    // 2D: only STS and nts has to be performed
+    if(Dim()==2)
+    {
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pairs)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      EvaluateSTS(mparams_ptr);
+
+      //********************************************************************
+      // 1) perform coupling (find closest point between to lines)
+      // 2) evaluate gap and shape functions at this point
+      // 3) compute directional derivative of entries and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      EvaluateNTS();
+
+      //********************************************************************
+      // NTN is a special case of NTS and an additional implementation is
+      // not required!
+      //********************************************************************
+    }
+    else if(Dim() == 3)
+    {
+      //********************************************************************
+      // TODO: remove this hack!
+      // HACK: LTL is not yet included in nonsmooth contact framework!
+      // However, we want to test the LTL code separately. Thus, the "if"-
+      // statement is included:
+      // decide which type of coupling should be evaluated
+      //********************************************************************
+      INPAR::MORTAR::AlgorithmType algo =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      if(algo == INPAR::MORTAR::algorithm_ltl)
+      {
+        EvaluateLTL();
+        return;
+      }
+
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pairs)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      EvaluateSTS(mparams_ptr);
+
+      //********************************************************************
+      // 1) perform coupling (projection + line clipping edge surface pairs)
+      // 2) integrate Mortar matrices D + M and weighted gap g
+      // 3) compute directional derivative of D + M and g and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      EvaluateLTS();
+
+      //********************************************************************
+      // 1) try to project slave nodes onto master elements
+      // 2) evaluate shape functions at projected positions
+      // 3) compute directional derivative of M and g and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      EvaluateNTS();
+
+      //********************************************************************
+      // 1) perform coupling (find closest point between to lines)
+      // 2) evaluate gap and shape functions at this point
+      // 3) compute directional derivative of entries and store into nodes
+      //    (only for contact setting)
+      //********************************************************************
+      //EvaluateLTL();
+
+      //********************************************************************
+      // NTN is a special case of NTS and an additional implementation is
+      // not required!
+      //********************************************************************
+    }
+    else
+    {
+      dserror("ERROR: Wrong dimension!");
+    }
+  }
+  else
+  {
+    //********************************************************************
+    // call base routine for standard mortar/nts evaluation
+    //********************************************************************
+    MORTAR::MortarInterface::EvaluateCoupling(mparams_ptr);
+  }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check and initialize corner/edge contact                 farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::InitializeCornerEdge()
+{
+  //return if nonsmooth contact is activated
+  if(nonSmoothContact_)
+    return;
+
+  // call base function
+  MORTAR::MortarInterface::InitializeCornerEdge();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  scale calculated entries for nts, mortar etc...         farah 02/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ScaleTerms3D()
+{
+  dserror("ERROR: not yet implemented!");
 }
 
 
@@ -1506,23 +2464,34 @@ void CONTACT::CoInterface::ScaleTerms()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::PrepareNonSmoothContact()
 {
-  // 1. detect non-smooth geometries
-  DetectNonSmoothGeometries();
-
-  // 2. create cpp for non-smooth regions
-  EvaluateCPPNormals();
-
-  // 3. create averged normal for smooth regions
-  EvaluateAveragedNodalNormals();
-
-  // 4. Export nodal normals due to overlap > 1
+  // this is enough for contact without scaling between nts mortar etc.
+  EvaluateNodalNormals();
   ExportNodalNormals();
 
-  // 5. sort out special contac scenarios
-  SpecialContactScenarios();
-
-  // 6. create scaling for nts and mortar for critical nodes
-  ComputeScaling();
+//  // 1. detect non-smooth geometries
+//  // we skip this and assume that this information is provided by the user
+//  DetectNonSmoothGeometries();
+//
+//  // 2. create cpp for non-smooth regions
+//  if(false)
+//    EvaluateCPPEleNormals();
+//  else
+//    EvaluateCPPNodalNormals();
+//
+//  // 3. create averged normal for smooth regions
+//  EvaluateAveragedNodalNormals();
+//
+//  // 4. Export nodal normals due to overlap > 1
+//  ExportNodalNormals();
+//
+//  // 5. sort out special contac scenarios
+//  SpecialContactScenarios();
+//
+//  // 6. create scaling for nts and mortar for critical nodes
+//  ComputeScaling();
+//
+//  // 7. scale normals
+//  ScaleNormals();
 
   // bye bye
   return;
@@ -1592,11 +2561,11 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
 
   // create maps
   nonsmoothnodes_ = LINALG::CreateMap(nonsmoothnodegids,Comm());
-  smoothnodes_ = LINALG::CreateMap(smoothnodegids,Comm());
+  smoothnodes_    = LINALG::CreateMap(smoothnodegids,   Comm());
 
   // debug output
   std::cout << "# nonsmooth nodes: " << nonsmoothnodes_->NumGlobalElements() << std::endl;
-  std::cout << "#    smooth nodes: " << smoothnodes_->NumGlobalElements() << std::endl;
+  std::cout << "#    smooth nodes: " << smoothnodes_->NumGlobalElements()    << std::endl;
 
   // bye bye
   return;
@@ -1606,8 +2575,12 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
 /*----------------------------------------------------------------------*
  |  evaluate closest point normals                          farah 01/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::EvaluateCPPNormals()
+void CONTACT::CoInterface::EvaluateCPPEleNormals()
 {
+  //safety
+  if(nonsmoothnodes_ == Teuchos::null)
+    dserror("ERROR: map of non smooth nodes is wrong!");
+
   // loop over slave nodes
   for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
   {
@@ -1677,10 +2650,157 @@ void CONTACT::CoInterface::EvaluateCPPNormals()
 
 
 /*----------------------------------------------------------------------*
+ |  evaluate closest point normals                          farah 05/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateCPPNodalNormals()
+{
+  std::cout << "<<<<<<<<< ################## >>>>>>>>>>" << std::endl;
+  std::cout << "<<<<<<<<< AVERAGED CPP FIELD >>>>>>>>>>" << std::endl;
+  std::cout << "<<<<<<<<< ################## >>>>>>>>>>" << std::endl;
+
+  dserror("ERROR: not yet ready to use");
+
+//  //safety
+//  if(nonsmoothnodes_ == Teuchos::null)
+//    dserror("ERROR: map of non smooth nodes is wrong!");
+//
+//  // loop over proc's slave nodes of the interface
+//  // use row map and export to column map later
+//  // (use boundary map to include slave side boundary nodes)
+//  for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
+//  {
+//    int gid = MasterColNodes()->GID(i);
+//    DRT::Node* node = idiscret_->gNode(gid);
+//    if (!node)
+//      dserror("ERROR: Cannot find node with gid %", gid);
+//    CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
+//
+//    // build averaged normal at each slave node
+//    mrtrnode->BuildAveragedNormal();
+//  }
+//
+//  // loop over slave nodes
+//  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
+//  {
+//    int gid = nonsmoothnodes_->GID(i);
+//    DRT::Node* node = idiscret_->gNode(gid);
+//    if (!node)
+//      dserror("ERROR: Cannot find node with gid %", gid);
+//    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+//
+//    if (mrtrnode->Owner() != Comm().MyPID())
+//      dserror("ERROR: Node ownership inconsistency!");
+//
+//    // vector with possible contacting master eles/nodes
+//    std::vector<MORTAR::MortarElement*> meles;
+//    std::vector<MORTAR::MortarNode*> mnodes;
+//
+//    // fill vector with possibly contacting meles
+//    FindMEles(*mrtrnode,meles);
+//
+//    // fill vector with possibly contacting mnodes
+//    FindMNodes(*mrtrnode,meles,mnodes);
+//
+//    // Here we have all found master elements for one slave node.
+//    // distance for cpp
+//    double disttoline      = 1e12;
+//    double normaltoline[3] = {0.0, 0.0, 0.0};
+//    std::vector<GEN::pairedvector<int,double> > normaltolineLin(3,1000);
+//
+//    // Now, calculate distance between node and master line
+//    disttoline = ComputeNormalToLineAV(*mrtrnode,meles,normaltoline,normaltolineLin);
+//
+//    // set the normal and its lineratization
+//    SetCPPNormal(*mrtrnode,normaltoline,normaltolineLin);
+//  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate closest point normals                          farah 01/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateCPPNormalsForAll()
+{
+  // loop over slave nodes
+  for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %", gid);
+    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+
+    if (mrtrnode->Owner() != Comm().MyPID())
+      dserror("ERROR: Node ownership inconsistency!");
+
+    // vector with possible contacting master eles/nodes
+    std::vector<MORTAR::MortarElement*> meles;
+    std::vector<MORTAR::MortarNode*> mnodes;
+
+    // fill vector with possibly contacting meles
+    FindMEles(*mrtrnode,meles);
+
+    // fill vector with possibly contacting mnodes
+    FindMNodes(*mrtrnode,meles,mnodes);
+
+    // Here we have all found master elements for one slave node.
+    // distance for cpp
+    double disttosurface = 1e12;
+    double disttoline    = 1e12;
+    double disttonode    = 1e12;
+
+    double normaltosurface[3] = {0.0, 0.0, 0.0};
+    double normaltoline[3]    = {0.0, 0.0, 0.0};
+    double normaltonode[3]    = {0.0, 0.0, 0.0};
+
+    std::vector<GEN::pairedvector<int,double> > normaltosurfaceLin(3,1000);
+    std::vector<GEN::pairedvector<int,double> > normaltolineLin(3,1000);
+    std::vector<GEN::pairedvector<int,double> > normaltonodeLin(3,1000);
+
+    // Now, we try to project the node along the master ele normal
+    //disttosurface = ComputeNormalToSurface(*mrtrnode,meles,normaltosurface);
+
+    // Now, calculate distance between node and master line
+    disttoline = ComputeNormalToLine(*mrtrnode,meles,normaltoline,normaltolineLin);
+
+    // Now, calculate normal between found nodes
+    disttonode = ComputeNormalToNode(*mrtrnode,mnodes,normaltonode,normaltonodeLin);
+
+    // here we have all possible normals and check which is the correct one
+    if(disttosurface<=disttoline and disttosurface<=disttonode)
+    {
+//      std::cout << "Node to Surface" << std::endl;
+      SetCPPNormal(*mrtrnode,normaltosurface,normaltosurfaceLin);
+    }
+    else if(disttoline<=disttonode)
+    {
+//      std::cout << "Node to Line" << std::endl;
+      SetCPPNormal(*mrtrnode,normaltoline,normaltolineLin);
+    }
+    else
+    {
+//      std::cout << "Node to Node" << std::endl;
+//        std::cout << "normal[0]= " << -normaltonode[0] << " normal[1]= " << -normaltonode[1] << " normal[2]= " << -normaltonode[2] << std::endl;
+//      dynamic_cast<CoNode*>(node)->BuildAveragedNormal();
+      SetCPPNormal(*mrtrnode,normaltonode,normaltonodeLin);
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                          farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateAveragedNodalNormals()
 {
+  //safety
+  if(smoothnodes_ == Teuchos::null)
+    dserror("ERROR: map of non smooth nodes is wrong!");
+
   // loop over proc's slave nodes of the interface
   // use row map and export to column map later
   // (use boundary map to include slave side boundary nodes)
@@ -1705,7 +2825,26 @@ void CONTACT::CoInterface::EvaluateAveragedNodalNormals()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::SpecialContactScenarios()
 {
-  // coming soon...
+  // 1. dropping edge:
+  //======================================================
+  // loop over non smooth slave nodes
+//  for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
+//  {
+//    int gid = SlaveRowNodes()->GID(i);
+//    DRT::Node* node = idiscret_->gNode(gid);
+//    if (!node)
+//      dserror("ERROR: Cannot find node with gid %", gid);
+//    CoNode* cnode = dynamic_cast<CoNode*>(node);
+//
+//    // check orientation of the two normals
+//    double dot = cnode->MoData().n()[0] * cnode->MoData().nold()[0] + cnode->MoData().n()[1] * cnode->MoData().nold()[1] + cnode->MoData().n()[2] * cnode->MoData().nold()[2];
+//    std::cout << "++++++++++++++++++++++++++++++++++++++++dot= " << dot << std::endl;
+//    if (dot < -0.01)//-1.0e-12)
+//    {
+//      dserror("stop");
+//      cnode->BuildAveragedNormal();
+//    }
+//  }
 
   return;
 }
@@ -1716,69 +2855,36 @@ void CONTACT::CoInterface::SpecialContactScenarios()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::ComputeScaling()
 {
-  // TODO: meaningfull values?!?!?
-//  const double rs = 0.0;
-//  const double rp = 0.05;
+  if(Dim()==2)
+    ComputeScaling2D();
+  else if(Dim() == 3)
+    ComputeScaling3D();
+  else
+    dserror("ERROR: Wrong dimension!");
 
-  //======================================================
-  // loop over non smooth slave nodes
-  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
-  {
-    int gid = nonsmoothnodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+  return;
+}
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: Node ownership inconsistency!");
 
-    // cast to cnode
-    std::vector<GEN::pairedvector<int,double> > vecalpha(1,1000);
+/*----------------------------------------------------------------------*
+ |  calc scaling for hybrid formulation                     farah 01/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ComputeScaling2D()
+{
+  // define iterator for linerization
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-    // clear old data
-    cnode->CoData().GetAlpha().clear();
+  // angle in degree
+  const double minAngle = IParams().get<double>("HYBRID_ANGLE_MIN");
+  const double maxAngle = IParams().get<double>("HYBRID_ANGLE_MAX");
 
-    // get cpp normal
-    double normalcpp[3] = {0.0, 0.0, 0.0};
-    normalcpp[0] = cnode->MoData().n()[0];
-    normalcpp[1] = cnode->MoData().n()[1];
-    normalcpp[2] = cnode->MoData().n()[2];
+  // check
+  if(minAngle<0.0 or maxAngle < 0.0)
+    dserror("ERROR: invalid hybrid angle!");
 
-    // NTS evtl...
-    // calc element normal
-    const int eles = cnode->NumElement();
-    double gR = 1e12;
-    for (int i = 0; i<eles; ++i)
-    {
-      int loc = 0;
-      CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[i]);
-      Epetra_SerialDenseMatrix elens(6,1);
-      seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
-
-      double normalsele[3] = {0.0, 0.0, 0.0};
-      normalsele[0] = elens(0,0) / elens(4,0);
-      normalsele[1] = elens(1,0) / elens(4,0);
-      normalsele[2] = elens(2,0) / elens(4,0);
-
-      double dotcpp = normalsele[0] * normalcpp[0] + normalsele[1] * normalcpp[1] + normalsele[2] * normalcpp[2];
-      double Rl = abs(dotcpp - 1.0); // 0.0 for perfect mortar setting; 1.0 for perfect nts
-
-      if(Rl<gR)
-        gR=Rl;
-    }
-
-//    double alpha = 0.0;
-//    if(gR<=rs)
-//      alpha = 1.0;
-//    else if(gR>rs and gR<rp)
-//      alpha=0.5*(1.0 - cos(3.141592*(gR-rp)/(rs-rp)));
-//    else
-//      alpha = 0.0;
-
-    // store to data container
-    cnode->CoData().GetAlphaN() = 0.0;//alpha;
-  }
+  // angle in rad
+  const double alphaMin = minAngle*(3.141592/180.0); // min angle in rad
+  const double alphaMax = maxAngle*(3.141592/180.0); // max angle in rad
 
   //======================================================
   // loop over smooth slave nodes
@@ -1794,11 +2900,476 @@ void CONTACT::CoInterface::ComputeScaling()
       dserror("ERROR: Node ownership inconsistency!");
 
     // MORTAR
-    cnode->CoData().GetAlphaN() = 1.0;
+    cnode->CoData().GetAlphaN() = -1.0;
   }
+
+  //======================================================
+  // loop over non smooth slave nodes
+  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
+  {
+    int gid = nonsmoothnodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %", gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: Node ownership inconsistency!");
+
+    // clear old data
+    if(cnode->CoData().GetAlpha().size() == 0)
+      cnode->CoData().GetAlpha().resize(1000);
+
+    // get cpp normal
+    double normalcpp[3] = {0.0, 0.0, 0.0};
+    normalcpp[0] = cnode->MoData().n()[0];
+    normalcpp[1] = cnode->MoData().n()[1];
+    normalcpp[2] = cnode->MoData().n()[2];
+
+    // NTS evtl...
+    // calc element normal
+    const int eles = cnode->NumElement();
+    if(eles>2)
+      dserror("ERROR: element number to high!");
+
+    // calc smallest angle between cpp and nele
+    double gR = 1e12;
+    GEN::pairedvector<int,double> ddotcppfinal(1000);
+
+    for (int n = 0; n<eles; ++n)
+    {
+      // create element normal:
+      int loc = 0;
+      CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[n]);
+      Epetra_SerialDenseMatrix elens(6,1);
+      seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
+
+      double normalsele[3] = {0.0, 0.0, 0.0};
+      normalsele[0] = elens(0,0) / elens(4,0);
+      normalsele[1] = elens(1,0) / elens(4,0);
+      normalsele[2] = elens(2,0) / elens(4,0);
+
+      // calculate angle between cpp and elenormal
+      double dotcpp = normalsele[0] * normalcpp[0] + normalsele[1] * normalcpp[1] + normalsele[2] * normalcpp[2];
+      double Rl = acos(dotcpp); // current angle in rad
+
+      if(Rl<0.0)
+        dserror("ERROR: angle less than 0.0");
+
+      //======================================================
+      // lin angle
+      // lin Rl
+      double fac = (-1.0/(sqrt(1.0-dotcpp*dotcpp)));
+
+      // init lin
+      GEN::pairedvector<int,double> ddotcpp(1000);
+      std::vector<GEN::pairedvector<int,double> > dnele(3,1000);
+
+      // deriv unit normal!
+      seleaux->DerivNormalAtNode(cnode->Id(),loc,elens,dnele);
+
+      // linearization of cpp normal
+      for (CI p=cnode->CoData().GetDerivN()[0].begin();p!=cnode->CoData().GetDerivN()[0].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalsele[0];
+      for (CI p=cnode->CoData().GetDerivN()[1].begin();p!=cnode->CoData().GetDerivN()[1].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalsele[1];
+      for (CI p=cnode->CoData().GetDerivN()[2].begin();p!=cnode->CoData().GetDerivN()[2].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalsele[2];
+
+      // linearization of ele normal
+      for (CI p=dnele[0].begin();p!=dnele[0].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalcpp[0];
+      for (CI p=dnele[1].begin();p!=dnele[1].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalcpp[1];
+      for (CI p=dnele[2].begin();p!=dnele[2].end();++p)
+        (ddotcpp)[p->first] += (p->second) * normalcpp[2];
+
+      // multiply with fac: -asin(dotcpp)
+      for (CI p=ddotcpp.begin();p!=ddotcpp.end();++p)
+        (ddotcpp)[p->first] = fac * (p->second);
+
+
+      // safe smaller angle and linearization
+      if(Rl<gR)
+      {
+        gR=Rl;
+        ddotcppfinal = ddotcpp;
+      }
+    }// end ele loop
+
+
+    double alpha = 0.0;
+    if(gR<=alphaMin)
+    {
+      alpha = 1.0;
+    }
+    else if(gR>alphaMin and gR<alphaMax)
+    {
+      std::cout << "current transition angle in degree = " << gR*(180.0/3.141592) << std::endl;
+      alpha=0.5*(1.0 - cos(3.141592*(gR-alphaMax)/(alphaMin-alphaMax)));
+      std::cout << "alpha = " << alpha << std::endl;
+    }
+    else
+    {
+      alpha = 0.0;
+    }
+
+    // store to data container
+    cnode->CoData().GetAlphaN() = alpha;
+
+    //======================================================
+    // lin alpha:
+    if(gR<=alphaMin)
+    {
+      // nothing: pure mortar
+    }
+    // hybrid linearization:
+    else if (gR>alphaMin and gR<alphaMax)
+    {
+      const double fac = (3.141592/(2.0*(alphaMin-alphaMax))) * sin(3.141592*(gR-alphaMax)/(alphaMin-alphaMax));
+      for (CI p=ddotcppfinal.begin();p!=ddotcppfinal.end();++p)
+        (cnode->CoData().GetAlpha())[p->first] = fac * (p->second);
+    }
+    else
+    {
+      // nothing: pure nts
+    }
+  }// end node loop
 
   // bye bye
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calc scaling for hybrid formulation                     farah 01/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ComputeScaling3D()
+{
+  dserror("ERROR: function not yet implemented!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  scale normals for hybrid formulation                    farah 05/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ScaleNormals()
+{
+  if(Dim()==2)
+    ScaleNormals2D();
+  else if(Dim() == 3)
+    ScaleNormals3D();
+  else
+    dserror("ERROR: Wrong dimension!");
+}
+
+/*----------------------------------------------------------------------*
+ |  scale normals for hybrid formulation                    farah 05/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ScaleNormals2D()
+{
+  // define iterator for paired vector
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
+
+  //======================================================
+  // loop over non smooth slave nodes
+  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
+  {
+    int gid = nonsmoothnodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %", gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: Node ownership inconsistency!");
+
+    // get cpp normal
+    double normalcpp[3]  = {0.0, 0.0, 0.0};
+
+    // get cpp normal lin.
+    std::vector<GEN::pairedvector<int,double> > dcppaux(3,1000);
+
+    dcppaux = cnode->CoData().GetDerivN();
+    normalcpp[0] = cnode->MoData().n()[0];
+    normalcpp[1] = cnode->MoData().n()[1];
+    normalcpp[2] = cnode->MoData().n()[2];
+
+    if(cnode->Active())
+    {
+      std::cout << "cnode->CoData().GetAlphaN()] = " << cnode->CoData().GetAlphaN()  << std::endl;
+      std::cout << "normalcpp[0] = " << normalcpp[0]  << std::endl;
+      std::cout << "normalcpp[1] = " << normalcpp[1]  << std::endl;
+      std::cout << "normalcpp[2] = " << normalcpp[2]  << std::endl;
+    }
+
+
+    // calc element normal
+    const int eles = cnode->NumElement();
+    if(eles>2)
+      dserror("ERROR: element number to high!");
+
+    double gR = 1e12;
+    int localid=-1;
+
+    for (int n = 0; n<eles; ++n)
+    {
+      // create element normal:
+      int loc = 0;
+      CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[n]);
+      Epetra_SerialDenseMatrix elens(6,1);
+      seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
+
+      double normalsele[3] = {0.0, 0.0, 0.0};
+      normalsele[0] = elens(0,0) / elens(4,0);
+      normalsele[1] = elens(1,0) / elens(4,0);
+      normalsele[2] = elens(2,0) / elens(4,0);
+
+      // calculate angle between cpp and elenormal
+      double dotcpp = normalsele[0] * normalcpp[0] + normalsele[1] * normalcpp[1] + normalsele[2] * normalcpp[2];
+      double Rl = acos(dotcpp); // current angle in rad
+
+      if(cnode->Active())
+      {
+        std::cout << "normalsele[0] = " << normalsele[0]  << std::endl;
+        std::cout << "normalsele[1] = " << normalsele[1]  << std::endl;
+        std::cout << "normalsele[2] = " << normalsele[2]  << std::endl;
+
+        std::cout << "dotcpp= " << dotcpp << std::endl;
+        std::cout << "Rl= " << Rl << std::endl;
+      }
+
+
+      if(Rl<0.0)
+        dserror("ERROR: angle less than 0.0");
+
+
+
+      // safe smaller angle and linearization
+      if(Rl<gR)
+      {
+        gR=Rl;
+        localid = n;
+      }
+    }// end ele loop
+
+    // create new normals:
+    const double alpha = cnode->CoData().GetAlphaN();
+
+    // create element normal:
+    int loc = 0;
+    CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[localid]);
+    Epetra_SerialDenseMatrix elens(6,1);
+    seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
+
+    double normalsele[3] = {0.0, 0.0, 0.0};
+    normalsele[0] = elens(0,0) / elens(4,0);
+    normalsele[1] = elens(1,0) / elens(4,0);
+    normalsele[2] = elens(2,0) / elens(4,0);
+
+    cnode->MoData().n()[0] = alpha * normalsele[0] + (1.0 - alpha) * normalcpp[0];
+    cnode->MoData().n()[1] = alpha * normalsele[1] + (1.0 - alpha) * normalcpp[1];
+    cnode->MoData().n()[2] = alpha * normalsele[2] + (1.0 - alpha) * normalcpp[2];
+
+
+    // deriv unit normal!
+    std::vector<GEN::pairedvector<int,double> > dnele(3,1000);
+    seleaux->DerivNormalAtNode(cnode->Id(),loc,elens,dnele);
+
+    cnode->CoData().GetDerivN()[0].clear();
+    cnode->CoData().GetDerivN()[1].clear();
+    cnode->CoData().GetDerivN()[2].clear();
+
+    // lin ele normal * alpha
+    for (CI p=dnele[0].begin();p!=dnele[0].end();++p)
+      (cnode->CoData().GetDerivN()[0])[p->first] += alpha * (p->second);
+    for (CI p=dnele[1].begin();p!=dnele[1].end();++p)
+      (cnode->CoData().GetDerivN()[1])[p->first] += alpha * (p->second);
+    for (CI p=dnele[2].begin();p!=dnele[2].end();++p)
+      (cnode->CoData().GetDerivN()[2])[p->first] += alpha * (p->second);
+
+    // lin cpp normal * alpha
+    for (CI p=dcppaux[0].begin();p!=dcppaux[0].end();++p)
+      (cnode->CoData().GetDerivN()[0])[p->first] += (1.0 -alpha) * (p->second);
+    for (CI p=dcppaux[1].begin();p!=dcppaux[1].end();++p)
+      (cnode->CoData().GetDerivN()[1])[p->first] += (1.0 -alpha) * (p->second);
+    for (CI p=dcppaux[2].begin();p!=dcppaux[2].end();++p)
+      (cnode->CoData().GetDerivN()[2])[p->first] += (1.0 -alpha) * (p->second);
+
+    // lin alpha
+    for (CI p=cnode->CoData().GetAlpha().begin();p!=cnode->CoData().GetAlpha().end();++p)
+    {
+      (cnode->CoData().GetDerivN()[0])[p->first] += (p->second) * (normalsele[0] - normalcpp[0]);
+      (cnode->CoData().GetDerivN()[1])[p->first] += (p->second) * (normalsele[1] - normalcpp[1]);
+      (cnode->CoData().GetDerivN()[2])[p->first] += (p->second) * (normalsele[2] - normalcpp[2]);
+    }
+
+    // 2D Tangent!
+    if (cnode->NumDof()==2)
+    {
+      // simple definition for txi
+      cnode->CoData().txi()[0] = -cnode->MoData().n()[1];
+      cnode->CoData().txi()[1] =  cnode->MoData().n()[0];
+      cnode->CoData().txi()[2] =  0.0;
+
+      // teta is z-axis
+      cnode->CoData().teta()[0] = 0.0;
+      cnode->CoData().teta()[1] = 0.0;
+      cnode->CoData().teta()[2] = 1.0;
+
+      cnode->CoData().GetDerivTxi()[0].clear();
+      cnode->CoData().GetDerivTxi()[1].clear();
+      cnode->CoData().GetDerivTxi()[2].clear();
+
+
+      for (CI p=cnode->CoData().GetDerivN()[1].begin();p!=cnode->CoData().GetDerivN()[1].end();++p)
+        (cnode->CoData().GetDerivTxi()[0])[p->first] -= (p->second);
+      for (CI p=cnode->CoData().GetDerivN()[0].begin();p!=cnode->CoData().GetDerivN()[0].end();++p)
+        (cnode->CoData().GetDerivTxi()[1])[p->first] += (p->second);
+    }
+    else
+      dserror("ERROR: only 2D");
+
+
+
+    double length = sqrt(cnode->MoData().n()[0] *cnode->MoData().n()[0] +cnode->MoData().n()[1]*cnode->MoData().n()[1] + cnode->MoData().n()[2]*cnode->MoData().n()[2]);
+
+    if(cnode->Active())
+    {
+      std::cout << "cnode->MoData().n()[0]= " << cnode->MoData().n()[0] << std::endl;
+      std::cout << "cnode->MoData().n()[1]= " << cnode->MoData().n()[1] << std::endl;
+      std::cout << "cnode->MoData().n()[2]= " << cnode->MoData().n()[2] << std::endl;
+      std::cout << "length= " << length << std::endl;
+    }
+
+
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  scale normals for hybrid formulation                    farah 05/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ScaleNormals3D()
+{
+  dserror("ERROR: not yet implemented!");
+}
+
+
+/*----------------------------------------------------------------------*
+ |  cpp to line based on averaged nodal normal field        farah 05/16 |
+ *----------------------------------------------------------------------*/
+double CONTACT::CoInterface::ComputeNormalToLineAV(
+    MORTAR::MortarNode& mrtrnode,
+    std::vector<MORTAR::MortarElement*> meles,
+    double* normal,
+    std::vector<GEN::pairedvector<int,double> >& normaltolineLin)
+{
+  const double tol = 1e-8;
+
+  // 2D case
+  if (Dim()==2)
+  {
+    int count = 0;
+
+    typedef GEN::pairedvector<int,double>::const_iterator CI;
+
+    // distance between node and surface
+    double gdist = 1e12;
+    double gnormal[3] = {0.0, 0.0, 0.0};
+    std::vector<GEN::pairedvector<int,double> > glin(3,1000);
+
+    // loop over found eles
+    for (size_t ele = 0; ele< meles.size();++ele)
+    {
+      double xi[2] = {0.0 , 0.0};
+      double dist = 1e12;
+      double auxnormal[3] = {0.0, 0.0, 0.0};
+      std::vector<GEN::pairedvector<int,double> > auxlin(3,1000);
+
+      // perform CPP to find normals
+      MORTAR::MortarProjector::Impl(*meles[ele])->ProjectSNodeByMNodalNormalLin(
+          mrtrnode,
+          *meles[ele],
+          xi,
+          auxnormal,
+          dist,
+          auxlin);
+
+      // check if found parameter space coordinate is within element domain
+      if(meles[ele]->Shape()  == DRT::Element::line2 or
+          meles[ele]->Shape() == DRT::Element::line3)
+      {
+        if(-1.0-tol>xi[0] or xi[0]>1.0+tol)
+          continue;
+      }
+      else
+      {
+        dserror("ERROR: Unknown ele type!");
+      }
+
+      // check if this is the closest distance
+      // and average between these normals
+      if (dist < 1e11)
+      {
+        if(count == 0)
+          count = 1;
+
+        if(abs(dist-gdist)<1e-4)
+        {
+          count += 1;
+          gnormal[0] = 0.5 * (gnormal[0] + auxnormal[0]);
+          gnormal[1] = 0.5 * (gnormal[1] + auxnormal[1]);
+          gnormal[2] = 0.5 * (gnormal[2] + auxnormal[2]);
+
+          for(int j = 0; j<Dim() ;++j)
+            for (CI p=glin[j].begin();p!=glin[j].end();++p)
+              (normaltolineLin[j])[p->first] += 0.5*(p->second);
+
+          for(int j = 0; j<Dim() ;++j)
+            for (CI p=auxlin[j].begin();p!=auxlin[j].end();++p)
+              (normaltolineLin[j])[p->first] += 0.5*(p->second);
+
+          break;
+        }
+        else
+        {
+          if (dist < gdist)
+          {
+            count = 1;
+            gdist = dist;
+            gnormal[0] = auxnormal[0];
+            gnormal[1] = auxnormal[1];
+            gnormal[2] = auxnormal[2];
+            glin = auxlin;
+          }
+        }
+      }
+
+    }
+
+    // get the cpp normal
+    normal[0] = gnormal[0];
+    normal[1] = gnormal[1];
+    normal[2] = gnormal[2];
+
+    if(count < 2)
+      normaltolineLin = glin;
+
+    return gdist;
+  }
+  // 3D case
+  else if(Dim()==3)
+  {
+    return 1e12;
+    dserror("ERROR: Not yet implemented!");
+  }
+
+
+  // default
+  return -1.0;
 }
 
 
@@ -1843,7 +3414,7 @@ double CONTACT::CoInterface::ComputeNormalToLine(
           auxlin);
 
       // check if found parameter space coordinate is within element domain
-      if(meles[ele]->Shape() == DRT::Element::line2 or
+      if(meles[ele]->Shape()  == DRT::Element::line2 or
           meles[ele]->Shape() == DRT::Element::line3)
       {
         if(-1.0-tol>xi[0] or xi[0]>1.0+tol)
@@ -1860,13 +3431,9 @@ double CONTACT::CoInterface::ComputeNormalToLine(
         if(count == 0)
           count = 1;
 
-//        std::cout << "dist= " << dist << "   gdist= " << gdist << std::endl;
-
         if(abs(dist-gdist)<1e-4)
         {
           count += 1;
-//          std::cout << "2 equally long normals found!" << std::endl;
-
           gnormal[0] = 0.5 * (gnormal[0] + auxnormal[0]);
           gnormal[1] = 0.5 * (gnormal[1] + auxnormal[1]);
           gnormal[2] = 0.5 * (gnormal[2] + auxnormal[2]);
@@ -2107,6 +3674,7 @@ void CONTACT::CoInterface::SetCPPNormal(
 {
   CoNode& cnode = dynamic_cast<CoNode&>(snode);
 
+  // negative sign because it is a master normal!
   cnode.MoData().n()[0] = -normal[0];
   cnode.MoData().n()[1] = -normal[1];
   cnode.MoData().n()[2] = -normal[2];
@@ -2553,6 +4121,595 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type segment-to-line coupl             farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateSTL()
+{
+  // check
+  if(Dim() == 2)
+    dserror("ERROR: LTS algorithm only for 3D simulations!");
+
+  // counter
+  int count = 0;
+
+  // loop over slave elements
+  for(int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1)
+      dserror("ERROR: Cannot find slave element with gid %", gid1);
+    CoElement* selement = dynamic_cast<CoElement*>(ele1);
+
+    // guarantee uniquness
+    std::set<std::pair<int,int> > donebefore;
+
+    // loop over found meles
+    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+    {
+      int gid2 = selement->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2)
+        dserror("ERROR: Cannot find master element with gid %", gid2);
+      CoElement* melement = dynamic_cast<CoElement*>(ele2);
+
+      if(melement->Shape() == DRT::Element::quad4)
+      {
+        for(int j = 0; j< 4 ; ++j)
+        {
+          int nodeIds[2]  = {0,0};
+          int nodeLIds[2] = {0,0};
+
+          if(j == 0)
+          {
+            nodeIds[0] = melement->NodeIds()[0];
+            nodeIds[1] = melement->NodeIds()[1];
+
+            nodeLIds[0] = 0;
+            nodeLIds[1] = 1;
+          }
+          else if(j == 1)
+          {
+            nodeIds[0] = melement->NodeIds()[1];
+            nodeIds[1] = melement->NodeIds()[2];
+
+            nodeLIds[0] = 1;
+            nodeLIds[1] = 2;
+          }
+          else if(j == 2)
+          {
+            nodeIds[0] = melement->NodeIds()[2];
+            nodeIds[1] = melement->NodeIds()[3];
+
+            nodeLIds[0] = 2;
+            nodeLIds[1] = 3;
+          }
+          else if(j == 3)
+          {
+            nodeIds[0] = melement->NodeIds()[3];
+            nodeIds[1] = melement->NodeIds()[0];
+
+            nodeLIds[0] = 3;
+            nodeLIds[1] = 0;
+          }
+
+          //create pair
+          std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+          std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+          // check if processed before
+          std::set<std::pair<int,int> >::iterator iter  = donebefore.find(actIDs);
+          std::set<std::pair<int,int> >::iterator itertw= donebefore.find(actIDstw);
+
+           // if not then create ele
+           if (iter == donebefore.end() and itertw == donebefore.end())
+           {
+             // add to set of processed nodes
+             donebefore.insert(actIDs);
+             donebefore.insert(actIDstw);
+
+             // create line ele:
+             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                         new MORTAR::MortarElement(
+                             j,
+                             melement->Owner(),
+                             DRT::Element::line2,
+                             2,
+                             nodeIds,
+                             false));
+
+             // get nodes
+             DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]],melement->Nodes()[nodeLIds[1]]};
+             lineEle->BuildNodalPointers(nodes);
+
+             // init data container for dual shapes
+             lineEle->InitializeDataContainer();
+
+             // create coupling object
+             LineCoupling3d coup(
+                 *idiscret_,
+                 3,
+                 IParams(),
+                 *melement,
+                 lineEle,
+                 *selement,
+                 LineCoupling3d::stl);
+
+             // perform evaluate!
+             coup.EvaluateCoupling();
+
+             // count for safety
+             count++;
+           }
+        } // end edge loop
+      }
+      else
+        dserror("ERROR: LTS only for quad4!");
+
+    }// end found mele loop
+  }// end slave ele loop
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type line-to-segment coupl             farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateLTS()
+{
+  // check
+  if(Dim() == 2)
+    dserror("ERROR: LTS algorithm only for 3D simulations!");
+
+  // counter
+  int count = 0;
+
+  // guarantee uniquness
+  std::set<std::pair<int,int> > donebefore;
+
+  // loop over slave elements
+  for(int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1)
+      dserror("ERROR: Cannot find slave element with gid %", gid1);
+    CoElement* selement = dynamic_cast<CoElement*>(ele1);
+
+    // empty vector of master element pointers
+    std::vector<Teuchos::RCP<MORTAR::MortarElement> >  lineElements;
+    std::vector<CoElement* > meleElements;
+
+    // compute slave normal
+    double slaveN[3] = {0.0, 0.0, 0.0};
+    double loccenter[2] = { 0.0, 0.0 };
+
+    DRT::Element::DiscretizationType dt = selement->Shape();
+    if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+    {
+      loccenter[0] = 1.0 / 3.0;
+      loccenter[1] = 1.0 / 3.0;
+    }
+    else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8
+          || dt == DRT::Element::quad9)
+    {
+      loccenter[0] = 0.0;
+      loccenter[1] = 0.0;
+    }
+    else
+      dserror("ERROR: AuxiliaryPlane called for unknown element type");
+
+    // we then compute the unit normal vector at the element center
+    selement->ComputeUnitNormalAtXi(loccenter, slaveN);
+
+    // loop over the candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+    {
+      int gid2 = selement->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2)
+        dserror("ERROR: Cannot find master element with gid %", gid2);
+      CoElement* melement = dynamic_cast<CoElement*>(ele2);
+
+      // check orientation
+      // compute slave normal
+      double masterN[3] = {0.0, 0.0, 0.0};
+      double loccenterM[2] = { 0.0, 0.0 };
+
+      DRT::Element::DiscretizationType dt = melement->Shape();
+      if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+      {
+        loccenterM[0] = 1.0 / 3.0;
+        loccenterM[1] = 1.0 / 3.0;
+      }
+      else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8
+            || dt == DRT::Element::quad9)
+      {
+        loccenterM[0] = 0.0;
+        loccenterM[1] = 0.0;
+      }
+      else
+        dserror("ERROR: AuxiliaryPlane called for unknown element type");
+
+      // we then compute the unit normal vector at the element center
+      melement->ComputeUnitNormalAtXi(loccenterM, masterN);
+
+      double scaprod = slaveN[0] * masterN[0] + slaveN[1] * masterN[1] + slaveN[2] * masterN[2];
+
+      // tolerance for line clipping
+      const double sminedge = selement->MinEdgeSize();
+      const double mminedge = melement->MinEdgeSize();
+      const double tol = 0.001 * std::min(sminedge, mminedge);
+
+      if(abs(scaprod)<tol)
+        continue;
+
+      // if orientation okay
+      meleElements.push_back(melement);
+    }
+
+    // no valid maste elements?
+    if(meleElements.size()<1)
+      continue;
+
+    if(selement->Shape() == DRT::Element::quad4)
+    {
+      for(int j = 0; j< 4 ; ++j)
+      {
+        int nodeIds[2]  = {0,0};
+        int nodeLIds[2] = {0,0};
+
+        if(j == 0)
+        {
+          nodeIds[0] = selement->NodeIds()[0];
+          nodeIds[1] = selement->NodeIds()[1];
+
+          nodeLIds[0] = 0;
+          nodeLIds[1] = 1;
+        }
+        else if(j == 1)
+        {
+          nodeIds[0] = selement->NodeIds()[1];
+          nodeIds[1] = selement->NodeIds()[2];
+
+          nodeLIds[0] = 1;
+          nodeLIds[1] = 2;
+        }
+        else if(j == 2)
+        {
+          nodeIds[0] = selement->NodeIds()[2];
+          nodeIds[1] = selement->NodeIds()[3];
+
+          nodeLIds[0] = 2;
+          nodeLIds[1] = 3;
+        }
+        else if(j == 3)
+        {
+          nodeIds[0] = selement->NodeIds()[3];
+          nodeIds[1] = selement->NodeIds()[0];
+
+          nodeLIds[0] = 3;
+          nodeLIds[1] = 0;
+        }
+
+        // check if both nodes on edge geometry
+        bool node0Edge = dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+
+        if(nonSmoothContact_ and (!node0Edge or !node1Edge))
+          continue;
+
+        //create pair
+        std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+        std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+        // check if processed before
+        std::set<std::pair<int,int> >::iterator iter   = donebefore.find(actIDs);
+        std::set<std::pair<int,int> >::iterator itertw = donebefore.find(actIDstw);
+
+         // if not then create ele
+         if (iter == donebefore.end() and itertw == donebefore.end() )
+         {
+           // add to set of processed nodes
+           donebefore.insert(actIDs);
+           donebefore.insert(actIDstw);
+
+           // create line ele:
+           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                       new MORTAR::MortarElement(
+                           j,
+                           selement->Owner(),
+                           DRT::Element::line2,
+                           2,
+                           nodeIds,
+                           false));
+
+           // get nodes
+           DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]],selement->Nodes()[nodeLIds[1]]};
+           lineEle->BuildNodalPointers(nodes);
+
+           // init data container for dual shapes
+           lineEle->InitializeDataContainer();
+
+           // push back into vector
+           lineElements.push_back(lineEle);
+
+           // count for safety
+           count++;
+         }
+      } // end edge loop
+    }
+    else
+      dserror("ERROR: LTS only for quad4!");
+
+
+    // evaluate couplings
+    for(int m = 0; m<(int)meleElements.size();++m)
+    {
+      for(int l = 0; l<(int)lineElements.size(); ++l)
+      {
+        // create coupling object
+        LineCoupling3d coup(
+            *idiscret_,
+            3,
+            IParams(),
+            *selement,
+            lineElements[l],
+            *meleElements[m],
+            LineCoupling3d::lts);
+
+        // perform evaluate!
+        coup.EvaluateCoupling();
+      }
+    }
+
+  }//slave ele loop
+
+  // bye bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type line-to-line coupl                farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvaluateLTL()
+{
+  // check
+  if(Dim() == 2)
+    dserror("ERROR: LTL algorithm only for 3D simulations!");
+
+  // guarantee uniquness of slave edges
+  std::set<std::pair<int,int> > donebeforeS;
+
+  // loop over slave elements
+  for(int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1)
+      dserror("ERROR: Cannot find slave element with gid %", gid1);
+    CoElement* selement = dynamic_cast<CoElement*>(ele1);
+
+    // empty vector of slave element pointers
+    std::vector<Teuchos::RCP<MORTAR::MortarElement> > lineElementsS;
+
+    if(selement->Shape() == DRT::Element::quad4)
+    {
+      for(int j = 0; j< 4 ; ++j)
+      {
+        int nodeIds[2]  = {0,0};
+        int nodeLIds[2] = {0,0};
+
+        if(j == 0)
+        {
+          nodeIds[0] = selement->NodeIds()[0];
+          nodeIds[1] = selement->NodeIds()[1];
+
+          nodeLIds[0] = 0;
+          nodeLIds[1] = 1;
+        }
+        else if(j == 1)
+        {
+          nodeIds[0] = selement->NodeIds()[1];
+          nodeIds[1] = selement->NodeIds()[2];
+
+          nodeLIds[0] = 1;
+          nodeLIds[1] = 2;
+        }
+        else if(j == 2)
+        {
+          nodeIds[0] = selement->NodeIds()[2];
+          nodeIds[1] = selement->NodeIds()[3];
+
+          nodeLIds[0] = 2;
+          nodeLIds[1] = 3;
+        }
+        else if(j == 3)
+        {
+          nodeIds[0] = selement->NodeIds()[3];
+          nodeIds[1] = selement->NodeIds()[0];
+
+          nodeLIds[0] = 3;
+          nodeLIds[1] = 0;
+        }
+
+        // check if both nodes on edge geometry
+        bool node0Edge = dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+
+        if(!node0Edge or !node1Edge)
+          continue;
+
+        //create pair
+        std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+        std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+        // check if processed before
+        std::set<std::pair<int,int> >::iterator iter   = donebeforeS.find(actIDs);
+        std::set<std::pair<int,int> >::iterator itertw = donebeforeS.find(actIDstw);
+
+         // if not then create ele
+         if (iter == donebeforeS.end() and itertw == donebeforeS.end())
+         {
+           // add to set of processed nodes
+           donebeforeS.insert(actIDs);
+           donebeforeS.insert(actIDstw);
+
+           // create line ele:
+           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                       new MORTAR::MortarElement(
+                           j,
+                           selement->Owner(),
+                           DRT::Element::line2,
+                           2,
+                           nodeIds,
+                           false));
+
+           // get nodes
+           DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]],selement->Nodes()[nodeLIds[1]]};
+           lineEle->BuildNodalPointers(nodes);
+
+           // init data container for dual shapes
+           lineEle->InitializeDataContainer();
+
+           // push back into vector
+           lineElementsS.push_back(lineEle);
+         }
+      } // end edge loop
+    }
+    else
+      dserror("ERROR: LTL only for quad4!");
+
+    // guarantee uniquness of master edges
+    std::set<std::pair<int,int> > donebeforeM;
+
+    // empty vector of slave element pointers
+    std::vector<Teuchos::RCP<MORTAR::MortarElement> > lineElementsM;
+
+    // loop over the candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int k = 0; k < selement->MoData().NumSearchElements(); ++k)
+    {
+      int gid2 = selement->MoData().SearchElements()[k];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2)
+        dserror("ERROR: Cannot find master element with gid %", gid2);
+      CoElement* melement = dynamic_cast<CoElement*>(ele2);
+
+      if(melement->Shape() == DRT::Element::quad4)
+      {
+        for(int j = 0; j< 4 ; ++j)
+        {
+          int nodeIds[2]  = {0,0};
+          int nodeLIds[2] = {0,0};
+
+          if(j == 0)
+          {
+            nodeIds[0] = melement->NodeIds()[0];
+            nodeIds[1] = melement->NodeIds()[1];
+
+            nodeLIds[0] = 0;
+            nodeLIds[1] = 1;
+          }
+          else if(j == 1)
+          {
+            nodeIds[0] = melement->NodeIds()[1];
+            nodeIds[1] = melement->NodeIds()[2];
+
+            nodeLIds[0] = 1;
+            nodeLIds[1] = 2;
+          }
+          else if(j == 2)
+          {
+            nodeIds[0] = melement->NodeIds()[2];
+            nodeIds[1] = melement->NodeIds()[3];
+
+            nodeLIds[0] = 2;
+            nodeLIds[1] = 3;
+          }
+          else if(j == 3)
+          {
+            nodeIds[0] = melement->NodeIds()[3];
+            nodeIds[1] = melement->NodeIds()[0];
+
+            nodeLIds[0] = 3;
+            nodeLIds[1] = 0;
+          }
+
+          // check if both nodes on edge geometry
+          bool node0Edge = dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+
+          if(!node0Edge or !node1Edge)
+            continue;
+
+          //create pair
+          std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+          std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+          // check if processed before
+          std::set<std::pair<int,int> >::iterator iter = donebeforeM.find(actIDs);
+          std::set<std::pair<int,int> >::iterator itertw = donebeforeM.find(actIDstw);
+
+           // if not then create ele
+           if (iter == donebeforeM.end() and itertw == donebeforeM.end())
+           {
+             // add to set of processed nodes
+             donebeforeM.insert(actIDs);
+             donebeforeM.insert(actIDstw);
+
+             // create line ele:
+             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                         new MORTAR::MortarElement(
+                             j,
+                             melement->Owner(),
+                             DRT::Element::line2,
+                             2,
+                             nodeIds,
+                             false));
+
+             // get nodes
+             DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]],melement->Nodes()[nodeLIds[1]]};
+             lineEle->BuildNodalPointers(nodes);
+
+             // init data container for dual shapes
+             lineEle->InitializeDataContainer();
+
+             // push back into vector
+             lineElementsM.push_back(lineEle);
+           }
+        } // end edge loop
+      }
+      else
+        dserror("ERROR: LTL only for quad4!");
+    }// end found mele loop
+
+    // loop over slave edges
+    for( int s = 0; s<(int)lineElementsS.size(); ++s)
+    {
+      // loop over master edges
+      for( int m = 0; m<(int)lineElementsM.size(); ++m)
+      {
+        // create coupling object
+        LineToLineCoupling3d coup(
+            *idiscret_,
+            3,
+            IParams(),
+            lineElementsS[s],
+            lineElementsM[m]);
+
+        // perform evaluate!
+        coup.EvaluateCoupling();
+      }
+    }
+
+  }// end slave loop
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  evaluate coupling type node-to-segment coupl             farah 02/16|
@@ -2571,6 +4728,9 @@ void CONTACT::CoInterface::EvaluateNTS()
     if (!node)
       dserror("ERROR: Cannot find node with gid %", gid);
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+
+    if(!mrtrnode->IsOnCorner() and nonSmoothContact_)
+      continue;
 
     if (mrtrnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
@@ -2768,7 +4928,6 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
 
   // parameters
-  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
   double pp = IParams().get<double>("PENALTYPARAM");
 
   // loop over all slave row nodes on the current interface
@@ -2778,6 +4937,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
+    double cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
 
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
@@ -5073,6 +7233,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Assemble normal weighted gap                              popp 01/08|
  *----------------------------------------------------------------------*/
@@ -5086,10 +7247,10 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
   // since this routine technically assembles the right hand side for active
   // nodes (when using Lagrange multipler contact),
   // we introduce the (scaled) complementarity parameter here.
-  bool adaptive_cn = DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
+  const bool adaptive_cn = DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
 
   // scaling?
-  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
+  const bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -5101,7 +7262,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
+      dserror("ERROR: AssembleG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
     if (cnode->CoData().Getg()!=0.0)
@@ -5380,8 +7541,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   INPAR::CONTACT::FrictionType ftype
   = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
-  double ct_input   = IParams().get<double>("SEMI_SMOOTH_CT");
-  double cn_input   = IParams().get<double>("SEMI_SMOOTH_CN");
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
@@ -5413,6 +7572,9 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     // get friction coefficient for this node
     // in case of TSI, the nodal temperature influences the local friction coefficient
     frcoeff = cnode->FrCoeff(frcoeff_in);
+
+    double cn_input   = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+    double ct_input   = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
     // more information from node
     double* n    = cnode->MoData().n();
@@ -6489,8 +8651,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound    = IParams().get<double>("FRBOUND");
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
-  double ct_input   = IParams().get<double>("SEMI_SMOOTH_CT");
-  double cn_input   = IParams().get<double>("SEMI_SMOOTH_CN");
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
@@ -6523,6 +8683,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // get friction coefficient for this node
       // in case of TSI, the nodal temperature influences the local friction coefficient
       frcoeff = cnode->FrCoeff(frcoeff_in);
+
+      double cn_input = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+      double ct_input = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
@@ -7802,10 +9965,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   //**********************************************************************
   if (ftype == INPAR::CONTACT::friction_tresca)
   {
-    // complementarity parameters
-    // no adaptive complementarity parameters for tresca friction
-    double ct = ct_input;
-
     // loop over all slip nodes of the interface
     for (int i=0; i<slipnodes_->NumMyElements();++i)
     {
@@ -7816,6 +9975,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+
+      double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // preparation of assembly
       // get Deriv N and calculate DerivD form DerivN
@@ -8772,6 +10933,24 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
         ", " << std::setw(14) << std::setprecision(5) << std::scientific << gbalMo[2] <<
         "]"  << std::endl;
   }
+
+  // write angular momentum conservation in xxx.amom
+  FILE* MyFile = NULL;
+  std::ostringstream filename;
+  const std::string filebase = "xxx";
+  filename << filebase <<".amom";
+  MyFile = fopen(filename.str().c_str(), "at+");
+
+  // store data
+  if (MyFile)
+  {
+    fprintf(MyFile, "%g\t", gresMoSl[2]);
+    fprintf(MyFile, "%g\t", gresMoMa[2]);
+    fprintf(MyFile, "%g\n", gbalMo[2]);
+    fclose(MyFile);
+  }
+  else
+    dserror("ERROR: File could not be opened.");
   return;
 }
 

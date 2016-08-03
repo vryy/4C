@@ -6,10 +6,7 @@
 
 \level 1
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
@@ -584,6 +581,12 @@ void MORTAR::IntElement::NodeLinearization(std::vector<std::vector<GEN::pairedve
 }
 
 
+
+
+
+
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
@@ -600,43 +603,54 @@ nvertices_(nvertices),
 coords_(coords),
 shape_(shape)
 {
-#ifdef DEBUG
-   // check nvertices_ and shape_
-  if (nvertices_!=3) dserror("ERROR: Integration cell must have 3 vertices");
-  if (shape_!=DRT::Element::tri3) dserror("ERROR: Integration cell must be tri3");
-
-  // check dimensions of coords_
-  if (coords_.M() != 3) dserror("ERROR: Inconsistent coord matrix");
-  if (coords_.N() != (unsigned)nvertices_) dserror("ERROR: Inconsistent coord matrix");
-#endif
-
   // store auxiliary plane normal
-  for (int k=0;k<3;++k) Auxn()[k] = auxn[k];
-
-  // compute area of IntCell
-  double t1[3] = {0.0, 0.0, 0.0};
-  double t2[3] = {0.0, 0.0, 0.0};
   for (int k=0;k<3;++k)
-  {
-    t1[k]=Coords()(k,1)-Coords()(k,0);
-    t2[k]=Coords()(k,2)-Coords()(k,0);
-  }
+    Auxn()[k] = auxn[k];
 
-  double t1xt2[3] = {0.0, 0.0, 0.0};
-  t1xt2[0] = t1[1]*t2[2]-t1[2]*t2[1];
-  t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
-  t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0];
-  area_ = 0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  if(shape == DRT::Element::tri3)
+  {
+    // compute area of IntCell
+    double t1[3] = {0.0, 0.0, 0.0};
+    double t2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      t1[k]=Coords()(k,1)-Coords()(k,0);
+      t2[k]=Coords()(k,2)-Coords()(k,0);
+    }
+
+    double t1xt2[3] = {0.0, 0.0, 0.0};
+    t1xt2[0] = t1[1]*t2[2]-t1[2]*t2[1];
+    t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
+    t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0];
+    area_ = 0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  }
+  else if (shape == DRT::Element::line2)
+  {
+    // compute length of IntLine
+    double v[3] = {0.0, 0.0, 0.0};
+    v[0] = Coords()(0,0)-Coords()(0,1);
+    v[1] = Coords()(1,0)-Coords()(1,1);
+    v[2] = Coords()(2,0)-Coords()(2,1);
+
+    area_ = sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    if(area_<1e-12)
+    {
+      std::cout << "v0 = " << Coords()(0,0) << "  " << Coords()(1,0) << "  " << Coords()(2,0) << std::endl;
+      std::cout << "v1 = " << Coords()(0,1) << "  " << Coords()(1,1) << "  " << Coords()(2,1) << std::endl;
+      dserror("ERROR: INTCELL has no length!");
+    }
+  }
 
   // store vertex linearizations and auxn linearization
   linvertex_.resize(3);
   linvertex_[0] = linv1;
   linvertex_[1] = linv2;
-  linvertex_[2] = linv3;
+  linvertex_[2] = linv3; // dummy for line2
   linauxn_ = linauxn;
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords (IntCell)        popp 11/08|
@@ -649,40 +663,49 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi,
   if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
   if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
-  // collect fundamental data
-  static LINALG::Matrix<3,1> val;
-  static LINALG::Matrix<3,2> deriv;
-
-  // Evaluate shape, get nodal coords and interpolate global coords
-  EvaluateShape(xi, val, deriv);
-  for (int i=0;i<3;++i) globcoord[i]=0.0;
-
-  for (int i=0;i<3;++i)
+  if(Shape() == DRT::Element::tri3 or
+     Shape() == DRT::Element::line2)
   {
-    if (inttype==0)
+    // collect fundamental data
+    LINALG::Matrix<3,1> val;
+    LINALG::Matrix<3,2> deriv;
+
+    // Evaluate shape, get nodal coords and interpolate global coords
+    EvaluateShape(xi, val, deriv);
+    for (int i=0;i<3;++i)
+      globcoord[i]=0.0;
+
+    for (int i=0;i<NumVertices();++i)
     {
-      // use shape function values for interpolation
-      globcoord[0]+=val(i)*Coords()(0,i);
-      globcoord[1]+=val(i)*Coords()(1,i);
-      globcoord[2]+=val(i)*Coords()(2,i);
+      if (inttype==0)
+      {
+        // use shape function values for interpolation
+        globcoord[0]+=val(i)*Coords()(0,i);
+        globcoord[1]+=val(i)*Coords()(1,i);
+        globcoord[2]+=val(i)*Coords()(2,i);
+      }
+      else if (inttype==1)
+      {
+        // use shape function derivatives xi for interpolation
+        globcoord[0]+=deriv(i,0)*Coords()(0,i);
+        globcoord[1]+=deriv(i,0)*Coords()(1,i);
+        globcoord[2]+=deriv(i,0)*Coords()(2,i);
+      }
+      else if (inttype==2)
+      {
+        if(Shape() == DRT::Element::line2)
+          dserror("ERROR: for line2 elements only 1 parameter space coordinate");
+
+        // use shape function derivatives eta for interpolation
+        globcoord[0]+=deriv(i,1)*Coords()(0,i);
+        globcoord[1]+=deriv(i,1)*Coords()(1,i);
+        globcoord[2]+=deriv(i,1)*Coords()(2,i);
+      }
+      else
+        dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
     }
-    else if (inttype==1)
-    {
-      // use shape function derivatives xi for interpolation
-      globcoord[0]+=deriv(i,0)*Coords()(0,i);
-      globcoord[1]+=deriv(i,0)*Coords()(1,i);
-      globcoord[2]+=deriv(i,0)*Coords()(2,i);
-    }
-    else if (inttype==2)
-    {
-      // use shape function derivatives eta for interpolation
-      globcoord[0]+=deriv(i,1)*Coords()(0,i);
-      globcoord[1]+=deriv(i,1)*Coords()(1,i);
-      globcoord[2]+=deriv(i,1)*Coords()(2,i);
-    }
-    else
-      dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
   }
+
 
   return true;
 }
@@ -722,9 +745,17 @@ bool MORTAR::IntCell::EvaluateShape(const double* xi,
     deriv(1,0) =  1.0; deriv(1,1) =  0.0;
     deriv(2,0) =  0.0; deriv(2,1) =  1.0;
   }
+  else if(Shape()==DRT::Element::line2)
+  {
+    val(0) = 0.5*(1-xi[0]);
+    val(1) = 0.5*(1+xi[0]);
+    deriv(0,0) = -0.5;
+    deriv(1,0) =  0.5;
+  }
 
   // unknown case
-  else dserror("ERROR: EvaluateShape (IntCell) called for type != tri3");
+  else
+    dserror("ERROR: EvaluateShape (IntCell) called for type != tri3/line2");
 
   return true;
 }
@@ -739,9 +770,11 @@ double MORTAR::IntCell::Jacobian(double* xi)
   // 2D linear case (2noded line element)
   if (Shape()==DRT::Element::tri3)
     jac = Area()*2.0;
-
+  else if (Shape()==DRT::Element::line2)
+    jac = Area()*0.5;
   // unknown case
-  else dserror("ERROR: Jacobian (IntCell) called for unknown ele type!");
+  else
+    dserror("ERROR: Jacobian (IntCell) called for unknown ele type!");
 
   return jac;
 }
@@ -751,29 +784,89 @@ double MORTAR::IntCell::Jacobian(double* xi)
  *----------------------------------------------------------------------*/
 void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac)
 {
-  // metrics routine gives local basis vectors
-  static std::vector<double> gxi(3);
-  static std::vector<double> geta(3);
-
-  for (int k=0;k<3;++k)
-  {
-    gxi[k]  = Coords()(k,1) - Coords()(k,0);
-    geta[k] = Coords()(k,2) - Coords()(k,0);
-  }
-
-  // cross product of gxi and geta
-  double cross[3] = {0.0, 0.0, 0.0};
-  cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
-  cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
-  cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
-
-  // inverse jacobian
-  const double jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+  // define iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  // 2D linear case (2noded line element)
-  if (Shape()==DRT::Element::tri3)
+  // 1d line element
+  if(Shape()==DRT::Element::line2)
   {
+    // compute length of IntLine
+    double v[3] = {0.0, 0.0, 0.0};
+    v[0] = Coords()(0,0)-Coords()(0,1);
+    v[1] = Coords()(1,0)-Coords()(1,1);
+    v[2] = Coords()(2,0)-Coords()(2,1);
+
+    double l    = sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double linv = 1.0/l;
+    double fac  = 0.25*linv;
+
+    // linearizarion of v
+    std::vector<GEN::pairedvector<int, double> >vg(3,100);
+
+    // first entry (x component lin)
+    for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
+      vg[0][p->first] += (p->second);
+    for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
+      vg[0][p->first] -= (p->second);
+
+    // first entry (y component lin)
+    for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
+      vg[1][p->first] += (p->second);
+    for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
+      vg[1][p->first] -= (p->second);
+
+    // first entry (z component lin)
+    for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
+      vg[2][p->first] += (p->second);
+    for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
+      vg[2][p->first] -= (p->second);
+
+    // linearizarion of v^t * v
+    GEN::pairedvector<int, double> vv(100);
+
+    // delta v^T * v
+    for (CI p=vg[0].begin();p!=vg[0].end();++p)
+      vv[p->first] += v[0] * (p->second);
+    for (CI p=vg[1].begin();p!=vg[1].end();++p)
+      vv[p->first] += v[1] * (p->second);
+    for (CI p=vg[2].begin();p!=vg[2].end();++p)
+      vv[p->first] += v[2] * (p->second);
+
+    // v^T * delta v
+    for (CI p=vg[0].begin();p!=vg[0].end();++p)
+      vv[p->first] += v[0] * (p->second);
+    for (CI p=vg[1].begin();p!=vg[1].end();++p)
+      vv[p->first] += v[1] * (p->second);
+    for (CI p=vg[2].begin();p!=vg[2].end();++p)
+      vv[p->first] += v[2] * (p->second);
+
+    // fac * vv
+    for (CI p=vv.begin();p!=vv.end();++p)
+      derivjac[p->first] += fac * (p->second);
+  }
+  // 2D linear case (2noded line element)
+  else if (Shape()==DRT::Element::tri3)
+  {
+    // metrics routine gives local basis vectors
+    static std::vector<double> gxi(3);
+    static std::vector<double> geta(3);
+
+    for (int k=0;k<3;++k)
+    {
+      gxi[k]  = Coords()(k,1) - Coords()(k,0);
+      geta[k] = Coords()(k,2) - Coords()(k,0);
+    }
+
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+
+    // inverse jacobian
+    const double jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+
     // *********************************************************************
     // compute Jacobian derivative
     // *********************************************************************
@@ -836,7 +929,8 @@ void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& d
   }
 
   // unknown case
-  else dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
+  else
+    dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
 
   return;
 }

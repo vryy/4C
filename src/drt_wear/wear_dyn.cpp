@@ -1,15 +1,14 @@
 /*!----------------------------------------------------------------------*/
 /*!
-\file stru_ale_dyn.cpp
+\file wear_dyn.cpp
 \brief Control routine for structure with ale problems.
 
+\level 2
 
-<pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 */
 
 /*----------------------------------------------------------------------*
@@ -17,6 +16,7 @@ Maintainer: Philipp Farah
  *----------------------------------------------------------------------*/
 #include "wear_dyn.H"
 #include "wear_partitioned.H"
+#include "../drt_fsi/fsi_utils.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
 
@@ -25,6 +25,8 @@ Maintainer: Philipp Farah
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_inpar/inpar_wear.H"
+
+#include "../drt_particle/binning_strategy.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>
@@ -74,8 +76,32 @@ void wear_dyn_drt(int restart)
     params.set<std::string>("action", "setup_material");
     aledis->Evaluate(params);
   }
-  else
-    dserror("ERROR: Reading an ALE mesh from the input file is not supported for this problem type.");
+  else  // filled ale discretization
+  {
+    // if we have non-matching meshes:
+    if (!DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(),"MATCHINGGRID"))
+    {
+      // create vector of discr.
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      dis.push_back(structdis);
+      dis.push_back(aledis);
+
+      //binning strategy for parallel redistribution
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+
+      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+      // redistribute discr. with help of binning strategy
+      if(structdis->Comm().NumProc()>1)
+      {
+        std::cout << "BINNING!!!" << std::endl;
+
+        /// binning strategy is created and parallel redistribution is performed
+        binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+      }
+    }
+  }
   // ***********************************************************
 
   Teuchos::RCP<WEAR::Algorithm> stru_ale = Teuchos::null;

@@ -3,13 +3,12 @@
 
  \brief main routine of the main postprocessor filters
 
- <pre>
+\level 1
+
  \maintainer Martin Kronbichler
              kronbichler@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15235
- </pre>
-
  */
 
 #include "post_drt_common.H"
@@ -119,9 +118,19 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       break;
     }
+    case prb_struct_ale:
+    {
+      PostField* structurefield = problem.get_discretization(0);
+      StructureFilter structwriter(structurefield, problem.outname(), problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* alefield = problem.get_discretization(1);
+      AleFilter alewriter(alefield, problem.outname());
+      alewriter.WriteFiles();
+      break;
+    }
     case prb_structure:
     case prb_statmech:
-    case prb_struct_ale:
     case prb_invana:
     {
         PostField* field = problem.get_discretization(0);

@@ -107,10 +107,19 @@ public:
   virtual double& Getg() { return grow_; }
 
   /*!
-   \brief Return the weighted gap (scalar) of this node
+   \brief Return the weighted gap (scalar) of this node for NTS
    */
   virtual double& Getgnts() { return gnts_; }
 
+  /*!
+   \brief Return the weighted gap (scalar) of this node for LTS
+   */
+  virtual double& Getglts() { return glts_; }
+
+  /*!
+  \brief Return the weighted gap (scalar) of this node for LTL
+  */
+ virtual double& Getgltl() { return gltl_; }
   /*!
   \brief Return the weighted gap (scalar) of this node
 
@@ -231,6 +240,8 @@ public:
 
    */
   virtual std::map<int, std::map<int, double> >& GetDerivD() { return derivd_; }
+  virtual std::map<int, std::map<int, double> >& GetDerivDlts() { return derivdlts_; }
+  virtual std::map<int, std::map<int, double> >& GetDerivDltl() { return derivdltl_; }
 
   /*!
    \brief Return the 'DerivM' map of maps of this node
@@ -243,6 +254,9 @@ public:
 
    */
   virtual std::map<int, std::map<int, double> >& GetDerivM() { return derivm_; }
+  virtual std::map<int, std::map<int, double> >& GetDerivMnts() { return derivmnts_; }
+  virtual std::map<int, std::map<int, double> >& GetDerivMlts() { return derivmlts_; }
+  virtual std::map<int, std::map<int, double> >& GetDerivMltl() { return derivmltl_; }
 
   /*!
    \brief Return one specific 'DerivD' map of this node
@@ -284,6 +298,9 @@ public:
 
    */
   virtual std::map<int, double>& GetDerivG() { return derivg_; }
+  virtual std::map<int, double>& GetDerivGnts() { return derivgnts_;}
+  virtual std::map<int, double>& GetDerivGlts() { return derivglts_;}
+  virtual std::map<int, double>& GetDerivGltl() { return derivgltl_;}
 
   /*!
    \brief Return the 'DerivGlm' map of this node
@@ -337,7 +354,7 @@ public:
    */
   virtual std::map<int, double>& GetDerivScale() { return derivscalefac_; }
 
-  virtual std::vector<GEN::pairedvector<int, double> >& GetAlpha() {return alpha_;};
+  virtual GEN::pairedvector<int, double>& GetAlpha() {return alpha_;};
   virtual double& GetAlphaN() {return nalpha_;};
 
   //@}
@@ -351,17 +368,27 @@ protected:
   double txi_[3];  // nodal tangent t_xi for contact methods at newton step n
   double teta_[3]; // nodal tangent t_eta for contact methods at newton step n
   double grow_;    // nodal entry of g vector
-  double gnts_;    // nodal entry of g vector
+  double gnts_;    // nodal entry of g vector for nts
+  double glts_;    // nodal entry of g vector for lts
+  double gltl_;    // nodal entry of g vector for lts
 
-  double nalpha_;
+  double nalpha_;  // scaling factor for nts-mortar hybrid formulation
   bool activeold_; // true if cnode was in contact (last converged state n)
 
   std::vector<GEN::pairedvector<int, double> > derivn_;    // directional derivative of nodal normal
   std::vector<GEN::pairedvector<int, double> > derivtxi_;  // directional derivative of nodal tangent t_xi
   std::vector<GEN::pairedvector<int, double> > derivteta_; // directional derivative of nodal tangent t_eta
   std::map<int, std::map<int, double> > derivd_;           // directional derivative of nodal D-matrix value
+  std::map<int, std::map<int, double> > derivdlts_;           // directional derivative of nodal D-matrix value lts
+  std::map<int, std::map<int, double> > derivdltl_;           // directional derivative of nodal D-matrix value ltl
   std::map<int, std::map<int, double> > derivm_;           // directional derivative of nodal M-matrix values
+  std::map<int, std::map<int, double> > derivmnts_;        // directional derivative of nodal M-matrix values nts
+  std::map<int, std::map<int, double> > derivmlts_;        // directional derivative of nodal M-matrix values lts
+  std::map<int, std::map<int, double> > derivmltl_;        // directional derivative of nodal M-matrix values ltl
   std::map<int, double> derivg_;                           // directional derivative of nodal weighted gap value
+  std::map<int, double> derivgnts_;                        // directional derivative of nts gap value
+  std::map<int, double> derivglts_;                        // directional derivative of lts gap value
+  std::map<int, double> derivgltl_;                        // directional derivative of ltl gap value
   std::map<int, double> derivgw_;                          // directional derivative of nodal weighted gap value
   std::map<int, double> derivw_;                           // directional derivative of nodal weighted wear value
   std::map<int, double> derivw_lm_;                        // directional derivative of nodal weighted wear value
@@ -384,7 +411,7 @@ protected:
   std::map<int,double> aWGapLin_;     // linearization of the averaged weighted gap
   std::map<int,double> wGapLin_;      // linearization of the weighted gap
 
-  std::vector<GEN::pairedvector<int, double> >  alpha_;    // scaling factor for hybrid formulation
+  GEN::pairedvector<int, double> alpha_;    // lin. of scaling factor for hybrid formulation
 
 
   // *** Penalty-related quantities **************************
@@ -813,7 +840,32 @@ public:
 
    */
   void AddgValue(double& val);
+
+  /*!
+   \brief Add a value to the point-wise gap of this node (NTS)
+
+   \param val : value to be added
+
+   */
   void AddntsGapValue(double& val);
+
+  /*!
+   \brief Add a value to the line-weighted gap of this node (LTS)
+
+   \param val : value to be added
+
+   */
+  void AddltsGapValue(double& val);
+
+  /*!
+   \brief Add a value to the point-wise gap of this node (LTL)
+
+   \param val : value to be added
+
+   */
+  void AddltlGapValue(double& val);
+
+
   /*!
   \brief Add a value to the weighted gap of this node (augmented Lagrange)
 

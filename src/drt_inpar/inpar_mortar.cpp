@@ -131,11 +131,17 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   setStringToIntegralParameter<int>("ALGORITHM","Mortar","Type of meshtying/contact algorithm",
       tuple<std::string>("mortar","Mortar",
                          "nts","NTS",
-                         "gpts","GPTS"),
+                         "gpts","GPTS",
+                         "lts","LTS",
+                         "ltl","LTL",
+                         "stl","STL"),
       tuple<int>(
                  algorithm_mortar,algorithm_mortar,
                  algorithm_nts,algorithm_nts,
-                 algorithm_gpts,algorithm_gpts),
+                 algorithm_gpts,algorithm_gpts,
+                 algorithm_lts,algorithm_lts,
+                 algorithm_ltl,algorithm_ltl,
+                 algorithm_stl,algorithm_stl),
       &mortar);
 
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&mortar);
@@ -301,5 +307,36 @@ void INPAR::MORTAR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
   condlist.push_back(linemrtrsym);
   condlist.push_back(pointmrtrsym);
 
+  /*--------------------------------------------------------------------*/
+  // mortar edge/corner condition
+
+//  std::vector<Teuchos::RCP<ConditionComponent> > nscomponents;
+//  nscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+//  nscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",3)));
+
+  Teuchos::RCP<ConditionDefinition> edgemrtr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR EDGE CONDITIONS 3D",
+                                         "mrtredge",
+                                         "Geometrical edge for 3D contact",
+                                         DRT::Condition::EdgeMrtr,
+                                         true,
+                                         DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> cornermrtr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D",
+                                         "mrtrcorner",
+                                         "Geometrical corner for 2D/3D contact",
+                                         DRT::Condition::CornerMrtr,
+                                         true,
+                                         DRT::Condition::Point));
+
+//  for (unsigned i=0; i<nscomponents.size(); ++i)
+//  {
+//    edgemrtr->AddComponent(nscomponents[i]);
+//    cornermrtr->AddComponent(nscomponents[i]);
+//  }
+
+  condlist.push_back(edgemrtr);
+  condlist.push_back(cornermrtr);
 }
 

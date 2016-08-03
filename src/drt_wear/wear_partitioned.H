@@ -3,13 +3,14 @@
 \file wear_partitioned.H
 
 \brief  Basis of partitioned wear algorithm
-        (Lagrangian step followed by Eulerian step )
-<pre>
-Maintainer: Philipp Farah
+        (Lagrangian step followed by Eulerian step)
+
+\level 2
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 */
 
 /*----------------------------------------------------------------------*
@@ -39,6 +40,7 @@ namespace MORTAR
 }
 namespace ADAPTER
 {
+  class CouplingBase;
   class Coupling;
 }
 namespace DRT
@@ -179,8 +181,8 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector>                      delta_ale_;
     Teuchos::RCP<Epetra_Vector>                      ale_i_;
 
-    Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_;   // ale struct cpupling
     Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
+    Teuchos::RCP< ::ADAPTER::CouplingBase>           coupalestru_;   // ale struct cpupling
 
     Teuchos::ParameterList                           alepara_;       // ale parameter list
 

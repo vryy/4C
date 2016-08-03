@@ -253,6 +253,26 @@ discret_(discret)
                           mtnode);
         }
 
+        // get edge and corner information:
+        std::vector<DRT::Condition*> contactcornercond(0);
+        Discret().GetCondition("mrtrcorner", contactcornercond);
+        for (unsigned j = 0; j < contactcornercond.size(); j++)
+        {
+          if (contactcornercond.at(j)->ContainsNode(node->Id()))
+          {
+            mtnode->SetOnCorner() = true;
+          }
+        }
+        std::vector<DRT::Condition*> contactedgecond(0);
+        Discret().GetCondition("mrtredge", contactedgecond);
+        for (unsigned j = 0; j < contactedgecond.size(); j++)
+        {
+          if (contactedgecond.at(j)->ContainsNode(node->Id()))
+          {
+            mtnode->SetOnEdge() = true;
+          }
+        }
+
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
         std::vector<DRT::Condition*> contactSymconditions(0);
         Discret().GetCondition("mrtrsym",contactSymconditions);

@@ -63,6 +63,7 @@
 #include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_volmortar.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_ale_wear.H"
 
@@ -81,10 +82,43 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
       StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* aledofmap = AleField().Discretization()->NodeRowMap();
 
-  // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an error !!!
-  coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupalestru_->SetupCoupling(*AleField().Discretization(),
-      *StructureField()->Discretization(), *aledofmap, *structdofmap, ndim);
+  if(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(),"MATCHINGGRID"))
+  {
+    // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an error !!!
+    coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
+    Teuchos::rcp_dynamic_cast<ADAPTER::Coupling>(coupalestru_)->SetupCoupling(
+        *AleField().Discretization(),
+        *StructureField()->Discretization(),
+        *aledofmap,
+        *structdofmap,
+        ndim);
+  }
+  else
+  {
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    coupalestru_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //projection ale -> structure : all ndim dofs (displacements)
+    std::vector<int> coupleddof12 = std::vector<int>(ndim,1);
+
+    //projection structure -> ale : all ndim dofs (displacements)
+    std::vector<int> coupleddof21 = std::vector<int>(ndim,1);
+
+    std::pair<int,int> dofset12(0,0);
+    std::pair<int,int> dofset21(0,0);
+
+    //setup projection matrices
+    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Setup(
+        DRT::Problem::Instance()->GetDis("ale"),
+        DRT::Problem::Instance()->GetDis("structure"),
+        &coupleddof12,
+        &coupleddof21,
+        &dofset12,
+        &dofset21,
+        Teuchos::null,
+        false,
+        false);
+  }
 
   //create interface coupling
   coupstrualei_ = Teuchos::rcp(new ADAPTER::Coupling());
@@ -93,15 +127,13 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
       StructureField()->Interface()->AleWearCondMap(),
       *AleField().Discretization(),
       AleField().Interface()->Map(AleField().Interface()->cond_ale_wear),
-      "AleWear", ndim);
+      "AleWear",
+      ndim);
 
   // initialize intern variables for wear
-  wearnp_i_ = Teuchos::rcp(new Epetra_Vector(
-      *AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
-  wearnp_ip_ = Teuchos::rcp(new Epetra_Vector(
-          *AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
-  wearincr_ = Teuchos::rcp(new Epetra_Vector(
-          *AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
+  wearnp_i_  = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
+  wearnp_ip_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
+  wearincr_  = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
   delta_ale_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
   ale_i_     = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
 
@@ -114,7 +146,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
  *----------------------------------------------------------------------*/
 WEAR::Partitioned::~Partitioned()
 {
-
+  //empty
 }
 
 
@@ -269,7 +301,7 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
     /* Wear from structure solve as dirichlet for ALE                   */
     /********************************************************************/
 
-    // wear as interface displacements in ale dofs
+    // wear as interface displacements in interface dofs
     Teuchos::RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
     InterfaceDisp(idisale_s, idisale_m);
 
@@ -403,8 +435,11 @@ void WEAR::Partitioned::UpdateSpatConf()
   // for shape evol in spat conf
   if (wconf == INPAR::WEAR::wear_se_sp)
   {
+    int err = 0;
     // update per absolute vector
-    dispnp->Update(1.0, *disalenp, 0.0);
+    err = dispnp->Update(1.0, *disalenp, 0.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
   }
   // for shape evol in mat conf
   else if (wconf == INPAR::WEAR::wear_se_mat)
@@ -491,7 +526,7 @@ void WEAR::Partitioned::DispCoupling(Teuchos::RCP<Epetra_Vector>& disinterface)
   // change the parallel distribution from mortar interface to structure
   LINALG::Export(*disinterface, *strudofs);
 
-  // perform coupling
+  // perform coupling to ale dofs
   disinterface.reset();
   disinterface = coupstrualei_->MasterToSlave(strudofs);
 
@@ -525,7 +560,10 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
   LINALG::Export(*disinterface_s, *disinterface_g);
   LINALG::Export(*disinterface_m, *auxvector);
 
-  disinterface_g->Update(1.0, *auxvector, true);
+  int err= 0;
+  err = disinterface_g->Update(1.0, *auxvector, true);
+  if(err!=0)
+    dserror("ERROR: update wrong!");
 
   return;
 }
@@ -920,10 +958,22 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
  *----------------------------------------------------------------------*/
 void WEAR::Partitioned::RedistributeMatInterfaces()
 {
+  // barrier
+  Comm().Barrier();
+
   // loop over all interfaces
   for (int m = 0; m < (int) interfaces_.size(); ++m)
   {
+    int redistglobal= 0;
+    int redistlocal = 0;
     if(interfaces_[m]->IsRedistributed())
+      redistlocal++;
+
+    Comm().SumAll(&redistlocal,&redistglobal,1);
+    Comm().Barrier();
+
+
+    if(redistglobal>0)
     {
       if (Comm().MyPID() == 0)
       {
@@ -954,6 +1004,8 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
     }
   }
 
+  // barrier
+  Comm().Barrier();
   return;
 }
 
@@ -1373,8 +1425,7 @@ void WEAR::Partitioned::UpdateMatConf()
 {
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
-  Teuchos::RCP<Epetra_Vector> disalenp = AleToStructure(AleField().Dispnp());
-  Teuchos::RCP<Epetra_Vector> disalen  = AleToStructure(AleField().Dispn());
+  Teuchos::RCP<Epetra_Vector> disalenp     = AleToStructure(AleField().Dispnp());
 
   // vector of current spatial displacements
   Teuchos::RCP<const Epetra_Vector> dispnp = StructureField()->Dispnp(); // change to ExtractDispn() for overlap
@@ -1398,17 +1449,38 @@ void WEAR::Partitioned::UpdateMatConf()
   // if shape evol. in mat conf: ale dispnp = material displ.
   if(wconf == INPAR::WEAR::wear_se_mat)
   {
-    delta_ale_->Update(-1.0, *ale_i_, 0.0);
-    delta_ale_->Update(1.0, *disalenp, 1.0);
-    ale_i_->Update(1.0, *disalenp, 0.0);
+    // just information for user
+    int err = 0;
+    err = delta_ale_->Update(-1.0, *ale_i_, 0.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
+    err = delta_ale_->Update(1.0, *AleField().Dispnp(), 1.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
+    err = ale_i_->Update(1.0, *AleField().Dispnp(), 0.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
 
-    dismat->Update(1.0, *disalenp, 0.0);
+    // important vector to update mat conf
+    Teuchos::RCP<Epetra_Vector> dismat_struct = Teuchos::rcp(
+        new Epetra_Vector(dispnp->Map()), true);
+
+    LINALG::Export(*disalenp,*dismat_struct);
+
+    err = dismat->Update(1.0, *dismat_struct, 0.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
   }
   // if shape evol. in spat conf: advection map!
   else if (wconf == INPAR::WEAR::wear_se_sp)
   {
-    disalenp->Update(-1.0, *dispnp, 1.0);
-    delta_ale_->Update(1.0, *disalenp, 0.0);
+    int err = 0;
+    err = disalenp->Update(-1.0, *dispnp, 1.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
+    err = delta_ale_->Update(1.0, *StructureToAle(disalenp), 0.0);
+    if(err!=0)
+      dserror("ERROR: update wrong!");
 
     // loop over all row nodes to fill graph
     for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)

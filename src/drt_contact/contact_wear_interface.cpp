@@ -1333,8 +1333,8 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
 
   // information from interface contact parameter list
   const double frcoeff = IParams().get<double>("FRCOEFF");
-  const double ct = IParams().get<double>("SEMI_SMOOTH_CT");
-  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
 
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 

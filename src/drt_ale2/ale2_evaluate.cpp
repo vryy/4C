@@ -979,7 +979,7 @@ void DRT::ELEMENTS::Ale2::JacobianMatrix(
 /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
-//  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
+  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
 /*----------------------------------------------------------------------*/
 
   return;

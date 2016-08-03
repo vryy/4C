@@ -2,6 +2,10 @@
 /*!
 \file inpar_mortar.H
 
+\brief input parameters for mortar methods
+
+\level 2
+
 \maintainer Philipp Farah, Alexander Seitz
 
 */
@@ -86,9 +90,10 @@ namespace INPAR
       algorithm_mortar,    ///< mortar algorithm (segment-to-segment)
       algorithm_nts,       ///< node-to-segment algorithm
       algorithm_gpts,      ///< gp-to-segment algorithm
-      algorithm_lts,       ///< line-to-segment algorithm (coming soon...)
-      algorithm_ltl,       ///< line-to-segment algorithm (coming soon...)
-      algorithm_ntl        ///< node-to-line algorithm (coming soon...)
+      algorithm_lts,       ///< line-to-segment algorithm
+      algorithm_ltl,       ///< line-to-segment algorithm
+      algorithm_ntl,       ///< node-to-line algorithm (coming soon...)
+      algorithm_stl        ///< segment-to-line algorithm
     };
 
     /// Type of parallel redistribution algorithm

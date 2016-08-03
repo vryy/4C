@@ -446,6 +446,26 @@ CONTACT::CoManager::CoManager(
                 cnode);
           }
 
+          // get edge and corner information:
+          std::vector<DRT::Condition*> contactcornercond(0);
+          Discret().GetCondition("mrtrcorner", contactcornercond);
+          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          {
+            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnCorner() = true;
+            }
+          }
+          std::vector<DRT::Condition*> contactedgecond(0);
+          Discret().GetCondition("mrtredge", contactedgecond);
+          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          {
+            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnEdge() = true;
+            }
+          }
+
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym",contactSymconditions);
@@ -489,6 +509,27 @@ CONTACT::CoManager::CoManager(
                 node,
                 cnode);
           }
+
+          // get edge and corner information:
+          std::vector<DRT::Condition*> contactcornercond(0);
+          Discret().GetCondition("mrtrcorner", contactcornercond);
+          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          {
+            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnCorner() = true;
+            }
+          }
+          std::vector<DRT::Condition*> contactedgecond(0);
+          Discret().GetCondition("mrtredge", contactedgecond);
+          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          {
+            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnEdge() = true;
+            }
+          }
+
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
@@ -1225,6 +1266,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Comm().NumProc() == 1)
     cparams.set<std::string>("PARALLEL_REDIST", "None");
 
+  // set dimension
+  cparams.set<int>("DIMENSION", dim);
   return true;
 }
 
@@ -1292,6 +1335,8 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
+
+
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = GetStrategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp( new Epetra_Vector(*problemnodes));
@@ -1338,6 +1383,26 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // contact tractions in normal and tangential direction
   output.WriteVector("norcontactstress", normalstressesexp);
   output.WriteVector("tancontactstress", tangentialstressesexp);
+
+//  // nonsmooth stresses
+//  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ContactDynamicParams(),"NONSMOOTH_GEOMETRIES"))
+//  {
+//    // normal direction
+//    Teuchos::RCP<Epetra_Vector> normalstressesns    = GetStrategy().ContactNorStressNs();
+//    Teuchos::RCP<Epetra_Vector> normalstressesnsexp = Teuchos::rcp( new Epetra_Vector(*problemdofs));
+//    LINALG::Export(*normalstressesns, *normalstressesnsexp);
+//
+//    // tangential plane
+//    Teuchos::RCP<Epetra_Vector> tangentialstressesns    = GetStrategy().ContactTanStressNs();
+//    Teuchos::RCP<Epetra_Vector> tangentialstressesnsexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+//    LINALG::Export(*tangentialstressesns, *tangentialstressesnsexp);
+//
+//    // write to output
+//    // contact tractions in normal and tangential direction
+//    output.WriteVector("norcontactstressNs", normalstressesnsexp);
+//    output.WriteVector("tancontactstressNs", tangentialstressesnsexp);
+//  }
+
 
 #ifdef CONTACTFORCEOUTPUT
 
@@ -1416,6 +1481,24 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   }
 
 #endif  //MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
+
+  // when we do a boundary modification we shift slave entries to the M matrix with
+  // negative sign. Therefore, we have to extract the right force entries from the
+  // master force which correcpond to the slave force!
+  Teuchos::RCP<Epetra_Vector> slavedummy =
+      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap(),true));
+  LINALG::Export(*fcmasternor,*slavedummy);
+  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
+  if(err!=0)
+    dserror("ERROR");
+
+  Teuchos::RCP<Epetra_Vector> masterdummy =
+      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap(),true));
+  LINALG::Export(*slavedummy,*masterdummy);
+  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
+  if(err!=0)
+    dserror("ERROR");
+
   // export
   LINALG::Export(*fcslavenor,*fcslavenorexp);
   LINALG::Export(*fcslavetan,*fcslavetanexp);

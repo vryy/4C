@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Philipp Farah, Alexander Seitz
 
 */
 /*----------------------------------------------------------------------*/
@@ -202,6 +202,17 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       &scontact
       );
 
+  setStringToIntegralParameter<int>("NONSMOOTH_GEOMETRIES","No",
+      "If chosen the contact algorithm combines mortar and nts formulations.",
+                               yesnotuple,yesnovalue,&scontact);
+
+  DoubleParameter("HYBRID_ANGLE_MIN",-1.0,"Non-smooth contact: angle between cpp normal and element normal: begin transition (Mortar)",&scontact);
+  DoubleParameter("HYBRID_ANGLE_MAX",-1.0,"Non-smooth contact: angle between cpp normal and element normal: end transition (NTS)",&scontact);
+
+  setStringToIntegralParameter<int>("CPP_NORMALS","No",
+      "If chosen the nodal normal field is created as averaged CPP normal field.",
+                               yesnotuple,yesnovalue,&scontact);
+
   // sub-list "Augmented"
   Teuchos::ParameterList& augcontact=scontact.sublist("AUGMENTED");
 
@@ -212,7 +223,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("PRINT_ANGULAR_CONSERVATION","No",
       "Do and print the angular momentum conservation check.",
       yesnotuple,yesnovalue,&augcontact);
-
 }
 
 

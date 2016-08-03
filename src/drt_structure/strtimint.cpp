@@ -841,6 +841,24 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           std::cout << "===== Node-To-Segment approach =================================" << std::endl;
           std::cout << "================================================================\n" << std::endl;
         }
+        else if(algorithm == INPAR::MORTAR::algorithm_lts)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Line-To-Segment approach =================================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if(algorithm == INPAR::MORTAR::algorithm_ltl)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Line-To-Line approach ====================================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if(algorithm == INPAR::MORTAR::algorithm_stl)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Segment-To-Line approach =================================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
         else if(algorithm == INPAR::MORTAR::algorithm_gpts)
         {
           std::cout << "================================================================" << std::endl;
@@ -3638,9 +3656,7 @@ void STR::TimInt::ApplyDisMat(
 {
   // The values in dismatn_ are replaced, because the new absolute material
   // displacement is provided in the argument (not an increment)
-
-   for (int k=0;k<dismat->MyLength();++k)
-     (*dismatn_)[k]=(*dismat)[k];
+   LINALG::Export(*dismat,*dismatn_);
 
    return;
  }

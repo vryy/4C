@@ -71,6 +71,7 @@ public:
   */
   virtual ~CoInterface() {}
 
+
   /*!
   \brief Print this Interface
 
@@ -162,6 +163,30 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+
+  /*!
+  \brief Get row map of nonsmooth node (Filled()==true is prerequisite)
+
+  */
+  virtual const Teuchos::RCP<Epetra_Map> NonSmoothNodes() const
+  {
+    if (Filled()) return nonsmoothnodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of smooth nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Teuchos::RCP<Epetra_Map> SmoothNodes() const
+  {
+    if (Filled()) return smoothnodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+
 
   /*!
   \brief Get number of slave / master pairs of this interface (proc local)
@@ -326,6 +351,24 @@ public:
 
   */
   void EvaluateNTS();
+
+  /*!
+  \brief evaluate coupling terms for lts coupling + lin
+
+  */
+  void EvaluateLTS();
+
+  /*!
+  \brief evaluate coupling terms for ltl coupling + lin
+
+  */
+  void EvaluateLTL();
+
+  /*!
+  \brief evaluate coupling terms for stl coupling + lin
+
+  */
+  void EvaluateSTL();
 
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element
@@ -608,6 +651,14 @@ public:
   */
   void FDCheckGapDeriv();
 
+
+  /*!
+  \brief Check alpha derivatives with finite differences (for hybrid formulation)
+
+  */
+  void FDCheckAlphaDeriv();
+
+
   /*!
   \brief Check weighted slip increment derivatives with finite differences (gp-wise calculated)
 
@@ -650,6 +701,29 @@ public:
   void AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff);
   void AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
 
+  Teuchos::RCP<Epetra_Vector>& GetCn()
+  {
+    return cnValues_;
+  };
+
+  Epetra_Vector& GetCnRef()
+  {
+    if (cnValues_.is_null())
+      dserror("The cnValues_ is not initialized!");
+    return *cnValues_;
+  }
+
+  Teuchos::RCP<Epetra_Vector>& GetCt()
+  {
+    return ctValues_;
+  };
+
+  Epetra_Vector& GetCtRef()
+  {
+    if (ctValues_.is_null())
+      dserror("The ctValues_ is not initialized!");
+    return *ctValues_;
+  }
   //@}
 
 protected:
@@ -657,15 +731,23 @@ protected:
   /*!
   \brief initialize node and element data container
 
-  Derived verision!
+  Derived version!
 
   */
   virtual void InitializeDataContainer();
 
   /*!
+  \brief initialize slave/master node status for corner/edge modification
+
+  Derived version!
+
+  */
+  virtual void InitializeCornerEdge();
+
+  /*!
   \brief set cpp normal and tangent to data container
 
-  Derived verision!
+  Derived version!
 
   */
   virtual void SetCPPNormal(
@@ -673,37 +755,150 @@ protected:
       double* normal,
       std::vector<GEN::pairedvector<int,double> >& normallin);
 
+  /*!
+  \brief do calculations which are required for contact term evaluation:
+         for example: nodal normal calculation
+
+  Derived version!
+
+  */
   virtual void PreEvaluate();
+
+  /*!
+  \brief Routine to control contact term evaluation. Here, we decide if mortar, nts
+         etc. is evaluated
+
+  Derived version!
+
+  */
+  virtual void EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+
+  /*!
+  \brief do calculations which are required after contact term evaluation:
+         for example: scale nodal entries
+
+  Derived version!
+
+  */
   virtual void PostEvaluate(const int step, const int iter);
 
-  virtual void EvaluateCPPNormals();
+  /*!
+  \brief Compute scaling factors for transition between nts, mortar etc.
+
+  */
+  virtual void ComputeScaling();
+
+  /*!
+  \brief 2D version of scaling computation
+
+  */
+  virtual void ComputeScaling2D();
+
+  /*!
+  \brief 3D version of scaling computation
+
+  */
+  virtual void ComputeScaling3D();
+
+  /*!
+  \brief Set new cn and ct values (global interface vector)
+
+  */
+  virtual void SetCnCtValues();
+
+  /*!
+  \brief Routine scale between nts, mortar, lts etc. This is required for non-smooth
+         contact geometries
+
+  */
+  virtual void ScaleTerms();
+
+  /*!
+  \brief 2D version of scaling routine
+
+  */
+  virtual void ScaleTerms2D();
+
+  /*!
+  \brief 3D version of scaling routine
+
+  */
+  virtual void ScaleTerms3D();
+
+  /*!
+  \brief Routine to scale nodal normals between nodal averaged normal and cpp normal
+
+  */
+  virtual void ScaleNormals();
+
+  /*!
+  \brief 2D version of nodal normal scaling
+
+  */
+  virtual void ScaleNormals2D();
+
+  /*!
+  \brief 3D version of nodal normal scaling
+
+  */
+  virtual void ScaleNormals3D();
+
+  /*!
+  \brief Routine which stores entries from nts algorithm into mortar nodes to reuse
+         standard assemble functions
+
+  */
+  virtual void StoreNTSvalues();
+
+  /*!
+  \brief Routine which stores entries from lts algorithm into mortar nodes to reuse
+         standard assemble functions
+
+  */
+  virtual void StoreLTSvalues();
+
+  /*!
+  \brief Routine which stores entries from ltl algorithm into mortar nodes to reuse
+         standard assemble functions
+
+  */
+  virtual void StoreLTLvalues();
+
+  /*!
+  \brief These functions are not properly implemented/used!!!!
+
+  */
+  virtual void EvaluateCPPNormalsForAll();
   virtual void PrepareNonSmoothContact();
   virtual void DetectNonSmoothGeometries();
   virtual void EvaluateAveragedNodalNormals();
   virtual void SpecialContactScenarios();
-  virtual void ScaleTerms();
-
-
+  virtual void EvaluateCPPEleNormals();
+  virtual void EvaluateCPPNodalNormals();
   virtual double ComputeNormalToLine(
       MORTAR::MortarNode& mrtrnode,
       std::vector<MORTAR::MortarElement*> meles,
       double* normal,
       std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
-
+  virtual double ComputeNormalToLineAV(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarElement*> meles,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
   virtual double ComputeNormalToNode(
       MORTAR::MortarNode& mrtrnode,
       std::vector<MORTAR::MortarNode*> mnodes,
       double* normal,
       std::vector<GEN::pairedvector<int,double> >& normaltonodeLin);
 
-  virtual void ComputeScaling();
-
+protected:
   // don't want = operator and cctor
   CoInterface operator = (const CoInterface& old);
   CoInterface(const CoInterface& old);
 
   bool                          selfcontact_;           // flag indicating if this is a self contact interface
   bool                          friction_;              // flag for frictional contact
+  bool                          nonSmoothContact_;      // flag for non-smooth contact algorithm
   INPAR::CONTACT::ConstraintDirection constr_direction_;// direction in which the contact constraints are formulated
 
   Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
@@ -721,6 +916,10 @@ protected:
   Teuchos::RCP<Epetra_Map>      eextendedghosting_;
 
   Teuchos::RCP<SelfBinaryTree>  binarytreeself_; // binary tree for self contact search
+
+  //! cn-values of each node
+  Teuchos::RCP<Epetra_Vector>   cnValues_;         // cn
+  Teuchos::RCP<Epetra_Vector>   ctValues_;         // ct
 
   int                           smpairs_;        // proc local number of slave/master pairs
   int                           smintpairs_;     // proc local number of slave/master integration pairs

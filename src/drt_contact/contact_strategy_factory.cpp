@@ -579,6 +579,9 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   if (Comm().MyPID() == 0)
     std::cout << "done!" << std::endl;
 
+  // set dimension
+  cparams.set<int>("DIMENSION", dim);
+
   return;
 }
 

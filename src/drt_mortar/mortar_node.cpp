@@ -3,12 +3,9 @@
 
 \brief A class for a mortar coupling node
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
@@ -37,7 +34,9 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 MORTAR::MortarNodeDataContainer::MortarNodeDataContainer():
 drows_(0),
-drows_nts_(0)
+drows_nts_(0),
+drows_lts_(0),
+drows_ltl_(0)
 {
   for (int i=0;i<3;++i)
   {
@@ -101,6 +100,8 @@ DRT::Node(id,coords,owner),
 isslave_(isslave),
 istiedslave_(isslave),
 isonbound_(false),
+isonedge_(false),
+isoncorner_(false),
 isdbc_(false),
 numdof_(numdof),
 dofs_(dofs),
@@ -203,6 +204,10 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,istiedslave_);
   // add isonbound_
   AddtoPack(data,isonbound_);
+  // add isonbound_
+  AddtoPack(data,isonedge_);
+  // add isonbound_
+  AddtoPack(data,isoncorner_);
   // add isdbc_
   AddtoPack(data,isdbc_);
   // add dbcdofs_
@@ -254,6 +259,10 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   istiedslave_ = ExtractInt(position,data);
   // isonbound_
   isonbound_ = ExtractInt(position,data);
+  // isonedge_
+  isonedge_ = ExtractInt(position,data);
+  // isoncorner_
+  isoncorner_ = ExtractInt(position,data);
   // isdbc_
   isdbc_ = ExtractInt(position,data);
   // dbcdofs_
@@ -335,6 +344,47 @@ void MORTAR::MortarNode::AddDntsValue(const int& colnode,const double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddDltsValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+
+  // check if this has been called before
+  if ((int)MoData().GetDlts().size()==0)
+    MoData().GetDlts().resize(dentries_);
+
+  // add the pair (col,val) to the given row
+  MoData().GetDlts()[colnode] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddDltlValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (!IsOnEdge())
+    dserror("ERROR: function called for non-edge node %i", Id());
+
+  // check if this has been called before
+  if ((int)MoData().GetDltl().size()==0)
+    MoData().GetDltl().resize(dentries_);
+
+  // add the pair (col,val) to the given row
+  MoData().GetDltl()[colnode] += val;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
@@ -342,7 +392,7 @@ void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
     dserror("ERROR: AddMValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
+  if (IsOnBoundorCE()==true)
     dserror("ERROR: AddMValue: function called for boundary node %i", Id());
 
   // add the pair (col,val) to the given row
@@ -367,6 +417,39 @@ void MORTAR::MortarNode::AddMntsValue(const int& colnode,const double& val)
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddMltsValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMValue: function called for master node %i", Id());
+
+  // add the pair (col,val) to the given row
+  MoData().GetMlts()[colnode] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddMltlValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMValue: function called for master node %i", Id());
+  if (!IsOnEdge())
+    dserror("ERROR: function called for non-edge node %i", Id());
+
+  // add the pair (col,val) to the given row
+  MoData().GetMltl()[colnode] += val;
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'Mmod' map                             popp 01/08|

@@ -249,6 +249,7 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
   if(distype=="Nurbs")
     isnurbs=true;
   input.set<bool>("NURBS",isnurbs);
+  input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual and

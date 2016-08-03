@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file mortar_node.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief header for mortar node and data container
+
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_NODE_H
@@ -145,7 +144,7 @@ public:
   }
 
   /*!
-   \brief Return the 'D' map (vector) of this node
+   \brief Return the 'D' map (vector) of this node for nts
    */
   GEN::pairedvector<int, double>& GetDnts()
   {
@@ -153,11 +152,43 @@ public:
   }
 
   /*!
-   \brief Return the 'M' map of this node
+   \brief Return the 'M' map of this node for nts
    */
   std::map<int, double>& GetMnts()
   {
     return mrows_nts_;
+  }
+
+  /*!
+   \brief Return the 'D' map (vector) of this node for lts
+   */
+  GEN::pairedvector<int, double>& GetDlts()
+  {
+    return drows_lts_;
+  }
+
+  /*!
+   \brief Return the 'M' map of this node for lts
+   */
+  std::map<int, double>& GetMlts()
+  {
+    return mrows_lts_;
+  }
+
+  /*!
+   \brief Return the 'D' map (vector) of this node for lts
+   */
+  GEN::pairedvector<int, double>& GetDltl()
+  {
+    return drows_ltl_;
+  }
+
+  /*!
+   \brief Return the 'M' map of this node for lts
+   */
+  std::map<int, double>& GetMltl()
+  {
+    return mrows_ltl_;
   }
 
   /*!
@@ -189,12 +220,21 @@ protected:
   double lmold_[3]; // old Lagrange multiplier value (last converged state n)
   double lmuzawa_[3]; // Uzawa Lagrange multiplier value (last Uzawa step k)
 
-  GEN::pairedvector<int, double> drows_; // nodal rows of D matrix
-  std::map<int, double> mrows_; // nodal rows of M matrix
-  std::map<int, double> mmodrows_; // nodal rows of Mmod matrix
+  GEN::pairedvector<int, double> drows_; // nodal rows of D matrix for sts
+  std::map<int, double> mrows_;          // nodal rows of M matrix for sts
+  std::map<int, double> mmodrows_;       // nodal rows of Mmod matrix (sts)
 
-  GEN::pairedvector<int, double> drows_nts_; // nodal rows of D matrix
-  std::map<int, double> mrows_nts_; // nodal rows of M matrix
+  //! node-to-segment (nts) specific
+  GEN::pairedvector<int, double> drows_nts_; // nodal rows of D matrix for nts
+  std::map<int, double> mrows_nts_;          // nodal rows of M matrix for nts
+
+  //! line-to-segment (lts) specific
+  GEN::pairedvector<int, double> drows_lts_; // nodal rows of D matrix for lts
+  std::map<int, double> mrows_lts_;          // nodal rows of M matrix for lts
+
+  //! line-to-line (ltl) specific
+  GEN::pairedvector<int, double> drows_ltl_; // nodal rows of D matrix for lts
+  std::map<int, double> mrows_ltl_;          // nodal rows of M matrix for lts
 
   double scalefac_; // nodal scaling factor for better conditioning
 
@@ -388,6 +428,62 @@ public:
   }
 
   /*!
+   \brief Is node on bound or corner/edge
+   */
+  virtual bool IsOnBoundorCE() const
+  {
+    return ((isonedge_ or isoncorner_) or isonbound_);
+  }
+
+  /*!
+   \brief Is node on edge or corner
+   */
+  virtual bool IsOnCornerEdge() const
+  {
+    return (isonedge_ or isoncorner_);
+  }
+
+  /*!
+   \brief Is node on geometrical edge
+   */
+  virtual bool IsOnEdge() const
+  {
+    return isonedge_;
+  }
+
+  /*!
+   \brief Set node is on geometrical edge
+   */
+  virtual bool& SetOnEdge()
+  {
+    return isonedge_;
+  }
+
+  /*!
+   \brief Is node on geometrical corner
+   */
+  virtual bool IsOnCorner() const
+  {
+    return isoncorner_;
+  }
+
+  /*!
+   \brief Is node on geometrical corner
+   */
+  virtual bool IsOnCornerorBound() const
+  {
+    return (isoncorner_ or isonbound_);
+  }
+
+  /*!
+   \brief Set node is on geometrical corner
+   */
+  virtual bool& SetOnCorner()
+  {
+    return isoncorner_;
+  }
+
+  /*!
    \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
    */
   virtual bool IsDbc() const
@@ -482,6 +578,8 @@ public:
    */
   void AddDValue(const int& colnode, const double& val);
   void AddDntsValue(const int& colnode, const double& val);
+  void AddDltsValue(const int& colnode, const double& val);
+  void AddDltlValue(const int& colnode, const double& val);
 
   /*!
    \brief Add a value to the 'M' map of this node
@@ -496,6 +594,8 @@ public:
    */
   void AddMValue(const int& colnode,const double& val);
   void AddMntsValue(const int& colnode,const double& val);
+  void AddMltsValue(const int& colnode,const double& val);
+  void AddMltlValue(const int& colnode,const double& val);
 
   /*!
    \brief Add a value to the 'Mmod' map of this node
@@ -596,6 +696,8 @@ protected:
   bool              isslave_;        // true if cnode is on slave side of contact problem
   bool              istiedslave_;    // true if cnode is on slave side and actually tied
   bool              isonbound_;      // true if cnode is on slave side boundary
+  bool              isonedge_;       // true if cnode is on geometrical edge
+  bool              isoncorner_;     // true if cnode is on geometrical corner
   bool              isdbc_;          // true if cnode has D.B.C.applied to at least one dof
   bool              dbcdofs_[3];      // true at each cnode has D.B.C applied at i-th dof
   int               numdof_;         // number of degrees of freedom (length of dofs_)

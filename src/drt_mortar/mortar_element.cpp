@@ -61,6 +61,7 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
   Area()=0.0;
   dualshapecoeff_      = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
+  trafocoeff_          = Teuchos::null;
 
   return;
 }
@@ -587,7 +588,7 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
 
   // store length of normal and other information into elens
   elens(4,i) = sqrt(elens(0,i)*elens(0,i)+elens(1,i)*elens(1,i)+elens(2,i)*elens(2,i));
-  if (elens(4,i)==0.0) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
+  if (elens(4,i)<1e-12) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
   elens(3,i) = Id();
   elens(5,i) = MoData().Area();
 
@@ -617,7 +618,45 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
 
   // build unit normal
   const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
-  if (length==0.0) dserror("ERROR: Normal of length zero!");
+  if (length<1e-12) dserror("ERROR: Normal of length zero!");
+  for (int i=0;i<3;++i) n[i] /= length;
+
+  return length;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Compute nodal averaged normal at xi                      farah 06/16|
+ *----------------------------------------------------------------------*/
+double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(double* xi, double* n)
+{
+  // check input
+  if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
+  if (!n)  dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
+
+  int nnodes = NumPoint();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+
+  // get shape function values and derivatives at xi
+  EvaluateShape(xi, val, deriv, nnodes,false);
+
+  // initialize n
+  n[0] = 0.0;
+  n[1] = 0.0;
+  n[2] = 0.0;
+
+  // loop over all nodes of this element
+  for (int i = 0; i<NumNode(); ++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (Nodes()[i]);
+    n[0] = val[i] * mymrtrnode->MoData().n()[0];
+    n[1] = val[i] * mymrtrnode->MoData().n()[1];
+    n[2] = val[i] * mymrtrnode->MoData().n()[2];
+  }
+
+  const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  if (length<1e-12) dserror("ERROR: Normal of length zero!");
   for (int i=0;i<3;++i) n[i] /= length;
 
   return length;
@@ -652,7 +691,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 
   // build unit normal
   const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
-  if (length==0.0) dserror("ERROR: Normal of length zero!");
+  if (length<1e-12) dserror("ERROR: Normal of length zero!");
   for (int i=0;i<3;++i) n[i] /= length;
 
   // check if this mortar ele is an IntEle
@@ -1378,7 +1417,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
   else
     dserror("ERROR: MaxEdgeSize not implemented for this type of MortarElement");
 
-  if (maxedgesize==0.0) dserror("ERROR: MaxEdgeSize went wrong...!");
+  if (maxedgesize<1e-12) dserror("ERROR: MaxEdgeSize went wrong...!");
   return maxedgesize;
 }
 

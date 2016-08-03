@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file mortar_projector.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief header for projector functions
+
+\level 1
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_PROJECTOR_H
@@ -82,6 +81,14 @@ public:
                          double* xi,
                          double* normal,
                          double& dist) = 0;
+
+
+  virtual bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin) = 0;
 
   virtual bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
                          MORTAR::MortarElement& mele,
@@ -259,6 +266,14 @@ public:
                          double& dist);
 
   //TODO explanation
+  bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  //TODO explanation
   bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
                          MORTAR::MortarElement& mele,
                          double* xi,
@@ -286,6 +301,13 @@ protected:
                          double* xi,
                          double* normal,
                          double& dist);
+
+  bool ProjectSNodeByMNodalNormal2DLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
 
   bool ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
                          MORTAR::MortarElement& mele,
@@ -517,6 +539,13 @@ public:
                          double* xi,
                          double* normal,
                          double& dist){dserror("ERROR");return false;};
+
+  bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin){dserror("ERROR");return false;};
 
   bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
                          MORTAR::MortarElement& mele,

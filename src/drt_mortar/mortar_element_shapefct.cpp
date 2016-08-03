@@ -3,12 +3,9 @@
 
 \brief Shape function repository for mortar coupling element
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
@@ -50,6 +47,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   // *********************************************************************
   case MortarElement::lin1D_edge0:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = 0.0;
     val[1] = 1.0;
     deriv(0, 0) = 0.0;
@@ -62,6 +60,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   // *********************************************************************
   case MortarElement::lin1D_edge1:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = 1.0;
     val[1] = 0.0;
     deriv(0, 0) = 0.0;
@@ -173,6 +172,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     // *********************************************************************
   case MortarElement::quad1D_edge0:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = 0.0;
     val[1] = xi[0];
     val[2] = 1.0 - xi[0];
@@ -187,6 +187,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     // *********************************************************************
   case MortarElement::quad1D_edge1:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = -xi[0];
     val[1] = 0.0;
     val[2] = 1.0 + xi[0];
@@ -875,6 +876,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     // *********************************************************************
   case MortarElement::lindual1D_edge0:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = 0.0;
     val[1] = 1.0;
     deriv(0, 0) = 0.0;
@@ -887,6 +889,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     // *********************************************************************
   case MortarElement::lindual1D_edge1:
   {
+    dserror("ERROR: explicit edge modification is outdated! We apply a genreal transformaiton instead");
     val[0] = 1.0;
     val[1] = 0.0;
     deriv(0, 0) = 0.0;
@@ -2185,7 +2188,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
 bool MORTAR::MortarElement::EvaluateShapeLagMult(
     const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
-    const int& valdim)
+    const int& valdim, bool boundtrafo)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none)
@@ -2194,15 +2197,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
   if (!xi)
     dserror("ERROR: EvaluateShapeLagMult called with xi=NULL");
 
-//  commented out due to both sided wear --> here we have to do some calculations with
-//  the master elements
-//  if (!IsSlave())
-//    dserror("ERROR: EvaluateShapeLagMult called for master element");
-
   // dual LM shape functions or not
   bool dual = false;
-  if (lmtype == INPAR::MORTAR::shape_dual
-      || lmtype == INPAR::MORTAR::shape_petrovgalerkin)
+  if (lmtype == INPAR::MORTAR::shape_dual or
+      lmtype == INPAR::MORTAR::shape_petrovgalerkin)
     dual = true;
 
   // get node number and node pointers
@@ -2219,46 +2217,11 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
     {
       if (valdim != 2)
         dserror("ERROR: Inconsistency in EvaluateShape");
-      // check for boundary nodes
-      MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
-      MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
-      if (!mymrtrnode0)
-        dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-      if (!mymrtrnode1)
-        dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-      bool isonbound0 = mymrtrnode0->IsOnBound();
-      bool isonbound1 = mymrtrnode1->IsOnBound();
 
-      // both nodes are interior: use unmodified dual shape functions
-      if (!isonbound0 && !isonbound1)
-      {
-        if (dual)
-          ShapeFunctions(MortarElement::lindual1D, xi, val, deriv);
-        else
-          ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
-      }
-
-      // node 0 is on boundary: modify dual shape functions
-      else if (isonbound0 && !isonbound1)
-      {
-        if (dual)
-          ShapeFunctions(MortarElement::lindual1D_edge0, xi, val, deriv);
-        else
-          ShapeFunctions(MortarElement::lin1D_edge0, xi, val, deriv);
-      }
-
-      // node 1 is on boundary: modify dual shape functions
-      else if (!isonbound0 && isonbound1)
-      {
-        if (dual)
-          ShapeFunctions(MortarElement::lindual1D_edge1, xi, val, deriv);
-        else
-          ShapeFunctions(MortarElement::lin1D_edge1, xi, val, deriv);
-      }
-
-      // both nodes are on boundary: infeasible case
+      if (dual)
+        ShapeFunctions(MortarElement::lindual1D, xi, val, deriv);
       else
-        dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes!");
+        ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
     }
     // Hermite smoothing
     else
@@ -2305,54 +2268,11 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
   {
     if (valdim != 3)
       dserror("ERROR: Inconsistency in EvaluateShape");
-    // check for boundary nodes
-    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
-    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
-    MortarNode* mymrtrnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
-    if (!mymrtrnode0)
-      dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    if (!mymrtrnode1)
-      dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    if (!mymrtrnode2)
-      dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-    bool isonbound0 = mymrtrnode0->IsOnBound();
-    bool isonbound1 = mymrtrnode1->IsOnBound();
-    bool isonbound2 = mymrtrnode2->IsOnBound();
 
-    // all 3 nodes are interior: use unmodified dual shape functions
-    if (!isonbound0 && !isonbound1 && !isonbound2)
-    {
-      if (dual)
-        ShapeFunctions(MortarElement::quaddual1D, xi, val, deriv);
-      else
-        ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
-    }
-
-    // node 0 is on boundary: modify dual shape functions
-    else if (isonbound0 && !isonbound1 && !isonbound2)
-    {
-      if (dual)
-        ShapeFunctions(MortarElement::quaddual1D_edge0, xi, val, deriv);
-      else
-        ShapeFunctions(MortarElement::quad1D_edge0, xi, val, deriv);
-    }
-
-    // node 1 is on boundary: modify dual shape functions
-    else if (!isonbound0 && isonbound1 && !isonbound2)
-    {
-      if (dual)
-        ShapeFunctions(MortarElement::quaddual1D_edge1, xi, val, deriv);
-      else
-        ShapeFunctions(MortarElement::quad1D_edge1, xi, val, deriv);
-    }
-
-    // node 2 is on boundary: infeasible case
-    else if (isonbound2)
-      dserror("ERROR: EvaluateShapeLagMult: Middle boundary node");
-
-    // nodes 0 and 1 are on boundary: infeasible case
+    if (dual)
+      ShapeFunctions(MortarElement::quaddual1D, xi, val, deriv);
     else
-      dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes");
+      ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
 
     break;
   }
@@ -2585,6 +2505,170 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
     break;
   }
   }
+
+  // special case: hermite interpolation. trafo not valid for this case
+  // TODO: remove this if statement and include this into trafo framework!
+  if(IsHermite())
+    return true;
+
+  // if no trafo is required return!
+  if(!boundtrafo)
+    return true;
+
+  // check if we need trafo
+  const int nnodes = NumNode();
+  bool bound = false;
+  for(int i = 0; i<nnodes;++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    if(mymrtrnode->IsOnBoundorCE())
+    {
+      bound = true;
+      break;
+    }
+  }
+
+  if(!bound)
+    return true;
+
+  //---------------------------------
+  // do trafo for bound elements
+  LINALG::SerialDenseMatrix trafo(nnodes, nnodes,true);
+
+  if(MoData().Trafo() == Teuchos::null)
+  {
+    // 2D case!
+    if(Shape()== DRT::Element::line2 or
+       Shape()== DRT::Element::line3 or
+       Shape()== DRT::Element::nurbs2 or
+       Shape()== DRT::Element::nurbs3)
+    {
+      // get number of bound nodes
+      std::vector<int> ids;
+      for(int i = 0; i<nnodes;++i)
+      {
+        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        if(mymrtrnode->IsOnCornerorBound())
+        {
+          // get local bound id
+          ids.push_back(i);
+        }
+      }
+
+      int numbound = (int)ids.size();
+
+      // if all bound: error
+      if((nnodes-numbound)<1e-12)
+        dserror("ERROR: all nodes are bound");
+
+      const double factor = 1.0/(nnodes-numbound);
+      // row loop
+      for(int i = 0; i<nnodes;++i)
+      {
+        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        if (!mymrtrnode->IsOnCornerorBound())
+        {
+          trafo(i,i)=1.0;
+          for(int j = 0; j<(int)ids.size();++j)
+            trafo(i,ids[j]) = factor;
+        }
+      }
+    }
+
+    // 3D case!
+    else if(Shape()== DRT::Element::tri6 or
+       Shape()== DRT::Element::tri3  or
+       Shape()== DRT::Element::quad4 or
+       Shape()== DRT::Element::quad8 or
+       Shape()== DRT::Element::quad9 or
+       Shape()== DRT::Element::quad4 or
+       Shape()== DRT::Element::nurbs9)
+    {
+      // get number of bound nodes
+      std::vector<int> ids;
+      for(int i = 0; i<nnodes;++i)
+      {
+        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        if(mymrtrnode->IsOnBoundorCE())
+        {
+          // get local bound id
+          ids.push_back(i);
+        }
+      }
+
+      int numbound = (int)ids.size();
+
+      // if all bound: error
+      if((nnodes-numbound)<1e-12)
+      {
+        std::cout << "numnode= " << nnodes << "shape= " << Shape()<< std::endl;
+        dserror("ERROR: all nodes are bound");
+      }
+
+      const double factor = 1.0/(nnodes-numbound);
+      // row loop
+      for(int i = 0; i<nnodes;++i)
+      {
+        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        if (!mymrtrnode->IsOnBoundorCE())
+        {
+          trafo(i,i)=1.0;
+          for(int j = 0; j<(int)ids.size();++j)
+            trafo(i,ids[j]) = factor;
+        }
+      }
+    }
+    else
+      dserror("ERROR: unknown element type!");
+
+    MoData().Trafo() = Teuchos::rcp(new LINALG::SerialDenseMatrix(trafo));
+  }
+  else
+  {
+    trafo = *(MoData().Trafo());
+  }
+
+  int eledim = -1;
+  if(Shape()== DRT::Element::tri6 or
+         Shape()== DRT::Element::tri3  or
+         Shape()== DRT::Element::quad4 or
+         Shape()== DRT::Element::quad8 or
+         Shape()== DRT::Element::quad9 or
+         Shape()== DRT::Element::nurbs4 or
+         Shape()== DRT::Element::nurbs9)
+  {
+    eledim = 2;
+  }
+  else if(Shape()== DRT::Element::line2 or
+          Shape()== DRT::Element::line3 or
+          Shape()== DRT::Element::nurbs2 or
+          Shape()== DRT::Element::nurbs3)
+  {
+    eledim = 1;
+  }
+  else
+  {
+    dserror("ERROR: unknown shape");
+  }
+
+  LINALG::SerialDenseVector tempval(nnodes,true);
+  LINALG::SerialDenseMatrix tempderiv(nnodes,eledim,true);
+
+  for(int i = 0; i < nnodes; ++i)
+    for(int j = 0; j < nnodes; ++j)
+      tempval(i) += trafo(i,j)*val(j);
+
+  for(int k = 0; k < eledim; ++k)
+    for(int i = 0; i < nnodes; ++i)
+      for(int j = 0; j < nnodes; ++j)
+        tempderiv(i,k) += trafo(i,j)*deriv(j,k);
+
+  for(int i = 0; i < nnodes; ++i)
+    val(i) = tempval(i);
+
+  for(int k = 0; k < eledim; ++k)
+    for(int i = 0; i < nnodes; ++i)
+      deriv(i,k) = tempderiv(i,k);
 
   return true;
 }
@@ -4579,9 +4663,6 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
 bool MORTAR::MortarElement::DerivShapeDual(
     GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivdual)
 {
-  // commented out this line for maste-sided wear (diagonal shaped wear matrix E_2)
-  //if (!IsSlave()) dserror("ERROR: DerivShapeDual called for master element");
-
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
   if (!mynodes)
@@ -4627,7 +4708,6 @@ bool MORTAR::MortarElement::DerivShapeDual(
         derivdual.resize(0);
     }
 
-
     break;
   }
     // 3D linear case (3noded triangular element)
@@ -4643,41 +4723,8 @@ bool MORTAR::MortarElement::DerivShapeDual(
     // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    // check for boundary nodes
-    MortarNode* mycnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
-    MortarNode* mycnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
-    MortarNode* mycnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
-    if (!mycnode0)
-      dserror("ERROR: DerivShapeDual: Null pointer!");
-    if (!mycnode1)
-      dserror("ERROR: DerivShapeDual: Null pointer!");
-    if (!mycnode2)
-      dserror("ERROR: DerivShapeDual: Null pointer!");
-    bool isonbound0 = mycnode0->IsOnBound();
-    bool isonbound1 = mycnode1->IsOnBound();
-    bool isonbound2 = mycnode2->IsOnBound();
-
     // all 3 nodes are interior: use unmodified dual shape functions
-    if (!isonbound0 && !isonbound1 && !isonbound2)
-      ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
-
-    // node 0 is on boundary: modify dual shape functions
-    else if (isonbound0 && !isonbound1 && !isonbound2)
-      ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D_edge0,
-          derivdual);
-
-    // node 1 is on boundary: modify dual shape functions
-    else if (!isonbound0 && isonbound1 && !isonbound2)
-      ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D_edge1,
-          derivdual);
-
-    // node 2 is on boundary: infeasible case
-    else if (isonbound2)
-      dserror("ERROR: DerivShapeDual: Middle boundary node");
-
-    // nodes 0 and 1 are on boundary: infeasible case
-    else
-      dserror("ERROR: DerivShapeDual: Element with 2 boundary nodes");
+    ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
 
     break;
   }
@@ -4688,37 +4735,18 @@ bool MORTAR::MortarElement::DerivShapeDual(
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    // check for boundary nodes
-    bool bound = false;
-    for (int i = 0; i < NumNode(); ++i)
-    {
-      MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-      if (!mycnode)
-        dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-      bound += mycnode->IsOnBound();
-    }
-
-    // all nodes are interior: use unmodified dual shape functions
-    if (!bound)
-    {
-      if (Shape() == quad4)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::bilindual2D,
-            derivdual);
-      else if (Shape() == tri6)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual2D,
-            derivdual);
-      else if (Shape() == quad8)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::serendipitydual2D,
-            derivdual);
-      else
-        /*Shape()==quad9*/ShapeFunctionLinearizations(
-            MORTAR::MortarElement::biquaddual2D, derivdual);
-    }
-
-    // some nodes are on slave boundary
+    if (Shape() == quad4)
+      ShapeFunctionLinearizations(MORTAR::MortarElement::bilindual2D,
+          derivdual);
+    else if (Shape() == tri6)
+      ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual2D,
+          derivdual);
+    else if (Shape() == quad8)
+      ShapeFunctionLinearizations(MORTAR::MortarElement::serendipitydual2D,
+          derivdual);
     else
-      dserror(
-          "ERROR: DerivShapeDual: boundary mod. not yet impl. for 3D contact!");
+      /*Shape()==quad9*/ShapeFunctionLinearizations(
+          MORTAR::MortarElement::biquaddual2D, derivdual);
 
     break;
   }
@@ -4742,6 +4770,133 @@ bool MORTAR::MortarElement::DerivShapeDual(
     break;
   }
   }
+
+  // special case: hermite interpolation. trafo not valid for this case
+  // TODO: remove this if statement and include this into trafo framework!
+  if(IsHermite())
+    return true;
+
+  // check if we need trafo
+  const int nnodes = NumNode();
+  bool bound = false;
+  for(int i = 0; i<nnodes;++i)
+  {
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    if(mymrtrnode->IsOnBoundorCE())
+    {
+      bound = true;
+      break;
+    }
+  }
+
+  if(!bound)
+    return true;
+
+  //---------------------------------
+  // do trafo for bound elements
+  LINALG::SerialDenseMatrix trafo(nnodes, nnodes,true);
+
+  // 2D case!
+  if(Shape()== DRT::Element::line2 or
+     Shape()== DRT::Element::line3 or
+     Shape()== DRT::Element::nurbs2 or
+     Shape()== DRT::Element::nurbs3)
+  {
+    // get number of bound nodes
+    std::vector<int> ids;
+    for(int i = 0; i<nnodes;++i)
+    {
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      if(mymrtrnode->IsOnCorner())
+      {
+        // get local bound id
+        ids.push_back(i);
+      }
+    }
+
+    int numbound = (int)ids.size();
+
+    // if all bound: error
+    if((nnodes-numbound)<1e-12)
+      dserror("ERROR: all nodes are bound");
+
+    const double factor = 1.0/(nnodes-numbound);
+    // row loop
+    for(int i = 0; i<nnodes;++i)
+    {
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      if (!mymrtrnode->IsOnCorner())
+      {
+        trafo(i,i)=1.0;
+        for(int j = 0; j<(int)ids.size();++j)
+          trafo(i,ids[j]) = factor;
+      }
+    }
+  }
+
+  // 3D case!
+  else if(Shape()== DRT::Element::tri6 or
+     Shape()== DRT::Element::tri3  or
+     Shape()== DRT::Element::quad4 or
+     Shape()== DRT::Element::quad8 or
+     Shape()== DRT::Element::quad9 or
+     Shape()== DRT::Element::nurbs4 or
+     Shape()== DRT::Element::nurbs9)
+  {
+    // get number of bound nodes
+    std::vector<int> ids;
+    for(int i = 0; i<nnodes;++i)
+    {
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      if(mymrtrnode->IsOnBoundorCE())
+      {
+        // get local bound id
+        ids.push_back(i);
+      }
+    }
+
+    int numbound = (int)ids.size();
+
+    // if all bound: error
+    if((nnodes-numbound)<1e-12)
+      dserror("ERROR: all nodes are bound");
+
+    const double factor = 1.0/(nnodes-numbound);
+    // row loop
+    for(int i = 0; i<nnodes;++i)
+    {
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      if (!mymrtrnode->IsOnBoundorCE())
+      {
+        trafo(i,i)=1.0;
+        for(int j = 0; j<(int)ids.size();++j)
+          trafo(i,ids[j]) = factor;
+      }
+    }
+  }
+  else
+    dserror("ERROR: unknown element type!");
+
+
+
+  // do trafo
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dummy(nnodes*nnodes*3,0,Epetra_SerialDenseMatrix(nnodes,nnodes,true));
+
+  typedef GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator _CIM;
+  for (_CIM p=derivdual.begin();p!=derivdual.end();++p)
+  {
+    for(int i = 0; i<nnodes;++i)
+    {
+      for(int j = 0; j<nnodes;++j)
+      {
+        dummy[p->first](i,j) += trafo(i,j) * (p->second)(j,i);
+      }
+    }
+  }
+
+  for (_CIM p=dummy.begin();p!=dummy.end();++p)
+    derivdual[p->first] = p->second;
+
 
   return true;
 }

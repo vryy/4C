@@ -35,11 +35,13 @@ DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
 CONTACT::CoNodeDataContainer::CoNodeDataContainer():
 grow_(1.0e12),
 gnts_(1.0e12),
+glts_(1.0e12),
 activeold_(false),
 derivn_(0,0),    //init deriv normal to length 0 with 0 entries per direction
 derivtxi_(0,0),  //init deriv txi    to length 0 with 0 entries per direction
 derivteta_(0,0), //init deriv teta   to length 0 with 0 entries per direction
 varWGapSl_(0),
+alpha_(0),
 kappa_(1.0)
 {
   // set all tangent entries to 0.0
@@ -406,6 +408,7 @@ void CONTACT::CoNode::AddgValue(double& val)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                      hiermeier 04/14|
  *----------------------------------------------------------------------*/
@@ -442,6 +445,44 @@ void CONTACT::CoNode::AddntsGapValue(double& val)
 
   // add given value to wGap_
   CoData().Getgnts()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the lts gap                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddltsGapValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: function called for master node %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().Getglts()==1.0e12) CoData().Getglts()=0;
+
+  // add given value to wGap_
+  CoData().Getglts()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the ltl gap                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddltlGapValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: function called for master node %i", Id());
+  if (!IsOnEdge())
+    dserror("ERROR: function call for non edge node! %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().Getgltl()==1.0e12) CoData().Getgltl()=0;
+
+  // add given value to wGap_
+  CoData().Getgltl()+=val;
 
   return;
 }
@@ -625,6 +666,23 @@ void CONTACT::CoNode::BuildAveragedNormal()
     CoData().teta()[j]=0.0;
   }
 
+//  MoData().n()[0]=0.0;
+//  MoData().n()[1]=0.0;
+//  MoData().n()[2]=-1.0;
+//
+//  CoData().txi()[0]=1.0;
+//  CoData().txi()[1]=0.0;
+//  CoData().txi()[2]=0.0;
+//
+//  CoData().teta()[0]=0.0;
+//  CoData().teta()[1]=1.0;
+//  CoData().teta()[2]=0.0;
+//
+//  if ((int)CoData().GetDerivN().size()==0) CoData().GetDerivN().resize(3,0);
+//  if ((int)CoData().GetDerivTxi().size()==0) CoData().GetDerivTxi().resize(3,0);
+//  if ((int)CoData().GetDerivTeta().size()==0) CoData().GetDerivTeta().resize(3,0);
+//  return;
+
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
 
@@ -726,7 +784,11 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   // create unit normal vector
   double length = sqrt(n_tmp[0]*n_tmp[0]+n_tmp[1]*n_tmp[1]+n_tmp[2]*n_tmp[2]);
-  if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
+  if (length<1e-12)
+  {
+    std::cout << "normal zero: node slave= " << IsSlave() << "  length= " << length << std::endl;
+    dserror("ERROR: Nodal normal length 0, node ID %i",Id());
+  }
   else
   {
     for (int j=0;j<3;++j)
@@ -747,8 +809,14 @@ void CONTACT::CoNode::BuildAveragedNormal()
       CoData().txi()[1] = tangent[1];
       CoData().txi()[2] = tangent[2];
       double tlength = sqrt(tangent[0]*tangent[0]+tangent[1]*tangent[1]+tangent[2]*tangent[2]);
-      if (tlength==0.0) dserror("ERROR: Nodal tangent length 0, node ID %i",Id());
-      else             for (int j=0;j<3;++j) CoData().txi()[j]=tangent[j]/tlength;
+      if (tlength<1e-12)
+      {
+        std::cout << "tangent zero: node slave= " << IsSlave() << "  length= " << tlength << std::endl;
+        dserror("ERROR: Nodal tangent length 0, node ID %i",Id());
+      }
+      else
+        for (int j=0;j<3;++j)
+          CoData().txi()[j]=tangent[j]/tlength;
     }
     else
     {
@@ -779,7 +847,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
     CoData().txi()[2] = CoData().teta()[0]*MoData().n()[1]-CoData().teta()[1]*MoData().n()[0];
 #else
 
-    if (abs(MoData().n()[0])>1.0e-6 || abs(MoData().n()[1])>1.0e-6 )
+    if (abs(MoData().n()[0])>1.0e-4 || abs(MoData().n()[1])>1.0e-4 )
     {
       CoData().txi()[0]=-MoData().n()[1];
       CoData().txi()[1]=MoData().n()[0];
@@ -793,7 +861,18 @@ void CONTACT::CoNode::BuildAveragedNormal()
     }
 
     ltxi = sqrt(CoData().txi()[0]*CoData().txi()[0]+CoData().txi()[1]*CoData().txi()[1]+CoData().txi()[2]*CoData().txi()[2]);
-    for (int j=0;j<3;++j) CoData().txi()[j]/=ltxi;
+    if (ltxi<1e-12)
+    {
+      std::cout << "tangent 1 zero: node slave= " << IsSlave() << "  length= " << ltxi << std::endl;
+      dserror("ERROR: Nodal tangent length 0, node ID %i",Id());
+    }
+    else
+    {
+      for (int j=0;j<3;++j)
+        CoData().txi()[j]/=ltxi;
+    }
+
+
 
     // teta follows from corkscrew rule (teta = n x txi)
     CoData().teta()[0] = MoData().n()[1]*CoData().txi()[2]-MoData().n()[2]*CoData().txi()[1];
@@ -1111,7 +1190,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 #else
   // unnormalized tangent derivative txi
   // use definitions for txi from BuildAveragedNormal()
-  if (abs(MoData().n()[0])>1.0e-6 || abs(MoData().n()[1])>1.0e-6)
+  if (abs(MoData().n()[0])>1.0e-4 || abs(MoData().n()[1])>1.0e-4)
   {
     GEN::pairedvector<int,double>& derivtxix = CoData().GetDerivTxi()[0];
     GEN::pairedvector<int,double>& derivtxiy = CoData().GetDerivTxi()[1];

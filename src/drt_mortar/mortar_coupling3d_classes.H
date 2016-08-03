@@ -4,12 +4,9 @@
 \brief A class for mortar coupling of ONE slave element and ONE master
        element of a mortar interface in 3D (definition of sub-classes).
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_CLASSES_H
@@ -286,8 +283,19 @@ public:
   */
   virtual std::vector<GEN::pairedvector<int,double> >& GetDerivVertex(int i)
   {
-    if (i<0 || i>2) dserror("ERROR: IntCell has 3 vertex linearizations only!");
-    return linvertex_[i];
+    if(shape_ == DRT::Element::line2)
+    {
+      if (i<0 || i>1)
+        dserror("ERROR: IntLine has 2 vertex linearizations only!");
+      return linvertex_[i];
+    }
+    else
+    {
+      if (i<0 || i>2)
+        dserror("ERROR: IntCell has 3 vertex linearizations only!");
+      return linvertex_[i];
+    }
+
   }
 
   /*!
@@ -362,7 +370,6 @@ protected:
 
 }; // class IntCell
 
-
 /*!
 \brief A class representing one Vertex during the polygon clipping of
        slave and master element from the Coupling class. Besides the
@@ -386,7 +393,9 @@ public:
     {
       slave,        // slave node
       projmaster,   // projected master node
-      lineclip      // clipping point of two lines
+      lineclip,     // clipping point of two lines
+      master,       // master node (LTS)
+      projslave     // projected slave node (LTS)
     };
 
   //@}

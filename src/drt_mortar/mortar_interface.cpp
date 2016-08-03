@@ -6,10 +6,8 @@
 
 \level 1
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
+
 */
 /*-----------------------------------------------------------------------*/
 
@@ -440,6 +438,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
   InitializeLagMultLin();
 
+  // check/init corner/edge modification
+  InitializeCornerEdge();
+
   // later we will export node and element column map to FULL overlap,
   // thus store the standard column maps first
   // get standard nodal column map (overlap=1)
@@ -561,6 +562,36 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   int globalstatus = 0;
   Comm().SumAll(&localstatus, &globalstatus, 1);
   quadslave_ = (bool) (globalstatus);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check and initialize corner/edge contact                 farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::InitializeCornerEdge()
+{
+  for (int i = 0; i < (Discret().NodeRowMap())->NumMyElements(); ++i)
+  {
+    // static_cast to the corresponding mortar/contact/friction/... node
+    // or element would be enough in all places
+    // performance loss is negligible when using a dynamic_cast instead
+    // but safety is increased enormously
+    MORTAR::MortarNode* node =
+        dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+
+    // remove bound/corner/edge flag for master nodes!
+    if (!node->IsSlave() && node->IsOnCorner() == true)
+      node->SetOnCorner() = false;
+    if (!node->IsSlave() && node->IsOnEdge() == true)
+      node->SetOnEdge() = false;
+
+    // candidates are slave nodes with only 1 adjacent MortarElement
+    if (node->IsSlave() && node->IsOnCornerEdge() == true)
+    {
+      node->SetSlave() = false;
+    }
+  }
 
   return;
 }
@@ -1441,7 +1472,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       bool isslave =
           dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
       bool isonbound =
-          dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBound();
+          dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
 
       if (isslave || isonbound)
         scb.push_back(gid);
@@ -2157,7 +2188,7 @@ void MORTAR::MortarInterface::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- |  private evaluate routine                                 farah 02/16|
+ |  protected evaluate routine                               farah 02/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::EvaluateCoupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
@@ -2166,10 +2197,11 @@ void MORTAR::MortarInterface::EvaluateCoupling(
   INPAR::MORTAR::AlgorithmType algo =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
+  // smooth contact
   switch(algo)
   {
   //*********************************
-  // Mortar Coupling (STS)
+  // Mortar Coupling (STS)    (2D/3D)
   // Gauß-Point-To-Segment (GPTS)
   //*********************************
   case INPAR::MORTAR::algorithm_mortar:
@@ -2185,15 +2217,49 @@ void MORTAR::MortarInterface::EvaluateCoupling(
     break;
   }
   //*********************************
-  // Line-to-Segment Coupling
+  // Segment-to-Line Coupling (3D)
   //*********************************
-  case INPAR::MORTAR::algorithm_lts:
+  case INPAR::MORTAR::algorithm_stl:
   {
-    dserror("ERROR: not yet implemented!");
+    //********************************************************************
+    // 1) perform coupling (projection + line clipping edge surface pairs)
+    // 2) integrate Mortar matrices D + M and weighted gap g
+    // 3) compute directional derivative of D + M and g and store into nodes
+    //    (only for contact setting)
+    //********************************************************************
+    EvaluateSTL();
     break;
   }
   //*********************************
-  // Node-to-Segment Coupling
+  // Line-to-Segment Coupling (3D)
+  //*********************************
+  case INPAR::MORTAR::algorithm_lts:
+  {
+    //********************************************************************
+    // 1) perform coupling (projection + line clipping edge surface pairs)
+    // 2) integrate Mortar matrices D + M and weighted gap g
+    // 3) compute directional derivative of D + M and g and store into nodes
+    //    (only for contact setting)
+    //********************************************************************
+    EvaluateLTS();
+    break;
+  }
+  //*********************************
+  // line-to-line Coupling (3D)
+  //*********************************
+  case INPAR::MORTAR::algorithm_ltl:
+  {
+    //********************************************************************
+    // 1) perform coupling (find closest point between to lines)
+    // 2) evaluate gap and shape functions at this point
+    // 3) compute directional derivative of entries and store into nodes
+    //    (only for contact setting)
+    //********************************************************************
+    EvaluateLTL();
+    break;
+  }
+  //*********************************
+  // Node-to-Segment Coupling (2D/3D)
   //*********************************
   case INPAR::MORTAR::algorithm_nts:
   {
@@ -2207,18 +2273,11 @@ void MORTAR::MortarInterface::EvaluateCoupling(
     break;
   }
   //*********************************
-  // line-to-line Coupling
-  //*********************************
-  case INPAR::MORTAR::algorithm_ltl:
-  {
-    dserror("ERROR: not yet implemented!");
-    break;
-  }
-  //*********************************
-  // Node-to-Line Coupling
+  // Node-to-Line Coupling (3D)
   //*********************************
   case INPAR::MORTAR::algorithm_ntl:
   {
+    dserror("ERROR: not yet implemented!");
     break;
   }
   //*********************************
@@ -2318,6 +2377,33 @@ void MORTAR::MortarInterface::EvaluateNTS()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type line-to-segment coupl             farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateLTS()
+{
+  dserror("ERROR: LTS NOT FOR MESHTYING!!!!");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type line-to-line coupl                farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateLTL()
+{
+  dserror("ERROR: LTL NOT FOR MESHTYING!!!!");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate coupling type segment-to-line coupl             farah 07/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateSTL()
+{
+  dserror("ERROR: LTS NOT FOR MESHTYING!!!!");
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                           popp 10/11|
@@ -3645,123 +3731,13 @@ void MORTAR::MortarInterface::AssembleDM(
     LINALG::SparseMatrix& mglobal)
 {
 
-  // call subroutines
+  // call subroutines:
+
+  // assemble mortar matrix D (slave side)
   AssembleD(dglobal);
+
+  // assemble mortar matrix M (master side)
   AssembleM(mglobal);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Assemble NTS matrices                                    farah 01/16|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AssembleDMnts(
-    LINALG::SparseMatrix& dglobal,
-    LINALG::SparseMatrix& mglobal,
-    bool onlyD)
-{
-  dserror("DO NOT USE THIS FUNCTION");
-
-  // get out of here if not participating in interface
-  if (!lComm())
-    return;
-
-  // loop over proc's slave nodes of the interface for assembly
-  // use standard row map to assemble each node only once
-  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find node with gid %", gid);
-    MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
-
-    if (mrtrnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDM: Node ownership inconsistency!");
-
-    /**************************************************** D-matrix ******/
-    if ((mrtrnode->MoData().GetDnts()).size() > 0)
-    {
-      const GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetDnts();
-      int rowsize = mrtrnode->NumDof();
-
-      GEN::pairedvector<int, double>::const_iterator colcurr;
-
-      for (colcurr = dmap.begin(); colcurr != dmap.end(); ++colcurr)
-      {
-        double val = colcurr->second;
-
-        DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
-        MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
-        if (!kcnode) dserror("node not found");
-
-        for (int j = 0; j < rowsize; ++j)
-        {
-          int row = mrtrnode->Dofs()[j];
-          int col = kcnode  ->Dofs()[j];
-
-          // do the assembly into global D matrix
-          if (shapefcn_ == INPAR::MORTAR::shape_dual
-              || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-#ifdef MORTARTRAFO
-            // do lumping of D-matrix
-            // create an explicitly diagonal d matrix
-            dglobal.Assemble(val, row, row);
-#else
-            // check for diagonality
-            if (row != col && abs(val) > 1.0e-12)
-              dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
-
-            // create an explicitly diagonal d matrix
-            if (row == col)
-              dglobal.Assemble(val, row, col);
-#endif // #ifdef MORTARTRAFO
-          }
-          else if (shapefcn_ == INPAR::MORTAR::shape_standard)
-          {
-            // don't check for diagonality
-            // since for standard shape functions, as in general when using
-            // arbitrary shape function types, this is not the case
-
-            // create the d matrix, do not assemble zeros
-            dglobal.Assemble(val, row, col);
-          }
-        }
-      }
-    }
-
-    /**************************************************** M-matrix ******/
-    if ((mrtrnode->MoData().GetMnts()).size() > 0 and !onlyD)
-    {
-      const std::map<int, double>& mmap = mrtrnode->MoData().GetMnts();
-      int rowsize = mrtrnode->NumDof();
-
-      std::map<int, double>::const_iterator colcurr;
-
-      for (colcurr = mmap.begin(); colcurr != mmap.end(); ++colcurr)
-      {
-        DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
-        MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
-        if (!kcnode) dserror("node not found");
-
-        double val = colcurr->second;
-
-        for (int j = 0; j < rowsize; ++j)
-        {
-          int row = mrtrnode->Dofs()[j];
-          int col = kcnode->Dofs()[j];
-
-          // do not assemble zeros into m matrix
-          if (abs(val) > 1.0e-12)
-            mglobal.Assemble(val, row, col);
-        }
-      }
-    }
-  }
 
   return;
 }

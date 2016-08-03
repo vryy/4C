@@ -108,6 +108,8 @@ public:
     AleWear,
     LineMrtrSym,
     PointMrtrSym,
+    EdgeMrtr,
+    CornerMrtr,
     PointLocsys,
     LineLocsys,
     SurfaceLocsys,

@@ -50,7 +50,7 @@ SYSTEM               sp
 LM_SHAPEFCN           dual
 LM_QUAD               quad
 LM_DUAL_CONSISTENT    none
-NUMGP_PER_DIM         16
+NUMGP_PER_DIM         7
 TRIANGULATION         Delaunay
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

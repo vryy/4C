@@ -12,6 +12,7 @@
 
 /*----------------------------------------------------------------------------*/
 #include "ale.H"
+#include "ale_meshsliding.H"
 #include "ale_resulttest.H"
 #include "ale_utils_mapextractor.H"
 
@@ -94,6 +95,15 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
   }
 
+  if (msht_ == INPAR::ALE::meshsliding)
+  {
+    meshtying_ = Teuchos::rcp(new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
+  }
+  else if (msht_ == INPAR::ALE::meshtying)
+  {
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
+  }
+
   // ---------------------------------------------------------------------
   // Create LocSysManager, if needed (used for LocSys-Dirichlet BCs)
   // ---------------------------------------------------------------------
@@ -115,7 +125,18 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
 void ALE::Ale::CreateSystemMatrix(
     Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
 {
-  if (interface == Teuchos::null)
+  if (msht_ != INPAR::ALE::no_meshtying )
+  {
+    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(),1);
+    sysmat_ = meshtying_->Setup(coupleddof, dispnp_);
+    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
+
+    if (interface != Teuchos::null)
+    {
+      meshtying_->IsMultifield(*interface, true);
+    }
+  }
+  else if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
@@ -147,8 +168,20 @@ void ALE::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc,
     dispnp_->Update(1.0, *stepinc, 1.0, *dispn_, 0.0);
   }
 
+  if (msht_ != INPAR::ALE::no_meshtying)
+  {
+    meshtying_->MshtSplit(sysmat_);
+  }
+
   EvaluateElements();
   EvaluateElementQuality();
+
+  // prepare meshtying system
+  if (msht_ != INPAR::ALE::no_meshtying)
+  {
+    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,dispnp_);
+    meshtying_->MultifieldSplit(sysmat_);
+  }
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
   if (LocsysManager() != Teuchos::null)
@@ -184,8 +217,11 @@ int ALE::Ale::Solve()
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
-  int errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
-
+  int errorcode = 0;
+  if (msht_== INPAR::ALE::no_meshtying)
+    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
+  else
+    errorcode = meshtying_->SolveMeshtying(*solver_, sysmat_, disi_, rhs, dispnp_);
   // calc norm
   disi_->Norm2(&normdisi_);
   normdisi_ /= sqrt(disi_->GlobalLength());
