@@ -30,11 +30,14 @@
 #include "fs3i.H"
 #include "Epetra_MpiComm.h"
 #include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_tsi.H"
 
 
-// forward declaration
+// forward declarations
+namespace LINALG
+{
+  template <unsigned int n, unsigned int m> class Matrix;
+}
 namespace TSI
 {
   class Monolithic;

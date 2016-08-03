@@ -14,6 +14,7 @@
 
 #include "biofilm_fsi_utils.H"
 
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
 

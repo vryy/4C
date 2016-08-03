@@ -22,7 +22,6 @@
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
-#include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -41,6 +40,7 @@ namespace LINALG
 {
   class MapExtractor;
   class SparseMatrix;
+  template <unsigned int n, unsigned int m> class Matrix;
 }
 
 namespace STR

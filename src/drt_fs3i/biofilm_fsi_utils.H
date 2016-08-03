@@ -15,7 +15,13 @@
 #ifndef BIOFILMFSIUTILS_H_
 #define BIOFILMFSIUTILS_H_
 
-#include "../drt_lib/drt_discret.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace FS3I {
 namespace Biofilm {
