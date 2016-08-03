@@ -193,8 +193,9 @@ public:
     slipcoeff = 0.0;
   }
 
-  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap()
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap(double kappa_m)
   {
+    UpdateConfigurationMap_GP(kappa_m);
     #ifdef DEBUG
     //Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
 
@@ -216,6 +217,9 @@ public:
 protected:
 
   virtual void InitConfigurationMap();
+
+  //Updates configurationmap
+  virtual void UpdateConfigurationMap_GP(double kappa_m){return;}
 
   void SetElementConditions();
 

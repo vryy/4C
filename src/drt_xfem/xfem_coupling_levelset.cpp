@@ -950,23 +950,30 @@ void XFEM::LevelSetCouplingNavierSlip::GetConditionByRobinId(
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::InitConfigurationMap()
 {
-  //Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+    dserror("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
+  else
+    dserror("XFEM::LevelSetCouplingNavierSlip: You want to initialize another strategy than Xfluid_Sided?");
   return;
 }
 
@@ -1171,22 +1178,47 @@ void XFEM::LevelSetCouplingTwoPhase::ReadRestart(
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingTwoPhase::InitConfigurationMap()
 {
-  //Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
+  if (GetAveragingStrategy() == INPAR::XFEM::Harmonic)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+    dserror("XFEM::LevelSetCouplingTwoPhase: Averaging Strategy not set!");
+  else
+    dserror("XFEM::LevelSetCouplingTwoPhase: You want to initialize another strategy than harmonic?");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(double kappa_m)
+{
+  if (GetAveragingStrategy() == INPAR::XFEM::Harmonic)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Col].second = kappa_m;
+    configuration_map_[INPAR::XFEM::X_Con_Col].second = 1.-kappa_m;
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_Row].second = kappa_m;
+    configuration_map_[INPAR::XFEM::X_Adj_Row].second = 1.-kappa_m;
+  }
+  else
+    dserror("XFEM::LevelSetCouplingTwoPhase: You want to initialize another strategy than harmonic?");
   return;
 }

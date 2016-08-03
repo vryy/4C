@@ -1381,21 +1381,28 @@ void XFEM::MeshCouplingFSI::LiftDrag(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::InitConfigurationMap()
 {
-  //Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
 
-  //Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+    //Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+  }
+    else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+      dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
+    else
+      dserror("XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
   return;
 }
 
@@ -1936,14 +1943,10 @@ void XFEM::MeshCouplingFluidFluid::InitConfigurationMap()
 {
   //Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
 
   //Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
 
   //Configuration of Penalty Terms
@@ -1951,6 +1954,38 @@ void XFEM::MeshCouplingFluidFluid::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+
+  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
+
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::Mean)
+  {
+    //Configuration of Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,0.5);
+    configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,0.5);
+
+    //Configuration of Adjount Consistency Terms
+    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,0.5);
+    configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,0.5);
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+    dserror("XFEM::MeshCouplingFluidFluid: Averaging Strategy not set!");
+  else
+    dserror("XFEM::MeshCouplingFluidFluid: You want to initialize another strategy?");
+
   return;
 }
 

@@ -2029,49 +2029,50 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
           if (my::fldparatimint_->IsNewOSTImplementation())
           {
-            // get velocity at integration point
-            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::velintn_.Multiply(eveln,my::funct_);
-
-            // get velocity derivatives at integration point
-            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::vderxyn_.MultiplyNT(eveln,my::derxy_);
-
-            //-----------------------------------------------------------------------------
-            // evaluate the coupling terms for coupling with current side
-            // (or embedded element through current side)
-            // time step n
-            const double kappa_m = 1.0;
-            const double kappa_s = 0.0;
-            GetMaterialParametersVolumeCell(mat,densaf_master_,viscaf_master_,gamma_m_);
-
-            // REMARK: do not add adjoint and penalty terms at t_n for hybrid LM approach!
-            // (these are Nitsche-terms! find best settings for Nitsche's method first!)
-            LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
-            LINALG::Matrix<my::nsd_,1> itractionn_jump(true);
-
-            //Get Configuration Map (finally we should modify the configuration map here in a way that it fits hybrid LM approach)
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap();
-
-            si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
-              normal,
-              surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
-              false,
-              viscaf_master_,              // dynvisc viscosity in background fluid
-              viscaf_slave_,               // dynvisc viscosity in embedded fluid
-              kappa_m,                     // mortaring weighting
-              kappa_s,                     // mortaring weighting
-              my::densn_,                  // fluid density
-              my::funct_,                  // bg shape functions
-              my::derxy_,                  // bg shape function gradient
-              my::vderxyn_,                // bg grad u^n
-              my::funct_.Dot(epren),       // bg p^n
-              my::velintn_,                // bg u^n
-              ivelintn_jump,
-              itractionn_jump,
-              configmap_n,
-              INPAR::XFEM::PreviousState_only_consistency
-            );
+            dserror("New OST for HybridLM not implemented - check out the code below this dserror!");
+//            // get velocity at integration point
+//            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+//            my::velintn_.Multiply(eveln,my::funct_);
+//
+//            // get velocity derivatives at integration point
+//            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+//            my::vderxyn_.MultiplyNT(eveln,my::derxy_);
+//
+//            //-----------------------------------------------------------------------------
+//            // evaluate the coupling terms for coupling with current side
+//            // (or embedded element through current side)
+//            // time step n
+//            const double kappa_m = 1.0;
+//            const double kappa_s = 0.0;
+//            GetMaterialParametersVolumeCell(mat,densaf_master_,viscaf_master_,gamma_m_);
+//
+//            // REMARK: do not add adjoint and penalty terms at t_n for hybrid LM approach!
+//            // (these are Nitsche-terms! find best settings for Nitsche's method first!)
+//            LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
+//            LINALG::Matrix<my::nsd_,1> itractionn_jump(true);
+//
+//            //Get Configuration Map (finally we should modify the configuration map here in a way that it fits hybrid LM approach)
+//            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& hlm_configmap_n = coupling->GetConfigurationmap();
+//
+//            si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
+//              normal,
+//              surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
+//              false,
+//              viscaf_master_,              // dynvisc viscosity in background fluid
+//              viscaf_slave_,               // dynvisc viscosity in embedded fluid
+//              kappa_m,                     // mortaring weighting
+//              kappa_s,                     // mortaring weighting
+//              my::densn_,                  // fluid density
+//              my::funct_,                  // bg shape functions
+//              my::derxy_,                  // bg shape function gradient
+//              my::vderxyn_,                // bg grad u^n
+//              my::funct_.Dot(epren),       // bg p^n
+//              my::velintn_,                // bg u^n
+//              ivelintn_jump,
+//              itractionn_jump,
+//              hlm_configmap_n,
+//              INPAR::XFEM::PreviousState_only_consistency
+//            );
           }
         } // hybrid lm method
 
@@ -3622,7 +3623,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::NIT_evaluateCoupling" );
 
           //Get Configuration Map
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap = coupling->GetConfigurationmap();
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap = coupling->GetConfigurationmap(kappa_m);
 
           //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
@@ -3739,7 +3740,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             }
 
             //Get Configuration Map
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap();
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap(kappa_m);
 
             const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(

@@ -940,6 +940,9 @@ protected:
 
   void InitConfigurationMap();
 
+  //Updates configurationmap
+  virtual void UpdateConfigurationMap_GP(double kappa_m);
+
 private:
 
   bool surfacetension_init_;
