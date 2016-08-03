@@ -210,6 +210,12 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     params.set("MyPID",myrank_);
   }
 
+  // add initial forces due to 0D cardiovascular coupling conditions - needed in case of initial ventricular pressure!
+  Teuchos::ParameterList pwindk;
+  pwindk.set("scale_timint", 1.0);
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffCardiovascular0D((*time_)[0], (*dis_)(0), fint_, stiff_, pwindk);
+
   if (HaveNonlinearMass()==INPAR::STR::ml_none)
   {
     // set initial internal force vector
