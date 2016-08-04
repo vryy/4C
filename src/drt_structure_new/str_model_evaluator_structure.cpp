@@ -99,10 +99,10 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
   Int().SetState(x);
 
   // reset external forces
-  fextnp_ptr_->Scale(0.0);
+  fextnp_ptr_->PutScalar(0.0);
 
   // reset internal forces
-  fintnp_ptr_->Scale(0.0);
+  fintnp_ptr_->PutScalar(0.0);
 
   // zero stiffness matrix
   stiff_ptr_->Zero();

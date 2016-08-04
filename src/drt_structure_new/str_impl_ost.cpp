@@ -110,7 +110,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  if (IsPredictorState())
+  if (IsPredictorState() or  IsEquilibriateInitialState())
     return;
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
@@ -149,7 +149,7 @@ void STR::IMPLICIT::OneStepTheta::UpdateConstantStateContributions()
   // ---------------------------------------------------------------------------
   // (1) constant velocity update contribution
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale(1.0/(theta_*dt),
+  (*const_vel_acc_update_ptr_)(0)->Scale(-(1.0-theta_)/theta_,
       *GlobalState().GetVelN());
   // ---------------------------------------------------------------------------
   // (2) constant acceleration update contribution
@@ -304,6 +304,9 @@ void STR::IMPLICIT::OneStepTheta::WriteRestart(
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader)
 {
+  dserror("Restart is not yet working for new structural time integration with"
+      " one-step-theta.");
+
   CheckInitSetup();
   ioreader.ReadVector(finertian_ptr_,"finert");
   ioreader.ReadVector(fviscon_ptr_,"fvisco");

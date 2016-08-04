@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linesearch_backtrack.cpp
 
+\brief %NOX::NLN backtracking line search implementation.
+
 \maintainer Michael Hiermeier
 
 \date Jun 11, 2015
@@ -19,7 +21,9 @@
 
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
-#include <NOX_Epetra_Group.H>
+#include "nox_nln_group.H"
+
+#include <Epetra_Vector.h>
 
 #include <Teuchos_ParameterList.hpp>
 

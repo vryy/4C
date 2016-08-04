@@ -77,7 +77,7 @@ namespace GROUP {
     virtual NOX::Abstract::Group::ReturnType computeFandJacobian();
 
     //! set right hand side
-    NOX::Abstract::Group::ReturnType setF(const Teuchos::RCP<const NOX::Epetra::Vector> Fptr);
+    NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<NOX::Epetra::Vector> Fptr);
 
     //! set jacobian operator
     virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);

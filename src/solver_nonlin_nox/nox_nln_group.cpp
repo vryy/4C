@@ -92,12 +92,12 @@ void NOX::NLN::Group::computeX(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::NLN::Group::setF(
-    const Teuchos::RCP<const NOX::Epetra::Vector> Fptr)
+    Teuchos::RCP<NOX::Epetra::Vector> Fptr)
 {
   if (Fptr == Teuchos::null or Fptr->getEpetraVector().Map().NumGlobalElements()==0)
     return NOX::Abstract::Group::BadDependency;
 
-  RHSVectorPtr =  Teuchos::rcp_const_cast<NOX::Epetra::Vector>(Fptr);
+  RHSVector = *Fptr;
   isValidRHS = true;
 
   return NOX::Abstract::Group::Ok;
