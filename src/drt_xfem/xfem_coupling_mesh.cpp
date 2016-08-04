@@ -707,9 +707,26 @@ void XFEM::MeshCouplingWeakDirichlet::InitConfigurationMap()
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+
+  return;
+}
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(
@@ -1064,6 +1081,49 @@ void XFEM::MeshCouplingNavierSlip::InitConfigurationMap()
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+
+  double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+  double sliplength = 0.0;
+  GetSlipCoefficient(sliplength,x,cond);
+
+  if(sliplength < 0.0)
+    dserror("The slip length can not be negative.");
+
+  if ( sliplength != 0.0 )
+  {
+    double stabnit = 0.0;
+    double stabadj = 0.0;
+    XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
+    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,sliplength);
+  }
+  else
+  {
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+  }
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = visc_stab; //full_stab <-- to keep results!
+
+  return;
+}
+
 //! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
@@ -1403,6 +1463,27 @@ void XFEM::MeshCouplingFSI::InitConfigurationMap()
       dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
     else
       dserror("XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ * first version without possibility to use Navier Slip
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+#ifdef DEBUG
+  if (kappa_m != 1) dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d",kappa_m);
+#endif
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
   return;
 }
 
@@ -1986,6 +2067,29 @@ void XFEM::MeshCouplingFluidFluid::InitConfigurationMap()
   else
     dserror("XFEM::MeshCouplingFluidFluid: You want to initialize another strategy?");
 
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+#ifdef DEBUG
+  if (!(GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided ||
+      GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided  ||
+      GetAveragingStrategy() == INPAR::XFEM::Mean))
+    dserror("XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP: Does your Averaging strategy change the weighing during the simulation or between gausspoints?");
+#endif
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
   return;
 }
 

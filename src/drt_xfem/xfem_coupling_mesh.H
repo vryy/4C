@@ -314,7 +314,12 @@ public:
 
 protected:
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 };
 
@@ -434,7 +439,12 @@ protected:
       std::map< int ,DRT::Condition* > &     conditionsmap_robin
       );
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 private:
 
@@ -532,7 +542,12 @@ protected:
       const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
   );
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -694,7 +709,12 @@ public:
 
 protected:
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 private:
 

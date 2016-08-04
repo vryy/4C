@@ -773,6 +773,23 @@ void XFEM::LevelSetCouplingWeakDirichlet::InitConfigurationMap()
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+
+  return;
+}
+
 void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
     LINALG::Matrix<3,1>& ivel,
     LINALG::Matrix<3,1>& itraction,
@@ -974,6 +991,49 @@ void XFEM::LevelSetCouplingNavierSlip::InitConfigurationMap()
     dserror("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
   else
     dserror("XFEM::LevelSetCouplingNavierSlip: You want to initialize another strategy than Xfluid_Sided?");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
+{
+
+  double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+  double sliplength = 0.0;
+  GetSlipCoefficient(sliplength,x,cond);
+
+  if(sliplength < 0.0)
+    dserror("The slip length can not be negative.");
+
+  if ( sliplength != 0.0 )
+  {
+    double stabnit = 0.0;
+    double stabadj = 0.0;
+    XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
+    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,sliplength);
+  }
+  else
+  {
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
+  }
+
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = visc_stab; //full_stab <-- to keep results!
+
   return;
 }
 
@@ -1207,8 +1267,19 @@ void XFEM::LevelSetCouplingTwoPhase::InitConfigurationMap()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(double kappa_m)
+void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
+    double& kappa_m,
+    double& visc_m,
+    double& visc_s,
+    double& visc_stab,
+    double& full_stab,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond)
 {
+  //Configuration of Penalty Terms
+  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
+
   if (GetAveragingStrategy() == INPAR::XFEM::Harmonic)
   {
     //Configuration of Consistency Terms

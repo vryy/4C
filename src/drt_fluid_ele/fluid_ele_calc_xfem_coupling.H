@@ -298,8 +298,6 @@ namespace DRT
           const double &                    kappa_m,                ///< mortaring weight for coupling master
           const double &                    kappa_s,                ///< mortaring weight for coupling slave
           const double &                    density_m,              ///< fluid density (master)
-          const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-          const double &                    NIT_visc_stab_fac,      ///< convective Nitsche's penalty term scaling
           const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
           const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
@@ -308,7 +306,6 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const double &                    sliplength,             ///< prescribed slip length for Robin type BC
           const bool                        is_traction_jump,        ///< is it a normal traction jump or calculated throw laplace-beltrami
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
@@ -330,8 +327,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap, ///< Interface Terms configuration map
-          const double                             NIT_full_stab_facn = 0.0 ///< full Nitsche's penalty term scaling (viscous+convective part)
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
 
       };

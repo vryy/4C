@@ -2,10 +2,11 @@
 \file xfem_utils.H
 \brief Basic tools used in XFEM routines
 
+\level 2
+
 <pre>
-Maintainer:  Magnus Winter / Raffaela Kruse
+\maintainer Magnus Winter
              winter@lnm.mw.tum.de
-             kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236
 </pre>
@@ -54,6 +55,21 @@ namespace XFEM
     void SafetyCheckMaterials(Teuchos::RCP<MAT::Material> &          pmat,
                               Teuchos::RCP<MAT::Material> &          nmat
                               );
+
+    //! @name GetNavierSlipStabilizationParameters
+    /*!
+
+    \brief Get NavierSlip Stabilization Parameters for tangential direction
+
+     */
+    void GetNavierSlipStabilizationParameters(
+      const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
+      const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
+      double &                                      dynvisc,                      ///< average dynamic viscosity
+      double &                                      sliplength,                   ///< sliplength
+      double &                                      stabnit,                      ///< stabilization factor NIT_Penalty
+      double &                                      stabadj                       ///< stabilization factor Adjoint
+    );
   }
 }
 

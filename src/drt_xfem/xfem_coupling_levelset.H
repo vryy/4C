@@ -196,7 +196,12 @@ public:
 
 protected:
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 };
 
 
@@ -570,7 +575,12 @@ protected:
       std::vector<DRT::Condition*> & mynewcond
   );
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
+
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 private:
 
@@ -938,10 +948,12 @@ public:
 
 protected:
 
+  //! Initializes configurationmap
   void InitConfigurationMap();
 
-  //Updates configurationmap
-  virtual void UpdateConfigurationMap_GP(double kappa_m);
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
+      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 private:
 

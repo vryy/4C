@@ -347,8 +347,6 @@ namespace DRT
           const double &                    kappa_m,                ///< mortaring weight for coupling master
           const double &                    kappa_s,                ///< mortaring weight for coupling slave
           const double &                    density_m,              ///< fluid density (master)
-          const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-          const double &                    NIT_visc_stab_fac,      ///< convective Nitsche's penalty term scaling
           const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
           const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
@@ -357,7 +355,6 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const double &                    sliplength,             ///< prescribed slip length for Robin type BC
           const bool                        is_traction_jump,        ///< is it a normal traction jump or calculated throw laplace-beltrami
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         );
@@ -379,8 +376,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap, ///< Interface Terms configuration map
-          const double                             NIT_full_stab_facn = 0.0 ///< full Nitsche's penalty term scaling (viscous+convective part)
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         );
 
       private:
@@ -486,7 +482,6 @@ namespace DRT
             const LINALG::Matrix<nsd_,nen_> &         derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
             const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
             const LINALG::Matrix<nsd_,1> &            normal,                        ///< normal vector
-            const double &                            stab_tang_dir,                     ///< stab parameter in tangential direction
             const std::pair<bool,double>& m_row, ///< scaling for master row
             const std::pair<bool,double>& m_col, ///< scaling for master col
             const std::pair<bool,double>& s_col ///< scaling for slave col
@@ -499,7 +494,6 @@ namespace DRT
           const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                          ///< coupling master spatial velocity derivatives
           const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
           const LINALG::Matrix<nsd_,1> &           normal,                            ///< normal vector
-          const double &                           stab_tang_dir,                      ///< stab parameter
           const std::pair<bool,double>& m_row, ///< scaling for master row
           const std::pair<bool,double>& mstr_col ///< scaling for master col
           );
@@ -518,7 +512,6 @@ namespace DRT
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty(
             const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
-            const double &                         stabfac,         ///< stabilization factor
             const double &                         timefacfac,      ///< time integration factor
             const std::pair<bool,double>& m_row,                    ///< scaling for master row
             const std::pair<bool,double>& s_row,                    ///< scaling for slave row
@@ -532,7 +525,6 @@ namespace DRT
             const LINALG::Matrix<nen_,1>&          funct_m,                      ///< funct
             const LINALG::Matrix<nsd_,nsd_>&       projection_matrix,            ///< projection_matrix
             const LINALG::Matrix<nsd_,1>&          velint_diff_proj_matrix,      ///< velocity difference projected
-            const double &                         stabfac,                      ///< stabilization factor
             const double &                         timefacfac,                    ///< time integration factor
             const std::pair<bool,double>& m_row, ///< scaling for master row
             const std::pair<bool,double>& s_row, ///< scaling for slave row
@@ -545,7 +537,6 @@ namespace DRT
           const LINALG::Matrix<nsd_,nen_> &     derxy_m,                      ///< master deriv
           const LINALG::Matrix<nen_,1> &        funct_m,                      ///< funct_m
           const double &                        km_viscm,                     ///< traction jump
-          const double &                        stab_tang_dir,                 ///< tangential stabilization parameter [gamma*h_E/(gamma*h_E+epsilon)]
           const std::pair<bool,double>& m_row, ///< scaling for penalty master row
           const std::pair<bool,double>& s_row, ///< scaling for penalty slave row
           const std::pair<bool,double>& mstr_col ///< scaling for penalty master stress col
@@ -561,15 +552,6 @@ namespace DRT
           bool only_rhs = false                                     ///< evaluat only rhs
         );
 
-        //! Do Nitsche penalty terms < [|v|] , [|u|] P >
-        void Do_NIT_Stab_Penalty_Terms_Projected(
-          const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
-          const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
-          const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,     ///< velocity difference projected
-          const double &                                stabfac,                      ///< stabilization factor in normal direction
-          const double &                                timefacfac                    ///< time integration factor
-          );
-
         //! Do Nitsche consistency and adjoint consistency terms with projection
         void Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
             const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
@@ -578,12 +560,8 @@ namespace DRT
             const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
             const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
             const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-            const double &                                stabepsnittang_t,             ///< stabilization factor in normal direction
-            const double &                                stabadjtang_t,                ///< stabilization factor in normal direction
-            const double &                                stabepsadjtang_t,             ///< stabilization factor in normal direction
             const double &                                km_viscm_fac,                  ///< scaling factor
             const LINALG::Matrix<nsd_,1>&                 itraction_jump,
-            const bool &                                  sliplength_not_zero,           ///< eval Robin-terms
             const std::pair<bool,double>& m_row, ///< scaling for master row
             const std::pair<bool,double>& m_col, ///< scaling for master col
             const std::pair<bool,double>& s_col, ///< scaling for slave col
@@ -741,7 +719,6 @@ namespace DRT
         LINALG::Matrix<nsd_,1>    vderxy_m_normal_tang_, vderxy_m_normal_transposed_;
 
         //  Stabilization parameters:
-        double sliplength_;            //  epsilon
         double dyn_visc_;
 
         //  projected velocity components:

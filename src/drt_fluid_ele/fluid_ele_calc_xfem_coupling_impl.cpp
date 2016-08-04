@@ -774,9 +774,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
     {
       NIT_Stab_Penalty(
         funct_m,
-        NIT_stab_fac_conv,
         timefacfac,
-        std::pair<bool,double>(true,1.0), //F_Pen_Row
+        std::pair<bool,double>(true,NIT_stab_fac_conv), //F_Pen_Row
         std::pair<bool,double>(false,0.0), //X_Pen_Row
         std::pair<bool,double>(true,1.0), //F_Pen_Col
         std::pair<bool,double>(false,0.0) //X_Pen_Col
@@ -802,10 +801,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       {
         NIT_Stab_Penalty(
           funct_m,
-          NIT_stab_fac_conv,
           timefacfac,
-          std::pair<bool,double>(true,1.0), //F_Pen_Row
-          std::pair<bool,double>(true,1.0), //X_Pen_Row
+          std::pair<bool,double>(true,NIT_stab_fac_conv), //F_Pen_Row
+          std::pair<bool,double>(true,NIT_stab_fac_conv), //X_Pen_Row
           std::pair<bool,double>(true,1.0), //F_Pen_Col
           std::pair<bool,double>(true,1.0) //X_Pen_Col
         );
@@ -847,8 +845,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const double &                    kappa_m,                ///< mortaring weight for coupling master
   const double &                    kappa_s,                ///< mortaring weight for coupling slave
   const double &                    density_m,              ///< fluid density (master) USED IN XFF
-  const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-  const double &                    NIT_visc_stab_fac,      ///< viscous Nitsche's penalty term scaling
   const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
   const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
@@ -857,7 +853,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
   const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
   const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-  const double &                    sliplength,             ///< prescribed slip length for Robin type BC
   const bool                        is_traction_jump,       ///< is it a normal traction jump or calculated throw laplace-beltrami
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
@@ -874,6 +869,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // [| v |] := vm - vs
   //  { v }  := kappa_m * vm + kappas * vs = kappam * vm (for Dirichlet coupling km=1.0, ks = 0.0)
   //  < v >  := kappa_s * vm + kappam * vs = kappas * vm (for Dirichlet coupling km=1.0, ks = 0.0)
+
+  dyn_visc_=visceff_m; //Todo: Finally move this scaling away from element level (This should be fine for kappa_m = 1)
+ //--------------------------------------------
 
 // Create projection matrices
 //--------------------------------------------
@@ -893,68 +891,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     //    handed down to NIT_evaluateCoupling.
     NIT_Create_Standard_Projection_Matrices(normal);
   }
-
-//---------------------------------------Projection matrices created
-
-// Create parameters needed for calculations:
-
-  dyn_visc_   = (kappa_m*visceff_m + kappa_s*visceff_s);
-  sliplength_ = sliplength;
-
-  // Check whether a sliplength is present
-//  largest = ((a > b) ? a : b);
-//  bool sliplength_not_zero = (( sliplength_ > TOL_SLIPLENGTH_ZERO ) ? true : false);
-  bool sliplength_not_zero = (( sliplength_ == 0.0 ) ? false : true);
-
-//---------------------------------------Parameters created
-
-  //Stabilization parameters for normal and tangential direction
-  double stabnit    = 0.0;
-
-  double stabnit_n    = 0.0;
-  double stabepsnit_n = 0.0;
-  double stabadj_n    = 0.0;
-  double stabepsadj_n = 0.0;
-
-  double stabnit_t    = 0.0;
-  double stabepsnit_t = 0.0;
-  double stabadj_t    = 0.0;
-  double stabepsadj_t = 0.0;
-
-  if(configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
-  {
-    //Normal direction stabilization parameters
-    GetStabilizationParameters(
-        NIT_full_stab_fac,
-        NIT_visc_stab_fac,
-        stabnit_n,
-        stabepsnit_n,
-        stabadj_n,
-        stabepsadj_n,
-        false
-    );
-  }
-
-  if(configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
-  {
-    //Tangential direction stabilization parameters
-    GetStabilizationParameters(
-        NIT_full_stab_fac,
-        NIT_visc_stab_fac,
-        stabnit_t,
-        stabepsnit_t,
-        stabadj_t,
-        stabepsadj_t,
-        sliplength_not_zero
-    );
-  }
-
-  if(configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first) //todo: will be moved away from here in one of thefollowing commits ager 07/16
-  {
-    //If normal WDBC -> use full-scaling (only Nitsche term needed!).
-    stabnit      = NIT_full_stab_fac;
-  }
-//-------------------------------------------- Stab-parameters created
 
   half_normal_.Update(0.5,normal,0.0);
   normal_pres_timefacfac_.Update(pres_timefacfac,normal,0.0);
@@ -1045,7 +981,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         funct_m,
         proj_normal_,
         velint_diff_proj_normal_,
-        stabnit_n,
         timefacfac,
         configmap.at(INPAR::XFEM::F_Pen_n_Row),
         configmap.at(INPAR::XFEM::X_Pen_n_Row),
@@ -1060,7 +995,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
         funct_m,
         proj_tangential_,
         velint_diff_proj_tangential_,
-        stabnit_t,
         timefacfac,
         configmap.at(INPAR::XFEM::F_Pen_t_Row),
         configmap.at(INPAR::XFEM::X_Pen_t_Row),
@@ -1072,7 +1006,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   {
     NIT_Stab_Penalty(
         funct_m,
-        stabnit,
         timefacfac,
         configmap.at(INPAR::XFEM::F_Pen_Row),
         configmap.at(INPAR::XFEM::X_Pen_Row),
@@ -1212,12 +1145,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
            proj_normal_,                 ///< projection_matrix
            velint_diff_proj_normal_,     ///< velocity difference projected
            normal,                       ///< normal-vector
-           stabepsnit_n,                 ///< stabilization factor NIT_Penalty Neumann
-           stabadj_n,                    ///< stabilization factor Adjoint
-           stabepsadj_n,                 ///< stabilization factor Adjoint Neumann
            km_viscm_fac,
            itraction_jump,               ///< traction jump
-           false,                         ///< eval Robin-terms (NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)
            configmap.at(INPAR::XFEM::F_Adj_n_Row),
            configmap.at(INPAR::XFEM::F_Adj_n_Col),
            configmap.at(INPAR::XFEM::X_Adj_n_Col),
@@ -1241,12 +1170,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
          proj_tangential_,            ///< projection_matrix
          velint_diff_proj_tangential_, ///< velocity difference projected
          normal,                       ///< normal-vector
-         stabepsnit_t,                 ///< stabilization factor NIT_Penalty Neumann
-         stabadj_t,                ///< stabilization factor Adjoint
-         stabepsadj_t,             ///< stabilization factor Adjoint Neumann
          km_viscm_fac,
          itraction_jump,               ///< traction jump
-         sliplength_not_zero,           ///< eval Robin-terms
          configmap.at(INPAR::XFEM::F_Adj_t_Row),
          configmap.at(INPAR::XFEM::F_Adj_t_Col),
          configmap.at(INPAR::XFEM::X_Adj_t_Col),
@@ -1448,8 +1373,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   const LINALG::Matrix<nsd_,1> &           velint_m,               ///< coupling master interface velocity
   const LINALG::Matrix<nsd_,1> &           ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
   const LINALG::Matrix<nsd_,1> &           itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
-  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap, ///< Interface Terms configuration map
-  const double                             NIT_full_stab_facn       ///< full Nitsche's penalty term scaling (viscous+convective part)
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
 {
   //--------------------------------------------
@@ -1466,8 +1390,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   //--------------------------------------------
 
   //TODO: @XFEM-Team Add possibility to use new One Step Theta with Robin Boundary Condition.
-
-  //--------------------------------------------
 
   half_normal_.Update(0.5,normal,0.0);
   normal_pres_timefacfac_.Update(timefacfac,normal,0.0);
@@ -1553,7 +1475,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     {
       NIT_Stab_Penalty(
           funct_m,
-          NIT_full_stab_facn,
           timefacfac,
           configmap.at(INPAR::XFEM::F_Pen_Row),
           configmap.at(INPAR::XFEM::X_Pen_Row),
@@ -2740,7 +2661,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
   const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
   const LINALG::Matrix<nsd_,1> &           normal,                            ///< normal vector
-  const double &                           stab_fac,                      ///< stab parameter in tangential direction [ gamma*h_E  /(epsilon + gamma*h_E)  ]
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& m_col, ///< scaling for master col
   const std::pair<bool,double>& s_col ///< scaling for slave col
@@ -2783,8 +2703,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
 
   // here we use a non-optimal order to assemble the values into C_umum
   // however for this term we have to save operations
-  const double facmm = stab_fac*m_row.second*m_col.second;
-  const double facms = stab_fac*m_row.second*s_col.second;
+  const double facmm = m_row.second*m_col.second;
+  const double facms = m_row.second*s_col.second;
   for (unsigned ir =0; ir<nen_; ++ir)
   {
     // alpha * mu_m * timefacfac * \sum_k dN^(ir)/dx_k * n_k
@@ -2828,7 +2748,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
     }
   }
 
-  const double facm = m_row.second * 0.5 * stab_fac;
+  const double facm = m_row.second * 0.5;
   for (unsigned ir = 0; ir<nen_; ++ir)
   {
     for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
@@ -2843,6 +2763,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
     }
   }
 
+  return;
 }
 
 
@@ -2960,7 +2881,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Penal
   const LINALG::Matrix<nsd_,nen_> &     derxy_m,                      ///< master deriv
   const LINALG::Matrix<nen_,1> &        funct_m,                      ///< funct_m
   const double &                        km_viscm,                     ///< traction jump
-  const double &                        stab_tang_dir,                 ///< tangential stabilization parameter [gamma*h_E/(gamma*h_E+epsilon)]
   const std::pair<bool,double>& m_row, ///< scaling for penalty master row
   const std::pair<bool,double>& s_row, ///< scaling for penalty slave row
   const std::pair<bool,double>& mstr_col ///< scaling for penalty master stress col
@@ -2996,8 +2916,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Penal
 
   // here we use a non-optimal order to assemble the values into C_umum
   // however for this term we have to save operations
-  const double facmm = m_row.second*mstr_col.second*stab_tang_dir;
-  const double facsm = s_row.second*mstr_col.second*stab_tang_dir;
+  const double facmm = m_row.second*mstr_col.second;
+  const double facsm = s_row.second*mstr_col.second;
   for (unsigned ic =0; ic<nen_; ++ic)
   {
     // half_normal_deriv_m_viscm_timefacfac_km_ = 2.0 * timefacfac * visceff_m*(0.5*normal(k)*derxy_m(k,ic))
@@ -3075,7 +2995,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Adjoi
   const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                          ///< coupling master spatial velocity derivatives
   const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
   const LINALG::Matrix<nsd_,1> &           normal,                            ///< normal vector
-  const double &                           stab_tang_dir,                      ///< stab parameter [ epsilon * gamma * h_E /(epsilon + gamma*h_E) ]
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& mstr_col ///< scaling for master col
 )
@@ -3102,7 +3021,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Adjoi
   // +1.0 symmetric
   // -1.0 antisymmetric
 
-  const double facmm=m_row.second*mstr_col.second*stab_tang_dir;
+  const double facmm=m_row.second*mstr_col.second;
 
 //  //normal_deriv_m_viscm_km_ = 2.0 * alpha * half_normal(k) * mu_m * timefacfac * km * derxy_m(k,ic)
 //  //                         = mu_m * alpha * timefacfac *km * c(ix)
@@ -3193,7 +3112,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Adjoi
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
   const LINALG::Matrix<nen_,1>&                 funct_m,           ///< funct
-  const double &                                stabfac,           ///< stabilization factor
   const double &                                timefacfac,         ///< time integration factor
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
@@ -3219,7 +3137,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
 
   // + gamma*mu/h_K (vm, um))
 
-  const double stabfac_timefacfac_m = stabfac * timefacfac * m_row.second;
+  const double stabfac_timefacfac_m = timefacfac * m_row.second;
   velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m,velint_diff_,0.0);
 
   for (unsigned ir=0; ir<nen_; ++ir)
@@ -3236,7 +3154,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
 
   if (s_row.first)
   {
-    const double stabfac_timefacfac_s = stabfac * timefacfac * s_row.second;
+    const double stabfac_timefacfac_s = timefacfac * s_row.second;
     velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_s,velint_diff_,0.0);
 
     for (unsigned ir=0; ir<slave_nen_; ++ir)
@@ -3254,7 +3172,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
 
   if (only_rhs) return;
 
-  const double stabfac_timefacfac_mm = stabfac * timefacfac * m_row.second * m_col.second;
+  const double stabfac_timefacfac_mm = timefacfac * m_row.second * m_col.second;
 
   for (unsigned ic=0; ic<nen_; ++ic)
   {
@@ -3274,7 +3192,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
     // - gamma*mu/h_K (vm, us))
     // - gamma*mu/h_K (vs, um))
 
-    const double stabfac_timefacfac_ms = stabfac * timefacfac * m_row.second * s_col.second;
+    const double stabfac_timefacfac_ms = timefacfac * m_row.second * s_col.second;
 
     for (unsigned ic=0; ic<slave_nen_; ++ic)
     {
@@ -3292,7 +3210,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
 
   if (s_row.first && s_col.first)
   {
-    const double stabfac_timefacfac_ss = stabfac * timefacfac * s_row.second * s_col.second;
+    const double stabfac_timefacfac_ss = timefacfac * s_row.second * s_col.second;
 
     for (unsigned ic=0; ic<slave_nen_; ++ic)
     {
@@ -3311,7 +3229,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
 
   if (s_row.first)
   {
-    const double stabfac_timefacfac_sm = stabfac * timefacfac * s_row.second * m_col.second;
+    const double stabfac_timefacfac_sm = timefacfac * s_row.second * m_col.second;
 
     for (unsigned ic=0; ic<nen_; ++ic)
     {
@@ -3337,7 +3255,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
   const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct
   const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
   const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
-  const double &                                stabfac,                      ///< stabilization factor
   const double &                                timefacfac,                    ///< time integration factor
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
@@ -3375,7 +3292,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
   velint_diff_proj_matrix_ = velint_diff_proj_matrix;
   proj_matrix_ = projection_matrix;
 
-  const double stabfac_timefacfac_mm = stabfac * timefacfac * m_row.second * m_col.second;
+  const double stabfac_timefacfac_mm = timefacfac * m_row.second * m_col.second;
 
   for (unsigned ic=0; ic<nen_; ++ic)
   {
@@ -3394,7 +3311,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
     }
   }
 
-  const double stabfac_timefacfac_m = stabfac * timefacfac * m_row.second;
+  const double stabfac_timefacfac_m = timefacfac * m_row.second;
   velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m, velint_diff_proj_matrix_, 0.0);
   for (unsigned ir=0; ir<nen_; ++ir)
   {
@@ -3414,7 +3331,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
     // - gamma*mu/h_K (vm, us))
     // - gamma*mu/h_K (vs, um))
 
-    const double stabfac_timefacfac_ms = stabfac * timefacfac * m_row.second * s_col.second;
+    const double stabfac_timefacfac_ms = timefacfac * m_row.second * s_col.second;
 
     for (unsigned ic=0; ic<slave_nen_; ++ic)
     {
@@ -3435,7 +3352,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
 
   if (s_row.first && s_col.first)
   {
-    const double stabfac_timefacfac_ss = stabfac * timefacfac * s_row.second * s_col.second;
+    const double stabfac_timefacfac_ss = timefacfac * s_row.second * s_col.second;
 
     for (unsigned ic=0; ic<slave_nen_; ++ic)
     {
@@ -3457,7 +3374,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
 
   if (s_row.first)
   {
-    const double stabfac_timefacfac_sm = stabfac * timefacfac * s_row.second * m_col.second;
+    const double stabfac_timefacfac_sm = timefacfac * s_row.second * m_col.second;
 
     for (unsigned ic=0; ic<nen_; ++ic)
     {
@@ -3475,7 +3392,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
       }
     }
 
-    const double stabfac_timefacfac_s = stabfac * timefacfac * s_row.second;
+    const double stabfac_timefacfac_s = timefacfac * s_row.second;
     velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_s, velint_diff_proj_matrix_, 0.0);
 
     for (unsigned ir=0; ir<slave_nen_; ++ir)
@@ -4012,12 +3929,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
   const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
   const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
   const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-  const double &                                stabepsnit_t,             ///< stabilization factor NIT_Penalty Neumann
-  const double &                                stabadj_t,                ///< stabilization factor Adjoint
-  const double &                                stabepsadj_t,             ///< stabilization factor Adjoint Neumann
   const double &                                km_viscm_fac,                    ///< scaling factor
   const LINALG::Matrix<nsd_,1>&                 itraction_jump,
-  const bool &                                  eval_traction_terms,           ///< eval Robin-terms
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& m_col, ///< scaling for master col
   const std::pair<bool,double>& s_col, ///< scaling for slave col
@@ -4050,7 +3963,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
         derxy_m,
         funct_m,
         km_viscm_fac,
-        stabepsnit_t,
         m_pen_row,
         s_pen_row,
         mstr_pen_col);
@@ -4076,7 +3988,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
       derxy_m_viscm_timefacfac_,
       funct_m,
       normal,
-      stabadj_t,
       m_row,
       m_col,
       s_col);
@@ -4093,7 +4004,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
         vderxy_m,
         funct_m,
         normal,
-        stabepsadj_t,
         m_row,
         mstr_col);
   }
@@ -4103,79 +4013,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::Do_NIT_visc_Adjoint_an
   return;
 
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::GetStabilizationParameters(
-  const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
-  const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
-  double &                                      stabnit,                      ///< stabilization factor NIT_Penalty
-  double &                                      stabepsnit,                   ///< stabilization factor NIT_Penalty Neumann
-  double &                                      stabadj,                      ///< stabilization factor Adjoint
-  double &                                      stabepsadj,                   ///< stabilization factor Adjoint Neumann
-  const bool &                                  sliplength_not_zero           ///< bool for now, add a inpar for more options?
-)
-{
-
-   // Create stabilization parameters:
-  //--------------------------------------------------------------------------
-    if(sliplength_not_zero) //Change this criterion. As now if the slip length is small the eqs are stabilized too much.
-    {
-      // Create stabilization parameters needed for the Robin case
-      //  NIT_visc_stab_fac     =   gamma' * mu * C^2
-      //  NIT_visc_stab_fac_inv =   ( (1/gamma)*h_E )
-
-      double NIT_visc_stab_fac_inv;
-
-      if(NIT_visc_stab_fac<=0.0)
-        NIT_visc_stab_fac_inv = 1e15; //If Nitsche parameter is 0
-      else
-        NIT_visc_stab_fac_inv = 1.0/(NIT_visc_stab_fac/dyn_visc_);
-
-      //  NIT_robin_denominator = [ mu/(epislon + gamma*h_E) ]
-      double NIT_robin_denominator_no_mu = 1.0/(sliplength_+NIT_visc_stab_fac_inv);
-      //NIT_robin_denominator_ = dyn_visc_*NIT_robin_denominator_no_mu;
-
-      // Nitsche penalty term stabilization in tangential direction
-      // ----------------------------------------------------------------------
-      // stabnit =  [ { mu }/(epsilon + gamma*h_E) ) + extra_terms]
-      stabnit    = dyn_visc_*NIT_robin_denominator_no_mu; //NIT_robin_denominator_;
-
-      //  stabepsnit = [ epsilon / (epsilon + gamma*h_E) + extra_terms ];
-      stabepsnit = NIT_robin_denominator_no_mu*sliplength_;
-
-      // ----------------------------------------------------------------------
-
-      // Adjoint-terms stabilization in tangential direction
-      // ----------------------------------------------------------------------
-      //  stabadj = [ gamma*h_E  /(epsilon + gamma*h_E)  ]
-      stabadj    = NIT_robin_denominator_no_mu*NIT_visc_stab_fac_inv;
-
-      // stabepsadj =  [ gamma*h_E * ( epsilon * (1 /(epsilon + gamma*h_E) ) ) ]
-      stabepsadj = NIT_visc_stab_fac_inv*(NIT_robin_denominator_no_mu*sliplength_);
-
-#ifdef ENFORCE_URQUIZA_GNBC
-      // In tangential direction stabilization:
-      stabnit    = (dyn_visc_/sliplength_);  //Appears in NIT-penalty stabilization
-      stabadj    = 0.0;
-      stabepsnit = 0.0;
-      stabepsadj = 0.0;
-#endif
-
-      // ----------------------------------------------------------------------
-    }
-    else
-    {
-      //If normal WDBC -> use only viscous scaling.
-      stabnit      = NIT_visc_stab_fac;
-      stabepsnit   = 0.0;
-      stabadj      = 1.0;
-      stabepsadj   = 0.0;
-    }
-
-}
-
 
 
 } // namespace XFLUID

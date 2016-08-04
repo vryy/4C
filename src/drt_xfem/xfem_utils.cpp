@@ -2,10 +2,11 @@
 \file xfem_utils.cpp
 \brief Basic tools used in XFEM routines
 
+\level 2
+
 <pre>
-Maintainer:  Magnus Winter / Raffaela Kruse
+\maintainer Magnus Winter
              winter@lnm.mw.tum.de
-             kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236
 </pre>
@@ -148,6 +149,58 @@ void XFEM::UTILS::SafetyCheckMaterials(
   {
     dserror("up to now I expect a FLUID (m_fluid) material for edge stabilization\n");
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::UTILS::GetNavierSlipStabilizationParameters(
+  const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
+  const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
+  double &                                      dynvisc,                      ///< average dynamic viscosity
+  double &                                      sliplength,                   ///< sliplength
+  double &                                      stabnit,                      ///< stabilization factor NIT_Penalty
+  double &                                      stabadj                       ///< stabilization factor Adjoint
+)
+{
+  // Create stabilization parameters needed for the Robin case
+  //  NIT_visc_stab_fac     =   gamma' * mu * C^2
+  //  NIT_visc_stab_fac_inv =   ( (1/gamma)*h_E )
+
+  double NIT_visc_stab_fac_inv;
+
+  if(NIT_visc_stab_fac<=0.0)
+    NIT_visc_stab_fac_inv = 1e15; //If Nitsche parameter is 0
+  else
+    NIT_visc_stab_fac_inv = 1.0/(NIT_visc_stab_fac/dynvisc);
+
+  //  NIT_robin_denominator = [ mu/(epislon + gamma*h_E) ]
+  double NIT_robin_denominator_no_mu = 1.0/(sliplength+NIT_visc_stab_fac_inv);
+  //NIT_robin_denominator_ = dyn_visc_*NIT_robin_denominator_no_mu;
+
+  // Nitsche penalty term stabilization in tangential direction
+  // ----------------------------------------------------------------------
+  // stabnit =  [ { mu }/(epsilon + gamma*h_E) ) + extra_terms]
+  stabnit    = dynvisc*NIT_robin_denominator_no_mu; //NIT_robin_denominator_;
+
+  //  stabepsnit = [ epsilon / (epsilon + gamma*h_E) + extra_terms ];
+ // stabepsnit = NIT_robin_denominator_no_mu*sliplength;
+
+  // ----------------------------------------------------------------------
+
+  // Adjoint-terms stabilization in tangential direction
+  // ----------------------------------------------------------------------
+  //  stabadj = [ gamma*h_E  /(epsilon + gamma*h_E)  ]
+  stabadj    = NIT_robin_denominator_no_mu*NIT_visc_stab_fac_inv;
+
+  #ifdef ENFORCE_URQUIZA_GNBC
+  // In tangential direction stabilization:
+  stabnit    = (dynvisc/sliplength);  //Appears in NIT-penalty stabilization
+  stabadj    = 0.0;
+  stabepsnit = 0.0;
+  stabepsadj = 0.0;
+  #endif
 
   return;
 }

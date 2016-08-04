@@ -3549,17 +3549,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         // get convective velocity at integration point
         my::SetConvectiveVelint(ele->IsAle());
 
-        //---------------------------------------------------------------------------------
-        // Get the slip length (\beta) for Navier Slip/MCL simulations
-        // Could become dependent later on mesh-size and or position of contact line.
-        // See for example Legendre and Duponts paper or Buscaglia and Ausas.
-        //---------------------------------------------------------------------------------
-
-        double slipcoeff=0.0;
-        coupling->GetSlipCoefficient(slipcoeff,x_gp_lin_,coupcond.second);
-        if(slipcoeff < 0.0)
-          dserror("The slip length can not be negative.");
-
         //-----------------------------------------------------------------------------
         // compute stabilization factors
 
@@ -3623,7 +3612,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::NIT_evaluateCoupling" );
 
           //Get Configuration Map
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap = coupling->GetConfigurationmap(kappa_m);
+          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap =
+              coupling->GetConfigurationmap(kappa_m,viscaf_master_,viscaf_slave_,NIT_visc_stab_fac, NIT_full_stab_fac,x_gp_lin_,coupcond.second);
 
           //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
@@ -3643,8 +3633,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             kappa_m,                     // mortaring weighting
             kappa_s,                     // mortaring weighting
             my::densaf_,                 // fluid density
-            NIT_full_stab_fac,           // full Nitsche's penalty term scaling (viscous+convective part)
-            NIT_visc_stab_fac,           // viscous part of Nitsche's penalty term scaling
             my::funct_,                  // bg shape functions
             my::derxy_,                  // bg shape function gradient
             my::vderxy_,                 // bg grad u^n+1
@@ -3653,7 +3641,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             ivelint_jump_,               // prescribed interface velocity, Dirichlet values or jump height for coupled problems
             itraction_jump_,             // prescribed interface traction, jump height for coupled problems
             itraction_jump_matrix_,      // prescribed interface traction matrix for Laplace-Beltrami projection
-            slipcoeff,                   // prescribed slip length for Robin type BC
             is_traction_jump,
             configmap                     // Configuration Map
           );
@@ -3740,7 +3727,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             }
 
             //Get Configuration Map
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n = coupling->GetConfigurationmap(kappa_m);
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n =
+                coupling->GetConfigurationmap(kappa_m,viscaf_master_,viscaf_slave_,NIT_visc_stab_fac, NIT_full_stab_fac,x_gp_lin_,coupcond.second);
 
             const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(
@@ -3759,8 +3747,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::velintn_,                 // bg u^n
               ivelintn_jump_,               // velocity jump at interface (i.e. [| u |])
               itractionn_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
-              configmap_n,
-              NIT_full_stab_fac_n           // penalty parameter at n
+              configmap_n
             );
           }
         }

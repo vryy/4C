@@ -193,9 +193,17 @@ public:
     slipcoeff = 0.0;
   }
 
-  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap(double kappa_m)
+  std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap(
+      double& kappa_m,    //< fluid sided weighting
+      double& visc_m,     //< fluid sided weighting
+      double& visc_s,     //< slave sided dynamic viscosity
+      double& visc_stab,  //< viscous NIT Penalty scaling
+      double& full_stab,  //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x, //<Position x
+      const DRT::Condition* cond //< Condition
+      )
   {
-    UpdateConfigurationMap_GP(kappa_m);
+    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab, full_stab,x,cond);
     #ifdef DEBUG
     //Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
 
@@ -216,10 +224,19 @@ public:
 
 protected:
 
+  //! Initializes configurationmap
   virtual void InitConfigurationMap();
 
-  //Updates configurationmap
-  virtual void UpdateConfigurationMap_GP(double kappa_m){return;}
+  //! Updates configurationmap for specific Gausspoint
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,    //< fluid sided weighting
+      double& visc_m,     //< fluid sided weighting
+      double& visc_s,     //< slave sided dynamic viscosity
+      double& visc_stab,  //< viscous NIT Penalty scaling
+      double& full_stab,  //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x, //<Position x
+      const DRT::Condition* cond //< Condition
+      ){return;}
 
   void SetElementConditions();
 
