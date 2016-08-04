@@ -1562,7 +1562,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // penalty term
   if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
   {
-    if(configmap.at(INPAR::XFEM::F_Pen_Row).first && full_mastersided) //Todo: Just to make commit not change any results!
+    if(configmap.at(INPAR::XFEM::F_Pen_Row).first)
     {
       NIT_Stab_Penalty_MasterRHS(
       funct_m,
@@ -1571,7 +1571,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
       );
     }
 
-    if(configmap.at(INPAR::XFEM::X_Pen_Row).first && !(!eval_coupling_ || full_mastersided)) //Todo: Just to make commit not change any results!
+    if(configmap.at(INPAR::XFEM::X_Pen_Row).first)
     {
       NIT_Stab_Penalty_SlaveRHS(
         NIT_full_stab_facn,
