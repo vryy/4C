@@ -727,55 +727,6 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::PrintNewton(
-    Teuchos::RCP<Epetra_Vector> strfintvector
-    )
-{
-
-  std::ostringstream oss;
-
-  double norm_fres_struct;
-  strfintvector->Norm2(&norm_fres_struct);
-
-  oss << std::setw(16) << std::setprecision(5) << std::scientific << norm_fres_struct;
-  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetStructuralDisplIncrNorm();
-
-  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetCardiovascular0DRHSNorm();
-  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetCardiovascular0DDofIncrNorm();
-
-
-  // finish oss
-  oss << std::ends;
-
-  fprintf(stdout, "%s\n", oss.str().c_str());
-  fflush(stdout);
-
-  return;
-
-}
-
-/*----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::PrintNewtonHeader()
-{
-
-  std::ostringstream oss;
-
-  oss << std::setw(16)<< "abs-res-norm";
-  oss << std::setw(16)<< "abs-dis-norm";
-
-  oss << std::setw(16)<< "abs-0Dres-norm";
-  oss << std::setw(16)<< "abs-0Dinc-norm";
-
-  // finish oss
-  oss << std::ends;
-
-  fprintf(stdout, "%s\n", oss.str().c_str());
-  fflush(stdout);
-
-  return;
-
-}
 
 /*----------------------------------------------------------------------*
  |  set-up (public)                                            mhv 11/13|

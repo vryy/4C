@@ -124,28 +124,12 @@ namespace UTILS
     };
 
     /*!
-     \brief Store structural displ incr
-    */
-    void StoreStructuralDisplIncrement(Teuchos::RCP<Epetra_Vector> displincr) const
-    {
-      strdisplincrement_->Update(1.,*displincr,0.);
-      return;
-    };
-
-    /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
     int GetCardiovascular0DLinSolveError() const
     {
       return linsolveerror_;
     };
-
-    void StoreCv0dDofIncrement(Teuchos::RCP<Epetra_Vector> cv0ddofincr) const
-    {
-      cv0ddofincrement_->Update(1.,*cv0ddofincr,0.);
-      return;
-    };
-
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -221,13 +205,6 @@ namespace UTILS
     {
       return cv0ddof_;
     };
-
-    void PrintNewton
-    (
-      Teuchos::RCP<Epetra_Vector> strfintvector
-    );
-
-    void PrintNewtonHeader();
 
     /*!
      \brief Return if there are Cardiovascular0Ds
