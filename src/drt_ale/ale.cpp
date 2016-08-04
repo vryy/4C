@@ -448,8 +448,12 @@ void ALE::Ale::OutputState(bool& datawritten)
   // write output data
   output_->NewStep(step_,time_);
   output_->WriteVector("dispnp", dispnp_);
-  output_->WriteVector("det_j", eledetjac_, IO::DiscretizationWriter::elementvector);
-  output_->WriteVector("element_quality", elequality_, IO::DiscretizationWriter::elementvector);
+
+  if (elequalityyesno_)
+  {
+    output_->WriteVector("det_j", eledetjac_, IO::DiscretizationWriter::elementvector);
+    output_->WriteVector("element_quality", elequality_, IO::DiscretizationWriter::elementvector);
+  }
 
   return;
 }

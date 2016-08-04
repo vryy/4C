@@ -474,7 +474,7 @@ private:
   Teuchos::RCP<Epetra_Vector> elequality_;
 
   //! Flag to activate (true) and deactivate (false) assessment of mesh quality
-  bool elequalityyesno_;
+  const bool elequalityyesno_;
 
   //@}
 
