@@ -3,12 +3,14 @@
 
 \brief specialized immersed element extending poro fluid element
 
-<pre>
-Maintainer:  Andreas Rauch
+\level 2
+
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 - 15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "fluid_ele_poro.H"
 #include "fluid_ele_immersed_base.H"
@@ -213,7 +215,6 @@ private:
   int is_immersed_;
   int is_immersed_bdry_;
   int has_projected_dirichletvalues_;
-  std::vector<int> matchednodes_;
   Teuchos::RCP<std::vector<int> >    intpoint_has_projected_divergence_;     // 1000 max number of gp
   Teuchos::RCP<std::vector<double> > stored_projected_intpoint_divergence_;  // 1000 max number of gp
 

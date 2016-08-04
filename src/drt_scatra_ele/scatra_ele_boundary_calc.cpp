@@ -529,7 +529,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     CalcBoundaryIntegral(ele,elevec1_epetra);
     break;
   }
-
+  case SCATRA::bd_integrate_weighted_scalar:
+  {
+    IntegrateWeightedScalar(params,ele,elevec1_epetra);
+    break;
+  }
   case SCATRA::bd_calc_Robin:
   {
     CalcRobinBoundary(
@@ -1348,6 +1352,48 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
+
+
+/*----------------------------------------------------------------------------------*
+ | calculate boundary integral of scalars                               rauch 08/16 |
+ *----------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateWeightedScalar(
+    Teuchos::ParameterList& params,  //!< parameter list
+    const DRT::FaceElement* ele,     //!< the element we are dealing with
+    Epetra_SerialDenseVector& result //!< result vector for scalar integral to be computed
+)
+{
+  // extract values from parameter list.
+  // these values are set in scatra_timint_ost_endoexocytosis.
+  const double scalarid  = params.get<int>("ScalarID");            //!< dof id of integrated scalar
+  const double scalar = params.get<double>("scalar");              //!< scalar to be integrated
+  const double prefac = params.get<double>("user defined prefac"); //!< user defined factor to integral
+
+  // get integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  //////////////////////////////////////
+  // loop over integration points
+  //////////////////////////////////////
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
+    const double timefacrhsfac = scatraparamstimint_->TimeFacRhs()*fac;
+
+    // evaluate element right-hand side vector
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numscal_+scalarid;
+      result[fvi] -= timefacrhsfac*prefac*funct_(vi)*scalar;
+    } // loop over nodes
+
+  } // loop over integration points
+
+  return;
+
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateWeightedScalar
 
 
 /*----------------------------------------------------------------------*

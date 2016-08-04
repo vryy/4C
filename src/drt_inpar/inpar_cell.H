@@ -52,7 +52,8 @@ typedef enum _SIM_TYPE
   sim_type_pureConfinement=2,
   sim_type_pureProtrusionFormation=3,
   sim_type_pureContraction=4,
-  sim_type_multiphysics=5
+  sim_type_pureEndoExocytosis=5,
+  sim_type_multiphysics=6
 } SIM_TYPE;
 
 typedef enum _SEGREGATION_BY_TYPE

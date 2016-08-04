@@ -256,6 +256,24 @@ public:
       );
 
 
+  /*!
+  \brief Integrate scalar over conditioned surface with all prefactors for rhs and additional prefactor
+         provided as input.
+
+  \note These prefactors are : TimeFacRhs * gp_weight * drs * Userdefined *testfunct
+
+  \param params (in)  : parameter list
+  \param ele    (in)  : element that is evaluated
+  \param scalar (out) : result vector containing integrated scalar values
+
+  */
+  void IntegrateWeightedScalar(Teuchos::ParameterList& params,
+                               const DRT::FaceElement* ele,
+                               Epetra_SerialDenseVector& result
+      );
+
+
+
   //! evaluate Kedem-Katchalsky interface condition
   void EvaluateKedemKatchalsky(
       const DRT::FaceElement*                       ele,            ///< the actual boundary element

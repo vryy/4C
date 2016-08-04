@@ -99,6 +99,7 @@ namespace SCATRA
   /*--------------------------------------------------------------------------*/
   enum BoundaryAction {
     bd_add_convective_mass_flux,
+    bd_integrate_weighted_scalar,
     bd_calc_boundary_integral,
     bd_calc_convective_heat_transfer,
     bd_calc_elch_boundary_kinetics,

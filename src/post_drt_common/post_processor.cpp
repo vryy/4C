@@ -285,6 +285,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         lubricationwriter.WriteFiles();
         break;
     }
+    case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
     {

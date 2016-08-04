@@ -1,7 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_problemtype.cpp
+ *
+\brief convert problem type string to enum
 
+\level 1
+
+\file inpar_problemtype.cpp
 
 \maintainer Georg Bauer
             bauer@lnm.mw.tum.de
@@ -66,6 +70,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["ReducedDimensionalAirWays"]                        = prb_red_airways;
     string2prbtype["Scalar_Thermo_Interaction"]                        = prb_sti;
     string2prbtype["Scalar_Transport"]                                 = prb_scatra;
+    string2prbtype["Scalar_Transport_EndoExocytosis"]                  = prb_scatra_endoexocytosis;
     string2prbtype["StatMech"]                                         = prb_statmech;
     string2prbtype["Structure"]                                        = prb_structure;
     string2prbtype["Structure_Ale"]                                    = prb_struct_ale;

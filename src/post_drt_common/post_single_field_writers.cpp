@@ -301,7 +301,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   for(int inode=0; inode<discret.NumMyRowNodes(); ++inode)
   {
     const int numdof = discret.NumDof(discret.lRowNode(inode));
-    if(numdof > mynumdofpernode);
+    if(numdof > mynumdofpernode)
       mynumdofpernode = numdof;
   }
   int numdofpernode(-1);

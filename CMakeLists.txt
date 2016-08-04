@@ -2298,6 +2298,7 @@ set(OBJS_DRT_IMMERSED_LIB
 src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
+src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM

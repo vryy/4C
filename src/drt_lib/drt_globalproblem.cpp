@@ -300,6 +300,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CELL DYNAMIC/ADHESION MODULE", *list);
   reader.ReadGidSection("--CELL DYNAMIC/PROTRUSION MODULE", *list);
   reader.ReadGidSection("--CELL DYNAMIC/FLOW INTERACTION MODULE", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/ENDOEXOCYTOSIS MODULE", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
@@ -1335,6 +1336,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+  case prb_scatra_endoexocytosis:
   case prb_cardiac_monodomain:
   case prb_scatra:
   {

@@ -43,6 +43,7 @@
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_scatra/scatra_dyn.H"
 
 void immersed_problem_drt()
 {
@@ -605,6 +606,10 @@ void CellMigrationControlAlgorithm()
     algo->TestResults(comm);
 
   }// sim_type_pureContraction
+  else if (simtype==INPAR::CELL::sim_type_pureEndoExocytosis)
+  {
+    scatra_dyn(0);
+  }
   else if (simtype==INPAR::CELL::sim_type_multiphysics)
   {
     // here the global algo of the fully coupled cell migration will be implemented

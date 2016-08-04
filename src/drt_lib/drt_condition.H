@@ -237,6 +237,8 @@ public:
     DomainIntegral,
     BoundaryIntegral,
     ScaTraFluxCalc,
+    ScaTraCellIntCalc,
+    ScaTraCellExtCalc,
     TotalAndMeanScalar,
     ScaTraCoupling,
     SpringDashpot,

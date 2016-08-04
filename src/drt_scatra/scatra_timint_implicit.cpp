@@ -1285,7 +1285,9 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
+    PreSolve();
     Solve();
+    PostSolve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -2891,7 +2893,7 @@ Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(int nds)
 /*----------------------------------------------------------------------*
  |  add contribution to rhs                                rauch   04/15|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+void SCATRA::ScaTraTimIntImpl::AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector>& contributing_vector)
 {
   int err = neumann_loads_->Update(1.0,*contributing_vector,1.0);
 
@@ -2915,6 +2917,14 @@ int SCATRA::ScaTraTimIntImpl::NumScal() const
 int SCATRA::ScaTraTimIntImpl::NumDofPerNode() const
 {
   return scalarhandler_->NumDofPerNode();
+}
+
+/*----------------------------------------------------------------------*
+|  return number of dofs per node in condition
+*----------------------------------------------------------------------*/
+int SCATRA::ScaTraTimIntImpl::NumDofPerNodeInCondition(const DRT::Condition& condition) const
+{
+  return scalarhandler_->NumDofPerNodeInCondition(condition,discret_);
 }
 
 /*-----------------------------------------------------------------------------*

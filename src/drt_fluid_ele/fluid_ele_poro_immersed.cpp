@@ -3,12 +3,13 @@
 
 \brief specialized immersed element extending poro fluid element
 
-<pre>
-Maintainer:  Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 - 15240
-</pre>
+
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele_poro_immersed.H"

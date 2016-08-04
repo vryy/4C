@@ -209,8 +209,14 @@ public:
   //! do time integration (time loop)
   virtual void TimeLoop();
 
+  //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
+  virtual void PreSolve(){return;};
+
   //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
   virtual void Solve();
+
+  //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
+  virtual void PostSolve(){return;};
 
   //! update the solution after convergence of the nonlinear iteration.
   virtual void Update(
@@ -314,7 +320,7 @@ public:
   void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
   //! add vector to rhs
-  void AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
+  void AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector>& contributing_vector);
 
   //! return pointer to const dofrowmap
   Teuchos::RCP<const Epetra_Map> DofRowMap();
@@ -423,6 +429,17 @@ public:
 
   //! return number of dofs per node
   int NumDofPerNode() const;
+
+  //! return number of dofs per node in condition
+  int NumDofPerNodeInCondition(
+      const DRT::Condition& condition) const;
+
+  //! return number of transported scalars per node in condition
+  virtual int NumScalInCondition(
+      const DRT::Condition& condition) const
+  {
+    return NumDofPerNodeInCondition(condition);
+  };
 
   // return scalar field phi at time n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;

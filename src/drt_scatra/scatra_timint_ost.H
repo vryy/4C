@@ -43,17 +43,23 @@ public:
   /// initialize time integration scheme
   virtual void Init();
 
+  //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
+  virtual void PreSolve(){return;};
+
+  //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
+  virtual void PostSolve(){return;};
+
   /// Print information about current time step to screen (reimplementation for OST)
   virtual void PrintTimeStepInfo();
 
   /// compute values at intermediate time steps (required for generalized-alpha)
-  void ComputeIntermediateValues(){return;};
+  virtual void ComputeIntermediateValues(){return;};
 
   /// compute values at the interior of the elements (required for hdg)
   virtual void ComputeInteriorValues(){return;};
 
   ///  compute scalar time derivative
-  void ComputeTimeDerivative();
+  virtual void ComputeTimeDerivative();
 
   ///  compute scalar time derivate parameters of the input voltage
   virtual void ComputeTimeDerivPot0(const bool init){return;};
@@ -63,19 +69,19 @@ public:
   virtual void Update(const int num=0);
 
   /// read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   // routine to return scalar field phi at time step n-1
-  Teuchos::RCP<Epetra_Vector> Phinm() {return Teuchos::null;}
+  virtual Teuchos::RCP<Epetra_Vector> Phinm() {return Teuchos::null;}
 
   /// routine to return scalar field phi at time step n+alpha_F
-  Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
+  virtual Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
 
   /// routine to return scalar field phi at time step n+alpha_M
-  Teuchos::RCP<Epetra_Vector> Phiam(){return Teuchos::null;}
+  virtual Teuchos::RCP<Epetra_Vector> Phiam(){return Teuchos::null;}
 
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
-  Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
+  virtual Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
 
   /// routine to return fine-scale scalar field fsphi at time step n+1
   virtual Teuchos::RCP<Epetra_Vector> FsPhi() {
@@ -84,7 +90,7 @@ public:
     return fsphinp_; };
 
   /// routine to return time integration specific parameters
-  Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+  virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
   {
     Teuchos::RCP<Teuchos::ParameterList> timeparams;
     timeparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -136,25 +142,25 @@ protected:
   virtual void ExplicitPredictor();
 
   /// add actual Neumann loads with time factor
-  void AddNeumannToResidual();
+  virtual void AddNeumannToResidual();
 
   /// AVM3-based scale separation
-  void AVM3Separation();
+  virtual void AVM3Separation();
 
   /// dynamic Smagorinsky model
-  void DynamicComputationOfCs();
+  virtual void DynamicComputationOfCs();
 
   // dynamic Vreman model
-  void DynamicComputationOfCv();
+  virtual void DynamicComputationOfCv();
 
   /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
+  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   /// write additional data required for restart
-  void OutputRestart();
+  virtual void OutputRestart();
 
   /// return the right time-scaling-factor for the true residual
-  double ResidualScaling() const { return 1.0/(dta_*theta_); }
+  virtual double ResidualScaling() const { return 1.0/(dta_*theta_); }
 
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;

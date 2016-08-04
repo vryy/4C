@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file global_cal_control.cpp
+
 \brief routine to control execution phase
+
+\level 1
 
 \maintainer Michael Gee
             gee@lnm.mw.tum.de
@@ -69,6 +72,7 @@ void ntacal()
     case prb_ehl:
       ehl_dyn();
       break;
+    case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:
       scatra_dyn(restart);

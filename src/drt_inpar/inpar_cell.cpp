@@ -66,6 +66,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                        "pureCompression",
                                                        "pureProtrusionFormation",
                                                        "pureContraction",
+                                                       "pureEndoExocytosis",
                                                        "Multiphysics"),
                                     tuple<int>(
                                                sim_type_pureFSI,
@@ -73,6 +74,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                sim_type_pureConfinement,
                                                sim_type_pureProtrusionFormation,
                                                sim_type_pureContraction,
+                                               sim_type_pureEndoExocytosis,
                                                sim_type_multiphysics),
                                     &celldyn);
 
@@ -158,7 +160,6 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
   /* PROTEOLYSIS PARAMETERS */
-
 
   Teuchos::ParameterList& proteolysisdyn = celldyn.sublist("PROTEOLYSIS MODULE",false,
                                                   "Control the models for proteolysis");
@@ -285,6 +286,14 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     coupname,
                                     couplabel,
                                     &cfidyn);
+
+  /* ENDO-/EXOCYTOSIS PARAMETERS */
+
+
+  Teuchos::ParameterList& endoexocytosisdyn = celldyn.sublist("ENDOEXOCYTOSIS MODULE",false,
+                                                  "Control the models for endo-/exocytosis");
+
+  DoubleParameter("ENDOEXO_DELAY",600.0,"Time delay between internalization and begin of externalization",&endoexocytosisdyn);
 
 
 
@@ -1145,21 +1154,22 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
 {
   using namespace DRT::INPUT;
 
-    /*--------------------------------------------------------------------*/
-    // FOCAL ADHESION
+  /*--------------------------------------------------------------------*/
+  // FOCAL ADHESION
+  /*--------------------------------------------------------------------*/
+  std::vector<Teuchos::RCP<ConditionComponent> > facomponents;
 
-    std::vector<Teuchos::RCP<ConditionComponent> > facomponents;
+  facomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
-    facomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-
-    Teuchos::RCP<ConditionDefinition> linefa =
+  Teuchos::RCP<ConditionDefinition> linefa =
       Teuchos::rcp(new ConditionDefinition("DESIGN FOCAL ADHESION LINE CONDITIONS",
                                            "CellFocalAdhesion",
                                            "Cell Focal Adhesion",
                                            DRT::Condition::CellFocalAdhesion,
                                            true,
                                            DRT::Condition::Line));
-    Teuchos::RCP<ConditionDefinition> surffa =
+
+  Teuchos::RCP<ConditionDefinition> surffa =
       Teuchos::rcp(new ConditionDefinition("DESIGN FOCAL ADHESION SURF CONDITIONS",
                                            "CellFocalAdhesion",
                                            "Cell Focal Adhesion",
@@ -1167,23 +1177,23 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
                                            true,
                                            DRT::Condition::Surface));
 
-    for (unsigned i=0; i<facomponents.size(); ++i)
-    {
-      linefa->AddComponent(facomponents[i]);
-      surffa->AddComponent(facomponents[i]);
-    }
+  for (unsigned i=0; i<facomponents.size(); ++i)
+  {
+    linefa->AddComponent(facomponents[i]);
+    surffa->AddComponent(facomponents[i]);
+  }
 
-    condlist.push_back(linefa);
-    condlist.push_back(surffa);
+  condlist.push_back(linefa);
+  condlist.push_back(surffa);
 
-    /*--------------------------------------------------------------------*/
-    // SURFSCATRA - VOLSCATRA COUPLING
+  /*--------------------------------------------------------------------*/
+  // SURFSCATRA - VOLSCATRA COUPLING
+  /*--------------------------------------------------------------------*/
+  std::vector<Teuchos::RCP<ConditionComponent> > couplcomponents;
 
-    std::vector<Teuchos::RCP<ConditionComponent> > couplcomponents;
+  couplcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
-    couplcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-
-    Teuchos::RCP<ConditionDefinition> surfcoup =
+  Teuchos::RCP<ConditionDefinition> surfcoup =
       Teuchos::rcp(new ConditionDefinition("DESIGN CELL SURF VOL COUPLING",
                                            "CellSurfVolCoupling",
                                            "Cell Surf Vol Coupling",
@@ -1191,12 +1201,78 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
                                            true,
                                            DRT::Condition::Surface));
 
-    for (unsigned i=0; i<couplcomponents.size(); ++i)
-    {
-      surfcoup->AddComponent(couplcomponents[i]);
-    }
+  for (unsigned i=0; i<couplcomponents.size(); ++i)
+  {
+    surfcoup->AddComponent(couplcomponents[i]);
+  }
 
-    condlist.push_back(surfcoup);
+  condlist.push_back(surfcoup);
+
+  /*--------------------------------------------------------------------*/
+  // SURFACE FOR INTERNALIZATION AND EXTERNALIZATION
+  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // Boundary internalization condition for scalar transport
+  std::vector<Teuchos::RCP<ConditionComponent> > internalizationcomponents;
+
+  Teuchos::RCP<ConditionDefinition> lineinternalization =
+      Teuchos::rcp(new ConditionDefinition("SCATRA CELL INTERNALIZATION LINE CONDITIONS",
+                                           "ScaTraCellInt",
+                                           "Scalar Transport Cell Internalization Calculation",
+                                           DRT::Condition::ScaTraCellIntCalc,
+                                           true,
+                                           DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> surfinternalization =
+      Teuchos::rcp(new ConditionDefinition("SCATRA CELL INTERNALIZATION SURF CONDITIONS",
+                                           "ScaTraCellInt",
+                                           "Scalar Transport Cell Internalization Calculation",
+                                           DRT::Condition::ScaTraCellIntCalc,
+                                           true,
+                                           DRT::Condition::Surface));
+
+  for(unsigned i=0; i<internalizationcomponents.size(); ++i)
+  {
+    lineinternalization->AddComponent(internalizationcomponents[i]);
+    surfinternalization->AddComponent(internalizationcomponents[i]);
+  }
+
+
+  condlist.push_back(lineinternalization);
+  condlist.push_back(surfinternalization);
+
+
+  /*--------------------------------------------------------------------*/
+  // Boundary externalization condition for scalar transport
+  std::vector<Teuchos::RCP<ConditionComponent> > externalizationcomponents;
+
+  Teuchos::RCP<ConditionDefinition> lineexternalization =
+      Teuchos::rcp(new ConditionDefinition("SCATRA CELL EXTERNALIZATION LINE CONDITIONS",
+                                           "ScaTraCellExt",
+                                           "Scalar Transport Cell Externalization Calculation",
+                                           DRT::Condition::ScaTraCellExtCalc,
+                                           true,
+                                           DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> surfexternalization =
+      Teuchos::rcp(new ConditionDefinition("SCATRA CELL EXTERNALIZATION SURF CONDITIONS",
+                                           "ScaTraCellExt",
+                                           "Scalar Transport Cell Externalization Calculation",
+                                           DRT::Condition::ScaTraCellExtCalc,
+                                           true,
+                                           DRT::Condition::Surface));
+
+  externalizationcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ScalarID")));
+  externalizationcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ScalarID")));
+
+  for(unsigned i=0; i<externalizationcomponents.size(); ++i)
+  {
+    lineexternalization->AddComponent(externalizationcomponents[i]);
+    surfexternalization->AddComponent(externalizationcomponents[i]);
+  }
+
+  condlist.push_back(lineexternalization);
+  condlist.push_back(surfexternalization);
 
 
 }
