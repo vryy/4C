@@ -697,7 +697,7 @@ namespace TIMINT {
       return finertialnp_;
     }
 
-    /// Return viscous force \f$fviscous,n}\f$
+    /// Return viscous force \f$f_{viscous,n}\f$
     Teuchos::RCP<Epetra_Vector>& GetMutableFviscoN()
     {
       CheckInitSetup();

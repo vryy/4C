@@ -1,9 +1,15 @@
-/*
- * loca_str_constraint_arclength.H
- *
- *  Created on: Nov 19, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file loca_str_constraint_arclength.H
+
+\brief ToDo Add description.
+
+\maintainer Michael Hiermeier
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef SRC_DRT_STRUCTURE_NEW_LOCA_STR_CONSTRAINT_ARCLENGTH_H_
 #define SRC_DRT_STRUCTURE_NEW_LOCA_STR_CONSTRAINT_ARCLENGTH_H_
@@ -40,7 +46,7 @@ namespace MultiContinuation {
  *  \f]
  *  and w.r.t. p
  *  \f[
- *    \ņabla_{p} g = 2 \|f_{\mathrm{ext}}\|^{2} (p - p^\ast).
+ *    \nabla_{p} g = 2 \|f_{\mathrm{ext}}\|^{2} (p - p^\ast).
  *  \f] */
   class ArcLengthConstraint : public LOCA::MultiContinuation::ConstraintInterfaceMVDX
   {

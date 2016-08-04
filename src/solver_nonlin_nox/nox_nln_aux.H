@@ -46,7 +46,7 @@ namespace AUX {
 
   /*! \brief Calculate the root mean square for the NOX status test
    *  \f[
-   *    \delta_{rms} = \sqrt{\frac{1}{N} \sum\limits_{i=1}^{N} \left( \frac{x_{i}^{k} - x_{i}^{k-1}}{\mathcal{RTOL} | x_{i}^{k-1} | + \mathcal{ATOL}} \right)} $
+   *    \delta_{rms} = \sqrt{\frac{1}{N} \sum\limits_{i=1}^{N} \left( \frac{x_{i}^{k} - x_{i}^{k-1}}{\mathcal{RTOL} | x_{i}^{k-1} | + \mathcal{ATOL}} \right)}
    *  \f]
    *
    *  \param atol  : absolute tolerance

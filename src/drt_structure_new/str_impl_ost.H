@@ -153,8 +153,8 @@ namespace IMPLICIT {
      *         and OST for the remaining things).
      *
      *  \f[
-     *    Res = M . [\theta  * A_{n+1} + (1-\theta) * A_{n}]
-     *        + C . [\theta  * V_{n+1} + \(1-\theta) * V_{n}]
+     *    Res = M \cdot [\theta  * A_{n+1} + (1-\theta) * A_{n}]
+     *        + C \cdot [\theta  * V_{n+1} + (1-\theta) * V_{n}]
      *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
      *  \f] */
     void AddViscoMassContributions(Epetra_Vector& f) const;
