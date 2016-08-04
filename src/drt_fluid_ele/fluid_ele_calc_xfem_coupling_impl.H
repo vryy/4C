@@ -401,12 +401,13 @@ namespace DRT
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_Consistency_MasterTerms(
-          const double &                            pres_m,                       ///< master pressure
-          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct
+          const double &                            pres_m,                     ///< master pressure
+          const LINALG::Matrix<nen_,1> &            funct_m,                    ///< funct
           const LINALG::Matrix<nsd_,1> &            normal_timefacfac,          ///< normal vector * timefacfac
-          const std::pair<bool,double>& m_row, ///< scaling for master row
-          const std::pair<bool,double>& s_row, ///< scaling for slave row
-          const std::pair<bool,double>& m_col ///< scaling for master col
+          const std::pair<bool,double>& m_row,                                  ///< scaling for master row
+          const std::pair<bool,double>& s_row,                                  ///< scaling for slave row
+          const std::pair<bool,double>& m_col,                                  ///< scaling for master col
+          bool only_rhs = false                                                 ///< evaluat only rhs
         );
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with slave side's weighting factor)
@@ -414,37 +415,41 @@ namespace DRT
           const double &                            pres_s,                        ///< slave pressure
           const LINALG::Matrix<nen_,1> &            funct_m,                       ///< funct
           const LINALG::Matrix<nsd_,1> &            normal_timefacfac_ks,          ///< normal vector * timefacfac
-          const std::pair<bool,double>& m_row, ///< scaling for master row
-          const std::pair<bool,double>& s_row, ///< scaling for slave row
-          const std::pair<bool,double>& s_col ///< scaling for slave col
+          const std::pair<bool,double>& m_row,                                     ///< scaling for master row
+          const std::pair<bool,double>& s_row,                                     ///< scaling for slave row
+          const std::pair<bool,double>& s_col,                                     ///< scaling for slave col
+          bool only_rhs = false                                                    ///< evaluat only rhs
         );
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_AdjointConsistency_MasterTerms(
           const LINALG::Matrix<nen_,1> &            funct_m,                          ///< funct
-          const LINALG::Matrix<nsd_,1> &            normal_timefacfac,             ///< normal vector * timefacfac
-          const double &                            velint_diff_normal_timefacfac,  ///< (velint_m - velint_s) * normal * timefacfac
-          const std::pair<bool,double>& m_row, ///< scaling for master row
-          const std::pair<bool,double>& m_col,  ///< scaling for master col
-          const std::pair<bool,double>& s_col ///< scaling for slave row
+          const LINALG::Matrix<nsd_,1> &            normal_timefacfac,                ///< normal vector * timefacfac
+          const double &                            velint_diff_normal_timefacfac,    ///< (velint_m - velint_s) * normal * timefacfac
+          const std::pair<bool,double>& m_row,                                        ///< scaling for master row
+          const std::pair<bool,double>& m_col,                                        ///< scaling for master col
+          const std::pair<bool,double>& s_col,                                        ///< scaling for slave row
+          bool only_rhs = false                                                       ///< evaluat only rhs
         );
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_p_AdjointConsistency_SlaveTerms(
-            const LINALG::Matrix<nsd_,1> &          normal_timefacfac,            ///< normal vector * timefacfac
-            const double &                          velint_diff_normal_timefacfac, ///< (velint_m - velint_s) * normal * timefacfac
-            const std::pair<bool,double>& s_row, ///< scaling for slave row
-            const std::pair<bool,double>& m_col,  ///< scaling for master col
-            const std::pair<bool,double>& s_col ///< scaling for slave col
+            const LINALG::Matrix<nsd_,1> &          normal_timefacfac,              ///< normal vector * timefacfac
+            const double &                          velint_diff_normal_timefacfac,  ///< (velint_m - velint_s) * normal * timefacfac
+            const std::pair<bool,double>& s_row,                                    ///< scaling for slave row
+            const std::pair<bool,double>& m_col,                                    ///< scaling for master col
+            const std::pair<bool,double>& s_col,                                    ///< scaling for slave col
+            bool only_rhs = false                                                   ///< evaluat only rhs
         );
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_Consistency_MasterTerms(
           const LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master deriv
-          const LINALG::Matrix<nen_,1> &            funct_m,                       ///< funct_m
-          const std::pair<bool,double>& m_row, ///< scaling for master row
-          const std::pair<bool,double>& s_row, ///< scaling for slave row
-          const std::pair<bool,double>& m_col ///< scaling for master col
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+          const std::pair<bool,double>& m_row,                                    ///< scaling for master row
+          const std::pair<bool,double>& s_row,                                    ///< scaling for slave row
+          const std::pair<bool,double>& m_col,                                    ///< scaling for master col
+          bool only_rhs = false                                                   ///< evaluat only rhs
         );
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
@@ -457,10 +462,11 @@ namespace DRT
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_Consistency_SlaveTerms(
           const LINALG::Matrix<nsd_,slave_nen_> &   derxy_s,                      ///< slave shape function derivatives
-          const LINALG::Matrix<nen_,1> &            funct_m,                       ///< funct_m
-          const std::pair<bool,double>& m_row, ///< scaling for master row
-          const std::pair<bool,double>& s_row, ///< scaling for slave row
-          const std::pair<bool,double>& s_col ///< scaling for slave col
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+          const std::pair<bool,double>& m_row,                                    ///< scaling for master row
+          const std::pair<bool,double>& s_row,                                    ///< scaling for slave row
+          const std::pair<bool,double>& s_col,                                    ///< scaling for slave col
+          bool only_rhs = false                                                   ///< evaluat only rhs
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
@@ -468,10 +474,11 @@ namespace DRT
             const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
             const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
             const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-            const double &                                viscm_fac,                  ///< scaling factor
-            const std::pair<bool,double>& m_row, ///< scaling for master row
-            const std::pair<bool,double>& m_col, ///< scaling for master col
-            const std::pair<bool,double>& s_col ///< scaling for slave col
+            const double &                                viscm_fac,                    ///< scaling factor
+            const std::pair<bool,double>& m_row,                                        ///< scaling for master row
+            const std::pair<bool,double>& m_col,                                        ///< scaling for master col
+            const std::pair<bool,double>& s_col,                                        ///< scaling for slave col
+            bool only_rhs = false                                                       ///< evaluat only rhs
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
@@ -501,73 +508,23 @@ namespace DRT
         void NIT_visc_AdjointConsistency_SlaveTerms(
           const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
           const LINALG::Matrix<nsd_,slave_nen_> &   derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nsd_,1> &            normal,
-          const std::pair<bool,double>& s_row, ///< scaling for slave row
-          const std::pair<bool,double>& m_col, ///< scaling for master col
-          const std::pair<bool,double>& s_col ///< scaling for slave col
-        );
-
-        //! evaluate rhs of pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
-        void NIT_p_Consistency_MasterRHS(
-          const double &                           pres_s,                        ///< master pressure
-          const LINALG::Matrix<nen_,1> &           funct_m,                       ///< funct_m
-          const LINALG::Matrix<nsd_,1> &           normal_timefacfac_km           ///< normal vector * timefacfac * kappa_m
-        );
-
-        //! evaluate rhs of pressure-consistency term for Nitsche's method (scaled with slave side's weighting factor)
-        void NIT_p_Consistency_SlaveRHS(
-          const double &                           pres_s,                        ///< slave pressure
-          const LINALG::Matrix<nen_,1> &           funct_m,                       ///< funct_m
-          const LINALG::Matrix<nsd_,1> &           normal_timefacfac_ks           ///< normal vector * timefacfac * kappa_s
-        );
-
-        //! evaluate rhs of pressure-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
-        void NIT_p_AdjointConsistency_MasterRHS(
-          const double &                           velint_diff_normal_timefacfac_km,  ///<  (velint_m - velint_s) * normal * timefacfac *kappa_m
-          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
-        );
-
-        //! evaluate rhs of pressure-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
-        void NIT_p_AdjointConsistency_SlaveRHS(
-            const double &                         velint_diff_normal_timefacfac_ks   ///<  (velint_m - velint_s) * normal * timefacfac *kappa_s
-        );
-
-        //! evaluate rhs of viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
-        void NIT_visc_Consistency_MasterRHS(
-          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
-        );
-
-        //! evaluate rhs of viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
-        void NIT_visc_Consistency_SlaveRHS(
-          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
-        );
-
-        //! evaluate rhs of viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
-        void NIT_visc_AdjointConsistency_MasterRHS(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< master velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< slave velocity
-          const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
-        );
-
-        //! evaluate rhs of viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
-        void NIT_visc_AdjointConsistency_SlaveRHS(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< master velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< slave velocity
-          const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_viscs_timefacfac_ks,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nsd_,1> &           normal
+          const LINALG::Matrix<nsd_,1> &            normal,                       ///< normal vector
+          const std::pair<bool,double>& s_row,                                    ///< scaling for slave row
+          const std::pair<bool,double>& m_col,                                    ///< scaling for master col
+          const std::pair<bool,double>& s_col,                                    ///< scaling for slave col
+          bool only_rhs = false                                                   ///< evaluat only rhs
         );
 
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty(
             const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
             const double &                         stabfac,         ///< stabilization factor
-            const double &                         timefacfac,       ///< time integration factor
-            const std::pair<bool,double>& m_row, ///< scaling for master row
-            const std::pair<bool,double>& s_row, ///< scaling for slave row
-            const std::pair<bool,double>& m_col, ///< scaling for master col
-            const std::pair<bool,double>& s_col, ///< scaling for slave col
-            bool only_rhs = false
+            const double &                         timefacfac,      ///< time integration factor
+            const std::pair<bool,double>& m_row,                    ///< scaling for master row
+            const std::pair<bool,double>& s_row,                    ///< scaling for slave row
+            const std::pair<bool,double>& m_col,                    ///< scaling for master col
+            const std::pair<bool,double>& s_col,                    ///< scaling for slave col
+            bool only_rhs = false                                   ///< evaluat only rhs
         );
 
         //!  evaluate Nitsche's penalty term
@@ -594,35 +551,14 @@ namespace DRT
           const std::pair<bool,double>& mstr_col ///< scaling for penalty master stress col
         );
 
-        //!  evaluate master side's part of rhs contribution from Nitsche's penalty term
-        void NIT_Stab_Penalty_MasterRHS(
-            const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
-            const double &                         stabfac,         ///< stabilization factor
-            const double &                         timefacfac       ///< time integration scaling
-        );
-
-        //!  evaluate slave side's part of rhs contribution from Nitsche's penalty term
-        void NIT_Stab_Penalty_SlaveRHS(
-          const double &                           stabfac,         ///< stabilization factor
-          const double &                           timefacfac       ///< time integration scaling
-        );
-
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
         void NIT_Stab_Inflow_AveragedTerm(
           const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
           const LINALG::Matrix<nsd_,1>&            velint_m,        ///< master velocity
           const LINALG::Matrix<nsd_,1>&            normal,          ///< normal vector n^m
           const double &                           density,         ///< fluid density
-          const double &                           timefacfac       ///< timefac * fac
-        );
-
-        //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only, RHS)
-        void NIT_Stab_Inflow_AveragedTermRHS(
-          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
-          const LINALG::Matrix<nsd_,1>&            velint_m,        ///< master velocity
-          const LINALG::Matrix<nsd_,1>&            normal,          ///< normal vector n^m
-          const double &                           density,         ///< fluid density
-          const double &                           timefacfac       ///< timefac * fac
+          const double &                           timefacfac,      ///< timefac * fac
+          bool only_rhs = false                                     ///< evaluat only rhs
         );
 
         //! Do Nitsche penalty terms < [|v|] , [|u|] P >

@@ -1145,7 +1145,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   if(configmap.at(INPAR::XFEM::F_Con_Col).first)
   {
     #ifndef ENFORCE_URQUIZA_GNBC
-        //Comment: Here half_normal_deriv_m_viscm_timefacfac_km_ is used!
+        //Comment: Here vderxy_m_normal_transposed_viscm_timefacfac_km_ is used!
         NIT_visc_Consistency_MasterTerms(
             derxy_m,
             funct_m,
@@ -1469,19 +1469,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
 
   //--------------------------------------------
 
-  // plausibility check
-  if (kappa_s * kappa_m < 0)
-    dserror("Please choose reasonable, non-negative weights");
-
-  // check if this is a one-sided background fluid-master approach
-  const bool full_mastersided(fabs(kappa_m-1.0) < 1.e-14);
-  // check if this is a slave-sided (embedded-sided approach=
-  const bool full_slavesided(fabs(kappa_s-1.0) < 1.e-14);
-
-  // check the weights
-  if (fabs(kappa_m + kappa_s -1.0) > 1.e-14)
-    dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
-
   half_normal_.Update(0.5,normal,0.0);
   normal_pres_timefacfac_.Update(timefacfac,normal,0.0);
 
@@ -1562,34 +1549,30 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // penalty term
   if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
   {
-    if(configmap.at(INPAR::XFEM::F_Pen_Row).first)
+    if(configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
     {
-      NIT_Stab_Penalty_MasterRHS(
-      funct_m,
-      NIT_full_stab_facn,
-      timefacfac
-      );
-    }
-
-    if(configmap.at(INPAR::XFEM::X_Pen_Row).first)
-    {
-      NIT_Stab_Penalty_SlaveRHS(
-        NIT_full_stab_facn,
-        timefacfac
-      );
+      NIT_Stab_Penalty(
+          funct_m,
+          NIT_full_stab_facn,
+          timefacfac,
+          configmap.at(INPAR::XFEM::F_Pen_Row),
+          configmap.at(INPAR::XFEM::X_Pen_Row),
+          configmap.at(INPAR::XFEM::F_Pen_Col),
+          configmap.at(INPAR::XFEM::X_Pen_Col),
+          true);
     }
 
     // add averaged term
-    if ((fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
-        fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged) &&
-        !(!eval_coupling_ || full_mastersided)) //Todo: just to keep results the same, not sure if this is what we actually want?
+    if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
+        fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
     {
-      NIT_Stab_Inflow_AveragedTermRHS(
+      NIT_Stab_Inflow_AveragedTerm(
         funct_m,
         velint_m,
         normal,
         density_m,
-        timefacfac
+        timefacfac,
+        true
       );
     }
   }
@@ -1601,7 +1584,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // system - two-sided or xfluid-sided:
 
   // 2 * mu_m * kappa_m * timefac * fac
-  const double km_viscm_fac = 2.0 * timefacfac * visceff_m * kappa_m;
+  const double km_viscm_fac = 2.0 * timefacfac * visceff_m;
   half_normal_viscm_timefacfac_km_.Update(km_viscm_fac,half_normal_,0.0);
 
   // 0.5* (\nabla u + (\nabla u)^T) * normal
@@ -1610,84 +1593,123 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
   vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
 
-  normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
-
   // evaluate the terms, that contribute to the background fluid
   // system - two-sided or xfluid-sided:
-  if (! full_slavesided)
-  {
-    //-----------------------------------------------------------------
-    // pressure consistency term
-    if ( configmap.at(INPAR::XFEM::F_Con_Col).first || configmap.at(INPAR::XFEM::F_Con_n_Col).first)
+  //-----------------------------------------------------------------
+  // pressure consistency term
+    if (not isImplPressure)
     {
-      if (not isImplPressure)
+      //-----------------------------------------------------------------
+      // pressure consistency term
+      if ( configmap.at(INPAR::XFEM::F_Con_Col).first)
       {
-        NIT_p_Consistency_MasterRHS(
-            pres_m,
-            funct_m,
-            normal_pres_timefacfac_km_
+        NIT_p_Consistency_MasterTerms(
+          pres_m,
+          funct_m,
+          normal_pres_timefacfac_,
+          configmap.at(INPAR::XFEM::F_Con_Row),
+          configmap.at(INPAR::XFEM::X_Con_Row),
+          configmap.at(INPAR::XFEM::F_Con_Col),
+          true
+        );
+      }
+
+      if (configmap.at(INPAR::XFEM::F_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+      {
+        NIT_p_Consistency_MasterTerms(
+          pres_m,
+          funct_m,
+          normal_pres_timefacfac_,
+          configmap.at(INPAR::XFEM::F_Con_n_Row),
+          configmap.at(INPAR::XFEM::X_Con_n_Row),
+          configmap.at(INPAR::XFEM::F_Con_n_Col),
+          true
         );
       }
     }
 
-    //-----------------------------------------------------------------
-    // viscous consistency term
-    if(configmap.at(INPAR::XFEM::F_Con_Col).first)
-    {
-      #ifndef ENFORCE_URQUIZA_GNBC
-      NIT_visc_Consistency_MasterRHS(
-          funct_m);
-      #else
-        dserror("ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?"); //@Magnus: What should we do here?
-      #endif
+  //-----------------------------------------------------------------
+  // viscous consistency term
+  if(configmap.at(INPAR::XFEM::F_Con_Col).first)
+  {
+    #ifndef ENFORCE_URQUIZA_GNBC
+    const LINALG::Matrix<nsd_,nen_> dummy; //as for the evaluation of the rhs this parameter is not used!
+        //Comment: Here vderxy_m_normal_transposed_viscm_timefacfac_km_ is used!
+        NIT_visc_Consistency_MasterTerms(
+            dummy,
+            funct_m,
+            configmap.at(INPAR::XFEM::F_Con_Row),
+            configmap.at(INPAR::XFEM::X_Con_Row),
+            configmap.at(INPAR::XFEM::F_Con_Col),
+            true);
+    #else
+      dserror("ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?"); //@Magnus: What should we do here?
+    #endif
     }
     if(configmap.at(INPAR::XFEM::F_Con_n_Col).first)
       dserror("F_Con_n_Col will come soon");
     if(configmap.at(INPAR::XFEM::F_Con_t_Col).first)
       dserror("F_Con_t_Col will come soon");
 
-    if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+  if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+  {
+    if (not isImplPressure)
     {
       //-----------------------------------------------------------------
       // pressure adjoint consistency term
-      if(configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
-      {
-        if (not isImplPressure)
-        {
-          double velint_diff_normal_pres_timefacfac_km = 0.0;
-          if (configmap.at(INPAR::XFEM::F_Adj_Row).first)
-            velint_diff_normal_pres_timefacfac_km += velint_diff_pres_timefacfac_ * kappa_m;
-          if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
-            velint_diff_normal_pres_timefacfac_km += velint_diff_normal_pres_timefacfac_ * kappa_m;
-          //-----------------------------------------------------------------
-          NIT_p_AdjointConsistency_MasterRHS(
-              velint_diff_normal_pres_timefacfac_km,
-              funct_m
-          );
-        }
-      }
-
-      //Normal Terms!
-      if(configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
-        dserror("Implement normal Adjoint Consistency term RHS for NEW OST !");
-      if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first || configmap.at(INPAR::XFEM::FStr_Pen_n_Col).first || configmap.at(INPAR::XFEM::XStr_Pen_n_Col).first)
-        dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
-      if(configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::FStr_Pen_t_Col).first)
-        dserror("Implement tangential Adjoint Consistency term RHS for NEW OST !");
-
-      //-----------------------------------------------------------------
-      // viscous adjoint consistency term
       if(configmap.at(INPAR::XFEM::F_Adj_Row).first)
       {
-        LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_km(derxy_m);
-        derxy_m_viscm_timefacfac_km.Scale(adj_visc_scale_*km_viscm_fac);
-        NIT_visc_AdjointConsistency_MasterRHS(
-            velint_m,
-            velint_s_,
-            derxy_m_viscm_timefacfac_km,
-            normal
+        //-----------------------------------------------------------------
+        // +++ qnuP option added! +++
+        NIT_p_AdjointConsistency_MasterTerms(
+          funct_m,
+          normal_pres_timefacfac_,
+          velint_diff_pres_timefacfac_,
+          configmap.at(INPAR::XFEM::F_Adj_Row),
+          configmap.at(INPAR::XFEM::F_Adj_Col),
+          configmap.at(INPAR::XFEM::X_Adj_Col),
+          true
         );
       }
+
+      if(configmap.at(INPAR::XFEM::F_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+      {
+        //-----------------------------------------------------------------
+        // +++ qnuP option added! +++
+        NIT_p_AdjointConsistency_MasterTerms(
+          funct_m,
+          normal_pres_timefacfac_,
+          velint_diff_normal_pres_timefacfac_,
+          configmap.at(INPAR::XFEM::F_Adj_n_Row),
+          configmap.at(INPAR::XFEM::F_Adj_n_Col),
+          configmap.at(INPAR::XFEM::X_Adj_n_Col),
+          true
+        );
+      }
+    }
+
+    //Normal Terms!
+    if(configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
+      dserror("Implement normal Adjoint Consistency term RHS for NEW OST !");
+    if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first || configmap.at(INPAR::XFEM::FStr_Pen_n_Col).first || configmap.at(INPAR::XFEM::XStr_Pen_n_Col).first)
+      dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
+    if(configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::FStr_Pen_t_Col).first)
+      dserror("Implement tangential Adjoint Consistency term RHS for NEW OST !");
+
+    //-----------------------------------------------------------------
+    // viscous adjoint consistency term
+    if(configmap.at(INPAR::XFEM::F_Adj_Row).first)
+    {
+      const LINALG::Matrix<nsd_,nen_> dummy; //as for the evaluation of the rhs this parameter is not used!
+      NIT_visc_AdjointConsistency_MasterTerms(
+          funct_m,                      ///< funct * timefacfac
+          dummy,                      ///< spatial derivatives of coupling master shape functions
+          normal,                       ///< normal-vector
+          km_viscm_fac,                  ///< scaling factor
+          configmap.at(INPAR::XFEM::F_Adj_Row),
+          configmap.at(INPAR::XFEM::F_Adj_Col),
+          configmap.at(INPAR::XFEM::X_Adj_Col)
+      );
     }
   }
 
@@ -1695,8 +1717,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // the following quantities are only required for two-sided coupling
   // kappa_s > 0.0
   if ((configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first ||
-      configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first) &&
-      kappa_s != 0.0)
+      configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first))
   {
     //-----------------------------------------------------------------
     // pressure consistency term
@@ -1708,12 +1729,29 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
         // must use this-pointer because of two-stage lookup!
         this->GetInterfacePresn(presn_s);
 
-        normal_pres_timefacfac_ks_.Update(kappa_s,normal_pres_timefacfac_,0.0);
+        if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+        {
+          NIT_p_Consistency_SlaveTerms(
+              presn_s,
+              funct_m,
+              normal_pres_timefacfac_,
+              configmap.at(INPAR::XFEM::F_Con_Row),
+              configmap.at(INPAR::XFEM::X_Con_Row),
+              configmap.at(INPAR::XFEM::X_Con_Col),
+              true);
+        }
 
-        NIT_p_Consistency_SlaveRHS(
-            presn_s,
-            funct_m,
-            normal_pres_timefacfac_ks_);
+        if(configmap.at(INPAR::XFEM::X_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+        {
+          NIT_p_Consistency_SlaveTerms(
+              presn_s,
+              funct_m,
+              normal_pres_timefacfac_,
+              configmap.at(INPAR::XFEM::F_Con_n_Row),
+              configmap.at(INPAR::XFEM::X_Con_n_Row),
+              configmap.at(INPAR::XFEM::X_Con_n_Col),
+              true);
+        }
       }
     }
 
@@ -1725,7 +1763,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     this->GetInterfaceVelGradn(vderxyn_s);
 
     // 2 * mu_s * kappa_s * timefac * fac
-    const double ks_viscs_fac = 2.0 * kappa_s * visceff_s * timefacfac;
+    double ks_viscs_fac = 2.0 * visceff_s * timefacfac;
 
     vderxy_s_normal_.Multiply(vderxyn_s, half_normal_);
     vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxyn_s, half_normal_);
@@ -1734,8 +1772,14 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
 
     if(configmap.at(INPAR::XFEM::X_Con_Col).first)
     {
-      NIT_visc_Consistency_SlaveRHS(
-      funct_m);
+      const LINALG::Matrix<nsd_,slave_nen_> dummy; //as for the evaluation of the rhs this parameter is not used!
+      NIT_visc_Consistency_SlaveTerms(
+          dummy,
+          funct_m,
+          configmap.at(INPAR::XFEM::F_Con_Row),
+          configmap.at(INPAR::XFEM::X_Con_Row),
+          configmap.at(INPAR::XFEM::X_Con_Col),
+          true);
     }
     if(configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first)
       dserror("Want to implement projected slave consistency?");
@@ -1747,35 +1791,49 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
       {
         //-----------------------------------------------------------------
         // pressure adjoint consistency term
-        if(configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
+        // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
+        if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
         {
-          double velint_diff_normal_pres_timefacfac_ks = 0.0;
-          if (configmap.at(INPAR::XFEM::X_Adj_Row).first)
-            velint_diff_normal_pres_timefacfac_ks += velint_diff_pres_timefacfac_ * kappa_s;
-          if (configmap.at(INPAR::XFEM::X_Adj_n_Row).first)
-            velint_diff_normal_pres_timefacfac_ks += velint_diff_normal_pres_timefacfac_ * kappa_s;
-
-
-          NIT_p_AdjointConsistency_SlaveRHS(
-              velint_diff_normal_pres_timefacfac_ks);
+          NIT_p_AdjointConsistency_SlaveTerms(
+              normal_pres_timefacfac_,
+              velint_diff_pres_timefacfac_,
+              configmap.at(INPAR::XFEM::X_Adj_Row),
+              configmap.at(INPAR::XFEM::F_Adj_Col),
+              configmap.at(INPAR::XFEM::X_Adj_Col),
+              true);
+        }
+        if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+        {
+          NIT_p_AdjointConsistency_SlaveTerms(
+              normal_pres_timefacfac_,
+              velint_diff_normal_pres_timefacfac_,
+              configmap.at(INPAR::XFEM::X_Adj_n_Row),
+              configmap.at(INPAR::XFEM::F_Adj_n_Col),
+              configmap.at(INPAR::XFEM::X_Adj_n_Col),
+              true);
         }
       }
 
       //-----------------------------------------------------------------
       // viscous adjoint consistency term
       // Shape function derivatives for slave side
-      LINALG::Matrix<nsd_,slave_nen_> derxyn_s;
-      this->GetSlaveFunctDeriv(derxyn_s);
+      LINALG::Matrix<nsd_,slave_nen_> derxy_s;
+      this->GetSlaveFunctDeriv(derxy_s);
 
-      LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfac_ks(derxyn_s);
+      LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
       derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
+
+      //TODO: Needs added Projection. (If deemed necessary!)
       if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
       {
-        NIT_visc_AdjointConsistency_SlaveRHS(
-            velint_m,
-            velint_s_,
+        NIT_visc_AdjointConsistency_SlaveTerms(
+            funct_m,
             derxy_s_viscs_timefacfac_ks,
-            normal
+            normal,
+            configmap.at(INPAR::XFEM::X_Adj_Row),
+            configmap.at(INPAR::XFEM::F_Adj_Col),
+            configmap.at(INPAR::XFEM::X_Adj_Col),
+            true
         );
       }
       if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first)
@@ -1931,7 +1989,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
   const LINALG::Matrix<nsd_,1> &            normal_timefacfac,  ///< normal vector * timefacfac
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
-  const std::pair<bool,double>& m_col ///< scaling for master col
+  const std::pair<bool,double>& m_col, ///< scaling for master col
+  bool only_rhs
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_p_Consistency_MasterTerms");
@@ -1945,6 +2004,36 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
   //    + (vm, km *(Dpm)*n)
   //-----------------------------------------------
   const double facmm = m_row.second*m_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double funct_m_pres = funct_m(ir)*pres_m*facmm;
+
+    // loop over velocity components
+    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
+    {
+      // -(v,p*n)
+      rhC_um_( mIndex(ir,ivel),0) -= funct_m_pres*normal_timefacfac(ivel);
+    }
+  }
+
+  double facsm = 0.0;
+  if (s_row.first)
+  {
+    facsm = s_row.second*m_col.second;
+    for(unsigned ir = 0; ir<slave_nen_; ++ir)
+    {
+      const double funct_s_pres = funct_s_(ir)*pres_m*facsm;
+
+      for (unsigned ivel = 0; ivel < nsd_; ++ivel)
+      {
+        // -(v,p*n)
+        rhC_us_(sIndex(ir,ivel),0) += funct_s_pres*normal_timefacfac(ivel);
+      }
+    } // end loop over velocity components
+  }
+
+  if (only_rhs) return;
 
   for (unsigned ic =0; ic<nen_; ++ic)
   {
@@ -1963,23 +2052,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
     }
   }
 
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    const double funct_m_pres = funct_m(ir)*pres_m*facmm;
-
-    // loop over velocity components
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      // -(v,p*n)
-      rhC_um_( mIndex(ir,ivel),0) -= funct_m_pres*normal_timefacfac(ivel);
-    }
-  }
-
-
   if (s_row.first)
   {
-    const double facsm = s_row.second*m_col.second;
-
     for(unsigned ic =0; ic<nen_; ++ic)
     {
       const unsigned col = mPres(ic);
@@ -1999,17 +2073,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
         }
       }
     }
-
-    for(unsigned ir = 0; ir<slave_nen_; ++ir)
-    {
-      const double funct_s_pres = funct_s_(ir)*pres_m*facsm;
-
-      for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-      {
-        // -(v,p*n)
-        rhC_us_(sIndex(ir,ivel),0) += funct_s_pres*normal_timefacfac(ivel);
-      }
-    } // end loop over velocity components
   }
 
   return;
@@ -2024,11 +2087,36 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Slav
   const LINALG::Matrix<nsd_,1> &                normal_timefacfac,  ///< normal vector * timefacfac
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
-  const std::pair<bool,double>& s_col ///< scaling for slave col
+  const std::pair<bool,double>& s_col, ///< scaling for slave col
+  bool only_rhs
 )
 {
   const double facms = m_row.second*s_col.second;
   const double facss = s_row.second*s_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double tmp = funct_m(ir)*pres_s*facms;
+    // loop over velocity components
+    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
+    {
+      // -(vm, ks * ps*n)
+      rhC_um_(mIndex(ir,ivel),0) -= tmp*normal_timefacfac(ivel);
+    }
+  }
+
+  for (unsigned ir = 0; ir<slave_nen_; ++ir)
+  {
+    const double tmp = funct_s_(ir)*pres_s*facss;
+    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
+    {
+      // +(vs,ks * ps*n)
+      rhC_us_(sIndex(ir,ivel),0) += tmp*normal_timefacfac(ivel);
+    }
+  } // end loop over velocity components
+
+if (only_rhs) return;
+
   for (unsigned ic =0; ic<slave_nen_; ++ic)
   {
     //-----------------------------------------------
@@ -2060,27 +2148,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Slav
     }
   }
 
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    const double tmp = funct_m(ir)*pres_s*facms;
-    // loop over velocity components
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      // -(vm, ks * ps*n)
-      rhC_um_(mIndex(ir,ivel),0) -= tmp*normal_timefacfac(ivel);
-    }
-  }
-
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    const double tmp = funct_s_(ir)*pres_s*facss;
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      // +(vs,ks * ps*n)
-      rhC_us_(sIndex(ir,ivel),0) += tmp*normal_timefacfac(ivel);
-    }
-  } // end loop over velocity components
-
   return;
 }
 
@@ -2093,7 +2160,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
   const double &                          velint_diff_normal_timefacfac,  ///< (velint_m - velint_s) * normal * timefacfac
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& m_col,  ///< scaling for master col
-  const std::pair<bool,double>& s_col ///< scaling for slave col
+  const std::pair<bool,double>& s_col, ///< scaling for slave col
+  bool only_rhs
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_p_AdjointConsistency_MasterTerms");
@@ -2118,11 +2186,23 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
   // for Stokes' problem, this sign choice leads to a symmetric, positive definite Schur-complement matrix S
   // (v, p*n)--> A_up; -(q,u*n)--> -A_up^T; S_pp = A_pp + A_up^T A_uu A_up
 
+
+  const double velint_diff_normal_timefacfac_km = velint_diff_normal_timefacfac*m_row.second;
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    // (qm*n, km * um)
+    // -(qm*n,km * u_DBC) for weak DBC or
+    // -(qm*n,km * us)
+    rhC_um_(mPres(ir),0) += funct_m(ir)*velint_diff_normal_timefacfac_km;
+    //    rhC_um_(mPres(ir),0) -= funct_m(ir)*velint_diff_normal_timefacfac; //TESTING!
+  }
+
+  if (only_rhs) return;
+
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
   LINALG::Matrix<nsd_,1> proj_norm_timefacfac;
   proj_norm_timefacfac.Multiply(proj_normal_,normal_timefacfac);
 #endif
-
   //-----------------------------------------------
   //    - (qm*n, km *(Dum))
   //-----------------------------------------------
@@ -2147,17 +2227,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
       }
     }
   }
-
-  const double velint_diff_normal_timefacfac_km = velint_diff_normal_timefacfac*m_row.second;
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    // (qm*n, km * um)
-    // -(qm*n,km * u_DBC) for weak DBC or
-    // -(qm*n,km * us)
-    rhC_um_(mPres(ir),0) += funct_m(ir)*velint_diff_normal_timefacfac_km;
-    //    rhC_um_(mPres(ir),0) -= funct_m(ir)*velint_diff_normal_timefacfac; //TESTING!
-  }
-
 
   if (s_col.first)
   {
@@ -2196,7 +2265,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
   const double &                  velint_diff_normal_timefacfac, ///< (velint_m - velint_s) * n * timefacfac
   const std::pair<bool,double>& s_row, ///< scaling for slave row
   const std::pair<bool,double>& m_col,  ///< scaling for master col
-  const std::pair<bool,double>& s_col ///< scaling for slave col
+  const std::pair<bool,double>& s_col, ///< scaling for slave col
+  bool only_rhs
 )
 {
 
@@ -2214,6 +2284,15 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
   LINALG::Matrix<nsd_,1> proj_norm_timefacfac;
   proj_norm_timefacfac.Multiply(proj_normal_,normal_timefacfac);
 #endif
+
+  const double velint_diff_normal_timefacfac_ks = velint_diff_normal_timefacfac*s_row.second;
+  for (unsigned ir = 0; ir<slave_nen_; ++ir)
+  {
+    // (qs*n,ks* um)
+    rhC_us_(sPres(ir),0) += funct_s_(ir)*velint_diff_normal_timefacfac_ks;
+  }
+
+  if (only_rhs) return;
 
   //-----------------------------------------------
   //    - (qs*n, ks *(Dum))
@@ -2263,13 +2342,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
       }
     }
   }
-
-  const double velint_diff_normal_timefacfac_ks = velint_diff_normal_timefacfac*s_row.second;
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    // (qs*n,ks* um)
-    rhC_us_(sPres(ir),0) += funct_s_(ir)*velint_diff_normal_timefacfac_ks;
-  }
+  return;
 }
 
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
@@ -2278,7 +2351,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
   const LINALG::Matrix<nen_,1> &        funct_m,                       ///< funct_m
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
-  const std::pair<bool,double>& m_col ///< scaling for master col
+  const std::pair<bool,double>& m_col, ///< scaling for master col
+  bool only_rhs
 )
 {
   // viscous consistency term
@@ -2292,6 +2366,40 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
   // however for this term we have to save operations
   const double facmm = m_row.second*m_col.second;
   const double facsm = s_row.second*m_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double tmp_val = funct_m(ir)*facmm;
+
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      //-----------------------------------------------
+      //    - (vm, (2*km*mum) *eps(Dum)*n)
+      //-----------------------------------------------
+      rhC_um_(mIndex(ir,ivel),0) += tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
+    }
+  }
+
+
+  if (s_row.first)
+  {
+    for (unsigned ir = 0; ir<slave_nen_; ++ir)
+    {
+      const double tmp_val = funct_s_(ir)*facsm;
+
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        //-----------------------------------------------
+        //    + (vs, (2*km*mum) *eps(Dum)*n)
+        //-----------------------------------------------
+
+        // rhs
+        rhC_us_(sIndex(ir,ivel),0) -= tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
+      }
+    }
+  }
+
+  if (only_rhs) return;
 
   for (unsigned ic =0; ic<nen_; ++ic)
   {
@@ -2325,40 +2433,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
     }
   }
 
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    const double tmp_val = funct_m(ir)*facmm;
-
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      //-----------------------------------------------
-      //    - (vm, (2*km*mum) *eps(Dum)*n)
-      //-----------------------------------------------
-      rhC_um_(mIndex(ir,ivel),0) += tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
-    }
-  }
-
-
-  if (s_row.first)
-  {
-    for (unsigned ir = 0; ir<slave_nen_; ++ir)
-    {
-      const double tmp_val = funct_s_(ir)*facsm;;
-
-      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-      {
-        //-----------------------------------------------
-        //    + (vs, (2*km*mum) *eps(Dum)*n)
-        //-----------------------------------------------
-
-        // rhs
-        rhC_us_(sIndex(ir,ivel),0) -= tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
-      }
-    }
-  }
-
   return;
-
 }
 
 
@@ -2478,7 +2553,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_S
   const LINALG::Matrix<nen_,1> &          funct_m,  ///< funct_m
   const std::pair<bool,double>& m_row, ///< scaling for master row
   const std::pair<bool,double>& s_row, ///< scaling for slave row
-  const std::pair<bool,double>& s_col ///< scaling for slave col
+  const std::pair<bool,double>& s_col, ///< scaling for slave col
+  bool only_rhs
 )
 {
   // diagonal block (i,i): +/-2*ks*mus * ...
@@ -2499,6 +2575,28 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_S
 
   const double facms = m_row.second*s_col.second;
   const double facss = s_row.second*s_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double tmp_val = funct_m(ir)*facms;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_um_(mIndex(ir,ivel),0) += tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
+    }
+  }
+
+  for (unsigned ir = 0; ir<slave_nen_; ++ir)
+  {
+    const double tmp_val = funct_s_(ir)*facss;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_us_(sIndex(ir,ivel),0) -= tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
+    }
+  }
+
+  if (only_rhs) return;
 
   for (unsigned ic =0; ic<slave_nen_; ++ic)
   {
@@ -2537,27 +2635,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_S
       }
     }
   }
-
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    const double tmp_val = funct_m(ir)*facms;
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      // rhs
-      rhC_um_(mIndex(ir,ivel),0) += tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
-    }
-  }
-
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    const double tmp_val = funct_s_(ir)*facss;
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      // rhs
-      rhC_us_(sIndex(ir,ivel),0) -= tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
-    }
-  }
-
   return;
 }
 
@@ -2569,7 +2646,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
     const double &                                viscm_fac,                  ///< scaling factor
     const std::pair<bool,double>& m_row, ///< scaling for master row
     const std::pair<bool,double>& m_col, ///< scaling for master col
-    const std::pair<bool,double>& s_col ///< scaling for slave col
+    const std::pair<bool,double>& s_col, ///< scaling for slave col
+    bool only_rhs
 )
 {
     /*                                \       /                             i   \
@@ -2582,11 +2660,39 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   //-----------------------------------------------------------------
   // viscous adjoint consistency term
 
-  const double facmm = m_row.second*m_col.second;
-  const double facms = m_row.second*s_col.second;
-
   double tmp_fac = adj_visc_scale_*viscm_fac;
   derxy_m_viscm_timefacfac_.Update(tmp_fac,derxy_m); //2 * mu_m * timefacfac * derxy_m(k,ic)
+
+  static LINALG::Matrix<nsd_,nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
+  velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
+
+  for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+  {
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      velint_diff_dyad_normal_symm(ivel,jvel) = velint_diff_dyad_normal(ivel,jvel) + velint_diff_dyad_normal(jvel,ivel);
+    }
+  }
+
+  const double facm = m_row.second * 0.5;
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      const double derxy_m_viscm_timefacfac_km_half_tmp = derxy_m_viscm_timefacfac_(jvel,ir)*facm;
+
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        // rhs
+        rhC_um_(mIndex(ir,ivel),0) += derxy_m_viscm_timefacfac_km_half_tmp * velint_diff_dyad_normal_symm(ivel,jvel);
+      }
+    }
+  }
+
+  if (only_rhs) return;
+
+  const double facmm = m_row.second*m_col.second;
+  const double facms = m_row.second*s_col.second;
 
   normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_, half_normal_); //half_normal(k)*derxy_m(k,ic)*viscm*km
 
@@ -2624,34 +2730,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
       }
     }
   }
-
-
-  static LINALG::Matrix<nsd_,nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
-  velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
-
-  for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      velint_diff_dyad_normal_symm(ivel,jvel) = velint_diff_dyad_normal(ivel,jvel) + velint_diff_dyad_normal(jvel,ivel);
-    }
-  }
-
-  const double facm = m_row.second * 0.5;
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-    {
-      const double derxy_m_viscm_timefacfac_km_half_tmp = derxy_m_viscm_timefacfac_(jvel,ir)*facm;
-
-      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-      {
-        // rhs
-        rhC_um_(mIndex(ir,ivel),0) += derxy_m_viscm_timefacfac_km_half_tmp * velint_diff_dyad_normal_symm(ivel,jvel);
-      }
-    }
-  }
-
 return;
 }
 
@@ -2778,7 +2856,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   const LINALG::Matrix<nsd_,1> &           normal,
   const std::pair<bool,double>& s_row, ///< scaling for slave row
   const std::pair<bool,double>& m_col, ///< scaling for master col
-  const std::pair<bool,double>& s_col ///< scaling for slave col
+  const std::pair<bool,double>& s_col, ///< scaling for slave col
+  bool only_rhs
 )
 {
     /*                                \       /                             i   \
@@ -2804,6 +2883,34 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
    *   -- * n_i * 0.5 * N
    *   dxj
    */
+
+  static LINALG::Matrix<nsd_,nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
+  velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
+
+  for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+  {
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      velint_diff_dyad_normal_symm(ivel,jvel) = velint_diff_dyad_normal(ivel,jvel) + velint_diff_dyad_normal(jvel,ivel);
+    }
+  }
+
+  const double facs = s_row.second * 0.5;
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      const double derxy_s_viscs_timefacfac_ks_half_tmp = derxy_s_viscs_timefacfac_ks(jvel,ir)*facs;
+
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        // rhs
+        rhC_us_(sIndex(ir,ivel),0) += derxy_s_viscs_timefacfac_ks_half_tmp * velint_diff_dyad_normal_symm(ivel,jvel);
+      }
+    }
+  }
+
+  if (only_rhs) return;
 
   const double facsm = s_row.second*m_col.second;
   const double facss = s_row.second*s_col.second;
@@ -2842,31 +2949,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
   }
 
 
-  static LINALG::Matrix<nsd_,nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
-  velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
 
-  for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      velint_diff_dyad_normal_symm(ivel,jvel) = velint_diff_dyad_normal(ivel,jvel) + velint_diff_dyad_normal(jvel,ivel);
-    }
-  }
-
-  const double facs = s_row.second * 0.5;
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-    {
-      const double derxy_s_viscs_timefacfac_ks_half_tmp = derxy_s_viscs_timefacfac_ks(jvel,ir)*facs;
-
-      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-      {
-        // rhs
-        rhC_us_(sIndex(ir,ivel),0) += derxy_s_viscs_timefacfac_ks_half_tmp * velint_diff_dyad_normal_symm(ivel,jvel);
-      }
-    }
-  }
 }
 
 
@@ -3103,322 +3186,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Neumann_Adjoi
     }
   }
 
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_MasterRHS(
-  const double &                           pres_m,                        ///< master pressure
-  const LINALG::Matrix<nen_,1> &           funct_m,                       ///< funct
-  const LINALG::Matrix<nsd_,1> &           normal_timefacfac_km           ///< normal vector * timefacfac *kappa_m
-)
-{
-             /*                  \       /          i      \
-          + |  [ v ],   {Dp}*n    | = - | [ v ], { p }* n   |
-             \                   /       \                */
-
-  // loop over velocity components
-  for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-  {
-    const double tmp_val = pres_m*normal_timefacfac_km(ivel);
-    //-----------------------------------------------
-    //    + (vm, km *(Dpm)*n)
-    //-----------------------------------------------
-    for (unsigned ir = 0; ir<nen_; ++ir)
-    {
-      // -(v,p*n)
-      rhC_um_(mIndex(ir,ivel),0) -= funct_m(ir)*tmp_val;
-    }
-
-    if (!eval_coupling_) continue;
-
-    //-----------------------------------------------
-    //    - (vs, km *(Dpm)*n)
-    //-----------------------------------------------
-    for(unsigned ir = 0; ir<slave_nen_; ++ir)
-    {
-      // -(v,p*n)
-      rhC_us_(sIndex(ir,ivel),0) += funct_s_(ir)*tmp_val;
-    }
-  } // end loop over velocity components
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_SlaveRHS(
-  const double &                                pres_s,                       ///< slave pressure
-  const LINALG::Matrix<nen_,1> &                funct_m,                      ///< funct
-  const LINALG::Matrix<nsd_,1> &                normal_timefacfac_ks          ///< normal vector
-)
-{
-  // loop over velocity components
-  for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-  {
-    const double tmp_val = pres_s*normal_timefacfac_ks(ivel);
-    //-----------------------------------------------
-    //    + (vm, ks *(Dps)*n)
-    //-----------------------------------------------
-    for (unsigned ir = 0; ir<nen_; ++ir)
-    {
-      // -(vm, ks * ps*n)
-      rhC_um_(mIndex(ir,ivel),0) -= funct_m(ir)*tmp_val;
-    }
-
-    //-----------------------------------------------
-    //    - (vs, ks *(Dps)*n)
-    //-----------------------------------------------
-    for (unsigned ir = 0; ir<slave_nen_; ++ir)
-    {
-      // +(vs,ks * ps*n)
-      rhC_us_(sIndex(ir,ivel),0) += funct_s_(ir)*tmp_val;
-    }
-  } // end loop over velocity components
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsistency_MasterRHS(
-  const double &                         velint_diff_normal_timefacfac_km,   ///<  (velint_m - velint_s) * normal * timefacfac *kappa_s
-  const LINALG::Matrix<nen_,1> &         funct_m                             ///< funct
-)
-{
-      /*                   \     /              i   \
-   - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
-      \                    /     \                 */
-
-  //-----------------------------------------------
-  //    - (qm*n, km *(Dum))
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    // (qm*n, km * um)
-    // -(qm*n,km * u_DBC) for weak DBC or
-    // -(qm*n,km * us)
-    rhC_um_(mPres(ir),0) += funct_m(ir)*velint_diff_normal_timefacfac_km;
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsistency_SlaveRHS(
-  const double &                         velint_diff_normal_timefacfac_ks  ///<  (velint_m - velint_s) * normal * timefacfac *kappa_s
-)
-{
-  //-----------------------------------------------
-  //    - (qs*n, ks *(Dum))
-  //    + (qs*n, ks *(Dus))
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    // (qs*n,ks* um)
-    rhC_us_(sPres(ir),0) += funct_s_(ir)*velint_diff_normal_timefacfac_ks;
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_MasterRHS(
-  const LINALG::Matrix<nen_,1> &        funct_m  ///< funct
-)
-{
-  // viscous consistency term
-
-  /*                           \       /                   i      \
-- |  [ v ],  { 2mu eps(u) }*n    | = + | [ v ],  { 2mu eps(u ) }*n  |
-  \                            /       \                         */
-
-
-
-  // diagonal terms (i,i): +/-2*km*mum * ...
-  /*
-   *        nsd_
-   *       *---*
-   *       \    dN                     dN
-   *  N  *  *   --  * 0.5 * n_j + N  * --  * n_i * 0.5
-   *       /    dxj                    dxi
-   *       *---*
-   *       j = 1
-   *
-   * REMARK: 2nd summand == 'off-diagonal'-term for i=j
-   */
-
-  // off-diagonal terms (i,j) : +/-2*km*mum * ...
-  /*       dN
-   *  N  * -- * n_j * 0.5
-   *       dxi
-   */
-
-  //-----------------------------------------------
-  //    - (vm, (2*km*mum) *eps(Dum)*n)
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    const double tmp_val = funct_m(ir);
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      rhC_um_(mIndex(ir,ivel),0) += tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
-    }
-  }
-  if (!eval_coupling_) return;
-
-  //-----------------------------------------------
-  //    + (vs, (2*km*mum) *eps(Dum)*n)
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    const double tmp_val = funct_s_(ir);
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      rhC_us_(sIndex(ir,ivel),0) -= tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_SlaveRHS(
-  const LINALG::Matrix<nen_,1> &          funct_m
-)
-{
-  // diagonal block (i,i): +/-2*ks*mus * ...
-  /*       nsd_
-   *       *---*
-   *       \    dN                     dN
-   *  N  *  *   --  * 0.5 * n_j + N  * --  * n_i * 0.5
-   *       /    dxj                    dxi
-   *       *---*
-   *       j = 1
-   */
-
-  // off-diagonal block (i,j) : +/-2*ks*mus * ...
-  /*       dN
-   *  N  * -- * n_j * 0.5
-   *       dxi
-   */
-
-  //-----------------------------------------------
-  //    - (vm, (2*ks*mus) *eps(Dus)*n)
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      rhC_um_(mIndex(ir,ivel),0) += funct_m(ir) * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
-    }
-  }
-
-  //-----------------------------------------------
-  //    + (vs, (2*ks*mus) *eps(Dus)*n)
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      rhC_us_(sIndex(ir,ivel),0) -= funct_s_(ir) * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsistency_MasterRHS(
-  const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-  const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
-  const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-  const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
-)
-{
-    /*                                 \       /                             i   \
-  - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
-    \                                  /       \                                */
-  // (see Burman, Fernandez 2009)
-  // +1.0 symmetric
-  // -1.0 antisymmetric
-
-
-  // diagonal block (i,i): +/-2*km*mum * alpha * ...
-  /*       nsd_
-   *       *---*
-   *       \    dN                    dN
-   *        *   --  * 0.5 * n_j *N +  --  * n_i * 0.5 * N
-   *       /    dxj                   dxi
-   *       *---*
-   *       j = 1
-   */
-
-  // off-diagonal block (i,j) : +/-2*km*mum * alpha * ...
-  /*       dN
-   *  N  * -- * n_i * 0.5
-   *       dxj
-   */
-
-  //-----------------------------------------------
-  //    - alpha * ((2*km*mum) *eps(vm)*n , um)
-  //-----------------------------------------------
-  for (unsigned ir = 0; ir<nen_; ++ir)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      const double tmp = derxy_m_viscm_timefacfac_km(ivel,ir) * 0.5;
-      for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-      {
-
-        rhC_um_(mIndex(ir,ivel),0) += tmp * (normal(jvel) * velint_diff_(ivel) + normal(ivel)*velint_diff_(jvel));
-      }
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsistency_SlaveRHS(
-  const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-  const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
-  const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_viscs_timefacfac_ks,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-  const LINALG::Matrix<nsd_,1> &           normal
-)
-{
-    /*                                \       /                             i   \
-  - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
-    \                                 /       \                                */
-  // (see Burman, Fernandez 2009)
-  // +1.0 symmetric
-  // -1.0 antisymmetric
-  // diagonal block (i,i): +/-2*km*mum * alpha * ...
-  /*
-   *       nsd_
-   *       *---*
-   *       \    dN                    dN
-   *        *   --  * 0.5 * n_j *N +  --  * n_i * 0.5 *N
-   *       /    dxj                   dxi
-   *       *---*
-   *       j = 1
-   */
-
-  // off-diagonal block (i,j) : +/-2*km*mum * alpha * ...
-  /*   dN
-   *   -- * n_i * 0.5 * N
-   *   dxj
-   */
-  for (unsigned ir = 0; ir<slave_nen_; ++ir)
-  {
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      const unsigned row = sIndex(ir,ivel);
-      for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
-      {
-        rhC_us_(row,0) += derxy_s_viscs_timefacfac_ks(jvel,ir) * 0.5 * (normal(jvel) * velint_diff_(ivel) + normal(ivel)*velint_diff_(jvel));
-      }
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -3727,47 +3494,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_MasterRHS(
-  const LINALG::Matrix<nen_,1>&                 funct_m,   ///< funct
-  const double &                                stabfac,   ///< stabfac
-  const double &                                timefacfac ///< timefac * fac
-)
-{
-  // + gamma*mu/h_K (vm, um))
-  const double stabfac_timefacfac = stabfac * timefacfac;
-  for (unsigned ir=0; ir<nen_; ++ir)
-  {
-    const double tmp_val = funct_m(ir)*stabfac_timefacfac;
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      rhC_um_(mIndex(ir,ivel),0) -= tmp_val*velint_diff_(ivel);
-    }
-  }
-}
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_SlaveRHS(
-  const double &                                stabfac,           ///< stabilization factor
-  const double &                                timefacfac         ///< time integration scaling
-)
-{
-  const double stabfac_timefacfac = stabfac * timefacfac;
-  // - gamma*mu/h_K (vm, us))
-  // - gamma*mu/h_K (vs, um))
-  for (unsigned ir=0; ir<slave_nen_; ++ir)
-  {
-    const double tmp_val = funct_s_(ir)*stabfac_timefacfac;
-    for (unsigned ivel = 0; ivel < nsd_; ++ivel)
-    {
-      rhC_us_(sIndex(ir,ivel),0) += tmp_val * velint_diff_(ivel);
-    }
-  }
-}
 
 /*----------------------------------------------------------------------*
  * add averaged term to balance instabilities due to convective
@@ -3779,7 +3506,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_Averag
   const LINALG::Matrix<nsd_,1>&                 velint_m,          ///< master velocity
   const LINALG::Matrix<nsd_,1>&                 normal,            ///< normal vector n^m
   const double &                                density,           ///< fluid density
-  const double &                                timefacfac         ///< timefac * fac
+  const double &                                timefacfac,         ///< timefac * fac
+  bool only_rhs
 )
 {
   //
@@ -3794,72 +3522,24 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_Averag
 
   for (unsigned ivel = 0; ivel<nsd_; ++ivel)
   {
-    //  [rho * (beta * n^b)] (0.5*vb,ub)
     for (unsigned ir=0; ir<nen_; ++ir)
     {
       const unsigned mrow = mIndex(ir,ivel);
-      for (unsigned ic=0; ic<nen_; ++ic)
-      {
-        C_umum_(mrow,mIndex(ic,ivel)) -= funct_m_m_dyad_(ir,ic)*stabfac_avg_scaled;
-      }
 
       const double tmp = funct_m(ir)*stabfac_avg_scaled;
-
-      //  -[rho * (beta * n^b)] (0.5*vb,ue)
-      for (unsigned ic=0; ic<slave_nen_; ++ic)
-      {
-        C_umus_(mrow,sIndex(ic,ivel)) += funct_s_m_dyad_(ic,ir)*stabfac_avg_scaled;
-      }
-
       rhC_um_(mrow,0) += tmp*velint_diff_(ivel);
     }
 
-    //  [rho * (beta * n^b)] (0.5*ve,ub)
     for (unsigned ir=0; ir<slave_nen_; ++ir)
     {
       const unsigned srow = sIndex(ir,ivel);
-      for (unsigned ic=0; ic<nen_; ++ic)
-      {
-        C_usum_(srow,mIndex(ic,ivel)) -= funct_s_m_dyad_(ir,ic)*stabfac_avg_scaled;
-      }
 
       const double tmp = funct_s_(ir)*stabfac_avg_scaled;
-
       rhC_us_(srow,0) += tmp*velint_diff_(ivel);
-
-    //-[rho * (beta * n^b)] (0.5*ve,ue)
-
-      for (unsigned ic=0; ic<slave_nen_; ++ic)
-      {
-        C_usus_(srow,sIndex(ic,ivel)) += funct_s_s_dyad_(ir,ic)*stabfac_avg_scaled;
-      }
     }
   }
-  return;
-}
 
-/*----------------------------------------------------------------------*
- * add averaged term to balance instabilities due to convective
- * mass transport across the fluid-fluid interface (only RHS)
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_AveragedTermRHS(
-  const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct
-  const LINALG::Matrix<nsd_,1>&                 velint_m,          ///< master velocity
-  const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
-  const double &                                density,                      ///< fluid density
-  const double &                                timefacfac                    ///< time integration factor
-)
-{
-  //
-  /*                                        \
- -|  [rho * (beta * n)] *  { v }_m , [   u ] |
-  \ ----stab_avg-----                      */
-
-  // { v }_m = 0.5* (v^b + v^e) leads to the scaling with 0.5;
-  // beta: convective velocity, currently beta=u^b_Gamma;
-  // n:= n^b
-  const double stabfac_avg_scaled = 0.5 * velint_m.Dot(normal) * density * timefacfac;
+  if (only_rhs) return;
 
   for (unsigned ivel = 0; ivel<nsd_; ++ivel)
   {
@@ -3868,10 +3548,16 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_Averag
     {
       const unsigned mrow = mIndex(ir,ivel);
 
-      const double tmp = funct_m(ir)*stabfac_avg_scaled;
+      for (unsigned ic=0; ic<nen_; ++ic)
+      {
+        C_umum_(mrow,mIndex(ic,ivel)) -= funct_m_m_dyad_(ir,ic)*stabfac_avg_scaled;
+      }
 
       //  -[rho * (beta * n^b)] (0.5*vb,ue)
-      rhC_um_(mrow,0) += tmp*velint_diff_(ivel);
+      for (unsigned ic=0; ic<slave_nen_; ++ic)
+      {
+        C_umus_(mrow,sIndex(ic,ivel)) += funct_s_m_dyad_(ic,ir)*stabfac_avg_scaled;
+      }
     }
 
     //  [rho * (beta * n^b)] (0.5*ve,ub)
@@ -3879,10 +3565,16 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_Averag
     {
       const unsigned srow = sIndex(ir,ivel);
 
-      const double tmp = funct_s_(ir)*stabfac_avg_scaled;
+      for (unsigned ic=0; ic<nen_; ++ic)
+      {
+        C_usum_(srow,mIndex(ic,ivel)) -= funct_s_m_dyad_(ir,ic)*stabfac_avg_scaled;
+      }
 
-      //-[rho * (beta * n^b)] (0.5*ve,ue)
-      rhC_us_(srow,0) += tmp*velint_diff_(ivel);
+    //-[rho * (beta * n^b)] (0.5*ve,ue)
+      for (unsigned ic=0; ic<slave_nen_; ++ic)
+      {
+        C_usus_(srow,sIndex(ic,ivel)) += funct_s_s_dyad_(ir,ic)*stabfac_avg_scaled;
+      }
     }
   }
   return;
