@@ -3,8 +3,9 @@
 \file fsi_lungmonolithic.cpp
 \brief Volume-coupled FSI (base class)
 
+\level 3
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -871,8 +872,6 @@ void FSI::LungMonolithic::Output()
 //   fluidfield->OutputForces(AddFluidRHS_);
 
   AleField()->Output();
-
-  FluidField()->LiftDrag();
 
   // output of volumes for visualization (e.g. gnuplot)
 

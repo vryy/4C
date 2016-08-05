@@ -4,8 +4,10 @@
 
 \brief General framework for monolithic fpsi solution schemes
 
+\level 3
+
 <pre>
-Maintainer: Andreas Rauch
+\maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
 
 </pre>
@@ -146,7 +148,6 @@ void FPSI::MonolithicBase::Output()
   PoroField()     ->Output();
   FluidField()    ->Output();
   AleField()      ->Output();
-  FluidField()    ->LiftDrag();
 }
 
 /*----------------------------------------------------------------------*/

@@ -126,8 +126,6 @@ void FSI::MonolithicBaseFS::Output()
   // Discretizations.
   FluidField()->    Output();
   AleField()->      Output();
-
-  FluidField()->LiftDrag();
 }
 
 

@@ -1579,7 +1579,6 @@ void FSI::MortarMonolithicFluidSplit::Output()
   OutputLambda();
 
   AleField()->Output();
-  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {

@@ -1,3 +1,16 @@
+/*!----------------------------------------------------------------------
+\file ad_fld_wrapper.H
+
+\brief fluid wrapper
+
+\level 1
+
+\maintainer Benjamin Krank & Volker Gravemeier
+             {krank,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-245
+
+*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_WRAPPER_H
 #define ADAPTER_FLUID_WRAPPER_H
 
@@ -207,8 +220,6 @@ public:
 
   //@}
 
-  virtual void LiftDrag() const
-  { return fluid_->LiftDrag(); }
   virtual double EvalTime() const { dserror("not implemented!"); return 0.0; }
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
   virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("not implemented!"); return; }

@@ -14,8 +14,10 @@ by the combustion algorithm. It does not have a TimeLoop() on its own. This clas
 of finding the solution to the fluid field in a nonlinear iterative procedure in the context of a
 combustion problem.
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -2550,11 +2552,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
   const bool do_time_sample = special_flow_!="no" && step_>=samstart_ && step_<=samstop_;
 
-  // -------------------------------------------------------------------
-  //         calculate lift'n'drag forces from the residual
-  // -------------------------------------------------------------------
-  LiftDrag();
-
   //-------------------------------------------- output of solution
 
   if (write_visualization_data or write_restart_data)
@@ -2847,6 +2844,12 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // dump turbulence statistics
   // --------------------------
   turbstatisticsmanager_->DoOutput((*output_), step_, 0);
+
+
+  // -------------------------------------------------------------------
+  //     calculate and write lift'n'drag forces from the residual
+  // -------------------------------------------------------------------
+  LiftDrag();
 
   return;
 }

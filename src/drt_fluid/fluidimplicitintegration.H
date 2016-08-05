@@ -818,9 +818,6 @@ public:
   /// AVM3-based scale separation
   virtual void AVM3Separation();
 
-  /// calculate lift&drag forces and angular momenta
-  virtual void LiftDrag() const;
-
   /// compute flow rate
   virtual void ComputeFlowRates() const;
 
@@ -1049,6 +1046,13 @@ protected:
 
   */
   virtual void InitForcing();
+
+  /*!
+  \brief calculate lift&drag forces and angular momenta
+
+  */
+  virtual void LiftDrag() const;
+
 
   //! @name general algorithm parameters
 

@@ -1,8 +1,11 @@
 /*!----------------------------------------------------------------------
 \file fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp
 \brief Class for monolithic fluid-fluid-FSI using XFEM
+
+\level 3
+
 <pre>
-Maintainer:  Shadan Shahmiri
+\maintainer  Shadan Shahmiri
              shahmiri@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15265
@@ -768,7 +771,6 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Output()
       FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
   AleField()->      Output();
-  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {

@@ -1454,7 +1454,6 @@ void FSI::SlidingMonolithicStructureSplit::Output()
     }
   }
   AleField()->Output();
-  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {

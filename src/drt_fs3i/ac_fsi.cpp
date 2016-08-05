@@ -851,8 +851,6 @@ void FS3I::ACFSI::FsiOutput()
 
   //ale output
   fsi_->AleField()->Output();
-
-  fsi_->FluidField()->LiftDrag();
 }
 
 /*----------------------------------------------------------------------*

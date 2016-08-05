@@ -4,8 +4,10 @@
 \brief Control routine for monolithic fluid-fluid-fsi
 (fluidsplit) using XFEM and NOX
 
+\level 3
+
 <pre>
-Maintainer: Raffaela Kruse
+\maintainer Raffaela Kruse
             kruse@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
@@ -142,7 +144,6 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
       FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
   AleField()->Output();
-  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {

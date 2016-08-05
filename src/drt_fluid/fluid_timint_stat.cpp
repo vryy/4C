@@ -153,11 +153,6 @@ void FLD::TimIntStationary::SolveStationaryProblem()
       Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(velnp_, velatmeshfreenodes_);
 
     // -------------------------------------------------------------------
-    //         calculate lift'n'drag forces from the residual
-    // -------------------------------------------------------------------
-    LiftDrag();
-
-    // -------------------------------------------------------------------
     //                        compute flow rates
     // -------------------------------------------------------------------
     ComputeFlowRates();

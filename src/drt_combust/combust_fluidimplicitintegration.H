@@ -2,8 +2,9 @@
 \file combust_fluidimplicitintegration.H
 \brief class holding implicit time integration schemes for combustion problems
 
+\level 2
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -424,28 +425,6 @@ public:
   /// return time integration factor
   double TimIntParam() const;
 
-  /// calculate lift&drag forces and angular moments
-  /*!
-  Lift and drag forces are based upon the right hand side true-residual entities
-  of the corresponding nodes. The contribution of the end node of a line is entirely
-  added to a present L&D force.
-
-  Idea of this routine:
-
-  create
-
-  std::map< label, std::set<DRT::Node*> >
-
-  which is a set of nodes to each L&D Id
-  nodal forces of all the nodes within one set are added to one L&D force
-
-  Notice: Angular moments obtained from lift&drag forces currently refer to the
-          initial configuration, i.e. are built with the coordinates X of a particular
-          node irrespective of its current position.
-  */
-  void LiftDrag() const;
-
-
   double EvalTime() const
   {
     return dtele_;
@@ -487,6 +466,27 @@ protected:
   CombustFluidImplicitTimeInt operator = (const CombustFluidImplicitTimeInt& old);
   CombustFluidImplicitTimeInt (const CombustFluidImplicitTimeInt& old);
   CombustFluidImplicitTimeInt();
+
+  /// calculate lift&drag forces and angular moments
+  /*!
+  Lift and drag forces are based upon the right hand side true-residual entities
+  of the corresponding nodes. The contribution of the end node of a line is entirely
+  added to a present L&D force.
+
+  Idea of this routine:
+
+  create
+
+  std::map< label, std::set<DRT::Node*> >
+
+  which is a set of nodes to each L&D Id
+  nodal forces of all the nodes within one set are added to one L&D force
+
+  Notice: Angular moments obtained from lift&drag forces currently refer to the
+          initial configuration, i.e. are built with the coordinates X of a particular
+          node irrespective of its current position.
+  */
+  void LiftDrag() const;
 
   /// helper function to get algorithm title
   std::string MapTimIntEnumToString(INPAR::FLUID::TimeIntegrationScheme term);

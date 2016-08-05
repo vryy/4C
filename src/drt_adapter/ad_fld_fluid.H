@@ -4,8 +4,10 @@
 
 \brief Fluid field adapter
 
+\level 1
+
 <pre>
-Maintainer: Ulrich Kuettler
+\maintainer Ulrich Kuettler
             kuettler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -405,9 +407,6 @@ namespace ADAPTER {
     \date 08/2013
      */
     virtual void ResetTime(const double dtold) = 0;
-
-    /// calculation (and output) of lift&drag
-    virtual void LiftDrag() const = 0;
 
     /// this procs element evaluate time
     virtual double EvalTime() const = 0;

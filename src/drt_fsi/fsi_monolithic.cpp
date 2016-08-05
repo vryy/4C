@@ -236,8 +236,6 @@ void FSI::MonolithicBase::Output()
   FluidField()->Output();
   AleField()->Output();
 
-  FluidField()->LiftDrag();
-
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {
     StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());

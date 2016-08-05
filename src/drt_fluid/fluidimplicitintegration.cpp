@@ -3215,11 +3215,6 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
   // -------------------------------------------------------------------
-  //          calculate lift'n'drag forces from the residual
-  // -------------------------------------------------------------------
-  LiftDrag();
-
-  // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
   if (meshtying_ !=Teuchos::null)
@@ -3540,6 +3535,11 @@ void FLD::FluidImplicitTimeInt::Output()
     std::cout << gid << " " << newX << " " << newY << " " << newZ << std::endl;
   }
 #endif //PRINTALEDEFORMEDNODECOORDS
+
+  // -------------------------------------------------------------------
+  // calculate and write lift'n'drag forces from the residual
+  // -------------------------------------------------------------------
+  LiftDrag();
 
   return;
 } // FluidImplicitTimeInt::Output
