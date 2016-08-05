@@ -1,18 +1,20 @@
 /*!----------------------------------------------------------------------
 \file so3_scatra.cpp
 
+\brief Solid-scatra elements base class
+
+\level 2
+
 <pre>
-   Maintainer: Thon Moritz
+   \maintainer Thon Moritz
                thon@mhpc.mw.tum.de
                089 - 289-10264
 </pre>
 
 *----------------------------------------------------------------------*/
 
+
 #include "so3_scatra.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*

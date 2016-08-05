@@ -1,8 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so3_scatra_eletypes.H
 
+\brief Solid-scatra elements types
+
+\level 2
+
 <pre>
-   Maintainer: Thon Moritz
+   \maintainer Thon Moritz
                thon@mhpc.mw.tum.de
                089 - 289-10264
 </pre>

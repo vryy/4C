@@ -1,8 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so3_scatra.H
 
+\brief Solid-scatra elements base class
+
+\level 2
+
 <pre>
-   Maintainer: Thon Moritz
+   \maintainer Thon Moritz
                thon@mhpc.mw.tum.de
                089 - 289-10264
 </pre>
@@ -11,15 +15,11 @@
 #ifndef SO3_SCATRA_H
 #define SO3_SCATRA_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-
-#include "../drt_lib/drt_linedefinition.H"
 
 #include "so3_scatra_eletypes.H"
+
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+
 
 namespace DRT
 {
@@ -290,41 +290,6 @@ protected:
 
   //! don't want = operator
   So3_Scatra& operator = (const So3_Scatra& old);
-
-  int MyEvaluate
-  (
-    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
-    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-    DRT::Element::LocationArray& la, ///< location array for de-assembly
-    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
-    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
-    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
-    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
-    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
-  );
-
-  //! action parameters recognized by so_hex8
-  enum ActionType
-  {
-    none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,  //!< reset elementwise internal variables
-                              //!< during iteration to last converged state
-    calc_struct_reset_all,  //!< reset elementwise internal variables
-                            //!< to state in the beginning of the computation
-    calc_struct_energy,       //!< compute internal energy
-    calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    postprocess_stress,       //!< postprocess stresses
-    prestress_update,
-    calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
-  };
 
 private:
 

@@ -1,8 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so3_scatra_evaluate.cpp
 
+\brief Solid-scatra elements evaluate
+
+\level 2
+
 <pre>
-   Maintainer: Thon Moritz
+   \maintainer Thon Moritz
                thon@mhpc.mw.tum.de
                089 - 289-10264
 </pre>
@@ -10,25 +14,12 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_scatra.H"
-#include "../drt_lib/drt_discret.H"
+#include "so_base.H"
+
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/micromaterial.H"
-#include <iterator>
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
-
-//TODO: (thon) delete this header if the lower to-do is done!
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-//#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
@@ -167,22 +158,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
- *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::MyEvaluate(Teuchos::ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    DRT::Element::LocationArray& la,
-                                    Epetra_SerialDenseMatrix& elemat1_epetra,
-                                    Epetra_SerialDenseMatrix& elemat2_epetra,
-                                    Epetra_SerialDenseVector& elevec1_epetra,
-                                    Epetra_SerialDenseVector& elevec2_epetra,
-                                    Epetra_SerialDenseVector& elevec3_epetra)
-{
-
-  return 0;
-}
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -197,90 +172,20 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterLis
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  // start with "none"
-  typename So3_Scatra::ActionType act = So3_Scatra::none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_multidofsetcoupling")   act = So3_Scatra::calc_struct_multidofsetcoupling;
-  else if (action=="postprocess_stress")   act = So3_Scatra::postprocess_stress;
-  else if (action=="calc_struct_update_istep") act = So3_Scatra::calc_struct_update_istep;
+  PreEvaluate(params,
+              discretization,
+              la);
 
-  // what should the element do
-  switch(act)
-  {
-  //==================================================================================
-  // coupling terms in force-vector and stiffness matrix
-  case So3_Scatra::calc_struct_multidofsetcoupling:
-  {
+  return so3_ele::Evaluate(params,
+                    discretization,
+                    la[0].lm_,
+                    elemat1_epetra,
+                    elemat2_epetra,
+                    elevec1_epetra,
+                    elevec2_epetra,
+                    elevec3_epetra);
 
-    MyEvaluate(params,
-                      discretization,
-                      la,
-                      elemat1_epetra,
-                      elemat2_epetra,
-                      elevec1_epetra,
-                      elevec2_epetra,
-                      elevec3_epetra);
-  }
-  break;
-  case So3_Scatra::postprocess_stress:
-  {
-    so3_ele::Evaluate(params,
-                          discretization,
-                          la[0].lm_,
-                          elemat1_epetra,
-                          elemat2_epetra,
-                          elevec1_epetra,
-                          elevec2_epetra,
-                          elevec3_epetra);
-  }
-  break;
-  /*case So3_Scatra::calc_struct_update_istep:
-  {
-    so3_ele::Evaluate(params,
-                      discretization,
-                      la[0].lm_,
-                      elemat1_epetra,
-                      elemat2_epetra,
-                      elevec1_epetra,
-                      elevec2_epetra,
-                      elevec3_epetra);
-  }
-  break;*/
-  //==================================================================================
-  default:
-  {
-    //in some cases we need to write/change some data before evaluating
-
-    PreEvaluate(params,
-                      discretization,
-                      la);
-
-    so3_ele::Evaluate(params,
-                      discretization,
-                      la[0].lm_,
-                      elemat1_epetra,
-                      elemat2_epetra,
-                      elevec1_epetra,
-                      elevec2_epetra,
-                      elevec3_epetra);
-
-    MyEvaluate(params,
-                      discretization,
-                      la,
-                      elemat1_epetra,
-                      elemat2_epetra,
-                      elevec1_epetra,
-                      elevec2_epetra,
-                      elevec3_epetra);
-
-    break;
-  }
-  } // action
-
-  return 0;
 }
 
 
