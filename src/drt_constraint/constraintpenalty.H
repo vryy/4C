@@ -3,12 +3,9 @@
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -67,7 +64,7 @@ namespace UTILS
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     );
-    
+
     /// initialization routine called by the manager ctor
     void Initialize
     (
@@ -94,15 +91,15 @@ namespace UTILS
   protected:
 
     std::map<int,double>  penalties_; ///< map containing penalty values
-    std::map<int,double>  rho_; ///< map containing rhos for augmented Lagrange 
+    std::map<int,double>  rho_; ///< map containing rhos for augmented Lagrange
     Teuchos::RCP<Epetra_Export> errorexport_;  ///< exporter for redundant and non-overlapping maps
     Teuchos::RCP<Epetra_Import> errorimport_;  ///< importer for redundant and non-overlapping maps
     Teuchos::RCP<Epetra_Map> rederrormap_;  ///< redundant map of errors
     Teuchos::RCP<Epetra_Map> errormap_;  ///< non-overlapping map of errors
-    Teuchos::RCP<Epetra_Vector> initerror_;  ///< initial value of bc  
+    Teuchos::RCP<Epetra_Vector> initerror_;  ///< initial value of bc
     Teuchos::RCP<Epetra_Vector> acterror_;  ///< current value of bc
     Teuchos::RCP<Epetra_Vector> lagrvalues_; ///< value of Lagrange multiplier in augmented Lagrange
-   
+
 
   private:
 

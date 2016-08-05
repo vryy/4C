@@ -2,12 +2,10 @@
 \file constraintpenalty.cpp
 
 \brief Basic constraint class, dealing with constraints living on boundaries
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
-</pre>
+
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -60,7 +58,7 @@ Constraint(discr,conditionname)
   {
     constrtype_=none;
   }
-  
+
   return;
 }
 
@@ -154,7 +152,7 @@ void UTILS::ConstraintPenalty::Evaluate(
   // start computing
   acterror_->Scale(0.0);
   EvaluateError(params,acterror_);
-    
+
   switch (constrtype_)
   {
     case volconstr3d:
@@ -189,6 +187,9 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
   const double time = params.get("total time",-1.0);
+
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -225,7 +226,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
       double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
-      
+
       (*lagrvalues_)[condID-1]+=rho_[condID]*diff;
       // elements might need condition
       params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -255,7 +256,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
         elematrix1.Shape(eledim,eledim);
-        
+
         elevector1.Size(eledim);
         elevector3.Size(1);
 
@@ -263,29 +264,35 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
             elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
-        
+
         elematrix2=elematrix1;
-        elevector2=elevector1;     
-    
+        elevector2=elevector1;
+
         // assembly
-        int eid = curr->second->Id();        
-        
+        int eid = curr->second->Id();
+
         // scale with time integrator dependent value
         elematrix1.Scale(diff);
         for(int i=0; i<eledim; i++)
           for(int j=0; j<eledim; j++)
             elematrix1(i,j) += elevector1(i)*elevector1(j);
-        elematrix1.Scale(scStiff*penalties_[condID]);
-        elematrix2.Scale((*lagrvalues_)[condID-1]*scStiff);
-        
-        systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
-        systemmatrix1->Assemble(eid,lmstride,elematrix2,lm,lmowner);
-        
-        elevector1.Scale(penalties_[condID]*diff);
-        elevector2.Scale((*lagrvalues_)[condID-1]);
-        LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        LINALG::Assemble(*systemvector1,elevector2,lm,lmowner);
-        
+
+        if (assemblemat1)
+        {
+          elematrix1.Scale(scStiff*penalties_[condID]);
+          elematrix2.Scale((*lagrvalues_)[condID-1]*scStiff);
+          systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
+          systemmatrix1->Assemble(eid,lmstride,elematrix2,lm,lmowner);
+        }
+
+        if (assemblevec1)
+        {
+          elevector1.Scale(penalties_[condID]*diff);
+          elevector2.Scale((*lagrvalues_)[condID-1]);
+          LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+          LINALG::Assemble(*systemvector1,elevector2,lm,lmowner);
+        }
+
       }
     }
   }
@@ -362,7 +369,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
       {
         std::cout << "Encountered a new active penalty condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
-      
+
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;
     }
@@ -371,6 +378,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
   Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
   acterrdist->Export(*systemvector,*errorexport_,Add);
   systemvector->Import(*acterrdist,*errorimport_,Insert);
+
   return;
 } // end of EvaluateError
 
