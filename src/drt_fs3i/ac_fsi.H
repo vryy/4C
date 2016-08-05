@@ -187,6 +187,9 @@ namespace FS3I
     ///Build map extractor which extracts the j-th dof
     std::vector<Teuchos::RCP<LINALG::MapExtractor> > BuildMapExtractor();
 
+    /// optional safety check for times and dt's of all fields
+    void CheckifTimesAndStepsAndDtsMatch();
+
     ///Compare if two doubles are relatively zero
     bool IsRealtiveEqualTo(
         const double A,        ///< first value

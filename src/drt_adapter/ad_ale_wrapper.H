@@ -4,8 +4,10 @@
 
  \brief Wrapper for the ALE time integration
 
+\level 2
+
  <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
  </pre>
@@ -153,6 +155,12 @@ public:
   virtual double Time() const
   {
     return ale_->Time();
+  }
+
+  //! Return target step counter \f$step_{n+1}\f$
+  virtual double Step() const
+  {
+    return ale_->Step();
   }
 
   //! get time step size \f$\Delta t_n\f$

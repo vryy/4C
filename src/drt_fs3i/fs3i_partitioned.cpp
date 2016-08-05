@@ -261,7 +261,7 @@ Teuchos::ParameterList& FS3I::PartFS3I::ManipulateFsiTimeParams(const Teuchos::P
 
   if (fsisubcycles != 1) //if we have subcycling for ac_fsi
   {
-    timeparams.set<double>("TIMESTEP", fs3idyn.get<double>("TIMESTEP")/fsisubcycles);
+    timeparams.set<double>("TIMESTEP", fs3idyn.get<double>("TIMESTEP")/(double)fsisubcycles);
   }
   return timeparams;
 }

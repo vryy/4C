@@ -233,6 +233,9 @@ public:
   /// Get current simulation time
   virtual double Time() const { return time_; }
 
+  /// Get current step counter
+  virtual double Step() const { return step_; }
+
   /// Get the time step size
   virtual double Dt() const { return dt_; }
 

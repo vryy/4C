@@ -101,8 +101,6 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
   // Save the phinp vector at the beginning of the large time scale loop in
   // in order to estimate the so far induced growth
   *structurephinp_blts_ = *scatravec_[1]->ScaTraField()->Phinp();
-
-
 }
 
 /*----------------------------------------------------------------------*
@@ -241,10 +239,10 @@ void FS3I::ACFSI::LargeTimeScalePrepareTimeStep()
   //Print to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
+    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(12)<< time_ << "/" << std::setprecision(4) << timemax_
              << "     DT = " << std::scientific << dt_large_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
-             << "\n\n";
+             << "\n";
   }
 
   //prepare structure scatra field
@@ -384,7 +382,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
   // this is the convergence check
   // We always require at least one solve. We test the L_2-norm of the
   // current residual. Norm of residual is just printed for information
-  if (conresnorm <= scatraittol and incconnorm/phinpnorm <= scatraittol)
+  if (conresnorm <= scatraabstolres and incconnorm/phinpnorm <= scatraittol)
   {
     if (Comm().MyPID()==0)
     {
@@ -393,18 +391,6 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
     }
     return true;
   }
-
-  // abort iteration, when there's nothing more to do! -> more robustness
-  else if (conresnorm < scatraabstolres)
-  {
-    // print 'finish line'
-    if (Comm().MyPID()==0)
-    {
-      printf("+------------+-------------------+--------------+--------------+\n\n");
-    }
-    return true;
-  }
-
   // if itemax is reached without convergence stop the simulation
   else if (itnum == scatraitemax)
   {
@@ -511,19 +497,24 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     double max_phidiff_bltsl = 0.0;
     phidiff_bltsl_j->MaxValue(&max_phidiff_bltsl);
 
-    if (Comm().MyPID()==0)
-      std::cout<<std::scientific<<std::setprecision(2)<<"The maximal local growth since the beginning of the large time scale loop is "<<alpha*max_phidiff_bltsl<<std::endl;
-
     //----------------------------------------------------------------------------------------------------
-    // now the actual comparison
+    // screen output
     //----------------------------------------------------------------------------------------------------
     const int growth_updates = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
     const double fsi_update_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("FSI_UPDATE_TOL");
+
+    if (Comm().MyPID()==0)
+      std::cout<<std::scientific<<std::setprecision(3)<<"The maximal relative local growth since the small time scale is "<<alpha*max_phidiff_bltsl
+               <<" (tol "<<((double)growth_updates_counter_+1.0) / (double)growth_updates * fsi_update_tol
+               <<", iter "<<growth_updates_counter_<<"/"<<growth_updates<<")"<<std::endl;
 
     // some safety check
     if (growth_updates_counter_ > growth_updates)
       dserror("It should not be possible to have done so much growth updates. Sorry!");
 
+    //----------------------------------------------------------------------------------------------------
+    // now the actual comparison
+    //----------------------------------------------------------------------------------------------------
     //do we need a growth update?
     if ( max_phidiff_bltsl * alpha >= ((double)growth_updates_counter_+1.0) / (double)growth_updates * fsi_update_tol )
     {
@@ -608,10 +599,12 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //write fsi output. Scatra outputs are done later
   // fsi output
   fsi_->PrepareOutput();
+  //NOTE: we have to call this functions, otherwise the structure displacements are not applied
   fsi_->Update();
   FsiOutput();
   //fluid scatra update. Structure scatra is done later
   fluidscatra->Update(0);
+  fluidscatra->Output(0);
 
   //----------------------------------------------------------------------
   // Switch back time steps and set mean values in scatra fields
@@ -710,7 +703,7 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
 
   //fluid scatra update and output. structure scatra is done later
 //  scatravec_[0]->ScaTraField()->Update(0);
-  scatravec_[0]->ScaTraField()->Output(0);
+//  scatravec_[0]->ScaTraField()->Output(0);
 
   //now update and output the structure scatra field
   scatravec_[1]->ScaTraField()->Update(1);
@@ -790,7 +783,7 @@ std::vector<Teuchos::RCP<LINALG::MapExtractor> > FS3I::ACFSI::BuildMapExtractor(
  *----------------------------------------------------------------------*/
 bool FS3I::ACFSI::IsRealtiveEqualTo(const double A, const double B, const double Ref)
 {
-  return ( (std::abs(A-B)/Ref) < 1e-12 );
+  return ( (fabs(A-B)/Ref) < 1e-12 );
 }
 
 /*----------------------------------------------------------------------*

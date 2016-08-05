@@ -205,34 +205,22 @@ bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
     // print the screen info
     if (Comm().MyPID()==0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",
-             itnum,itemax,ittol,conresnorm,incconnorm/connorm);
+      printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
+             itnum,itemax,abstolres,conresnorm,ittol,incconnorm/connorm);
     }
 
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the
     // current residual. Norm of residual is just printed for information
-    if (conresnorm <= ittol and incconnorm/connorm <= ittol)
+    if (conresnorm <= abstolres and incconnorm/connorm <= ittol)
     {
       if (Comm().MyPID()==0)
       {
         // print 'finish line'
-        printf("+------------+-------------------+--------------+--------------+\n");
+        printf("+------------+----------------------+--------------+----------------------+--------------+\n\n");
       }
       return true;
     }
-
-    // abort iteration, when there's nothing more to do! -> more robustness
-    else if (conresnorm < abstolres)
-    {
-      // print 'finish line'
-      if (Comm().MyPID()==0)
-      {
-        printf("+------------+-------------------+--------------+--------------+\n");
-      }
-      return true;
-    }
-
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
     else if (itnum == itemax)

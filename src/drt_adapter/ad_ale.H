@@ -4,8 +4,10 @@
 
  \brief ALE field adapter
 
+\level 2
+
  <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
  </pre>
@@ -141,6 +143,9 @@ public:
 
   //! Return target time \f$t_{n+1}\f$
   virtual double Time() const = 0;
+
+  //! Return target step counter \f$step_{n+1}\f$
+  virtual double Step() const = 0;
 
   //! Evaluate time step
   virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =

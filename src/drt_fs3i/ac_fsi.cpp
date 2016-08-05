@@ -234,16 +234,15 @@ void FS3I::ACFSI::SmallTimeScaleLoop()
   {
   //Do a time step
   SmallTimeScalePrepareTimeStep();
-  SmallTimeScaleOuterLoop();
-  SmallTimeScaleUpdateAndOutput();
 
-  //Update the isperiodic_ flags
-  IsSmallTimeScalePeriodic();
+  SmallTimeScaleOuterLoop();
+
+  SmallTimeScaleUpdateAndOutput();
   }
 }
 
 /*--------------------------------------------------------------------------*
- | flag whether small time scale time loop should be finished    Thon 07/15 |
+ | flag whether small time scale time loop is finished           Thon 07/15 |
  *--------------------------------------------------------------------------*/
 bool FS3I::ACFSI::SmallTimeScaleLoopNotFinished()
 {
@@ -260,7 +259,7 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
   //Print to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
+    std::cout << "\n"<< "TIME:  "    << std::scientific <<std::setprecision(12)<< time_ << "/" << std::setprecision(4) << timemax_
              << "     DT = " << std::scientific << dt_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
              << "\n"<<std::endl;
@@ -374,6 +373,9 @@ void FS3I::ACFSI::DoFSIStep()
     const int fsiperssisteps = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP");
     if (fsiperssisteps == 1) //no subcycling
     {
+      // this is the normal case, here we also check before
+      CheckifTimesAndStepsAndDtsMatch();
+
       DoFSIStepStandard();
     }
     else //subcycling
@@ -385,6 +387,10 @@ void FS3I::ACFSI::DoFSIStep()
   {
     DoFSIStepPeriodic();
   }
+
+  //just for safety reasons we check if all marching quantities match
+  //NOTE: we do this after the actual solving since in case of subcycling the may differ in between
+  CheckifTimesAndStepsAndDtsMatch();
 }
 
 void FS3I::ACFSI::IsSmallTimeScalePeriodic()
@@ -420,7 +426,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
     {
       if (Comm().MyPID()==0)
         std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has a relative error of      "<<abs(wk_rel_errors[i])
-                 <<"  ( tol "<<wk_rel_tol<<" )"<<std::endl;
+                 <<"  (tol "<<wk_rel_tol<<")"<<std::endl;
 
       if ( abs(wk_rel_errors[i]) > wk_rel_tol)
         fsiisperiodic_ = false;
@@ -453,7 +459,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
     if (Comm().MyPID()==0)
     {
       std::cout<<std::scientific<<std::setprecision(2)<<"The wall shear stresses have a relative error of "<<wss_rel_error
-               <<"  ( tol "<<wss_rel_tol<<" )"<<std::endl;
+               <<"  (tol "<<wss_rel_tol<<")"<<std::endl;
     }
 
     WallShearStress_lp_->Update(1.0,*(meanmanager_->GetMeanValue("mean_wss")),0.0); //Update
@@ -514,7 +520,7 @@ void FS3I::ACFSI::IsScatraPeriodic( )
     if (Comm().MyPID()==0)
     {
       std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th fluid-scatra has a relative error of    "<<ith_fluid_scatra_rel_error
-               <<"  ( tol "<<fluid_scatra_rel_tol<<" )"<<std::endl;
+               <<"  (tol "<<fluid_scatra_rel_tol<<")"<<std::endl;
     }
 
     if (ith_fluid_scatra_rel_error > fluid_scatra_rel_tol)
@@ -757,7 +763,7 @@ void FS3I::ACFSI::SmallTimeScaleDoScatraStep()
                "\n                        AC COUPLED SCATRA SOLVER"
                "\n************************************************************************\n"<<std::endl;
 
-    std::cout<<"+- step/max -+- tol ---- [norm] -+-- scal-res --+-- scal-inc --+"<<std::endl;
+    std::cout<<"+- step/max -+- abs-res-tol [norm] -+-- scal-res --+- rel-inc-tol [norm] -+-- scal-inc --+"<<std::endl;
   }
 
   bool stopnonliniter=false;
@@ -789,19 +795,22 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
     meanmanager_->AddValue("wss",WallShearStress_lp_,dt_);
   }
 
-  //Note: we can not reset the mean manager here, since we first need to write its data, to be able to restart.
+  //NOTE: we can not reset the mean manager here, since we first need to write its data, to be able to restart.
   //Hence the correct order is: 1. Calculate mean values; 2. Write output; 3. Reset mean Manager (in next time step)
 
-  //It is important to first update the fluid field (including the impedance BC)
-  //before checking the fsi periodicity. So be careful with the order here!!
+  //NOTE: it is important to update the periodic flags AFTER doing the windkessel
+  //time update and BEFORE writing the output. So be careful with the order here!!
 
-  //FSI update and output
+  //Update field variables
   fsi_->PrepareOutput();
   fsi_->Update();
-  FsiOutput();
-
-  //Scatra update and output
   UpdateScatraFields();
+
+  //Update the isperiodic_ flags
+  IsSmallTimeScalePeriodic();
+
+  //write outputs
+  FsiOutput();
   ScatraOutput();
 }
 
@@ -880,34 +889,22 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
   // print the screen info
   if (Comm().MyPID()==0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",
-           itnum,scatraitemax,scatraittol,conresnorm,incconnorm/connorm);
+    printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
+           itnum,scatraitemax,scatraabstolres,conresnorm,scatraittol,incconnorm/connorm);
   }
 
   // this is the convergence check
   // We always require at least one solve. We test the L_2-norm of the
   // current residual. Norm of residual is just printed for information
-  if (conresnorm <= scatraittol and incconnorm/connorm <= scatraittol)
+  if (conresnorm <= scatraabstolres and incconnorm/connorm <= scatraittol)
   {
     if (Comm().MyPID()==0)
     {
       // print 'finish line'
-      printf("+------------+-------------------+--------------+--------------+\n\n");
+      printf("+------------+----------------------+--------------+----------------------+--------------+\n\n");
     }
     return true;
   }
-
-  // abort iteration, when there's nothing more to do! -> more robustness
-  else if (conresnorm < scatraabstolres)
-  {
-    // print 'finish line'
-    if (Comm().MyPID()==0)
-    {
-      printf("+------------+-------------------+--------------+--------------+\n\n");
-    }
-    return true;
-  }
-
   // if itemax is reached without convergence stop the simulation
   else if (itnum == scatraitemax)
   {
@@ -994,7 +991,7 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
      stopnonliniter = true;
      if ((Comm().MyPID()==0) )
      {
-       std::cout<<"\n************************************************************************\n"
+       std::cout<<"************************************************************************\n"
                     "                     OUTER ITERATION STEP CONVERGED"
                   "\n************************************************************************\n"<<std::endl;
      }
@@ -1004,7 +1001,7 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
     {
-      std::cout<<"\n************************************************************************\n"
+      std::cout<<"************************************************************************\n"
                    "           OUTER ITERATION STEP NOT CONVERGED IN ITEMAX STEPS"
                  "\n************************************************************************\n"<<std::endl;
     }
@@ -1012,4 +1009,59 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
   }
 
   return stopnonliniter;
+}
+
+/*----------------------------------------------------------------------*
+ | Compare if two doubles are relatively equal               Thon 08/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::CheckifTimesAndStepsAndDtsMatch()
+{
+  // NOTE: this check should pass each time after all PrepareTimeStep() has been called,
+  // i.e. direclty before a actuall computation beginns. I wish you luck :-)
+
+  //check times
+  const double fluidtime = fsi_->FluidField()->Time();
+  const double structuretime = fsi_->StructureField()->Time();
+  const double aletime = fsi_->AleField()->Time();
+  const double fsitime = fsi_->Time();
+  const double fluidscatratime = scatravec_[0]->ScaTraField()->Time();
+  const double structurescatratime = scatravec_[1]->ScaTraField()->Time();
+
+  if ( not IsRealtiveEqualTo(fluidtime,time_,time_) ) dserror("Your fluid time does not match!");
+  if ( not IsRealtiveEqualTo(structuretime,time_,time_) ) dserror("Your structure time does not match!");
+  if ( not IsRealtiveEqualTo(aletime,time_,time_) ) dserror("Your ale time does not match!");
+  if ( not IsRealtiveEqualTo(fsitime,time_,time_) ) dserror("Your fsi time does not match!");
+  if ( not IsRealtiveEqualTo(fluidscatratime,time_,time_) ) dserror("Your fluid-scalar time does not match!");
+  if ( not IsRealtiveEqualTo(structurescatratime,time_,time_) ) dserror("Your structure-scalar time does not match!");
+
+  //check steps
+  const int fluidstep = fsi_->FluidField()->Step();
+  const int structurestep = fsi_->StructureField()->Step();
+  const int alestep = fsi_->AleField()->Step();
+  const int fsistep = fsi_->Step();
+  const int fluidscatrastep = scatravec_[0]->ScaTraField()->Step();
+  const int structurescatrastep = scatravec_[1]->ScaTraField()->Step();
+
+  if ( not IsRealtiveEqualTo(fluidstep,step_,step_) ) dserror("Your fluid step does not match!");
+  if ( not IsRealtiveEqualTo(structurestep,step_,step_) ) dserror("Your structure step does not match!");
+  if ( not IsRealtiveEqualTo(alestep,step_,step_) ) dserror("Your ale step does not match!");
+  if ( not IsRealtiveEqualTo(fsistep,step_,step_) ) dserror("Your fsi step does not match!");
+  if ( not IsRealtiveEqualTo(fluidscatrastep,step_,step_) ) dserror("Your fluid-scalar step does not match!");
+  if ( not IsRealtiveEqualTo(structurescatrastep,step_,step_) ) dserror("Your structure-scalar step does not match!");
+
+  //check dts
+  const double fsiperssisteps = (double)(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP"));
+  const double fluiddt = fsi_->FluidField()->Dt()*fsiperssisteps;
+  const double structuredt = fsi_->StructureField()->Dt()*fsiperssisteps;
+  const double aledt = fsi_->AleField()->Dt()*fsiperssisteps;
+  const double fsidt = fsi_->Dt()*fsiperssisteps;
+  const double fluidscatradt = scatravec_[0]->ScaTraField()->Dt();
+  const double structurescatradt = scatravec_[1]->ScaTraField()->Dt();
+
+  if ( not IsRealtiveEqualTo(fluiddt,dt_,1.0) ) dserror("Your fluid dt does not match!");
+  if ( not IsRealtiveEqualTo(structuredt,dt_,1.0) ) dserror("Your structure dt does not match!");
+  if ( not IsRealtiveEqualTo(aledt,dt_,1.0) ) dserror("Your ale dt does not match!");
+  if ( not IsRealtiveEqualTo(fsidt,dt_,1.0) ) dserror("Your fsi dt does not match!");
+  if ( not IsRealtiveEqualTo(fluidscatradt,dt_,1.0) ) dserror("Your fluid-scalar dt does not match!");
+  if ( not IsRealtiveEqualTo(structurescatradt,dt_,1.0) ) dserror("Your structure-scalar dt does not match!");
 }
