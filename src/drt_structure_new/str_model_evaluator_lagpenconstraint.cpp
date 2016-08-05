@@ -233,6 +233,11 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
         const bool& forced_writerestart) const
 {
 
+  iowriter.WriteVector("lagrmultiplier",
+                        constrman_->GetLagrMultVector());
+  iowriter.WriteVector("refconval",
+                        constrman_->GetRefBaseValues());
+
   return;
 }
 
@@ -241,6 +246,9 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
 void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(
     IO::DiscretizationReader& ioreader)
 {
+
+  double time_n = GState().GetTimeN();
+  constrman_->ReadRestart(ioreader,time_n);
 
   return;
 }

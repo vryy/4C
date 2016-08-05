@@ -2083,13 +2083,8 @@ void STR::TimInt::ReadRestartConstraint()
     IO::DiscretizationReader reader(discret_, step_);
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     consolv_->SetUzawaParameter(uzawatemp);
-    Teuchos::RCP<Epetra_Map> constrmap=conman_->GetConstraintMap();
-    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap, true);
-    reader.ReadVector(tempvec, "lagrmultiplier");
-    conman_->SetLagrMultVector(tempvec);
-    reader.ReadVector(tempvec, "refconval");
-    conman_->SetRefBaseValues(tempvec, (*time_)[0]);
 
+    conman_->ReadRestart(reader,(*time_)[0]);
   }
 }
 

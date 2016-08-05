@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 #include "constraint_manager.H"
 #include "constraint.H"
@@ -283,6 +284,26 @@ void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector>
 
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
+}
+
+
+/*----------------------------------------------------------------------*
+|(public)                                                      mhv 03/15|
+|Read restart information                                               |
+ *-----------------------------------------------------------------------*/
+void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
+{
+
+//  double uzawatemp = reader.ReadDouble("uzawaparameter");
+//  consolv_->SetUzawaParameter(uzawatemp);
+  Teuchos::RCP<Epetra_Map> constrmap=GetConstraintMap();
+  Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap, true);
+  reader.ReadVector(tempvec, "lagrmultiplier");
+  SetLagrMultVector(tempvec);
+  reader.ReadVector(tempvec, "refconval");
+  SetRefBaseValues(tempvec, time);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

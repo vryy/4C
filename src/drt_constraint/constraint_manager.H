@@ -18,6 +18,10 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+namespace IO
+{
+  class DiscretizationReader;
+}
 
 namespace DRT
 {
@@ -239,6 +243,13 @@ namespace UTILS
     {
         return havemonitor_;
     };
+
+    /*!
+     \brief Read restart information
+    */
+    void ReadRestart(
+      IO::DiscretizationReader& reader,
+      const double& time);
 
     /*!
      \brief Return current value
