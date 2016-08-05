@@ -50,11 +50,11 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-06
 TOLRES                          1.0E-06
-MAXITER                         20
+MAXITER                         10
 UZAWAPARAM                      0.5
 UZAWAMAXITER                    15
 TOLCONSTR                       1.0e-06
-UZAWAALGO                       direct
+UZAWAALGO                       simple
 NLNSOL                          fullnewton
 ---------------------------------------------------------STRUCT NOX/Printing
 Error                           = Yes
@@ -77,9 +77,150 @@ ALPHA_M 0.0 //0.333333333
 ALPHA_F 0.3333333333333 //0.444444444
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
+-------------------------------------------------------------CONTACT DYNAMIC
+LINEAR_SOLVER                   2                             // constraint simpler primary solver block
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact LINEAR solver (used for constraint simpler)
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      2
+IFPACKGFILL                     2
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC                          CheapSIMPLE
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5
+ML_MAXLEVEL                     2
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR
+SUB_SOLVER1                     4
+SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
+NAME Struct Solver
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      2
+IFPACKGFILL                     2
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC                          ML                            // ML
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5
+ML_MAXLEVEL                     2
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR
+--------------------------------------------------------------------SOLVER 3
+NAME                            Contact SIMPLER solver (used for constraint simpler)
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      1
+IFPACKGFILL                     0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5
+ML_MAXLEVEL                     2
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR
+--------------------------------------------------------------------SOLVER 4
+NAME                            SIMPLE_predict
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      2
+IFPACKGFILL                     2
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC ILU //ML
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5
+ML_MAXLEVEL                     2
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.02
 MAT 2 ELAST_CoupNeoHooke YOUNG 3.0E2 NUE 0.49
@@ -120,11 +261,11 @@ E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           3
 //connect2
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT n0 0 0
 //connect3
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT n0 0 0
 //connect4
-E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT n0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -3575,6 +3716,6 @@ NODE 938 COORD 7.2120881080627e-01 1.9495381414890e-01 3.6240367889404e+00
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 385 QUANTITY dispy VALUE -7.094020056e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.824916000e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 920 QUANTITY dispz VALUE 2.825015348e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 920 QUANTITY dispz VALUE 2.825015348e-03 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

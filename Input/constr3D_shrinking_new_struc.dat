@@ -35,13 +35,13 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-TIMESTEP                        0.005
-NUMSTEP                         20
+TIMESTEP                        0.01
+NUMSTEP                         10
 MAXTIME                         1000.0
-DAMPING                         No
+DAMPING                         Yes
 M_DAMP                          100.0
 K_DAMP                          0.0
 PREDICT                         ConstDis
@@ -3573,8 +3573,8 @@ NODE 938 COORD 7.2120881080627e-01 1.9495381414890e-01 3.6240367889404e+00
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 385 QUANTITY dispy VALUE -7.094020056e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.824916000e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 920 QUANTITY dispz VALUE 2.825015348e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 385 QUANTITY dispy VALUE -3.83933862157093391e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE -1.07730199593033575e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 920 QUANTITY dispz VALUE -1.07650663131186709e-04 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

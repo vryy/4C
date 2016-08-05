@@ -203,9 +203,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     const INPAR::STR::ModelType& mt)
 {
   CheckInit();
-
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.GetBlockDofRowMapPtr();
+
   model_maps_[mt] = me_map_ptr;
   const int dof_off_set = me_map_ptr->MaxAllGID();
 
@@ -245,9 +245,43 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     }
     case INPAR::STR::model_lag_pen_constraint:
     {
+      // ---------------------------------------------------------------------------
+      // check type of constraint conditions (Lagrange multiplier vs. penalty)
+      // ---------------------------------------------------------------------------
+      bool have_lag_constraint = false;
+      std::vector<DRT::Condition*> lagcond_volconstr3d(0);
+      std::vector<DRT::Condition*> lagcond_areaconstr3d(0);
+      std::vector<DRT::Condition*> lagcond_areaconstr2d(0);
+      std::vector<DRT::Condition*> lagcond_mpconline2d(0);
+      std::vector<DRT::Condition*> lagcond_mpconplane3d(0);
+      std::vector<DRT::Condition*> lagcond_mpcnormcomp3d(0);
+      discret_->GetCondition("VolumeConstraint_3D",lagcond_volconstr3d);
+      discret_->GetCondition("AreaConstraint_3D",lagcond_areaconstr3d);
+      discret_->GetCondition("AreaConstraint_2D",lagcond_areaconstr2d);
+      discret_->GetCondition("MPC_NodeOnLine_2D",lagcond_mpconline2d);
+      discret_->GetCondition("MPC_NodeOnPlane_3D",lagcond_mpconplane3d);
+      discret_->GetCondition("MPC_NormalComponent_3D",lagcond_mpcnormcomp3d);
+      if (
+             lagcond_volconstr3d.size()  or
+             lagcond_areaconstr3d.size() or
+             lagcond_areaconstr2d.size() or
+             lagcond_mpconline2d.size()  or
+             lagcond_mpconplane3d.size() or
+             lagcond_mpcnormcomp3d.size()
+          )
+        have_lag_constraint = true;
+
       // --- 2x2 block system (saddle-point structure)
-      model_block_id_[mt] = max_block_num_;
-      ++max_block_num_;
+      if (have_lag_constraint)
+      {
+        model_block_id_[mt] = max_block_num_;
+        ++max_block_num_;
+      }
+      // --- standard system
+      else
+      {
+        model_block_id_[mt] = 0;
+      }
       break;
     }
     case INPAR::STR::model_springdashpot:

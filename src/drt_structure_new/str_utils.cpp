@@ -17,6 +17,7 @@
 #include "str_utils.H"
 #include "str_integrator.H"
 #include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_lagpenconstraint.H"
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_noxinterface.H"
 #include "../drt_constraint/constraint_manager.H"
@@ -31,7 +32,6 @@
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
-#include "str_model_evaluator_lagpenconstraint.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

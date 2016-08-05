@@ -123,7 +123,7 @@ namespace LAGPENCONSTRAINT {
     virtual ~NoxInterfacePrec() {};
 
     /// initialize important member variables
-    void Init();
+    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -172,6 +172,9 @@ namespace LAGPENCONSTRAINT {
     bool issetup_;
 
   private:
+
+    //! global state data container
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
   };
 

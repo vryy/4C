@@ -37,7 +37,8 @@ LAGPENCONSTRAINT::NoxInterface::NoxInterface()
  *----------------------------------------------------------------------------*/
 LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
     : isinit_(false),
-      issetup_(false)
+      issetup_(false),
+      gstate_ptr_(Teuchos::null)
 {
   // should stay empty
 }
@@ -57,9 +58,12 @@ void LAGPENCONSTRAINT::NoxInterface::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterfacePrec::Init()
+void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
+
+  gstate_ptr_ = gstate_ptr;
 
   // set flag at the end
   isinit_ = true;
@@ -107,7 +111,6 @@ double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(
       Teuchos::rcp(new NOX::Epetra::Vector(constrRhs,NOX::Epetra::Vector::CreateView));
 
   double constrNorm = -1.0;
-
   constrNorm = constrRhs_nox->norm(type);
   if (isScaled)
     constrNorm /= static_cast<double>(constrRhs_nox->length());
@@ -216,8 +219,36 @@ double LAGPENCONSTRAINT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 {
-//  std::cout << "IsSaddlePointSystem" << std::endl;
-  return true;
+
+  Teuchos::RCP<const DRT::Discretization> dis = gstate_ptr_->GetDiscret();
+
+  // ---------------------------------------------------------------------------
+  // check type of constraint conditions (Lagrange multiplier vs. penalty)
+  // ---------------------------------------------------------------------------
+  bool have_lag_constraint = false;
+  std::vector<DRT::Condition*> lagcond_volconstr3d(0);
+  std::vector<DRT::Condition*> lagcond_areaconstr3d(0);
+  std::vector<DRT::Condition*> lagcond_areaconstr2d(0);
+  std::vector<DRT::Condition*> lagcond_mpconline2d(0);
+  std::vector<DRT::Condition*> lagcond_mpconplane3d(0);
+  std::vector<DRT::Condition*> lagcond_mpcnormcomp3d(0);
+  dis->GetCondition("VolumeConstraint_3D",lagcond_volconstr3d);
+  dis->GetCondition("AreaConstraint_3D",lagcond_areaconstr3d);
+  dis->GetCondition("AreaConstraint_2D",lagcond_areaconstr2d);
+  dis->GetCondition("MPC_NodeOnLine_2D",lagcond_mpconline2d);
+  dis->GetCondition("MPC_NodeOnPlane_3D",lagcond_mpconplane3d);
+  dis->GetCondition("MPC_NormalComponent_3D",lagcond_mpcnormcomp3d);
+  if (
+         lagcond_volconstr3d.size()  or
+         lagcond_areaconstr3d.size() or
+         lagcond_areaconstr2d.size() or
+         lagcond_mpconline2d.size()  or
+         lagcond_mpconplane3d.size() or
+         lagcond_mpcnormcomp3d.size()
+      )
+    have_lag_constraint = true;
+
+  return have_lag_constraint;
 }
 
 /*----------------------------------------------------------------------------*
@@ -225,7 +256,7 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 bool LAGPENCONSTRAINT::NoxInterfacePrec::IsCondensedSystem() const
 {
 //  std::cout << "IsCondensedSystem" << std::endl;
-  return true;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*

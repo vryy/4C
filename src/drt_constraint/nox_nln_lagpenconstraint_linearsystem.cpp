@@ -80,12 +80,6 @@ void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(
 
   bool isAdaptiveControl          = p.get<bool>("Adaptive Control");
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
-  // This value is specified in the underlying time integrator
-  // (i.e. RunPreNoxNlnSolve())
-//  int step = p.get<int>("Current Time Step");
-  // This value is specified in the PrePostOperator object of
-  // the non-linear solver (i.e. runPreIterate())
-//  int nlnIter = p.get<int>("Number of Nonlinear Iterations");
 
   if (isAdaptiveControl)
   {
@@ -123,8 +117,7 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
         "There have to be exactly two LINALG::Solvers (structure + contact)!");
   // ---------------------------------------------------------------------
   // Solving a saddle point system
-  // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
-  // (2) Direct Augmented Lagrange strategy
+  // Lagrange multiplier constraints -> SaddlePoint
   // ---------------------------------------------------------------------
   NOX::NLN::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
   bool issaddlepoint = false;
@@ -136,31 +129,17 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
       break;
     }
   }
-  // ---------------------------------------------------------------------
-  // Solving a purely displacement based system
-  // (1) Dual (not Standard) Lagrange multipliers -> Condensed
-  // (2) Penalty and Uzawa Augmented Lagrange strategies
-  // ---------------------------------------------------------------------
-  bool iscondensed = false;
-  for (cit=iConstrPrec_.begin();cit!=iConstrPrec_.end();++cit)
-  {
-    if (cit->second->IsCondensedSystem())
-    {
-      iscondensed = true;
-      break;
-    }
-  }
 
-  if (issaddlepoint or iscondensed)
+  if (issaddlepoint)
   {
     currSolver =  solvers.at(NOX::NLN::sol_lag_pen_constraint);
     return NOX::NLN::sol_lag_pen_constraint;
   }
   // ----------------------------------------------------------------------
-  // check if constraint contributions are present,
-  // if not we make a standard solver call to speed things up
+  // Solving a standard displacement-based system
+  // Penalty-enforced constraints
   // ----------------------------------------------------------------------
-  if (!issaddlepoint and !iscondensed)
+  if (!issaddlepoint)
   {
     currSolver = solvers.at(NOX::NLN::sol_structure);
     return NOX::NLN::sol_structure;

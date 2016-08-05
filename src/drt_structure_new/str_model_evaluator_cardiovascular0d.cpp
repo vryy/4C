@@ -52,7 +52,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   Teuchos::RCP<DRT::Discretization> dis = GState().GetMutableDiscret();
 
   // setup the displacement pointer
-  disnp_ptr_ = GState().GetMutableDisNp();
+  disnp_ptr_ = GState().GetDisNp();
 
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ =
@@ -78,6 +78,9 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
+
+  // update the structural displacement vector
+  disnp_ptr_ = GState().GetDisNp();
 
   fstructcardio_np_ptr_->Scale(0.0);
   stiff_cardio_ptr_->Zero();
