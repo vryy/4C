@@ -36,7 +36,8 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha //Statics
+DYNAMICTYP                      GenAlphaLieGroup
+INT_STRATEGY                    Standard
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
@@ -47,12 +48,12 @@ DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDis
-TOLRES                          1.0E-8
-TOLDISP                         1.0E-8
+TOLRES                          1.0E-12
+TOLDISP                         1.0E-12
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
-MAXITER                         100
+MAXITER                         10
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5

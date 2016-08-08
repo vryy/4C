@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_inner_statustest_factory.cpp
 
+\brief factory for user defined NOX inner status tests
+
 \maintainer Michael Hiermeier
 
 \date Aug 14, 2015
@@ -18,9 +20,11 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include <NOX_Utils.H>
+#include <NOX_Abstract_Vector.H>
 
 // supported inner status tests
 #include "nox_nln_inner_statustest_armijo.H"
+#include "nox_nln_inner_statustest_upperbound.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -53,6 +57,8 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
     status_test =  this->BuildComboTest(p, u, tagged_tests);
   else if (test_type == "Armijo")
     status_test = this->BuildArmijoTest(p, u);
+  else if (test_type == "UpperBound")
+    status_test = this->BuildUpperBoundTest(p, u);
   // supported StatusTests of the NOX::StatusTest classes for the inner check
   else if (test_type == "Stagnation" or
            test_type == "Divergence" or
@@ -110,6 +116,36 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
   else
     status_test =
         Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1,isMonotone,maxHistSize));
+
+  return status_test;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
+NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
+{
+  // Get upper bound as specified in xml file
+  double upperboundval = p.get("Value",1.0e10);
+
+  // Norm Type
+  std::string norm_type_string = p.get("Norm Type", "Two Norm");
+  NOX::Abstract::Vector::NormType norm_type = NOX::Abstract::Vector::TwoNorm;
+  if (norm_type_string == "Two Norm")
+    norm_type = NOX::Abstract::Vector::TwoNorm;
+  else if (norm_type_string == "One Norm")
+    norm_type = NOX::Abstract::Vector::OneNorm;
+  else if (norm_type_string == "Max Norm")
+    norm_type = NOX::Abstract::Vector::MaxNorm;
+  else {
+    std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
+    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
+  }
+
+  Teuchos::RCP<NOX::NLN::INNER::StatusTest::UpperBound> status_test =
+      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval,norm_type));
 
   return status_test;
 }

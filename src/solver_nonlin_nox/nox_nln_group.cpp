@@ -33,6 +33,7 @@ NOX::NLN::Group::Group(Teuchos::ParameterList& printParams,
     const NOX::Epetra::Vector& x,
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
     : NOX::Epetra::Group(printParams,i,x,linSys),
+      skipUpdateX_(false),
       prePostOperatorPtr_(Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator(grpOptionParams)))
 {
   // empty constructor
@@ -44,7 +45,16 @@ NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type)
     : NOX::Epetra::Group(source,type),
       prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
-  // no new variables, pointers or references
+  switch (type)
+  {
+    case DeepCopy:
+    {
+      skipUpdateX_ = source.skipUpdateX_;
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -54,6 +64,22 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Group::clone(CopyType type) const
   Teuchos::RCP<NOX::Abstract::Group> newgrp =
     Teuchos::rcp(new NOX::NLN::Group(*this, type));
   return newgrp;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group& NOX::NLN::Group::operator=(const NOX::Abstract::Group& source)
+{
+  return operator=(dynamic_cast<const NOX::Epetra::Group&> (source));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group& NOX::NLN::Group::operator=(const NOX::Epetra::Group& source)
+{
+  NOX::Epetra::Group::operator=(source);
+  skipUpdateX_ = dynamic_cast<const NOX::NLN::Group&>(source).skipUpdateX_;
+  return *this;
 }
 
 /*----------------------------------------------------------------------------*
@@ -80,10 +106,15 @@ void NOX::NLN::Group::computeX(
     const NOX::Epetra::Vector& d,
     double step)
 {
+  skipUpdateX_ = false;
   prePostOperatorPtr_->runPreComputeX(grp,d.getEpetraVector(),step,*this);
 
-  // Update the nox internal variables
-  NOX::Epetra::Group::computeX(grp,d,step);
+  if (isPreconditioner())
+    sharedLinearSystem.getObject(this)->destroyPreconditioner();
+  resetIsValid();
+
+  if (not skipUpdateX_)
+    xVector.update(1.0, grp.xVector, step, d);
 
   prePostOperatorPtr_->runPostComputeX(grp,d.getEpetraVector(),step,*this);
   return;
@@ -115,6 +146,13 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::setJacobianOperator(
   isValidJacobian = true;
 
   return NOX::Abstract::Group::Ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX)
+{
+  skipUpdateX_=skipUpdateX;
 }
 
 /*----------------------------------------------------------------------------*

@@ -30,6 +30,7 @@ namespace ELEMENTS {
     struct_calc_linstiff,
     struct_calc_nlnstiff,                   //!< evaluate the tangential stiffness matrix and the internal force vector
     struct_calc_internalforce,              //!< evaluate only the internal forces (no need for the stiffness terms)
+    struct_calc_internalinertiaforce,       //!< evaluate only the internal and inertia forces
     struct_calc_linstiffmass,
     struct_calc_nlnstiffmass,               //!< evaluate the dynamic state: internal forces vector, stiffness and the default/nln mass matrix
     struct_calc_nlnstifflmass,              //!< evaluate the dynamic state: internal forces vector, stiffness and the lumped mass matrix
@@ -79,6 +80,9 @@ namespace ELEMENTS {
         break;
       case struct_calc_internalforce:
         return "struct_calc_internalforce";
+        break;
+      case struct_calc_internalinertiaforce:
+        return "struct_calc_internalinertiaforce";
         break;
       case struct_calc_linstiffmass:
         return "struct_calc_linstiffmass";

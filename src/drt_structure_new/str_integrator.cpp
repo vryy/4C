@@ -246,8 +246,10 @@ void STR::Integrator::EquilibriateInitialState()
   //*) Add contributions of inhomogeneous DBCs
   accnp_ptr->Update(1.0,*acc_aux_ptr,1.0);
 
+  isequalibriate_initial_state_ = true;
   // re-build the entire right-hand-side with correct accelerations
   ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr,1.0);
+  isequalibriate_initial_state_ = false;
 
   // call update routines to copy states from t_{n+1} to t_{n}
   // note that the time step is not incremented
@@ -257,6 +259,44 @@ void STR::Integrator::EquilibriateInitialState()
   PostUpdate();
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::Integrator::CurrentStateIsEquilibrium(const double& tol)
+{
+  CheckInit();
+
+  // temporary right-hand-side
+  Teuchos::RCP<Epetra_Vector> rhs_ptr =
+      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
+
+  // overwrite initial state vectors with Dirichlet BCs
+  const double& timen = (*GlobalState().GetMultiTime())[0];
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetMutableDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+  Dbc().ApplyDirichletBC(timen,disnp_ptr,velnp_ptr,accnp_ptr,false);
+
+  // set the evaluate parameters of the current base class
+  ResetEvalParams();
+  // !!! evaluate the initial state !!!
+  EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
+
+  isequalibriate_initial_state_ = true;
+  // build the entire right-hand-side
+  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr,1.0);
+  isequalibriate_initial_state_ = false;
+
+  // add viscous contributions to rhs
+  rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);
+  // add inertial contributions to rhs
+  rhs_ptr->Update(1.0,*GlobalState().GetFinertialNp(),1.0);
+
+  double resnorm = 0.0;
+  rhs_ptr->NormInf(&resnorm);
+
+  return (resnorm<tol ? true : false);
 }
 
 /*----------------------------------------------------------------------------*

@@ -2,6 +2,8 @@
 /*!
 \file loca_nln_group.cpp
 
+\brief LOCA specific group
+
 \maintainer Michael Hiermeier
 
 \date Nov 16, 2015
@@ -64,6 +66,20 @@ LOCA::NLN::Group::Group(const LOCA::NLN::Group& source, NOX::CopyType type)
 Teuchos::RCP<NOX::Abstract::Group> LOCA::NLN::Group::clone(NOX::CopyType type) const
 {
   return Teuchos::rcp(new LOCA::NLN::Group(*this,type));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group& LOCA::NLN::Group::operator=(const NOX::Abstract::Group& source)
+{
+  return NOX::NLN::Group::operator=(source);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group& LOCA::NLN::Group::operator=(const NOX::Epetra::Group& source)
+{
+  return NOX::NLN::Group::operator=(source);
 }
 
 /*----------------------------------------------------------------------------*

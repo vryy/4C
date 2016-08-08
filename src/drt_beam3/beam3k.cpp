@@ -177,11 +177,7 @@ Irr_(0),
 T0_(0),
 T_(0),
 theta0_(0),
-dispthetaconv_(0),
-dispthetaold_(0),
 dispthetanew_(0),
-Qconv_(0),
-Qold_(0),
 Qnew_(0),
 Qrefconv_(0),
 Qrefnew_(0),
@@ -229,11 +225,7 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  T0_(old.T0_),
  T_(old.T_),
  theta0_(old.theta0_),
- dispthetaconv_(old.dispthetaconv_),
- dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
- Qconv_(old.Qconv_),
- Qold_(old.Qold_),
  Qnew_(old.Qnew_),
  Qrefconv_(old.Qrefconv_),
  Qrefnew_(old.Qrefnew_),
@@ -345,11 +337,7 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,T0_);
   AddtoPack<3,1>(data,T_);
   AddtoPack<3,1>(data,theta0_);
-  AddtoPack<3,1>(data,dispthetaconv_);
-  AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
-  AddtoPack<4,1>(data,Qconv_);
-  AddtoPack<4,1>(data,Qold_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qrefconv_);
   AddtoPack<4,1>(data,Qrefnew_);
@@ -409,11 +397,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,T0_);
   ExtractfromPack<3,1>(position,data,T_);
   ExtractfromPack<3,1>(position,data,theta0_);
-  ExtractfromPack<3,1>(position,data,dispthetaconv_);
-  ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
-  ExtractfromPack<4,1>(position,data,Qconv_);
-  ExtractfromPack<4,1>(position,data,Qold_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qrefconv_);
   ExtractfromPack<4,1>(position,data,Qrefnew_);
@@ -596,9 +580,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
       {
         LARGEROTATIONS::triadtoquaternion(Gref[ind],Qrefconv_[ind]);
       }
-      //Set initial values for the quaternions describing the orientation of the current and last Newton iteration
-      Qconv_[ind]=Qrefconv_[ind];
-      Qold_[ind]=Qrefconv_[ind];
+      //Set initial values for the quaternions describing the orientation of the current Newton iteration
       Qnew_[ind]=Qrefconv_[ind];
       Qrefnew_[ind]=Qrefconv_[ind];
     }//(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
@@ -787,9 +769,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
       {
         LARGEROTATIONS::triadtoquaternion(Gref[ind],Qrefconv_[ind]);
       }
-      //Set initial values for the quaternions describing the orientation of the current and last Newton iteration
-      Qconv_[ind]=Qrefconv_[ind];
-      Qold_[ind]=Qrefconv_[ind];
+      //Set initial values for the quaternions describing the orientation of the current Newton iteration
       Qnew_[ind]=Qrefconv_[ind];
       Qrefnew_[ind]=Qrefconv_[ind];
     }//(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)

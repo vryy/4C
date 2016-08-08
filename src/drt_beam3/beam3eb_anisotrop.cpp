@@ -3,12 +3,9 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-
 *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3eb_anisotrop.H"
@@ -441,8 +438,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
 
   if(!isinit_ || secondinit)
   {
-
-    std::cout << "SetUpReferenceGeometry!!!" << std::endl;
 
     //Get integration points for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);

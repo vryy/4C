@@ -29,10 +29,12 @@
 #include "../drt_inpar/inpar_statmech.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
 
 #include <iostream>
 #include <iomanip>
 
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -110,7 +112,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           dserror("energy vector of invalid size %i, expected row dimension 1 (total elastic energy of element)!", elevec1.M());
         elevec1(0)=Eint_;
       }
-
     }
     break;
 
@@ -119,6 +120,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_nlnstifflmass:
     case ELEMENTS::struct_calc_nlnstiff:
     case ELEMENTS::struct_calc_internalforce:
+    case ELEMENTS::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -286,10 +288,53 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
         }
       }
 
-    /* at the end of an iteration step the geometric configuration has to be updated: the starting point for the
-     * next iteration step is the configuration at the end of the current step */
-    Qoldnode_ = Qnewnode_;
-    dispthetaoldnode_= dispthetanewnode_;
+      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      {
+        switch(nnodetriad)
+        {
+          case 2:
+          {
+            if (!centerline_hermite_)
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+              if (needstatmech_)
+                CalcBrownianForcesAndStiff<2,2,1>(params,myvel,mydisp,NULL,&elevec1);
+            }
+            else
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            }
+            break;
+          }
+          case 3:
+          {
+            if (!centerline_hermite_)
+              CalcInternalAndInertiaForcesAndStiff<3,3,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            else
+              CalcInternalAndInertiaForcesAndStiff<3,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            break;
+          }
+          case 4:
+          {
+            if (!centerline_hermite_)
+              CalcInternalAndInertiaForcesAndStiff<4,4,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            else
+              CalcInternalAndInertiaForcesAndStiff<4,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            break;
+          }
+          case 5:
+          {
+            if (!centerline_hermite_)
+              CalcInternalAndInertiaForcesAndStiff<5,5,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            else
+              CalcInternalAndInertiaForcesAndStiff<5,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,&elevec2);
+            break;
+          }
+          default:
+            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+        }
+      }
+
     }
     break;
 
@@ -319,8 +364,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
        * not be applied as starting point for any further iteration step; as a consequence the thereby generated change
        * of the geometric configuration should be canceled and the configuration should be reset to the value at the
        * beginning of the time step*/
-      Qoldnode_ = Qconvnode_;
-      dispthetaoldnode_ = dispthetaconvnode_;
       Qnewnode_ = Qconvnode_;
       dispthetanewnode_ = dispthetaconvnode_;
       QnewGPmass_=QconvGPmass_;
@@ -334,15 +377,15 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
+    case ELEMENTS::struct_calc_stress:
+      dserror("No stress output implemented for beam3r elements");
+    break;
+
     case ELEMENTS::struct_calc_recover:
     {
       // do nothing here
       break;
     }
-
-    case ELEMENTS::struct_calc_stress:
-//      dserror("No stress output implemented for beam3r elements");
-    break;
 
     default:
       dserror("Unknown type of action for Beam3r %d", act);
@@ -362,15 +405,15 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
-  // get element displacements
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  SetParamsInterfacePtr(params);
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (this->IsParamsInterface())
+    time = this->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // nnodetriad: number of nodes used for interpolation of triad field
@@ -513,7 +556,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------------------------------------------------*/
 template <typename T>
 inline void DRT::ELEMENTS::Beam3r::GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
-                                                           LINALG::TMatrix<T,3,3>& CM)
+                                                           LINALG::TMatrix<T,3,3>& CM) const
 {
   // first of all we get the material law
    Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -559,7 +602,7 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T,3,3>& Lam
                                                 const LINALG::TMatrix<T,3,1>& stress_mat,
                                                 const LINALG::TMatrix<T,3,3>& C_mat,
                                                 LINALG::TMatrix<T,3,1>& stress_spatial,
-                                                LINALG::TMatrix<T,3,3>& c_spatial)
+                                                LINALG::TMatrix<T,3,3>& c_spatial) const
 {
   // introduce auxiliary variable for pushforward of rotational matrices
   LINALG::TMatrix<T,3,3> temp;
@@ -578,7 +621,7 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T,3,3>& Lam
  | calculate internal and inertia forces and their contributions to stiffmatrix                    cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&   params,
+void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&        params,
                                                                       std::vector<double>&      acc,
                                                                       std::vector<double>&      vel,
                                                                       std::vector<double>&      disp,
@@ -1112,8 +1155,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
       }
     }
 
-#ifdef MULTIPLICATIVEUPDATES
-
     /* we need to transform the stiffmatrix because its entries are derivatives with respect to additive rotational increments
      * we want a stiffmatrix containing derivatives with respect to multiplicative rotational increments
      * therefore apply a trafo matrix to all those 3x3 blocks in stiffmatrix which correspond to derivation with respect to rotational DOFs
@@ -1293,7 +1334,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
       }
     }
 
-#endif
   }
 #endif
 
@@ -1302,13 +1342,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
    *****************************************************************************************************/
 
   // calculation of inertia forces/moments and massmatrix; in case of Statmech, a dummy massmatrix is computed below
-  if (massmatrix != NULL and inertia_force != NULL and (!needstatmech_) )
+  if ( (massmatrix != NULL or inertia_force != NULL) and (!needstatmech_) )
   {
-#ifdef BEAM3RAUTOMATICDIFF
-#ifndef MULTIPLICATIVEUPDATES
-      dserror("beam3r: for dynamic simulations in combination with a FAD stiffness matrix, please define flag MULTIPLICATIVEUPDATES because the implemented GenAlpha Lie group time integration is based on multiplicative updates!");
-#endif
-#endif
 
     /* calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
      * finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
@@ -1319,11 +1354,35 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
      * our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
      * according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)*/
 
-    const double beta = params.get<double>("rot_beta",1000);
-    const double gamma = params.get<double>("rot_gamma",1000);
-    const double alpha_f = params.get<double>("rot_alphaf",1000);
-    const double alpha_m = params.get<double>("rot_alpham",1000);
-    const double dt = params.get<double>("delta time",1000);
+    /* Update: we now use a multiplicative update of rotational DOFs on time integrator level. Moreover, a new Lie group GenAlpha has been implemented
+     *         that consistently updates the discrete TRANSLATIONAL velocity and acceleration vectors according to this element-internal scheme. This would allow us to
+     *         use the global vel and acc vector at least for translational inertia contributions. Nevertheless, we stick to this completely element-internal
+     *         temporal discretization of spatially continuous variables (angular velocity and acceleration) because the reverse order of discretization (spatial -> temporal)
+     *         is much more intricate basically because of the triad interpolation. See also the discussion in Christoph Meier's Dissertation on this topic. (Maximilian Grill, 08/16)*/
+
+    double dt = 1000.0;
+    double beta = -1.0;
+    double gamma = -1.0;
+    double alpha_f = -1.0;
+    double alpha_m = -1.0;
+
+    if (this->IsParamsInterface())
+    {
+      dt = ParamsInterface().GetDeltaTime();
+      beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+      gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
+      alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+      alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
+    }
+    else
+    {
+      beta = params.get<double>("rot_beta",1000);
+      gamma = params.get<double>("rot_gamma",1000);
+      alpha_f = params.get<double>("rot_alphaf",1000);
+      alpha_m = params.get<double>("rot_alpham",1000);
+      dt = params.get<double>("delta time",1000);
+    }
+
     const bool materialintegration=true;        // TODO unused?
     const double diff_factor_vel = gamma/(beta*dt);
     const double diff_factor_acc = (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f));
@@ -1527,73 +1586,79 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
       auxmatrix1.Update(-1.0,S_Pit,1.0);
       auxmatrix1.Update(1.0,Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix,1.0);
 
-      // inertia forces
-      for (int i=0; i<3; i++)
+      if (inertia_force != NULL)
       {
-        for (unsigned int node=0; node<nnodecl; node++)
+        // inertia forces
+        for (int i=0; i<3; i++)
+        {
+          for (unsigned int node=0; node<nnodecl; node++)
+          {
+            // translational contribution
+            (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node)*r_tt(i);
+            if (centerline_hermite_)
+              (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node+1)*r_tt(i);
+            //rotational contribution
+            (*inertia_force)(dofpercombinode*node+3+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
+          }
+          for (unsigned int node=nnodecl; node<nnodetriad; node++)    // this loop is only entered in case of nnodetriad>nnodecl
+          {
+            // rotational contribution
+            (*inertia_force)(dofperclnode*nnodecl+dofpertriadnode*node+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
+          }
+        }
+      }
+
+      if (massmatrix != NULL)
+      {
+        // linearization of inertia forces: massmatrix
+        for (unsigned int jnode=0; jnode<nnodecl; jnode++)
         {
           // translational contribution
-          (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node)*r_tt(i);
-          if (centerline_hermite_)
-            (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node+1)*r_tt(i);
-          //rotational contribution
-          (*inertia_force)(dofpercombinode*node+3+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
+          for (unsigned int inode=0; inode<nnodecl; inode++)
+            for (int k=0;k<3;k++)
+            {
+              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
+              if (centerline_hermite_)
+              {
+                (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
+                (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
+                (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
+              }
+            }
+
+          // rotational contribution
+          LINALG::Matrix<3,3> auxmatrix2(true);
+          auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
+          for (unsigned int inode=0; inode<nnodecl; inode++)
+          {
+            for (int i=0; i<3; i++)
+              for (int j=0; j<3; j++)
+                (*massmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+          }
+          for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
+          {
+            for (int i=0; i<3; i++)
+              for (int j=0; j<3; j++)
+                (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+          }
         }
-        for (unsigned int node=nnodecl; node<nnodetriad; node++)    // this loop is only entered in case of nnodetriad>nnodecl
+        for (unsigned int jnode=nnodecl; jnode<nnodetriad; ++jnode)    // this loop is only entered in case of nnodetriad>nnodecl
         {
           // rotational contribution
-          (*inertia_force)(dofperclnode*nnodecl+dofpertriadnode*node+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
-        }
-      }
-
-      // linearization of inertia forces: massmatrix
-      for (unsigned int jnode=0; jnode<nnodecl; jnode++)
-      {
-        // translational contribution
-        for (unsigned int inode=0; inode<nnodecl; inode++)
-          for (int k=0;k<3;k++)
+          LINALG::Matrix<3,3> auxmatrix2(true);
+          auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
+          for (unsigned int inode=0; inode<nnodecl; inode++)
           {
-            (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
-            if (centerline_hermite_)
-            {
-              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
-              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
-              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
-            }
+            for (int i=0; i<3; i++)
+              for (int j=0; j<3; j++)
+                (*massmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
           }
-
-        // rotational contribution
-        LINALG::Matrix<3,3> auxmatrix2(true);
-        auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
-        for (unsigned int inode=0; inode<nnodecl; inode++)
-        {
-          for (int i=0; i<3; i++)
-            for (int j=0; j<3; j++)
-              (*massmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-        }
-        for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
-        {
-          for (int i=0; i<3; i++)
-            for (int j=0; j<3; j++)
-              (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-        }
-      }
-      for (unsigned int jnode=nnodecl; jnode<nnodetriad; ++jnode)    // this loop is only entered in case of nnodetriad>nnodecl
-      {
-        // rotational contribution
-        LINALG::Matrix<3,3> auxmatrix2(true);
-        auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
-        for (unsigned int inode=0; inode<nnodecl; inode++)
-        {
-          for (int i=0; i<3; i++)
-            for (int j=0; j<3; j++)
-              (*massmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-        }
-        for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
-        {
-          for (int i=0; i<3; i++)
-            for (int j=0; j<3; j++)
-              (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+          for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
+          {
+            for (int i=0; i<3; i++)
+              for (int j=0; j<3; j++)
+                (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+          }
         }
       }
 
@@ -1610,7 +1675,12 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
       Jp_Wnewmass.Multiply(Jp,Wnewmass);
     }//for (int gp=0; gp<gausspoints_mass.nquad; gp++)
-  }//if (massmatrix != NULL and inertia_force != NULL)
+
+    // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+    // so we apply inverse factor here because the correct prefactors for displacement/velocity/acceleration dependent terms have been applied individually above
+    if (massmatrix!=NULL)
+      massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
+  }//if (massmatrix != NULL or inertia_force != NULL)
 
 
   /*****************************************************************************************************/
@@ -1833,22 +1903,13 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
   // Compute current nodal triads
   for (unsigned int node=0; node<nnodetriad; ++node)
   {
-    /* rotation increment relative to configuration in last iteration step is difference between current rotation
-     * entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
+    // get initial nodal rotation vectors and transform to quaternions
+    LINALG::Matrix<4,1> Q0;
+    LARGEROTATIONS::angletoquaternion(theta0node_[node],Q0);
 
-    /* This shift is necessary, since our beam formulation and the corresponding linearization is based on multiplicative
-     * increments, while in BACI (Newtonfull()) the displacement of the last iteration and the rotation increment
-     * of the current iteration are added in an additive manner. This step is reversed in the next two lines in order
-     * to recover the multiplicative rotation increment between the last and the current Newton step. This also
-     * means that dispthetanewnode_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)*/
-    deltatheta  = dispthetanewnode_[node];
-    deltatheta -= dispthetaoldnode_[node];
-
-    // compute quaternion from rotation angle relative to last configuration
-    LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
-
-    // multiply relative rotation with rotation in last configuration to get rotation in new configuration
-    LARGEROTATIONS::quaternionproduct(Qoldnode_[node],deltaQ,Qnewnode_[node]);
+    // rotate initial triads by relative rotation vector from displacement vector (via quaternion product)
+    LARGEROTATIONS::angletoquaternion(dispthetanewnode_[node],deltaQ);
+    LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnewnode_[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
     Qnewnode_[node].Scale(1/Qnewnode_[node].Norm2());
@@ -2603,27 +2664,3 @@ inline void DRT::ELEMENTS::Beam3r::NodeShift(Teuchos::ParameterList& params,  //
 
 return;
 }//DRT::ELEMENTS::Beam3r::NodeShift
-
-/*----------------------------------------------------------------------------------------------------------*
- | Get position vector at xi for given nodal displacements                                        popp 02/16|
- *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
-{
-  LINALG::Matrix<3,1> r(true);
-  LINALG::Matrix<4,1> N_i(true);
-
-  if (!centerline_hermite_)
-    dserror("ERROR: GetPos() method only for Hermite center lines");
-
-  DRT::UTILS::shape_function_hermite_1D(N_i,xi,reflength_,line2);
-
-  for (int n=0;n<4;n++)
-  {
-    for (int i=0;i<3;i++)
-    {
-      r(i)+=N_i(n)*disp_totlag(3*n+i);
-    }
-  }
-
-  return (r);
-}

@@ -261,14 +261,14 @@ namespace TIMINT {
     virtual bool HaveConstraint()
     {
       CheckInitSetup();
-      return HaveModelType(INPAR::STR::model_lag_pen_constraint);
+      return datasdyn_->HaveModelType(INPAR::STR::model_lag_pen_constraint);
     }
 
     /// do we need a semi-smooth Newton-type plasticity algorithm
     virtual bool HaveSemiSmoothPlasticity()
     {
       CheckInitSetup();
-      return HaveEleTech(INPAR::STR::eletech_plasticity);
+      return datasdyn_->HaveEleTech(INPAR::STR::eletech_plasticity);
     }
 
     /// FixMe get constraint manager defined in the structure
@@ -763,12 +763,6 @@ namespace TIMINT {
       CheckInitSetup();
       return int_ptr_;
     }
-
-    /// check if the given model type is active.
-    bool HaveModelType(const INPAR::STR::ModelType& modeltype) const;
-
-    /// check if the given element technology is active.
-    bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
 
     /** \brief Output to file
      *

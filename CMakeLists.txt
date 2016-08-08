@@ -1682,11 +1682,13 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_impl_generic.cpp
   src/drt_structure_new/str_impl_statics.cpp
   src/drt_structure_new/str_impl_genalpha.cpp
+  src/drt_structure_new/str_impl_genalpha_liegroup.cpp
   src/drt_structure_new/str_impl_gemm.cpp
   src/drt_structure_new/str_impl_ost.cpp
   src/drt_structure_new/str_integrator.cpp
   src/drt_structure_new/str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_data.cpp
+  src/drt_structure_new/str_model_evaluator_beamdata.cpp
   src/drt_structure_new/str_model_evaluator_contactdata.cpp
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
@@ -1695,6 +1697,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -1880,6 +1883,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_generic.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_upperbound.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp

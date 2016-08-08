@@ -1,11 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------------------
- \file beam3_evaluate.cpp
+\file beam3_evaluate.cpp
+
+\brief three dimensional nonlinear Reissner beam element
+
+\level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
  *-----------------------------------------------------------------------------------------------------------*/
 
 
@@ -459,6 +459,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for beam3 elements");
     break;
+
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
+
     default:
       dserror("Unknown type of action for Beam3 %d", act);
     break;
@@ -478,23 +485,15 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
 {
-  // get element displacements
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-  // get element velocities (UNCOMMENT IF NEEDED)
-  /*
-  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  std::vector<double> myvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-  */
+  SetParamsInterfacePtr(params);
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (this->IsParamsInterface())
+    time = this->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // no. of nodes on this element; the following line is only valid for elements with constant number of

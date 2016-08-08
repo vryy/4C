@@ -1,16 +1,11 @@
 /*!----------------------------------------------------------------------
 \file beam3r_input.cpp
 
-
 \brief input related methods of 3D nonlinear Reissner beam element
 
+\level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-
 *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
@@ -70,7 +65,6 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
 
   // set nodal triads according to input file
   Qnewnode_.resize(nnodetriad);
-  Qoldnode_.resize(nnodetriad);
   Qconvnode_.resize(nnodetriad);
   theta0node_.resize(nnodetriad);
 
@@ -90,7 +84,6 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
     LARGEROTATIONS::angletoquaternion(theta0node_[i],Qnewnode_[i]);
   }
 
-  Qoldnode_ = Qnewnode_;
   Qconvnode_ = Qnewnode_;
 
   return true;

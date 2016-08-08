@@ -110,6 +110,7 @@ namespace INPAR
                                  tuple<std::string>(
                                    "Statics",
                                    "GenAlpha",
+                                   "GenAlphaLieGroup",
                                    "OneStepTheta",
                                    "GEMM",
                                    "ExplicitEuler",
@@ -121,6 +122,7 @@ namespace INPAR
                                  tuple<int>(
                                    dyna_statics,
                                    dyna_genalpha,
+                                   dyna_genalpha_liegroup,
                                    dyna_onesteptheta,
                                    dyna_gemm,
                                    dyna_expleuler,

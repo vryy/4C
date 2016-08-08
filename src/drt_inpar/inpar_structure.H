@@ -6,13 +6,8 @@
 
 \level 1
 
-<pre>
 \maintainer Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifndef INPAR_STRUCTURE_H
@@ -45,7 +40,8 @@ namespace INPAR
       eletech_eas,        ///< EAS detected
       eletech_fbar,       ///< FBAR detected
       eletech_plasticity, ///< plasticity detected
-      eletech_pressure    ///< additional pressure degree of freedom
+      eletech_pressure,   ///< additional pressure degree of freedom
+      eletech_rotvec      ///< non-additive rotation (pseudo-)vector DOFs
     };
 
     /// Map element technology to string
@@ -68,6 +64,9 @@ namespace INPAR
         case eletech_pressure:
           return "pressure";
           break;
+        case eletech_rotvec:
+          return "rotationvectorDOFs";
+          break;
         default :
           dserror("Cannot make std::string for element technology %d", name);
           break;
@@ -86,6 +85,7 @@ namespace INPAR
       model_springdashpot,        ///< evaluate the springdashpot model
       model_lag_pen_constraint,   ///< evaluate the Lagrange or/and penalty enforced constraint models
       model_partitioned_coupling, ///< evaluate any partitioned coupling contributions
+      model_beam_interaction,   ///< evaluate the model for contact/potential/... interactions of beams
       model_vague                 ///< undefined model type
     };
 
@@ -117,6 +117,10 @@ namespace INPAR
         break;
       case model_partitioned_coupling:
         return "Partitioned-Coupling";
+        break;
+      case model_beam_interaction :
+        return "BeamInteraction";
+        break;
       default :
         dserror("Cannot make std::string for model type %d", name);
         return "";
@@ -157,6 +161,7 @@ namespace INPAR
     {
       dyna_statics,                    ///< static analysis
       dyna_genalpha,                   ///< generalised-alpha time integrator (implicit)
+      dyna_genalpha_liegroup,          ///< generalised-alpha time integrator for Lie groups (e.g. SO3 group of rotation matrices) (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
       dyna_gemm,                       ///< generalised energy-momementum method (implicit)
       dyna_expleuler,                  ///< forward Euler (explicit)
@@ -180,6 +185,9 @@ namespace INPAR
         break;
       case dyna_genalpha :
         return "GenAlpha";
+        break;
+      case dyna_genalpha_liegroup :
+        return "GenAlphaLieGroup";
         break;
       case dyna_onesteptheta :
         return "OneStepTheta";

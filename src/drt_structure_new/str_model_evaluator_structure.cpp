@@ -351,7 +351,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
            * effects */
           // -------------------------------------------------------------
           // action for elements
-          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
+          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);
           // reset the inertial stuff...
           finertialnp_ptr_->PutScalar(0.0);
           // set the discretization state
@@ -392,9 +392,12 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
     damp_ptr_->Complete();
   }
 
-  // calculate the inertial force at t_{n+1}
-  mass_ptr_->Multiply(false,
-      *GState().GetAccNp(),*finertialnp_ptr_);
+  if (masslin_type_==INPAR::STR::ml_none)
+  {
+    // calculate the inertial force at t_{n+1}
+    mass_ptr_->Multiply(false,
+        *GState().GetAccNp(),*finertialnp_ptr_);
+  }
 
   // calculate the viscous/damping force at t_{n+1}
   if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
@@ -591,9 +594,12 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
     damp_ptr_->Complete();
   }
 
-  // calculate the inertial force at t_{n+1}
-  mass_ptr_->Multiply(false,
-      *GState().GetAccNp(),*finertialnp_ptr_);
+  if (masslin_type_==INPAR::STR::ml_none)
+  {
+    // calculate the inertial force at t_{n+1}
+    mass_ptr_->Multiply(false,
+        *GState().GetAccNp(),*finertialnp_ptr_);
+  }
 
   // calculate the viscous/damping force at t_{n+1}
   if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
@@ -773,9 +779,9 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
   CheckInitSetup();
 
   if (GInOutput().GetStressOutputType() == INPAR::STR::stress_none and
-      GInOutput().GetCouplingStressOutputType() != INPAR::STR::stress_none and
-      GInOutput().GetStrainOutputType() != INPAR::STR::strain_none and
-      GInOutput().GetPlasticStrainOutputType() != INPAR::STR::strain_none)
+      GInOutput().GetCouplingStressOutputType() == INPAR::STR::stress_none and
+      GInOutput().GetStrainOutputType() == INPAR::STR::strain_none and
+      GInOutput().GetPlasticStrainOutputType() == INPAR::STR::strain_none)
     return;
 
   // set all parameters in the evaluation data container

@@ -138,14 +138,6 @@ void STR::IMPLICIT::GenAlpha::Setup()
   fviscon_ptr_ = GlobalState().GetMutableFviscoN();
   fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
 
-  // ---------------------------------------------------------------------------
-  // initialize vectors and matrices
-  // ---------------------------------------------------------------------------
-  // set the constant parameters for the element evaluation
-  if (TimInt().GetDataSDyn().GetMassLinType()==INPAR::STR::ml_rotations)
-  {
-    dserror("INPAR::STR::ml_rotations is currently unsupported!");
-  }
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
 
@@ -157,6 +149,17 @@ void STR::IMPLICIT::GenAlpha::Setup()
 void STR::IMPLICIT::GenAlpha::PostSetup()
 {
   CheckInitSetup();
+
+  // ---------------------------------------------------------------------------
+  // check for applicability of classical GenAlpha scheme
+  // ---------------------------------------------------------------------------
+  // set the constant parameters for the element evaluation
+  if (TimInt().GetDataSDyn().GetMassLinType()==INPAR::STR::ml_rotations)
+  {
+    dserror("MASSLIN=ml_rotations is not supported by classical GenAlpha! "
+        "Choose GenAlphaLieGroup instead!");
+  }
+
   EquilibriateInitialState();
 }
 
@@ -166,7 +169,7 @@ void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  if (IsPredictorState())
+  if (IsPredictorState() or IsEquilibriateInitialState())
     return;
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
@@ -248,7 +251,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForce(x,f,1-alphaf_);
+  bool ok = ModelEval().ApplyForce(x,f,1.0-GetIntParam());
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
@@ -272,7 +275,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyStiff(x,jac,1-alphaf_);
+  bool ok = ModelEval().ApplyStiff(x,jac,1.0-GetIntParam());
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
@@ -298,7 +301,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1-alphaf_);
+  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1.0-GetIntParam());
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
@@ -381,8 +384,7 @@ double STR::IMPLICIT::GenAlpha::CalcRefNormForce(
 double STR::IMPLICIT::GenAlpha::GetIntParam() const
 {
   CheckInitSetup();
-  dserror("Set the time integration parameter as return value!");
-  return -1.0;
+  return alphaf_;
 }
 
 /*----------------------------------------------------------------------------*

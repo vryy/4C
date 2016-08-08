@@ -37,8 +37,9 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
@@ -59,6 +60,13 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         80
 MASSLIN                         rotations
 LOADLIN                         Yes
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F         0.487179487179
@@ -417,9 +425,9 @@ NODE            129    COORD 1000 0.0 0.0
 // MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1e+07 NUE 0.0 DENS 1e-07 THEXPANS 0.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.14512548929467251e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -1.85492326519908013e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE -1.41386551399722844e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.14512518665311180e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -1.85492295825048181e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE -1.41386497980773687e+01 TOLERANCE 1e-8
 ------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0.0 0 FUNCTION sin(x*3.14/500.0)*1.0
 ------------------------------------------------FUNCT2

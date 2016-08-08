@@ -931,7 +931,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     std::vector<int> originalnodedofids = nodedofs[nodeid];
 
     if (btsolnodedofids.size() != originalnodedofids.size())
-      dserror("Number of nodal DoFs does not match!");
+      dserror("Number of nodal DoFs does not match! "
+          "node (GID %d) originally had %d DoFs, now in BTSOLdiscret %d DoFs!",
+          nodeid, originalnodedofids.size(),btsolnodedofids.size());
 
     for (int j=0;j<(int)btsolnodedofids.size();j++)
     {
@@ -2717,19 +2719,21 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
               if (nnodescl==2)
               {
-                LINALG::Matrix<12,1> disp_totlag(true);
-                for (int i=0;i<3;i++)
+                std::vector<double> disp_totlag;
+                disp_totlag.reserve(12);
+                for (int n=0;n<2;++n)
                 {
-                  disp_totlag(i)=nodalcoords(i,0);
-                  disp_totlag(i+6)=nodalcoords(i,1);
-                  disp_totlag(i+3)=nodaltangents(i,0);
-                  disp_totlag(i+9)=nodaltangents(i,1);
+                  for (int d=0;d<3;++d)
+                    disp_totlag.push_back(nodalcoords(d,n));
+                  for (int d=0;d<3;++d)
+                    disp_totlag.push_back(nodaltangents(d,n));
                 }
                 //Calculate axial positions within the element by using the Hermite interpolation
                 for (int i=0;i<n_axial;i++)
                 {
                   double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
-                  LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
+                  LINALG::Matrix<3,1> r;
+                  ele->GetPosAtXi(r,xi,disp_totlag); //position vector on beam centerline
 
                   for (int j=0;j<3;j++)
                     coord(j,i)=r(j);
@@ -5600,11 +5604,21 @@ void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
+  WriteRestart(*output);
 
-  output->WriteVector("fcold", fcold_);
-  output->WriteVector("dis_old", dis_old_);
-  output->WriteDouble("totpenaltywork", totpenaltywork_);
-  output->WriteInt("outputcounter", outputcounter_);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | write contact force for restart  meier 02/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::WriteRestart(IO::DiscretizationWriter& output)
+{
+
+  output.WriteVector("fcold", fcold_);
+  output.WriteVector("dis_old", dis_old_);
+  output.WriteDouble("totpenaltywork", totpenaltywork_);
+  output.WriteInt("outputcounter", outputcounter_);
 
   return;
 }

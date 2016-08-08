@@ -24,7 +24,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
+STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
 FLUID_SOL                       No
@@ -34,8 +34,9 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 --------------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     100
 RESTARTEVRY                     100
 NLNSOL                          fullnewton
@@ -50,6 +51,13 @@ TOLRES                          1.0E-6
 TOLDISP                         1.0E-11
 MAXITER                         80
 MASSLIN                         rotations
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 -----------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.487179487179

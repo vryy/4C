@@ -4,19 +4,13 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15262
 //
-//
-//
 ==================================================================
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 Test case for small-angle-contact with analytical solution
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           16
-NODES              18
 DIM                3
-MATERIALS          1
-NUMDF              6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 RESTART      0
@@ -37,11 +31,12 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
+NLNSOL                          noxnln
 DIVERCONT                       stop
 TIMESTEP                        0.5
 NUMSTEP                         10
@@ -49,26 +44,17 @@ MAXTIME                         5
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
-PREDICT                         TangDis
-TOLRES                          1.0E-7
-TOLDISP                         1.0E-10
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              And
-MAXITER                         50
+PREDICT                         ConstDis
 LOADLIN                         Yes
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = beam3ebcontact_twobeamstwisting.xml
+-----------------------------------------------STRUCT NOX/Direction
+Method                          = Newton
+---------------------------------------------STRUCT NOX/Line Search
+Method                          = Backtrack
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
-SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, uzawa, none (default)
 BEAMS_BTBPENALTYPARAM           0.0  //Penalty parameter for beam-to-beam contact
@@ -85,7 +71,6 @@ BEAMS_SEGANGLE                  1.0 //Maximal angle deviation needed for contact
 BEAMS_NUMINTEGRATIONINTERVAL    1  //Number of integration intervals per element
 BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3r elements)
 BEAMS_PENALTYLAW                LinPen //Penalty Law: LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
-BEAMS_MAXDISISCALEFAC           0.3 //limit maximal allowed iterative displacement increment (=residual displacement) to a value of BEAMS_MAXDISISCALEFAC*Cross-section_radius (Default: 1.0)
 BEAMS_MAXDELTADISSCALEFAC       3.0 //limit maximal displacement per time step to BEAMS_MAXDELTADISSCALEFAC*Cross-section_radius (Default: -1.0=off)
 BEAMS_OCTREE                    octree_spherical //octree search
 BEAMS_ADDITEXT                  Yes //Application of additive bounding box extrusion factor (Default: Yes); No -> Multiplicative extrision factor
@@ -107,7 +92,6 @@ NODE       1 DNODE 1
 NODE       9 DNODE 2
 NODE       10 DNODE 3
 NODE       18 DNODE 4
------------------------------------------------DLINE-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE            1    COORD 0.0095     0     0
 NODE            2    COORD 0.0095     0     0.625

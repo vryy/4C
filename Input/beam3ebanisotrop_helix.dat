@@ -35,11 +35,12 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         100
 MAXTIME                         1
@@ -47,25 +48,18 @@ DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDisVelAcc
-TOLRES                          1.0E-11
-TOLDISP                         1.0E-11
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              And
-ITERNORM                        Rms
-MAXITER                         80
 LOADLIN                         Yes
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = beam3ebanisotrop_helix.xml
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2

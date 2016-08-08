@@ -2,6 +2,8 @@
 /*!
 \file str_factory.cpp
 
+\brief factory for time integrator
+
 \maintainer Michael Hiermeier
 
 \date Nov 20, 2015
@@ -20,6 +22,7 @@
 #include "str_impl_statics.H"
 #include "str_impl_prestress.H" // derived from statics
 #include "str_impl_genalpha.H"
+#include "str_impl_genalpha_liegroup.H"
 #include "str_impl_gemm.H"
 #include "str_impl_statmech.H"  // derived from ost
 
@@ -75,6 +78,13 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
     case INPAR::STR::dyna_genalpha :
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlpha());
+      break;
+    }
+
+    // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
+    case INPAR::STR::dyna_genalpha_liegroup :
+    {
+      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlphaLieGroup());
       break;
     }
 

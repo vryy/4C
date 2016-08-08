@@ -1,12 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------------------
- \file beam3cl_evaluate.cpp
- \brief
+\file beam3cl_evaluate.cpp
 
+\brief 3D nonlinear Reissner beam element of type II with interpolated node positions
+
+\level 3
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
  *-----------------------------------------------------------------------------------------------------------*/
 
@@ -396,6 +395,13 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
     break;
     case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for BeamCL elements");
+
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
+
     default:
       dserror("Unknown type of action for BeamCL %d", act);
   }

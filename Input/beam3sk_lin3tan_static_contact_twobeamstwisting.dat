@@ -21,7 +21,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
+STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
 FLUID_SOL                       No
@@ -31,28 +31,26 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-RESULTSEVRY                     1000
-RESTARTEVRY                     1000
-NLNSOL                          fullnewton
+RESULTSEVRY                     1
+RESTARTEVRY                     100
+NLNSOL                          noxnln
 TIMESTEP                        0.5
 NUMSTEP                         10
 MAXTIME                         5
-PREDICT                         TangDis
-TOLRES                          1.0e-7
-TOLDISP                         1.0e-10
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              And
-MAXITER                         50
+PREDICT                         ConstDis
 LOADLIN                         Yes
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = beam3sk_lin3tan_static_contact_twobeamstwisting.xml
+-----------------------------------------------STRUCT NOX/Direction
+Method                          = Newton
+---------------------------------------------STRUCT NOX/Line Search
+Method                          = Backtrack
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
-SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           0.0
@@ -67,7 +65,6 @@ BEAMS_PARSHIFTANGLE2            90
 BEAMS_SEGANGLE                  1.0
 BEAMS_NUMINTEGRATIONINTERVAL    1
 BEAMS_PENALTYLAW                LinPen
-BEAMS_MAXDISISCALEFAC           0.3
 BEAMS_MAXDELTADISSCALEFAC       3.0
 BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes

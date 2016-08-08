@@ -21,7 +21,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
+STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
 FLUID_SOL                       No
@@ -31,28 +31,26 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-RESULTSEVRY                     1000
-RESTARTEVRY                     1000
-NLNSOL                          fullnewton
+RESULTSEVRY                     1
+RESTARTEVRY                     100
+NLNSOL                          noxnln
 TIMESTEP                        0.01
 NUMSTEP                         230
 MAXTIME                         2.3
 PREDICT                         TangDis
-TOLRES                          1.0e-7
-TOLDISP                         1.0e-7
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              And
-MAXITER                         30
 LOADLIN                         Yes
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = beam3wk_lin3tan_static_contact_beamrotatingoverarc.xml
+-----------------------------------------------STRUCT NOX/Direction
+Method                          = Newton
+---------------------------------------------STRUCT NOX/Line Search
+Method                          = Backtrack
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Solver
-SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           1.0e5
@@ -70,7 +68,6 @@ BEAMS_PENALTYLAW                LinPosQuadPen
 BEAMS_PENREGPARAM_G0            0.005
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
-BEAMS_MAXDISISCALEFAC           0.3
 BEAMS_MAXDELTADISSCALEFAC       500.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0

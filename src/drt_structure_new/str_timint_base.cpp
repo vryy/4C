@@ -209,26 +209,6 @@ double STR::TIMINT::Base::TimIntParam() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::Base::HaveModelType(const INPAR::STR::ModelType& modeltype)
-const
-{
-  CheckInitSetup();
-  return (datasdyn_->GetModelTypes().find(modeltype)!=
-      datasdyn_->GetModelTypes().end());
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool STR::TIMINT::Base::HaveEleTech(const INPAR::STR::EleTech& eletech)
-const
-{
-  CheckInitSetup();
-  return (datasdyn_->GetElementTechnologies().find(eletech) !=
-      datasdyn_->GetElementTechnologies().end());
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::ResizeMStepTimAda()
 {
   CheckInitSetup();

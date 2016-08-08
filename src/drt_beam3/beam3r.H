@@ -6,9 +6,6 @@
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
 3D nonlinear Reissner beam element of type II (according to "The
 interpolation of rotations and its application to finite element models
@@ -39,7 +36,6 @@ For 2D rotations, multiplicative and additive increments are identical and rotat
 #ifdef BEAM3RAUTOMATICDIFF
   typedef Sacado::Fad::DFad<double> FADordouble;
 
-  #define MULTIPLICATIVEUPDATES  //default: on  // decide whether multiplicative updates of rotational DOFs are used (in this case, FAD-computed stiffmatrix needs to be transformed)
 #else
   typedef double FADordouble;
 #endif
@@ -247,10 +243,21 @@ public:
   */
   virtual inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_;}
 
-  /*!
-   \brief Get centerline position at given parameter coordinate xi
-  */
-  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>&       pos,
+                          const double&              xi,
+                          const std::vector<double>& disp_totlag) const;
+
+  /** \brief get triad at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
+                    const double&              xi,
+                    const std::vector<double>& psi_totlag) const;
 
   /*!
   \brief compute and get current tangent at specified node i.e. Tcurrnode_
@@ -428,6 +435,71 @@ public:
 
   //@}
 
+  /** \brief add indices of those DOFs of a given node that are positions
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
+  {
+    if ( (not centerline_hermite_) or
+         (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
+    {
+      posdofs.push_back(0);  posdofs.push_back(1);  posdofs.push_back(2);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite interpolation)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
+  {
+    if ( centerline_hermite_ and
+         (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
+    {
+      tangdofs.push_back(6);  tangdofs.push_back(7);  tangdofs.push_back(8);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive rotation vectors)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void RotationVecDofIndices(std::vector<int>& rotvecdofs, const DRT::Node& node) const
+  {
+    if ( (not centerline_hermite_) or
+         (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
+    {
+      rotvecdofs.push_back(3);  rotvecdofs.push_back(4);  rotvecdofs.push_back(5);
+    }
+    else
+    {
+      rotvecdofs.push_back(0);  rotvecdofs.push_back(1);  rotvecdofs.push_back(2);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+   *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with rotvec=false)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const
+  {
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+   *         (additive, e.g. in case of beam3k with rotvec=true)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const
+  {
+    return;
+  }
 
 private:
 
@@ -456,20 +528,16 @@ private:
   //! norm of maximal bending curvature occurring in this element
   double Kmax_;
 
-  //************** begin: Class variables required for element-based Lie-group time integration *******************************
-  //! rotation angle displacement at nodes; relates to the end of the preceding time step
+//  //! rotation angle displacement at nodes; relates to the end of the preceding time step
   std::vector<LINALG::Matrix<3,1> > dispthetaconvnode_;
-  //! rotation angle displacement at nodes; relates to the end of the preceding iteration step
-  std::vector<LINALG::Matrix<3,1> > dispthetaoldnode_;
   //! rotation angle displacement at nodes; relates to current configuration
   std::vector<LINALG::Matrix<3,1> > dispthetanewnode_;
-  //! nodal triads in quaternion form at the end of the preceding time step
+//  //! nodal triads in quaternion form at the end of the preceding time step
   std::vector<LINALG::Matrix<4,1> > Qconvnode_;
-  //! nodal triads in quaternion form at the end of the preceding iteration step
-  std::vector<LINALG::Matrix<4,1> > Qoldnode_;
   //! nodal triads in quaternion during the current iteration step
   std::vector<LINALG::Matrix<4,1> > Qnewnode_;
 
+  //************** begin: Class variables required for element-based Lie-group time integration *******************************
   //! triads at Gauss points for exact integration in quaternion at the end of the preceding time step (required for computation of angular velocity)
   std::vector<LINALG::Matrix<4,1> > QconvGPmass_;
   //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
@@ -586,39 +654,139 @@ private:
 
   //! @name Internal calculation methods
 
+  /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  template<unsigned int nnodecl, unsigned int vpernode>
+  LINALG::Matrix<3,1> GetPosAtXi(const double& xi, LINALG::Matrix<3*nnodecl*vpernode,1>& disp_totlag) const
+  {
+    LINALG::Matrix<3,1> r;
+    LINALG::Matrix<1,vpernode*nnodecl> N_i;
+
+    this->EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,N_i,this->Shape());
+    this->Calc_r<nnodecl,vpernode,double>(disp_totlag,N_i,r);
+
+    return r;
+  }
+
+  /*!
+   \brief Get triad (three unit base vectors) at given parameter coordinate xi
+  */
+  template<unsigned int nnodetriad>
+  LINALG::Matrix<3,3> GetTriadAtXi(const double& xi, std::vector<LINALG::Matrix<3,1> >& psi_totlag) const
+  {
+    // nodal triads in form of quaternions
+    std::vector<LINALG::Matrix<4,1> > Qnode(nnodetriad);
+    for (unsigned int node=0; node<nnodetriad; node++)
+    {
+      // ToDo
+      /* make function call independent from class variable Qnewnode_
+         by using absolute coordinate vector psi_totlag (nodal rotation pseudo-vectors)
+         passed into function from outside */
+
+//      LARGEROTATIONS::angletoquaternion(psi_totlag[node],Qnode[node]);
+      Qnode[node]=Qnewnode_[node];
+    }
+
+    // compute reference triad Lambda_r (in form of a quaternion) according to (3.9), Jelenic 1999
+    LINALG::Matrix<4,1> Q_r(true);
+    LINALG::Matrix<3,1> dummy(true);  // dummy 3x1 vector, quantity not required here
+    CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,dummy);
+
+    // compute nodal rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
+    std::vector<LINALG::Matrix<3,1> > Psi_li(nnodetriad);
+    for (unsigned int node=0; node<nnodetriad; node++)
+    {
+      CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
+    }
+
+    // values of Lagrange shape function at xi used for interpolation
+    LINALG::Matrix<1,nnodetriad> I_i;
+    this->EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
+
+    // compute interpolated local relative rotation \Psi^l at xi according to (3.11), Jelenic 1999
+    LINALG::Matrix<3,1> Psi_l;
+    Calc_Psi_l<nnodetriad>(Psi_li, I_i, Psi_l);
+
+    // finally compute interpolated triad Lambda at xi
+    LINALG::Matrix<3,3> triad;
+    Calc_Lambda<double>(Psi_l,Q_r,triad);
+
+    return triad;
+  }
+
+  //! evaluate shape functions at position xi in element parameter space [-1,1]
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionsAtXi(const double&                           xi,
+                                  LINALG::Matrix<1,vpernode*nnode>&       I_i,
+                                  const DRT::Element::DiscretizationType& distype) const
+  {
+    I_i.Clear();
+
+    switch(vpernode)
+    {
+      case 1:
+      {
+        // evaluate Lagrange shape functions at xi
+        DRT::UTILS::shape_function_1D(I_i,xi,distype);
+        break;
+      }
+      case 2:
+      {
+        // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D(I_i,xi,reflength_,line2);
+        break;
+      }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+
+    return;
+  }
+
+  //! evaluate shape function derivatives at position xi in element parameter space [-1,1]
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionDerivsAtXi(const double&                           xi,
+                                       LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
+                                       const DRT::Element::DiscretizationType& distype) const
+  {
+    I_i_xi.Clear();
+
+    switch(vpernode)
+    {
+      case 1:
+      {
+        // evaluate Lagrange shape functions at xi
+        DRT::UTILS::shape_function_1D_deriv1(I_i_xi,xi,distype);
+        break;
+      }
+      case 2:
+      {
+        // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D_deriv1(I_i_xi,xi,reflength_,line2);
+        break;
+      }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+
+    return;
+  }
+
   //! evaluate shape functions at specified Gauss points
   template<unsigned int nnode, unsigned int vpernode>
   void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
                                     std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
-                                    const DRT::Element::DiscretizationType&         distype)
+                                    const DRT::Element::DiscretizationType&         distype) const
   {
     if (I_i.size()!= (unsigned int) gausspoints.nquad)
       dserror("vector for %d individual shape functions has wrong size",gausspoints.nquad);
 
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
-      I_i[numgp].Clear();
-
       // Get location of GP in element parameter space xi \in [-1;1]
       const double xi = gausspoints.qxg[numgp][0];
-
-      switch(vpernode)
-      {
-        case 1:
-        {
-          // evaluate Lagrange shape functions at xi
-          DRT::UTILS::shape_function_1D(I_i[numgp],xi,distype);
-          break;
-        }
-        case 2:
-        {
-          // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
-          DRT::UTILS::shape_function_hermite_1D(I_i[numgp],xi,reflength_,line2);
-          break;
-        }
-        default:
-          dserror("invalid value for vpernode (number of values per node) specified");
-      }
+      this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i[numgp],distype);
     }
 
     return;
@@ -628,35 +796,16 @@ private:
   template<unsigned int nnode, unsigned int vpernode>
   void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
                                          std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
-                                         const DRT::Element::DiscretizationType&         distype)
+                                         const DRT::Element::DiscretizationType&         distype) const
   {
     if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
       dserror("vector for %d individual shape function derivatives has wrong size",gausspoints.nquad);
 
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
-      I_i_xi[numgp].Clear();
-
       // Get location of GP in element parameter space xi \in [-1;1]
       const double xi = gausspoints.qxg[numgp][0];
-
-      switch(vpernode)
-      {
-        case 1:
-        {
-          // evaluate Lagrange shape functions at xi
-          DRT::UTILS::shape_function_1D_deriv1(I_i_xi[numgp],xi,distype);
-          break;
-        }
-        case 2:
-        {
-          // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
-          DRT::UTILS::shape_function_hermite_1D_deriv1(I_i_xi[numgp],xi,reflength_,line2);
-          break;
-        }
-        default:
-          dserror("invalid value for vpernode (number of values per node) specified");
-      }
+      this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi[numgp],distype);
     }
 
     return;
@@ -667,7 +816,7 @@ private:
   void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
                                              std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
                                              std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
-                                             const DRT::Element::DiscretizationType&         distype)
+                                             const DRT::Element::DiscretizationType&         distype) const
   {
     EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints,I_i,distype);
     EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,I_i_xi,distype);
@@ -680,7 +829,7 @@ private:
   void CalcRefQuaternion(const LINALG::TMatrix<T,4,1>&  Q_nodeI,
                           const LINALG::TMatrix<T,4,1>& Q_nodeJ,
                           LINALG::TMatrix<T,4,1>&       Q_r,
-                          LINALG::TMatrix<T,3,1>&       Phi_IJ)
+                          LINALG::TMatrix<T,3,1>&       Phi_IJ) const
   {
     Q_r.Clear();
     Phi_IJ.Clear();
@@ -707,7 +856,7 @@ private:
   template<typename T>
   void CalcPsi_li(const LINALG::TMatrix<T,4,1>& Q_i,
                   const LINALG::TMatrix<T,4,1>& Q_r,
-                  LINALG::TMatrix<T,3,1>&       Psi_li)
+                  LINALG::TMatrix<T,3,1>&       Psi_li) const
   {
     // quaternion equivalent to Psi_li
     LINALG::TMatrix<T,4,1>  Q_li(true);
@@ -722,7 +871,7 @@ private:
   template<unsigned int nnode, unsigned int vpernode, typename T>
   void Calc_r(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
               const LINALG::Matrix<1,vpernode*nnode>&      funct,
-              LINALG::TMatrix<T,3,1>&                      r)
+              LINALG::TMatrix<T,3,1>&                      r) const
   {
     r.Clear();
 
@@ -737,7 +886,7 @@ private:
   template<unsigned int nnode, unsigned int vpernode, typename T>
   void Calc_r_xi(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
                  const LINALG::Matrix<1,vpernode*nnode>&      deriv,
-                 LINALG::TMatrix<T,3,1>&                      r_xi)
+                 LINALG::TMatrix<T,3,1>&                      r_xi) const
   {
     r_xi.Clear();
 
@@ -753,7 +902,7 @@ private:
   void Calc_r_s(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
                 const LINALG::Matrix<1, vpernode*nnode>&     deriv,
                 const double&                                jacobi,
-                LINALG::TMatrix<T,3,1>&                      r_s)
+                LINALG::TMatrix<T,3,1>&                      r_s) const
   {
     Calc_r_xi<nnode,vpernode,T>(disp_totlag_centerline,deriv,r_s);
 
@@ -769,7 +918,22 @@ private:
   template<unsigned int nnode, typename T>
   void Calc_Psi_l(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
                   const LINALG::Matrix<1,nnode>&              func,
-                  LINALG::TMatrix<T,3,1>&                     Psi_l)
+                  LINALG::TMatrix<T,3,1>&                     Psi_l) const
+  {
+    Psi_l.Clear();
+
+    for (int dof=0; dof<3; ++dof)
+      for (unsigned int node=0; node<nnode; ++node)
+        Psi_l(dof)+= func(node)*(Psi_li[node])(dof);
+
+    return;
+  }
+
+  //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
+  template<unsigned int nnode>
+  void Calc_Psi_l(const std::vector<LINALG::Matrix<3,1> >& Psi_li,
+                  const LINALG::Matrix<1,nnode>&           func,
+                  LINALG::Matrix<3,1>&                     Psi_l) const
   {
     Psi_l.Clear();
 
@@ -785,7 +949,7 @@ private:
   void Calc_Psi_l_s(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
                   const LINALG::Matrix<1,nnode>&                deriv,
                   const double&                                 jacobi,
-                  LINALG::TMatrix<T,3,1>&                       Psi_l_s)
+                  LINALG::TMatrix<T,3,1>&                       Psi_l_s) const
   {
     Psi_l_s.Clear();
 
@@ -805,7 +969,7 @@ private:
   template <typename T>
   void Calc_Lambda(const LINALG::TMatrix<T,3,1>& Psi_l,
                   const LINALG::TMatrix<T,4,1>&  Q_r,
-                  LINALG::TMatrix<T,3,3>&        Lambda)
+                  LINALG::TMatrix<T,3,3>&        Lambda) const
   {
     Lambda.Clear();
 
@@ -828,7 +992,7 @@ private:
   template <typename T>
   void Calc_Qgauss(const LINALG::TMatrix<T,3,1>& Psi_l,
                    const LINALG::TMatrix<T,4,1>& Q_r,
-                   LINALG::TMatrix<T,4,1>&       Qgauss)
+                   LINALG::TMatrix<T,4,1>&       Qgauss) const
   {
     Qgauss.Clear();
 
@@ -848,7 +1012,7 @@ private:
   void computeK(const LINALG::TMatrix<T,3,1>&      Psi_l,
                      const LINALG::TMatrix<T,3,1>& Psi_l_s,
                      const LINALG::Matrix<3,1>&    Kref,
-                     LINALG::TMatrix<T,3,1>&       K)
+                     LINALG::TMatrix<T,3,1>&       K) const
   {
     K.Clear();
 
@@ -871,7 +1035,7 @@ private:
   void computeGamma(const LINALG::TMatrix<T,3,1>& r_s,
                     const LINALG::TMatrix<T,3,3>& Lambda,
                     const LINALG::Matrix<3,1>&    Gammaref,
-                    LINALG::TMatrix<T,3,1>&       Gamma)
+                    LINALG::TMatrix<T,3,1>&       Gamma) const
   {
     Gamma.Clear();
 
@@ -894,7 +1058,7 @@ private:
   //! setup constitutive matrices from material law
   template <typename T>
   void GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
-                               LINALG::TMatrix<T,3,3>& CM);
+                               LINALG::TMatrix<T,3,3>& CM) const;
 
   //! push forward material stress vector and constitutive matrix to their spatial counterparts by rotation matrix Lambda
   template <typename T>
@@ -902,7 +1066,7 @@ private:
                    const LINALG::TMatrix<T,3,1>& stress_mat,
                    const LINALG::TMatrix<T,3,3>& C_mat,
                    LINALG::TMatrix<T,3,1>& stress_spatial,
-                   LINALG::TMatrix<T,3,3>& c_spatial);
+                   LINALG::TMatrix<T,3,3>& c_spatial) const;
 
   //! compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certain Gauss point
   template<unsigned int nnode>

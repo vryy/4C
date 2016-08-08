@@ -3,13 +3,10 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
+\level 3
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-
-*-----------------------------------------------------------------------------------------------------------*/
+--------------------------------------------------------------------------------------------------------*/
 
 #include "beam3ebtor.H"
 #include "../drt_lib/drt_discret.H"
@@ -154,6 +151,12 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
       //not necessary since no class variables are modified in predicting steps
     break;
 
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
+
     default:
       dserror("Unknown type of action for Beam3ebtor %d", act);
      break;
@@ -175,6 +178,8 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
                                                Epetra_SerialDenseVector& elevec1,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
+
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
@@ -199,7 +204,11 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (this->IsParamsInterface())
+    time = this->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor

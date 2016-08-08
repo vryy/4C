@@ -194,6 +194,14 @@ namespace TIMINT {
      *  identify consistent accelerations */
     void EquilibriateInitialState();
 
+    /*! check if current state is equilibrium (with respect to
+     *  a given tolerance of the inf-norm)
+     *  this is a sanity check in case of nonlinear mass
+     *  and non-additive rotation pseudo-vector DoFs where
+     *  determination of consistent accelerations is more intricate
+     *  and not supported yet */
+    bool CurrentStateIsEquilibrium(const double& tol);
+
     //! Return the model evaluator control object
     STR::ModelEvaluator& ModelEval();
 

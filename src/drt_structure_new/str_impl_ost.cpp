@@ -110,7 +110,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  if (IsPredictorState() or  IsEquilibriateInitialState())
+  if (IsPredictorState() or IsEquilibriateInitialState())
     return;
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
@@ -328,8 +328,7 @@ double STR::IMPLICIT::OneStepTheta::CalcRefNormForce(
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::OneStepTheta::GetIntParam() const
 {
-  dserror("Set the time integration parameter as return value!");
-  return -1.0;
+  return (1.0-theta_);
 }
 
 /*----------------------------------------------------------------------------*

@@ -24,6 +24,8 @@
 
 namespace STR {
 namespace ELEMENTS {
+  class BeamParamsInterface;
+
   //! evaluation error flags
   enum EvalErrorFlag
   {
@@ -76,6 +78,13 @@ namespace ELEMENTS {
     virtual double GetTimIntFactorDisp() const = 0;
 
     virtual double GetTimIntFactorVel() const = 0;
+    //! @}
+
+    //! @name access to model specific parameter interfaces
+    //! @{
+
+    //! get pointer to special parameter interface for beam elements
+    virtual const Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
     //! @}
 
     //! @name Access control parameters for the handling of element internal variables (e.g. EAS)
@@ -131,6 +140,25 @@ namespace ELEMENTS {
         const int&    owner) = 0;
     //! @}
   }; // class ParamsInterface
+
+
+  /*! \brief Parameter interface for the data exchange between beam elements and the STR::Integrator
+   *  \author grill */
+  class BeamParamsInterface
+  {
+  public:
+    //! destructor
+    virtual ~BeamParamsInterface() {};
+
+    /*! @name time integration parameters required for element-internal update of angular velocity
+     *  and acceleration (in combination with GenAlphaLieGroup) */
+    //! @{
+    virtual double GetBeta() const = 0;
+    virtual double GetGamma() const = 0;
+    virtual double GetAlphaf() const = 0;
+    virtual double GetAlpham() const = 0;
+    //! @}
+  }; // class BeamParamsInterface
 } // namespace ELEMENTS
 } // namespace STR
 

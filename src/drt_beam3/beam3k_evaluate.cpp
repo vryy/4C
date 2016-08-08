@@ -26,6 +26,11 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
+#include "../drt_structure_new/str_model_evaluator_data.H"
+#include "../drt_structure_new/str_timint_basedatasdyn.H"
+
+
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "beam3k.H"
 
@@ -94,6 +99,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_nlnstifflmass:
     case ELEMENTS::struct_calc_nlnstiff:
     case ELEMENTS::struct_calc_internalforce:
+    case ELEMENTS::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -108,7 +114,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);     // ToDo unused?
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
@@ -135,11 +141,13 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
         else
           CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
       }
-
-      /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
-       * next iteration step is the configuration at the end of the current step */
-      Qold_ = Qnew_;
-      dispthetaold_= dispthetanew_;
+      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      {
+        if(weakkirchhoff_)
+          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,&elevec2,false);
+        else
+          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,&elevec2,false);
+      }
 
       //ATTENTION: In order to perform a brief finite difference check of the nonlinear stiffness matrix the code block
       //"FD-CHECK" from the end of this file has to be copied to this place:
@@ -177,8 +185,6 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rtconvmass_ = rtnewmass_;
       rconvmass_ = rnewmass_;
 
-      Qconv_ = Qnew_;
-      dispthetaconv_ = dispthetanew_;
       Qrefconv_ = Qrefnew_;
     }
     break;
@@ -201,14 +207,16 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rtnewmass_=rtconvmass_;
       rnewmass_=rconvmass_;
 
-      Qold_ = Qconv_;
-      Qnew_ = Qconv_;
-      dispthetaold_ = dispthetaconv_;
-      dispthetanew_ = dispthetaconv_;
       Qrefnew_ = Qrefconv_;
 
     }
     break;
+
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
 
     default:
       dserror("Unknown type of action for Beam3k %d", act);
@@ -432,7 +440,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     v_theta_s.Update(1.0,v_thetaperp_s,1.0);
     v_theta_s.Update(1.0,v_thetapar_s,1.0);
     //"v"-vector which is required for inertia forces is already calculated here
-    if (massmatrix != NULL and inertia_force != NULL)
+    if (massmatrix != NULL or inertia_force != NULL)
     {
       v_theta[numgp].Clear();
       for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
@@ -504,9 +512,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     }
     if(rotvec_==true)
     {
-      #ifdef BEAM3K_MULTIPLICATIVEUPDATES
-        TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
-      #endif
+      TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
     }
   }
   if(force!=NULL)
@@ -526,10 +532,28 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  double beta = params.get<double>("rot_beta",1000);
-
-  if (massmatrix != NULL and inertia_force != NULL)
+  if (massmatrix != NULL or inertia_force != NULL)
   {
+    double dt = 1000.0;
+    double beta = -1.0;
+    double alpha_f = -1.0;
+    double alpha_m = -1.0;
+
+    if (this->IsParamsInterface())
+    {
+      dt = ParamsInterface().GetDeltaTime();
+      beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+      alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+      alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
+    }
+    else
+    {
+      beta = params.get<double>("rot_beta",1000);
+      alpha_f = params.get<double>("rot_alphaf",1000);
+      alpha_m = params.get<double>("rot_alpham",1000);
+      dt = params.get<double>("delta time",1000);
+    }
+
     if(beta < 999)
     {
 
@@ -555,23 +579,33 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
         }
         if(rotvec_==true)
         {
-          #ifdef BEAM3K_MULTIPLICATIVEUPDATES
-            TransformStiffMatrixMultipl(massmatrix,disp_totlag);
-          #endif
+          TransformStiffMatrixMultipl(massmatrix,disp_totlag);
         }
+
+
+        // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+        // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
+        massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
       }
-      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+
+      if(inertia_force!=NULL)
       {
-        (*inertia_force)(i)=f_inert(i).val();
+        for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        {
+          (*inertia_force)(i)=f_inert(i).val();
+        }
       }
     }
     else
     {
-      //This is a dummy mass matrix which is necessary for statmech simulations
-      for (int i=0; i<6*nnode; i++)
-        (*massmatrix)(i,i) = 1;
+      if(massmatrix!=NULL)
+      {
+        //This is a dummy mass matrix which is necessary for statmech simulations
+        for (int i=0; i<6*nnode; i++)
+          (*massmatrix)(i,i) = 1;
+      }
     }//if(beta < 999)
-  }//if (massmatrix != NULL)
+  }//if (massmatrix != NULL or inertia_force != NULL)
 
   return;
 }
@@ -885,7 +919,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     v_theta_s.Update(1.0,v_thetapartheta_s,1.0);
 
     //************** II) Compute v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is required for inertia forces ********
-    if (massmatrix != NULL and inertia_force != NULL)
+    if (massmatrix != NULL or inertia_force != NULL)
     {
       // II a) v_thetapartheta contribution
       v_theta[numgp].Clear();
@@ -1051,9 +1085,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     }
     if(rotvec_==true)
     {
-      #ifdef BEAM3K_MULTIPLICATIVEUPDATES
         TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
-      #endif
     }
 
   }
@@ -1074,10 +1106,28 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  double beta = params.get<double>("rot_beta",1000);
-
-  if (massmatrix != NULL and inertia_force != NULL)
+  if (massmatrix != NULL or inertia_force != NULL)
   {
+    double dt = 1000.0;
+    double beta = -1.0;
+    double alpha_f = -1.0;
+    double alpha_m = -1.0;
+
+    if (this->IsParamsInterface())
+    {
+      dt = ParamsInterface().GetDeltaTime();
+      beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+      alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+      alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
+    }
+    else
+    {
+      beta = params.get<double>("rot_beta",1000);
+      alpha_f = params.get<double>("rot_alphaf",1000);
+      alpha_m = params.get<double>("rot_alpham",1000);
+      dt = params.get<double>("delta time",1000);
+    }
+
     if(beta < 999)
     {
 
@@ -1102,21 +1152,29 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
         }
         if(rotvec_==true)
         {
-          #ifdef BEAM3K_MULTIPLICATIVEUPDATES
             TransformStiffMatrixMultipl(massmatrix,disp_totlag);
-          #endif
         }
+
+        // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+        // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
+        massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
       }
-      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+      if(inertia_force!=NULL)
       {
-        (*inertia_force)(i)=f_inert(i).val();
+        for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        {
+          (*inertia_force)(i)=f_inert(i).val();
+        }
       }
     }
     else
     {
-      //This is a dummy mass matrix which is necessary for statmech simulations
-      for (int i=0; i<6*nnode; i++)
-        (*massmatrix)(i,i) = 1;
+      if(massmatrix!=NULL)
+      {
+        //This is a dummy mass matrix which is necessary for statmech simulations
+        for (int i=0; i<6*nnode; i++)
+          (*massmatrix)(i,i) = 1;
+      }
     }//if(beta < 999)
   }//if (massmatrix != NULL)
 
@@ -1132,11 +1190,28 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
                                                     std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> >& v_theta,
                                                     LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_inert)
 {
-  double gamma = params.get<double>("rot_gamma",1000);
-  double alpha_f = params.get<double>("rot_alphaf",1000);
-  double alpha_m = params.get<double>("rot_alpham",1000);
-  double dt = params.get<double>("delta time",1000);
-  double beta = params.get<double>("rot_beta",1000);
+  double dt = 1000.0;
+  double beta = -1.0;
+  double gamma = -1.0;
+  double alpha_f = -1.0;
+  double alpha_m = -1.0;
+
+  if (this->IsParamsInterface())
+  {
+    dt = ParamsInterface().GetDeltaTime();
+    beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+    gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
+    alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+    alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
+  }
+  else
+  {
+    beta = params.get<double>("rot_beta",1000);
+    gamma = params.get<double>("rot_gamma",1000);
+    alpha_f = params.get<double>("rot_alphaf",1000);
+    alpha_m = params.get<double>("rot_alpham",1000);
+    dt = params.get<double>("delta time",1000);
+  }
 
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -1353,6 +1428,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
                                                Epetra_SerialDenseVector& elevec1,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
 
   //As long as only endpoint forces and moments as well as distributed forces (i.e. no distributed moments)
   //are considered, the method EvaluateNeumann is identical for the WK and the SK case.
@@ -1380,7 +1456,11 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (this->IsParamsInterface())
+    time = this->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
@@ -1601,9 +1681,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
       }
       if(rotvec_==true)
       {
-        #ifdef BEAM3K_MULTIPLICATIVEUPDATES
           TransformStiffMatrixMultipl(elemat1,disp_totlag);
-        #endif
       }
     }
     for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
@@ -1793,60 +1871,19 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
           disp_totlag[7*node+ndof]+=1;
         }
       }//for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
-      //additive updates of rotation vectors at boundary nodes
-      #ifndef BEAM3K_MULTIPLICATIVEUPDATES
-        LINALG::Matrix<3,1> deltatheta(true);
-        LINALG::Matrix<3,1> thetanew(true);
-        for(int i=0; i<3; i++)
-        {
-          dispthetanew_[node](i) = disp[7*node+3+i];
-        }
-        deltatheta  = dispthetanew_[node];
-        deltatheta -= dispthetaold_[node];
 
-        //Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by quaterniontoangle()
-        LARGEROTATIONS::quaterniontoangle(Qold_[node],thetanew);
-        thetanew.Update(1.0,deltatheta,1.0);
-
-        //compute quaternion from rotation angle relative to last configuration
-        LARGEROTATIONS::angletoquaternion(thetanew,Qnew_[node]);
-
-        //This step is necessary in order to get an angle thetanew in [-PI,PI]
-        if(thetanew.Norm2()>M_PI)
-        {
-          LARGEROTATIONS::quaterniontoangle(Qnew_[node],thetanew);
-        }
-
-        //Finally set rotation values in disp_totlag
-        for(int i=0; i<3; i++)
-        {
-          disp_totlag[7*node+3+i]=thetanew(i);
-        }
-        //multiplicative updates of rotation vectors at boundary nodes
-      #else //ifndef BEAM3K_MULTIPLICATIVEUPDATES
-        /*rotation increment relative to configuration in last iteration step is difference between current rotation
-         *entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
-
-        //This shift is necessary, since our beam formulation and the corresponding linearization is based on multiplicative
-        //increments, while in BACI (Newtonfull()) the displacement of the last iteration and the rotation increment
-        //of the current iteration are added in an additive manner. This step is reversed in the next two lines in order
-        //to recover the multiplicative rotation increment between the last and the current Newton step. This also
-        //means that dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)
-        LINALG::Matrix<3,1> deltatheta(true);
         LINALG::Matrix<3,1> thetanew(true);
         LINALG::Matrix<4,1> deltaQ(true);
         for(int i=0; i<3; i++)
         {
           dispthetanew_[node](i) = disp[7*node+3+i];
         }
-        deltatheta  = dispthetanew_[node];
-        deltatheta -= dispthetaold_[node];
 
-        //compute quaternion from rotation angle relative to last configuration
-        LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
+        LARGEROTATIONS::angletoquaternion(dispthetanew_[node],deltaQ);
 
-        //multiply relative rotation with rotation in last configuration to get rotation in new configuration
-        LARGEROTATIONS::quaternionproduct(Qold_[node],deltaQ,Qnew_[node]);
+        LINALG::Matrix<4,1> Q0;
+        LARGEROTATIONS::angletoquaternion(theta0_[node],Q0);
+        LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnew_[node]);
 
         //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
         Qnew_[node].Scale(1.0/Qnew_[node].Norm2());
@@ -1859,7 +1896,6 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
         {
           disp_totlag[7*node+3+i]=thetanew(i);
         }
-      #endif
     }//for (int node=0;node<2;node++)//loop over boundary nodes
   }
 
@@ -2104,12 +2140,6 @@ void DRT::ELEMENTS::Beam3k::TransformStiffMatrixMultipl(Epetra_SerialDenseMatrix
   {
     Tmat.Clear();
     Tmat = LARGEROTATIONS::Tmatrix(theta[node]);
-
-//    LINALG::Matrix<3,3> Tinvmat(true);                       // TODO unused?
-//    LINALG::Matrix<3,3> Unity(true);
-//
-//    Tinvmat = LARGEROTATIONS::Tinvmatrix(theta[node]);
-//    Unity.Multiply(Tmat,Tinvmat);
 
     tempmat.Clear();
     for (int i=0; i<2*6+BEAM3K_COLLOCATION_POINTS; ++i)

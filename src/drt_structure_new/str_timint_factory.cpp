@@ -2,6 +2,8 @@
 /*!
 \file str_timint_factory.cpp
 
+\brief factory for time integration base strategy and data container
+
 \maintainer Michael Hiermeier
 
 \date Sep 4, 2015
@@ -139,12 +141,13 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
   const enum INPAR::STR::DynamicType dyntype =
       DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
-  if (pstype == INPAR::STR::prestress_mulf     or   // prestress type
-      pstype == INPAR::STR::prestress_id       or
-      dyntype == INPAR::STR::dyna_statics      or   // dynamic type
-      dyntype == INPAR::STR::dyna_genalpha     or
-      dyntype == INPAR::STR::dyna_onesteptheta or
-      dyntype == INPAR::STR::dyna_gemm         or
+  if (pstype == INPAR::STR::prestress_mulf          or   // prestress type
+      pstype == INPAR::STR::prestress_id            or
+      dyntype == INPAR::STR::dyna_statics           or   // dynamic type
+      dyntype == INPAR::STR::dyna_genalpha          or
+      dyntype == INPAR::STR::dyna_genalpha_liegroup or
+      dyntype == INPAR::STR::dyna_onesteptheta      or
+      dyntype == INPAR::STR::dyna_gemm              or
       dyntype == INPAR::STR::dyna_statmech)
     ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());
 
@@ -196,6 +199,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
   switch (dyntype)
   {
     case INPAR::STR::dyna_genalpha:
+    case INPAR::STR::dyna_genalpha_liegroup:
       sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::GenAlphaDataSDyn());
       break;
     case INPAR::STR::dyna_onesteptheta:

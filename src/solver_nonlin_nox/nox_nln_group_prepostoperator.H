@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_group_prepostoperator.H
 
+\brief wrapper class for a user derived NOX PrePostOperator
+
 \maintainer Michael Hiermeier
 
 \date Oct 19, 2015
@@ -31,7 +33,8 @@ namespace GROUP {
   {
     prepost_ptc,         //!< pseudo transient continuation pre/post operator
     prepost_tangdis,     //!< tangdis (predictor) pre/post operator
-    prepost_impl_generic //!< implicit generic (time integrator) pre/post operator
+    prepost_impl_generic, //!< implicit generic (time integrator) pre/post operator
+    prepost_rotvecupdate //!< update of non-additive rotation vector DoFs
   };
 
 /*!

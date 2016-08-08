@@ -3,12 +3,9 @@
 
 \brief spherical particle element for brownian dynamics
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+\maintainer Christoph Meier
+
+\level 3
 *----------------------------------------------------------------------*/
 
 //header file only included if not yet included!
@@ -26,11 +23,15 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+// forward declaration ...
+namespace STR {
+namespace ELEMENTS {
+  class ParamsInterface;
+} // namespace ELEMENTS
+} // namespace STR
 
-//! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
-
 namespace ELEMENTS
 {
 
@@ -270,37 +271,54 @@ public:
   /*!
   \brief Evaluate mass matrix
   */
-  void eb_nlnstiffmass(Teuchos::ParameterList& params,
-                                                std::vector<double>& vel,
-                                                std::vector<double>& disp,
-                                                Epetra_SerialDenseMatrix* stiffmatrix,
-                                                Epetra_SerialDenseMatrix* massmatrix,
-                                                Epetra_SerialDenseVector* force);
+  void nlnstiffmass(Teuchos::ParameterList& params,
+                    std::vector<double>& vel,
+                    std::vector<double>& disp,
+                    Epetra_SerialDenseMatrix* stiffmatrix,
+                    Epetra_SerialDenseMatrix* massmatrix,
+                    Epetra_SerialDenseVector* force);
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   int HowManyRandomNumbersINeed();
 
+  /*! \brief set the parameter interface ptr for the solid elements
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+
+  /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual inline bool IsParamsInterface() const
+  { return (not interface_ptr_.is_null()); }
+
+  /*! \brief get access to the parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
   //@}
 
-private:
+protected:
+  /** \brief get access to the interface
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  { if (not IsParamsInterface())
+      dserror("The interface ptr is not set!");
+    return *interface_ptr_; }
 
-  //! action parameters recognized by Beam3eb
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,
-    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
-  };
+private:
+  /*! \brief interface ptr
+   *
+   *  data exchange between the element and the time integrator. */
+  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+
   //! radius of the sphere
   double radius_;
 
@@ -346,11 +364,8 @@ private:
   void EvaluatePTC(Teuchos::ParameterList& params,
                      Epetra_SerialDenseMatrix& elemat1);
 
-
   // don't want = operator
   Rigidsphere& operator = (const Rigidsphere& old);
-
-
 
 }; // class Rigidsphere
 

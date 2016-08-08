@@ -57,6 +57,9 @@ namespace GROUP {
     //! Destructor
     virtual ~Group(){};
 
+    virtual NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source);
+    virtual NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source);
+
     //! generate a clone of the given object concerning the given \c CopyType
     virtual Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type = DeepCopy) const;
 
@@ -81,6 +84,9 @@ namespace GROUP {
 
     //! set jacobian operator
     virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
+
+    //! set flag whether update of x vector should be skipped (because it has already be done in preComputeX)
+    void setSkipUpdateX(bool skipUpdateX);
 
     /* Check the isValidJacobian flag and the ownership of the linear system
      * separately and get the ownership, if necessary. This prevents unnecessary
@@ -172,6 +178,12 @@ namespace GROUP {
   private:
     //! Throw an NOX_error
     void throwError(const std::string& functionName,const std::string& errorMsg) const;
+
+  protected:
+    /*! flag whether update of x vector should be skipped
+     *  (e.g. because it has already be done in preComputeX as might be the case if we
+     *  need a multiplicative update of some beam elements' rotation (pseudo-)vector DOFs) */
+    bool skipUpdateX_;
 
   private:
     //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.

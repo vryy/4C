@@ -21,9 +21,16 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_beam3/beam3_base.H"
+#include "../drt_fem_general/largerotations.H"
+#include "../drt_structure_new/str_utils.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+
+
+#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -207,7 +214,6 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.GetBlockDofRowMapPtr();
 
   model_maps_[mt] = me_map_ptr;
-  const int dof_off_set = me_map_ptr->MaxAllGID();
 
   switch (mt)
   {
@@ -285,6 +291,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       break;
     }
     case INPAR::STR::model_springdashpot:
+    case INPAR::STR::model_beam_interaction:
     {
       // structural block
       model_block_id_[mt] = 0;
@@ -300,7 +307,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
   // create a global problem map
   gproblem_map_ptr_ = LINALG::MergeMap(gproblem_map_ptr_,me_map_ptr);
 
-  return dof_off_set;
+  return gproblem_map_ptr_->MaxAllGID();
 }
 
 /*----------------------------------------------------------------------------*
@@ -323,6 +330,86 @@ void STR::TIMINT::BaseDataGlobalState::SetupMultiMapExtractor()
   blockextractor_.Setup(*gproblem_map_ptr_,maps_vec);
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor()
+{
+  CheckInit();
+
+  /* all additive DoFs, i.e. members of real value vector spaces
+   * such as translational displacements, tangent vector displacements,
+   * 1D rotation angles, ... */
+  std::set<int> additdofset;
+  /* DoFs which are non-additive and therefore e.g. can not be updated in usual
+   * incremental manner, need special treatment in time integration ...
+   * (currently only rotation pseudo-vector DoFs of beam elements) */
+  std::set<int> rotvecdofset;
+
+  for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+  {
+    DRT::Node* nodeptr = discret_->lRowNode(i);
+
+    const DRT::ELEMENTS::Beam3Base* beameleptr =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(nodeptr->Elements()[0]);
+
+    std::vector<int> nodaladditdofs;
+    std::vector<int> nodalrotvecdofs;
+
+    // so far we only expect DoFs of beam elements for the rotvecdofset
+    if (beameleptr == NULL)
+    {
+      nodaladditdofs = discret_->Dof(0,nodeptr);
+    }
+    else
+    {
+      nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret_,*nodeptr);
+      nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret_,*nodeptr);
+
+      if (nodaladditdofs.size() + nodalrotvecdofs.size() !=
+          (unsigned) beameleptr->NumDofPerNode(*nodeptr))
+        dserror("Expected %d DoFs for node with GID %d but collected %d DoFs",
+            beameleptr->NumDofPerNode(*nodeptr),discret_->NodeRowMap()->GID(i),
+            nodaladditdofs.size() + nodalrotvecdofs.size());
+    }
+
+    // add the DoFs of this node to the total set
+    for (unsigned j=0; j<nodaladditdofs.size(); ++j)
+      additdofset.insert(nodaladditdofs[j]);
+
+    for (unsigned j=0; j<nodalrotvecdofs.size(); ++j)
+      rotvecdofset.insert(nodalrotvecdofs[j]);
+
+  } // loop over row nodes
+
+  // create the required Epetra maps
+  std::vector<int> additdofmapvec;
+  additdofmapvec.reserve(additdofset.size());
+  additdofmapvec.assign(additdofset.begin(), additdofset.end());
+  additdofset.clear();
+  Teuchos::RCP<Epetra_Map> additdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,additdofmapvec.size(),
+                                &additdofmapvec[0],
+                                0,
+                                discret_->Comm()));
+  additdofmapvec.clear();
+
+  std::vector<int> rotvecdofmapvec;
+  rotvecdofmapvec.reserve(rotvecdofset.size());
+  rotvecdofmapvec.assign(rotvecdofset.begin(), rotvecdofset.end());
+  rotvecdofset.clear();
+  Teuchos::RCP<Epetra_Map> rotvecdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,rotvecdofmapvec.size(),
+                                &rotvecdofmapvec[0],
+                                0,
+                                discret_->Comm()));
+  rotvecdofmapvec.clear();
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps( 2 );
+  maps[0] = additdofmap;
+  maps[1] = rotvecdofmap;
+
+  rotvecextractor_.Setup(*DofRowMapView(),maps);
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -332,6 +419,16 @@ const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
   // sanity check
   blockextractor_.CheckForValidMapExtractor();
   return blockextractor_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
+    RotVecExtractor() const
+{
+  // sanity check
+  rotvecextractor_.CheckForValidMapExtractor();
+  return rotvecextractor_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -454,6 +551,22 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() const
+{
+  CheckInit();
+  return RotVecExtractor().Map(0).get();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
+{
+  CheckInit();
+  return RotVecExtractor().Map(1).get();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractDisplEntries(
     const Epetra_Vector& source) const
 {
@@ -489,6 +602,26 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
 
 
   return model_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractAdditiveEntries(
+    const Epetra_Vector& source) const
+{
+  Teuchos::RCP<Epetra_Vector> addit_ptr = RotVecExtractor().ExtractVector(source,0);
+
+  return addit_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntries(
+    const Epetra_Vector& source) const
+{
+  Teuchos::RCP<Epetra_Vector> addit_ptr = RotVecExtractor().ExtractVector(source,1);
+
+  return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -627,4 +760,74 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
   if (jac_.is_null())
     dserror("The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::RotVecUpdater(
+    const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
+    : gstate_ptr_(gstate_ptr)
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
+    const NOX::NLN::Group& input_grp,
+    const Epetra_Vector& dir,
+    const double& step,
+    const NOX::NLN::Group& curr_grp)
+{
+  const Epetra_Vector& xold =
+      dynamic_cast<const NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+
+  // cast the const away so that the new x vector can be set after the update
+  NOX::NLN::Group& curr_grp_mutable = const_cast<NOX::NLN::Group&>(curr_grp);
+
+  Teuchos::RCP<Epetra_Vector> xnew = Teuchos::rcp(new Epetra_Vector(xold.Map(),true));
+
+  /* we do the multiplicative update only for those entries which belong to
+   * rotation (pseudo-)vectors */
+  Epetra_Vector x_rotvec = *gstate_ptr_->ExtractRotVecEntries(xold);
+  Epetra_Vector dir_rotvec = *gstate_ptr_->ExtractRotVecEntries(dir);
+
+  LINALG::Matrix<4,1> Qold;
+  LINALG::Matrix<4,1> deltaQ;
+  LINALG::Matrix<4,1> Qnew;
+
+  /* since parallel distribution is node-wise, the three entries belonging to
+   * a rotation vector should be stored on the same processor: safety-check */
+  if (x_rotvec.Map().NumMyElements() %3 !=0 or dir_rotvec.Map().NumMyElements() %3 !=0)
+    dserror("fatal error: apparently, the three DOFs of a nodal rotation vector are"
+        " not stored on this processor. Can't apply multiplicative update!");
+
+  // rotation vectors always consist of three consecutive DoFs
+  for (int i=0; i<x_rotvec.Map().NumMyElements(); i=i+3)
+  {
+    // create a LINALG::Matrix from reference to three x vector entries
+    LINALG::Matrix<3,1> theta(&x_rotvec[i],true);
+    LARGEROTATIONS::angletoquaternion(theta,Qold);
+
+    // same for relative rotation angle deltatheta
+    LINALG::Matrix<3,1> deltatheta(&dir_rotvec[i],true);
+    deltatheta.Scale(step);
+
+    LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
+    LARGEROTATIONS::quaternionproduct(Qold,deltaQ,Qnew);
+    LARGEROTATIONS::quaterniontoangle(Qnew,theta);
+  }
+
+  // first update entire x vector in an additive manner
+  xnew->Update(1.0, xold, step, dir,0.0);
+
+  // now replace the rotvec entries by the correct value computed before
+  STR::AssembleVector(0.0,*xnew,1.0,x_rotvec);
+  curr_grp_mutable.setX(xnew);
+
+  /* tell the NOX::NLN::Group that the x vector has already been updated in
+   * this preComputeX operator call */
+  curr_grp_mutable.setSkipUpdateX(true);
+
+  return;
 }

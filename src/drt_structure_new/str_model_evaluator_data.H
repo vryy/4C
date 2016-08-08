@@ -31,6 +31,7 @@ namespace TIMINT {
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
+  class BeamData;
   class ContactData;
 
   /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
@@ -137,10 +138,20 @@ namespace MODELEVALUATOR {
 
     //! get the current plastic strain type [derived]
     virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const;
+
+    //! get special parameter interface for beam elements [derived]
+    virtual inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
+    GetBeamParamsInterfacePtr() const
+    {
+      if (beam_data_ptr_.is_null())
+        dserror("pointer to beam data container not set!");
+      return beam_data_ptr_;
+    }
     //! @}
 
     //!@name set routines which can be called inside of the element [derived]
     //! @{
+
     //! set the element evaluation error flag inside of the element
     virtual inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag)
     {
@@ -319,6 +330,19 @@ namespace MODELEVALUATOR {
 
     //! @name accessors to the remaining data containers
     //! @{
+    //! access the beam data container, if applicable
+    inline BeamData& GetBeamData()
+    {
+      if (beam_data_ptr_.is_null())
+        dserror("pointer to beam data container not set!");
+      return *beam_data_ptr_;
+    }
+    inline const Teuchos::RCP<BeamData>& GetBeamDataPtr()
+    {
+      if (beam_data_ptr_.is_null())
+        dserror("pointer to beam data container not set!");
+      return beam_data_ptr_;
+    }
 
     //! access the contact data container, if the contact model is active
     inline ContactData& Contact()
@@ -544,9 +568,126 @@ namespace MODELEVALUATOR {
     //! read-only access to the epetra communicator
     Teuchos::RCP<const Epetra_Comm> comm_ptr_;
 
+    //! beam data container pointer
+    Teuchos::RCP<BeamData> beam_data_ptr_;
+
     //! remaining possible action types
     Teuchos::RCP<ContactData> contact_data_ptr_;
   };  // class Data
+
+
+  /*! data container holding special parameters required for the evaluation of beam elements
+   *
+   * \author Maximilian Grill
+   * \date 08/16 */
+  class BeamData : public STR::ELEMENTS::BeamParamsInterface
+  {
+  public:
+    //! constructor
+    BeamData();
+
+    //! destructor
+    virtual ~BeamData() {};
+
+    //! initialize the stuff coming from outside
+    void Init();
+
+    //! setup member variables
+    void Setup();
+
+    //! @name Derived STR::ELEMENTS::BeamParamsInterface accessors
+    //! @{
+    //! get the Lie group GenAlpha time integration parameters [derived]
+    virtual inline double GetBeta() const
+    {
+      CheckInitSetup();
+      return beta_;
+    }
+
+    virtual inline double GetGamma() const
+    {
+      CheckInitSetup();
+      return gamma_;
+    }
+
+    virtual inline double GetAlphaf() const
+    {
+      CheckInitSetup();
+      return alphaf_;
+    }
+
+    virtual inline double GetAlpham() const
+    {
+      CheckInitSetup();
+      return alpham_;
+    }
+
+    /*! @name set routines which are used to set the parameters of the data container
+     *
+     *  These functions are not allowed to be called by the elements! */
+    //! @{
+
+    //! set the Lie group GenAlpha time integration parameters
+    inline void SetBeta(const double& beta)
+    {
+      beta_ = beta;
+    }
+
+    inline void SetGamma(const double& gamma)
+    {
+      gamma_ = gamma;
+    }
+
+    inline void SetAlphaf(const double& alphaf)
+    {
+      alphaf_ = alphaf;
+    }
+
+    inline void SetAlpham(const double& alpham)
+    {
+      alpham_ = alpham;
+    }
+    //! @}
+
+  protected:
+    //! returns the isinit_ flag
+    inline const bool& IsInit() const
+    { return isinit_; };
+
+    //! returns the issetup_ flag
+    inline const bool& IsSetup() const
+    { return issetup_; };
+
+    //! Checks the init and setup status
+    inline void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+    //! Checks the init status
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Init() has not been called, yet!");
+    }
+
+  private:
+    bool isinit_;
+
+    bool issetup_;
+
+    //! @name time integration parameters
+    //! @{
+    //! Lie group GenAlpha parameters for element-internal update of angular velocities and accelerations
+    //  needed in case of non-additive rotation vector DOFs (see Lie group GenAlpha time integration for details)
+    double beta_;
+    double gamma_;
+    double alphaf_;
+    double alpham_;
+    //! @}
+  }; // class BeamData
+
 
   /*! Contact data container for the contact model evaluation procedure.
    *

@@ -69,12 +69,6 @@ typedef Sacado::Fad::DFad<double> FAD;
 //DEFAULT: BEAM3K_COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_. Furthermore, it specifies the number of collocation
                                          //points defining the number of material triads used to interpolate the triad field.
 
-#define BEAM3K_MULTIPLICATIVEUPDATES //In the case rotvec_==true, the nodal rotation increments are calculated in a multiplicative manner!!!
-//DEFAULT: true                        //In case of additive updates, the nodal rotation vectors have to satisfy theta_node in [-PI;PI].
-                                       //The T-matrix becomes singular for ||theta_node||=k*2*PI. In order to avoid such situations, we require  ||theta_node||<= PI.
-                                       //This restriction still enables the representation of all possible orientations.
-                                       //-->see also A. Cardona and M. Geradin, "A beam finite element non-linear theory with finite rotations", 1988.
-
 //#define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector component as test function for strong Kirchhoff
                                   //-> this interpolation enables exact energy and angular momentum balances
 
@@ -408,6 +402,90 @@ public:
   }
   //@}
 
+  /** \brief add indices of those DOFs of a given node that are positions
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
+  {
+    if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+    {
+      posdofs.push_back(0);  posdofs.push_back(1);  posdofs.push_back(2);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite interpolation)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
+  {
+    if ( (not rotvec_) and
+         (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
+    {
+      tangdofs.push_back(3);  tangdofs.push_back(4);  tangdofs.push_back(5);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive rotation vectors)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void RotationVecDofIndices(std::vector<int>& rotvecdofs, const DRT::Node& node) const
+  {
+    if ( (rotvec_) and
+         (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
+    {
+      rotvecdofs.push_back(3);  rotvecdofs.push_back(4);  rotvecdofs.push_back(5);
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+   *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with rotvec=false)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const
+  {
+    if (not rotvec_)
+    {
+      if ( node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id() )
+      {
+        twistdofs.push_back(6);
+      }
+      else if (node.Id() == this->Nodes()[2]->Id())
+      {
+        twistdofs.push_back(0);
+      }
+    }
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+   *         (additive, e.g. in case of beam3k with rotvec=true)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const
+  {
+    if (rotvec_)
+    {
+      if ( node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id() )
+      {
+        tangnormdofs.push_back(6);
+      }
+      else if (node.Id() == this->Nodes()[2]->Id())
+      {
+        tangnormdofs.push_back(0);
+      }
+    }
+    return;
+  }
+
+
 private:
 
   //Variables
@@ -430,16 +508,8 @@ private:
   //Variables needed by all local triads
   //! Matrix holding pseudo rotation vectors describing the material triads in the initial configuration at each node
   std::vector<LINALG::Matrix<3,1> > theta0_;
-  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to the end of the preceeding time step
-  std::vector<LINALG::Matrix<3,1> > dispthetaconv_;
-  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to the end of the preceeding iteration step
-  std::vector<LINALG::Matrix<3,1> > dispthetaold_;
   //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to current configuration
   std::vector<LINALG::Matrix<3,1> > dispthetanew_;
-  //! nodal triads in quaternion form at the converged configuration at the end of the preceeding time step (required for BEAM3K_MULTIPLICATIVEUPDATES)
-  std::vector<LINALG::Matrix<4,1> > Qconv_;
-  //! nodal triads in quaternion form at the end of the preceeding iteration step (required for BEAM3K_MULTIPLICATIVEUPDATES)
-  std::vector<LINALG::Matrix<4,1> > Qold_;
   //! nodal triads in quaternion during the current iteration step (required for BEAM3K_MULTIPLICATIVEUPDATES)
   std::vector<LINALG::Matrix<4,1> > Qnew_;
   //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the converged configuration of the last time step
@@ -781,11 +851,7 @@ private:
 
   void ResizeClassVariables(const int& n)
   {
-    dispthetaconv_.resize(2);
-    dispthetaold_.resize(2);
     dispthetanew_.resize(2);
-    Qconv_.resize(BEAM3K_COLLOCATION_POINTS);
-    Qold_.resize(BEAM3K_COLLOCATION_POINTS);
     Qnew_.resize(BEAM3K_COLLOCATION_POINTS);
     Qrefconv_.resize(BEAM3K_COLLOCATION_POINTS);
     Qrefnew_.resize(BEAM3K_COLLOCATION_POINTS);
@@ -812,8 +878,6 @@ private:
 
     for(unsigned int i=0; i<2; i++)
     {
-      dispthetaconv_[i].Clear();
-      dispthetaold_[i].Clear();
       dispthetanew_[i].Clear();
     }
 

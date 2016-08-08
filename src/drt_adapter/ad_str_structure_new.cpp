@@ -49,6 +49,7 @@
 #include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/drt_validparameters.H"
 
 #include "../drt_so3/so_sh8p8.H"
@@ -57,6 +58,12 @@
 #include "../drt_so3/so3_ssn_plast_sosh18.H"
 #include "../drt_so3/so_hex8fbar.H"
 #include "../drt_s8/shell8.H"
+
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3k.H"
+
+#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -104,6 +111,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   {
   case INPAR::STR::dyna_statics :
   case INPAR::STR::dyna_genalpha :
+  case INPAR::STR::dyna_genalpha_liegroup :
   case INPAR::STR::dyna_onesteptheta :
   case INPAR::STR::dyna_gemm :
   case INPAR::STR::dyna_expleuler:
@@ -272,6 +280,32 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   dataglobalstate->Setup();
 
   // ---------------------------------------------------------------------------
+  // in case of non-additive rotation (pseudo-)vector DOFs:
+  // ---------------------------------------------------------------------------
+  if (eletechs->find(INPAR::STR::eletech_rotvec) != eletechs->end())
+  {
+    // -------------------------------------------------------------------------
+    // setup the map extractor for split additive<->rotvec DOFs
+    // -------------------------------------------------------------------------
+    dataglobalstate->SetupRotVecMapExtractor();
+
+    // -------------------------------------------------------------------------
+    // set the RotVecUpdater as new precomputeX operator for the nox nln group
+    // -------------------------------------------------------------------------
+    Teuchos::ParameterList& p_grp_opt =
+        datasdyn->GetMutableNoxParams().sublist("Group Options");
+    // Get the current map. If there is no map, return a new empty one. (reference)
+    NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
+        NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grp_opt);
+    // create the new rotation vector update pre/post operator
+    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepostrotvec_ptr =
+        Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater(
+            dataglobalstate));
+    // insert/replace the old pointer in the map
+    prepostgroup_map[NOX::NLN::GROUP::prepost_rotvecupdate] = prepostrotvec_ptr;
+  }
+
+  // ---------------------------------------------------------------------------
   // Build time integrator
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy =
@@ -282,6 +316,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
    * for more information.                                     hiermeier 05/16*/
   if (not restart)
     ti_strategy->Setup();
+
 
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy
@@ -420,6 +455,23 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       break;
   } // switch (probtype)
 
+  // ---------------------------------------------------------------------------
+  // check for beam interactions (either contact or potential-based)
+  // ---------------------------------------------------------------------------
+  // get beam contact strategy since there are no conditions for beam contact
+  const Teuchos::ParameterList& beamcontact =
+     DRT::Problem::Instance()->BeamContactParams();
+  INPAR::BEAMCONTACT::Strategy strategy =
+      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,
+          "BEAMS_STRATEGY");
+
+  // conditions for potential-based beam interaction
+  std::vector<DRT::Condition*> beampotconditions(0);
+  actdis_->GetCondition("BeamPotentialLineCharge",beampotconditions);
+
+  if (strategy != INPAR::BEAMCONTACT::bstr_none or beampotconditions.size())
+    modeltypes.insert(INPAR::STR::model_beam_interaction);
+
   // hopefully we haven't forgotten anything
   return;
 }
@@ -441,6 +493,9 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
 
   int ispressure_local = 0;
   int ispressure_global = 0;
+
+  int isrotvec_local = 0;
+  int isrotvec_global = 0;
 
   for (int i=0;i<actdis_->NumMyRowElements();++i)
   {
@@ -483,6 +538,15 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
         dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(actele);
     if (so_hex8fbar_ele!=NULL)
       isfbar_local = 1;
+
+    // Detect non-additive rotation-vector DOFs --------------------------------
+    if (actele->ElementType() == DRT::ELEMENTS::Beam3rType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::Beam3kType::Instance()
+       )
+    {
+      isrotvec_local=true;
+      break;
+    }
   }
 
   // plasticity - sum over all processors
@@ -504,6 +568,11 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   actdis_->Comm().SumAll(&isfbar_local,&isfbar_global,1);
   if (isfbar_global>0)
     eletechs.insert(INPAR::STR::eletech_fbar);
+
+  // rotation vector DOFs - sum over all processors
+  actdis_->Comm().SumAll(&isrotvec_local,&isrotvec_global,1);
+  if (isrotvec_global>0)
+    eletechs.insert(INPAR::STR::eletech_rotvec);
 
   return;
 }

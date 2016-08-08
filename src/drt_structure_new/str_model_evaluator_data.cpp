@@ -48,7 +48,9 @@ STR::MODELEVALUATOR::Data::Data()
       io_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null),
-      comm_ptr_(Teuchos::null)
+      comm_ptr_(Teuchos::null),
+      beam_data_ptr_(Teuchos::null),
+      contact_data_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -92,6 +94,15 @@ void STR::MODELEVALUATOR::Data::Setup()
         break;
       }
     }
+  }
+
+  /* so far, we need the special parameter data container for beams only if
+   * the applied beam elements have non-additive rotation vector DOFs */
+  if (sdyn_ptr_->HaveEleTech(INPAR::STR::eletech_rotvec))
+  {
+    beam_data_ptr_ = Teuchos::rcp(new BeamData());
+    beam_data_ptr_->Init();
+    beam_data_ptr_->Setup();
   }
 
   issetup_ = true;

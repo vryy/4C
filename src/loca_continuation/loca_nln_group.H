@@ -2,6 +2,8 @@
 /*!
 \file loca_nln_group.H
 
+\brief LOCA specific group
+
 \maintainer Michael Hiermeier
 
 \date Nov 16, 2015
@@ -51,6 +53,10 @@ namespace NLN {
      * If type is DeepCopy, takes ownership of valid shared Jacobian and shared
      * preconditioning matrix. */
     Group(const Group& source, NOX::CopyType type = NOX::DeepCopy);
+
+    //! derived
+    virtual NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source);
+    virtual NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source);
 
     //! destructor
     virtual ~Group() {};

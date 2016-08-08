@@ -63,7 +63,7 @@ namespace IMPLICIT {
     virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);
 
     //! [derived]
-    double GetIntParam() const;
+    virtual double GetIntParam() const;
 
     //! @name Monolithic update routines
     //! @{
@@ -125,7 +125,7 @@ namespace IMPLICIT {
      *
      *  \author hiermeier
      *  \date 03/2016 */
-    void AddViscoMassContributions(Epetra_Vector& f) const;
+    virtual void AddViscoMassContributions(Epetra_Vector& f) const;
 
     /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
      *
@@ -143,7 +143,7 @@ namespace IMPLICIT {
      *
      *  \author hiermeier
      *  \date 03/2016 */
-    void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
+    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
 
     /*! \brief Update constant contributions of the current state for the new time step \f$t_{n+1}\f$
      *
@@ -180,9 +180,9 @@ namespace IMPLICIT {
      *
      *  \author hiermeier
      *  \date 03/2016 */
-    void UpdateConstantStateContributions();
+    virtual void UpdateConstantStateContributions();
 
-  private:
+  protected:
     //! beta factor: feasible interval (0,1/2]
     double beta_;
 

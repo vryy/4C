@@ -466,10 +466,8 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  Ngp_(old.Ngp_),
  Kmax_(old.Kmax_),
  dispthetaconvnode_(old.dispthetaconvnode_),
- dispthetaoldnode_(old.dispthetaoldnode_),
  dispthetanewnode_(old.dispthetanewnode_),
  Qconvnode_(old.Qconvnode_),
- Qoldnode_(old.Qoldnode_),
  Qnewnode_(old.Qnewnode_),
  QconvGPmass_(old.QconvGPmass_),
  QnewGPmass_(old.QnewGPmass_),
@@ -609,7 +607,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Izz_);
   AddtoPack<4,1>(data,Qconvnode_);
   AddtoPack<4,1>(data,Qnewnode_);
-  AddtoPack<4,1>(data,Qoldnode_);
   AddtoPack<4,1>(data,QconvGPmass_);
   AddtoPack<4,1>(data,QnewGPmass_);
   AddtoPack<3,1>(data,wconvGPmass_);
@@ -621,7 +618,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rtconvGPmass_);
   AddtoPack<3,1>(data,rtnewGPmass_);
   AddtoPack<3,1>(data,dispthetaconvnode_);
-  AddtoPack<3,1>(data,dispthetaoldnode_);
   AddtoPack<3,1>(data,dispthetanewnode_);
   AddtoPack<3,1>(data,rconvGPmass_);
   AddtoPack<3,1>(data,rnewGPmass_);
@@ -687,7 +683,6 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack<4,1>(position,data,Qconvnode_);
   ExtractfromPack<4,1>(position,data,Qnewnode_);
-  ExtractfromPack<4,1>(position,data,Qoldnode_);
   ExtractfromPack<4,1>(position,data,QconvGPmass_);
   ExtractfromPack<4,1>(position,data,QnewGPmass_);
   ExtractfromPack<3,1>(position,data,wconvGPmass_);
@@ -699,7 +694,6 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rtconvGPmass_);
   ExtractfromPack<3,1>(position,data,rtnewGPmass_);
   ExtractfromPack<3,1>(position,data,dispthetaconvnode_);
-  ExtractfromPack<3,1>(position,data,dispthetaoldnode_);
   ExtractfromPack<3,1>(position,data,dispthetanewnode_);
   ExtractfromPack<3,1>(position,data,rconvGPmass_);
   ExtractfromPack<3,1>(position,data,rnewGPmass_);
@@ -1061,14 +1055,12 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
 
     // resize and initialize STL vectors for rotational displacements so that they can store one value at each node
     dispthetaconvnode_.resize(nnodetriad);
-    dispthetaoldnode_.resize(nnodetriad);
     dispthetanewnode_.resize(nnodetriad);
 
     // nodal triads in reference configuration
     for (unsigned int node=0; node<nnodetriad; node++)
     {
       dispthetaconvnode_[node].Clear();
-      dispthetaoldnode_[node].Clear();
       dispthetanewnode_[node].Clear();
 
       // compute nodal local rotations according to (3.8), Jelenic 1999
@@ -1483,6 +1475,113 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*
     while (vpernode!=1 && std::fabs(res)>tolerance && numiter<100);
 
     if (numiter>100) dserror("beam3r: failed to compute length of element in reference configuration iteratively: Newton unconverged!");
+  }
+
+  return;
+}
+
+void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
+                                       const double&              xi,
+                                       const std::vector<double>& disp_totlag) const
+{
+  unsigned int numnodalvalues=1;
+  this->HermiteCenterlineInterpolation() ? numnodalvalues=2 : numnodalvalues=1;
+  unsigned int nnodecl=this->NumCenterlineNodes();
+
+  // at the moment, we assume that disp_totlag_centerline (without rotational DoFs) is passed in this function call
+  if (disp_totlag.size() != 3*numnodalvalues*nnodecl)
+    dserror("size mismatch: expected %d values for disp_totlag and got %d",3*numnodalvalues*nnodecl,disp_totlag.size());
+
+  switch (this->NumCenterlineNodes())
+  {
+    case 2:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        LINALG::Matrix<12,1> disp_totlag_fixedsize;
+        for (int i=0; i<12; ++i)
+          disp_totlag_fixedsize(i)=disp_totlag[i];
+        pos = this->GetPosAtXi<2,2>(xi,disp_totlag_fixedsize);
+      }
+      else
+      {
+        LINALG::Matrix<6,1> disp_totlag_fixedsize;
+        for (int i=0; i<6; ++i)
+          disp_totlag_fixedsize(i)=disp_totlag[i];
+        pos = this->GetPosAtXi<2,1>(xi,disp_totlag_fixedsize);
+      }
+      break;
+    }
+    case 3:
+    {
+      LINALG::Matrix<9,1> disp_totlag_fixedsize;
+      for (int i=0; i<9; ++i)
+        disp_totlag_fixedsize(i)=disp_totlag[i];
+      pos = this->GetPosAtXi<3,1>(xi,disp_totlag_fixedsize);
+      break;
+    }
+    case 4:
+    {
+      LINALG::Matrix<12,1> disp_totlag_fixedsize;
+      for (int i=0; i<12; ++i)
+        disp_totlag_fixedsize(i)=disp_totlag[i];
+      pos = this->GetPosAtXi<4,1>(xi,disp_totlag_fixedsize);
+      break;
+    }
+    case 5:
+    {
+      LINALG::Matrix<15,1> disp_totlag_fixedsize;
+      for (int i=0; i<15; ++i)
+        disp_totlag_fixedsize(i)=disp_totlag[i];
+      pos = this->GetPosAtXi<5,1>(xi,disp_totlag_fixedsize);
+      break;
+    }
+    default:
+      dserror("no valid number for number of centerline nodes");
+  }
+
+  return;
+}
+
+void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,
+                                        const double&              xi,
+                                        const std::vector<double>& psi_totlag) const
+{
+  unsigned int nnodetriad=this->NumNode();
+
+  // we assume that psi_totlag (contains only rotation vector DoFs, no centerline DoFs) is passed in this function call
+  if (psi_totlag.size() != 3*nnodetriad)
+    dserror("size mismatch: expected %d values for disp_totlag and got %d",3*nnodetriad,psi_totlag.size());
+
+  std::vector<LINALG::Matrix<3,1> > psi_totlag_fixedsize(nnodetriad);
+  for (unsigned int node=0; node<nnodetriad; ++node)
+    for (unsigned int i=0; i<3; ++i)
+      psi_totlag_fixedsize[node](i) = psi_totlag[node*3+i];
+
+  switch (nnodetriad)
+  {
+    case 2:
+    {
+      triad = this->GetTriadAtXi<2>(xi,psi_totlag_fixedsize);
+      break;
+    }
+    case 3:
+    {
+      triad = this->GetTriadAtXi<3>(xi,psi_totlag_fixedsize);
+      break;
+    }
+    case 4:
+    {
+      triad = this->GetTriadAtXi<4>(xi,psi_totlag_fixedsize);
+      break;
+    }
+    case 5:
+    {
+      triad = this->GetTriadAtXi<5>(xi,psi_totlag_fixedsize);
+      break;
+    }
+    default:
+      dserror("%d is no valid number of nodes for beam3r triad interpolation",nnodetriad);
   }
 
   return;

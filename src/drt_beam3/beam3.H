@@ -60,6 +60,8 @@ public:
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+
+
 private:
 
   static Beam3Type instance_;
@@ -608,6 +610,60 @@ public:
 
   //! changes the actual linker length
   void SetReferenceLength(const double& scalefac);
+
+  /** \brief add indices of those DOFs of a given node that are positions
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
+  {
+    posdofs.push_back(0);  posdofs.push_back(1);  posdofs.push_back(2);
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite interpolation)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
+  {
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive rotation vectors)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void RotationVecDofIndices(std::vector<int>& rotvecdofs, const DRT::Node& node) const
+  {
+    /* note: due to the incremental formulation of beam3, we can not apply the multiplicative update
+     *       in the nonlinear solver (see PrePostOperator RotVecUpdater for details) and hence pretend to
+     *       not have multiplicative rotation vector DoFs here. Instead, we declare them to be (additive)
+     *       1D rotation DoFs (see below) */
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+   *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with rotvec=false)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const
+  {
+    // see comment in method RotationVecDofIndices
+    twistdofs.push_back(3);  twistdofs.push_back(4);  twistdofs.push_back(5);
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+   *         (additive, e.g. in case of beam3k with rotvec=true)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const
+  {
+    return;
+  }
 
   //@}
 

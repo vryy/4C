@@ -273,6 +273,12 @@ namespace TIMINT {
       CheckInitSetup();
       return *eletechs_;
     };
+
+    /// check if the given model type is active.
+    bool HaveModelType(const INPAR::STR::ModelType& modeltype) const;
+
+    /// check if the given element technology is active.
+    bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
     ///@}
 
     /// @name Get the different status test control parameters (read only)

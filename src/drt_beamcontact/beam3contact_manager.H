@@ -6,10 +6,6 @@
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
 *----------------------------------------------------------------------*/
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
@@ -306,6 +302,7 @@ public:
   \brief Write restart
   */
   void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
+  void WriteRestart(IO::DiscretizationWriter& output);
 
   //@}
 

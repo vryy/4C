@@ -36,8 +36,9 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 --------------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     100
 RESTARTEVRY                     100
 NLNSOL                          fullnewton

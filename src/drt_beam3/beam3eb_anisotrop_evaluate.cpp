@@ -3,12 +3,9 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
+\level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
  *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3eb_anisotrop.H"
@@ -205,6 +202,12 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
       //not necessary since no class variables are modified in predicting steps
     break;
+
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
 
     default:
       dserror("Unknown type of action for Beam3ebanisotrop %d", act);
@@ -1393,6 +1396,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
                                                Epetra_SerialDenseVector& elevec1,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
 
   const int twistdofs = TWISTDOFS;
   if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
@@ -1462,7 +1466,11 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (this->IsParamsInterface())
+    time = this->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor

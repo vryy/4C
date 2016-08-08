@@ -27,6 +27,8 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_timestepping/timintmstep.H"
 
+#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
@@ -43,6 +45,9 @@ namespace Epetra {
 } // namespace NOX
 namespace DRT {
   class Discretization;
+namespace ELEMENTS {
+  class Beam3Base;
+} // namespace ELEMENTS
 } // namespace DRT
 
 namespace STR {
@@ -86,6 +91,10 @@ namespace TIMINT {
     /// setup the multi map extractor for saddle point problems
     void SetupMultiMapExtractor();
 
+    /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
+     *                              (additive)    <->  (non-additive)      */
+    void SetupRotVecMapExtractor();
+
     /* \brief Extract the part of a vector which belongs to the displacement dofs.
      *
      * \param source (in) : full vector to extract from. */
@@ -98,6 +107,19 @@ namespace TIMINT {
      * \param source (in) : full vector to extract from. */
     Teuchos::RCP<Epetra_Vector> ExtractModelEntries(
         const INPAR::STR::ModelType& mt,
+        const Epetra_Vector& source) const;
+
+    /* \brief Extract the part of a vector which belongs to the additive dofs.
+     *
+     * \param source (in) : full vector to extract from. */
+    Teuchos::RCP<Epetra_Vector> ExtractAdditiveEntries(
+        const Epetra_Vector& source) const;
+
+    /* \brief Extract the part of a vector which belongs to non-additive rotation
+     * (pseudo-)vector dofs.
+     *
+     * \param source (in) : full vector to extract from. */
+    Teuchos::RCP<Epetra_Vector> ExtractRotVecEntries(
         const Epetra_Vector& source) const;
 
     /// Get the block of the stiffness matrix which belongs to the displacement dofs.
@@ -218,6 +240,15 @@ namespace TIMINT {
 
     /// view of dof map of vector of unknowns
     const Epetra_Map* DofRowMapView() const;
+
+    /// view of dof map of vector of additive unknowns
+    /* in case we have non-additve DoFs in the structure discretization
+     * (e.g. rotation vector DoFs of beams), this method is overloaded */
+    const Epetra_Map* AdditiveDofRowMapView() const;
+
+    /// view of dof map of vector of rotation vector unknowns
+    /* (e.g. rotation vector DoFs of beams), this method is overloaded */
+    const Epetra_Map* RotVecDofRowMapView() const;
     ///@}
 
     /// @name Get general control parameters (read only access)
@@ -506,6 +537,8 @@ namespace TIMINT {
     };
 
     const LINALG::MultiMapExtractor& BlockExtractor() const;
+
+    const LINALG::MultiMapExtractor& RotVecExtractor() const;
     /// @}
 
     /// @name Get mutable general control parameters (read and write access)
@@ -897,11 +930,56 @@ namespace TIMINT {
 
     /// multi map extractor
     LINALG::MultiMapExtractor blockextractor_;
+
+    /// map extractor for split of translational <-> rotational pseudo-vector DoFs
+    LINALG::MultiMapExtractor rotvecextractor_;
     /// @}
   };  // class BaseDataGlobalState
 } // namespace TIMINT
 } // namespace STR
 
+namespace NOX {
+namespace NLN {
+namespace GROUP {
+namespace PrePostOp {
+namespace TIMINT {
+  /*! \brief helper class
+   *
+   *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
+   *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
+   *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator. We use it
+   *  to update the non-additive rotation (pseudo-)vector DOFs in a consistent
+   *  (multiplicative) manner.
+   *
+   *  \author Maximilian Grill */
+  class RotVecUpdater : public NOX::NLN::Abstract::PrePostOperator
+  {
+  public:
+    //! constructor
+    RotVecUpdater(const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
+    //! destructor
+    virtual ~RotVecUpdater() {};
+
+    /*! \brief Derived function, which is called before a call to
+     * NOX::NLN::Group::computeX()
+     *
+     *  This method is used to update non-additive rotation vector DoFs */
+    virtual void runPreComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp);
+
+  private:
+    //! pointer to the STR::TIMINT::BaseDataGlobalState object (read-only)
+    Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+  }; // class RotVecUpdater
+} // namespace TIMINT
+} // namespace PrePostOp
+} // namespace GROUP
+} // namespace NLN
+} // namespace NOX
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_ */

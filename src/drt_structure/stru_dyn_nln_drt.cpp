@@ -4,13 +4,9 @@
 
 \brief Control routine for structural dynamics (outsourced to adapter layer)
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
 
+\maintainer Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include <ctime>
@@ -55,6 +51,7 @@ void caldyn_drt()
   {
   case INPAR::STR::dyna_statics:
   case INPAR::STR::dyna_genalpha:
+  case INPAR::STR::dyna_genalpha_liegroup:
   case INPAR::STR::dyna_onesteptheta:
   case INPAR::STR::dyna_gemm:
   case INPAR::STR::dyna_expleuler:

@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_inner_statustest_factory.H
 
+\brief factory for user defined NOX inner status tests
+
 \maintainer Michael Hiermeier
 
 \date Aug 14, 2015
@@ -45,6 +47,10 @@ namespace StatusTest {
   protected:
     //! Build the Armijo sufficient decrease test
     Teuchos::RCP<Generic> BuildArmijoTest(
+        Teuchos::ParameterList& p, const NOX::Utils& u) const;
+
+    //! Build the upper bound test
+    Teuchos::RCP<Generic> BuildUpperBoundTest(
         Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
     /*! \brief Build the inner_statustest_combo object

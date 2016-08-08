@@ -617,6 +617,24 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
   return INPAR::STR::bop_and;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataSDyn::HaveModelType(const INPAR::STR::ModelType& modeltype)
+const
+{
+  CheckInitSetup();
+  return (GetModelTypes().find(modeltype)!=GetModelTypes().end());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataSDyn::HaveEleTech(const INPAR::STR::EleTech& eletech)
+const
+{
+  CheckInitSetup();
+  return (GetElementTechnologies().find(eletech)!=GetElementTechnologies().end());
+}
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

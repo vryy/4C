@@ -487,6 +487,54 @@ public:
    forces                                                                    */
   int HowManyRandomNumbersINeed();
 
+  /** \brief add indices of those DOFs of a given node that are positions
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
+  {
+    posdofs.push_back(0);  posdofs.push_back(1);  posdofs.push_back(2);
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite interpolation)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
+  {
+    tangdofs.push_back(3);  tangdofs.push_back(4);  tangdofs.push_back(5);
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive rotation vectors)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void RotationVecDofIndices(std::vector<int>& rotvecdofs, const DRT::Node& node) const
+  {
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+   *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with rotvec=false)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const
+  {
+    return;
+  }
+
+  /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+   *         (additive, e.g. in case of beam3k with rotvec=true)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual inline void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const
+  {
+    return;
+  }
 
 private:
 

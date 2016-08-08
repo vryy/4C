@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file rigidsphere_input.cpp
-\brief
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\brief spherical particle element for brownian dynamics
 
+\maintainer Christoph Meier
+
+\level 3
 *----------------------------------------------------------------------*/
 
 #include "rigidsphere.H"

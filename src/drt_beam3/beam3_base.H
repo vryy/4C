@@ -4,7 +4,7 @@
 
 \brief base class for all beam elements
 
-\level 3
+\level 2
 
 \maintainer Christoph Meier
 */
@@ -13,14 +13,14 @@
 #ifndef BEAM3_BASE_H_
 #define BEAM3_BASE_H_
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_elementtype.H"
-
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
 
@@ -34,7 +34,7 @@ namespace ELEMENTS {
 namespace DRT {
 namespace ELEMENTS {
 
-//! A wrapper for structural elements
+//! base class for all beam elements
 class Beam3Base : public DRT::Element
 {
 
@@ -98,6 +98,50 @@ public:
    *  \author grill
    *  \date 05/16 */
   virtual bool HermiteCenterlineInterpolation() const = 0;
+
+  /** \brief return GIDs of all additive DoFs for a given node
+   *
+   *  \author grill
+   *  \date 07/16 */
+  std::vector<int> GetAdditiveDofGIDs(const DRT::Discretization& discret, const DRT::Node& node) const;
+
+  /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
+   *
+   *  \author grill
+   *  \date 07/16 */
+  std::vector<int> GetRotVecDofGIDs(const DRT::Discretization& discret, const DRT::Node& node) const;
+
+  /** \brief add indices of those DOFs of a given node that are positions
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const = 0;
+
+  /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite interpolation)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const = 0;
+
+  /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive rotation vectors)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void RotationVecDofIndices(std::vector<int>& rotvecdofs, const DRT::Node& node) const = 0;
+
+  /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+   *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with rotvec=false)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const = 0;
+
+  /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+   *         (additive, e.g. in case of beam3k with rotvec=true)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const = 0;
 
 protected:
   /** \brief get access to the interface

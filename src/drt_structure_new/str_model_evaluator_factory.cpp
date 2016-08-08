@@ -23,6 +23,7 @@
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_lagpenconstraint.H"
+#include "str_model_evaluator_beaminteraction.H"
 
 
 
@@ -58,6 +59,9 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         break;
       case INPAR::STR::model_contact:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
+        break;
+      case INPAR::STR::model_beam_interaction:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction());
         break;
       case INPAR::STR::model_lag_pen_constraint:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::LagPenConstraint());

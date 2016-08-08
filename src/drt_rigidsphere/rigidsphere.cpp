@@ -3,13 +3,9 @@
 
 \brief spherical particle element for brownian dynamics
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+\maintainer Christoph Meier
 
+\level 3
 *----------------------------------------------------------------------*/
 
 #include "rigidsphere.H"
@@ -23,6 +19,7 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
@@ -209,4 +206,23 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Rigidsphere::Lines()
 int DRT::ELEMENTS::RigidsphereType::Initialize(DRT::Discretization& dis)
 {
     return 0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Rigidsphere::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+{
+  if (p.isParameter("interface"))
+    interface_ptr_ =
+        Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>
+        (p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface"));
+  else
+    interface_ptr_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Rigidsphere::ParamsInterfacePtr()
+{
+  return interface_ptr_;
 }
