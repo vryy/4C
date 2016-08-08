@@ -16,6 +16,7 @@
 #include "str_impl_generic.H"
 #include "str_timint_base.H"
 #include "str_model_evaluator.H"
+#include "str_model_evaluator_data.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
 #include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
@@ -87,6 +88,16 @@ double STR::IMPLICIT::Generic::GetDefaultStepLength() const
   }
   // default: return a step length of 1.0
   return 1.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::ResetEvalParams()
+{
+  // set the time step dependent parameters for the element evaluation
+  EvalData().SetTotalTime(GlobalState().GetTimeNp());
+  EvalData().SetDeltaTime((*GlobalState().GetDeltaTime())[0]);
+  EvalData().SetIsTolerateError(true);
 }
 
 /*----------------------------------------------------------------------------*

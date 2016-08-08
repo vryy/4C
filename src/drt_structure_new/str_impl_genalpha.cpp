@@ -533,6 +533,9 @@ bool STR::IMPLICIT::GenAlpha::PredictConstAcc(
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::ResetEvalParams()
 {
+  // call base class
+  STR::IMPLICIT::Generic::ResetEvalParams();
+
   // set the time step dependent parameters for the element evaluation
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   double timeintfac_dis = beta_*dt*dt;
@@ -540,7 +543,4 @@ void STR::IMPLICIT::GenAlpha::ResetEvalParams()
 
   EvalData().SetTimIntFactorDisp(timeintfac_dis);
   EvalData().SetTimIntFactorVel(timeintfac_vel);
-  EvalData().SetTotalTime(GlobalState().GetTimeNp());
-  EvalData().SetDeltaTime(dt);
-  EvalData().SetIsTolerateError(true);
 }

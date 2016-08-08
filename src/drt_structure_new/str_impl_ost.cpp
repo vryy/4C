@@ -17,6 +17,7 @@
 
 #include "str_dbc.H"
 #include "str_model_evaluator.H"
+#include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 #include "str_timint_basedatasdyn.H"
 #include "str_utils.H"
@@ -304,8 +305,6 @@ void STR::IMPLICIT::OneStepTheta::WriteRestart(
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader)
 {
-  dserror("Restart is not yet working for new structural time integration with"
-      " one-step-theta.");
 
   CheckInitSetup();
   ioreader.ReadVector(finertian_ptr_,"finert");
@@ -464,4 +463,20 @@ bool STR::IMPLICIT::OneStepTheta::PredictConstAcc(
       1.0/(theta_*theta_*dt*dt));
 
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::OneStepTheta::ResetEvalParams()
+{
+  // call base class
+  STR::IMPLICIT::Generic::ResetEvalParams();
+
+  // set the time step dependent parameters for the element evaluation
+  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  double timeintfac_dis = theta_*theta_*dt*dt;
+  double timeintfac_vel = theta_*dt;
+
+  EvalData().SetTimIntFactorDisp(timeintfac_dis);
+  EvalData().SetTimIntFactorVel(timeintfac_vel);
 }

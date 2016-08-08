@@ -284,10 +284,6 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::ResetEvalParams()
 {
-  // set the time step dependent parameters for the element evaluation
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
-
-  EvalData().SetTotalTime(GlobalState().GetTimeNp());
-  EvalData().SetDeltaTime(dt);
-  EvalData().SetIsTolerateError(true);
+  // call base class
+  STR::IMPLICIT::Generic::ResetEvalParams();
 }

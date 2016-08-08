@@ -100,7 +100,7 @@ namespace IMPLICIT {
 
   protected:
     //! reset the time step dependent parameters for the element evaluation [derived]
-    void ResetEvalParams();
+    virtual void ResetEvalParams();
   };
 } // namespace IMPLICIT
 } // namespace STR

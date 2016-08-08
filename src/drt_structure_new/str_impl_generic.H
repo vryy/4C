@@ -142,6 +142,10 @@ namespace IMPLICIT {
     //! Get the predictor state flag
     const bool& IsPredictorState() const;
 
+  protected:
+    //! reset the time step dependent parameters for the element evaluation [derived]
+    virtual void ResetEvalParams();
+
   private:
     /*! \brief Flag indicating if the current state is the predictor state.
      *

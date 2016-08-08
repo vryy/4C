@@ -144,6 +144,9 @@ namespace IMPLICIT {
     //! run directly after the setup routine has been finished
     virtual void PostSetup();
 
+    //! reset the time step dependent parameters for the element evaluation [derived]
+    virtual void ResetEvalParams();
+
   private:
     /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
      *
