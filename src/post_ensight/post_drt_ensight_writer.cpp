@@ -2443,7 +2443,7 @@ std::string EnsightWriter::GetTimeSectionString(
   s << "time set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
   for (unsigned i=0; i<times.size(); ++i)
   {
-    s << times[i]<< " ";
+    s << std::setprecision(16) << times[i]<< " ";
     if (i%8==0&& i!=0)
     {
       s << "\n";

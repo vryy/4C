@@ -1,17 +1,16 @@
-/*----------------------------------------------------------------------*/
-/*!
- * \file io.cpp
+/*!----------------------------------------------------------------------*
+
+\file io.cpp
+
 \brief output context of one discretization
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+
+*----------------------------------------------------------------------*/
 
 #include "io.H"
 #include "io_control.H"
@@ -586,8 +585,7 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 {
   if(binio_)
   {
-    resultfile_changed_ = -1;
-    meshfile_changed_ = -1;
+    CreateNewResultAndMeshFile();
     output_->NewResultFile(numb_run);
   }
 }
@@ -599,8 +597,7 @@ void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb
 {
   if(binio_)
   {
-    resultfile_changed_ = -1;
-    meshfile_changed_ = -1;
+    CreateNewResultAndMeshFile();
     output_->NewResultFile(name_appendix, numb_run);
   }
 }
@@ -611,8 +608,7 @@ void IO::DiscretizationWriter::OverwriteResultFile()
 {
   if(binio_)
   {
-    resultfile_changed_ = -1;
-    meshfile_changed_ = -1;
+    CreateNewResultAndMeshFile();
     output_->OverwriteResultFile();
   }
 }
@@ -656,7 +652,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
       output_->ControlFile()
         << "result:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
-        << "    time = " << time << "\n"
+        << std::setprecision(16) << "    time = " << time << "\n"
         << "    step = " << step << "\n\n";
 
     if (write_file)
@@ -1043,7 +1039,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
       output_->ControlFile()
         << "field:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
-        << "    time = " << time << "\n"
+        << std::setprecision(16) << "    time = " << time << "\n"
         << "    step = " << step << "\n\n"
         << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
         << "    max_nodeid = " << max_nodeid << "\n"
@@ -1097,7 +1093,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std:
       output_->ControlFile()
         << "field:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
-        << "    time = " << time << "\n"
+        << std::setprecision(16) << "    time = " << time << "\n"
         << "    step = " << step << "\n\n"
         << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
         << "    num_ele = " << dis_->NumGlobalElements() << "\n"
@@ -1186,7 +1182,7 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
       output_->ControlFile()
         << "field:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
-        << "    time = " << time << "\n"
+        << std::setprecision(16) << "    time = " << time << "\n"
         << "    step = " << step << "\n\n"
         << "    num_nd = " << 0 << "\n"
         << "    max_nodeid = " << max_nodeid << "\n"

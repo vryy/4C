@@ -1,4 +1,5 @@
 /*!----------------------------------------------------------------------
+
 \file ac_fsi.H
 
 \brief H-file associated with algorithmic routines for two-way coupled partitioned
@@ -104,7 +105,7 @@ namespace FS3I
     std::string GetFileName(const int step);
 
     ///Set time and step in FSI and all subfields
-    void SetTimeStepInFSI(const double time, const int step);
+    void SetTimeAndStepInFSI(const double time, const int step);
 
     ///Do a single scatra step
     void SmallTimeScaleDoScatraStep();

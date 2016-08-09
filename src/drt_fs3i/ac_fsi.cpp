@@ -1,4 +1,5 @@
 /*!----------------------------------------------------------------------
+
 \file ac_fsi.cpp
 
 \brief cpp-file associated with algorithmic routines for two-way coupled partitioned
@@ -563,7 +564,7 @@ void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps)
       fsi_->Update();           //... will do this in UpdateAndOutput()
       fsi_->PrepareTimeStep();  //... have already done this in PrepareTimeStep()
       //now fix the step_ counter. When subcycling the fsi subproblem we do not want to proceed the step_ AND the time_, but just the time_.
-      SetTimeStepInFSI(fsi_->FluidField()->Time(),step_);
+      SetTimeAndStepInFSI(fsi_->FluidField()->Time(),step_);
     }
 
     if (Comm().MyPID()==0)
@@ -614,7 +615,7 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
   fsi_->FluidField()->UpdateGridv(); //calculate grid velocity via FD approximation
 
   //update time and step in FSI and all subproblems
-  SetTimeStepInFSI(time_,step_);
+  SetTimeAndStepInFSI(time_,step_);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -731,7 +732,7 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 /*----------------------------------------------------------------------*
  | Set time and step in FSI and all subfields                Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetTimeStepInFSI(const double time, const int step)
+void FS3I::ACFSI::SetTimeAndStepInFSI(const double time, const int step)
 {
   // Set time and step in FSI. This looks a bit strange but in case of subcyling
   // we want a 'proper' screen output. And since the fsi time and step are only used
@@ -763,7 +764,7 @@ void FS3I::ACFSI::SmallTimeScaleDoScatraStep()
                "\n                        AC COUPLED SCATRA SOLVER"
                "\n************************************************************************\n"<<std::endl;
 
-    std::cout<<"+- step/max -+- abs-res-tol [norm] -+-- scal-res --+- rel-inc-tol [norm] -+-- scal-inc --+"<<std::endl;
+    std::cout<<"+- step/max -+-- scal-res/ abs-tol [norm] -+-- scal-inc/ rel-tol [norm] -+"<<std::endl;
   }
 
   bool stopnonliniter=false;
@@ -887,8 +888,8 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
   // print the screen info
   if (Comm().MyPID()==0)
   {
-    printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
-           itnum,scatraitemax,scatraabstolres,conresnorm,scatraittol,incconnorm/connorm);
+    printf("|   %3d/%3d  |  %1.3E/ %1.1E [L_2 ]  |  %1.3E/ %1.1E [L_2 ]  |\n",
+           itnum,scatraitemax,conresnorm,scatraabstolres,incconnorm/connorm,scatraittol);
   }
 
   // this is the convergence check
@@ -899,7 +900,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
     if (Comm().MyPID()==0)
     {
       // print 'finish line'
-      printf("+------------+----------------------+--------------+----------------------+--------------+\n\n");
+      printf("+------------+-----------------------------+-----------------------------+\n\n");
     }
     return true;
   }
@@ -1025,12 +1026,12 @@ void FS3I::ACFSI::CheckifTimesAndStepsAndDtsMatch()
   const double fluidscatratime = scatravec_[0]->ScaTraField()->Time();
   const double structurescatratime = scatravec_[1]->ScaTraField()->Time();
 
-  if ( not IsRealtiveEqualTo(fluidtime,time_,time_) ) dserror("Your fluid time does not match!");
-  if ( not IsRealtiveEqualTo(structuretime,time_,time_) ) dserror("Your structure time does not match!");
-  if ( not IsRealtiveEqualTo(aletime,time_,time_) ) dserror("Your ale time does not match!");
-  if ( not IsRealtiveEqualTo(fsitime,time_,time_) ) dserror("Your fsi time does not match!");
-  if ( not IsRealtiveEqualTo(fluidscatratime,time_,time_) ) dserror("Your fluid-scalar time does not match!");
-  if ( not IsRealtiveEqualTo(structurescatratime,time_,time_) ) dserror("Your structure-scalar time does not match!");
+  if ( not IsRealtiveEqualTo(fluidtime,time_,time_) ) dserror("Your fluid time %f does not match the fs3i time %f!",fluidtime,time_);
+  if ( not IsRealtiveEqualTo(structuretime,time_,time_) ) dserror("Your structure time %f does not match the fs3i time %f!",structuretime,time_);
+  if ( not IsRealtiveEqualTo(aletime,time_,time_) ) dserror("Your ale time %f does not match the fs3i time %f!",aletime,time_);
+  if ( not IsRealtiveEqualTo(fsitime,time_,time_) ) dserror("Your fsi time %f does not match the fs3i time %f!",fsitime,time_);
+  if ( not IsRealtiveEqualTo(fluidscatratime,time_,time_) ) dserror("Your fluid-scalar time %f does not match the fs3i time %f!",fluidscatratime,time_);
+  if ( not IsRealtiveEqualTo(structurescatratime,time_,time_) ) dserror("Your structure-scalar time %f does not match the fs3i time %f!",structurescatratime,time_);
 
   //check steps
   const int fluidstep = fsi_->FluidField()->Step();
@@ -1040,12 +1041,12 @@ void FS3I::ACFSI::CheckifTimesAndStepsAndDtsMatch()
   const int fluidscatrastep = scatravec_[0]->ScaTraField()->Step();
   const int structurescatrastep = scatravec_[1]->ScaTraField()->Step();
 
-  if ( not IsRealtiveEqualTo(fluidstep,step_,step_) ) dserror("Your fluid step does not match!");
-  if ( not IsRealtiveEqualTo(structurestep,step_,step_) ) dserror("Your structure step does not match!");
-  if ( not IsRealtiveEqualTo(alestep,step_,step_) ) dserror("Your ale step does not match!");
-  if ( not IsRealtiveEqualTo(fsistep,step_,step_) ) dserror("Your fsi step does not match!");
-  if ( not IsRealtiveEqualTo(fluidscatrastep,step_,step_) ) dserror("Your fluid-scalar step does not match!");
-  if ( not IsRealtiveEqualTo(structurescatrastep,step_,step_) ) dserror("Your structure-scalar step does not match!");
+  if ( not IsRealtiveEqualTo(fluidstep,step_,step_) ) dserror("Your fluid step %i does not match the fs3i step %i!",fluidstep,step_);
+  if ( not IsRealtiveEqualTo(structurestep,step_,step_) ) dserror("Your structure step %i does not match the fs3i step %i!",structurestep,step_);
+  if ( not IsRealtiveEqualTo(alestep,step_,step_) ) dserror("Your ale step %i does not match the fs3i step %i!",alestep,step_);
+  if ( not IsRealtiveEqualTo(fsistep,step_,step_) ) dserror("Your fsi step %i does not match the fs3i step %i!",fsistep,step_);
+  if ( not IsRealtiveEqualTo(fluidscatrastep,step_,step_) ) dserror("Your fluid-scalar step %i does not match the fs3i step %i!",fluidscatrastep,step_);
+  if ( not IsRealtiveEqualTo(structurescatrastep,step_,step_) ) dserror("Your structure-scalar step %i does not match the fs3i step %i!",structurescatrastep,step_);
 
   //check dts
   const double fsiperssisteps = (double)(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP"));
@@ -1056,10 +1057,10 @@ void FS3I::ACFSI::CheckifTimesAndStepsAndDtsMatch()
   const double fluidscatradt = scatravec_[0]->ScaTraField()->Dt();
   const double structurescatradt = scatravec_[1]->ScaTraField()->Dt();
 
-  if ( not IsRealtiveEqualTo(fluiddt,dt_,1.0) ) dserror("Your fluid dt does not match!");
-  if ( not IsRealtiveEqualTo(structuredt,dt_,1.0) ) dserror("Your structure dt does not match!");
-  if ( not IsRealtiveEqualTo(aledt,dt_,1.0) ) dserror("Your ale dt does not match!");
-  if ( not IsRealtiveEqualTo(fsidt,dt_,1.0) ) dserror("Your fsi dt does not match!");
-  if ( not IsRealtiveEqualTo(fluidscatradt,dt_,1.0) ) dserror("Your fluid-scalar dt does not match!");
-  if ( not IsRealtiveEqualTo(structurescatradt,dt_,1.0) ) dserror("Your structure-scalar dt does not match!");
+  if ( not IsRealtiveEqualTo(fluiddt,dt_,1.0) ) dserror("Your fluid dt %f does not match the fs3i time %f!",fluiddt,dt_);
+  if ( not IsRealtiveEqualTo(structuredt,dt_,1.0) ) dserror("Your structure dt %f does not match the fs3i time %f!",structuredt,dt_);
+  if ( not IsRealtiveEqualTo(aledt,dt_,1.0) ) dserror("Your ale dt %f does not match the fs3i time %f!",aledt,dt_);
+  if ( not IsRealtiveEqualTo(fsidt,dt_,1.0) ) dserror("Your fsi dt %f does not match the fs3i time %f!",fsidt,dt_);
+  if ( not IsRealtiveEqualTo(fluidscatradt,dt_,1.0) ) dserror("Your fluid-scalar dt %f does not match the fs3i time %f!",fluidscatradt,dt_);
+  if ( not IsRealtiveEqualTo(structurescatradt,dt_,1.0) ) dserror("Your structure-scalar dt %f does not match the fs3i time %f!",structurescatradt,dt_);
 }

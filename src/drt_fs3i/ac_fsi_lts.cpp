@@ -1,4 +1,5 @@
 /*!----------------------------------------------------------------------
+
 \file ac_fsi_lts.cpp
 
 \brief cpp-file associated with algorithmic routines for two-way coupled partitioned
@@ -44,6 +45,7 @@
 #include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
 //FOR WSS CALCULATIONS
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -203,20 +205,55 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   // multiple of fsiperiod_ we are already at the this time_
   // We do not modify the step_ counter; we just keep counting..
 
-  SetTimeStepInFSI(time_,step_);
+  double tmp = fmod(time_,dt_large_);
+  tmp = tmp-fmod(tmp,10.0*fsiperiod_)+10.0*fsiperiod_;
+  time_= tmp;
+  step_ = round(step_-fmod(step_,1000.0)+1000.0);
+
+  SetTimeAndStepInFSI(time_,step_);
+  scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
+  scatravec_[1]->ScaTraField()->SetTimeStep(time_,step_);
+
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
   // in PrepareTimeStep(), but in Update(), which we here will not call. So..
   fsi_->StructureField()->SetTime(time_);
-  fsi_->StructureField()->SetTimen(time_+fsi_->StructureField()->Dt());
+  fsi_->StructureField()->SetTimen(time_+fsi_->FluidField()->Dt());
   fsi_->StructureField()->SetStep(step_);
   fsi_->StructureField()->SetStepn(step_+1);
 
-  scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
-
   //we start with a clean small time scale loop
-  meanmanager_->Reset();
   fsiisperiodic_ = false;
   scatraisperiodic_ = false;
+
+
+  // NOTE: we start a new output file since paraview does only read floating point numbers.
+  // Hence the upcoming small time scale calculation may not be displayable in paraview due
+  // to the large variety in the time scales. Bad thing :(
+  //*-------------------------------------------------------------------------------*
+  // | create new output file
+  //*-------------------------------------------------------------------------------*/
+  Teuchos::RCP<IO::DiscretizationWriter> output_writer = DRT::Problem::Instance()->GetDis("structure")->Writer();
+  output_writer->NewResultFile(step_);
+  //and write all meshes
+  output_writer->CreateNewResultAndMeshFile();
+  output_writer->WriteMesh(0,0.0);
+  output_writer = DRT::Problem::Instance()->GetDis("fluid")->Writer();
+  output_writer->CreateNewResultAndMeshFile();
+  output_writer->WriteMesh(0,0.0);
+  output_writer = DRT::Problem::Instance()->GetDis("ale")->Writer();
+  output_writer->CreateNewResultAndMeshFile();
+  output_writer->WriteMesh(0,0.0);
+  output_writer = DRT::Problem::Instance()->GetDis("scatra1")->Writer();
+  output_writer->CreateNewResultAndMeshFile();
+  output_writer->WriteMesh(0,0.0);
+  output_writer = DRT::Problem::Instance()->GetDis("scatra2")->Writer();
+  output_writer->CreateNewResultAndMeshFile();
+  output_writer->WriteMesh(0,0.0);
+
+  //write outputs in new file
+  fsi_->PrepareOutput();
+  FsiOutput();
+  ScatraOutput();
 }
 
 /*----------------------------------------------------------------------*
@@ -274,7 +311,7 @@ void FS3I::ACFSI::DoStructScatraStep()
                "\n                       AC STRUCTURE SCATRA SOLVER"
                "\n************************************************************************\n"<<std::endl;
 
-    std::cout<<"+- step/max -+- tol ---- [norm] -+-- scal-res --+-- scal-inc --+"<<std::endl;
+    std::cout<<"+- step/max -+-- scal-res/ abs-tol [norm] -+-- scal-inc/ rel-tol [norm] -+"<<std::endl;
   }
 
   bool stopnonliniter=false;
@@ -375,8 +412,8 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
   // print the screen info
   if (Comm().MyPID()==0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",
-           itnum,scatraitemax,scatraittol,conresnorm,incconnorm/phinpnorm);
+    printf("|   %3d/%3d  |  %1.3E/ %1.1E [L_2 ]  |  %1.3E/ %1.1E [L_2 ]  |\n",
+           itnum,scatraitemax,conresnorm,scatraabstolres,incconnorm/phinpnorm,scatraittol);
   }
 
   // this is the convergence check
@@ -387,7 +424,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
     if (Comm().MyPID()==0)
     {
       // print 'finish line'
-      printf("+------------+-------------------+--------------+--------------+\n\n");
+      printf("+------------+-----------------------------+-----------------------------+\n\n");
     }
     return true;
   }
@@ -572,6 +609,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Prepare time steps
   //----------------------------------------------------------------------
   // fsi problem
+  SetStructScatraSolution();
   fsi_->PrepareTimeStep();
   //scatra fields
   fluidscatra->PrepareTimeStep();
@@ -581,10 +619,10 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Fix time_ and step_ counters
   //----------------------------------------------------------------------
   // fsi problem
-  SetTimeStepInFSI(time_,step_);
-  //scatra fields
+  SetTimeAndStepInFSI(time_,step_);
+  //fluid scatra field. Structure scatra field should already be up to date.
   fluidscatra->SetTimeStep(time_,step_);
-  structurescatra->SetTimeStep(time_,step_);
+  //structurescatra->SetTimeStep(time_,step_);
 
   //----------------------------------------------------------------------
   // do the growth update
@@ -692,16 +730,15 @@ void FS3I::ACFSI::LargeTimeScaleSetFSISolution()
 void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
 {
   //keep fsi time and fluid scatra field up to date
-  SetTimeStepInFSI(time_,step_);
+  SetTimeAndStepInFSI(time_,step_);
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
 
-  //write fsi output
-  //FSI update and output
+  // NOTE: fsi output is already updated and written in LargeTimeScaleDoGrowthUpdate()
 //  fsi_->PrepareOutput();
 //  fsi_->Update();
 //  FsiOutput();
 
-  //fluid scatra update and output. structure scatra is done later
+  // NOTE: fluid scatra is already updated and written in LargeTimeScaleDoGrowthUpdate()
 //  scatravec_[0]->ScaTraField()->Update(0);
 //  scatravec_[0]->ScaTraField()->Output(0);
 

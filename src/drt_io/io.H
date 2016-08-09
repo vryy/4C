@@ -1,16 +1,16 @@
-/*----------------------------------------------------------------------*/
-/*!
- * \file io.H
+/*!----------------------------------------------------------------------*
+
+\file io.H
+
 \brief output context of one discretization
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+
+*----------------------------------------------------------------------*/
 
 #ifndef IO_DRT_H
 #define IO_DRT_H
@@ -267,6 +267,8 @@ public:
   */
   virtual void WriteKnotvector() const;
 
+  //! write new mesh and result file next time it is possible
+  void CreateNewResultAndMeshFile(){resultfile_changed_=-1;meshfile_changed_=-1;};
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
   // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
