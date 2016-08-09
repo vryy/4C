@@ -2506,7 +2506,7 @@ return;
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                       meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
 {
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);
@@ -2523,6 +2523,85 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, LINALG::Matrix<12
   }
 
   return (r);
+}
+
+
+double DRT::ELEMENTS::Beam3eb::GetAxialStrain(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
+{
+  LINALG::Matrix<3,1> r_s(true);
+  LINALG::Matrix<1,4> N_i_x(true);
+  const DRT::Element::DiscretizationType distype = Shape();
+  //First get shape functions
+  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
+
+  for (int i=0;i<2*NODALDOFS;i++)
+  {
+    N_i_x(i)=N_i_x(i)/jacobi_;
+  }
+
+  LINALG::Matrix<3,1> epsilon_cp(true);
+  LINALG::Matrix<3,3> tangent_cp(true);
+  for (int i=0;i<3;i++)
+  {
+    tangent_cp(i,0)=disp_totlag(i+3);
+    tangent_cp(i,1)=disp_totlag(i+9);
+
+    for (int j=0;j<2*NODALDOFS;j++)
+    {
+      tangent_cp(i,2)+=N_i_x(j)*disp_totlag(3*j+i);
+    }
+  }
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<3;j++)
+    {
+      epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
+    }
+    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+  }
+
+  LINALG::Matrix<1,3> L_i(true);
+  DRT::UTILS::shape_function_1D(L_i,xi,line3);
+  double epsilon = 0.0;
+  for (int i=0;i<ANSVALUES;i++)
+  {
+    epsilon+=L_i(i)*epsilon_cp(i);
+  }
+
+  return epsilon;
+}
+
+
+/*----------------------------------------------------------------------------------------------------------*
+ | Get position vector at xi for given nodal displacements                                       meier 02/14|
+ *----------------------------------------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Beam3eb::GetAxialForce(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
+{
+  double epsilon = GetAxialStrain(xi,disp_totlag);
+
+  //Next, we get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double ym=0.0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this beam
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+    }
+    break;
+    default:
+    dserror("unknown or improper type of material law");
+    break;
+  }
+
+  //Finally, calcualte axial force
+  double EA = ym*crosssec_;
+  double axialforce=EA*epsilon;
+
+  return (axialforce);
 }
 
 //***************************************************************************************

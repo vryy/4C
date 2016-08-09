@@ -206,6 +206,16 @@ public:
   */
   virtual void Print(std::ostream& os) const;
 
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  inline virtual double GetJacobiFacAtXi(const double& xi) const
+  {
+    dserror("current implementation only valid for initially straight beams,"
+            " where the Jacobi factor is constant for all xi");
+    return jacobi_;
+  }
 
   //@}
 

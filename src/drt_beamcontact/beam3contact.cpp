@@ -795,7 +795,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
                 std::pair<TYPE,TYPE> closestpoint(std::make_pair(eta1,eta2));
                 std::pair<int,int> integration_ids = std::make_pair(numgp,interval);
                 std::pair<int,int> leftpoint_ids = std::make_pair(leftpoint_id1,leftpoint_id2);
-                TYPE jacobi = GetJacobi(element1_)*jacobi_interval;
+                TYPE jacobi = GetJacobiAtXi(element1_,eta1_slave)*jacobi_interval;
 
                 const double parallel_pp = bcparams_.get<double>("BEAMS_BTBLINEPENALTYPARAM");
 

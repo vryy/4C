@@ -243,6 +243,12 @@ public:
     return jacobi_[0];
   }
 
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual double GetJacobiFacAtXi(const double& xi) const;
+
   /** \brief get number of nodes used for centerline interpolation
    *
    *  \author grill

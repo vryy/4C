@@ -293,7 +293,17 @@ public:
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
-  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+  LINALG::Matrix<3,1> GetPos(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
+
+  /*!
+  \brief Get axial strain at xi for given nodal displacements
+  */
+  double GetAxialStrain(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
+
+  /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  double GetAxialForce(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
 
   /*!
   \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -348,6 +358,17 @@ public:
   \brief get jacobi factor jacobi_
   */
   double jacobi() const;
+
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  inline virtual double GetJacobiFacAtXi(const double& xi) const
+  {
+    /* beam3eb elements are restricted to initially straight beams, for which the jacobi factor is
+     * constant along the entire element length */
+    return jacobi();
+  }
 
   /*!
   \brief get moment of intertia of area Iyy_

@@ -143,6 +143,13 @@ public:
    *  \date 07/16 */
   virtual void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const = 0;
 
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual double GetJacobiFacAtXi(const double& xi) const = 0;
+
+
 protected:
   /** \brief get access to the interface
    *

@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3tospherecontact.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief class to handle contact between a 3D beam element and a rigid sphere
+
+\level 3
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef BEAMTOSPHEREC_H
 #define BEAMTOSPHEREC_H
 
@@ -28,12 +29,6 @@ Maintainer: Christoph Meier
 
 namespace CONTACT
 {
-
-/*!
- \brief contact element for contact between a 3D beam element and a rigid sphere
-
- \author meier (meier@lnm.mw.tum.de)
- */
 
 class Beam3tospherecontactinterface
 {
@@ -146,6 +141,7 @@ public:
   virtual void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
                     Epetra_SerialDenseMatrix& newele2pos)=0;
 
+  virtual void Print() const =0;
   //@}
 }; // class Beam3tospherecontactinterface
 
@@ -262,6 +258,7 @@ public:
     return r2;
   };
 
+  void Print() const;
   //@}
 
   //! @name Public evaluation methods

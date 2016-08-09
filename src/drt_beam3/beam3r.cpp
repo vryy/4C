@@ -1492,7 +1492,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
   if (disp_totlag.size() != 3*numnodalvalues*nnodecl)
     dserror("size mismatch: expected %d values for disp_totlag and got %d",3*numnodalvalues*nnodecl,disp_totlag.size());
 
-  switch (this->NumCenterlineNodes())
+  switch (nnodecl)
   {
     case 2:
     {
@@ -1541,6 +1541,42 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
   }
 
   return;
+}
+
+double DRT::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
+{
+  double jacfac=0.0;
+
+  switch (this->NumCenterlineNodes())
+  {
+    case 2:
+    {
+      if (this->HermiteCenterlineInterpolation())
+        jacfac=this->GetJacobiFacAtXi<2,2>(xi);
+      else
+        jacfac=this->GetJacobiFacAtXi<2,1>(xi);
+      break;
+    }
+    case 3:
+    {
+      jacfac=this->GetJacobiFacAtXi<3,1>(xi);
+      break;
+    }
+    case 4:
+    {
+      jacfac=this->GetJacobiFacAtXi<4,1>(xi);
+      break;
+    }
+    case 5:
+    {
+      jacfac=this->GetJacobiFacAtXi<5,1>(xi);
+      break;
+    }
+    default:
+      dserror("no valid number for number of centerline nodes");
+  }
+
+  return jacfac;
 }
 
 void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,

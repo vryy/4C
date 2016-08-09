@@ -1,13 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3tospherecontact.cpp
-\brief One beam contact pair (two beam elements)
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\brief class to handle contact between a 3D beam element and a rigid sphere
 
- *-----------------------------------------------------------------------------------------------------------*/
+\level 3
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3tospherecontact.H"
 #include "beam3contact_defines.H"
@@ -135,7 +136,7 @@ bool CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Evaluate(LINALG::S
 
   bool validclosestpointprojection = true;
 
-  if (abs(FADUTILS::CastToDouble(xicontact_))< (1.0 + XIETATOL))
+  if (abs(FADUTILS::CastToDouble(xicontact_))< (1.0 + XIETATOL))    // ToDo when to reset nodalcontactflag_?
   {
     nodalcontactflag_[0]=false;
     nodalcontactflag_[1]=false;
@@ -175,7 +176,7 @@ bool CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Evaluate(LINALG::S
                           ddx1,N1_i,N1_i_xi,N1_i_xixi,contactflag_);
 
   }
-  else    // TODO do this only for the nodes at beam end points in case of Kirchhoff beam
+  else    // TODO do this only for the nodes at beam end points in case of C1-continuous beam centerline representation
   {
     dsassert(numnodes==2,"Beamtospherecontact: Check for nodal contact only implemented for 2-noded beam elements!");
     //************************************************************************
@@ -188,60 +189,67 @@ bool CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Evaluate(LINALG::S
     TYPE XiContact = 0.0;
     for (int inode=0; inode<2; ++inode)
     {
-      // Set XiContact to +-1.0
-      switch(inode)
+      /* if inode=0 is active contact (gap<0), we do NOT want to run the loop for inode=1
+       * because the case validclosestpointprojection=false and nodalcontactflag_[0]=true and nodalcontactflag_[1]=true
+       * is highly unlikely and class variables like gap_ are overwritten if we run this loop again
+       * this leads to wrong output for gap_ of active BTSPH pairs in Beam3contactmanager */
+      if (nodalcontactflag_[0]!=true)
       {
-        case 0:
-          XiContact=-1.0;   // first node
-          break;
-        case 1:
-          XiContact=1.0;    // second node
-          break;
-        default:
-          dserror("This must not happen!");
-          break;
+        // Set XiContact to +-1.0
+        switch(inode)
+        {
+          case 0:
+            XiContact=-1.0;   // first node
+            break;
+          case 1:
+            XiContact=1.0;    // second node
+            break;
+          default:
+            dserror("This must not happen!");
+            break;
+        }
+
+        // Now do exactly the same as for "normal" contact based on closest point projection
+        // (except for contribution from linearization of xi)
+
+        // TODO: make more efficient: use knowledge that contact point is a node -> matrix of shape functions, etc. simplifies
+
+        //**********************************************************************
+        // (1) Compute some auxiliary quantities
+        //**********************************************************************
+
+        // call function to fill variables for shape functions and their derivatives
+        GetShapeFunctions(N1_i,N1_i_xi,N1_i_xixi,XiContact);
+
+        // call function to fill variables with coords and derivs of the contact point
+        ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,N1_i,N1_i_xi,N1_i_xixi);
+
+        // call function to compute scaled normal and gap in possible contact point
+        ComputeNormal(normal,gap,norm,x1,x2);
+
+        // evaluate nodal contact status
+        if ( gap_ < 0)
+        {
+          nodalcontactflag_[inode]=true;
+        }
+        else nodalcontactflag_[inode] = false;
+
+        //**********************************************************************
+        // (2) Compute contact forces and stiffness
+        //**********************************************************************
+
+        // call function to evaluate and assemble contact forces
+        EvaluateFcContact(pp,gap,normal,fint,N1_i,nodalcontactflag_[inode]);
+
+        // call function to evaluate and assemble contact stiffness
+        EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,
+                              ddx1,N1_i,N1_i_xi,N1_i_xixi,nodalcontactflag_[inode],false);
       }
-
-      // Now do exactly the same as for "normal" contact based on closest point projection
-      // (except for contribution from linearization of xi)
-
-      // TODO: make more efficient: use knowledge that contact point is a node -> matrix of shape functions, etc. simplifies
-
-      //**********************************************************************
-      // (1) Compute some auxiliary quantities
-      //**********************************************************************
-
-      // call function to fill variables for shape functions and their derivatives
-      GetShapeFunctions(N1_i,N1_i_xi,N1_i_xixi,XiContact);
-
-      // call function to fill variables with coords and derivs of the contact point
-      ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,N1_i,N1_i_xi,N1_i_xixi);
-
-      // call function to compute scaled normal and gap in possible contact point
-      ComputeNormal(normal,gap,norm,x1,x2);
-
-      // evaluate nodal contact status
-      if ( gap_ < 0)
-      {
-        nodalcontactflag_[inode]=true;
-      }
-      else nodalcontactflag_[inode] = false;
-
-      //**********************************************************************
-      // (2) Compute contact forces and stiffness
-      //**********************************************************************
-
-      // call function to evaluate and assemble contact forces
-      EvaluateFcContact(pp,gap,normal,fint,N1_i,nodalcontactflag_[inode]);
-
-      // call function to evaluate and assemble contact stiffness
-      EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,
-                            ddx1,N1_i,N1_i_xi,N1_i_xixi,nodalcontactflag_[inode],false);
 
     }
   }
 
-  return contactflag_;
+  return GetContactFlag();
 }
 
 /*----------------------------------------------------------------------*
@@ -913,9 +921,12 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& g
 
   if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
-
-  if ( eot1 == DRT::ELEMENTS::Beam3rType::Instance() )
+  else if ( eot1 == DRT::ELEMENTS::Beam3rType::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
+  else if ( eot1 == DRT::ELEMENTS::Beam3ebType::Instance() )
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->Iyy();
+  else
+    dserror("unknown beam type!");
 
   radius_ele2 = (static_cast<DRT::ELEMENTS::Rigidsphere*>(element2_))->Radius();
 
@@ -1262,6 +1273,25 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::UpdateElePos(Epetr
 
   return;
 }
+
+template<const int numnodes, const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Print() const
+{
+  // ToDo add further information here
+  printf("\nInstance of Beam3tospherecontact: element GIDs %i (beam) and %i (sphere)",element1_->Id(),element2_->Id());
+  std::cout << "\ncontactflag_: " << contactflag_ << "\tnodalcontactflag: " << nodalcontactflag_[0] << nodalcontactflag_[1];
+  std::cout << "\ngap_: " << gap_;
+  std::cout << "\nxicontact_: " << xicontact_;
+  std::cout << "\nnormal_: " << normal_;
+  std::cout << "\nx1_: " << x1_;
+  std::cout << "\nx2_: " << x2_;
+  std::cout << "\nele1pos_: " << ele1pos_;
+  std::cout << "\nele2pos_: " << ele2pos_;
+  std::cout << "\nlmuzawa_: " << lmuzawa_;      // just to make sure, this is always zero (no augmented Lagrange implemented so far for Beam3tospherecontact)
+
+  return;
+}
+
 
 Teuchos::RCP<CONTACT::Beam3tospherecontactinterface> CONTACT::Beam3tospherecontactinterface::Impl( const int numnodes,
                                                                       const int numnodalvalues,

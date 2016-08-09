@@ -1,13 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief One beam contact pair (two beam elements) consisting of several contact segments
+
+\level 2
+
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef BEAM3C_H
 #define BEAM3C_H
 
@@ -23,6 +25,7 @@ Maintainer: Christoph Meier
 #include "beam3contactinterface.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_beam3/beam3_base.H"
 
 #include "../drt_lib/standardtypes_cpp.H"
 
@@ -1074,6 +1077,20 @@ private:
     \brief Get jacobi factor of beam element
   */
   double GetJacobi(DRT::Element* element1);
+
+  /** \brief get Jacobi factor of beam element at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  inline double GetJacobiAtXi(DRT::Element* element1, const double& xi)
+  {
+    const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
+
+    if (ele==NULL)
+      dserror("Dynamic cast to Beam3Base failed");
+
+    return ele->GetJacobiFacAtXi(xi);
+  }
 
   /*!
     \brief Set class variables at the beginning of a Newton step

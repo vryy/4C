@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3r.H
 
 \brief 3D nonlinear Reissner beam element
@@ -6,17 +7,18 @@
 \level 2
 
 \maintainer Christoph Meier
-
-3D nonlinear Reissner beam element of type II (according to "The
-interpolation of rotations and its application to finite element models
-of geometrically exact rods", Romero 2004)
-
-Attention: For this implementation, prescribed 3D rotation values have no direct physical interpretation so far (Within the
-element, the rotation increments from time step to time step are treated as multiplicative updates!).
-For 2D rotations, multiplicative and additive increments are identical and rotations can be prescribed without problems.
 */
+/*----------------------------------------------------------------------------*/
 
-//header file only included if not yet included!
+/* 3D nonlinear Reissner beam element of type II (according to "The interpolation
+ * of rotations and its application to finite element models of geometrically exact
+ * rods", Romero 2004)
+ *
+ * Attention: For this implementation, prescribed 3D rotation values have no
+ * direct physical interpretation so far because DBC handling is always additive in BACI.
+ * For 2D rotations, multiplicative and additive increments are identical and
+ * rotations can be prescribed without problems. */
+
 #ifndef BEAM3R_H
 #define BEAM3R_H
 
@@ -286,6 +288,12 @@ public:
   {
     return jacobiGPelastf_[0];
   }
+
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual double GetJacobiFacAtXi(const double& xi) const;
 
   /*!
   \brief Get maximal bending curvature occurring in this element
@@ -658,7 +666,8 @@ private:
    \brief Get centerline position at given parameter coordinate xi
   */
   template<unsigned int nnodecl, unsigned int vpernode>
-  LINALG::Matrix<3,1> GetPosAtXi(const double& xi, LINALG::Matrix<3*nnodecl*vpernode,1>& disp_totlag) const
+  LINALG::Matrix<3,1> GetPosAtXi(const double& xi,
+                                 const LINALG::Matrix<3*nnodecl*vpernode,1>& disp_totlag) const
   {
     LINALG::Matrix<3,1> r;
     LINALG::Matrix<1,vpernode*nnodecl> N_i;
@@ -669,11 +678,42 @@ private:
     return r;
   }
 
+  /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+   *
+   *  \author grill
+   *  \date 08/16 */
+  template<unsigned int nnodecl, unsigned int vpernode>
+  double GetJacobiFacAtXi(const double& xi) const
+  {
+    /* ||dr_0/ds(xi)||=1 because s is arc-length parameter => ||dr_0/dxi(xi)|| * dxi/ds(xi) = 1
+     * => JacobiFac(xi) = ds/dxi(xi) = ||dr_0/dxi(xi)|| */
+    LINALG::Matrix<3,1> r0_xi;
+    LINALG::Matrix<1,vpernode*nnodecl> N_i_xi;
+    LINALG::Matrix<3*nnodecl*vpernode,1> disp_centerline_ref;
+
+    // fill disp_centerline_ref with reference nodal centerline positions and tangents
+    for (unsigned int node=0; node<nnodecl; node++)
+    {
+      for (unsigned int dim=0; dim<3; ++dim)
+      {
+        disp_centerline_ref(3*vpernode*node+dim) = Nodes()[node]->X()[dim];
+        if (vpernode==2)
+          disp_centerline_ref(3*vpernode*node+3+dim) = (Trefnode_[node])(dim);
+      }
+    }
+
+    this->EvaluateShapeFunctionDerivsAtXi<nnodecl,vpernode>(xi,N_i_xi,this->Shape());
+    this->Calc_r_xi<nnodecl,vpernode,double>(disp_centerline_ref,N_i_xi,r0_xi);
+
+    return r0_xi.Norm2();
+  }
+
   /*!
    \brief Get triad (three unit base vectors) at given parameter coordinate xi
   */
   template<unsigned int nnodetriad>
-  LINALG::Matrix<3,3> GetTriadAtXi(const double& xi, std::vector<LINALG::Matrix<3,1> >& psi_totlag) const
+  LINALG::Matrix<3,3> GetTriadAtXi(const double& xi,
+                                   const std::vector<LINALG::Matrix<3,1> >& psi_totlag) const
   {
     // nodal triads in form of quaternions
     std::vector<LINALG::Matrix<4,1> > Qnode(nnodetriad);

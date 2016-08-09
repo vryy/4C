@@ -1070,6 +1070,26 @@ void DRT::ELEMENTS::Beam3k::Calculate_length(const std::vector<LINALG::Matrix<3,
   return;
 }
 
+double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
+{
+  const int nnode=2;
+
+  // Matrices to store the the Hermite shape function derivative values
+  LINALG::Matrix<1,2*nnode> N_i_xi;
+  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+
+  // jacobi = ds/dxi = ||r'_0||
+  LINALG::Matrix<3,1> r_xi;
+
+  for (int dim=0; dim<3; dim++)
+  {
+    r_xi(dim) += Nodes()[0]->X()[dim]*N_i_xi(0) + Nodes()[1]->X()[dim]*N_i_xi(2)
+               + T0_[0](dim)*N_i_xi(1) + T0_[1](dim)*N_i_xi(3);
+  }
+
+  return r_xi.Norm2();
+}
+
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 01/16|
  *----------------------------------------------------------------------*/
