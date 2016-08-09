@@ -49,9 +49,6 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
   // set type of this spring
   SetSpringType();
 
-  if (viscosity_ != 0.)
-      dserror("Viscous damping not yet implemented for NOX time integration.");
-
   if (springtype_ != cursurfnormal && coupling_>=0)
     dserror("Coupling of spring dashpot to reference surface only possible for DIRECTION cursurfnormal.");
 
@@ -84,133 +81,14 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpotNew::EvaluateForce(
     Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp)
+    const Teuchos::RCP<const Epetra_Vector> disp,
+    const Teuchos::RCP<const Epetra_Vector> velo)
 {
   if (disp==Teuchos::null)
     dserror("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal)
     GetCurNormals(disp);
-
-  // loop nodes of current condition
-  const std::vector<int>& nds = *nodes_;
-  for (int j=0; j<(int)nds.size(); ++j)
-  {
-    // nodes owned by processor
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
-    {
-      int gid = nds[j];
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d",gid);
-
-      // get nodal values
-      const double nodalarea = area_[gid]; // nodal area
-      const std::vector<double> normal = normals_[gid]; // normalized nodal normal
-      const std::vector<double> offsetprestr = offset_prestr_[gid]; // get nodal displacement values of last time step for MULF offset
-
-      const int numdof = actdisc_->NumDof(0,node);
-      assert (numdof==3);
-      std::vector<int> dofs = actdisc_->Dof(0,node);
-
-      // initialize
-      double gap = 0.;   // displacement
-//      double gapdt = 0.; // velocity
-      double springstiff = 0.; // spring stiffness
-
-      // calculation of normals and displacements differs for each spring variant
-      switch (springtype_)
-      {
-      case all: // spring dashpot acts in every surface dof direction
-        // assemble into residual and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          if (stiff_tens_ != stiff_comp_)
-            dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
-                "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
-                "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
-
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-//          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          const double val  = nodalarea*stiff_tens_*(u-offset_-offsetprestr[k]);// + viscosity_*v
-
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-        }
-        break;
-
-      case refsurfnormal: // spring dashpot acts in refnormal direction
-        for (int k=0; k<numdof; ++k)
-        {
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-//          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          // projection of displacement/velocity onto nodal reference normal
-          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
-//          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
-        }
-
-        // select spring stiffness
-        springstiff = SelectStiffness(gap);
-
-        // assemble into residual vector
-        for (int k=0; k<numdof; ++k)
-        {
-          const double val = - nodalarea*springstiff*(gap-offset_)*normal[k];// + viscosity_*gapdt
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-        }
-        break;
-
-      case cursurfnormal: // spring dashpot acts in curnormal direction
-        // spring displacement
-        gap = gap_[gid];
-//        gapdt = gapdt_[gid];
-
-        // select spring stiffnes
-        springstiff = SelectStiffness(gap);
-
-        // assemble into residual vector
-        std::vector<double> out_vec(numdof, 0.);
-        for (int k=0; k<numdof; ++k)
-        {
-          // force
-          const double val = - nodalarea*springstiff*(gap-offset_)*normal[k];// + viscosity_*gapdt
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-
-          // store negative value of internal force for output (=reaction force)
-          out_vec[k] = - val;
-        }
-        // add to output
-        springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));
-        break;
-      }
-    } //node owned by processor
-  } //loop over nodes
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                         pfaller mar16|
- *----------------------------------------------------------------------*/
-void UTILS::SpringDashpotNew::EvaluateForceStiff(
-    LINALG::SparseMatrix& stiff,
-    Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp)
-{
-  if (disp==Teuchos::null)
-    dserror("Cannot find displacement state in discretization");
-
-  if (springtype_ == cursurfnormal)
-  {
-    GetCurNormals(disp);
-    stiff.UnComplete(); // sparsity pattern might change
-  }
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
@@ -251,10 +129,135 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
 
           // extract nodal displacement and velocity
           const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-//          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
 
-          const double val  = nodalarea*stiff_tens_*(u-offset_-offsetprestr[k]);// + viscosity_*v
-          const double dval = nodalarea*stiff_tens_;// + viscosity_*gamma/(beta*ts_size)
+          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
+
+          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
+          if (err) dserror("SumIntoGlobalValues failed!");
+        }
+        break;
+
+      case refsurfnormal: // spring dashpot acts in refnormal direction
+        for (int k=0; k<numdof; ++k)
+        {
+          // extract nodal displacement and velocity
+          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
+
+          // projection of displacement/velocity onto nodal reference normal
+          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
+          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
+        }
+
+        // select spring stiffness
+        springstiff = SelectStiffness(gap);
+
+        // assemble into residual vector
+        for (int k=0; k<numdof; ++k)
+        {
+          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
+          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
+          if (err) dserror("SumIntoGlobalValues failed!");
+        }
+        break;
+
+      case cursurfnormal: // spring dashpot acts in curnormal direction
+        // spring displacement
+        gap = gap_[gid];
+        gapdt = gapdt_[gid];
+
+        // select spring stiffnes
+        springstiff = SelectStiffness(gap);
+
+        // assemble into residual vector
+        std::vector<double> out_vec(numdof, 0.);
+        for (int k=0; k<numdof; ++k)
+        {
+          // force
+          const double val = - nodalarea*springstiff*(gap-offset_)*normal[k];// + viscosity_*gapdt
+          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
+          if (err) dserror("SumIntoGlobalValues failed!");
+
+          // store negative value of internal force for output (=reaction force)
+          out_vec[k] = - val;
+        }
+        // add to output
+        springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));
+        break;
+      }
+    } //node owned by processor
+  } //loop over nodes
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                         pfaller mar16|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpotNew::EvaluateForceStiff(
+    LINALG::SparseMatrix& stiff,
+    Epetra_Vector& fint,
+    const Teuchos::RCP<const Epetra_Vector> disp,
+    const Teuchos::RCP<const Epetra_Vector> velo,
+    Teuchos::ParameterList p)
+{
+  if (disp==Teuchos::null)
+    dserror("Cannot find displacement state in discretization");
+
+  if (springtype_ == cursurfnormal)
+  {
+    GetCurNormals(disp);
+    stiff.UnComplete(); // sparsity pattern might change
+  }
+
+  // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
+  const double time_fac = p.get("time_fac",1.0);
+
+  // loop nodes of current condition
+  const std::vector<int>& nds = *nodes_;
+  for (int j=0; j<(int)nds.size(); ++j)
+  {
+    // nodes owned by processor
+    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    {
+      int gid = nds[j];
+      DRT::Node* node = actdisc_->gNode(gid);
+      if (!node) dserror("Cannot find global node %d",gid);
+
+      // get nodal values
+      const double nodalarea = area_[gid]; // nodal area
+      const std::vector<double> normal = normals_[gid]; // normalized nodal normal
+      const std::vector<double> offsetprestr = offset_prestr_[gid]; // get nodal displacement values of last time step for MULF offset
+
+      const int numdof = actdisc_->NumDof(0,node);
+      assert (numdof==3);
+      std::vector<int> dofs = actdisc_->Dof(0,node);
+
+      // initialize
+      double gap = 0.;   // displacement
+      double gapdt = 0.; // velocity
+      double springstiff = 0.; // spring stiffness
+
+      // calculation of normals and displacements differs for each spring variant
+      switch (springtype_)
+      {
+      case all: // spring dashpot acts in every surface dof direction
+        // assemble into residual and stiffness matrix
+        for (int k=0; k<numdof; ++k)
+        {
+          if (stiff_tens_ != stiff_comp_)
+            dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
+                "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
+                "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
+
+          // extract nodal displacement and velocity
+          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
+
+          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
+          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_fac);
 
           const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
@@ -267,11 +270,11 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
         {
           // extract nodal displacement and velocity
           const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-//          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
 
           // projection of displacement/velocity onto nodal reference normal
           gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
-//          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
+          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
         }
 
         // select spring stiffness
@@ -288,7 +291,7 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
           // stiffness
           for (int m=0; m<numdof; ++m)
           {
-            const double dval = nodalarea*springstiff*normal[k]*normal[m];// + viscosity_*time_scale
+            const double dval = nodalarea*(springstiff + viscosity_*time_fac)*normal[k]*normal[m];
             stiff.Assemble(dval,dofs[k],dofs[m]);
           }
         }

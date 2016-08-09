@@ -78,13 +78,16 @@ namespace UTILS
       //! add contribution of spring dashpot BC to residual vector
       void EvaluateForce(
           Epetra_Vector& fint,
-          const Teuchos::RCP<const Epetra_Vector> disp);
+          const Teuchos::RCP<const Epetra_Vector> disp,
+          const Teuchos::RCP<const Epetra_Vector> velp);
 
       //! add contribution of spring dashpot BC to stiffness matrix
       void EvaluateForceStiff(
           LINALG::SparseMatrix& stiff,
           Epetra_Vector& fint,
-          const Teuchos::RCP<const Epetra_Vector> disp);
+          const Teuchos::RCP<const Epetra_Vector> disp,
+          const Teuchos::RCP<const Epetra_Vector> velp,
+          Teuchos::ParameterList p);
 
       //! reset after Newton step
       void ResetNewton();

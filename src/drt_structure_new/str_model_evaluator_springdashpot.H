@@ -118,6 +118,9 @@ namespace MODELEVALUATOR{
     //! structural displacement at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
+    //! structural velocity at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> velnp_ptr_;
+
     //! structural stiffness matrix
     Teuchos::RCP<LINALG::SparseMatrix> stiff_spring_ptr_;
 
