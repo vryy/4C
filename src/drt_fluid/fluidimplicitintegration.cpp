@@ -3292,7 +3292,7 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
 void FLD::FluidImplicitTimeInt::Output()
 {
   // output of solution
-  if (step_%upres_ == 0)
+  if (upres_ > 0 and step_%upres_ == 0)
   {
     // step number and time
     output_->NewStep(step_,time_);

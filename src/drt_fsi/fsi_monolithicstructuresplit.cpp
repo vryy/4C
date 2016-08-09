@@ -1308,7 +1308,8 @@ void FSI::MonolithicStructureSplit::OutputLambda()
   Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
-  if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+  if ((uprestart != 0 && FluidField()->Step() % uprestart == 0)
+      or (upres != 0 and FluidField()->Step() % upres == 0))
     StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
 }
 
