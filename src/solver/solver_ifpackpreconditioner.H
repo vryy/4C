@@ -2,7 +2,6 @@
 /*!
 \file solver_ifpackpreconditioner.H
 
-\brief Declaration
 \level 0
 \maintainer Martin Kronbichler
 
@@ -43,6 +42,9 @@ namespace SOLVER
 
     //! Access to preconditioner operator
     virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+
+    /// linear operator used for preconditioning
+    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
 
     //! Print name of preconditioner
     virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }

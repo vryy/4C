@@ -84,6 +84,9 @@ namespace LINALG
        */
       virtual Epetra_Operator * PrecOperator() const = 0;
 
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const = 0;
+
       /// Apply inverse of the preconditioner
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
       {

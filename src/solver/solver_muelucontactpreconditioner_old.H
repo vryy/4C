@@ -52,6 +52,9 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
+
       virtual void Print( std::ostream & stream ) { stream << "MueLu"; }
 
     private:

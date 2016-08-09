@@ -1,9 +1,12 @@
-/*
- * solver_muelucontactpreconditioner2.H
- *
- *  Created on: Sep 7, 2012
- *      Author: wiesner
- */
+/*!-----------------------------------------------------------------------------
+\file solver_muelucontactpreconditioner2.H
+
+\brief Declaration
+
+\level 2
+
+\maintainer Martin Kronbichler
+*-----------------------------------------------------------------------------*/
 
 #ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 #define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
@@ -47,6 +50,9 @@ namespace LINALG
                           Epetra_MultiVector * b );
 
       virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
 
       virtual void Print( std::ostream & stream ) { stream << "MueLu"; }
 

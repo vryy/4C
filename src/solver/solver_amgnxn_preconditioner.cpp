@@ -51,6 +51,15 @@ Epetra_Operator * LINALG::SOLVER::AMGnxn_Preconditioner::PrecOperator() const
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
+Teuchos::RCP<Epetra_Operator>
+LINALG::SOLVER::AMGnxn_Preconditioner::PrecOperatorRCP() const
+{
+  return P_;
+}
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
 void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
 (
   bool create,

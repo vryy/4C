@@ -1,9 +1,12 @@
-/*
- * solver_tekopreconditioner.H
- *
- *  Created on: Jul 11, 2011
- *      Author: wiesner
- */
+/*!-----------------------------------------------------------------------------
+\file solver_tekopreconditioner.H
+
+\brief Declaration
+
+\level 2
+
+\maintainer Martin Kronbichler
+*-----------------------------------------------------------------------------*/
 
 #ifndef SOLVER_TEKOPRECONDITIONER_H_
 #define SOLVER_TEKOPRECONDITIONER_H_
@@ -44,6 +47,9 @@ namespace LINALG
                           Epetra_MultiVector * b );
 
       virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
 
       virtual void Print( std::ostream & stream )
       {

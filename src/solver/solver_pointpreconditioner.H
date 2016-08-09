@@ -35,6 +35,9 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
 
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
+
       virtual void Print( std::ostream & stream ) { stream << "None"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
@@ -78,6 +81,9 @@ namespace LINALG
         /// return the wrapped preconditioner, no work needs to be done after the
         /// permutation is performed
         virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
+
+        /// linear operator used for preconditioning
+        virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return preconditioner_->PrecOperatorRCP(); }
 
         virtual void Print( std::ostream & stream )
         {
@@ -127,6 +133,9 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
 
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const  { return preconditioner_->PrecOperatorRCP(); }
+
       virtual void Print( std::ostream & stream )
       {
         stream << "InfNorm(";
@@ -166,6 +175,9 @@ namespace LINALG
           Epetra_MultiVector * b );
 
       virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
+
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const  { return preconditioner_->PrecOperatorRCP(); }
 
       virtual void Print( std::ostream & stream )
       {
