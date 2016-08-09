@@ -41,7 +41,7 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     10
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.05
 NUMSTEP                         20
