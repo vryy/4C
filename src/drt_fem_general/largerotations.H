@@ -1,19 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file largerotations.H
 
 \brief A set of utility functions for large rotations
 
--------------------------------------------------------------------------
-</pre>
-
-<pre>
 \level 2
-\maintainer Christian J. Cyron
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef LARGEROTATIONS_DEFINES_H
 #define LARGEROTATIONS_DEFINES_H
 
@@ -276,10 +272,10 @@ namespace LARGEROTATIONS
   LINALG::TMatrix<T,3,3> Tmatrix(LINALG::TMatrix<T,3,1> theta)
   {
     LINALG::TMatrix<T,3,3> result(true);
-    T theta_abs = sqrt(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2));
+    T theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
 
     //in case of theta_abs == 0 the following computation has problems with singularities
-    if(theta_abs > 0)
+    if(theta_abs > 1e-8)
     {
       computespin(result, theta);
       result.Scale(-0.5);
@@ -293,14 +289,14 @@ namespace LARGEROTATIONS
         for(int j=0; j<3; j++)
           result(i,j) += theta(i) * theta(j) * (1.0 - theta_abs/(2.0*tan(theta_abs_half)) )/(theta_abs*theta_abs);
     }
-    //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
+    //based on the small angle approximation tan(x)=x, we get: T = I - 0.5*S(theta)
     else
     {
-      result.PutScalar(0.0);
+      LARGEROTATIONS::computespin(result, theta);
+      result.Scale(-0.5);
       for(int j=0; j<3; j++)
-        result(j,j) = 1.0;
+        result(j,j) += 1.0;
     }
-
     return result;
   }//LARGEROTATIONS::Tmatrix
 
@@ -313,7 +309,7 @@ namespace LARGEROTATIONS
   LINALG::TMatrix<T,3,3> Tinvmatrix(LINALG::TMatrix<T,3,1> theta)
   {
 
-    LINALG::TMatrix<T,3,3> result;
+    LINALG::TMatrix<T,3,3> result(true);
     T theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
 
     //in case of theta_abs == 0 the following computation has problems with ill-conditioning / singularities
@@ -321,7 +317,7 @@ namespace LARGEROTATIONS
     {
       //ultimate term in eq. (2.5)
       LARGEROTATIONS::computespin(result, theta);
-      result.Scale((1-cos(theta_abs)) / (theta_abs*theta_abs));
+      result.Scale((1.0-cos(theta_abs)) / (theta_abs*theta_abs));
 
       //penultimate term in eq. (2.5)
       for(int i = 0; i<3; i++)
@@ -330,17 +326,16 @@ namespace LARGEROTATIONS
       //first term on the right side in eq. (2.5)
       for(int i = 0; i<3; i++)
         for(int j=0; j<3; j++)
-          result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/(theta_abs*theta_abs);
+          result(i,j) += theta(i) * theta(j) * (1.0 - sin(theta_abs)/(theta_abs) )/(theta_abs*theta_abs);
     }
     //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
     else
     {
       //based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I + 0.5*S(theta) -> Tinv'=0.5*S(theta')
-      result.PutScalar(0.0);
       LARGEROTATIONS::computespin(result, theta);
       result.Scale(0.5);
       for(int j=0; j<3; j++)
-        result(j,j) += 1;
+        result(j,j) += 1.0;
     }
 
     return result;

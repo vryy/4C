@@ -1160,31 +1160,12 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     LINALG::TMatrix<FAD,3,3> tempmat(true);
     LINALG::TMatrix<FAD,3,3> newstiffmat(true);
     LINALG::TMatrix<FAD,3,3> Tmat(true);
-    LINALG::TMatrix<FAD,3,1> deltatheta_j(true);
     LINALG::TMatrix<FAD,3,1> theta_totlag_j(true);
-    LINALG::TMatrix<FAD,4,1> Q_i_old(true);
-    LINALG::TMatrix<FAD,4,1> deltaQ(true);
-    LINALG::TMatrix<FAD,4,1> Q_i(true);
 
     for (unsigned int jnode=0; jnode<nnodecl; jnode++)
     {
-      theta_totlag_j.Clear();
-
-      for (int dim=0; dim<3; ++dim)
-        deltatheta_j(dim) = dispthetanewnode_[jnode](dim) - dispthetaoldnode_[jnode](dim);
-
-      Q_i_old.Clear();
-      for (int i=0; i<4; ++i)
-        Q_i_old(i) = Qoldnode_[jnode](i);
-
-      // compute quaternion from rotation angle relative to last configuration
-      LARGEROTATIONS::angletoquaternion(deltatheta_j,deltaQ);
-
-      // multiply relative rotation with rotation in last configuration to get rotation in new configuration
-      LARGEROTATIONS::quaternionproduct(Q_i_old,deltaQ,Q_i);
-
       // compute physical total angle theta_totlag
-      LARGEROTATIONS::quaterniontoangle(Q_i,theta_totlag_j);
+      LARGEROTATIONS::quaterniontoangle(Q_i[jnode],theta_totlag_j);
 
       // compute Tmatrix of theta_totlag_i
       Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
@@ -1248,26 +1229,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
       }
     }
 
-
     for (unsigned int jnode=nnodecl; jnode<nnodetriad; jnode++)    // this loop is only entered in case of nnodetriad>nnodecl
     {
-      theta_totlag_j.Clear();
-
-      for (int dim=0; dim<3; ++dim)
-        deltatheta_j(dim) = dispthetanewnode_[jnode](dim) - dispthetaoldnode_[jnode](dim);
-
-      Q_i_old.Clear();
-      for (int i=0; i<4; ++i)
-        Q_i_old(i) = Qoldnode_[jnode](i);
-
-      // compute quaternion from rotation angle relative to last configuration
-      LARGEROTATIONS::angletoquaternion(deltatheta_j,deltaQ);
-
-      // multiply relative rotation with rotation in last configuration to get rotation in new configuration
-      LARGEROTATIONS::quaternionproduct(Q_i_old,deltaQ,Q_i);
-
       // compute physical total angle theta_totlag
-      LARGEROTATIONS::quaterniontoangle(Q_i,theta_totlag_j);
+      LARGEROTATIONS::quaterniontoangle(Q_i[jnode],theta_totlag_j);
 
       // compute Tmatrix of theta_totlag_i
       Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
@@ -1865,11 +1830,6 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
   const int dofpertriadnode = 3;
   const int dofpercombinode = dofperclnode+dofpertriadnode;
 
-  // rotational displacement at a certain node between this and last iteration step
-  LINALG::TMatrix<FADordouble,3,1> deltatheta;
-  // rotational displacement at a certain node between this and last iteration step in quaternion form
-  LINALG::TMatrix<FADordouble,4,1> deltaQ;
-
   // get current values of translational nodal DOFs in total Lagrangean manner (initial value + disp)
   // rotational DOFs need different handling, depending on whether FAD is used or not (see comment below)
   for (unsigned int dim=0; dim<3; ++dim)
@@ -1884,9 +1844,7 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
     }
   }
 
-  /* get current displacement values of rotational DOFs
-   * note: these values are unphysical because the last increment has been added although large rotation vectors are non-additive
-   *       further processing of these values depends on choice of analytical or automatic differentiation (via FAD) */
+  // get current displacement values of rotational DOFs (i.e. relative rotation with respect to reference config)
   for(int dim=0; dim<3; dim++)
   {
     for (unsigned int node=0; node<nnodecl; ++node)
@@ -1896,12 +1854,16 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
       dispthetanewnode_[node](dim) = disp[dofperclnode*nnodecl+dofpertriadnode*node+dim];
   }
 
-#ifndef BEAM3RAUTOMATICDIFF
+
+  // rotational displacement at a certain node in quaternion form
+  LINALG::Matrix<4,1> deltaQ;
+  // initial nodal rotation vector in quaternion form
+  LINALG::Matrix<4,1> Q0;
+
   // Compute current nodal triads
   for (unsigned int node=0; node<nnodetriad; ++node)
   {
     // get initial nodal rotation vectors and transform to quaternions
-    LINALG::Matrix<4,1> Q0;
     LARGEROTATIONS::angletoquaternion(theta0node_[node],Q0);
 
     // rotate initial triads by relative rotation vector from displacement vector (via quaternion product)
@@ -1912,10 +1874,11 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
     Qnewnode_[node].Scale(1/Qnewnode_[node].Norm2());
 
     // copy quaternions of nodal triads to TMatrix FADordouble
-    Q_i[node] = Qnewnode_[node];
+    for (unsigned int i=0; i<4; ++i)
+      Q_i[node](i) = Qnewnode_[node](i);
   }
 
-#else
+#ifdef BEAM3RAUTOMATICDIFF
   // set differentiation variables for FAD: translational DOFs
   for (int dim=0; dim<3; ++dim)
   {
@@ -1932,45 +1895,12 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
   // rotation vector theta at a specific node in a total Lagrangean manner (with respect to global reference coordinate system)
   std::vector<LINALG::TMatrix<FAD,3,1> > theta_totlag_i(nnodetriad);
 
-#ifndef MULTIPLICATIVEUPDATES //use additive increments
-
-  /* FAD will compute linearization with respect to additive increments ("normal" differentiation),
-   * just as FullNewton expects, so everything is fine
-   * => rotational DOFs are naively treated just like translational DOFs (initial value + disp)*/
-
-  // compute unphysical total angle theta_totlag (large rotation pseudo-vectors are non-additive!)
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    for (unsigned int dim=0; dim<3; ++dim)
-    theta_totlag_i[node](dim) = theta0node_[node](dim) + dispthetanewnode_[node](dim);
-
-#else //use multiplicative increments, just as in case of analytical linearization (see comments above)
-
-  // temporary matrix of type FAD to store quaternion from last configuration
-  LINALG::TMatrix<FAD,4,1> Q_i_old;
-
   // compute nodal quaternions based on multiplicative increments of rotational DOFs
   for (unsigned int node=0; node<nnodetriad; ++node)
   {
-    for (unsigned int dim=0; dim<3; ++dim)
-    {
-      deltatheta(dim)  = dispthetanewnode_[node](dim);
-      deltatheta(dim) -= dispthetaoldnode_[node](dim);
-    }
-
-    for (int i=0; i<4; ++i)
-      Q_i_old(i) = Qoldnode_[node](i);
-
-    // compute quaternion from rotation angle relative to last configuration
-    LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
-
-    // multiply relative rotation with rotation in last configuration to get rotation in new configuration
-    LARGEROTATIONS::quaternionproduct(Q_i_old,deltaQ,Q_i[node]);
-
     // compute physical total angle theta_totlag
     LARGEROTATIONS::quaterniontoangle(Q_i[node],theta_totlag_i[node]);
   }
-
-#endif //#ifndef MULTIPLICATIVEUPDATE
 
   // set differentiation variables for FAD: rotational DOFs
   for (unsigned int dim=0; dim<3; ++dim)
@@ -1982,19 +1912,13 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
       theta_totlag_i[node](dim).diff(dofperclnode*nnodecl+dofpertriadnode*node+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
   }
 
+  /* Attention: although the nodal quaternions Q_i have already been computed correctly, we need the following step
+   *            in order to track the dependency of subsequently calculated quantities via FAD */
   for (unsigned int node=0; node<nnodetriad; ++node)
   {
-    // compute nodal quaternions
+    Q_i[node].PutScalar(0.0);
     LARGEROTATIONS::angletoquaternion(theta_totlag_i[node],Q_i[node]);
-
-    // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations.
-    Q_i[node].Scale(1.0/FADUTILS::VectorNorm<4>(Q_i[node]));
   }
-
-  // copy quaternions of nodal triads to class variable Qnewnode_
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    for (int i=0; i<4; ++i)
-      Qnewnode_[node](i)= FADUTILS::CastToDouble(Q_i[node](i));
 
 #endif //#ifndef BEAM3RAUTOMATICDIFF
 
