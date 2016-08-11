@@ -53,6 +53,7 @@ Constraint(discr,conditionname)
     acterror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
     initerror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
     lagrvalues_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
+    lagrvalues_force_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
   }
   else
   {
@@ -227,7 +228,10 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
 
       double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
 
-      (*lagrvalues_)[condID-1]+=rho_[condID]*diff;
+      // take care when calling this evaluate function separately (evaluate force / evaluate force+stiff)
+      if (assemblemat1) (*lagrvalues_)[condID-1]+=rho_[condID]*diff;
+      if (assemblevec1 and !(assemblemat1)) (*lagrvalues_force_)[condID-1]=(*lagrvalues_)[condID-1]+rho_[condID]*diff;
+
       // elements might need condition
       params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
@@ -288,7 +292,10 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         if (assemblevec1)
         {
           elevector1.Scale(penalties_[condID]*diff);
-          elevector2.Scale((*lagrvalues_)[condID-1]);
+//          elevector2.Scale((*lagrvalues_)[condID-1]);
+          // take care when calling this evaluate function separately (evaluate force / evaluate force+stiff)
+          if (!assemblemat1) elevector2.Scale((*lagrvalues_force_)[condID-1]);
+          if (assemblemat1)  elevector2.Scale((*lagrvalues_)[condID-1]);
           LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
           LINALG::Assemble(*systemvector1,elevector2,lm,lmowner);
         }

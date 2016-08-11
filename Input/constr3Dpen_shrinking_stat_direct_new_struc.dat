@@ -1,8 +1,8 @@
 //
-// Maintainer: Thomas Kloeppel
-// kloeppel@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-25257
+// Maintainer: Marc Hirschvogel
+// hirschvogel@mhpc.mw.tum.de
+// http://www.mhpc.mw.tum.de
+// 089 - 289-10363
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -98,7 +98,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1 FACTOR 1 0.98
 ----------------------------------------------------------------------FUNCT6
 -------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D PEN
 DSURF                           1
-E 4 - 1 2 0.0 0.00 0.275
+E 4 - 1 2 0.0 0.0 0.275
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3

@@ -39,7 +39,9 @@
 STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
     : disnp_ptr_(Teuchos::null),
       stiff_constr_ptr_(Teuchos::null),
-      fstrconstr_np_ptr_(Teuchos::null)
+      fstrconstr_np_ptr_(Teuchos::null),
+      noxinterface_ptr_(Teuchos::null),
+      noxinterface_prec_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -50,6 +52,16 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 {
 
   CheckInit();
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+  noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface());
+  noxinterface_ptr_->Init(GStatePtr());
+  noxinterface_ptr_->Setup();
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
+  noxinterface_prec_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterfacePrec());
+  noxinterface_prec_ptr_->Init(GStatePtr());
+  noxinterface_prec_ptr_->Setup();
 
   Teuchos::RCP<DRT::Discretization> dis = GState().GetMutableDiscret();
 
@@ -157,10 +169,8 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(Epetra_Vector& f,
 
   STR::AssembleVector(1.0,f,timefac_np,*fstrconstr_np_ptr_);
 
-//  std::cout << f << std::endl;
-
-//  if (noxinterface_ptr_prec_->IsSaddlePointSystem())
-//  {
+  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  {
     // assemble constraint rhs
     block_vec_ptr = constrman_->GetError();
 
@@ -176,7 +186,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(Epetra_Vector& f,
     if (elements_f==max_gid+1)
       STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
 
-//  }
+  }
 
   return true;
 }
@@ -194,14 +204,11 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
   Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
       GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_constr_ptr_,false,timefac_np,1.0);
-
-//  LINALG::SparseMatrix* lalala = dynamic_cast<LINALG::SparseMatrix*>(&jac);
-//  std::cout << *lalala << std::endl;
   // no need to keep it
   stiff_constr_ptr_->Zero();
 
-//  if (noxinterface_ptr_prec_->IsSaddlePointSystem())
-//  {
+  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  {
 
     // --- Kdz - block - scale with time-integrator dependent value!-----
     block_ptr = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(
@@ -220,7 +227,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
 
-//  }
+  }
 
   return true;
 }
@@ -341,27 +348,17 @@ const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>&
 {
   CheckInitSetup();
 
-  // build the NOX::NLN::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface());
-  noxinterface_ptr_->Init(GStatePtr());
-  noxinterface_ptr_->Setup();
-
   return noxinterface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
-    STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePtrPrec()
+    STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 {
   CheckInitSetup();
 
-  // build the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
-  noxinterface_ptr_prec_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterfacePrec());
-  noxinterface_ptr_prec_->Init(GStatePtr());
-  noxinterface_ptr_prec_->Setup();
-
-  return noxinterface_ptr_prec_;
+  return noxinterface_prec_ptr_;
 }
 
 
@@ -372,16 +369,14 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::
 {
   CheckInitSetup();
 
-//  if (noxinterface_ptr_prec_->IsSaddlePointSystem())
-//  {
-
-//    return GState().DofRowMap();
+  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  {
     return constrman_->GetConstraintMap();
-//  }
-//  else
-//  {
-//    return constrman_->GetNonConstraintMap();
-//  }
+  }
+  else
+  {
+    return GState().DofRowMap();
+  }
 
 }
 

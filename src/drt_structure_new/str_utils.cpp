@@ -304,7 +304,7 @@ void STR::NLN::CreateConstraintPreconditioner(
             integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
-        iconstr_prec[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePtrPrec();
+        iconstr_prec[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePrecPtr();
         break;
       }
       default:

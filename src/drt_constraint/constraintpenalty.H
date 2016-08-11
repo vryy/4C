@@ -99,6 +99,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> initerror_;  ///< initial value of bc
     Teuchos::RCP<Epetra_Vector> acterror_;  ///< current value of bc
     Teuchos::RCP<Epetra_Vector> lagrvalues_; ///< value of Lagrange multiplier in augmented Lagrange
+    Teuchos::RCP<Epetra_Vector> lagrvalues_force_; ///< value of Lagrange multiplier in augmented Lagrange
 
 
   private:

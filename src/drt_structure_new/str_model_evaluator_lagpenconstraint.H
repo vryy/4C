@@ -122,7 +122,7 @@ namespace MODELEVALUATOR{
     const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& NoxInterfacePtr();
 
     //! Return the NOX::NLN::CONSTRAINT::Interface::Preconditioner member object
-    const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& NoxInterfacePtrPrec();
+    const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& NoxInterfacePrecPtr();
 
   protected:
     //! Returns the underlying contact strategy object
@@ -146,7 +146,7 @@ namespace MODELEVALUATOR{
     Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface> noxinterface_ptr_;
 
     //! pointer to the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
-    Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_ptr_prec_;
+    Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_prec_ptr_;
   };
 
 } // namespace ModelEvaluator

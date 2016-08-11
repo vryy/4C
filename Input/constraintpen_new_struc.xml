@@ -39,7 +39,7 @@
         <ParameterList name="Quantity 1">
           <Parameter name="Quantity Type"    type="string" value="EAS" />
           <Parameter name="Tolerance Type"   type="string" value="Relative" />
-          <Parameter name="Tolerance"        type="double" value="1.0e-6" />
+          <Parameter name="Tolerance"        type="double" value="1.0e-3" />
           <Parameter name="Norm Type"        type="string" value="Two Norm" />
           <Parameter name="Scale Type"       type="string" value="Unscaled" />
         </ParameterList>
