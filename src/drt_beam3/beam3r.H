@@ -315,6 +315,11 @@ public:
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnewnode_;}
 
   /*!
+  \brief Get initial nodal rotation vectors
+  */
+  const std::vector<LINALG::Matrix<3,1> >& InitialNodalRotVecs() const {return theta0node_;}
+
+  /*!
   \brief Set moment of inertia of area Iyy_ of this element
   */
   void SetIyy(const double& Iyy);
@@ -353,7 +358,7 @@ public:
 
   //!sets up all geometric parameters (considering current position as reference configuration)
   /* nnodetriad: number of nodes used for interpolation of triad field
-   * nnoedcl: number of nodes used for interpolation of centerline
+   * nnodecl: number of nodes used for interpolation of centerline
    * vpernode: interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))*/
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
   void SetUpReferenceGeometry(const std::vector<double>& xrefe,

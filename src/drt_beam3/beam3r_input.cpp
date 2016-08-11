@@ -63,9 +63,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   else
     inertscalerot2_=1.0;
 
-  // set nodal triads according to input file
-  Qnewnode_.resize(nnodetriad);
-  Qconvnode_.resize(nnodetriad);
+  // store nodal triads according to input file
   theta0node_.resize(nnodetriad);
 
   /* Attention! expression "TRIADS" in input file is misleading.
@@ -76,15 +74,10 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
    *  and save them as quaternions at each node, respectively*/
   std::vector<double> nodal_rotvecs;
   linedef->ExtractDoubleVector("TRIADS",nodal_rotvecs);
-  for(int i=0; i<nnodetriad; i++)
-  {
-    for(int j=0; j<3; j++)
-      theta0node_[i](j) = nodal_rotvecs[3*i+j];
 
-    LARGEROTATIONS::angletoquaternion(theta0node_[i],Qnewnode_[i]);
-  }
-
-  Qconvnode_ = Qnewnode_;
+  for(int node=0; node<nnodetriad; node++)
+    for(int dim=0; dim<3; dim++)
+      theta0node_[node](dim) = nodal_rotvecs[3*node+dim];
 
   return true;
 }

@@ -362,7 +362,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
      *       is computed from the reference triads, i.e. rotrefe*/
     for (int node=0; node<nnodetriad; node++)
       for (int dim=0; dim<3; dim++)
-        rotrefe[node*3+dim]=0.0;
+        rotrefe[node*3+dim]=currele->InitialNodalRotVecs()[node](dim);
 
     for (int node=0; node<nnodecl; node++)
     {
@@ -950,9 +950,8 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::Parame
   return gaussrule;
 }
 
-/*------------------------------------------------------------------------------------------------------------*
- | sets up all geometric parameters (considering current position as reference configuration)      cyron 01/08|
- *-----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xrefe,
                                                    const std::vector<double>& rotrefe,
@@ -974,11 +973,6 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
    * note: the isinit_ flag is important for avoiding re-initialization upon restart. However, it should be possible to conduct a
    * second initialization in principle (e.g. for periodic boundary conditions*/
 
-  // prevent not yet functional use of rotrefe
-  for (unsigned int i=0; i<rotrefe.size(); i++)
-    if (std::fabs(rotrefe[i])>1.0e-10)
-      dserror("beam3r: So far, rotrefe is just a dummy and cannot be used in Beam3r::SetUpReferenceGeometry!");
-
   if (!isinit_ || secondinit)
   {
     isinit_ = true;
@@ -989,6 +983,16 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
 
     if(needstatmech_ and (nnodetriad!=2 or nnodecl!=2) )
       dserror("beam3r: Statmech functionalities only implemented for 2-noded element, i.e. linear Lagrange interpolation");
+
+    // check input data
+    if (xrefe.size() != 3*nnodecl)
+      dserror("size mismatch in given position vector for stress-free reference geometry of beam3r:"
+          " expected %d and got %d entries!", 3*nnodecl, xrefe.size());
+
+    if (rotrefe.size() != 3*nnodetriad)
+      dserror("size mismatch in given rotation vector for stress-free reference geometry of beam3r:"
+          " expected %d and got %d entries!", 3*nnodetriad, rotrefe.size());
+
 
 
     /********************************** Initialize/resize general variables *******************************
@@ -1035,8 +1039,29 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     LINALG::Matrix<3,1> dummy(true);
 
 
-    /******************************* Compute quantities valid for entire element *************************
+    /********************************** Compute nodal quantities ******************************************
      *****************************************************************************************************/
+
+    /********************* store given nodal triads as quaternions in class variable *********************/
+    Qnewnode_.resize(nnodetriad);
+    Qconvnode_.resize(nnodetriad);
+    // resize and initialize STL vectors for rotational displacements
+    dispthetanewnode_.resize(nnodetriad);
+    dispthetaconvnode_.resize(nnodetriad);
+
+    // nodal triads in stress-free configuration
+    for (unsigned int node=0; node<nnodetriad; node++)
+    {
+      LINALG::Matrix<3,1> rotvec(&rotrefe[3*node]);
+      LARGEROTATIONS::angletoquaternion(rotvec,Qnewnode_[node]);
+
+      dispthetaconvnode_[node].Clear();
+      dispthetanewnode_[node].Clear();
+    }
+
+    Qconvnode_ = Qnewnode_;
+
+    /**************************** Compute reference triad based on nodal triads **************************/
 
     // reference quaternion Q_r corresponding to reference triad Lambda_r
     LINALG::Matrix<4,1> Q_r(true);
@@ -1045,29 +1070,20 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     // Qnewnode_ has already been filled with initial values from input file in ReadElement(); same for Qoldnode_ and Qconvnode_
     CalcRefQuaternion<double>(Qnewnode_[nodeI_],Qnewnode_[nodeJ_],Q_r,dummy);
 
-
-    /********************************** Compute nodal quantities ******************************************
-     *****************************************************************************************************/
+    /***************************** Compute nodal local rotation vectors **********************************/
 
     // rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
     // use type TMatrix here to enable use of functions Calc_Psi_l and Calc_Psi_l (defined for std::vector<LINALG::TMatrix>)
     std::vector<LINALG::TMatrix<double,3,1> > Psi_li(nnodetriad);
 
-    // resize and initialize STL vectors for rotational displacements so that they can store one value at each node
-    dispthetaconvnode_.resize(nnodetriad);
-    dispthetanewnode_.resize(nnodetriad);
-
-    // nodal triads in reference configuration
+    // compute nodal local rotations according to (3.8), Jelenic 1999
     for (unsigned int node=0; node<nnodetriad; node++)
     {
-      dispthetaconvnode_[node].Clear();
-      dispthetanewnode_[node].Clear();
-
-      // compute nodal local rotations according to (3.8), Jelenic 1999
       CalcPsi_li<double>(Qnewnode_[node],Q_r,Psi_li[node]);
     }
 
-    // centerline tangent vectors in reference configuration
+    /***************************** Compute nodal centerline tangent vectors ******************************/
+
     LINALG::Matrix<3,3> Gref;
     Trefnode_.resize(nnodecl);
 
@@ -1077,7 +1093,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
        * So far the initial value for the relative angle is set to zero, i.e.
        * material coordinate system and reference system in the reference configuration coincidence (only at the nodes)*/
       Gref.Clear();
-      LARGEROTATIONS::angletotriad(theta0node_[node],Gref);
+      LARGEROTATIONS::quaterniontotriad(Qnewnode_[node],Gref);
       // store initial nodal tangents in class variable
       for (int i=0; i<3; i++)
         (Trefnode_[node])(i)=(Gref)(i,0);
@@ -1091,7 +1107,9 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
       }
     }
 
-    // calculate the initial length of the element (in case of Hermite centerline interpolation: iteratively via Newton's method)
+    /***************************** Compute the initial length of the element ******************************/
+
+    // note: in case of Hermite centerline interpolation: iteratively via Newton's method
     Calculate_reflength<nnodecl,vpernode>(disp_refe_centerline,BEAM3RLENGTHCALCNEWTONTOL);
 
 
