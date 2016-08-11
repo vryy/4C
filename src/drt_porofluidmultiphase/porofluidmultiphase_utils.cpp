@@ -98,7 +98,6 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
       Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),numdofpernode,true));
 
   // get maps
-  const Epetra_Map* noderowmap = dis.NodeRowMap();
   const Epetra_BlockMap& vectormap = vector.Map();
 
   // loop over nodes of the discretization
