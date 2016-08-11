@@ -329,14 +329,12 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       linsolver->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
-
     }
     break;
     case INPAR::STR::consolve_simple:
     {
 
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-
 
       // build constraint-structural linear solver
       linsolver =
@@ -356,7 +354,6 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
         std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         dserror("Please edit your dat file");
       }
-
 
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
       switch (prec) {
@@ -383,11 +380,14 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
       }
     }
     break;
+    case INPAR::STR::consolve_uzawa:
+    {
+      dserror("Uzawa-type solution techniques for constraints aren't supported anymore within the new structural time-integration!");
+    }
+    break;
     default :
       dserror("Unknown structural-constraint solution technique!");
   }
-
-//  dserror("Not yet implemented!");
 
   return linsolver;
 }
@@ -413,7 +413,6 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolve
                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   linsolver->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
-
 
   // solution algorithm - direct or simple
   INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(cardvasc0dstructparams,"SOLALGORITHM");
