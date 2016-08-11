@@ -3,12 +3,9 @@
 
 \brief Basic constraint class, dealing with multi point constraints
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 

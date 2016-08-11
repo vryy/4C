@@ -2,12 +2,10 @@
 \file multipointconstraint3.cpp
 
 \brief Basic constraint class, dealing with multi point constraints
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
-</pre>
+
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -50,7 +48,7 @@ MPConstraint
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*conditer)->GetInt("ConditionID");
-      if (offsetID>maxID) 
+      if (offsetID>maxID)
         offsetID=maxID;
 //      if (Type()==mpcnormalcomp3d)
 //        absconstraint_[condID]=true;
@@ -104,7 +102,7 @@ void UTILS::MPConstraint3::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        std::cout << "Encountered another active condition (Id = " << condID 
+        std::cout << "Encountered another active condition (Id = " << condID
             << ")  for restart time t = "<< time << std::endl;
       }
     }
@@ -154,7 +152,7 @@ void UTILS::MPConstraint3::Initialize(
       {
         switch (Type())
         {
-          
+
           case mpcnormalcomp3d:
           case mpcnodeonplane3d:
             params.set("action","calc_MPC_state");
@@ -383,7 +381,6 @@ void UTILS::MPConstraint3::EvaluateConstraint(
   bool assemblemat1 = systemmatrix1!=Teuchos::null;
   bool assemblemat2 = systemmatrix2!=Teuchos::null;
   bool assemblevec1 = systemvector1!=Teuchos::null;
-  bool assemblevec2 = systemvector2!=Teuchos::null;
   bool assemblevec3 = systemvector3!=Teuchos::null;
 
   // define element matrices and vectors
@@ -443,11 +440,11 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      if (assemblemat1) elematrix1.Shape(eledim,eledim);
-      if (assemblemat2) elematrix2.Shape(eledim,eledim);
-      if (assemblevec1) elevector1.Size(eledim);
-      if (assemblevec2) elevector2.Size(eledim);
-      if (assemblevec3) elevector3.Size(1);
+      elematrix1.Shape(eledim,eledim);
+      elematrix2.Shape(eledim,eledim);
+      elevector1.Size(eledim);
+      elevector2.Size(eledim);
+      elevector3.Size(1);
       params.set("ConditionID",eid);
 
       // call the element evaluate method
