@@ -85,7 +85,12 @@
 #include "biofilm.H"
 #include "optimization_density.H"
 #include "fluidporo.H"
+#include "fluidporo_singlephase.H"
+#include "fluidporo_multiphase.H"
+#include "fluidporo_singlephaseDof.H"
+#include "fluidporo_singlephaselaw.H"
 #include "structporo.H"
+#include "poro_law.H"
 #include "structporo_reaction.H"
 #include "structporo_reaction_ecm.H"
 #include "spring.H"
@@ -388,8 +393,99 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_fluidporo:
   {
     if (curmat->Parameter() == NULL)
-        curmat->SetParameter(new MAT::PAR::FluidPoro(curmat));
-      MAT::PAR::FluidPoro* params = static_cast<MAT::PAR::FluidPoro*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::FluidPoro(curmat));
+    MAT::PAR::FluidPoro* params = static_cast<MAT::PAR::FluidPoro*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_multiphase:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroMultiPhase(curmat));
+    MAT::PAR::FluidPoroMultiPhase* params = static_cast<MAT::PAR::FluidPoroMultiPhase*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_singlephase:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroSinglePhase(curmat));
+    MAT::PAR::FluidPoroSinglePhase* params = static_cast<MAT::PAR::FluidPoroSinglePhase*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_linear:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawLinear(curmat));
+    MAT::PAR::PoroLawLinear* params = static_cast<MAT::PAR::PoroLawLinear*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawConstant(curmat));
+    MAT::PAR::PoroLawConstant* params = static_cast<MAT::PAR::PoroLawConstant*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawNeoHooke(curmat));
+    MAT::PAR::PoroLawNeoHooke* params = static_cast<MAT::PAR::PoroLawNeoHooke*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_incompr_skeleton:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
+    MAT::PAR::PoroLawIncompSkeleton* params = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_linear_biot:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
+    MAT::PAR::PoroLawLinBiot* params = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phaselaw_linear:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
+    MAT::PAR::FluidPoroPhaseLawLinear* params = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phaselaw_tangent:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
+    MAT::PAR::FluidPoroPhaseLawTangent* params = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
+    MAT::PAR::FluidPoroPhaseDofDiffPressure* params = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phasedof_pressure:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
+    MAT::PAR::FluidPoroPhaseDofPressure* params = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phasedof_pressuresum:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressureSum(curmat));
+    MAT::PAR::FluidPoroPhaseDofPressureSum* params = static_cast<MAT::PAR::FluidPoroPhaseDofPressureSum*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_phasedof_saturation:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
+    MAT::PAR::FluidPoroPhaseDofSaturation* params = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_cavitation:
@@ -575,11 +671,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_growth_biofilm:
   case INPAR::MAT::m_growth_const:
   case INPAR::MAT::mes_coupSVK:
-  case INPAR::MAT::m_poro_law_linear:
-  case INPAR::MAT::m_poro_law_constant:
-  case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
-  case INPAR::MAT::m_poro_law_incompr_skeleton:
-  case INPAR::MAT::m_poro_law_linear_biot:
   {
     return Teuchos::null;
   }

@@ -3,6 +3,8 @@
 
  \brief main routine of the Ensight filter
 
+ \level 1
+
  \maintainer Martin Kronbichler
  */
 
@@ -157,6 +159,28 @@ protected:
             PostField* field);
 };
 
+/*!
+ \brief Writer for multiphase porous fluid  problems
+
+ \author vuong
+ \date 08/16
+*/
+class PoroFluidMultiPhaseFilter : public PostFilterBase
+{
+public:
+    /// constructor
+  PoroFluidMultiPhaseFilter(PostField *field,
+                      std::string name)
+    :
+      PostFilterBase (field, name)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
 
 /*!
  \brief Writer for scalar transport problems

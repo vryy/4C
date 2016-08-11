@@ -2,10 +2,12 @@
 /*!
  \file wall1_poro.cpp
 
- \brief
+ \brief 2D wall element for structure part of porous medium
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+ \level 2
+
+   \maintainer  Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -271,6 +273,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
     if (NumMaterial() > 1)
     {
       fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
+      if(fluidmat_==Teuchos::null)
+        return;
+       // dserror("cast to fluid poro material failed");
       if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
         dserror("invalid fluid material for poroelasticity");
     }

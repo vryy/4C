@@ -63,6 +63,14 @@ namespace INPAR
       m_ferech_pv,                             ///< material with simplified chemical kinetics due to Ferziger and Echekki (1993) with a modification by Poinsot and Veynante (2005) (progress variable)
       m_fluid,                                 ///< fluid
       m_fluidporo,                             ///< darcy fluid for poroelasticity problems
+      m_fluidporo_singlephase,                 ///< single phase material for multiphase flow through porous medium
+      m_fluidporo_multiphase,                  ///< collection of single phase materials for multiphase flow through porous medium
+      m_fluidporo_phasedof_pressure,           ///< pressure DOF for multiphase flow through porous medium
+      m_fluidporo_phasedof_saturation,         ///< saturation DOF for multiphase flow through porous medium
+      m_fluidporo_phasedof_pressuresum,        ///< sumed pressure DOF for multiphase flow through porous medium
+      m_fluidporo_phasedof_diffpressure,       ///< diffrenetial pressure DOF for multiphase flow through porous medium
+      m_fluidporo_phaselaw_linear,             ///< linear pressure-saturation relationship
+      m_fluidporo_phaselaw_tangent,            ///< tangent pressure-saturation relationship
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations

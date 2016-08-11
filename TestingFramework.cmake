@@ -853,6 +853,10 @@ baci_test(potential_surf_pointapprox_VDW_3D 2 "")
 #baci_test(potential_vol_LJ_2D 1 "") # broken since dimension of condition now must not be greater than problem dimension
 #baci_test(potential_vol_LJ_2D 2 "") #   maybe fix by rename volume potential to domain potential or something the like?
 baci_test(potential_vol_LJ_3D 2 "")
+baci_test(porofluidmulti_2D_quad4 2 14)
+post_processing(porofluidmulti_2D_quad4 2 "" "" 14)
+baci_test(poromultielast_2D_quad4_part 2 4)
+baci_test(porofluidmulti_2D_quad4_FD 1 "" minimal)
 baci_test(poro_2D_contact_closed_bound 2 "")
 baci_test(poro_2D_quad4_linporo 2 "")
 baci_test(poro_2D_quad4_p1 1 "")

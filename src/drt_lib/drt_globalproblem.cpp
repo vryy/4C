@@ -249,6 +249,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TSI CONTACT", *list);
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
+  reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC", *list);
+  reader.ReadGidSection("--POROMULTIPHASE DYNAMIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
@@ -1706,6 +1708,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_poroelast:
+  case prb_poromultiphase:
   {
     // create empty discretizations
     if(distype == "Nurbs")
@@ -1727,6 +1730,27 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("porofluid", porofluiddis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+
+    break;
+  }
+  case prb_porofluidmultiphase:
+  {
+    // create empty discretizations
+    if(distype == "Nurbs")
+    {
+      porofluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("porofluid",reader.Comm()));
+    }
+    else
+    {
+      porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
+    }
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
+
+    AddDis("porofluid", porofluiddis);
+
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
 
     break;

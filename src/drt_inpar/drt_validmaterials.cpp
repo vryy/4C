@@ -2196,6 +2196,128 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhase",
+                                            "multi phase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_multiphase));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedReal(m,"PERMEABILITY","permeability of medium");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one phase for multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhase",
+                                            "one phase for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_singlephase));
+
+    AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
+    AddNamedReal(m,"DENSITY","density");
+    AddNamedReal(m,"BULKMODULUS","bulk modulus of phase");
+    AddNamedReal(m,"PERMEABILITY","relative permeability of phase");
+    AddNamedInt(m,"DOFTYPEID","ID of dof definition");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofDiffPressure",
+                                            "one degrree of freedom for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_phasedof_diffpressure));
+
+    AddNamedInt(m,"PHASELAWID","ID of pressure-saturation law");
+    AddNamedInt(m,"NUMDOF","number of DoFs",0);
+    AddNamedIntVector(m,"PRESCOEFF","pressure IDs for differential pressure","NUMDOF",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofPressure",
+                                            "one degrree of freedom for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_phasedof_pressure));
+
+    AddNamedInt(m,"PHASELAWID","ID of pressure-saturation law");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofPressureSum",
+                                            "one degrree of freedom for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_phasedof_pressuresum));
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofSaturation",
+                                            "one degrree of freedom for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_phasedof_saturation));
+
+    AddNamedInt(m,"PHASELAWID","ID of pressure-saturation law");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // saturated law for pressure-saturation law in porous media problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawLinear",
+                                            "saturated fluid phase of porous medium",
+                                            INPAR::MAT::m_fluidporo_phaselaw_linear));
+
+    AddNamedReal(m,"RELTENSION","relative interface tensions");
+    AddNamedReal(m,"SATURATION_0","saturation at zero differential pressure");
+    AddNamedInt(m,"NUMDOF","number of DoFs",0,true);
+    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0,true);
+    AddNamedSeparator(m,"END","indicating end of line",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // tangent law for pressure-saturation law in porous media problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawTangent",
+                                            "tangent fluid phase of porous medium",
+                                            INPAR::MAT::m_fluidporo_phaselaw_tangent));
+
+    AddNamedReal(m,"RELTENSION","relative interface tensions");
+    AddNamedReal(m,"EXP","exponent in pressure-saturation law");
+    AddNamedReal(m,"SATURATION_0","saturation at zero differential pressure");
+    AddNamedInt(m,"NUMDOF","number of DoFs",0,true);
+    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0,true);
+    AddNamedSeparator(m,"END","indicating end of line",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // elastic spring
   {
     Teuchos::RCP<MaterialDefinition> m

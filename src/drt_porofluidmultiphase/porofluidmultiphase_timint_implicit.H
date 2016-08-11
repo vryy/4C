@@ -1,0 +1,551 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file porofluidmultiphase_timint_implicit.H
+
+ \brief base class for implicit time integration schemes for
+        multiphas porous fluid problems
+
+   \level 3
+
+   \maintainer  Anh-Tu Vuong
+                vuong@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+                089 - 289-15251
+ *----------------------------------------------------------------------*/
+
+#ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_
+#define SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_
+
+
+
+#include <Epetra_MultiVector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Map.h>
+
+#include <Teuchos_ParameterList.hpp>
+
+#include "../drt_lib/drt_discret.H"
+
+#include "../drt_inpar/inpar_porofluidmultiphase.H"
+
+
+/*==========================================================================*/
+// forward declarations
+/*==========================================================================*/
+
+namespace DRT
+{
+  class DofSet;
+  class Condition;
+  class ResultTest;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+  class MapExtractor;
+  class BlockSparseMatrixBase;
+  class SparseOperator;
+  class KrylovProjector;
+}
+
+
+/*==========================================================================*/
+//! Algorithm and time integration classes for porous multiphase flow problems
+/*==========================================================================*/
+namespace POROFLUIDMULTIPHASE
+{
+
+/*!
+ * \brief implicit time integration for porous multiphase flow problems
+ */
+
+class TimIntImpl
+{
+
+public:
+
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  TimIntImpl(Teuchos::RCP<DRT::Discretization>       dis,
+             const int                               linsolvernumber,
+             const Teuchos::ParameterList&           probparams,
+             const Teuchos::ParameterList&           poroparams,
+             FILE*                                   errfile,
+             Teuchos::RCP<IO::DiscretizationWriter>  output);
+
+  //! Destructor
+  virtual ~TimIntImpl();
+
+  //! initialize time integration
+  virtual void Init(
+      bool isale,
+      int nds_disp,
+      int nds_vel,
+      int nds_solidpressure
+      )=0;
+
+  /*========================================================================*/
+  //! @name general framework
+  /*========================================================================*/
+
+  /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! add global state vectors specific for time-integration scheme
+  virtual void AddTimeIntegrationSpecificVectors() = 0;
+
+  //! prepare time loop
+  virtual void PrepareTimeLoop();
+
+  //! setup the variables to do a new time step
+  virtual void PrepareTimeStep();
+
+  //! initialization procedure prior to evaluation of first time step
+  virtual void PrepareFirstTimeStep();
+
+  //! read restart data
+  virtual void ReadRestart(int step) = 0;
+
+  /// create result test for porous fluid field
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+  //! finite difference check for system matrix
+  void FDCheck();
+
+  /*--- calculate and update -----------------------------------------------*/
+
+  //! do time integration (time loop)
+  virtual void TimeLoop();
+
+  //! general solver call for coupled algorithms
+  virtual void Solve();
+
+  //! update the solution after convergence of the nonlinear iteration.
+  virtual void Update(
+  ) = 0;
+
+  ///  compute time derivative
+  virtual void ComputeTimeDerivative() =0;
+
+  ///  compute intermediate values if necessary
+  virtual void ComputeIntermediateValues() =0;
+
+  //! apply moving mesh data
+  void ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> dispnp //!< displacement vector
+  );
+
+  //! set convective velocity field (+ pressure and acceleration field as
+  //! well as fine-scale velocity field, if required)
+  virtual void SetVelocityField(
+    Teuchos::RCP<const Epetra_Vector>   vel                       //!< velocity vector
+    );
+
+  //! calculate error compared to analytical solution
+  virtual void EvaluateErrorComparedToAnalyticalSol();
+
+  /*--- query and output ---------------------------------------------------*/
+
+  //! print information about current time step to screen
+  virtual void PrintTimeStepInfo();
+
+  //! iterative update of phinp
+  void UpdateIter(
+    const Teuchos::RCP<const Epetra_Vector> inc //!< increment vector for phi
+  );
+
+  //! build linear system tangent matrix, rhs/force residual
+  void Evaluate();
+
+  //! Return MapExtractor for Dirichlet boundary conditions
+  const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+  { return dbcmaps_; }
+
+  //! right-hand side alias the dynamic force residual
+  Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
+
+  //! return discretization
+  Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
+
+  //! access dof row map
+  Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
+
+  //! output solution and restart data to file
+  virtual void Output();
+
+  //! write additional data required for restart
+  virtual void OutputRestart() = 0;
+
+  /*========================================================================*/
+  //! @name Time, time-step and related methods
+  /*========================================================================*/
+
+  /*--- query and output ---------------------------------------------------*/
+
+  //! return current time value
+  double Time() const { return time_; }
+
+  //! return current step number
+  int Step() const { return step_; }
+
+  //! return number of newton iterations in last timestep
+  double IterNum() const { return iternum_; }
+
+  //! return time step size
+  double Dt() const { return dt_; }
+
+  //! return number of dof set associated with solid pressure
+  int GetDofSetNumberOfSolidPressure() {return nds_solidpressure_;};
+
+  /*========================================================================*/
+  //! @name pressure degrees of freedom and related
+  /*========================================================================*/
+
+  /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! set the initial scalar field phi
+  virtual void SetInitialField(
+    const INPAR::POROFLUIDMULTIPHASE::InitialField  init,       //!< type of initial field
+    const int                          startfuncno //!< number of spatial function
+  );
+
+  /*--- query and output ---------------------------------------------------*/
+
+  //! return pressure field at time n+1
+  Teuchos::RCP<const Epetra_Vector> Phinp() const { return phinp_; }
+
+  //! return scalar field phi at time n
+  Teuchos::RCP<const Epetra_Vector> Phin() const { return phin_; }
+
+  //! return time derivative of scalar field phi at time n
+  Teuchos::RCP<const Epetra_Vector> Phidtn() const { return phidtn_; }
+
+  //! return time derivative of scalar field phi at time n+1
+  Teuchos::RCP<const Epetra_Vector> Phidtnp() const { return phidtnp_; }
+
+  //! return scalar field history
+  Teuchos::RCP<const Epetra_Vector> Hist() const { return hist_; }
+
+  //! return solid pressure field
+  Teuchos::RCP<const Epetra_Vector> SolidPressure() const { return solidpressure_; }
+
+  //! return pressure field
+  Teuchos::RCP<const Epetra_Vector> Pressure() const { return pressure_; }
+
+  //! return saturation field
+  Teuchos::RCP<const Epetra_Vector> Saturation() const { return saturation_; }
+
+  //! output mean values of pressure(s)
+  //virtual void OutputMeanPressures(const int num=0);
+
+  //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
+  //void OutputDomainOrBoundaryIntegrals(const std::string condstring);
+
+
+protected:
+
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! don't want copy constructor
+  TimIntImpl (const TimIntImpl& old);
+
+  /*========================================================================*/
+  //! @name set element parameters
+  /*========================================================================*/
+
+  //! Set element time step parameters (varying every time step)
+  virtual void SetElementTimeStepParameter() const = 0;
+
+  //! set time for evaluation of Neumann boundary conditions
+  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
+
+  //! Set general element parameters
+  void SetElementGeneralParameters() const;
+
+  /*========================================================================*/
+  //! @name general framework
+  /*========================================================================*/
+
+  /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! Set the part of the righthandside belonging to the last timestep.
+  virtual void SetOldPartOfRighthandside() = 0;
+
+  /*--- calculate and update -----------------------------------------------*/
+
+  //! Apply Dirichlet boundary conditions on provided state vector
+  void ApplyDirichletBC(
+    const double                time,  //!< evaluation time
+    Teuchos::RCP<Epetra_Vector> prenp, //!< pressure (may be = null)
+    Teuchos::RCP<Epetra_Vector> predt  //!< first time derivative (may be = null)
+  );
+
+  //! potential residual scaling and potential addition of Neumann terms
+  void ScalingAndNeumann();
+
+  //! add actual Neumann loads multipl. with time factor to the residual
+  virtual void AddNeumannToResidual() = 0;
+
+  //! Apply Neumann boundary conditions
+  void ApplyNeumannBC(
+    const Teuchos::RCP<Epetra_Vector>&   neumann_loads //!< Neumann loads
+  );
+
+  //! call elements to calculate system matrix and rhs and assemble
+  virtual void AssembleMatAndRHS();
+
+  //! return the right time-scaling-factor for the true residual
+  virtual double ResidualScaling() const = 0;
+
+  //! contains the nonlinear iteration loop
+  virtual void NonlinearSolve();
+
+  //! check convergence (or divergence) of nonlinear iteration
+  bool AbortNonlinIter(
+    const int itnum,        //!< current value of iteration step counter
+    const int itmax,        //!< maximum number of iteration steps
+    const double ittol,     //!< relative tolerance for increments
+    const double abstolres, //!< absolute tolerance for the residual norm
+    double& actresidual     //!< return value of the current residual
+  );
+
+  //! Calculate problem specific norm
+  virtual void CalcProblemSpecificNorm(
+      double& preresnorm,
+      double& incprenorm_L2,
+      double& prenorm_L2,
+      double& preresnorminf
+  );
+
+  //! reconstruct pressures and saturation from current solution
+  void ReconstructPressuresAndSaturations();
+
+  /*--- query and output ---------------------------------------------------*/
+
+  //! is output needed for the current time step?
+  bool DoOutput()
+    { return ((step_%upres_==0 )or (step_%uprestart_==0)); };
+
+  //! write state vectors prenp to BINIO
+  virtual void OutputState();
+
+  //! print header of convergence table to screen
+  virtual void PrintConvergenceHeader();
+
+  //! print first line of convergence table to screen
+  virtual void PrintConvergenceValuesFirstIter(
+      const int&              itnum,          //!< current Newton-Raphson iteration step
+      const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
+      const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
+      const double&           preresnorm,     //!< L2 norm of pressure residual
+      const double&           preresnorminf   //!< infinity norm of pressure residual
+  );
+
+  //! print current line of convergence table to screen
+  virtual void PrintConvergenceValues(
+      const int&              itnum,           //!< current Newton-Raphson iteration step
+      const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
+      const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
+      const double&           preresnorm,      //!< L2 norm of pressure residual
+      const double&           incprenorm_L2,   //!< L2 norm of pressure increment
+      const double&           prenorm_L2,      //!< L2 norm of pressure state vector
+      const double&           preresnorminf    //!< infinity norm of pressure residual
+  );
+
+  //! print finish line of convergence table to screen
+  virtual void PrintConvergenceFinishLine();
+
+  /*========================================================================*/
+  //! @name Time, time-step and related methods
+  /*========================================================================*/
+
+  /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! increment time and step value
+  void IncrementTimeAndStep();
+
+  /*========================================================================*/
+  //! @name general framework variables
+  /*========================================================================*/
+
+  //! linear solver
+  Teuchos::RCP<LINALG::Solver>         solver_;
+
+  //! solver number in input file
+  const int    linsolvernumber_;
+
+  //! parameter list of global control problem
+  const Teuchos::ParameterList& params_;
+
+  //! parameter list of poro fluid multiphase problem
+  const Teuchos::ParameterList& poroparams_;
+
+  //! processor id
+  int myrank_;
+
+  //! error file handle
+  FILE* errfile_;
+
+  /*========================================================================*/
+  //! @name flags and enums
+  /*========================================================================*/
+
+  //! flag for Eulerian or ALE formulation of equation(s)
+  bool isale_;
+
+  /*--- query and output ---------------------------------------------------*/
+
+  //! flag for printing out mean values of pressures
+  const bool outmean_;
+
+  //! flag for error calculation
+  const INPAR::POROFLUIDMULTIPHASE::CalcError calcerr_;
+
+  //! what to do when nonlinear solution fails
+  enum INPAR::POROFLUIDMULTIPHASE::DivContAct divcontype_ ;
+
+  //! flag for finite difference check
+  const INPAR::POROFLUIDMULTIPHASE::FDCheck fdcheck_;
+
+  //! perturbation magnitude for finite difference check
+  const double fdcheckeps_;
+
+  //! relative tolerance for finite difference check
+  const double fdchecktol_;
+
+  /*========================================================================*/
+  //! @name Time, time-step, and iteration variables
+  /*========================================================================*/
+
+  //! actual time
+  double time_;
+
+  //! maximum simulation time
+  double maxtime_;
+
+  //! actual step number
+  int step_;
+
+  //! maximum number of steps
+  const int stepmax_;
+
+  //! time step size
+  double dt_;
+
+  //! time measurement element
+  double dtele_;
+
+  //! time measurement solve
+  double dtsolve_;
+
+  //! number of newton iterations in actual timestep
+  int iternum_;
+
+  //! maximum number of newton iterations
+  const int itemax_;
+
+  /*========================================================================*/
+  //! @name pressure degrees of freedom variables
+  /*========================================================================*/
+
+  //! number of space dimensions
+  int nsd_;
+
+  //! phi at time n
+  Teuchos::RCP<Epetra_Vector> phin_;
+  //! phi at time n+1
+  Teuchos::RCP<Epetra_Vector> phinp_;
+
+  //! time derivative of phi at time n
+  Teuchos::RCP<Epetra_Vector> phidtn_;
+  //! time derivative of phi at time n+1
+  Teuchos::RCP<Epetra_Vector> phidtnp_;
+
+  //! histvector --- a linear combination of phinm, phin (BDF)
+  //!                or phin, phidtn (One-Step-Theta)
+  Teuchos::RCP<Epetra_Vector> hist_;
+
+  /*========================================================================*/
+  //! @name degrees of freedom and related
+  /*========================================================================*/
+
+  //! pressure at time n+1
+  Teuchos::RCP<Epetra_Vector> pressure_;
+
+  //! saturation at time n+1
+  Teuchos::RCP<Epetra_Vector> saturation_;
+
+  //! solid pressure at time n+1
+  Teuchos::RCP<Epetra_Vector> solidpressure_;
+
+  //! number of dofset associated with displacement dofs
+  int nds_disp_;
+
+  //! number of dofset associated with velocity related dofs
+  int nds_vel_;
+
+  //! number of dofset associated with solid pressure dofs
+  int nds_solidpressure_;
+
+  /*========================================================================*/
+  //! @name Galerkin discretization, boundary conditions, and related
+  /*========================================================================*/
+
+  //! the porous multiphase flow discretization
+  Teuchos::RCP<DRT::Discretization>    discret_;
+
+  //! the discretization writer
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  //! system matrix (either sparse matrix or block sparse matrix)
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+
+  //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  Teuchos::RCP<Epetra_Vector> zeros_;
+
+  //! maps for extracting Dirichlet and free DOF sets
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+
+  //! the vector containing body and surface forces
+  Teuchos::RCP<Epetra_Vector> neumann_loads_;
+
+  //! residual vector
+  Teuchos::RCP<Epetra_Vector> residual_;
+
+  //! true (rescaled) residual vector without zeros at Dirichlet conditions
+  Teuchos::RCP<Epetra_Vector> trueresidual_;
+
+  //! nonlinear iteration increment vector
+  Teuchos::RCP<Epetra_Vector> increment_;
+
+  Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
+                                      //!< \f$\Delta{p}^{<k>}_{n+1}\f$
+
+  /*========================================================================*/
+  //! @name not classified variables - to be kept clean!!!
+  /*========================================================================*/
+
+  //! write results every upres_ steps ? writesolutionevery_
+  int upres_;
+
+  //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
+  int uprestart_;
+
+  /*========================================================================*/
+
+}; // class TimIntImpl
+} // namespace POROFLUIDMULTIPHASE
+
+
+#endif /* SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_ */

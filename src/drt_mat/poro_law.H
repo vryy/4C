@@ -67,7 +67,8 @@ namespace PAR
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        )=0;
 
-
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const =0 ;
   };
 
   /*----------------------------------------------------------------------*/
@@ -83,12 +84,6 @@ namespace PAR
 
     /// destructor
     virtual ~PoroLawLinear() { ; }
-
-    /// @name material parameters
-    //@{
-    /// bulk modulus of skeleton phase
-    double bulkmodulus_;
-    //@}
 
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -123,6 +118,16 @@ namespace PAR
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        );
 
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const {return 1.0/bulkmodulus_;};
+
+  private:
+   /// @name material parameters
+   //@{
+   /// bulk modulus of skeleton phase
+   double bulkmodulus_;
+   //@}
+
   };  // class PoroLawLinear
 
   /*----------------------------------------------------------------------*/
@@ -141,14 +146,6 @@ namespace PAR
 
     /// destructor
     virtual ~PoroLawNeoHooke() { ; }
-
-    /// @name material parameters
-    //@{
-    /// bulk modulus of skeleton phase
-    double bulkmodulus_;
-    /// penalty parameter for porosity
-    double penaltyparameter_;
-    //@}
 
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -182,6 +179,17 @@ namespace PAR
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        );
 
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const {return 1.0/bulkmodulus_;};
+
+  private:
+   /// @name material parameters
+   //@{
+   /// bulk modulus of skeleton phase
+   double bulkmodulus_;
+   /// penalty parameter for porosity
+   double penaltyparameter_;
+   //@}
   };  // class PoroLawLinear
 
   /*----------------------------------------------------------------------*/
@@ -230,6 +238,8 @@ namespace PAR
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        );
 
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const {return 0.0;};
   };  // class PoroLawConstant
 
   /*----------------------------------------------------------------------*/
@@ -278,6 +288,8 @@ namespace PAR
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        );
 
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const {return 0.0;};
   };  // class PoroLawConstant
 
   /*----------------------------------------------------------------------*/
@@ -293,14 +305,6 @@ namespace PAR
 
     /// destructor
     virtual ~PoroLawLinBiot() { ; }
-
-    /// @name material parameters
-    //@{
-    /// inverse biot modulus
-    double invBiotModulus_;
-    /// Biot coefficient
-    double biotCoeff_;
-    //@}
 
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -333,6 +337,18 @@ namespace PAR
        double*       dphi_dpp,        ///< (o) second derivative of porosity w.r.t. pressure at gauss point
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        );
+
+   /// return inverse bulkmodulus (=compressibility)
+   virtual double InvBulkmodulus() const {return invBiotModulus_;};
+
+  private:
+   /// @name material parameters
+   //@{
+   /// inverse biot modulus
+   double invBiotModulus_;
+   /// Biot coefficient
+   double biotCoeff_;
+   //@}
 
   };  // class PoroLawConstant
 

@@ -4,7 +4,9 @@
  \brief wrapper for structure material of porous media
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+  \level 2
+
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -181,6 +183,9 @@ namespace MAT
 
       /// poro law type
       virtual INPAR::MAT::MaterialType PoroLawType() const;
+
+      /// return inverse bulkmodulus (=compressibility)
+      double InvBulkmodulus() const;
 
       /// check if element kinematics and material kinematics are compatible
       virtual void ValidKinematics(INPAR::STR::KinemType kinem)

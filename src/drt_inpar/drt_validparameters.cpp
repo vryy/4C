@@ -54,6 +54,8 @@ Maintainer: Martin Kronbichler
 #include "inpar_mlmc.H"
 #include "inpar_poroelast.H"
 #include "inpar_poroscatra.H"
+#include "inpar_poromultiphase.H"
+#include "inpar_porofluidmultiphase.H"
 #include "inpar_immersed.H"
 #include "inpar_cell.H"
 #include "inpar_fpsi.H"
@@ -631,6 +633,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::FS3I::SetValidParameters(list);
   INPAR::POROELAST::SetValidParameters(list);
   INPAR::PORO_SCATRA::SetValidParameters(list);
+  INPAR::POROMULTIPHASE::SetValidParameters(list);
+  INPAR::POROFLUIDMULTIPHASE::SetValidParameters(list);
   INPAR::EHL::SetValidParameters(list);
   INPAR::SSI::SetValidParameters(list);
   INPAR::ALE::SetValidParameters(list);

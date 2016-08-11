@@ -518,6 +518,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/electrode.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
+  src/drt_mat/fluidporo_singlephase.cpp
+  src/drt_mat/fluidporo_singlephaseDof.cpp
+  src/drt_mat/fluidporo_singlephaselaw.cpp
+  src/drt_mat/fluidporo_multiphase.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth_ip.cpp
@@ -723,6 +727,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
+  src/drt_adapter/ad_porofluidmultiphase.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
@@ -783,6 +788,8 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_poroelast.cpp
   src/drt_inpar/inpar_plasticity.cpp
   src/drt_inpar/inpar_poroscatra.cpp
+  src/drt_inpar/inpar_poromultiphase.cpp
+  src/drt_inpar/inpar_porofluidmultiphase.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
   src/drt_inpar/inpar_s2i.cpp
@@ -1242,6 +1249,17 @@ set(OBJS_DRT_LUBRICATION_LIB
   src/drt_lubrication_ele/lubrication_ele_calc.cpp
   src/drt_lubrication_ele/lubrication_ele_parameter.cpp
 
+)
+set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_factory.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_evaluate.cpp
+  src/drt_porofluidmultiphase_ele/porofluid_phasemanager.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_evaluate.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_factory.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_calc.cpp
 )
 set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele.cpp
@@ -2277,6 +2295,23 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_scatra_monolithic.cpp
 )
 
+set(OBJS_DRT_POROFLUIDMULTIPHASE
+  src/drt_porofluidmultiphase/porofluidmultiphase_dyn.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_timint_implicit.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_timint_ost.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_resulttest.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_utils.cpp
+)
+
+set(OBJS_DRT_POROMULTIPHASE
+  src/drt_poromultiphase/poromultiphase_dyn.cpp
+  src/drt_poromultiphase/poromultiphase_base.cpp
+  src/drt_poromultiphase/poromultiphase_partitioned.cpp
+  src/drt_poromultiphase/poromultiphase_partitioned_twoway.cpp
+  src/drt_poromultiphase/poromultiphase_utils_clonestrategy.cpp
+  src/drt_poromultiphase/poromultiphase_utils.cpp
+)
+
 set(OBJS_DRT_FPSI
   src/drt_fpsi/fpsi_utils.cpp
   src/drt_fpsi/fpsi_dyn.cpp
@@ -2412,6 +2447,7 @@ add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
+add_library(ele_porofluidmuliphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
@@ -2439,6 +2475,7 @@ set(ELEMENT_LIBRARIES
   ele_s8
   ele_membrane
   ele_lubrication
+  ele_porofluidmuliphase
   ele_scatra
   ele_sp3
   ele_meshfree_scatra
@@ -2465,6 +2502,7 @@ add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_sti ${OBJS_DRT_STI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
+add_library(alg_poromultiphase ${OBJS_DRT_POROMULTIPHASE})
 add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
@@ -2482,6 +2520,7 @@ set(MULTIFIELD_LIBRARIES
   alg_sti
   alg_wear
   alg_poroelast
+  alg_poromultiphase
   alg_immersed_problem
   alg_fpsi
   alg_fs3i
@@ -2509,6 +2548,7 @@ add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
+add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_statmech_bilayer ${OBJS_DRT_STATMECHBILAYER})
@@ -2531,6 +2571,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_xfluid
   alg_redairways
   alg_lubrication
+  alg_porofluidmultiphase
   alg_scatra
   alg_structure
   alg_statmech

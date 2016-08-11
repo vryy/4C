@@ -63,6 +63,8 @@ typedef enum _PROBLEM_TYP
   prb_particle,             // particle simulation
   prb_poroelast,            // poroelasticity
   prb_poroscatra,           // passive scalar transport in porous media
+  prb_porofluidmultiphase,  // multiphase flow in porous media
+  prb_poromultiphase,       // multiphase flow in elastic porous media
   prb_red_airways,          // reduced dimensional airways
   prb_redairways_tissue,    // coupling of reduced-dimensional airways with 3D tissue model
   prb_scatra,               // scalar transport problem (e.g. convection-diffusion)

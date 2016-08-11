@@ -289,6 +289,47 @@ void LubricationFilter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 }
 
+/*----------------------------------------------------------------------*
+|                                                           vuong 08/16 |
+\*----------------------------------------------------------------------*/
+void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
+{
+  // compute maximum number of dofs per node on poro fluid discretization
+  const DRT::Discretization& discret = *field->discretization();
+  int mynumdofpernode(-1);
+  for(int inode=0; inode<discret.NumMyRowNodes(); ++inode)
+  {
+    const int numdof = discret.NumDof(discret.lRowNode(inode));
+    if(numdof > mynumdofpernode)
+      mynumdofpernode = numdof;
+  }
+  int numdofpernode(-1);
+  discret.Comm().MaxAll(&mynumdofpernode,&numdofpernode,1);
+
+  // write results for each transported scalar
+  for(int k = 1; k <= numdofpernode; k++)
+  {
+    std::ostringstream temp;
+    temp << k;
+    // write generic degree of freedom
+    writer_->WriteResult("phinp", "phi_"+temp.str(), dofbased, 1,k-1);
+    // write pressure solution
+    writer_->WriteResult("pressure", "pressure_"+temp.str(), dofbased, 1,k-1);
+    // write saturation solution
+    writer_->WriteResult("saturation", "saturation_"+temp.str(), dofbased, 1,k-1);
+
+    // write generic degree of freedom
+    writer_->WriteResult("phidtnp", "phidt_"+temp.str(), dofbased, 1,k-1);
+  }
+  // write solid pressure solution
+  writer_->WriteResult("solidpressure", "solid_pressure", nodebased, 1);
+
+  // write displacement field
+  writer_->WriteResult("dispnp", "ale-displacement", nodebased, field->problem()->num_dim());
+
+  // write element results (e.g. element owner)
+  WriteElementResults(field);
+}
 
 /*----------------------------------------------------------------------*
 |                                                           gjb 12/07   |

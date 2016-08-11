@@ -2,10 +2,12 @@
 /*!
  \file wall1_poro.H
 
- \brief
+ \brief 2D wall element for structure part of porous medium
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+ \level 2
+
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -316,6 +318,7 @@ namespace ELEMENTS
       calc_struct_stress,
       calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
       calc_struct_poroscatra_coupling,
+      calc_struct_poro_presbased_coupling,
       calc_struct_energy
     };
 
@@ -331,8 +334,21 @@ namespace ELEMENTS
     //! Calculate nonlinear stiffness and internal force for poroelasticity problems
     virtual void nlnstiff_poroelast(
         std::vector<int>& lm, ///< location matrix
-        LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-        LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
+        LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
+        LINALG::Matrix<numdim_, numnod_>&               vel,          //< current velocities
+        LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
+        LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
+        LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
+        LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
+        LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
+        Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
+        );
+
+    //! Calculate nonlinear stiffness and internal force for poroelasticity problems (pressure based formulation)
+    virtual void nlnstiff_poroelast_presbased(
+        std::vector<int>& lm, ///< location matrix
+        LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
+        LINALG::Matrix<numdim_, numnod_>&               vel,          //< current velocities
         LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
         LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
         LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
@@ -344,8 +360,20 @@ namespace ELEMENTS
     //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
     virtual void coupling_poroelast(
         std::vector<int>& lm, ///< location matrix
-        LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-        LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
+        LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
+        LINALG::Matrix<numdim_, numnod_>&               vel,          //< current velocities
+        LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
+        LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
+        LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
+        LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
+        LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
+        Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
+
+    //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems (pressure based formulation)
+    virtual void coupling_poroelast_presbased(
+        std::vector<int>& lm, ///< location matrix
+        LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
+        LINALG::Matrix<numdim_, numnod_>&               vel,          //< current velocities
         LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
         LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
         LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
@@ -355,7 +383,7 @@ namespace ELEMENTS
 
     //! Calculate coupling stress for poroelasticity problems
     virtual void couplstress_poroelast(
-        LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
+        LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
         LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
         LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
         Epetra_SerialDenseMatrix*      elestress, ///< stresses at GP
@@ -381,6 +409,34 @@ namespace ELEMENTS
 
     //! Gauss Point Loop evaluating stiffness (off diagonal)
     void GaussPointLoopOD(
+        Teuchos::ParameterList&                 params,
+        const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+        const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+        const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+        const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
+        const LINALG::Matrix<numdim_,numnod_>&  evelnp,
+        const LINALG::Matrix<numnod_,1> &       epreaf,
+        const LINALG::Matrix<numnod_, 1>*       porosity_dof,
+        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix
+                                            );
+
+    //! Gauss Point Loop evaluating stiffness and force
+    void GaussPointLoop_presbased(      Teuchos::ParameterList& params,
+                                        const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+                                        const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+                                        const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+                                        const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
+                                        const LINALG::Matrix<numdim_,numnod_> & evelnp,
+                                        const LINALG::Matrix<numnod_,1> &       epreaf,
+                                        const LINALG::Matrix<numnod_, 1>*       porosity_dof,
+                                        LINALG::Matrix<numdof_,numdof_>& erea_v,
+                                        LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
+                                        LINALG::Matrix<numdof_,numdof_>* reamatrix,
+                                        LINALG::Matrix<numdof_,1>*              force
+                                            );
+
+    //! Gauss Point Loop evaluating stiffness (off diagonal)
+    void GaussPointLoopOD_presbased(
         Teuchos::ParameterList&                 params,
         const LINALG::Matrix<numdim_,numnod_>&  xrefe,
         const LINALG::Matrix<numdim_,numnod_>&  xcurr,
@@ -459,6 +515,31 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>*                      force,
         LINALG::Matrix<numstr_,1>&                      fstress);
 
+    //! fill stiffness matrix and rhs vector for darcy flow
+    void FillMatrixAndVectors_presbased(
+        const int &                                     gp,
+        const LINALG::Matrix<numnod_,1>&                shapefct,
+        const LINALG::Matrix<numdim_,numnod_>&          N_XYZ,
+        const double&                                   J,
+        const double&                                   press,
+        const double&                                   porosity,
+        const LINALG::Matrix<numdim_,1>&                velint,
+        const LINALG::Matrix<numdim_,1>&                fvelint,
+        const LINALG::Matrix<numdim_,numdim_>&          fvelder,
+        const LINALG::Matrix<numdim_,numdim_>&          defgrd_inv,
+        const LINALG::Matrix<numstr_,numdof_>&          bop,
+        const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+        const LINALG::Matrix<numdim_,1>&                Finvgradp,
+        const LINALG::Matrix<1,numdof_>&                dphi_dus,
+        const LINALG::Matrix<1,numdof_>&                dJ_dus,
+        const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+        const LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
+        const LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+        LINALG::Matrix<numdof_,numdof_>&                erea_v,
+        LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+        LINALG::Matrix<numdof_,1>*                      force,
+        LINALG::Matrix<numstr_,1>&                      fstress);
+
     //! fill stiffness matrix and rhs vector for brinkman flow
     void FillMatrixAndVectorsBrinkman(
         const int &                                     gp,
@@ -478,6 +559,22 @@ namespace ELEMENTS
 
     //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
     void FillMatrixAndVectorsOD(
+        const int &                             gp,
+        const LINALG::Matrix<numnod_,1>&        shapefct,
+        const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+        const double&                           J,
+        const double&                           porosity,
+        const double&                           dphi_dp,
+        const LINALG::Matrix<numdim_,1>&        velint,
+        const LINALG::Matrix<numdim_,1>&        fvelint,
+        const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+        const LINALG::Matrix<numdim_,1>&        Gradp,
+        const LINALG::Matrix<numstr_,numdof_>&  bop,
+        const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
+
+    //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
+    void FillMatrixAndVectorsOD_presbased(
         const int &                             gp,
         const LINALG::Matrix<numnod_,1>&        shapefct,
         const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,

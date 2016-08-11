@@ -285,6 +285,26 @@ void runEnsightVtuFilter(PostProblem    &problem)
         lubricationwriter.WriteFiles();
         break;
     }
+    case prb_porofluidmultiphase:
+    {
+        PostField* field = problem.get_discretization(0);
+        PoroFluidMultiPhaseFilter writer(field, problem.outname());
+        writer.WriteFiles();
+        break;
+    }
+    case prb_poromultiphase:
+    {
+      std::string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+      break;
+    }
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:

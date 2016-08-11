@@ -4,7 +4,9 @@
  \brief wrapper for structure material of porous media
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+  \level 2
+
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -150,6 +152,14 @@ void MAT::StructPoro::PoroSetup(int numgp, DRT::INPUT::LineDefinition* linedef)
 inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
 {
   return params_->porolaw_->Type();
+}
+
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+double MAT::StructPoro::InvBulkmodulus() const
+{
+  return params_->porolaw_->InvBulkmodulus();
 }
 
 /*----------------------------------------------------------------------*

@@ -1,0 +1,62 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file porofluidmultiphase_ele_factory.H
+
+ \brief factory class providing the implementations of the porofluidmultiphase
+        element evaluation routines
+
+   \level 3
+
+   \maintainer  Anh-Tu Vuong
+                vuong@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+                089 - 289-15251
+ *----------------------------------------------------------------------*/
+
+#ifndef SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_
+#define SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_
+
+
+#include "../drt_lib/drt_element.H"
+
+namespace DRT
+{
+
+namespace ELEMENTS
+{
+
+// forward declaration
+class PoroFluidMultiPhaseEleInterface;
+
+class PoroFluidMultiPhaseFactory
+{
+public:
+  //! ctor
+  PoroFluidMultiPhaseFactory(){ return; }
+
+  //! dtor
+  virtual ~PoroFluidMultiPhaseFactory(){ return; }
+
+  //! ProvideImpl
+  static PoroFluidMultiPhaseEleInterface* ProvideImpl(
+      DRT::Element::DiscretizationType distype,
+      const int numdofpernode,
+      const std::string& disname);
+
+private:
+  //! define PoroFluidMultiPhaseEle instances dependent on problem
+  template<DRT::Element::DiscretizationType distype>
+  static PoroFluidMultiPhaseEleInterface* DefineProblemType(
+      const int numdofpernode,
+      const std::string& disname);
+
+
+}; // end class PoroFluidMultiPhaseFactory
+
+} // end ELEMENTS
+
+} // end DRT
+
+
+
+#endif /* SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_ */

@@ -322,6 +322,8 @@ public:
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
   const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const { return getParameterList()->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC"); }
   const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
+  const Teuchos::ParameterList& PoroFluidMultiPhaseDynamicParams() const { return getParameterList()->sublist("POROFLUIDMULTIPHASE DYNAMIC"); }
+  const Teuchos::ParameterList& PoroMultiPhaseDynamicParams() const { return getParameterList()->sublist("POROMULTIPHASE DYNAMIC"); }
   const Teuchos::ParameterList& PoroScatraControlParams() const { return getParameterList()->sublist("POROSCATRA CONTROL"); }
   const Teuchos::ParameterList& ElastoHydroDynamicParams() const { return getParameterList()->sublist("ELASTO HYDRO DYNAMIC"); }
   const Teuchos::ParameterList& SSIControlParams() const { return getParameterList()->sublist("SSI CONTROL"); }
