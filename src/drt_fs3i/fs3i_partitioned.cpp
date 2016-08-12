@@ -18,6 +18,7 @@
 
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <initializer_list>
 
 #include "fs3i_partitioned.H"
 
