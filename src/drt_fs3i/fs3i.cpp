@@ -32,6 +32,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fs3i.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -191,6 +192,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
   //is scatra calculated conservative?
   if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(fs3idyn,"STRUCTSCAL_CONVFORM") == INPAR::SCATRA::convform_convective
+      and DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(fs3idyn,"STRUCTSCAL_FIELDCOUPLING")==INPAR::FS3I::coupling_match
       and not ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(fs3idyn,"STRUCTSCAL_SCATRATYPE") == INPAR::SCATRA::impltype_refconcreac) )
       dserror("Your scalar fields have to be calculated in conservative form, since the velocity field in the structure is NOT divergence free!");
 

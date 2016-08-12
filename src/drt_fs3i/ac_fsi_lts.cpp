@@ -113,7 +113,7 @@ void FS3I::ACFSI::SetMeanWallShearStresses()
   std::vector<Teuchos::RCP<const Epetra_Vector> > wss;
 
   //############ Fluid Field ###############
-  wss.push_back(WallShearStress_lp_);
+  scatravec_[0]->ScaTraField()->SetWallShearStresses( FluidToFluidScalar(WallShearStress_lp_),1);
 
   //############ Structure Field ###############
 
@@ -124,17 +124,12 @@ void FS3I::ACFSI::SetMeanWallShearStresses()
   WallShearStress = fsi_->FluidToStruct(WallShearStress);
 
   // insert structure interface entries into vector with full structure length
-  Teuchos::RCP<Epetra_Vector> structure = LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()),true);
+  Teuchos::RCP<Epetra_Vector> structurewss = LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()),true);
 
   //Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->StructureField()->Interface()->InsertVector(WallShearStress,1,structure);
-  wss.push_back(structure);
+  fsi_->StructureField()->Interface()->InsertVector(WallShearStress,1,structurewss);
+  scatravec_[1]->ScaTraField()->SetWallShearStresses( StructureToStructureScalar(structurewss),1 );
 
-  for (unsigned i=0; i<scatravec_.size(); ++i)
-  {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(wss[i],1);
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -144,7 +139,7 @@ void FS3I::ACFSI::SetMeanFluidScatraConcentration()
 {
   Teuchos::RCP<const Epetra_Vector> MeanFluidConc = meanmanager_->GetMeanValue("mean_phi");
 
-  scatravec_[0]->ScaTraField()->SetMeanConcentration(MeanFluidConc);
+  scatravec_[0]->ScaTraField()->SetMeanConcentration( FluidToFluidScalar(MeanFluidConc) );
 }
 
 /*----------------------------------------------------------------------*
@@ -153,15 +148,17 @@ void FS3I::ACFSI::SetMeanFluidScatraConcentration()
 void FS3I::ACFSI::SetZeroVelocityField()
 {
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->FluidField()->Velnp()->Map(),true));
-  scatravec_[0]->ScaTraField()->SetVelocityField(zeros,
+  scatravec_[0]->ScaTraField()->SetVelocityField(
+                                         FluidToFluidScalar(zeros),
                                          Teuchos::null,
-                                         zeros,
+                                         FluidToFluidScalar(zeros),
                                          Teuchos::null,
                                          1);
   Teuchos::RCP<Epetra_Vector> zeros2 = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
-  scatravec_[1]->ScaTraField()->SetVelocityField(zeros2,
+  scatravec_[1]->ScaTraField()->SetVelocityField(
+                                         StructureToStructureScalar(zeros2),
                                          Teuchos::null,
-                                         zeros2,
+                                         StructureToStructureScalar(zeros2),
                                          Teuchos::null,
                                          1);
 }
@@ -579,7 +576,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();
 
   // Note: we never do never proceed with time_ and step_, so this really just about updating the growth, i.e.
-  // the displacments of the structure scatra fiels
+  // the displacements of the structure scatra fields
 
   //----------------------------------------------------------------------
   // print to screen
@@ -601,9 +598,22 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Switch time step of scatra fields
   //----------------------------------------------------------------------
   //Switch back the time step to do the update with the same (small) timestep as the fsi (subcycling time step possible!)
-  const double dt_fluid = fsi_->FluidField()->Dt();
-  fluidscatra->SetDt( dt_fluid );
-  structurescatra->SetDt( dt_fluid );
+  fluidscatra->SetDt( dt_ );
+  structurescatra->SetDt( dt_ );
+
+  //----------------------------------------------------------------------
+  // Fix time_ and step_ counters
+  //----------------------------------------------------------------------
+  SetTimeAndStepInFSI(time_-dt_,step_-1);
+  fluidscatra->SetTimeStep(time_-dt_,step_-1);
+  structurescatra->SetTimeStep(time_-dt_,step_-1);
+
+  // we now have to fix the time_ and step_ of the structure field, since this is not shifted
+  // in PrepareTimeStep(), but in Update(), which we here will not call. So..
+  fsi_->StructureField()->SetTime(time_-dt_);
+  fsi_->StructureField()->SetTimen(time_);
+  fsi_->StructureField()->SetStep(step_-1);
+  fsi_->StructureField()->SetStepn(step_);
 
   //----------------------------------------------------------------------
   // Prepare time steps
@@ -614,15 +624,6 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //scatra fields
   fluidscatra->PrepareTimeStep();
   structurescatra->PrepareTimeStep();
-
-  //----------------------------------------------------------------------
-  // Fix time_ and step_ counters
-  //----------------------------------------------------------------------
-  // fsi problem
-  SetTimeAndStepInFSI(time_,step_);
-  //fluid scatra field. Structure scatra field should already be up to date.
-  fluidscatra->SetTimeStep(time_,step_);
-  //structurescatra->SetTimeStep(time_,step_);
 
   //----------------------------------------------------------------------
   // do the growth update

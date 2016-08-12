@@ -962,6 +962,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--LUBRICATION ELEMENTS");
   exclude.push_back("--LUBRICATION DOMAIN");
   exclude.push_back("--TRANSPORT ELEMENTS");
+  exclude.push_back("--TRANSPORT2 ELEMENTS");
   exclude.push_back("--TRANSPORT DOMAIN");
   exclude.push_back("--THERMO ELEMENTS");
   exclude.push_back("--THERMO DOMAIN");

@@ -3,8 +3,10 @@
 
 \brief Input parameters for fs3i
 
+\level 2
+
 <pre>
-Maintainer: Thon Moritz
+\maintainer Thon Moritz
             thon@mhpc.mw.tum.de
             089 - 289-10364
 </pre>
@@ -38,6 +40,13 @@ namespace FS3I
 //    fs3i_IterStaggAitken_SolidToScatra
 //    fs3i_IterStaggAitkenIrons,
 //    fs3i_Monolithic
+  };
+
+  /// Type of coupling strategy between the two fields of the SSI problems
+  enum VolumeCoupling
+  {
+    coupling_match,
+    coupling_nonmatch
   };
 
   /// set the fs3i parameters

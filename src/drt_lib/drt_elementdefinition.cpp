@@ -118,6 +118,9 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"TRANSP");
   PrintElementLines(stream,"METRANSP");
 
+  PrintSectionHeader(stream,"TRANSPORT2 ELEMENTS");
+  PrintElementLines(stream,"TRANSP");
+
   PrintSectionHeader(stream,"ALE ELEMENTS");
   PrintElementLines(stream,"ALE2");
   PrintElementLines(stream,"ALE3");

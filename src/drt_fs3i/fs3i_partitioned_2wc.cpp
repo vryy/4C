@@ -62,6 +62,9 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   // check number of dof sets in structure field
   if (fsi_->StructureField()->Discretization()->AddDofSet(structurescatradofset)!=1)
     dserror("Incorrect number of dof sets in structure field!");
+
+  if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
+    dserror("Mortar volume coupling is not tested for thermo-fs3i.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -261,16 +264,17 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     }
     else
     {*/
-     Teuchos::rcp_dynamic_cast<FLD::TimIntLoma>(fsi_->FluidField())->SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
-                                           fluidscatra_->ScaTraField()->Phin(),
-                                           fluidscatra_->ScaTraField()->Phidtnp(),
+     Teuchos::rcp_dynamic_cast<FLD::TimIntLoma>(fsi_->FluidField())->SetIterScalarFields(
+                                           FluidScalarToFluid(fluidscatra_->ScaTraField()->Phinp()),
+                                           FluidScalarToFluid(fluidscatra_->ScaTraField()->Phin()),
+                                           FluidScalarToFluid(fluidscatra_->ScaTraField()->Phidtnp()),
                                            Teuchos::null,
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressN(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressDtNp(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressDtNp(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->Discretization());
-      fsi_->StructureField()->Discretization()->SetState(1,"temperature",structurescatra_->ScaTraField()->Phinp());
+      fsi_->StructureField()->Discretization()->SetState(1,"temperature", StructureToStructureScalar(structurescatra_->ScaTraField()->Phinp()) );
     //}
 }
 
@@ -367,10 +371,10 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  fsi_->FluidField()->SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
-                                       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
-                                       fluidscatra_->ScaTraField()->TrueResidual(),
-                                       fluidscatra_->ScaTraField()->Discretization());
+  fsi_->FluidField()->SetScalarFields(FluidScalarToFluid(fluidscatra_->ScaTraField()->Phinp()),
+                                      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
+                                      FluidScalarToFluid(fluidscatra_->ScaTraField()->TrueResidual()),
+                                      fluidscatra_->ScaTraField()->Discretization());
 
   // Note: The order is important here! Herein, control file entries are
   // written, defining the order in which the filters handle the

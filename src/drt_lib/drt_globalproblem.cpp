@@ -1097,43 +1097,39 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Nurbs")
     {
-      dserror("Nurbs discretization not possible for lung gas exchange!");
+      dserror("Nurbs discretization not possible for fs3i!");
     }
     else
     {
-      structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
-      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+      structdis       = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+      fluiddis        = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      aledis          = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+      fluidscatradis  = Teuchos::rcp(new DRT::Discretization("scatra1"   ,reader.Comm()));
+      structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2"   ,reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+    structdis->SetWriter(      Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    fluiddis->SetWriter(       Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+    aledis->SetWriter(         Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+    fluidscatradis->SetWriter( Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis)));
+    structscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structscatradis)));
 
     AddDis("structure", structdis);
     AddDis("fluid", fluiddis);
     AddDis("ale", aledis);
+    AddDis("scatra1", fluidscatradis);
+    AddDis("scatra2", structscatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS")));
 
 #ifdef EXTENDEDPARALLELOVERLAP
     structdis->CreateExtendedOverlap(false,false,false);
 #endif
-
-    // fluid scatra field
-    fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1",reader.Comm()));
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    fluidscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis)));
-    AddDis("scatra1", fluidscatradis);
-
-    // structure scatra field
-    structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2",reader.Comm()));
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    structscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structscatradis)));
-    AddDis("scatra2", structscatradis);
 
     break;
   }

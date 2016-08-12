@@ -206,6 +206,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
 
+  if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
+    dserror("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
 }
 
 

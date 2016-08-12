@@ -40,7 +40,6 @@
 #include "../linalg/linalg_solver.H"
 //INPAR
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_fs3i.H"
 //ALE
 #include "../drt_ale/ale_utils_clonestrategy.H"
 //ADAPTER
@@ -48,6 +47,7 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_adapter/adapter_coupling_volmortar.H"
 //SCATRA
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -64,6 +64,8 @@
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   : FS3I_Base(),
+    volume_fieldcouplings_( {DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_FIELDCOUPLING"),
+                    DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_FIELDCOUPLING")} ),
     comm_(comm)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -103,7 +105,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
     aledis->Evaluate(params);
   }
   else
-    dserror("Providing an ALE mesh is not supported for problemtype FS3I.");
+    dserror("Providing an ALE mesh is not supported for FS3I problems.");
 
   //std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap = problem->CloningMaterialMap();
   //if (clonefieldmatmap.size() < 2)
@@ -123,6 +125,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
+    if ( not (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_match) )
+      dserror("If you clone your fluid-scatra mesh from the fluid use FLUIDSCAL_FIELDCOUPLING 'volume_matching'!");
+
     // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
 
@@ -135,9 +140,26 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       else
         element->SetImplType(impltype_fluid);
     }
+
+    volume_coupling_objects_.push_back(Teuchos::null);
+
+    // care for secondary dof sets:
+    // add proxy of fluid degrees of freedom to scatra discretization
+    if(fluidscatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+      dserror("Fluid scatra discretization has illegal number of dofsets!");
   }
   else
-    dserror("Fluid AND ScaTra discretization present. This is not supported.");
+  {
+    if ( not (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch) )
+      dserror("If you have specified the fluid-scalar by TRANSPORT ELEMENTS use FLUIDSCAL_FIELDCOUPLING 'volume_nonmatching'!");
+
+    if ( not (impltype_fluid == INPAR::SCATRA::impltype_undefined) )
+      dserror("Be aware that your FLUIDSCAL_SCATRATYPE will be ignored and the impltype from the TRANSPORT ELMENTS section will be utilized. Use FLUIDSCAL_SCATRATYPE 'Undefined'!");
+
+    volume_coupling_objects_.push_back( CreateVolMortarObject(fluiddis,fluidscatradis) );
+
+    dserror("Mortar volume coupling for the fluid-scalar is yet not tested. So be careful!");
+  }
 
 
   // determine type of scalar transport
@@ -154,6 +176,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // scalar transport discretization is empty
   if (structscatradis->NumGlobalNodes()==0)
   {
+    if ( not (volume_fieldcouplings_[1]==INPAR::FS3I::coupling_match) )
+      dserror("If you clone your structure-scatra mesh from the structure use STRUCTSCAL_FIELDCOUPLING 'volume_matching'!");
+
     // fill structure-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,structscatradis);
 
@@ -166,13 +191,40 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       else
         element->SetImplType(impltype_struct);
     }
+
+    volume_coupling_objects_.push_back(Teuchos::null);
+
+    // care for secondary dof sets:
+    // add proxy of structure scatra degrees of freedom to structure discretization
+    if (structdis->AddDofSet( structscatradis->GetDofSetProxy() )!=1)
+      dserror("Structure discretization has illegal number of dofsets!");
+
+    // add proxy of structure degrees of freedom to scatra discretization
+    if(structscatradis->AddDofSet(structdis->GetDofSetProxy()) != 1)
+      dserror("Structure scatra discretization has illegal number of dofsets!");
   }
   else
-    dserror("Structure AND ScaTra discretization present. This is not supported.");
+  {
+    if ( not (volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch) )
+      dserror("If you have specified the structure-scalar by TRANSPORT2 ELEMENTS use STRUCTSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
-  // add proxy of structure scatra degrees of freedom to structure discretization
-  if (structdis->AddDofSet( structscatradis->GetDofSetProxy() )!=1)
-    dserror("Structure discretization has illegal number of dofsets!");
+    if ( not (impltype_struct == INPAR::SCATRA::impltype_undefined) )
+          dserror("Be aware that your STRUCTSCAL_SCATRATYPE will be ignored and the impltype from the TRANSPORT2 ELMENTS section will be utilized. Use STRUCTSCAL_SCATRATYPE 'Undefined'!");
+
+    volume_coupling_objects_.push_back( CreateVolMortarObject(structdis,structscatradis) );
+  }
+
+  //safety check
+  if ( not (volume_coupling_objects_.size() == 2) )
+    dserror("Unexpected size of volmortar object vector!");
+
+  //Note: in the scatra fields we have now the following dof-sets:
+  // structure dofset 0: structure dofset
+  // structure dofset 1: structscatra dofset
+  // fluidscatra dofset 0: fluidscatra dofset
+  // fluidscatra dofset 1: fluid dofset
+  // structscatra dofset 0: structscatra dofset
+  // structscatra dofset 1: structure dofset
 
   //---------------------------------------------------------------------
   // get FSI coupling algorithm
@@ -224,22 +276,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
 
-  // care for secondary dof sets:
-  // add proxy of fluid degrees of freedom to scatra discretization
-  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Fluid scatra discretization has illegal number of dofsets!");
-
-  // add proxy of structure degrees of freedom to scatra discretization
-  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Structure scatra discretization has illegal number of dofsets!");
-
-  //Note: in the scatra fields we have now the following dof-sets:
-  // fluidscatra dofset 0: fluidscatra dofset
-  // fluidscatra dofset 1: fluid dofset
-  // structscatra dofset 0: structscatra dofset
-  // structscatra dofset 1: structure dofset
-
-
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
   // discretizations and definition of the permeability coefficient
@@ -250,7 +286,56 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::ParameterList& FS3I::PartFS3I::ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn)
+Teuchos::RCP< ::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
+    Teuchos::RCP<DRT::Discretization> masterdis,
+    Teuchos::RCP<DRT::Discretization> slavedis )
+{
+  // copy conditions
+  // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
+  // as standard DIRICHLET/NEUMANN CONDITIONS
+  std::map<std::string,std::string> conditions_to_copy;
+  SCATRA::ScatraFluidCloneStrategy clonestrategy;
+  conditions_to_copy = clonestrategy.ConditionsToCopy();
+  DRT::UTILS::DiscretizationCreatorBase creator;
+  creator.CopyConditions(*slavedis,*slavedis,conditions_to_copy);
+
+  //first call FillComplete for single discretizations.
+  //This way the physical dofs are numbered successively
+  masterdis->FillComplete();
+  slavedis->FillComplete();
+
+  //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+  const int ndofpernode_scatra = slavedis->NumDof(0,slavedis->lRowNode(0));
+  const int ndofperelement_scatra  = 0;
+  const int ndofpernode_struct = masterdis->NumDof(0,masterdis->lRowNode(0));
+  const int ndofperelement_struct = 0;
+  if (masterdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+    dserror("unexpected dof sets in structure field");
+  if (slavedis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+    dserror("unexpected dof sets in scatra field");
+
+  //call AssignDegreesOfFreedom also for auxiliary dofsets
+  //note: the order of FillComplete() calls determines the gid numbering!
+  // 1. structure dofs
+  // 2. scatra dofs
+  // 3. structure auxiliary dofs
+  // 4. scatra auxiliary dofs
+  masterdis->FillComplete(true, false,false);
+  slavedis->FillComplete(true, false,false);
+
+
+  // Scheme: non matching meshes --> volumetric mortar coupling...
+  Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volume_coupling_object = Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+  //setup projection matrices (use default material strategy)
+  volume_coupling_object->Setup(masterdis,slavedis);
+
+  return volume_coupling_object;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::ParameterList& FS3I::PartFS3I::ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn) const
 {
   // NOTE: we can not do this in the AC-fs3i class were it would belong,
   // since overloading a function inside the constructor does not work :(
@@ -506,31 +591,29 @@ void FS3I::PartFS3I::SetFSISolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetStructScatraSolution()
+void FS3I::PartFS3I::SetStructScatraSolution() const
 {
-  fsi_->StructureField()->Discretization()->SetState(1,"temperature",(scatravec_[1])->ScaTraField()->Phinp());
+  fsi_->StructureField()->Discretization()->SetState( 1,"temperature",StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()) );
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetMeshDisp()
+void FS3I::PartFS3I::SetMeshDisp() const
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  Teuchos::RCP<ADAPTER::Fluid> fluidadapter = fsi_->FluidField();
-  fluidscatra->ScaTraField()->ApplyMeshMovement(fluidadapter->Dispnp(),1);
+  fluidscatra->ScaTraField()->ApplyMeshMovement( FluidToFluidScalar(fsi_->FluidField()->Dispnp()),1 );
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
-  const Teuchos::RCP<ADAPTER::Structure>& structadapter = fsi_->StructureField();
-  structscatra->ScaTraField()->ApplyMeshMovement(structadapter->Dispnp(),1);
+  structscatra->ScaTraField()->ApplyMeshMovement( StructureToStructureScalar(fsi_->StructureField()->Dispnp()),1 );
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetVelocityFields()
+void FS3I::PartFS3I::SetVelocityFields() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > convel;
   std::vector<Teuchos::RCP<const Epetra_Vector> > vel;
@@ -539,9 +622,9 @@ void FS3I::PartFS3I::SetVelocityFields()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetVelocityField(convel[i],
+    scatra->ScaTraField()->SetVelocityField(VolMortarMasterToSlavei(i,convel[i]),
                                            Teuchos::null,
-                                           vel[i],
+                                           VolMortarMasterToSlavei(i,vel[i]),
                                            Teuchos::null,
                                            1);
   }
@@ -551,7 +634,7 @@ void FS3I::PartFS3I::SetVelocityFields()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& convel,
-                      std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
+                      std::vector<Teuchos::RCP<const Epetra_Vector> >& vel) const
 {
   // extract fluid velocities
 
@@ -570,7 +653,7 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 /*----------------------------------------------------------------------*
  |  Set wall shear stresses                                  Thon 11/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetWallShearStresses()
+void FS3I::PartFS3I::SetWallShearStresses() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > wss;
   ExtractWSS(wss);
@@ -578,14 +661,14 @@ void FS3I::PartFS3I::SetWallShearStresses()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(wss[i],1);
+    scatra->ScaTraField()->SetWallShearStresses( VolMortarMasterToSlavei(i,wss[i]),1 );
   }
 }
 
 /*----------------------------------------------------------------------*
  |  Extract wall shear stresses                              Thon 11/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
+void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss) const
 {
   //############ Fluid Field ###############
 
@@ -615,3 +698,76 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >&
   fsi_->StructureField()->Interface()->InsertVector(WallShearStress,1,structure);
   wss.push_back(structure);
 }
+
+/*----------------------------------------------------------------------*
+ |  transport quantity from fluid to fluid-scalar            Thon 08/16 |
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(const Teuchos::RCP<const Epetra_Vector> fluidvector) const
+{
+  return VolMortarMasterToSlavei(0,fluidvector);
+}
+
+/*----------------------------------------------------------------------*
+ |  transport quantity from fluid-scalar to fluid            Thon 08/16 |
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const
+{
+  return VolMortarSlaveToMasteri(0,fluidscalarvector);
+}
+
+/*----------------------------------------------------------------------*
+ |  transport quantity from structure to structure-scalar    Thon 08/16 |
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScalar(const Teuchos::RCP<const Epetra_Vector> structurevector) const
+{
+  return VolMortarMasterToSlavei(1,structurevector);
+}
+
+/*----------------------------------------------------------------------*
+ |  transport quantity from structure-scalar to structure    Thon 08/16 |
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructure(const Teuchos::RCP<const Epetra_Vector> structurescalavector) const
+{
+  return VolMortarSlaveToMasteri(1,structurescalavector);
+}
+
+/*-------------------------------------------------------------------------------------*
+ |  transport quantity from i-th volmortar master to i-th volmortar slave   Thon 08/16 |
+ *-------------------------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const
+{
+  switch(volume_fieldcouplings_[i])
+  {
+  case INPAR::FS3I::coupling_match:
+    return mastervector;
+    break;
+  case INPAR::FS3I::coupling_nonmatch:
+    return volume_coupling_objects_[i]->ApplyVectorMapping21(mastervector);
+    break;
+  default:
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
+}
+
+/*-------------------------------------------------------------------------------------*
+ |  transport quantity from i-th volmortar slave to i-th volmortar master   Thon 08/16 |
+ *-------------------------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const
+{
+  switch(volume_fieldcouplings_[i])
+  {
+  case INPAR::FS3I::coupling_match:
+    return slavevector;
+    break;
+  case INPAR::FS3I::coupling_nonmatch:
+    return volume_coupling_objects_[i]->ApplyVectorMapping12(slavevector);
+    break;
+  default:
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
+}
+

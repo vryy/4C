@@ -4,6 +4,8 @@
 
 \brief Input parameters for fs3i
 
+\level 2
+
 \maintainer Thon Moritz
             thon@mhpc.mw.tum.de
             089 - 289-10364
@@ -106,6 +108,34 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_poro,
                                  INPAR::SCATRA::impltype_pororeac),
                                  &fs3idyn);
+
+  // Type of coupling strategy between structure and structure-scalar field
+  setStringToIntegralParameter<int>(
+                              "STRUCTSCAL_FIELDCOUPLING","volume_matching",
+                              "Type of coupling strategy between structure and structure-scalar field",
+                              tuple<std::string>(
+                                "volume_matching",
+                                "volume_nonmatching"
+                                ),
+                              tuple<int>(
+                                coupling_match,
+                                coupling_nonmatch
+                                ),
+                              &fs3idyn);
+
+  // Type of coupling strategy between fluid and fluid-scalar field
+  setStringToIntegralParameter<int>(
+                              "FLUIDSCAL_FIELDCOUPLING","volume_matching",
+                              "Type of coupling strategy between fluid and fluid-scalar field",
+                              tuple<std::string>(
+                                "volume_matching",
+                                "volume_nonmatching"
+                                ),
+                              tuple<int>(
+                                coupling_match,
+                                coupling_nonmatch
+                                ),
+                              &fs3idyn);
 
   // type of scalar transport
   setStringToIntegralParameter<int>("FLUIDSCAL_SCATRATYPE","ConvectionDiffusion",
