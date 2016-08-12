@@ -160,7 +160,7 @@ namespace FS3I
     Teuchos::RCP<FSI::Monolithic> fsi_;
 
     /// vector of scatra volume couplings (i.e. fluid to fluid-scalar and structure to structure-scalar)
-    const std::vector<INPAR::FS3I::VolumeCoupling> volume_fieldcouplings_;
+    std::vector<INPAR::FS3I::VolumeCoupling> volume_fieldcouplings_;
 
   private:
 

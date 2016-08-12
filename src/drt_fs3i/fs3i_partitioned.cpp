@@ -65,10 +65,11 @@
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   : FS3I_Base(),
-    volume_fieldcouplings_( {DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_FIELDCOUPLING"),
-                    DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_FIELDCOUPLING")} ),
     comm_(comm)
 {
+  volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_FIELDCOUPLING"));
+  volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_FIELDCOUPLING"));
+
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
 
