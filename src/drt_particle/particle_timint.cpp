@@ -148,7 +148,7 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // temperatures T_{n}
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -191,8 +191,10 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n+1} at t_{n+1}
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
   // temperatures T_{n+1} at t_{n+1}
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  {
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
+  }
 
   return;
 }
@@ -204,7 +206,7 @@ void PARTICLE::TimInt::SetInitialFields()
   // make sure that a particle material is defined in the dat-file
   int id = -1;
 
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
   }
@@ -216,7 +218,7 @@ void PARTICLE::TimInt::SetInitialFields()
   // check
   if (id==-1)
   {
-    dserror("Could not find particle material or material type - trg_temperature do not match");
+    dserror("Could not find particle material or material type");
   }
 
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
@@ -301,7 +303,7 @@ void PARTICLE::TimInt::SetInitialFields()
     }
   }
 
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
     const MAT::PAR::ParticleAMmat* actmat_derived = static_cast<const MAT::PAR::ParticleAMmat*>(mat);
     // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
@@ -687,7 +689,7 @@ void PARTICLE::TimInt::ReadRestartState()
     reader.ReadVector(accn_, "acceleration");
     acc_->UpdateSteps(*accn_);
 
-    if(particle_algorithm_->trg_Temperature())
+    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
     {
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
@@ -783,7 +785,7 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
 
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
     output_->WriteVector("temperature", (*temperature_)(0));
 
   output_->WriteVector("radius", radius_, output_->nodevector);
@@ -848,8 +850,10 @@ void PARTICLE::TimInt::OutputState
   }
 
   output_->WriteVector("radius", radius_, output_->nodevector);
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  {
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
+  }
   if(collhandler_ != Teuchos::null and writeorientation_)
   {
     output_->WriteVector("orientation", orient_);

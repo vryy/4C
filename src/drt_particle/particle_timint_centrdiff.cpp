@@ -54,12 +54,11 @@ void PARTICLE::TimIntCentrDiff::Init()
 {
   // decide whether there is particle contact
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ParticleInteractions contact_strategy =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
 
-  switch(contact_strategy)
+  switch(particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::Normal_DEM:
+  case INPAR::PARTICLE::Normal_DEM_thermo:
   case INPAR::PARTICLE::NormalAndTang_DEM:
     collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEM(discret_, particle_algorithm_, particleparams));
   break;
@@ -96,7 +95,7 @@ void PARTICLE::TimIntCentrDiff::Init()
   }
 
   // simple check if the expansion speed is too elevated
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
     const int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
@@ -144,7 +143,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
   ComputeDisplacements();
 
-  if (particle_algorithm_->trg_Temperature())
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
     ComputeThermodynamics();
   }

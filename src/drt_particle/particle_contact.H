@@ -120,9 +120,6 @@ namespace PARTICLE
     //! @name Collision parameters
     //@{
 
-    /// overall contact strategy
-    INPAR::PARTICLE::ParticleInteractions particle_interaction_type_;
-
     /// normal contact model
     INPAR::PARTICLE::NormalContact normal_contact_;
 

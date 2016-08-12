@@ -56,7 +56,7 @@ PARTICLE::Algorithm::Algorithm(
   particlewalldis_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
   dismemberRadius_((double)DRT::Problem::Instance()->ParticleParams().get<double>("DISMEMBER_RADIUS")),
-  trg_temperature_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE"))
+  particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION"))
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -114,7 +114,7 @@ void PARTICLE::Algorithm::Timeloop()
     Integrate();
 
     // dismembering if necessary
-    if (trg_temperature_)
+    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
     {
       ParticleDismemberer();
     }
@@ -598,10 +598,7 @@ Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::Algorithm::CreateGraph()
 void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
 {
   // rough safety check whether bin size is large enough for proper contact detection
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ParticleInteractions contact_strategy =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
-  if(contact_strategy != INPAR::PARTICLE::None)
+  if(particleInteractionType_ != INPAR::PARTICLE::None)
   {
     double extrema[2] = {0.0, 0.0};
     particles_->Veln()->MinValue(&extrema[0]);
@@ -2157,7 +2154,7 @@ void PARTICLE::Algorithm::GetBinContent(
       continue;
 
 #ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(discret_->lColElement(lid));
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lColElement(lid));
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =

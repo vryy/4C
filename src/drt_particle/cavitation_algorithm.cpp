@@ -3206,9 +3206,8 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
 
   // initial overlap can be problematic when particle contact is considered
   bool detectoverlap = false;
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ParticleInteractions contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
-  if(contact_strategy != INPAR::PARTICLE::None)
+
+  if(particleInteractionType_ != INPAR::PARTICLE::None)
     detectoverlap = true;
 
   // unique bubbleinflow id over all inflow conditions

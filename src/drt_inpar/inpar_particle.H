@@ -39,6 +39,7 @@ namespace INPAR
       Normal_DEM,
       Normal_MD,
       NormalAndTang_DEM,
+      Normal_DEM_thermo,
       MeshFree
     };
 

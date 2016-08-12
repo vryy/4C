@@ -18,6 +18,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expleuler.H"
+#include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -50,11 +51,11 @@ void PARTICLE::TimIntExplEuler::Init()
 {
   // decide whether there is particle contact
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ParticleInteractions contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
 
-  switch(contact_strategy)
+  switch(particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::Normal_DEM:
+  case INPAR::PARTICLE::Normal_DEM_thermo:
   case INPAR::PARTICLE::NormalAndTang_DEM:
     dserror("explicit euler time integrator is not yet combined with discrete element collision mechanism");
   break;

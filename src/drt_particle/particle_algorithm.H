@@ -107,8 +107,8 @@ namespace PARTICLE
 
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > & GetBins2HeatSources() {return bins2heatSources_; }
 
-    /// thermodynamics is activated?
-    const bool trg_Temperature() {return trg_temperature_; }
+    /// contact type: meshfree, particle-thermo, etc.
+    const INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
 
     /// list of heat sources
     const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
@@ -250,7 +250,7 @@ namespace PARTICLE
 
     const double dismemberRadius_;
 
-    const bool trg_temperature_;
+    const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
 
     //@}
 

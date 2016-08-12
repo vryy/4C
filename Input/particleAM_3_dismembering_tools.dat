@@ -26,9 +26,8 @@ TIMESTEP                        5e-5
 NUMSTEP                         5000
 MAXTIME                         100
 GRAVITY_ACCELERATION            0 0 -9.81
-PARTICLE_INTERACTION            NormalContact_DEM
+PARTICLE_INTERACTION            NormalContact_DEM_thermo
 NORMAL_CONTACT_LAW              LinearSpringDamp
-TRG_TEMPERATURE                 yes
 DISMEMBER_RADIUS                0.003
 MIN_RADIUS                      0.003
 MAX_RADIUS                      0.05

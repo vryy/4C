@@ -54,10 +54,7 @@ void PARTICLE::TimIntExpl::Init()
   TimInt::Init();
 
   // decide whether there is particle contact
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ParticleInteractions contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(particleparams,"PARTICLE_INTERACTION");
-
-  if(contact_strategy != INPAR::PARTICLE::None)
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
     // allocate vectors
     inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -103,7 +100,10 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
   acc_->UpdateSteps(*accn_);
   //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
-  if (particle_algorithm_->trg_Temperature()) temperature_->UpdateSteps(*temperaturen_);
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  {
+    temperature_->UpdateSteps(*temperaturen_);
+  }
 
   if(collhandler_ != Teuchos::null)
   {

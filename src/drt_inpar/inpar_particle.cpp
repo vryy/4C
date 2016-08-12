@@ -58,6 +58,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  "NormalContact_DEM",
                                  "NormalContact_MD",
                                  "NormalAndTangentialContact_DEM",
+                                 "NormalContact_DEM_thermo",
                                  "MeshFree"
                                  ),
                                tuple<int>(
@@ -65,6 +66,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  INPAR::PARTICLE::Normal_DEM,
                                  INPAR::PARTICLE::Normal_MD,
                                  INPAR::PARTICLE::NormalAndTang_DEM,
+                                 INPAR::PARTICLE::Normal_DEM_thermo,
                                  INPAR::PARTICLE::MeshFree
                                  ),
                                &particledyn);
@@ -101,7 +103,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    DoubleParameter("DISMEMBER_RADIUS",-1.0,"particle radius used during dismembering (it shall be smaller than the radius of the old particle)",&particledyn);
-   BoolParameter("TRG_TEMPERATURE","no","switch on/off thermodynamics equations",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle penetration",&particledyn);
