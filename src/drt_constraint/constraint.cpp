@@ -228,7 +228,6 @@ void UTILS::Constraint::EvaluateConstraint(
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
   const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
   const bool assemblevec3 = systemvector3!=Teuchos::null;
 
   //----------------------------------------------------------------------
@@ -309,11 +308,11 @@ void UTILS::Constraint::EvaluateConstraint(
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
-        if (assemblemat1) elematrix1.Shape(eledim,eledim);
-        if (assemblemat2) elematrix2.Shape(eledim,eledim);
-        if (assemblevec1) elevector1.Size(eledim);
-        if (assemblevec2) elevector2.Size(eledim);
-        if (assemblevec3) elevector3.Size(1);
+        elematrix1.Shape(eledim,eledim);
+        elematrix2.Shape(eledim,eledim);
+        elevector1.Size(eledim);
+        elevector2.Size(eledim);
+        elevector3.Size(1);
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
