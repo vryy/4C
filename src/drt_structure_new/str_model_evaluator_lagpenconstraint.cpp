@@ -74,6 +74,9 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   stiff_constr_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *GState().DofRowMapView(), 81, true, true));
 
+  // ToDo: we do not want to hand in the structural dynamics parameter list
+  // to the manager in the future! -> get rid of it as soon as old
+  // time-integration dies ...
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new UTILS::ConstrManager(dis,
       disnp_ptr_,
@@ -119,12 +122,10 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForce()
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateStiff()
 {
-
   CheckInitSetup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon; // empty parameter list
-
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 
   // only stiffnesses are evaluated!
@@ -141,12 +142,10 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateStiff()
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForceStiff()
 {
-
   CheckInitSetup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon; // empty parameter list
-
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 
   constrman_->EvaluateForceStiff(time_np, disn,
@@ -164,7 +163,6 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(Epetra_Vector& f,
     const double& timefac_np) const
 {
-
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   STR::AssembleVector(1.0,f,timefac_np,*fstrconstr_np_ptr_);
@@ -197,7 +195,6 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(Epetra_Vector& f,
 bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
     LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-
   Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdd - block ---------------------------------------------------
@@ -239,7 +236,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const
 {
-
   iowriter.WriteVector("lagrmultiplier",
                         constrman_->GetLagrMultVector());
   iowriter.WriteVector("refconval",
@@ -253,7 +249,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
 void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(
     IO::DiscretizationReader& ioreader)
 {
-
   double time_n = GState().GetTimeN();
   constrman_->ReadRestart(ioreader,time_n);
 
@@ -267,8 +262,8 @@ void STR::MODELEVALUATOR::LagPenConstraint::RecoverState(
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)
 {
+  CheckInitSetup();
 
-//  CheckInitSetup();
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*GetBlockDofRowMapPtr()));
 
@@ -284,7 +279,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::RecoverState(
 void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepState(
     const double& timefac_n)
 {
-
   constrman_->Update();
 
   // add the constraint force contributions to the old structural
@@ -377,7 +371,6 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::
   {
     return GState().DofRowMap();
   }
-
 }
 
 /*----------------------------------------------------------------------*

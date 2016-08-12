@@ -17,6 +17,7 @@
 
 #include "str_timint_base.H"
 #include "str_utils.H"
+#include "str_integrator.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -46,7 +47,6 @@ STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
-
   CheckInit();
 
   Teuchos::RCP<DRT::Discretization> dis = GState().GetMutableDiscret();
@@ -62,6 +62,9 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 
   Teuchos::RCP<LINALG::Solver> dummysolver;
 
+  // ToDo: we do not want to hand in the structural dynamics parameter list
+  // to the manager in the future! -> get rid of it as soon as old
+  // time-integration dies ...
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis,
       disnp_ptr_,
@@ -129,7 +132,6 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::EvaluateStiff()
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Cardiovascular0D::EvaluateForceStiff()
 {
-
   CheckInitSetup();
 
   double time_np = GState().GetTimeNp();
@@ -220,7 +222,6 @@ void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const
 {
-
   iowriter.WriteVector("cv0ddof",
                         cardvasc0dman_->Get0DDofVector());
   iowriter.WriteVector("refvolval",
@@ -254,6 +255,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::RecoverState(
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)
 {
+  CheckInitSetup();
 
   Teuchos::RCP<Epetra_Vector> cv0d_incr = GState().ExtractModelEntries(
       INPAR::STR::model_cardiovascular0d,dir);
@@ -269,7 +271,14 @@ void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(
     const double& timefac_n)
 {
   cardvasc0dman_->UpdateTimeStep();
-  cardvasc0dman_->PrintPresFlux(false);
+  // only print state variables after a finished time step, not when we're
+  // in the equilibriate initial state routine
+
+  // ToDo Currently, this doesn't work, since the flag
+  // isequalibriate_initial_state_ is always FALSE when UpdateStepState is
+  // called inside EquilibriateInitialState() !
+  if(!(Int().IsEquilibriateInitialState()))
+    cardvasc0dman_->PrintPresFlux(false);
 
   // add the 0D cardiovascular force contributions to the old structural
   // residual state vector
@@ -334,6 +343,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::
     GetBlockDofRowMapPtr() const
 {
   CheckInitSetup();
+
   return cardvasc0dman_->GetCardiovascular0DMap();
 }
 
