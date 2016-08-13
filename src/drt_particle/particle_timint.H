@@ -259,6 +259,9 @@ namespace PARTICLE
     //! unknown temperatures \f$T_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
 
+    //! unknown pressure \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Pressuren() { return (*pressure_)(0); }
+
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
 
@@ -267,6 +270,9 @@ namespace PARTICLE
 
     //! Return temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
+
+    //! Return pressure \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() { return pressuren_; }
 
     //! unknown angular velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*ang_vel_)(0); }
@@ -330,6 +336,9 @@ namespace PARTICLE
 
     //! extract temperatures
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
+
+    //! extract pressure
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressurenp(){ return pressuren_; }
 
     //! extract SL latent heat
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat(){ return SL_latent_heat_; }
@@ -449,6 +458,8 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
     //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
+    //! global pressure \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > pressure_;
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
@@ -457,6 +468,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> accn_;
     //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>  temperaturen_;
+    //! global pressure \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>  pressuren_;
     //! radius of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> SL_latent_heat_;
     //! radius of each particle at \f$t_{0}\f$

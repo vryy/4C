@@ -21,7 +21,7 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/particleAMmat.H"
+#include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -97,9 +97,9 @@ void PARTICLE::TimIntCentrDiff::Init()
   // simple check if the expansion speed is too elevated
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
-    const int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+    const int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::ParticleAMmat* actmat_derived = static_cast<const MAT::PAR::ParticleAMmat*>(mat);
+    const MAT::PAR::ExtParticleMat* actmat = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
 
     const std::map<int,Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
     double max_HSQDot = 0;
@@ -108,7 +108,7 @@ void PARTICLE::TimIntCentrDiff::Init()
       if (iHS->second->HSQDot_> max_HSQDot)
         max_HSQDot = iHS->second->HSQDot_;
     }
-    const double min_density = actmat_derived->density_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
+    const double min_density = actmat->density_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
 
     const double delta_SL = max_HSQDot * (*dt_)[0]/min_density;
     const double delta_S = delta_SL/CPS_;

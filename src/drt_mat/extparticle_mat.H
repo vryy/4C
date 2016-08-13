@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------*/
 /*!
-\file particleAMmat.H
+\file extparticle_mat.H
 
 \brief Particle material with support for thermodynamics
 
@@ -9,8 +9,8 @@
 \maintainer Alessandro Cattabiani
 */
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLEAMMAT_H
-#define PARTICLEAMMAT_H
+#ifndef ExtParticleMat_H
+#define ExtParticleMat_H
 
 #include "particle_mat.H"
 
@@ -18,18 +18,18 @@ namespace MAT
 {
   namespace PAR
   {
-    //! parameters for ParticleAMmat material
-    class ParticleAMmat : public ParticleMat
+    //! parameters for ExtParticleMat material
+    class ExtParticleMat : public ParticleMat
     {
       public:
 
         //! constructor
-      ParticleAMmat(
+      ExtParticleMat(
             Teuchos::RCP<MAT::PAR::Material> matdata
             );
 
         //! destructor
-        virtual ~ParticleAMmat(){return;};
+        virtual ~ExtParticleMat(){return;};
 
         //! create instance of particle additive manufacturing material
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -51,38 +51,38 @@ namespace MAT
         /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
         const double SL_thermalExpansion_;
 
-    };  // class MAT::PAR::ParticleAMmat
+    };  // class MAT::PAR::ExtParticleMat
   } // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class ParticleAMmatType : public DRT::ParObjectType
+  class ExtParticleMatType : public DRT::ParObjectType
   {
     public:
 
-      std::string Name() const {return "ParticleAMmatType";};
+      std::string Name() const {return "ExtParticleMatType";};
 
-      static ParticleAMmatType& Instance() {return instance_;};
+      static ExtParticleMatType& Instance() {return instance_;};
 
       DRT::ParObject* Create(const std::vector<char>& data);
 
     private:
 
-      static ParticleAMmatType instance_;
+      static ExtParticleMatType instance_;
   };
 
 
   /*----------------------------------------------------------------------*/
-  //! wrapper for ParticleAMmat material
-  class ParticleAMmat : public ParticleMat
+  //! wrapper for ExtParticleMat material
+  class ExtParticleMat : public ParticleMat
   {
     public:
 
-      //! construct empty ParticleAMmat material
-      ParticleAMmat();
+      //! construct empty ExtParticleMat material
+      ExtParticleMat();
 
-      //! construct ParticleAMmat material with specific material parameters
-      explicit ParticleAMmat(MAT::PAR::ParticleAMmat* params);
+      //! construct ExtParticleMat material with specific material parameters
+      explicit ExtParticleMat(MAT::PAR::ExtParticleMat* params);
 
       //! @name packing and unpacking
       /*!
@@ -91,7 +91,7 @@ namespace MAT
         Every class implementing ParObject needs a unique id defined at the
         top of drt_parobject.H (this file) and should return it in this method.
       */
-      int UniqueParObjectId() const {return ParticleAMmatType::Instance().UniqueParObjectId();};
+      int UniqueParObjectId() const {return ExtParticleMatType::Instance().UniqueParObjectId();};
 
       /*!
         \brief Pack this class so it can be communicated
@@ -120,10 +120,10 @@ namespace MAT
       //@}
 
       //! return material type
-      INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_particleAMmat;};
+      INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_extparticlemat;};
 
-      //! clone ParticleAMmat material
-      Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new ParticleAMmat(*this));};
+      //! clone ExtParticleMat material
+      Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new ExtParticleMat(*this));};
 
     private:
 
@@ -131,7 +131,7 @@ namespace MAT
       virtual MAT::PAR::Parameter* Parameter() const {return params_;}
 
       //! material parameters
-      MAT::PAR::ParticleAMmat* params_;
+      MAT::PAR::ExtParticleMat* params_;
   };
 }
 #endif

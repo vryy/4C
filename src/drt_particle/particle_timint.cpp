@@ -23,7 +23,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/particle_mat.H"
-#include "../drt_mat/particleAMmat.H"
+#include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -78,10 +78,12 @@ PARTICLE::TimInt::TimInt
   vel_(Teuchos::null),
   acc_(Teuchos::null),
   temperature_(Teuchos::null),
+  pressure_(Teuchos::null),
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   temperaturen_(Teuchos::null),
+  pressuren_(Teuchos::null),
   SL_latent_heat_(Teuchos::null),
   radius_(Teuchos::null),
   radius0_(Teuchos::null),
@@ -137,8 +139,6 @@ PARTICLE::TimInt::TimInt
 void PARTICLE::TimInt::Init()
 {
 
-
-
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
 
   // displacements D_{n}
@@ -148,16 +148,18 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // temperatures T_{n}
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  switch (particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree :
+    pressure_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+  case INPAR::PARTICLE::Normal_DEM_thermo :
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  default : {}
   }
 
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-
 
   // radius of each particle
   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -191,9 +193,13 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n+1} at t_{n+1}
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
   // temperatures T_{n+1} at t_{n+1}
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  switch (particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree :
+    pressuren_ = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
+  case INPAR::PARTICLE::Normal_DEM_thermo :
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
+  default : {}
   }
 
   return;
@@ -206,12 +212,12 @@ void PARTICLE::TimInt::SetInitialFields()
   // make sure that a particle material is defined in the dat-file
   int id = -1;
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  switch (particle_algorithm_->ParticleInteractionType())
   {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
-  }
-  else
-  {
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+    break;
+  default :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
   }
 
@@ -305,18 +311,18 @@ void PARTICLE::TimInt::SetInitialFields()
 
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
   {
-    const MAT::PAR::ParticleAMmat* actmat_derived = static_cast<const MAT::PAR::ParticleAMmat*>(mat);
+    const MAT::PAR::ExtParticleMat* actmat = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
     // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
-    CPS_ = actmat_derived->CPS_;
-    CPL_ = actmat_derived->CPL_;
-    SL_latent_heat_max_ = actmat_derived->SL_latent_heat_max_;
-    SL_transitionTemperature_ = actmat_derived->SL_transitionTemperature_;
-    S_thermalExpansion_ = actmat_derived->S_thermalExpansion_;
-    L_thermalExpansion_ = actmat_derived->L_thermalExpansion_;
-    SL_thermalExpansion_ = actmat_derived->SL_thermalExpansion_;
+    CPS_ = actmat->CPS_;
+    CPL_ = actmat->CPL_;
+    SL_latent_heat_max_ = actmat->SL_latent_heat_max_;
+    SL_transitionTemperature_ = actmat->SL_transitionTemperature_;
+    S_thermalExpansion_ = actmat->S_thermalExpansion_;
+    L_thermalExpansion_ = actmat->L_thermalExpansion_;
+    SL_thermalExpansion_ = actmat->SL_thermalExpansion_;
 
     // initialize temperature of particles
-    const double temperature0 = actmat_derived->temperature_;
+    const double temperature0 = actmat->temperature_;
     (*temperature_)(0)->PutScalar(temperature0);
 
     if (temperature0>SL_transitionTemperature_)
@@ -519,6 +525,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *temperaturen_);
   }
 
+  if (pressuren_ != Teuchos::null)
+  {
+    old = pressuren_;
+    pressuren_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *pressuren_);
+  }
+
   if (ang_veln_ != Teuchos::null)
   {
     old = ang_veln_;
@@ -573,6 +586,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
     temperature_->ReplaceMaps(discret_->NodeRowMap());
     LINALG::Export(*oldvec, *(*temperature_)(0));
+  }
+
+  if (pressure_ != Teuchos::null && (*pressure_)(0) != Teuchos::null)
+  {
+    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
+    pressure_->ReplaceMaps(discret_->NodeRowMap());
+    LINALG::Export(*oldvec, *(*pressure_)(0));
   }
 
   if (ang_acc_ != Teuchos::null and (*ang_acc_)(0) != Teuchos::null)
@@ -689,10 +709,15 @@ void PARTICLE::TimInt::ReadRestartState()
     reader.ReadVector(accn_, "acceleration");
     acc_->UpdateSteps(*accn_);
 
-    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+    switch (particle_algorithm_->ParticleInteractionType())
     {
+    case INPAR::PARTICLE::MeshFree :
+      reader.ReadVector(pressuren_, "pressure");
+      pressure_->UpdateSteps(*pressuren_);
+    case INPAR::PARTICLE::Normal_DEM_thermo :
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
+    default : {}
     }
 
     reader.ReadVector(mass_, "mass");
@@ -785,8 +810,15 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+    output_->WriteVector("pressure", (*pressure_)(0));
+  case INPAR::PARTICLE::Normal_DEM_thermo :
     output_->WriteVector("temperature", (*temperature_)(0));
+  default : {}
+  }
+
 
   output_->WriteVector("radius", radius_, output_->nodevector);
   output_->WriteVector("mass", mass_, output_->nodevector);
@@ -830,7 +862,7 @@ void PARTICLE::TimInt::OutputRestart
 }
 
 /*----------------------------------------------------------------------*/
-/* output displacements, velocities, accelerations, and temperatures */
+/* output displacements, velocities, accelerations, temperatures, and pressure */
 void PARTICLE::TimInt::OutputState
 (
   bool& datawritten
@@ -850,9 +882,13 @@ void PARTICLE::TimInt::OutputState
   }
 
   output_->WriteVector("radius", radius_, output_->nodevector);
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  switch (particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree :
+    output_->WriteVector("pressure", (*pressure_)(0), output_->nodevector);
+  case INPAR::PARTICLE::Normal_DEM_thermo :
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
+  default : {}
   }
   if(collhandler_ != Teuchos::null and writeorientation_)
   {

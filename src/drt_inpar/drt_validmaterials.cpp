@@ -2460,40 +2460,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // particle material for additive manufacturing
+  // multipurpose meshfree/particle material for additive manufacturing
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_ParticleAM",
+      = Teuchos::rcp(new MaterialDefinition("MAT_ExtParticle",
                                             "particle material",
-                                            INPAR::MAT::m_particleAMmat));
+                                            INPAR::MAT::m_extparticlemat));
 
     AddNamedReal(m,"DENSITY","initial mass density");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
     AddNamedReal(m,"NUE","poisson ratio",0.0,true);
     AddNamedReal(m,"YOUNG","youngs modulus",0.0,true);
-    AddNamedReal(m,"INITTEMPERATURE","initial temperature");
-    AddNamedReal(m,"CPS","specific heat - constant pressure - solid state");
-    AddNamedReal(m,"CPL","specific heat - constant pressure - liquid state");
-    AddNamedReal(m,"SL_LATENT_HEAT","specific latent heat - solid <-> liquid");
-    AddNamedReal(m,"SL_TRANSITION_TEMPERATURE","transition temperature - solid <-> liquid");
-    AddNamedReal(m,"S_THERMAL_EXPANSION","volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient");
-    AddNamedReal(m,"L_THERMAL_EXPANSION","volumetric thermal expansion coefficient - liquid state");
-    AddNamedReal(m,"SL_THERMAL_EXPANSION","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // meshfree material for additive manufacturing
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_MeshFreeAM",
-                                            "meshfree material",
-                                            INPAR::MAT::m_meshFreeAMmat));
-
-    AddNamedReal(m,"MASS","initial mass");
-    AddNamedReal(m,"INITRADIUS","initial radius");
-    AddNamedReal(m,"NUE","poisson ratio",0.0,true);
     AddNamedReal(m,"INITTEMPERATURE","initial temperature");
     AddNamedReal(m,"CPS","specific heat - constant pressure - solid state");
     AddNamedReal(m,"CPL","specific heat - constant pressure - liquid state");

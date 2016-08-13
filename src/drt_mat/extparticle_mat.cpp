@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------*/
 /*!
-\file particleAMmat.cpp
+\file extparticle_mat.cpp
 
 \brief Particle material with support for thermodynamics
 
@@ -10,15 +10,14 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-
-#include "particleAMmat.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              catta 06/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::ParticleAMmat::ParticleAMmat(
+MAT::PAR::ExtParticleMat::ExtParticleMat(
     Teuchos::RCP<MAT::PAR::Material> matdata
     ) :
     ParticleMat(matdata),
@@ -36,27 +35,27 @@ MAT::PAR::ParticleAMmat::ParticleAMmat(
 
 
 /*------------------------------------------------------------------*
- | create instance of ParticleAMmat material            catta 06/16 |
+ | create instance of ExtParticleMat material            catta 06/16 |
  *------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleAMmat::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::ExtParticleMat::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ParticleAMmat(this));
+  return Teuchos::rcp(new MAT::ExtParticleMat(this));
 }
 
-MAT::ParticleAMmatType MAT::ParticleAMmatType::instance_;
+MAT::ExtParticleMatType MAT::ExtParticleMatType::instance_;
 
-DRT::ParObject* MAT::ParticleAMmatType::Create(const std::vector<char>& data)
+DRT::ParObject* MAT::ExtParticleMatType::Create(const std::vector<char>& data)
 {
-  MAT::ParticleAMmat* particleAMmat = new MAT::ParticleAMmat();
-  particleAMmat->Unpack(data);
-  return particleAMmat;
+  MAT::ExtParticleMat* ExtParticleMat = new MAT::ExtParticleMat();
+  ExtParticleMat->Unpack(data);
+  return ExtParticleMat;
 }
 
 
 /*------------------------------------------------------------------*
-| construct empty ParticleAMmat material                catta 06/16 |
+| construct empty ExtParticleMat material                catta 06/16 |
  *------------------------------------------------------------------*/
-MAT::ParticleAMmat::ParticleAMmat() :
+MAT::ExtParticleMat::ExtParticleMat() :
   params_(NULL)
 {
   return;
@@ -64,9 +63,9 @@ MAT::ParticleAMmat::ParticleAMmat() :
 
 
 /*--------------------------------------------------------------------------------*
- | construct ParticleAMmat material with specific material parameters catta 06/16 |
+ | construct ExtParticleMat material with specific material parameters catta 06/16 |
  *--------------------------------------------------------------------------------*/
-MAT::ParticleAMmat::ParticleAMmat(MAT::PAR::ParticleAMmat* params) :
+MAT::ExtParticleMat::ExtParticleMat(MAT::PAR::ExtParticleMat* params) :
   ParticleMat(params),
   params_(params)
 {
@@ -77,7 +76,7 @@ MAT::ParticleAMmat::ParticleAMmat(MAT::PAR::ParticleAMmat* params) :
 /*----------------------------------------------------------------------*
  | pack material for communication purposes                 catta 06/16 |
  *----------------------------------------------------------------------*/
-void MAT::ParticleAMmat::Pack(DRT::PackBuffer& data) const
+void MAT::ExtParticleMat::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -101,7 +100,7 @@ void MAT::ParticleAMmat::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data from a char vector                           catta 06/16 |
  *----------------------------------------------------------------------*/
-void MAT::ParticleAMmat::Unpack(const std::vector<char>& data)
+void MAT::ExtParticleMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -121,7 +120,7 @@ void MAT::ParticleAMmat::Unpack(const std::vector<char>& data)
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if(mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ParticleAMmat*>(mat);
+        params_ = static_cast<MAT::PAR::ExtParticleMat*>(mat);
       else
         dserror("Type of parameter material %d does not match calling type %d!", mat->Type(), MaterialType());
     }

@@ -102,8 +102,7 @@
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
-#include "particleAMmat.H"
-#include "meshFreeAMmat.H"
+#include "extparticle_mat.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
 #include "activefiber.H"
@@ -786,13 +785,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::Spring* params = static_cast<MAT::PAR::Spring*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_meshFreeAMmat:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::MeshFreeAMMat(curmat));
-    MAT::PAR::MeshFreeAMMat* params = static_cast<MAT::PAR::MeshFreeAMMat*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
   case INPAR::MAT::m_particlemat:
   {
     if (curmat->Parameter() == NULL)
@@ -800,11 +792,11 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_particleAMmat:
+  case INPAR::MAT::m_extparticlemat:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ParticleAMmat(curmat));
-    MAT::PAR::ParticleAMmat* params = static_cast<MAT::PAR::ParticleAMmat*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::ExtParticleMat(curmat));
+    MAT::PAR::ExtParticleMat* params = static_cast<MAT::PAR::ExtParticleMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growth_volumetric_scd:

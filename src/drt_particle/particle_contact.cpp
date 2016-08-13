@@ -21,8 +21,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/particle_mat.H"
-#include "../drt_mat/particleAMmat.H"
-#include "../drt_mat/meshFreeAMmat.H"
+#include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
@@ -66,11 +65,11 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_meshFreeAMmat);
-    dserror("Warning! Initial safety checks for MeshFree still in the TODO list");
+    //id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+    std::cout << "\n\n\n Warning! Initial safety checks for MeshFree still in the TODO list\n\n\n";
     return;
   case INPAR::PARTICLE::Normal_DEM_thermo :
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     break;
   default :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
@@ -108,20 +107,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if(r_min_>r_max_)
       dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
 
-    int id = -1;
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
-    }
-    else
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-    }
-    // check
-    if (id==-1)
-    {
-      dserror("Could not find particle material or material type");
-    }
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
 
