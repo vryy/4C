@@ -507,7 +507,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   particledata_.clear();
 
   radiusncol_ = Teuchos::null;
-  masscol_ =Teuchos::null;
+  masscol_ = Teuchos::null;
   velncol_ = Teuchos::null;
   disncol_ = Teuchos::null;
   ang_velncol_ = Teuchos::null;

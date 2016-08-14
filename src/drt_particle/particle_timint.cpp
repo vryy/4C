@@ -155,7 +155,9 @@ void PARTICLE::TimInt::Init()
   case INPAR::PARTICLE::Normal_DEM_thermo :
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  default : {}
+    break;
+  default : //do nothing
+    break;
   }
 
   // create empty interface force vector
@@ -199,7 +201,9 @@ void PARTICLE::TimInt::Init()
     pressuren_ = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
   case INPAR::PARTICLE::Normal_DEM_thermo :
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
-  default : {}
+    break;
+  default : //do nothing
+    break;
   }
 
   return;
@@ -209,39 +213,46 @@ void PARTICLE::TimInt::Init()
 /* Set intitial fields in structure (e.g. initial velocities) */
 void PARTICLE::TimInt::SetInitialFields()
 {
+
+  // -----------------------------------------//
+  // set material properties
+  // -----------------------------------------//
+
   // make sure that a particle material is defined in the dat-file
   int id = -1;
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree :
   case INPAR::PARTICLE::Normal_DEM_thermo :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     break;
   default :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
   }
-
   // check
   if (id==-1)
-  {
     dserror("Could not find particle material or material type");
-  }
 
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
 
-  // all particles have identical specific heats
+  // all particles have identical density. For meshfree particles the mass is determined by density and radius of influence
+  // for the sake of semplicity
   initDensity_ = actmat->density_;
   density_->PutScalar(initDensity_);
 
-  double initial_radius = actmat->initialradius_;
+  initRadius_ = actmat->initialradius_;
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
-  radius_->PutScalar(initial_radius);
+  radius_->PutScalar(initRadius_);
 
   // mass-vector: m = rho * 4/3 * PI *r^3
-  mass_->PutScalar(initDensity_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius);
+  mass_->PutScalar(initDensity_ * 4.0/3.0 * M_PI * initRadius_ * initRadius_ * initRadius_);
 
+  // -----------------------------------------//
   // set initial radius condition if existing
+  // -----------------------------------------//
+
   std::vector<DRT::Condition*> condition;
   discret_->GetCondition("InitialParticleRadius", condition);
 
@@ -272,7 +283,10 @@ void PARTICLE::TimInt::SetInitialFields()
     }
   }
 
+  // -----------------------------------------//
   // evaluate random normal distribution for particle radii if applicable
+  // -----------------------------------------//
+
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RADIUS_DISTRIBUTION"))
   {
     // get minimum and maximum radius for particles
@@ -309,37 +323,10 @@ void PARTICLE::TimInt::SetInitialFields()
     }
   }
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-  {
-    const MAT::PAR::ExtParticleMat* actmat = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
-    // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
-    CPS_ = actmat->CPS_;
-    CPL_ = actmat->CPL_;
-    SL_latent_heat_max_ = actmat->SL_latent_heat_max_;
-    SL_transitionTemperature_ = actmat->SL_transitionTemperature_;
-    S_thermalExpansion_ = actmat->S_thermalExpansion_;
-    L_thermalExpansion_ = actmat->L_thermalExpansion_;
-    SL_thermalExpansion_ = actmat->SL_thermalExpansion_;
+  // -----------------------------------------//
+  // initialize displacement field
+  // -----------------------------------------//
 
-    // initialize temperature of particles
-    const double temperature0 = actmat->temperature_;
-    (*temperature_)(0)->PutScalar(temperature0);
-
-    if (temperature0>SL_transitionTemperature_)
-    {
-      SL_latent_heat_->PutScalar(SL_latent_heat_max_);
-    }
-    else if (temperature0<SL_transitionTemperature_)
-    {
-      SL_latent_heat_->PutScalar(0);
-    }
-    else
-    {
-      dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
-    }
-  }
-
-  // initialize displacement field, radius, and mass vector
   for(int n=0; n<discret_->NumMyRowNodes(); ++n)
   {
     DRT::Node* actnode = discret_->lRowNode(n);
@@ -351,7 +338,7 @@ void PARTICLE::TimInt::SetInitialFields()
       if(amplitude)
       {
         double randomValue = DRT::Problem::Instance()->Random()->Uni();
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomValue * amplitude * initial_radius;
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomValue * amplitude * initRadius_;
       }
       else
       {
@@ -360,7 +347,10 @@ void PARTICLE::TimInt::SetInitialFields()
     }
   }
 
+  // -----------------------------------------//
   // set initial velocity field if existing
+  // -----------------------------------------//
+
   const std::string field = "Velocity";
   std::vector<int> localdofs;
   localdofs.push_back(0);
@@ -368,7 +358,48 @@ void PARTICLE::TimInt::SetInitialFields()
   localdofs.push_back(2);
   discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
 
-  return;
+  // -----------------------------------------//
+  // set the other parameters and rewrite density in case of meshfree
+  // -----------------------------------------//
+
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+    {
+      case INPAR::PARTICLE::MeshFree :
+        std::cout << "warning! the density adapter for meshfree interaction is still in the todo list!!!\n";
+        std::cin.get();
+        break;
+      case INPAR::PARTICLE::Normal_DEM_thermo :
+      const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+      // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
+      CPS_ = actmat2->CPS_;
+      CPL_ = actmat2->CPL_;
+      SL_latent_heat_max_ = actmat2->SL_latent_heat_max_;
+      SL_transitionTemperature_ = actmat2->SL_transitionTemperature_;
+      S_thermalExpansion_ = actmat2->S_thermalExpansion_;
+      L_thermalExpansion_ = actmat2->L_thermalExpansion_;
+      SL_thermalExpansion_ = actmat2->SL_thermalExpansion_;
+
+      // initialize temperature of particles
+      const double temperature0 = actmat2->temperature_;
+      (*temperature_)(0)->PutScalar(temperature0);
+
+      if (temperature0>SL_transitionTemperature_)
+      {
+        SL_latent_heat_->PutScalar(SL_latent_heat_max_);
+      }
+      else if (temperature0<SL_transitionTemperature_)
+      {
+        SL_latent_heat_->PutScalar(0);
+      }
+      else
+      {
+        dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+      }
+    }
+  default : //do nothing
+    break;
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -717,7 +748,9 @@ void PARTICLE::TimInt::ReadRestartState()
     case INPAR::PARTICLE::Normal_DEM_thermo :
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
-    default : {}
+      break;
+    default : //do nothing
+      break;
     }
 
     reader.ReadVector(mass_, "mass");
@@ -816,7 +849,8 @@ void PARTICLE::TimInt::OutputRestart
     output_->WriteVector("pressure", (*pressure_)(0));
   case INPAR::PARTICLE::Normal_DEM_thermo :
     output_->WriteVector("temperature", (*temperature_)(0));
-  default : {}
+  default : // do nothing
+    break;
   }
 
 
@@ -888,7 +922,9 @@ void PARTICLE::TimInt::OutputState
     output_->WriteVector("pressure", (*pressure_)(0), output_->nodevector);
   case INPAR::PARTICLE::Normal_DEM_thermo :
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
-  default : {}
+    break;
+  default : //do nothing
+    break;
   }
   if(collhandler_ != Teuchos::null and writeorientation_)
   {

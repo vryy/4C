@@ -304,6 +304,9 @@ namespace PARTICLE
     //! Return initial density
     virtual const double initDensity() { return initDensity_; }
 
+    //! Return initial radius
+    virtual const double initRadius() { return initRadius_; }
+
     //! extract heat source - constant pressure - solid state
     virtual const double CPS() { return CPS_; }
 
@@ -496,6 +499,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> density_;
     //! initial density
     double initDensity_;
+    //! initial radius
+    double initRadius_;
     //! specific heat - constant pressure - solid state
     double CPS_;
     //! specific heat - constant pressure - liquid state
