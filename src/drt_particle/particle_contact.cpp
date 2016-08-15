@@ -39,8 +39,10 @@ typedef Sacado::Fad::DFad<double> FAD;
 
 //#define OUTPUT
 
-
-PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
+/*----------------------------------------------------------------------*
+ | constructor for particle and meshfree interactions cattabiani 08/16  |
+ *----------------------------------------------------------------------*/
+PARTICLE::InteractionHandlerBase::InteractionHandlerBase(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
   const Teuchos::ParameterList& particledynparams
@@ -48,14 +50,55 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
   particle_algorithm_(particlealgorithm),
-  contact_energy_(0.0),
-  g_max_(0.0),
-  writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   radiusncol_(Teuchos::null),
   masscol_(Teuchos::null),
   disncol_(Teuchos::null),
   velncol_(Teuchos::null),
   ang_velncol_(Teuchos::null)
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set states from time integrator to prepare collisions   ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::InteractionHandlerBase::SetState(
+  Teuchos::RCP<Epetra_Vector> radius,
+  Teuchos::RCP<Epetra_Vector> mass)
+{
+  // node based vectors
+  radiusncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*radius,*radiusncol_);
+  masscol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*mass,*masscol_);
+
+  // miraculous transformation from row to col layout ...
+  disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
+  velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
+  ang_velncol_ = discret_->GetState("bubbleangvel");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor for particle contact                        ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+
+PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+  const Teuchos::ParameterList& particledynparams
+  ) :
+  PARTICLE::InteractionHandlerBase(
+      discret,
+      particlealgorithm,
+      particledynparams
+      ),
+  contact_energy_(0.0),
+  g_max_(0.0),
+  writeenergyevery_(particledynparams.get<int>("RESEVRYERGY"))
 {
   // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
@@ -345,28 +388,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
        dserror("Friction coefficient invalid");
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*
- | set states from time integrator to prepare collisions   ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::SetState(
-  Teuchos::RCP<Epetra_Vector> radius,
-  Teuchos::RCP<Epetra_Vector> mass)
-{
-  // node based vectors
-  radiusncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radius,*radiusncol_);
-  masscol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*mass,*masscol_);
-
-  // miraculous transformation from row to col layout ...
-  disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
-  velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
-  ang_velncol_ = discret_->GetState("bubbleangvel");
-
-  return;
 }
 
 

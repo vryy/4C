@@ -39,6 +39,88 @@ namespace PARTICLE
 namespace PARTICLE
 {
 
+/*====================================================================*/
+/*!
+ * \brief interaction handler base for particle and meshfree interactions
+ *
+ * \author cattabiani
+ * \date 08/16
+ */
+  class InteractionHandlerBase
+  {
+
+  public:
+
+    //! @name Life
+    //@{
+
+    //! Constructor
+    InteractionHandlerBase(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+      const Teuchos::ParameterList& particledynparams
+      );
+
+    //! Destructor
+    virtual ~InteractionHandlerBase(){ ; }
+
+    //@}
+
+    //! @name Actions
+    //@{
+
+    /// set states from time integrator to prepare collision calculation
+    virtual void SetState(
+      Teuchos::RCP<Epetra_Vector> radius,
+      Teuchos::RCP<Epetra_Vector> mass
+      );
+
+    /// compute collisions (inter-particle and particle-wall), returns contact energy
+    virtual double EvaluateParticleContact(
+      double dt,
+      Teuchos::RCP<Epetra_Vector> sysvec1,
+      Teuchos::RCP<Epetra_Vector> sysvec2
+      ) = 0;
+
+    //@}
+
+    //! @name Actions
+    //@{
+
+  protected:
+
+    /// ID of actual processor in parallel
+    int myrank_;
+
+    //! @name helper classes
+    //@{
+
+    /// particle discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
+
+    /// particle algorithm that is connected to the time integration
+    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+
+    //@}
+
+    //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
+    //@{
+
+    //! @node-based
+    //@{
+    Teuchos::RCP<Epetra_Vector> radiusncol_;
+    Teuchos::RCP<Epetra_Vector> masscol_;
+    //@}
+
+    //! @dof-based
+    //@{
+    Teuchos::RCP<Epetra_Vector> disncol_;
+    Teuchos::RCP<Epetra_Vector> velncol_;
+    Teuchos::RCP<const Epetra_Vector> ang_velncol_;
+    //@}
+
+  };  // class InteractionHandlerBase
+
   /*====================================================================*/
   /*!
    * \brief Collision handler base for particle contact
@@ -46,7 +128,7 @@ namespace PARTICLE
    * \author hammerl
    * \date 09/13
    */
-  class ParticleCollisionHandlerBase
+  class ParticleCollisionHandlerBase : public PARTICLE::InteractionHandlerBase
   {
 
   public:
@@ -69,21 +151,8 @@ namespace PARTICLE
     //! @name Actions
     //@{
 
-    /// set states from time integrator to prepare collision calculation
-    virtual void SetState(
-      Teuchos::RCP<Epetra_Vector> radius,
-      Teuchos::RCP<Epetra_Vector> mass
-      );
-
     /// assemble energies of particles
     virtual double EnergyAssemble(double owner_i, double owner_j);
-
-    /// compute collisions (inter-particle and particle-wall), returns contact energy
-    virtual double EvaluateParticleContact(
-      double dt,
-      Teuchos::RCP<Epetra_Vector> sysvec1,
-      Teuchos::RCP<Epetra_Vector> sysvec2
-      ) = 0;
 
     //@}
 
@@ -102,20 +171,6 @@ namespace PARTICLE
     //@}
 
   protected:
-
-    /// ID of actual processor in parallel
-    int myrank_;
-
-    //! @name helper classes
-    //@{
-
-    /// particle discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
-
-    /// particle algorithm that is connected to the time integration
-    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
-
-    //@}
 
     //! @name Collision parameters
     //@{
@@ -185,36 +240,17 @@ namespace PARTICLE
 
     //@}
 
-    //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
-    //@{
-
-    //! @node-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> radiusncol_;
-    Teuchos::RCP<Epetra_Vector> masscol_;
-    //@}
-
-    //! @dof-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> disncol_;
-    Teuchos::RCP<Epetra_Vector> velncol_;
-    Teuchos::RCP<const Epetra_Vector> ang_velncol_;
-    //@}
-
-    //@}
-
     /// struct to store wall contact point and additional information about corresponding wall ele
     struct WallContactPoint {
-      int eleid;
-      LINALG::Matrix<3,1> point;
-      double penetration;
-      std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
-      std::vector<int> lm;
-      std::vector<int> lmowner;
+     int eleid;
+     LINALG::Matrix<3,1> point;
+     double penetration;
+     std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
+     std::vector<int> lm;
+     std::vector<int> lmowner;
     };
 
-  };  // class ParticleCollisionHandler
-
+  };  // class ParticleCollisionHandlerBase
 
   /*====================================================================*/
   /*!
@@ -386,8 +422,6 @@ namespace PARTICLE
     LINALG::Matrix<3,1> wallcollpoint_pos;
     LINALG::Matrix<3,1> wallcollpoint_vel;
   };
-
-
 
   /*====================================================================*/
   /*!
