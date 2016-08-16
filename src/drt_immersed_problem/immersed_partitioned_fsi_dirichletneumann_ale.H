@@ -27,6 +27,9 @@ public:
   /// setup partitioned ImmersedFSI algorithm
   explicit ImmersedPartitionedFSIDirichletNeumannALE(const Epetra_Comm& comm);
 
+  /// setup this object
+  virtual void Setup();
+
   /// here we need to call the standard FSI setup
   virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
 

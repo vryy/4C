@@ -4,11 +4,11 @@
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 
-<pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -78,7 +78,11 @@ class DirichletNeumann : public Partitioned
 {
 public:
 
+  /// constructor
   explicit DirichletNeumann(const Epetra_Comm& comm);
+
+  /// setup this object
+  virtual void Setup();
 
 protected:
 

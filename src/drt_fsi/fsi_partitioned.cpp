@@ -54,12 +54,29 @@
 /*----------------------------------------------------------------------*/
 FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   : Algorithm(comm),
-    counter_(7)
+    idispn_(Teuchos::null),
+    iveln_(Teuchos::null),
+    rawGraph_(Teuchos::null),
+    counter_(7),
+    mfresitemax_(0),
+    coupsfm_(Teuchos::null),
+    matchingnodes_(false),
+    debugwriter_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  SetDefaultParameters(fsidyn,noxparameterlist_);
+  // empty constructor
+}
 
-  SetupCoupling(fsidyn,comm);
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::Setup()
+{
+  // call setup of base class
+  FSI::Algorithm::Setup();
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  SetDefaultParameters(fsidyn,noxparameterlist_);
+  SetupCoupling(fsidyn,Comm());
 }
 
 
@@ -67,6 +84,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm)
 {
+  if(Comm().MyPID()==0)
+    std::cout<<"\n SetupCoupling in FSI::Partitioned ..."<<std::endl;
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
@@ -129,8 +148,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
   }
   else
   {
-    if(comm.MyPID()==0)
-      std::cout<<"\n No setup for fsi interface treatment needed.\n Performing IMMERSED FSI ALGORITHM ... \n"<<std::endl;
+    dserror("You should not arrive here");
   }
 
     // enable debugging
@@ -143,6 +161,9 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
+  if(Comm().MyPID()==0)
+    std::cout<<"\n SetDefaultParameters in FSI::Partitioned ..."<<std::endl;
+
   // extract sublist with settings for partitioned solver
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
 

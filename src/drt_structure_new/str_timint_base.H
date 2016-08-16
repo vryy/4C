@@ -245,16 +245,6 @@ namespace TIMINT {
     }
     ///@}
 
-    /// @name set global state variables via adapter
-    /// @{
-    /** \brief Set forces due to interface with fluid
-     *
-     *  The force is expected to be external force like. */
-    virtual void SetForceInterface(
-        Teuchos::RCP<Epetra_MultiVector> iforce   ///< the force on interface
-        ){ dserror( "Not yet considered!" ); };
-    /// @}
-
     /// @name access and modify model evaluator stuff via adapter
     /// @{
     /// are there any algebraic constraints?
@@ -583,8 +573,6 @@ namespace TIMINT {
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
     /// Update routine for coupled problems with monolithic approach with time adaptivity (implicit only)
     virtual void Update(double endtime) = 0;
-    /// linear structure solve with just a interface load (implicit only)
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
     /// Get type of thickness scaling for thin shell structures (implicit only)
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
     /// Access to scaling matrix for STC (implicit only)
@@ -672,6 +660,20 @@ namespace TIMINT {
       return *int_ptr_;
     }
 
+    /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
+    BaseDataSDyn& DataSDyn()
+    {
+      CheckInit();
+      return *datasdyn_;
+    };
+
+    /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
+    const Teuchos::RCP<STR::Dbc>& DBCPtr()
+    {
+      CheckInitSetup();
+      return dbc_ptr_;
+    }
+
     ///@}
   protected:
     /// get the indicator state
@@ -722,13 +724,6 @@ namespace TIMINT {
       return dataio_;
     };
 
-    /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
-    BaseDataSDyn& DataSDyn()
-    {
-      CheckInit();
-      return *datasdyn_;
-    };
-
     /// return a pointer to the structural dynamic data container (read and write access)
     const Teuchos::RCP<BaseDataSDyn>& DataSDynPtr()
     {
@@ -741,13 +736,6 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return *dbc_ptr_;
-    }
-
-    /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
-    const Teuchos::RCP<STR::Dbc>& DBCPtr()
-    {
-      CheckInitSetup();
-      return dbc_ptr_;
     }
 
     /// return a reference to the integrator (read and write access)

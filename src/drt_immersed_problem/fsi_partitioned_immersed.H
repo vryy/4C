@@ -26,6 +26,9 @@ public:
   //! constructor
   explicit PartitionedImmersed(const Epetra_Comm& comm);
 
+  //! setup this object
+  virtual void Setup();
+
   //! overrides method of base class.
   virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
 

@@ -5,6 +5,8 @@
 \brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
        and methods dependent on the interface
 
+\level 2
+
 \maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -13,12 +15,15 @@
 */
 
 
-
 #include "ad_str_fsiwrapper_immersed.H"
+
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_structure/stru_aux.H"
+
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
+
 #include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
@@ -43,8 +48,7 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Apply interface forces
-void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
+void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                 Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
   Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
@@ -57,6 +61,21 @@ void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(Teuchos:
   SetForceInterface(fifc);
 
   PreparePartitionStep();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
+                                Teuchos::RCP<Epetra_Vector> iforce_immersed)
+{
+  FSIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
+
+  if(iforce_fsi!=Teuchos::null)
+    interface_->AddFSICondVector(iforce_fsi, FSIModelEvaluator()->GetInterfaceForceNpPtr());
+  if(iforce_immersed!=Teuchos::null)
+    interface_->AddIMMERSEDCondVector(iforce_immersed, FSIModelEvaluator()->GetInterfaceForceNpPtr());
 
   return;
 }

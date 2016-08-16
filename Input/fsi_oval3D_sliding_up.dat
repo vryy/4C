@@ -72,7 +72,6 @@ PARTITIONED                     DirichletNeumannSlideALE
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 RELAX                           1.0
 --------------------------------------------------------------------------IO
-FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -80,9 +79,6 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
@@ -92,131 +88,38 @@ PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
 REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
-NORM_DISP                       Mix
-NORM_RESF                       Mix
-NORMCOMBI_RESFDISP              And
 DYNAMICTYP                      GenAlpha
-MAXITER                         50
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
-TOLCONSTR                       1e-07
-TOLDISP                         1e-07
-TOLRES                          1e-07
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6

@@ -161,15 +161,6 @@ const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::Implicit::SolveRelaxationLinear()
-{
-  CheckInitSetup();
-  dserror("FixMe: SolveRelaxationLinear() should be implemented here!");
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
 {
   CheckInitSetup();

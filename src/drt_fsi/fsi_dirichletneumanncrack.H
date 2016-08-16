@@ -3,13 +3,11 @@
 \file fsi_dirichletneumanncrack.H
 
 \brief Dirichlet-Neumann partitioning XFSI approach to simulate FSI
-with cracking structures
+       with cracking structures
 
-<pre>
-Maintainer: Sudhakar
-            sudhakar@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\maintainer Sudhakar Y.
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 
@@ -27,6 +25,9 @@ public:
 
   /// constructor
   explicit DirichletNeumann_Crack(const Epetra_Comm& comm);
+
+  /// setup this object
+  virtual void Setup();
 
   /// Perform all operations related to updating FSI interface for FSI-crack problem
   void update_FSI_interface_Crack();

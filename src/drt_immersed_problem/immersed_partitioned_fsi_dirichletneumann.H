@@ -48,7 +48,10 @@ public:
   /// setup partitioned ImmersedFSI algorithm
   explicit ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm);
 
-  /// initialize search tree for structure discretization and ghost structure redundantly
+  /// setup this object
+  virtual void Setup();
+
+  /// initialize search tree for structure discretization
   void SetupStructuralDiscretization();
 
 protected:
@@ -178,7 +181,7 @@ protected:
   bool displacementcoupling_;
   bool multibodysimulation_;         //!< true if more than one body is present. Each body needs to be labeled with "ImmersedSearchbox" condition
   bool output_evry_nlniter_;         //!< true if output after every iteration of the outer fsi loop. Useful for debugging.
-  bool is_relaxation_;
+  bool is_relaxation_;               //!< true if relaxation is used
   int coupalgo_;                     //!< here we store the coupalgo
   int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested
   int degree_gp_fluid_bound_;        //!< determines number of gp in fluid elements cut by boundary. gps covered by structure are "compressible" gps.

@@ -5,12 +5,10 @@
 \brief Structural adapter for FPSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 - 15249
-</pre>
+\maintainer Christoph Ager
+
+\level 3
+
 */
 
 #ifndef FPSI_STRUCTURE_WRAPPER_H
@@ -30,10 +28,24 @@ namespace ADAPTER
     /// Destructor
     virtual ~FPSIStructureWrapper() { ; }
 
-    /// extract interface displacements at \f$t_{n}\f$
+    /*!
+    \brief extract interface displacements at \f$t_{n}\f$
+
+    \param FPSI (in) : if true perform some pre-stress and fpsi specific stuff
+
+    \note if param FPSI = false the base class version of this method is called
+
+    */
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn(bool FPSI = false);
 
-    /// extract interface displacements at \f$t_{n+1}\f$
+    /*!
+    \brief  extract interface displacements at \f$t_{n+1}\f$
+
+    \param FPSI (in) : if true perform some pre-stress and fpsi specific stuff
+
+    \note if param FPSI = false the base class version of this method is called
+
+    */
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI = false);
   };
 }

@@ -3,12 +3,12 @@
 
 \brief partitioned immersed cell-ecm interaction via cell confinement in ecm pore
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_CONFINE_CELL_H
 #define IMMERSED_PARTITIONED_CONFINE_CELL_H

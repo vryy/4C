@@ -36,17 +36,43 @@
 // time monitoring
 #include <Teuchos_TimeMonitor.hpp>
 
-// relaxation
-#include "../drt_fsi/fsi_nox_aitken.H"
-
 
 IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm)
   : ImmersedBase(),
-    FSI::PartitionedImmersed(comm)
+    FSI::PartitionedImmersed(comm),
+    struct_bdry_traction_(Teuchos::null),
+    fluid_artificial_velocity_(Teuchos::null),
+    dbcmap_immersed_(Teuchos::null),
+    fluid_SearchTree_(Teuchos::null),
+    structure_SearchTree_(Teuchos::null),
+    myrank_(comm.MyPID()),
+    numproc_(comm.NumProc()),
+    globalproblem_(NULL),
+    displacementcoupling_(false),
+    multibodysimulation_(false),
+    output_evry_nlniter_(false),
+    is_relaxation_(false),
+    coupalgo_(0),
+    correct_boundary_velocities_(0),
+    degree_gp_fluid_bound_(0),
+    artificial_velocity_isvalid_(false),
+    boundary_traction_isvalid_(false),
+    immersed_info_isvalid_(false),
+    fluiddis_(Teuchos::null),
+    structdis_(Teuchos::null),
+    immersedstructure_(Teuchos::null)
+
 {
-  // important variables for parallel simulations
-  myrank_  = comm.MyPID();
-  numproc_ = comm.NumProc();
+  // empty constructor
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
+{
+  // call setup of base class
+  FSI::PartitionedImmersed::Setup();
 
   // get pointer to global problem
   globalproblem_ = DRT::Problem::Instance();
@@ -61,9 +87,9 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   // get coupling variable
   displacementcoupling_ = globalproblem_->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned FSI scheme :  Displacements "<<std::endl;
+    std::cout<<"\n Coupling variable for partitioned FSI scheme :  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
+    std::cout<<"\n Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
 
   // set switch for interfdace velocity correction
   correct_boundary_velocities_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
@@ -195,8 +221,9 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   immersed_info_isvalid_ = false;
 
   // wait for all processors to arrive here
-  comm.Barrier();
+  Comm().Barrier();
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -453,18 +480,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(T
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretization()
 {
-  // ghost structure on each proc (for search algorithm)
-  if(numproc_ > 1)
-  {
-    // fill complete inside
-    CreateGhosting(structdis_);
-  }
-  else
-  {
-    // fill complete to incorporate changes due to ghosting and build geometries
-    structdis_->FillComplete();
-  }
-
   // find positions of the immersed structural discretization
   std::map<int,LINALG::Matrix<3,1> > my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
@@ -662,39 +677,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     for(int i=0;i<(int)structboxes.size();++i)
       std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.at(i).size()<<" background elements for body "<<i<<std::endl;
   }
-
-//  // DEBUG option:
-//  // output of sets:
-//
-//  std::cout<<"\n Structural bounding box diagonal = "<<max_radius<<std::endl;
-//  std::cout<<"\n bounding box center coordinate = "<<boundingboxcenter<<std::endl;
-//  if(curr_subset_of_fluiddis_.empty() == false)
-//  {
-//    int counter = 0;
-//    for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_fluiddis_.begin(); closele != curr_subset_of_fluiddis_.end(); closele++)
-//    {
-//      for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
-//      {
-//        counter ++;
-//        std::cout<<"PROC"<<myrank_<<" key "<<closele->first<<" eleIter "<<counter<<" : "<<*eleIter<<std::endl;
-//      }
-//    }
-//  }
-//  else
-//    std::cout<<"curr_subset_of_fluiddis_ empty on PROC "<<myrank_<<std::endl;
-//
-//  //___________________________
-//
-//  if(currpositions_struct_.empty() == false)
-//  {
-//    int counter = 0;
-//    for(std::map<int,LINALG::Matrix<3,1> >::const_iterator closele = currpositions_struct_.begin(); closele != currpositions_struct_.end(); closele++)
-//    {
-//      counter ++;
-//      if(myrank_==1)
-//      std::cout<<"PROC"<<myrank_<<" key: "<<closele->first<<"  position: "<<counter<<closele->second(0)<<" "<<closele->second(1)<<" "<<closele->second(2)<<std::endl;
-//    }
-//  }
 
   return;
 }

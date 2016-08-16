@@ -1,4 +1,19 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_dirichletneumannslideale.cpp
 
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+       with sliding ALE-structure interfaces
+
+
+\maintainer Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "fsi_dirichletneumannslideale.H"
@@ -20,8 +35,20 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
-  : DirichletNeumann(comm)
+  : DirichletNeumann(comm),
+    displacementcoupling_(false)
 {
+  // empty constructor
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::DirichletNeumannSlideale::Setup()
+{
+  // call setup of base class
+  FSI::DirichletNeumann::Setup();
+
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -36,7 +63,6 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
                                                          aletype));
 
   islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofMap(),true));
-
 }
 
 

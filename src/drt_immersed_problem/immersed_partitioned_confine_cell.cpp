@@ -3,12 +3,12 @@
 
 \brief partitioned immersed cell-ecm interaction via cell confinement in ecm pore
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_confine_cell.H"
 
@@ -208,7 +208,7 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedOp(Teuchos::RCP<Epetra_Vector>
   else
   {
     // prescribe neumann values at structural boundary dofs
-    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,bdry_traction);
+    cellstructure_->ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::null,bdry_traction);
 
      //solve cell
     cellstructure_->Solve();

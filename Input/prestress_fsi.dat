@@ -34,6 +34,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 DYNAMICTYP                      Statics
 PRESTRESS                       mulf                          // mulf id none
@@ -43,6 +44,17 @@ RESTARTEVRY                     1
 TOLDISP                         1.0E-07
 MAXITER                         50
 PREDICT                         ConstDisVelAcc
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 INITIALFIELD                    zero_field

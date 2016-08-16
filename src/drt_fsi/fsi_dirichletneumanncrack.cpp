@@ -1,9 +1,15 @@
-/*
- * fsidirichletneumanncrack.cpp
- *
- *  Created on: Mar 26, 2014
- *      Author: sudhakar
- */
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_dirichletneumanncrack.cpp
+
+\brief Dirichlet-Neumann partitioning XFSI approach to simulate FSI
+       with cracking structures
+
+\maintainer Sudhakar Y.
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fsi_dirichletneumanncrack.H"
 
@@ -23,9 +29,17 @@
  *        Constructor
  *-------------------------------------------------------------------------------------*/
 FSI::DirichletNeumann_Crack::DirichletNeumann_Crack(const Epetra_Comm& comm)
-: DirichletNeumann(comm)
+: DirichletNeumann(comm),
+  crackUpdate_(false)
 {
-  crackUpdate_ = false;
+  // empty constructor
+}
+
+
+void FSI::DirichletNeumann_Crack::Setup()
+{
+  // call setup of base class
+  FSI::DirichletNeumann::Setup();
 }
 
 

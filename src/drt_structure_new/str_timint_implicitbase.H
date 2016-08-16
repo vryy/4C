@@ -94,8 +94,6 @@ namespace TIMINT {
     virtual int IntegrateStep() = 0;
     /// nonlinear solve (pure virtual)
     virtual INPAR::STR::ConvergenceStatus Solve() = 0;
-    /// linear structure solve with just a interface load (pure virtual)
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
     /// start new time step
     virtual void PrepareTimeStep() = 0;
     /// specific method for iterative staggered partitioned TSI

@@ -2,6 +2,8 @@
 /*!
 \file str_timint_explicit.H
 
+\brief explicit structural time integration
+
 \maintainer Philipp Farah
 
 \date Aug 12, 2015
@@ -49,9 +51,6 @@ namespace TIMINT {
      *  for the time step. All boundary conditions have
      *  been set. */
     virtual INPAR::STR::ConvergenceStatus Solve();
-
-    /* Linear structure solve with just an interface load */
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
     //! prepare partiton step
     virtual void PreparePartitionStep();

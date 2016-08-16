@@ -19,6 +19,7 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 NORM_DISP                       Abs
@@ -27,12 +28,24 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-10
 TOLRES                          1.0E-10
 MAXITER                         50
+TIMESTEP                        0.1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.5
 ALPHA_F                         0.5
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
@@ -45,6 +58,7 @@ NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
+TIMESTEP                        0.1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 CHARELELENGTH_PC                root_of_volume
@@ -61,15 +75,15 @@ LINEAR_SOLVER                   1
 ALE_TYPE                        solid_linear
 UPDATEMATRIX                    no
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
+MAXTIME                         0.2
 TIMESTEP                        0.1
 NUMSTEP                         2
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_steep_desc
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 DIVPROJECTION                   yes
-CONVTOL                         1.0E-7
+CONVTOL                         1.0E-11
 ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           0.825
@@ -7067,7 +7081,7 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.71472229883596602e-05 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.86933886675524085e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.63637929773413316e-05 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.90423899308673585e-04 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

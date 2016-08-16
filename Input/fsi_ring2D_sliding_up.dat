@@ -90,6 +90,7 @@ PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
 REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 NORM_DISP                       Mix
 NORM_RESF                       Mix
@@ -111,6 +112,17 @@ ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 AZBDIAG                         0

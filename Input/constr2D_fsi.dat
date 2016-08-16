@@ -34,6 +34,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Old
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -62,6 +63,19 @@ ALPHA_F                         0.3333333333333
 ALPHA_M                         0.
 BETA                            0.44444444444
 GAMMA                           0.83333333333
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta

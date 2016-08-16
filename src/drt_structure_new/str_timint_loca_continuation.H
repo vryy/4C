@@ -63,9 +63,6 @@ namespace TIMINT {
      *  been set. */
     virtual INPAR::STR::ConvergenceStatus Solve();
 
-    /* Linear structure solve with just an interface load */
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
-
     //! start new time step (derived)
     virtual void PrepareTimeStep();
 

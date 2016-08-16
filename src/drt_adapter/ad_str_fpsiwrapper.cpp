@@ -5,12 +5,9 @@
 \brief Structural adapter for FPSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 - 15249
-</pre>
+\maintainer Christoph Ager
+
+\level 3
 */
 
 #include "ad_str_fpsiwrapper.H"

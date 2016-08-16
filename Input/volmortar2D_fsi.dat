@@ -17,6 +17,7 @@ DIM           2
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton
@@ -27,6 +28,17 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
@@ -51,7 +63,7 @@ ALE_TYPE                        solid
 MAXTIME                         20.0
 TIMESTEP                        0.1
 NUMSTEP                         200
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 COUPALGO                        iter_stagg_fixed_rel_param //iter_monolithicstructuresplit
 MATCHGRID_FLUIDALE              no

@@ -613,9 +613,15 @@ void fsi_ale_drt()
         DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       if (method==INPAR::FSI::DirichletNeumannSlideale)
+      {
         fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannSlideale>(fsi,true)->Setup();
+      }
       else if (method==INPAR::FSI::DirichletNeumann)
+      {
         fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi,true)->Setup();
+      }
       else
         dserror("unsupported partitioned FSI scheme");
 
@@ -765,9 +771,13 @@ void xfsi_drt()
       if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
       {
         fsi = Teuchos::rcp(new FSI::DirichletNeumann_Crack(comm));
+        fsi->Setup();
       }
       else
+      {
         fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+        fsi->Setup();
+      }
     }
     else
       dserror("only Dirichlet-Neumann partitioned schemes with XFEM");

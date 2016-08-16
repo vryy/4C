@@ -34,6 +34,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 DYNAMICTYP                      GenAlpha//OneStepTheta
 TIMESTEP                        1
 NUMSTEP                         200
@@ -53,6 +54,19 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   1
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         0.8
 TIMESTEP                        0.1

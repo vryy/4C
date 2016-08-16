@@ -69,6 +69,9 @@ public:
   /// setup FSI algorithm
   explicit Partitioned(const Epetra_Comm& comm);
 
+  /// setup this object
+  virtual void Setup();
+
   /// outer level FSI time loop
   virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
@@ -169,6 +172,9 @@ protected:
   /// extract idispn_ iveln_
   virtual void ExtractPreviousInterfaceSolution();
 
+  /// setup list with default parameters
+  virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+
 private:
 
   /// create linear solver framework
@@ -181,9 +187,6 @@ private:
   /// create convergence tests including testing framework
   Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(Teuchos::ParameterList& nlParams,
                                                         Teuchos::RCP<NOX::Epetra::Group> grp);
-
-  /// setup list with default parameters
-  virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;
@@ -225,7 +228,6 @@ protected:
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist_;
 
-private:
   /// special debugging output
   Teuchos::RCP<UTILS::DebugWriter> debugwriter_;
 

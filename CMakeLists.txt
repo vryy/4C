@@ -670,7 +670,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
   src/drt_adapter/adapter_coupling_poro_mortar.cpp
   src/drt_adapter/adapter_coupling_volmortar.cpp
-    src/drt_adapter/ad_field_wrapper.cpp
+  src/drt_adapter/ad_field_wrapper.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
   src/drt_adapter/ad_fld_fluid_ale_immersed.cpp
@@ -1146,6 +1146,7 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_line_evaluate.cpp
 )
 set(OBJS_DRT_FSI
+  src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
   src/drt_fsi/fs_monolithic.cpp
   src/drt_fsi/fsi_algorithm.cpp
   src/drt_fsi/fsi_constrmonolithic.cpp

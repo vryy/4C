@@ -33,6 +33,7 @@ STRUCT_STRESS                   no
 FLUID_SOL                       yes
 FLUID_VIS                       yes
 -------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDisVelAcc
@@ -48,6 +49,19 @@ RESTARTEVRY                     2
 NLNSOL                          fullnewton
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 TIMEINTEGR                      One_Step_Theta

@@ -19,6 +19,7 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 TOLDISP                         1.0E-10
@@ -29,6 +30,17 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta

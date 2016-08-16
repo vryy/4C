@@ -5,12 +5,12 @@
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
-</pre>
+
+\level 1
 */
 
 
@@ -43,7 +43,7 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 }
 
 /*------------------------------------------------------------------------------------*
- * Rebuild FSI interface on structure side                                      sudhakar 09/13
+ * Rebuild FSI interface on structure side                              sudhakar 09/13
  * This is necessary if elements are added/deleted from interface
  *------------------------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapper::RebuildInterface()
@@ -64,9 +64,10 @@ void ADAPTER::FSIStructureWrapper::UseBlockMatrix()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  Teuchos::RCP<Epetra_Vector> relax = interface_->InsertFSICondVector(iforce);
-  SetForceInterface(relax);
-  Teuchos::RCP<Epetra_Vector> idisi = SolveRelaxationLinear();
+  ApplyInterfaceForces(iforce);
+  FSIModelEvaluator()->SetIsRelaxationSolve(true);
+  Teuchos::RCP<const Epetra_Vector> idisi = FSIModelEvaluator()->SolveRelaxationLinear(structure_);
+  FSIModelEvaluator()->SetIsRelaxationSolve(false);
 
   // we are just interested in the incremental interface displacements
   return interface_->ExtractFSICondVector(idisi);
@@ -217,6 +218,17 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
 // Apply interface forces
 void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
+  FSIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
+  interface_->AddFSICondVector(iforce, FSIModelEvaluator()->GetInterfaceForceNpPtr());
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+// Apply interface forces deprecated version ! Remove as soon as possible!
+void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce)
+{
   Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
 
   interface_->AddFSICondVector(iforce, fifc);
@@ -226,7 +238,6 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
   PreparePartitionStep();
 
   return;
+
 }
-
-
 

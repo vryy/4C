@@ -264,15 +264,6 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::LOCAContinuation::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::LOCAContinuation::SolveRelaxationLinear()
-{
-  CheckInitSetup();
-  dserror("SolveRelaxationLinear() is not available for LOCA!");
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 const NOX::Abstract::Group& STR::TIMINT::LOCAContinuation::GetSolutionGroup() const
 {
   CheckInitSetup();

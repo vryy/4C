@@ -336,7 +336,12 @@ namespace ADAPTER {
 
     \note Can only be called after a valid structural solve.
     */
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
+        {dserror("In the new structural timeintegration this method is"
+                 "no longer needed inside the structure. Since this is"
+                 "FSI specific, the functionality is shifted to the"
+                 "STR::MODELEVALUATOR::PartitionedFSI.");
+        return Teuchos::null;};
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
@@ -351,7 +356,12 @@ namespace ADAPTER {
     //@{
 
     /// Set forces due to interface with fluid, the force is expected external-force-like
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce)
+    {
+      dserror("This method is deprecated. In the new structural time integration"
+              "this functionality is taken over by the problem specific model "
+              "evaluators. Remove this method as soon as possible.");
+      return;};
 
     //! specific method for iterative staggered partitioned TSI
 

@@ -3,14 +3,14 @@
 \file fsi_dirichletneumannslideale.H
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
-with sliding ALE-structure interfaces
+       with sliding ALE-structure interfaces
 
 
-<pre>
-Maintainer: Thomas Kloeppel
+\maintainer Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
+
+\level 1
 
 */
 /*----------------------------------------------------------------------*/
@@ -89,11 +89,14 @@ class DirichletNeumannSlideale : public DirichletNeumann
 {
 public:
 
-  ///almost empty ctor within saving of important things
+  /// almost empty ctor within saving of important things
   explicit DirichletNeumannSlideale(const Epetra_Comm& comm);
 
-  ///computation of rotation free ALE displacement values, remeshing
-  ///of the fluid field and reevaluation of the Mortar interface
+  /// setup this object
+  virtual void Setup();
+
+  /// computation of rotation free ALE displacement values, remeshing
+  /// of the fluid field and reevaluation of the Mortar interface
   void Remeshing();
 
 protected:
@@ -105,32 +108,9 @@ protected:
   virtual Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                                const FillType fillFlag);
 
-  ///predictor
+  /// predictor
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
-//  /// compute Displacement of structural center of gravity
-//  std::vector<double> Centerdisp
-//  (
-//    Teuchos::RCP<Epetra_Vector> idisptotal,
-//    Teuchos::RCP<Epetra_Vector>idispstep
-//  );
-//
-//  std::map<int,LINALG::Matrix<3,1> > CurrentMasterPos
-//  (
-//    Teuchos::RCP<Epetra_Vector> idisptotal,
-//    Teuchos::RCP<Epetra_Vector> reddisp,
-//    DRT::Discretization& interfacedis,
-//    Teuchos::RCP<Epetra_Map> msfullelemap
-//  );
-//
-//  void SlideProjection
-//  (
-//    Teuchos::RCP<Epetra_Vector> islavestep,
-//    DRT::Discretization& interfacedis,
-//    std::vector<double> centerdisp,
-//    std::map<int, Teuchos::RCP<DRT::Element> > masterreduelements,
-//    std::map<int,LINALG::Matrix<3,1> > currentpositions
-//  );
 
 private:
 

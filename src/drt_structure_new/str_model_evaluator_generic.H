@@ -55,7 +55,7 @@ namespace MODELEVALUATOR {
     virtual ~Generic() {};
 
     //! initialize the class variables
-    virtual void Init(
+    void Init(
         const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,

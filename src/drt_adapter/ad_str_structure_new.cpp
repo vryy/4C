@@ -779,8 +779,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
   switch(probtype)
   {
     case prb_fsi:
-    case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
@@ -792,12 +790,13 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
-      if ((actdis_->Comm()).MyPID()==0)
-        IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
       // Are there any constraint conditions active?
       const std::set<INPAR::STR::ModelType>& modeltypes = ti_strategy->GetDataSDyn().GetModelTypes();
       if (modeltypes.find(INPAR::STR::model_lag_pen_constraint)!=modeltypes.end())
       {
+        if ((actdis_->Comm()).MyPID()==0)
+          IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
           str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
@@ -808,10 +807,26 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       {
         if (coupling == fsi_iter_lung_monolithicstructuresplit or
             coupling == fsi_iter_lung_monolithicfluidsplit)
+        {
+          if ((actdis_->Comm()).MyPID()==0)
+            IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
           str_wrapper_ = Teuchos::rcp(new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
+        }
         else
-          str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
+        {
+          if(problem->Restart())
+            ti_strategy->Setup();
+          str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy)); // case of partitioned fsi
+        }
       }
+      break;
+    }
+    case prb_immersed_fsi:
+    case prb_immersed_ale_fsi:
+    {
+      if(problem->Restart())
+        ti_strategy->Setup();
+      str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
     case prb_fsi_crack:

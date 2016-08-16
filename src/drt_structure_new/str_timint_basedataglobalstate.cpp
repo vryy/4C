@@ -297,6 +297,11 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       model_block_id_[mt] = 0;
       break;
     }
+    case INPAR::STR::model_partitioned_coupling:
+    {
+      // do nothing
+      break;
+    }
     default:
     {
       // FixMe please
@@ -479,6 +484,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
         if (not model_sol_ptr.is_null())
           BlockExtractor().InsertVector(model_sol_ptr,ci->second,xvec_ptr);
       }
+      break;
     }
     /* construct a new solution vector filled with zeros */
     case vec_init_zero:

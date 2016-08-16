@@ -5,6 +5,8 @@
 \brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
        and methods dependent on the interface
 
+\level 2
+
 \maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -55,6 +57,10 @@ namespace ADAPTER
     /// Predictor for interface displacements at immersed and fsi interface
     Teuchos::RCP<Epetra_Vector> PredictFullInterfaceDispnp();
 
+    /// until new structure is plugged to cell migration
+    void ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::RCP<Epetra_Vector> iforce_fsi,
+                                                             Teuchos::RCP<Epetra_Vector> iforce_immersed);
+
     /// @name Apply interface forces
 
     /// apply interface forces to structural solver
@@ -62,8 +68,6 @@ namespace ADAPTER
     /// This prepares a new solve of the structural field within one time
     /// step. The middle values are newly created.
     ///
-    /// \note This is not yet the most efficient implementation.
-    /// special routine needed in immersed+ale fsi
     void ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                       Teuchos::RCP<Epetra_Vector> iforce_immersed);
 

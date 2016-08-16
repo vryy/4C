@@ -81,7 +81,7 @@ void immersed_problem_drt()
       }
 
       {
-        // check if structural predictor ConstVel is chosen in input file
+        // check if structural predictor ConstDisVelAcc is chosen in input file
         if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
           dserror("Invalid structural predictor for immersed fsi!\n"
                   "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
@@ -101,6 +101,12 @@ void immersed_problem_drt()
         dserror("unknown coupling scheme");
       }
 
+      // ghost structure redundantly on all procs
+      algo->CreateGhosting(problem->GetDis("structure"));
+
+      // setup algo
+      algo->Setup();
+
       // PARTITIONED FSI ALGORITHM
 
       // read restart step
@@ -111,7 +117,9 @@ void immersed_problem_drt()
         algo->ReadRestart(restart);
       }
 
+      // additional setup for structural search tree, etc.
       algo->SetupStructuralDiscretization();
+
       algo->Timeloop(algo);
 
       if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
@@ -181,7 +189,7 @@ void immersed_problem_drt()
       }
 
       // create algorithm
-      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
+      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE> algo = Teuchos::null;
       if(scheme == INPAR::IMMERSED::dirichletneumann)
         algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE(comm));
       else
@@ -189,6 +197,12 @@ void immersed_problem_drt()
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
       }
+
+      // setup algo
+      algo->Setup();
+
+      // additional setup of structural search tree, etc.
+      algo->SetupStructuralDiscretization();
 
       // PARTITIONED FSI ALGORITHM
       const int restart = DRT::Problem::Instance()->Restart();
@@ -198,7 +212,6 @@ void immersed_problem_drt()
         algo->ReadRestart(restart);
       }
 
-      algo->SetupStructuralDiscretization();
       algo->Timeloop(algo);
 
       if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
@@ -333,8 +346,9 @@ void CellMigrationControlAlgorithm()
   }
   else
   {
-    if(comm.MyPID()==0)
-      std::cout<<"\n Skipped Construction of CellScatra Subproblem ... \n \n"<<std::endl;
+      std::cout<<"Skipped Construction of CellScatra Subproblem.\n"
+              "The current parameter combination is not supported.\n"
+              "Check your .dat file !"<<std::endl;;
   }
 
   // create instance of poroelast subproblem

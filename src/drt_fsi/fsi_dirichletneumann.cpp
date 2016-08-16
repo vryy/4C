@@ -1,4 +1,16 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_dirichletneumann.cpp
 
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+
+\maintainer Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289-10362
+
+\level 1
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "fsi_dirichletneumann.H"
@@ -16,8 +28,20 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
-  : Partitioned(comm)
+  : Partitioned(comm),
+    displacementcoupling_(false)
 {
+  // empty constructor
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::DirichletNeumann::Setup()
+{
+  /// call setup of base class
+  FSI::Partitioned::Setup();
+
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -108,12 +132,15 @@ FSI::DirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
   if (fillFlag==User)
   {
     // SD relaxation calculation
-    return StructureField()->RelaxationSolve(iforce);
+    return StructureField()->RelaxationSolve(iforce);;
   }
   else
   {
     // normal structure solve
-    StructureField()->ApplyInterfaceForces(iforce);
+    if (not use_old_structure_)
+      StructureField()->ApplyInterfaceForces(iforce);
+    else
+      StructureField()->ApplyInterfaceForcesTemporaryDeprecated(iforce); // todo remove this line as soon as possible!
     StructureField()->Solve();
     StructureField()->writeGmshStrucOutputStep();
     return StructureField()->ExtractInterfaceDispnp();

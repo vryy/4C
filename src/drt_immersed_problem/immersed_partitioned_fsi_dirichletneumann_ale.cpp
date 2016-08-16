@@ -23,20 +23,24 @@
 #include "../drt_fsi/fsi_nox_fixpoint.H"
 #include "../drt_fsi/fsi_nox_aitken_immersed_ale.H"
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
-
 #include "immersed_field_exchange_manager.H"
 
 
 IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::ImmersedPartitionedFSIDirichletNeumannALE(const Epetra_Comm& comm)
   : ImmersedPartitionedFSIDirichletNeumann(comm),
+    combined_newstate_(Teuchos::null),
     idispnp_(Teuchos::null),
     ivelnp_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  SetupCoupling(fsidyn,comm);
+  // empty constructor
+}
 
-  SetDefaultParameters(fsidyn,noxparameterlist_);
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::Setup()
+{
+  // call setup of base class
+  IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup();
 
   /// Immersed+FSI interface vector of new state to use in residual calculation
   combined_newstate_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->CombinedInterface()->FullMap()),true));
@@ -48,7 +52,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::ImmersedPartitionedFSIDiric
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm)
 {
-  std::cout<<" Setup ALE coupling at FSI Interface ..."<<std::endl;
+  if(myrank_==0)
+    std::cout<<"\n Setup ALE coupling at FSI Interface for ImmersedPartitionedFSIDirichletNeumannALE :"<<std::endl;
   FSI::Partitioned::SetupCoupling(fsidyn,comm);
 
 }
@@ -260,6 +265,8 @@ int IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::CalcResidual(Epetra_Vec
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
+  if(myrank_==0)
+    std::cout<<"\n SetDefaultParameters in ImmersedPartitionedFSIDirichletNeumannALE ..."<<std::endl;
 
   // extract sublist with settings for partitioned solver
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
@@ -304,6 +311,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetDefaultParameters(c
       lineSearchParams.sublist("Aitken").set("max step size", fsipart.get<double>("MAXOMEGA"));
       lineSearchParams.sublist("Aitken").set("min step size", -0.1);
       break;
+    }
+    default:
+    {
+      FSI::Partitioned::SetDefaultParameters(fsidyn,list);
     }
   }
 

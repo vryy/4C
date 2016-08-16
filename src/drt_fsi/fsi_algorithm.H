@@ -4,11 +4,11 @@
 
 \brief Basis of all FSI algorithms
 
-<pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -30,6 +30,7 @@ Maintainer: Matthias Mayr
 namespace ADAPTER
 {
   class FSIStructureWrapper;
+  class StructureBaseAlgorithmNew;
 }
 
 
@@ -67,6 +68,9 @@ namespace FSI
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
+    /// setup this object
+    virtual void Setup();
+
     /// access to structure field
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
@@ -95,27 +99,31 @@ namespace FSI
     //@}
 
     //! @name Transfer helpers
-
-    //virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-    //virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    //virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    //virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-
     //@}
 
+    /// return the structure fluid coupling object
     ADAPTER::Coupling& StructureFluidCoupling();
+
+    /// return const version of structure fluid coupling object
     const ADAPTER::Coupling& StructureFluidCoupling() const;
+
+  protected:
 
     /// underlying structure of the FSI problem
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
     /// underlying fluid of the FSI problem
     Teuchos::RCP< ::ADAPTER::FluidMovingBoundary>    fluid_;
+
+    /// RCP pointer to the base algorithm of the structure
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr_;
+
+    /// use deprecated old structural time integration. todo Has to be removed !
+    bool use_old_structure_;
 
   private:
 

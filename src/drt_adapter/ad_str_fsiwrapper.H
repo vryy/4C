@@ -5,18 +5,19 @@
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
-</pre>
+
+\level 1
 */
 
 #ifndef FSI_STRUCTURE_WRAPPER_H
 #define FSI_STRUCTURE_WRAPPER_H
 
 #include "ad_str_wrapper.H"
+#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
 
 // forward declarations
 namespace STR
@@ -24,6 +25,14 @@ namespace STR
   namespace AUX
   {
     class MapExtractor;
+  }
+}
+
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class PartitionedFSI;
   }
 }
 
@@ -79,8 +88,23 @@ namespace ADAPTER
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
+    /// remove as soon as new structure is fully usable ! todo
+    /// only 4 nightly tests use this method:
+    /// fsi_dc3D_part_ait_ga_ost_xwall (no solidsh8 possible yet)
+    /// fsi_ow3D_mtr_drt (no solidsh8 possible yet)
+    /// crfsi_inclDomain_suppFluid_interfaceBuild (crack specific model evaluator is missing)
+    /// constr2D_fsi (newtonlinuzawa not implemented; but really needed ?)
+    void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
+
     /// rebuild FSI interface from structure side
     virtual void RebuildInterface();
+
+    /// set pointer to model evaluator
+    void SetModelEvaluatorPtr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> me)
+    {
+      fsi_model_evaluator_=me;
+      return;
+    }
 
   protected:
 
@@ -90,7 +114,18 @@ namespace ADAPTER
     /// predictor type
     int predictor_;
 
-  };
-}
+    /// The structural model evaluator object.
+    /// Your FSI algorithm calls methods in this adapter.
+    /// If this method is related to the structural field,
+    /// a corresponding method in the model evaluator may be
+    /// called, if necessary.
+    /// See e.g. \ref ADAPTER::FSIStructureWrapper::RelaxationSolve()
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator_;
+
+    /// access the fsi model evaluator
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator(){return fsi_model_evaluator_;};
+
+  }; // class FSIStructureWrapper
+} // namespace ADAPTER
 
 #endif

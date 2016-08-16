@@ -94,7 +94,7 @@ NUMSTEP                         5
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-6
@@ -138,6 +138,7 @@ WRITEFLUX                       No
 -------------------------------------------------------STATISTICAL MECHANICS
 -------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -174,6 +175,19 @@ GAMMA                           0.5
 GENAVG                          TrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver_potential_LJ.xml
 -----------------------------------------------------------------SEARCH TREE
 TREE_TYPE                       quadtree2d
 ----------------------------------------------------------------XFEM GENERAL

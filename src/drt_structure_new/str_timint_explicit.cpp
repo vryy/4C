@@ -2,6 +2,8 @@
 /*!
 \file str_timint_explicit.cpp
 
+\brief explicit structural time integration
+
 \maintainer Philipp Farah
 
 \date Aug 13, 2015
@@ -141,14 +143,6 @@ int STR::TIMINT::Explicit::IntegrateStep()
   return 0;
 }
 
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::SolveRelaxationLinear()
-{
-  dserror("SolveRelaxationLinear() is not avaible for explicit time integration!");
-  return Teuchos::null;
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

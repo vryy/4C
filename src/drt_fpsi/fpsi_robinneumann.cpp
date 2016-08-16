@@ -1,4 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fpsi_robinneumann.cpp
 
+\brief Solve FSI problems using a Robin-Neumann partitioning approach
+
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+
+\level 3
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "fpsi_robinneumann.H"
@@ -49,7 +60,7 @@ FPSI::RobinNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp)
 void
 FPSI::RobinNeumann::PoroOp(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  PoroField()->StructureField()->ApplyInterfaceForces(iforce);
+  //PoroField()->StructureField()->ApplyInterfaceForces(iforce);
   PoroField()->Solve();
 
   /* Return the interface velocity of the fluid in the porous medium.

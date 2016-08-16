@@ -83,14 +83,6 @@ namespace TIMINT {
     //! Prepare time step
     virtual void PrepareTimeStep();
 
-    /*! \brief linear structure solve with just a interface load
-     *
-     * The very special solve done in steepest descent relaxation
-     * calculation (and matrix free Newton Krylov).
-     *
-     * \note Can only be called after a valid structural solve. */
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
-
     //! @name Accessors
     //! @{
     //! return the predictor
@@ -112,20 +104,21 @@ namespace TIMINT {
     //! check, if according to divercont flag time step size can be increased
     void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
 
+    //! returns pointer to generic implicit object
+    const Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
+    {
+      CheckInitSetup();
+      return implint_ptr_;
+    };
+
   protected:
-    // returns the current solution group
+    //! returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;
 
     STR::IMPLICIT::Generic& ImplInt()
     {
       CheckInitSetup();
       return *implint_ptr_;
-    };
-
-    const Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
-    {
-      CheckInitSetup();
-      return implint_ptr_;
     };
 
     STR::PREDICT::Generic& Predictor()
