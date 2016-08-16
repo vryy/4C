@@ -75,13 +75,6 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> mass
       );
 
-    /// compute collisions (inter-particle and particle-wall), returns contact energy
-    virtual double EvaluateParticleContact(
-      double dt,
-      Teuchos::RCP<Epetra_Vector> sysvec1,
-      Teuchos::RCP<Epetra_Vector> sysvec2
-      ) = 0;
-
     //@}
 
     //! @name Actions
@@ -121,6 +114,7 @@ namespace PARTICLE
 
   };  // class InteractionHandlerBase
 
+
   /*====================================================================*/
   /*!
    * \brief Collision handler base for particle contact
@@ -150,6 +144,13 @@ namespace PARTICLE
 
     //! @name Actions
     //@{
+
+    /// compute collisions (inter-particle and particle-wall), returns contact energy
+    virtual double EvaluateParticleContact(
+      double dt,
+      Teuchos::RCP<Epetra_Vector> sysvec1,
+      Teuchos::RCP<Epetra_Vector> sysvec2
+      ) = 0;
 
     /// assemble energies of particles
     virtual double EnergyAssemble(double owner_i, double owner_j);
@@ -296,15 +297,15 @@ namespace PARTICLE
   //@{
 
   /// compute collisions (inter-particle and particle-wall), returns contact energy
+  void PreFetchCollData(
+    const int numcolparticles
+    );
+
+  /// compute collisions (inter-particle and particle-wall), returns contact energy
   virtual double EvaluateParticleContact(
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
     Teuchos::RCP<Epetra_Vector> m_contact
-    );
-
-  /// collect collision data for faster access
-  virtual void PreFetchCollData(
-    const int numcolparticles
     );
 
   /// calculate contact with neighboring particles
@@ -638,6 +639,54 @@ namespace PARTICLE
    std::vector<ParticleCollData> particledata_;   ///< temporary storage for all particle collision relevant data
 
    };  // class ParticleCollisionHandlerMD
+
+
+  /*====================================================================*/
+    /*!
+     * \brief MeshFree interaction handler
+     *
+     * \author cattabiani
+     * \date 08/16
+     */
+    class MeshFreeInteractionHandler : public PARTICLE::InteractionHandlerBase
+    {
+
+    public:
+
+      //! @name Life
+      //@{
+
+      //! Constructor
+      MeshFreeInteractionHandler(
+        Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+        const Teuchos::ParameterList& particledynparams
+        );
+
+      //! Destructor
+      virtual ~MeshFreeInteractionHandler(){ ; }
+
+      //@}
+
+      //! @name Actions
+      //@{
+
+      /// compute interactions, returns 0
+      void EvaluateParticleInteraction(
+        const double dt,
+        Teuchos::RCP<Epetra_Vector> f_contact,
+        Teuchos::RCP<Epetra_Vector> m_contact
+        );
+
+    protected:
+
+      //! @name Collision parameters
+      //@{
+
+      /// weight function for meshfree interactions
+      INPAR::PARTICLE::WeightFunction weight_function_;
+
+    };  // class MeshFreeInteractionHandler
 
 }  // namespace PARTICLE
 

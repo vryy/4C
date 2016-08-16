@@ -93,12 +93,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    setStringToIntegralParameter<int>(
-                               "WEIGHT_FUNCTION","Exponential","weight function for meshFree contact dynamics",
+                               "WEIGHT_FUNCTION","CubicBspline","weight function for meshFree contact dynamics",
                                tuple<std::string>(
-                                 "Exponential"
+                                 "CubicBspline"
                                  ),
                                tuple<int>(
-                                 INPAR::PARTICLE::Exponential
+                                 INPAR::PARTICLE::CubicBspline
                                  ),
                                &particledyn);
 

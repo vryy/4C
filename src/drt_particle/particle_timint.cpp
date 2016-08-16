@@ -366,9 +366,8 @@ void PARTICLE::TimInt::SetInitialFields()
   {
     {
       case INPAR::PARTICLE::MeshFree :
-        std::cout << "warning! the density adapter for meshfree interaction is still in the todo list!!!\n";
-        std::cin.get();
-        break;
+        // density is discarded since it has a different meaning for meshfree methods
+        density_->PutScalar(-1);
       case INPAR::PARTICLE::Normal_DEM_thermo :
       const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
       // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
@@ -1018,6 +1017,7 @@ void PARTICLE::TimInt::SetForceInterface
   fifc_->Update(1.0, *iforce, 0.0);
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for energy file #energyfile_                      */

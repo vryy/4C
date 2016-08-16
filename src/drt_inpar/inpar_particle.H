@@ -71,10 +71,10 @@ namespace INPAR
       particle_2Dz
     };
 
-    /// Weight function for MeshFree contact dynamics
+    /// Weight function for MeshFree interactions
     enum WeightFunction
     {
-      Exponential
+      CubicBspline
     };
 
     /// set the particle parameters

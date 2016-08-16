@@ -3733,3 +3733,100 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
   return event1->time < event2->time;
 }
 
+
+/*----------------------------------------------------------------------*
+ | constructor for MeshFree interactions                   katta 08/16  |
+ *----------------------------------------------------------------------*/
+PARTICLE::MeshFreeInteractionHandler::MeshFreeInteractionHandler(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+  const Teuchos::ParameterList& particledynparams
+  ) :
+  PARTICLE::InteractionHandlerBase(
+    discret,
+    particlealgorithm,
+    particledynparams
+    )
+{
+  // extract input parameters
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+  //find the weight function type
+  weight_function_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(particleparams,"WEIGHT_FUNCTION");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute MeshFree interactions                           katta 08/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
+  const double dt,
+  Teuchos::RCP<Epetra_Vector> f_contact,
+  Teuchos::RCP<Epetra_Vector> m_contact
+  )
+{
+/*
+  // gather data for all particles initially
+  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+  particledata_.resize(numcolparticles);
+  PreFetchCollData(numcolparticles);
+
+  // store bins, which have already been examined
+  std::set<int> examinedbins;
+
+  // list of all particles in the neighborhood of currparticle
+  std::list<DRT::Node*> neighboring_particles;
+
+  // loop over all particles
+  for(int i=0; i<numcolparticles; ++i)
+  {
+    DRT::Node *currparticle = discret_->lColNode(i);
+
+    DRT::Element* CurrentBin = currparticle->Elements()[0];
+    const int binId = CurrentBin->Id();
+
+    // if a bin has already been examined --> continue with next particle
+    if( examinedbins.find(binId) != examinedbins.end() )
+    {
+      continue;
+    }
+    //else: bin is examined for the first time --> new entry in examinedbins_
+    else
+    {
+      examinedbins.insert(binId);
+    }
+
+    // remove current content but keep memory
+    neighboring_particles.clear();
+
+    // list of walls that border on the CurrentBin
+    std::set<DRT::Element*> neighboring_walls;
+
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
+
+    DRT::Node **NodesInCurrentBin = CurrentBin->Nodes();
+    const int numparticle = CurrentBin->NumNode();
+
+    // loop over all particles in CurrentBin
+    for(int i=0; i<numparticle; ++i)
+    {
+      DRT::Node *particle_i = NodesInCurrentBin[i];
+
+      // extract data
+      ParticleCollData& data_i = particledata_[particle_i->LID()];
+
+    }
+  }
+
+  // erase temporary storage for collision data
+  particledata_.clear();
+
+  radiusncol_ = Teuchos::null;
+  masscol_ = Teuchos::null;
+  velncol_ = Teuchos::null;
+  disncol_ = Teuchos::null;
+  ang_velncol_ = Teuchos::null;
+
+  */
+}
