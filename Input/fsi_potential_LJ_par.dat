@@ -3,33 +3,29 @@
 // mayer@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15257
-
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 fsi_potential_LJ_par.dat
+TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+This test needs to be swtiched to new structural time integration.
+For this purpose, one has to create a potential specific model evaluator.
+It will no longer be necessary to hack the potential stuff nastily into
+the structure implementation, as it had been done before.
+TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        13188
 NODES                           27282
 DIM                             3
 MATERIALS                       3
 NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Fluid_Structure_Interaction
+RESTART                         0
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid
-MAXTIME                         4
-NUMSTEP                         10
-RESULTSEVRY                     1
-TIMESTEP                        0.01
 ----------------------------------------------------------COMBUSTION CONTROL
 CONVTOL                         1e-06
 ITEMAX                          10
-MAXTIME                         10
-NUMSTEP                         10
-RESTARTEVRY                     20
-TIMESTEP                        0.01
-RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                0
@@ -43,27 +39,16 @@ NUMTHERMDIS                     1
 LINEAR_SOLVER                   3
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
 GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
-LIFTDRAG                        No
 MAXTIME                         1000
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         10
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
-RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -99,12 +84,9 @@ CONVTOL                         1.0E-6
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 ITEMAX                          100
-MAXOMEGA                        0
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-RELAX                           1.0
 --------------------------------------------------------------------------IO
-FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FLUID_VIS                       No
@@ -112,14 +94,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   Yes
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Structure_Interaction
-RESTART                         0
-SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-FSSUGRDIFF                      No
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 MAXTIME                         1000
@@ -127,54 +102,30 @@ NUMSTEP                         10
 RESTARTEVRY                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
-RESULTSEVRY                           1
-VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-WRITEFLUX                       No
 -------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 LINEAR_SOLVER                   2
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs
-DAMPING                         No
 DYNAMICTYP                      GenAlpha
-K_DAMP                          0.5
 MAXITER                         50
-MAXTIME                         5
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         10
 PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
 TIMESTEP                        0.01
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLRES                          2e-07
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
@@ -194,16 +145,11 @@ TREE_TYPE                       quadtree2d
 GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
@@ -211,34 +157,16 @@ AZSCAL                          none
 AZSOLVE                         CG
 AZSUB                           300
 AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     2
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-IFPACKOVERLAP                   0
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
@@ -246,21 +174,6 @@ AZSCAL                          none
 AZSOLVE                         CG
 AZSUB                           300
 AZTOL                           1e-06
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver

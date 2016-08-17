@@ -6,12 +6,14 @@
 //
 // necessary defines: D_SOLID3 BINIO D_FLUID D_FLUID3 UMFPACK AZTEC_PACKAGE RESULTTEST D_FSI D_ALE
 //
-
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 fsi_potential_LJ
+TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+This test needs to be swtiched to new structural time integration.
+For this purpose, one has to create a potential specific model evaluator.
+It will no longer be necessary to hack the potential stuff nastily into
+the structure implementation, as it had been done before.
+TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        213
 NODES                           524
@@ -21,18 +23,9 @@ NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid
-MAXTIME                         4
-NUMSTEP                         5
-RESULTSEVRY                     1
-TIMESTEP                        0.05
 ----------------------------------------------------------COMBUSTION CONTROL
 CONVTOL                         1e-06
 ITEMAX                          10
-MAXTIME                         10
-NUMSTEP                         5
-RESTARTEVRY                     20
-TIMESTEP                        0.1
-RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                0
@@ -46,8 +39,6 @@ NUMTHERMDIS                     1
 LINEAR_SOLVER                   3
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-05
 GAMMA                           1
@@ -55,18 +46,10 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-MAXTIME                         1000
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         5
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                      1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -107,7 +90,6 @@ PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 RELAX                           1.0
 ------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
-FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FLUID_VIS                       No
@@ -120,61 +102,34 @@ THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
-SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-FSSUGRDIFF                      No
-INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 MAXTIME                         1000
 NUMSTEP                         5
-RESTARTEVRY                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.1
-RESULTSEVRY                           1
-VELFUNCNO                       -1
+TIMESTEP                        0.9
+RESULTSEVRY                      1
 VELOCITYFIELD                   zero
-WRITEFLUX                       No
--------------------------------------------------------STATISTICAL MECHANICS
--------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 LINEAR_SOLVER                   2
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-DAMPING                         No
 DYNAMICTYP                      GenAlpha
-K_DAMP                          0.5
 MAXITER                         500
-MAXTIME                         5
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         5
 PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLRES                          1e-08
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
@@ -194,108 +149,12 @@ TREE_TYPE                       quadtree2d
 GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
