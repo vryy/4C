@@ -162,5 +162,25 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
                                   divcont_stop,
                                   divcont_continue),
                                 &porofluidmultiphasedyn);
+
+  IntParameter("FLUX_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&porofluidmultiphasedyn);
+
+  setStringToIntegralParameter<int>("FLUX_PROJ_METHOD",
+                               "none",
+                               "Flag to (de)activate flux reconstruction.",
+                               tuple<std::string>(
+                                 "none",
+                               //  "superconvergent_patch_recovery",
+                                 "L2_projection"),
+                               tuple<std::string>(
+                                 "no gradient reconstruction",
+                                // "gradient reconstruction via superconvergent patch recovery",
+                                 "gracient reconstruction via l2-projection"),
+                               tuple<int>(
+                                 gradreco_none,       // no convective streamline edge-based stabilization
+                              //   gradreco_spr,    // convective streamline edge-based stabilization on the entire domain
+                                 gradreco_l2     // pressure edge-based stabilization as ghost penalty around cut elements
+                               ),
+                               &porofluidmultiphasedyn);
 }
 

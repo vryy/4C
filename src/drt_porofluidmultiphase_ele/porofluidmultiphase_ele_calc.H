@@ -403,6 +403,15 @@ class PoroFluidPhaseManager;
       DRT::Element::LocationArray&  la                //!< location array
     );
 
+    virtual void ReconFlux(
+      DRT::Element*                 ele,              //!< current element
+      Epetra_SerialDenseMatrix&     elemat1,          //!< linearizations
+      Epetra_SerialDenseMatrix&     elemat2,          //!< rhs
+      Teuchos::ParameterList&       params,           //!< parameter list
+      DRT::Discretization&          discretization,   //!< discretization
+      DRT::Element::LocationArray&  la                //!< location array
+    );
+
     /*========================================================================*/
     //! @name material and related functions
     /*========================================================================*/

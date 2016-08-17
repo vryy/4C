@@ -331,6 +331,12 @@ protected:
   //! reconstruct pressures and saturation from current solution
   void ReconstructPressuresAndSaturations();
 
+  //! reconstruct solid pressures from current solution
+  void ReconstructSolildPressures();
+
+  //! reconstruct fluxes from current solution
+  void ReconstructFlux();
+
   /*--- query and output ---------------------------------------------------*/
 
   //! is output needed for the current time step?
@@ -412,6 +418,12 @@ protected:
   //! flag for error calculation
   const INPAR::POROFLUIDMULTIPHASE::CalcError calcerr_;
 
+  //! flag for flux reconstruction
+  const INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxrecon_;
+
+  //! solver number for flux reconstruction
+  const int fluxreconsolvernum_;
+
   //! what to do when nonlinear solution fails
   enum INPAR::POROFLUIDMULTIPHASE::DivContAct divcontype_ ;
 
@@ -488,6 +500,9 @@ protected:
 
   //! solid pressure at time n+1
   Teuchos::RCP<Epetra_Vector> solidpressure_;
+
+  //! velocity of each phase at time n+1 (post-processed from pressure solution)
+  Teuchos::RCP<Epetra_MultiVector> flux_;
 
   //! number of dofset associated with displacement dofs
   int nds_disp_;

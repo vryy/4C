@@ -320,6 +320,9 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
 
     // write generic degree of freedom
     writer_->WriteResult("phidtnp", "phidt_"+temp.str(), dofbased, 1,k-1);
+
+    // write flux vectors (always 3D)
+    writer_->WriteResult("flux_"+temp.str(), "flux_"+temp.str(), nodebased, 3);
   }
   // write solid pressure solution
   writer_->WriteResult("solidpressure", "solid_pressure", nodebased, 1);

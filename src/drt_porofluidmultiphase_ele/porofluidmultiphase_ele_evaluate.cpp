@@ -64,6 +64,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(
     case POROFLUIDMULTIPHASE::calc_error:
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     case POROFLUIDMULTIPHASE::calc_solidpressure:
+    case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     {
       return DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(Shape(),numdofpernode,discretization.Name())->EvaluateService(
                this,

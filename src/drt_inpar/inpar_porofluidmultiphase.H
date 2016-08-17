@@ -83,6 +83,14 @@ enum DivContAct
   divcont_continue            ///< continue nevertheless
 };
 
+//! reconstruction type of gradients (e.g. velocity gradient)
+enum FluxReconstructionMethod
+{
+  gradreco_none,
+  //gradreco_spr, super-convergent patch recovery not activated yet
+  gradreco_l2
+};
+
 //! map enum term to std::string
 static inline const std::string VectorNormString(
   const enum VectorNorm norm  //!< input enum term

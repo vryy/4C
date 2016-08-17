@@ -346,10 +346,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
     static LINALG::Matrix<nsd_,1> convelint;
     convelint.Clear();
     convelint.Multiply(evelnp_,funct_);
-    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-    static LINALG::Matrix<nen_,1> conv;
-    conv.Clear();
-    conv.MultiplyTN(derxy_,convelint);
+//    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+//    static LINALG::Matrix<nen_,1> conv;
+//    conv.Clear();
+//    conv.MultiplyTN(derxy_,convelint);
 
     //gauss point displacements
     LINALG::Matrix<nsd_,1> dispint(false);
@@ -413,14 +413,14 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
       //----------------------------------------------------------------
 
       // calculation of convective element matrix in convective form
-      if(k!=numdofpernode_-1)
-        CalcMatConv(
-            emat,
-            k,
-            *phasemanager_,
-            porosity,
-            timefacfac,
-            conv);
+//      if(k!=numdofpernode_-1)
+//        CalcMatConv(
+//            emat,
+//            k,
+//            *phasemanager_,
+//            porosity,
+//            timefacfac,
+//            conv);
 
       // add conservative contributions
       if(k!=numdofpernode_-1)
@@ -594,14 +594,14 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
       //----------------------------------------------------------------
 
       // convective term
-      if(k!=numdofpernode_-1)
-        CalcRHSConv(
-            erhs,
-            k,
-            *phasemanager_,
-            porosity,
-            rhsfac,
-            conv_phi);
+//      if(k!=numdofpernode_-1)
+//        CalcRHSConv(
+//            erhs,
+//            k,
+//            *phasemanager_,
+//            porosity,
+//            rhsfac,
+//            conv_phi);
 
       // convective term conservative contribution
       CalcRHSConvCons(
@@ -1584,7 +1584,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
-  // calculate time derivative for time value t_0
+  // calculate true pressures and saturation
   case POROFLUIDMULTIPHASE::calc_pres_and_sat:
   {
     // calculate matrix and rhs
@@ -1599,7 +1599,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
       );
     break;
   }
-  // calculate time derivative for time value t_0
+  // calculate solid pressure
   case POROFLUIDMULTIPHASE::calc_solidpressure:
   {
     // calculate matrix and rhs
@@ -1607,6 +1607,20 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
       ele,
       elevec1_epetra,
       elevec2_epetra,
+      params,
+      discretization,
+      la
+      );
+    break;
+  }
+  // reconstruct velocities
+  case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
+  {
+    // calculate matrix and rhs
+    ReconFlux(
+      ele,
+      elemat1_epetra,
+      elemat2_epetra,
       params,
       discretization,
       la
@@ -1624,7 +1638,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
 }
 
 /*-----------------------------------------------------------------------------*
- | calculate mass matrix + rhs for initial time derivative calc.     vuong 08/16 |
+ | calculate pressures and saturation                               vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcPressureAndSaturation(
@@ -1664,7 +1678,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcPressureAndSaturati
 }
 
 /*-----------------------------------------------------------------------------*
- | calculate mass matrix + rhs for initial time derivative calc.     vuong 08/16 |
+ | calculate solid pressure                                         vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcSolidPressure(
@@ -1695,6 +1709,98 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcSolidPressure(
 
     phasemanager_->ClearGPState();
   }
+}
+
+/*-----------------------------------------------------------------------------*
+ | reconstruct flux field                                          vuong 08/16 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ReconFlux(
+    DRT::Element*                 ele,              //!< current element
+    Epetra_SerialDenseMatrix&     elemat1,          //!< linearizations
+    Epetra_SerialDenseMatrix&     elemat2,          //!< rhs
+    Teuchos::ParameterList&       params,           //!< parameter list
+    DRT::Discretization&          discretization,   //!< discretization
+    DRT::Element::LocationArray&  la                //!< location array
+    )
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::DisTypeToOptGaussRule<distype>::rule);
+
+   // Loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Get integration factor and evaluate shape func and its derivatives at the integration points.
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+
+    //! scalar at t_(n+1) or t_(n+alpha_F)
+    std::vector<double> phinp(numdofpernode_,0.0);
+    //! spatial gradient of current scalar value
+    std::vector<LINALG::Matrix<nsd_,1> > gradphi(numdofpernode_);
+
+    for (int k = 0; k < numdofpernode_; ++k)
+    {
+      // calculate scalar at t_(n+1) or t_(n+alpha_F)
+      phinp[k] = funct_.Dot(ephinp_[k]);
+      // spatial gradient of current scalar value
+      gradphi[k].Multiply(derxy_,ephinp_[k]);
+    }
+
+    //diffusion tensor
+    static LINALG::Matrix<nsd_,nsd_> difftensor;
+    difftensor.Clear();
+
+    // set the current gauss point state in the manager
+    phasemanager_->EvaluateGPState(*ele->Material(0),phinp);
+
+    // Compute element matrix. For L2-projection
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = fac*funct_(vi);
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        elemat1(vi,ui) += v*funct_(ui);
+      }
+    }
+
+    // Loop over degrees of freedom
+    for (int k=0; k<numdofpernode_; k++)
+    {
+      // compute prefactor
+      ComputeDiffTensor(
+          *phasemanager_,
+          k,
+          *ele->Material(0),
+          phinp,
+          difftensor);
+
+      // current pressure gradient
+      LINALG::Matrix<nsd_,1> gradpres(true);
+      gradpres.Clear();
+
+      // compute the pressure gradient from the phi gradients
+      for (int idof=0; idof<numdofpernode_; ++idof)
+      {
+        gradpres.Update(phasemanager_->PressureDeriv(k,idof),gradphi[idof],1.0);
+      }
+
+      // diffusive flux
+      static LINALG::Matrix<nsd_,1> diffflux(true);
+      diffflux.Multiply(difftensor,gradpres);
+
+      // Compute element vectors. For L2-Projection
+      for (int node_i=0;node_i<nen_;node_i++)
+      {
+        for (int j=0;j<nsd_;j++)
+        {
+          elemat2(node_i,nsd_*k+j) += funct_(node_i) * fac * diffflux(j);
+        }
+      }
+
+    } //loop over degrees of freedom
+
+    phasemanager_->ClearGPState();
+  } //loop over integration points
 }
 
 /*----------------------------------------------------------------------*

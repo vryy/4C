@@ -61,6 +61,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
 //  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outmean_  (false),
   calcerr_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::CalcError>(poroparams_,"CALCERROR")),
+  fluxrecon_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(poroparams_,"FLUX_PROJ_METHOD")),
+  fluxreconsolvernum_(poroparams_.get<int>("FLUX_PROJ_SOLVER")),
   divcontype_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::DivContAct>(poroparams_,"DIVERCONT")),
   fdcheck_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FDCheck>(poroparams_,"FDCHECK")),
   fdcheckeps_(poroparams_.get<double>("FDCHECKEPS")),
@@ -84,6 +86,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   pressure_(Teuchos::null),
   saturation_(Teuchos::null),
   solidpressure_(Teuchos::null),
+  flux_(Teuchos::null),
   nds_disp_(-1),
   nds_vel_(-1),
   nds_solidpressure_(-1),
@@ -288,6 +291,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeLoop()
     // compute pressure and saturations from initial state
     ReconstructPressuresAndSaturations();
 
+    // compute velocities from initial state
+    ReconstructFlux();
+
     // write out initial state
     Output();
 
@@ -408,6 +414,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Solve()
 
   // reconstruct pressures and saturations
   ReconstructPressuresAndSaturations();
+
+  // reconstruct velocities
+  ReconstructFlux();
 
   return;
 }
@@ -850,84 +859,126 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcProblemSpecificNorm(
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
 {
+  //reset
+  pressure_->PutScalar(0.0);
+  saturation_->PutScalar(0.0);
+
+  // create parameter list for elements
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_pres_and_sat);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // initialize counter vector (will store how many times the node has been evaluated)
+  Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(),true);;
+
+  // call loop over elements
+  discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
+
+  discret_->ClearState();
+
+  // dummy way: the values have been assembled too many times -> just divide by number of evaluations
+  for(int i=0; i<discret_->DofRowMap()->NumMyElements();i++)
   {
-    //reset
-    pressure_->PutScalar(0.0);
-    saturation_->PutScalar(0.0);
-
-    // create parameter list for elements
-    Teuchos::ParameterList eleparams;
-
-    // action for elements
-    eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_pres_and_sat);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-
-    // add state vectors according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
-
-    // initialize counter vector (will store how many times the node has been evaluated)
-    Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(),true);;
-
-    // call loop over elements
-    discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
-
-    discret_->ClearState();
-
-    // dummy way: the values have been assembled too many times -> just divide by number of evaluations
-    for(int i=0; i<discret_->DofRowMap()->NumMyElements();i++)
-    {
-      (*pressure_)[i]   *=  1.0/(*counter)[i];
-      (*saturation_)[i] *=  1.0/(*counter)[i];
-    }
+    (*pressure_)[i]   *=  1.0/(*counter)[i];
+    (*saturation_)[i] *=  1.0/(*counter)[i];
   }
 
-  {
-    //reset
-    solidpressure_->PutScalar(0.0);
-
-    // create parameter list for elements
-    Teuchos::ParameterList eleparams;
-
-    // action for elements
-    eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_solidpressure);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-
-    // add state vectors according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
-
-    // initialize counter vector (will store how many times the node has been evaluated)
-    Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_),true);;
-
-    // create strategy for assembly of solid pressure
-    DRT::AssembleStrategy strategysolidpressure(
-        nds_solidpressure_,
-        0,
-        Teuchos::null,
-        Teuchos::null,
-        solidpressure_,
-        counter,
-        Teuchos::null
-        );
-
-    // call loop over elements
-    discret_->Evaluate(eleparams,strategysolidpressure);
-
-    discret_->ClearState();
-
-    // dummy way: the values have been assembled too many times -> just divide by number of evaluations
-    for(int i=0; i<discret_->DofRowMap(nds_solidpressure_)->NumMyElements();i++)
-    {
-      (*solidpressure_)[i]   *=  1.0/(*counter)[i];
-    }
-  }
+  // reconstruct also the solid pressures
+  ReconstructSolildPressures();
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ | reconstruct pressures from current solution     vuong 08/16 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolildPressures()
+{
+  //reset
+  solidpressure_->PutScalar(0.0);
+
+  // create parameter list for elements
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_solidpressure);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // initialize counter vector (will store how many times the node has been evaluated)
+  Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_),true);;
+
+  // create strategy for assembly of solid pressure
+  DRT::AssembleStrategy strategysolidpressure(
+      nds_solidpressure_,
+      0,
+      Teuchos::null,
+      Teuchos::null,
+      solidpressure_,
+      counter,
+      Teuchos::null
+      );
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,strategysolidpressure);
+
+  discret_->ClearState();
+
+  // dummy way: the values have been assembled too many times -> just divide by number of evaluations
+  for(int i=0; i<discret_->DofRowMap(nds_solidpressure_)->NumMyElements();i++)
+  {
+    (*solidpressure_)[i]   *=  1.0/(*counter)[i];
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ | reconstruct velocicities from current solution                vuong 08/16 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
+{
+  if(fluxrecon_==INPAR::POROFLUIDMULTIPHASE::gradreco_none)
+    return;
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",POROFLUIDMULTIPHASE::recon_flux_at_nodes);
+
+  const int dim = DRT::Problem::Instance()->NDim();
+  // we assume same number of dofs per node in the whole dis here
+  const int numphases = discret_->NumDof(discret_->lRowNode(0));
+  const int numvec = numphases*dim;
+
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  switch(fluxrecon_)
+  {
+  case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
+    flux_ =  DRT::UTILS::ComputeNodalL2Projection(
+                    discret_,
+                    "phinp",
+                    numvec,
+                    eleparams,
+                    fluxreconsolvernum_);
+    break;
+  default:
+    dserror("unknown method for recovery of fluxes!");
+    break;
+  }
+}
 
 /*----------------------------------------------------------------------*
  | print header of convergence table to screen              vuong 08/16 |
@@ -1016,7 +1067,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
   // saturations
   output_->WriteVector("saturation", saturation_);
 
-
   // solid pressure
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
@@ -1038,6 +1088,36 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(*discret_,*dispnp,nds_disp_,nsd_);
 
     output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);
+  }
+  // fluxes
+  if(flux_!=Teuchos::null)
+  {
+    // post_drt_ensight does not support multivectors based on the dofmap
+    // for now, I create single vectors that can be handled by the filter
+
+    const int dim = DRT::Problem::Instance()->NDim();
+    const int numdof = discret_->NumDof(discret_->lRowNode(0));
+    // get the noderowmap
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    for (int k=0; k<numdof; k++)
+    {
+      Teuchos::RCP<Epetra_MultiVector> velocity_k = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+      std::ostringstream temp;
+      temp << k+1;
+      std::string name = "flux_"+temp.str();
+      for (int i = 0;i<velocity_k->MyLength();++i)
+      {
+        // get value for each component of velocity vector
+        for(int idim=0;idim<dim;idim++)
+        {
+          double value = ((*flux_)[k*dim+idim])[i];
+          int err = velocity_k->ReplaceMyValue(i,idim,value);
+          if (err!=0) dserror("Detected error in ReplaceMyValue");
+        }
+      }
+      output_->WriteVector(name, velocity_k, IO::DiscretizationWriter::nodevector);
+    }
   }
 
   return;

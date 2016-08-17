@@ -31,7 +31,8 @@ enum Action {
   calc_mat_and_rhs,          // calc system matrix and residual,
   calc_pres_and_sat,         // calculate pressure and saturation
   calc_solidpressure,        // calculate solid pressure
-  calc_error                 // calc_error
+  calc_error,                // calc_error
+  recon_flux_at_nodes        // reconstruct flux at nodes
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/
