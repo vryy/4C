@@ -261,6 +261,19 @@ public:
                     const double&              xi,
                     const std::vector<double>& psi_totlag) const;
 
+  /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i,
+                                          const int&           i) const
+  {
+    if (not ((unsigned)i<Tref().size()))
+      dserror("asked for tangent at node index %d, but only %d centerline nodes existing",i,Tref().size());
+
+    Tref_i = Tref()[i];
+  }
+
   /*!
   \brief compute and get current tangent at specified node i.e. Tcurrnode_
   Attention: strictly speaking, this returns the first vector of the nodal triad which is NOT identical to the tangent of the centerline
@@ -589,9 +602,9 @@ private:
   double reflength_;
   //! rotational pseudovectors at nodes in reference configuration
   std::vector<LINALG::Matrix<3,1> > theta0node_;
-  //! vector holding current tangent at the nodes
+  //! vector holding current tangent at the centerline nodes
   std::vector<LINALG::Matrix<3,1> > Tcurrnode_;
-  //! vector holding reference tangent at the nodes
+  //! vector holding reference tangent at the centerline nodes
   std::vector<LINALG::Matrix<3,1> > Trefnode_;
 
   //! initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999

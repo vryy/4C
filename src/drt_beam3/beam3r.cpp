@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3r.cpp
 
 \brief 3D nonlinear Reissner beam element
@@ -6,11 +7,8 @@
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-*-----------------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
@@ -1516,41 +1514,31 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     {
       if (this->HermiteCenterlineInterpolation())
       {
-        LINALG::Matrix<12,1> disp_totlag_fixedsize;
-        for (int i=0; i<12; ++i)
-          disp_totlag_fixedsize(i)=disp_totlag[i];
+        const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
         pos = this->GetPosAtXi<2,2>(xi,disp_totlag_fixedsize);
       }
       else
       {
-        LINALG::Matrix<6,1> disp_totlag_fixedsize;
-        for (int i=0; i<6; ++i)
-          disp_totlag_fixedsize(i)=disp_totlag[i];
+        const LINALG::Matrix<6,1> disp_totlag_fixedsize(&disp_totlag[0]);
         pos = this->GetPosAtXi<2,1>(xi,disp_totlag_fixedsize);
       }
       break;
     }
     case 3:
     {
-      LINALG::Matrix<9,1> disp_totlag_fixedsize;
-      for (int i=0; i<9; ++i)
-        disp_totlag_fixedsize(i)=disp_totlag[i];
+      const LINALG::Matrix<9,1> disp_totlag_fixedsize(&disp_totlag[0]);
       pos = this->GetPosAtXi<3,1>(xi,disp_totlag_fixedsize);
       break;
     }
     case 4:
     {
-      LINALG::Matrix<12,1> disp_totlag_fixedsize;
-      for (int i=0; i<12; ++i)
-        disp_totlag_fixedsize(i)=disp_totlag[i];
+      const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
       pos = this->GetPosAtXi<4,1>(xi,disp_totlag_fixedsize);
       break;
     }
     case 5:
     {
-      LINALG::Matrix<15,1> disp_totlag_fixedsize;
-      for (int i=0; i<15; ++i)
-        disp_totlag_fixedsize(i)=disp_totlag[i];
+      const LINALG::Matrix<15,1> disp_totlag_fixedsize(&disp_totlag[0]);
       pos = this->GetPosAtXi<5,1>(xi,disp_totlag_fixedsize);
       break;
     }

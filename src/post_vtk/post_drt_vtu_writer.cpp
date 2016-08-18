@@ -4,13 +4,9 @@
 
 \brief VTU filter
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\level 2
 
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 
@@ -29,6 +25,8 @@ Maintainer: Martin Kronbichler
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_element.H"
+
+#include "../drt_beam3/beam3_base.H"
 
 // deactivate for ascii output. Only do this for debugging.
 #define BIN_VTK_OUT
@@ -172,11 +170,21 @@ VtuWriter::WriteGeo()
 
   // loop over my elements and write the data
   int outNodeId = 0;
-  for (int e=0; e<dis->NumMyRowElements(); ++e)
+  for (int e=0; e<nelements; ++e)
   {
     const DRT::Element* ele = dis->lRowElement(e);
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->IsNurbsElement()==false)
+    if (ele->IsNurbsElement())
+    {
+      WriteGeoNurbsEle(ele,celltypes,outNodeId,celloffset,coordinates);
+    }
+    else if (beamele!=NULL)
+    {
+      WriteGeoBeamEle(beamele,celltypes,outNodeId,celloffset,coordinates);
+    }
+    else
     {
       celltypes.push_back(vtk_element_types[ele->Shape()].first);
       const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
@@ -187,13 +195,11 @@ VtuWriter::WriteGeo()
       outNodeId += ele->NumNode();
       celloffset.push_back(outNodeId);
     }
-    else
-      WriteGeoNurbsEle(ele,celltypes,outNodeId,celloffset,coordinates);
   }
-  dsassert((int)coordinates.size() == 3*nnodes, "internal error");
+  dsassert((int)coordinates.size() == 3*outNodeId, "internal error");
 
   // step 1: write node coordinates into file
-  currentout_ << "<Piece NumberOfPoints=\"" << nnodes
+  currentout_ << "<Piece NumberOfPoints=\"" << outNodeId
       <<"\" NumberOfCells=\"" << nelements << "\" >\n"
       << "  <Points>\n"
       << "    <DataArray type=\"Float64\" NumberOfComponents=\"3\"";
@@ -229,8 +235,8 @@ VtuWriter::WriteGeo()
 #endif
   {
     std::vector<int32_t> connectivity;
-    connectivity.reserve(nnodes);
-    for (int i=0; i<nnodes; ++i)
+    connectivity.reserve(outNodeId);
+    for (int i=0; i<outNodeId; ++i)
       connectivity.push_back(i);
 #ifdef BIN_VTK_OUT
     LIBB64::writeCompressedBlock(connectivity, currentout_);
@@ -343,8 +349,18 @@ VtuWriter::WriteDofResultStep(
   for (int e=0; e<dis->NumMyRowElements(); ++e)
   {
     const DRT::Element* ele = dis->lRowElement(e);
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->IsNurbsElement()==false)
+    if (ele->IsNurbsElement())
+    {
+      WirteDofResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData,from,fillzeros);
+    }
+    else if (beamele!=NULL)
+    {
+      WriteDofResultStepBeamEle(beamele,ncomponents,numdf,solution,ghostedData,from,fillzeros);
+    }
+    else
     {
       const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
       for (int n=0; n<ele->NumNode(); ++n)
@@ -371,8 +387,7 @@ VtuWriter::WriteDofResultStep(
           solution.push_back(0.);
       }
     }
-    else
-      WirteDofResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData,from,fillzeros);
+
   } // loop over all elements
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
@@ -643,6 +658,37 @@ VtuWriter::WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& cellty
 }
 
 void
+VtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+                           std::vector<uint8_t>& celltypes,
+                           int& outNodeId,
+                           std::vector<int32_t>& celloffset,
+                           std::vector<double>& coordinates)
+{
+  /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
+   * which is supported as vtkCellType number 4 (see also list vtk_element_types above) */
+  celltypes.push_back(4);
+
+  /* loop over the chosen visualization points (equidistant distribution in the element
+   * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
+  LINALG::Matrix<3,1> r;
+  double xi=0.0;
+
+  for (unsigned int i=0; i<BEAMSVTUVISUALSUBSEGMENTS+1; ++i)
+  {
+    r.Clear();
+    xi= -1.0 + i*2.0/BEAMSVTUVISUALSUBSEGMENTS;
+
+    beamele->GetRefPosAtXi(r,xi);
+
+    for (int d=0; d<3; ++d)
+      coordinates.push_back(r(d));
+  }
+
+  outNodeId += BEAMSVTUVISUALSUBSEGMENTS+1;
+  celloffset.push_back(outNodeId);
+}
+
+void
 VtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
       std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros)
@@ -720,6 +766,74 @@ VtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,c
     break;
   }// end switch shape
   return;
+}
+
+void
+VtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+                                    const int& ncomponents,
+                                    const int& numdf,
+                                    std::vector<double>& solution,
+                                    Teuchos::RCP<Epetra_Vector>& ghostedData,
+                                    const int& from,
+                                    const bool fillzeros)
+{
+  if (numdf != ncomponents or numdf != 3)
+  {
+    dserror("writing of dof-based result for beams with Hermite centerline interpolation is "
+            "restricted to centerline displacements where numdof = ncomponents = 3");
+  }
+
+  const Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
+  std::vector<int> nodedofs;
+  std::vector<double> centerlinedofvals;
+
+  for (int n=0; n<beamele->NumCenterlineNodes(); ++n)
+  {
+    nodedofs.clear();
+
+    // local storage position of desired dof gid
+    dis->Dof(beamele->Nodes()[n], nodedofs);
+
+    std::vector<int> centerlinedofindices;
+
+    beamele->PositionDofIndices(centerlinedofindices,*(beamele->Nodes()[n]));
+    beamele->TangentDofIndices(centerlinedofindices,*(beamele->Nodes()[n]));
+
+    for (std::vector<int>::const_iterator it=centerlinedofindices.begin(); it!=centerlinedofindices.end(); ++it)
+    {
+      const int lid = ghostedData->Map().LID(nodedofs[*it]);
+      if (lid > -1)
+        centerlinedofvals.push_back((*ghostedData)[lid]);
+      else
+      {
+        if(fillzeros)
+          centerlinedofvals.push_back(0.);
+        else
+          dserror("received illegal dof local id: %d", lid);
+      }
+    }
+  }
+
+  /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
+   * which is supported as vtkCellType number 4 (see also list vtk_element_types above)
+   * loop over the chosen visualization points (equidistant distribution in the element
+   * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
+  LINALG::Matrix<3,1> disp;
+  double xi=0.0;
+
+  for (unsigned int i=0; i<BEAMSVTUVISUALSUBSEGMENTS+1; ++i)
+  {
+    disp.Clear();
+    xi= -1.0 + i*2.0/BEAMSVTUVISUALSUBSEGMENTS;
+
+    // let the beam element do the interpolation
+    // note: we "misuse" the method for interpolation of the total position which is thought to get absolute state values (disp_totlag)
+    //       here, we use it to interpolate the translational displacement of a point, i.e. we hand in the displacements instead of the total values
+    beamele->GetPosAtXi(disp,xi,centerlinedofvals);
+
+    for (int d=0; d<3; ++d)
+      solution.push_back(disp(d));
+  }
 }
 
 void

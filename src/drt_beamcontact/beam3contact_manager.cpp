@@ -7,9 +7,6 @@
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 */
 /*----------------------------------------------------------------------*/
 
@@ -2518,6 +2515,9 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   {
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
+
+    if (fp==NULL) dserror("can't write to specified gmsh output folder!");
+
     std::stringstream gmshfileheader;
       //write output to temporary std::stringstream;
 //    gmshfileheader <<"General.BackgroundGradient = 0;\n";

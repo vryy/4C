@@ -24,6 +24,10 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
 
+/* number of linear subsegments used for visualization of beam centerline
+ * in vtu format (see post_drt_vtu_writer.cpp) */
+#define BEAMSVTUVISUALSUBSEGMENTS 10
+
 // forward declaration ...
 namespace STR {
 namespace ELEMENTS {
@@ -149,6 +153,64 @@ public:
    *  \date 06/16 */
   virtual double GetJacobiFacAtXi(const double& xi) const = 0;
 
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space) in stress-free reference configuration
+   *
+   *  \author grill
+   *  \date 06/16 */
+  inline void GetRefPosAtXi(LINALG::Matrix<3,1>& refpos, const double& xi) const
+  {
+    const int numclnodes = this->NumCenterlineNodes();
+    int numnodalvalues = 0;
+    this->HermiteCenterlineInterpolation() ? numnodalvalues = 2 : numnodalvalues=1;
+    std::vector<double> refdofval;
+    refdofval.reserve(3*numnodalvalues*numclnodes);
+    const DRT::Node* const* nodes = this->Nodes();
+
+    if (nodes[0]==NULL) dserror("Cannot get nodes of this element");
+
+    // centerline nodes are always the first numclnodes nodes of the element
+    for (int n=0; n<numclnodes; ++n)
+    {
+      std::vector<int> dofindices;
+
+      this->PositionDofIndices(dofindices, *(nodes[n]));
+
+      for (std::vector<int>::const_iterator it=dofindices.begin(); it!=dofindices.end(); ++it)
+        refdofval.push_back((nodes[n]->X())[*it]);
+
+      if (this->HermiteCenterlineInterpolation())
+      {
+        LINALG::Matrix<3,1> Tref_node;
+        this->GetRefTangentAtNode(Tref_node,n);
+        for (int d=0; d<3; ++d)
+          refdofval.push_back(Tref_node(d));
+      }
+    }
+
+    this->GetPosAtXi(refpos,xi,refdofval);
+
+    return;
+  }
+
+  /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const
+  {
+    // ToDo make pure virtual and add/generalize implementations in beam eles
+    dserror("not implemented");
+  }
+
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos, const double& xi, const std::vector<double>& disp_totlag) const
+  {
+    // ToDo make pure virtual and add/generalize implementations in beam eles
+    dserror("not implemented");
+  }
 
 protected:
   /** \brief get access to the interface

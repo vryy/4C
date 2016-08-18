@@ -274,6 +274,15 @@ public:
    *  \date 05/16 */
   virtual inline double GetRefLength() const { return 2.0*jacobi_; }
 
+  /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const
+  {
+    Tref_i = Tref()[i];
+  }
+
   /*!
    \brief Get maximal bending curvature occuring in this element
    */
@@ -293,7 +302,24 @@ public:
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
-  LINALG::Matrix<3,1> GetPos(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
+  LINALG::Matrix<3,1> GetPos(const double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
+
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetPosAtXi(LINALG::Matrix<3,1>&      pos,
+                                const double&              xi,
+                                const std::vector<double>& disp_totlag) const
+  {
+    if (disp_totlag.size() != 12)
+      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp_totlag.size());
+
+    const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
+    pos = this->GetPos(xi,disp_totlag_fixedsize);
+
+    return;
+  }
 
   /*!
   \brief Get axial strain at xi for given nodal displacements

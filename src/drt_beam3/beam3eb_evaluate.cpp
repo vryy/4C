@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3eb_evaluate.cpp
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
@@ -6,7 +7,8 @@
 \level 2
 
 \maintainer Christoph Meier
-*-----------------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "beam3eb.H"
 #include "../drt_lib/drt_discret.H"
@@ -2506,7 +2508,7 @@ return;
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                       meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(const double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
 {
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);

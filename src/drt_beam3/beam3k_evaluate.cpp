@@ -7,7 +7,6 @@
 \level 2
 
 \maintainer Christoph Meier
-
 */
 /*-----------------------------------------------------------------------------------------------------------*/
 
@@ -2192,8 +2191,10 @@ void DRT::ELEMENTS::Beam3k::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD 
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                        popp 02/16|
  *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(const double& xi,
+                                                  const LINALG::Matrix<12,1>& disp_totlag_centerline) const
 {
+  // note: this method expects the absolute ("total Lagrangean") values for positions and tangents of both centerline nodes (local numbering 0 and 1)
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);
 
@@ -2203,7 +2204,7 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(double& xi, LINALG::Matrix<12,
   {
     for (int i=0;i<3;i++)
     {
-      r(i)+=N_i(n)*disp_totlag(3*n+i);
+      r(i)+=N_i(n)*disp_totlag_centerline(3*n+i);
     }
   }
 
@@ -2261,6 +2262,7 @@ std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& 
       basevectors[1](i)=triad_mat(i,2);
     }
 
+    // ToDo careful, this is a hack for rectangular cross-sections ?!?
     double Ly=pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
     double Lz=12.0*Izz_/pow(Ly,3);
 

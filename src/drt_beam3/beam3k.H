@@ -204,7 +204,7 @@ public:
   }
 
   /*!
-  \brief get moment of inertia Iyy    // TODO print at least warning in case of anisotropy, i.e. Iyy!=Izz; better: always return both in double array
+  \brief get moment of inertia Iyy
   */
   const double& Iyy() const
   {
@@ -214,7 +214,7 @@ public:
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
-  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+  LINALG::Matrix<3,1> GetPos(const double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
 
   /*!
    \brief Get (non-unit) tangent vectors at the two boundary nodes
@@ -222,6 +222,37 @@ public:
   std::vector<LINALG::Matrix<3,1> > GetNodalTangents() const
   {
     return T_;
+  }
+
+  /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const
+  {
+    if (not ((unsigned)i < Tref().size()))
+      dserror("asked for tangent at node index %d, but only %d centerline nodes existing",i,Tref().size());
+    Tref_i = Tref()[i];
+  }
+
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetPosAtXi(LINALG::Matrix<3,1>&       pos,
+                                 const double&              xi,
+                                 const std::vector<double>& disp_totlag) const
+  {
+    // ToDo we expect absolute positions and absolute tangents at both centerline nodes here (i.e. "disp_totlag_centerline")
+    //      make this more general and accept complete DoF vector of this element (2*7+1 DoFs) and do the rest automatically here
+    if (disp_totlag.size() != 12)
+      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp_totlag.size());
+
+    // note: in case of ROTVEC=true, we need 3 positions, 3 absolute rotvec DOFs AND the length of tangent vector (7th DoF) of both centerline nodes
+    if (this->RotVec()) dserror("not implemented for case ROTVEC=true so far");
+
+    const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
+    pos = this->GetPos(xi,disp_totlag_fixedsize);
   }
 
   /*!
