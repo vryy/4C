@@ -428,13 +428,13 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     r.Update(1.0,surfacenodes[0],-1.0,surfacenodes[2]);
     p.Update(1.0,surfacenodes[1],-1.0,surfacenodes[3%numsurfacenodes]);
 
-    //calculate normalvector n with cross product of diagonals r,p
+    //calculate normal vector n with cross product of diagonals r,p
     n(0) = r(1)*p(2)-r(2)*p(1);
     n(1) = r(2)*p(0)-r(0)*p(2);
     n(2) = r(0)*p(1)-r(1)*p(0);
     n.Scale(1.0/n.Norm2());
 
-    // bubblesurfaces of the cubic bubble
+    // bubble surfaces of the cubic bubble
     const double bubblesurface[] = {particleposition(0)+influence, particleposition(0)-influence,
                               particleposition(1)+influence, particleposition(1)-influence,
                               particleposition(2)+influence, particleposition(2)-influence};
@@ -514,7 +514,7 @@ void CAVITATION::Algorithm::EvaluateSurface(
   // - calculating bubblecorner points
   //**********************************************************************
 
-  // variable to store integrationpoints
+  // variable to store integration points
   std::vector<LINALG::Matrix<3,1> > integrationpoints;
   integrationpoints.reserve(12);
   double bubblesurface[]={particleposition(0)+influence , particleposition(0)-influence ,
@@ -543,7 +543,7 @@ void CAVITATION::Algorithm::EvaluateSurface(
   {
     difference.Update(1.0,surfacenodes[iedges],-1.0,particleposition);
 
-    // catch corner points cp by testing whether NormInf of the current corner point is smaller than the influenceradius
+    // catch corner points cp by testing whether NormInf of the current corner point is smaller than the influence radius
     // corner points are edge-points of the fluid surface, which are into the bubble influence area
     // InfNorm due to a cubic bubble
     if(difference.NormInf() <= influence+tol)
@@ -551,13 +551,13 @@ void CAVITATION::Algorithm::EvaluateSurface(
       integrationpoints.push_back(surfacenodes[iedges]);
     }
 
-    // catch penetration points pp which penetrate the bubble surface by building a line between two surfacepoints
+    // catch penetration points pp which penetrate the bubble surface by building a line between two surface points
     // penetration points are at the edge lines of the surface and penetrate the bubble surface
     // and test whether the penetration happens between them with 0<t<1 and the point is in InfNorm influence of the bubble
     for(int ipene=0; ipene<6; ++ipene)
     {
       // parameter t for penetrating bubble surface
-      if((surfacenodes[(iedges+1)%numsurfacenodes](ipene/2)-surfacenodes[iedges](ipene/2))>tol or (surfacenodes[(iedges+1)%numsurfacenodes](ipene/2)-surfacenodes[iedges](ipene/2)<-tol))
+      if(std::abs(surfacenodes[(iedges+1)%numsurfacenodes](ipene/2)-surfacenodes[iedges](ipene/2)) > tol)
       {
         t = (bubblesurface[ipene]-surfacenodes[iedges](ipene/2))/(surfacenodes[(iedges+1)%numsurfacenodes](ipene/2)-surfacenodes[iedges](ipene/2));
       }
@@ -582,10 +582,10 @@ void CAVITATION::Algorithm::EvaluateSurface(
     }
   }
 
-  // get bubblecorner points which are in the surface
-  // calculates the bubblecorner intersection point of the two surfaces
-  // A bubblecorner point is an intersection point of the fluid surface with the bubbleedges
-  // calculates the intersection points of the bubbleedges with the plane surface (represented with n,centersurf)
+  // get bubble corner points which are in the surface
+  // calculates the bubble corner intersection point of the two surfaces
+  // A bubble corner point is an intersection point of the fluid surface with the bubble edges
+  // calculates the intersection points of the bubble edges with the plane surface (represented with n,centersurf)
   for(int y=2; y<4; y++)
     for(int z=4; z<6; z++)
     {
@@ -593,7 +593,7 @@ void CAVITATION::Algorithm::EvaluateSurface(
 
       CalculateBubbleCornerPoint(n, centersurf, y, z, bubblesurface, bubblecorner);
       bool inpoint = CheckPointInSurface(surfacenodes, centersurf, centerele, bubblecorner);
-      difference.Update(1,bubblecorner,-1,particleposition);
+      difference.Update(1.0,bubblecorner,-1.0,particleposition);
       if(difference.NormInf()<=influence+tol and inpoint==true)
       {
         integrationpoints.push_back(bubblecorner);
@@ -635,10 +635,23 @@ void CAVITATION::Algorithm::EvaluateSurface(
   {
     // integration points are ordered for correct ring integral evaluation
     // close points are removed altering integrationpoints.size()
-    if(integrationpoints.size() > 3)
+    {
       BuildConvexHull(integrationpoints);
 
-    int numintegrationpoints = (int)integrationpoints.size();
+      if(integrationpoints.size() == 2)
+      {
+        // nothing to add because only two points left which will end up in a zero contribution
+        return;
+      }
+      else if(integrationpoints.size() == 1)
+      {
+        // surface overlap detected
+        surfaceoverlap = true;
+        return;
+      }
+    }
+
+    const int numintegrationpoints = (int)integrationpoints.size();
 
     static LINALG::Matrix<3,1> centerringintgral;
     centerringintgral.PutScalar(0.0);
@@ -672,6 +685,10 @@ void CAVITATION::Algorithm::EvaluateSurface(
       break;
       }
     }
+  }
+  else if(integrationpoints.size() == 2)
+  {
+    // nothing to add because only two points left which will end up in a zero contribution
   }
   else if(integrationpoints.size() > 0)
   {
@@ -719,6 +736,7 @@ void CAVITATION::Algorithm::GetPenetrationPointsOfXSurfaces(
         {
           // due to surface overlap, do integration again with smaller influence radius
           surfaceoverlap = true;
+          return;
         }
       }
       else
@@ -803,19 +821,16 @@ void CAVITATION::Algorithm::CalculateBubbleCornerPoint(
   double *bubblesurface,
   LINALG::Matrix<3,1>& bubblecorner)
 {
-  // calculates the bubblecorner intersection point of the two surfaces
-  // A bubblecorner point is a intersection point of the fluid surface with the bubbleedges
-  // suface 0 is +x
+  // calculates the bubble corner intersection point of the two surfaces
+  // A bubble corner point is a intersection point of the fluid surface with the bubble edges
+  // surface 0 is +x
   // 1 is -x
   // 2 is y
   // 3 is -y
   // 4 is z
   // 5 is -z
-  int iset[3];
-  iset[0] = 0;
-  iset[1] = 0;
-  iset[2] = 0;
-  for(int j=0; j<6; j++)
+  int iset[3] = {0,0,0};
+  for(int j=0; j<6; ++j)
   {
     if(bubblesurface1 == j)
     {
