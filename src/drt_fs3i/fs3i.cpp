@@ -213,6 +213,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   std::map<int,std::vector<double>* > structcoeff;
   PermCoeffs.push_back(fluidcoeff);
   PermCoeffs.push_back(structcoeff);
+  const int numscal = scatravec_[0]->ScaTraField()->NumScal();
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -227,6 +228,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
       if (!infperm_) //get all FS3I interface condition parameters from the input file
       {
+        // initialize a large enough vector
         std::vector<double>* params = new std::vector<double>(7,true);
         params->at(0) = (coupcond[iter])->GetDouble("permeability coefficient");
         params->at(1) = (coupcond[iter])->GetDouble("hydraulic conductivity");
@@ -235,7 +237,12 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         const std::vector<double>* mywsscoeffs = (coupcond[iter])->Get<std::vector<double> >("wss coeffs");
         params->at(4)=mywsscoeffs->at(0);
         params->at(5)=mywsscoeffs->at(1);
-        params->at(6) = (double)(coupcond[iter])->GetInt("numscal");
+        params->at(6) = (double)((coupcond[iter])->GetInt("numscal"));
+        const std::vector<int>* onoffs = (coupcond[iter])->Get<std::vector<int> >("onoff");
+        for (int k=0; k<numscal; k++)
+        {
+          params->push_back( (double)(onoffs->at(k)) );
+        }
 
         if (scatravec_[i]->ScaTraField()->NumScal() != params->at(6))
           dserror("Number of scalars NUMSCAL in ScaTra coupling conditions with COUPID %i does not equal the number of scalars your scalar field has!",myID);
@@ -262,9 +269,11 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
     std::map<int,std::vector<double>*> fluid_PermCoeffs = PermCoeffs[0];
     std::map<int,std::vector<double>*> struct_PermCoeffs = PermCoeffs[1];
 
+    std::vector<int>* onoff_sum = new std::vector<int>(numscal,0);
+
     for (std::map<int,std::vector<double>*>::iterator fit=fluid_PermCoeffs.begin(); fit!=fluid_PermCoeffs.end(); ++fit) //loop over all fluid-scatra COUPIDs
     {
-      int ID = (*fit).first;
+      const int ID = (*fit).first;
       std::vector<double>* fluid_permcoeffs = (*fit).second; //get the pointer to the fluid-scatra params
 
       std::map<int,std::vector<double>*>::iterator sit = struct_PermCoeffs.find(ID); //get corresponding structure-scatra condition with same COUPID
@@ -288,6 +297,19 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
       if ( fluid_permcoeffs->at(6) != structure_permcoeffs->at(6) )
         dserror("Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",ID);
 
+      for (int k=0; k<numscal; k++)
+      {
+        if ( fluid_permcoeffs->at(7+k) != structure_permcoeffs->at(7+k) )
+          dserror("ONOFF vector of ScaTra couplings with COUPID %i needs to be the same!",ID);
+
+        onoff_sum->at(k)+=fluid_permcoeffs->at(7+k);
+      }
+    }
+
+    for (int j=0; j<numscal; j++)
+    {
+      if ( onoff_sum->at(j) > 1 )
+        dserror("In the ONOFF vector the %i-th scalar has been switched on multiple times. The ON is allowed only once per scalar!",j);
     }
   }
 }
