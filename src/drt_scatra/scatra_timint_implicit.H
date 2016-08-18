@@ -173,6 +173,10 @@ public:
     SetElementTimeParameter();
   };
 
+  //! set upres
+  void SetUpres( const int newupres )
+  { upres_=newupres; }
+
   //! do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 

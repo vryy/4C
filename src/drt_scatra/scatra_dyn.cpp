@@ -89,8 +89,15 @@ void scatra_dyn(int restart)
       if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
 
+      // allow TRANSPORT conditions, too
+      std::map<std::string,std::string> conditions_to_copy;
+      SCATRA::ScatraFluidCloneStrategy clonestrategy;
+      conditions_to_copy = clonestrategy.ConditionsToCopy();
+      DRT::UTILS::DiscretizationCreatorBase creator;
+      creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
+
       // finalize discretization
-      scatradis->FillComplete(true, false, false);
+      scatradis->FillComplete();
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
