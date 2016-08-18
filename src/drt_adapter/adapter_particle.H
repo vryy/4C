@@ -146,6 +146,12 @@ namespace ADAPTER
     //! unknown temperatures \f$T_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
 
+    //! unknown pressure \f$P_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Pressuren() = 0;
+
+    //! unknown pressure \f$D_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
+
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
@@ -154,6 +160,12 @@ namespace ADAPTER
 
     //! Return temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
+
+    //! Return pressure \f$P_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() = 0;
+
+    //! Return density \f$D_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
 
     //! unknown angular velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() = 0;
@@ -178,9 +190,6 @@ namespace ADAPTER
 
     //! Return inertia of particles
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
-
-    //! Return density
-    virtual Teuchos::RCP<const Epetra_Vector> Density() = 0;
 
     //! Return initial density
     virtual const double initDensity() = 0;
@@ -217,6 +226,12 @@ namespace ADAPTER
     //! extract temperatures
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
 
+    //! extract pressures
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressurenp() = 0;
+
+    //! extract densities
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
+
     //! extract SL latent heat
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat() = 0;
 
@@ -237,9 +252,6 @@ namespace ADAPTER
 
     //! extract inertia vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
-
-    //! Return density
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensity() = 0;
 
     //@}
 

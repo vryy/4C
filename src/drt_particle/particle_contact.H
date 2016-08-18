@@ -653,6 +653,16 @@ namespace PARTICLE
 
     public:
 
+      /// struct to store node data for faster access
+      struct NodeInterData {
+        LINALG::Matrix<3,1> pos;
+        LINALG::Matrix<3,1> vel;
+        double rad;
+        double mass;
+        std::vector<int> lm;
+        int owner;
+      };
+
       //! @name Life
       //@{
 
@@ -664,12 +674,17 @@ namespace PARTICLE
         );
 
       //! Destructor
-      virtual ~MeshFreeInteractionHandler(){ ; }
+      ~MeshFreeInteractionHandler(){ ; }
 
       //@}
 
       //! @name Actions
       //@{
+
+      /// compute collisions (inter-particle and particle-wall), returns contact energy
+      void PreFetchInterData(
+        const int numcolparticles
+        );
 
       /// compute interactions, returns 0
       void EvaluateParticleInteraction(
@@ -678,10 +693,19 @@ namespace PARTICLE
         Teuchos::RCP<Epetra_Vector> m_contact
         );
 
+      /// compute density for meshfree interactions
+      void CalcDensity(
+        DRT::Node* particle_i,
+        const NodeInterData& data_i,
+        const std::list<DRT::Node*>& neighboring_particles
+        );
+
     protected:
 
       //! @name Collision parameters
       //@{
+
+      std::vector<NodeInterData> nodedata_;   ///< temporary storage for all particle collision relevant data
 
       /// weight function for meshfree interactions
       INPAR::PARTICLE::WeightFunction weight_function_;

@@ -79,11 +79,13 @@ PARTICLE::TimInt::TimInt
   acc_(Teuchos::null),
   temperature_(Teuchos::null),
   pressure_(Teuchos::null),
+  density_(Teuchos::null),
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   temperaturen_(Teuchos::null),
   pressuren_(Teuchos::null),
+  densityn_(Teuchos::null),
   SL_latent_heat_(Teuchos::null),
   radius_(Teuchos::null),
   radius0_(Teuchos::null),
@@ -95,7 +97,6 @@ PARTICLE::TimInt::TimInt
   ang_veln_(Teuchos::null),
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
-  density_(Teuchos::null),
   initDensity_(-1.0),
   CPS_(-1.0),
   CPL_(-1.0),
@@ -147,13 +148,18 @@ void PARTICLE::TimInt::Init()
   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // temperatures T_{n}
+
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+    // pressures P_{n}
     pressure_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
   case INPAR::PARTICLE::Normal_DEM_thermo :
+    // densities D_{n}
+    density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    // temperatures T_{n}
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    // latent heat
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     break;
   default : //do nothing
@@ -165,8 +171,7 @@ void PARTICLE::TimInt::Init()
 
   // radius of each particle
   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  // density of each particle
-  density_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+
   if(variableradius_)
   {
     // initial radius of each particle for time dependent radius
@@ -194,12 +199,16 @@ void PARTICLE::TimInt::Init()
   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
   // accelerations A_{n+1} at t_{n+1}
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
-  // temperatures T_{n+1} at t_{n+1}
+
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+    // pressures P_{n+1} at p_{n+1}
     pressuren_ = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
   case INPAR::PARTICLE::Normal_DEM_thermo :
+    // densities D_{n+1} at d_{n+1}
+    densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
+    // temperatures T_{n+1} at t_{n+1}
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
     break;
   default : //do nothing
@@ -240,7 +249,6 @@ void PARTICLE::TimInt::SetInitialFields()
   // all particles have identical density. For meshfree particles the mass is determined by density and radius of influence
   // for the sake of semplicity
   initDensity_ = actmat->density_;
-  density_->PutScalar(initDensity_);
 
   initRadius_ = actmat->initialradius_;
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
@@ -278,7 +286,7 @@ void PARTICLE::TimInt::SetInitialFields()
           dserror("negative initial radius");
 
         // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = (*density_)[lid] * 4.0/3.0 * M_PI * r_p * r_p * r_p;
+        (*mass_)[lid] = initDensity_ * 4.0/3.0 * M_PI * r_p * r_p * r_p;
       }
     }
   }
@@ -319,7 +327,7 @@ void PARTICLE::TimInt::SetInitialFields()
       (*radius_)[lid] = random_radius;
 
       // recompute particle mass
-      (*mass_)[lid] = (*density_)[lid]*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
+      (*mass_)[lid] = initDensity_*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
     }
   }
 
@@ -359,16 +367,17 @@ void PARTICLE::TimInt::SetInitialFields()
   discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
 
   // -----------------------------------------//
-  // set the other parameters and rewrite density in case of meshfree
+  // set the other parameters. In case of meshfree set also pressure and density
   // -----------------------------------------//
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
     {
-      case INPAR::PARTICLE::MeshFree :
-        // density is discarded since it has a different meaning for meshfree methods
-        density_->PutScalar(-1);
-      case INPAR::PARTICLE::Normal_DEM_thermo :
+    case INPAR::PARTICLE::MeshFree :
+      // here density_ and pressure_ should be inizialized with the initial values. Yet, they can be zero without a loss of generality.
+    case INPAR::PARTICLE::Normal_DEM_thermo :
+      // set density. Warining! use for meshfree this density leads only to the node masses. For everything else it must be discarded
+      (*density_)(0)->PutScalar(initDensity_);
       const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
       // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
       CPS_ = actmat2->CPS_;
@@ -562,6 +571,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *pressuren_);
   }
 
+  if (densityn_ != Teuchos::null)
+  {
+    old = densityn_;
+    densityn_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *densityn_);
+  }
+
   if (ang_veln_ != Teuchos::null)
   {
     old = ang_veln_;
@@ -625,6 +641,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*oldvec, *(*pressure_)(0));
   }
 
+  if (density_ != Teuchos::null && (*density_)(0) != Teuchos::null)
+  {
+    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
+    density_->ReplaceMaps(discret_->NodeRowMap());
+    LINALG::Export(*oldvec, *(*density_)(0));
+  }
+
   if (ang_acc_ != Teuchos::null and (*ang_acc_)(0) != Teuchos::null)
   {
     const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*ang_acc_)(0)));
@@ -672,13 +695,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     old = mass_;
     mass_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
     LINALG::Export(*old, *mass_);
-  }
-
-  if (density_ != Teuchos::null)
-  {
-    old = density_;
-    density_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *density_);
   }
 
   if (inertia_ != Teuchos::null)
@@ -742,9 +758,14 @@ void PARTICLE::TimInt::ReadRestartState()
     switch (particle_algorithm_->ParticleInteractionType())
     {
     case INPAR::PARTICLE::MeshFree :
+      // read pressure
       reader.ReadVector(pressuren_, "pressure");
       pressure_->UpdateSteps(*pressuren_);
     case INPAR::PARTICLE::Normal_DEM_thermo :
+      // read density
+      reader.ReadVector(densityn_, "density");
+      density_->UpdateSteps(*densityn_);
+      // read temperature
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
       break;
@@ -847,6 +868,7 @@ void PARTICLE::TimInt::OutputRestart
   case INPAR::PARTICLE::MeshFree :
     output_->WriteVector("pressure", (*pressure_)(0));
   case INPAR::PARTICLE::Normal_DEM_thermo :
+    output_->WriteVector("density", (*density_)(0));
     output_->WriteVector("temperature", (*temperature_)(0));
   default : // do nothing
     break;
@@ -920,6 +942,7 @@ void PARTICLE::TimInt::OutputState
   case INPAR::PARTICLE::MeshFree :
     output_->WriteVector("pressure", (*pressure_)(0), output_->nodevector);
   case INPAR::PARTICLE::Normal_DEM_thermo :
+    output_->WriteVector("density", (*density_)(0), output_->nodevector);
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
     break;
   default : //do nothing

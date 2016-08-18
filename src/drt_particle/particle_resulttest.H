@@ -68,8 +68,13 @@ private:
   Teuchos::RCP<const Epetra_Vector> acc_;
   //! global radius DOFs
   Teuchos::RCP<const Epetra_Vector> radius_;
+  //! global density DOFs
+  Teuchos::RCP<const Epetra_Vector> density_;
+  //! global pressure DOFs
+    Teuchos::RCP<const Epetra_Vector> pressure_;
   //! global temperature DOFs
   Teuchos::RCP<const Epetra_Vector> temperature_;
+
 };
 
 #endif /* #ifndef PARTICLERESULTTEST_H */

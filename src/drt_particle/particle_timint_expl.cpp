@@ -99,10 +99,20 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
   acc_->UpdateSteps(*accn_);
-  //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+
+  switch (particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree :
+    //    P_{n} := P_{n+1}, P_{n-1} := P_{n}
+    pressure_->UpdateSteps(*pressuren_);
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+    //    D_{n} := T_{n+1}, D_{n-1} := D_{n}
+    density_->UpdateSteps(*densityn_);
+    //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
     temperature_->UpdateSteps(*temperaturen_);
+    break;
+  default : // do nothing
+    break;
   }
 
   if(collhandler_ != Teuchos::null)

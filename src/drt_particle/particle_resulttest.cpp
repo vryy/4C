@@ -27,17 +27,21 @@
 PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
   : DRT::ResultTest("PARTICLE")
 {
-  dis_  = tintegrator.Dispnp();
+  partdisc_ = tintegrator.Discretization();
+
+    dis_  = tintegrator.Dispnp();
   if (tintegrator.Velnp() != Teuchos::null)
     vel_  = tintegrator.Velnp();
   if (tintegrator.Accnp() != Teuchos::null)
     acc_  = tintegrator.Accnp();
   if (tintegrator.Radius() != Teuchos::null)
     radius_  = tintegrator.Radius();
+  if (tintegrator.Densitynp() != Teuchos::null)
+    density_  = tintegrator.Densitynp();
+  if (tintegrator.Pressurenp() != Teuchos::null)
+    pressure_  = tintegrator.Pressurenp();
   if (tintegrator.Temperaturenp() != Teuchos::null)
-      temperature_  = tintegrator.Temperaturenp();
-
-  partdisc_ = tintegrator.Discretization();
+    temperature_  = tintegrator.Temperaturenp();
 }
 
 /*----------------------------------------------------------------------*/
@@ -180,6 +184,44 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
           if (lid < 0)
             dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
           result = (*temperature_)[lid];
+        }
+      }
+
+      // test pressure
+      if (pressure_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& pressurenpmap = pressure_->Map();
+        int idx = -1;
+        if (position == "pressure")
+          idx = 0;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          // node based vector
+          int lid = pressurenpmap.LID(actnode->Id());
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
+          result = (*pressure_)[lid];
+        }
+      }
+
+      // test density
+      if (density_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& densitynpmap = density_->Map();
+        int idx = -1;
+        if (position == "density")
+          idx = 0;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          // node based vector
+          int lid = densitynpmap.LID(actnode->Id());
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
+          result = (*density_)[lid];
         }
       }
 

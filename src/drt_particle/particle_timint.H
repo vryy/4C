@@ -259,8 +259,11 @@ namespace PARTICLE
     //! unknown temperatures \f$T_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
 
-    //! unknown pressure \f$T_{n}\f$
+    //! unknown pressure \f$P_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressuren() { return (*pressure_)(0); }
+
+    //! unknown pressure \f$D_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
@@ -271,8 +274,11 @@ namespace PARTICLE
     //! Return temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
 
-    //! Return pressure \f$T_{n+1}\f$
+    //! Return pressure \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() { return pressuren_; }
+
+    //! Return density \f$D_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
     //! unknown angular velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*ang_vel_)(0); }
@@ -297,9 +303,6 @@ namespace PARTICLE
 
     //! Return inertia of particles
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
-
-    //! Return density
-    virtual Teuchos::RCP<const Epetra_Vector> Density() { return density_; }
 
     //! Return initial density
     virtual const double initDensity() { return initDensity_; }
@@ -343,6 +346,9 @@ namespace PARTICLE
     //! extract pressure
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressurenp(){ return pressuren_; }
 
+    //! Return density
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
+
     //! extract SL latent heat
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat(){ return SL_latent_heat_; }
 
@@ -363,9 +369,6 @@ namespace PARTICLE
 
     //! extract inertia vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
-
-    //! Return density
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensity() { return density_; }
 
     //@}
 
@@ -461,8 +464,10 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
     //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
-    //! global pressure \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! global pressure \f${P}_{n+1}\f$ at \f$p_{n+1}\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > pressure_;
+    //! global pressure \f${D}_{n+1}\f$ at \f$d_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
@@ -471,8 +476,10 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> accn_;
     //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>  temperaturen_;
-    //! global pressure \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! global pressure \f${P}_{n+1}\f$ at \f$p_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>  pressuren_;
+    //! global density \f${D}_{n+1}\f$ at \f$d_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>  densityn_;
     //! radius of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> SL_latent_heat_;
     //! radius of each particle at \f$t_{0}\f$
@@ -495,8 +502,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> ang_accn_;
     //! global vector for visualization of particle orientation
     Teuchos::RCP<Epetra_Vector> orient_;
-    //! density of each particle at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> density_;
     //! initial density
     double initDensity_;
     //! initial radius

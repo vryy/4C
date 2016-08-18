@@ -1884,7 +1884,6 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   }
 
   Teuchos::RCP<Epetra_Vector> dispnp = particles_->WriteAccessDispnp();
-  Teuchos::RCP<Epetra_Vector> density = particles_->WriteAccessDensity();
   Teuchos::RCP<Epetra_Vector> mass = particles_->WriteAccessMass();
   Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
   Teuchos::RCP<Epetra_Vector> temperaturenp = particles_->WriteAccessTemperaturenp();
@@ -2019,10 +2018,10 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 
   // reset/set of the pointers after updatestestesafterparticletransfer
   dispnp = particles_->WriteAccessDispnp();
-  density = particles_->WriteAccessDensity();
   mass = particles_->WriteAccessMass();
   radius = particles_->WriteAccessRadius();
   temperaturenp = particles_->WriteAccessTemperaturenp();
+  Teuchos::RCP<Epetra_Vector> densitynp = particles_->WriteAccessDensitynp();
   Teuchos::RCP<Epetra_Vector> velnp = particles_->WriteAccessVelnp();
   Teuchos::RCP<Epetra_Vector> accnp = particles_->WriteAccessAccnp();
   Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
@@ -2050,7 +2049,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
       dserror("invalid old dof lid");
 
     // new masses and densities (to conserve the overall mass)
-    MassDensityUpdaterForParticleDismemberer(mass, density, radius, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
+    MassDensityUpdaterForParticleDismemberer(mass, densitynp, radius, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
     (*radius)[lidNode_new] = dismemberRadius_;
     (*temperaturenp)[lidNode_new] = (*temperaturenp)[lidNode_old];
     (*SL_latent_heat)[lidNode_new] = (*SL_latent_heat)[lidNode_old];
@@ -2073,7 +2072,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   {
     if (Step() > 0 && (*temperature0)[lidNode_old] <= SL_transitionTemperature && (*temperaturenp)[lidNode_old]>SL_transitionTemperature)
     {
-      MassDensityUpdaterForParticleDismemberer(mass, density, radius, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
+      MassDensityUpdaterForParticleDismemberer(mass, densitynp, radius, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
       // radius MUST be updated after MassDensityUpdaterForParticleDismemberer
       (*radius)[lidNode_old] = dismemberRadius_;
       // inertia-vector: sphere: I = 2/5 * m * r^2
@@ -2088,7 +2087,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 
 void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
     Teuchos::RCP<Epetra_Vector> &mass,
-    Teuchos::RCP<Epetra_Vector> &density,
+    Teuchos::RCP<Epetra_Vector> &densitynp,
     Teuchos::RCP<Epetra_Vector> &radius,
     const int &lidNode_new,
     const int &lidNode_old,
@@ -2096,7 +2095,7 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
 {
   // new masses and densities (to conserve the overall mass)
   (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
-  (*density)[lidNode_new] = (*density)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius_,3));
+  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius_,3));
 }
 
 /*----------------------------------------------------------------------*
