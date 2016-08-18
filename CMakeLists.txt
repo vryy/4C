@@ -600,7 +600,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupneohooke.cpp
   src/drt_matelast/elast_coupvarga.cpp
   src/drt_matelast/elast_isoanisoexpo.cpp
-  src/drt_matelast/elast_isoanisoexpodispersion.cpp
   src/drt_matelast/elast_isocub.cpp
   src/drt_matelast/elast_isoexpopow.cpp
   src/drt_matelast/elast_coupmooneyrivlin.cpp

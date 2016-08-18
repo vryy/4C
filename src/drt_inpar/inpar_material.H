@@ -156,7 +156,6 @@ namespace INPAR
       mes_iso1pow,                             ///< isochoric general power hyperelastic potential summand for modinv I
       mes_iso2pow,                             ///< isochoric general power hyperelastic potential summand for modiinv II
       mes_isoanisoexpo,                        ///< isochoric anisotropic single fiber material
-      mes_isoanisoexpodispersion,              ///< isochoric anisotropic single fiber material, with isotropic fiber dispersion
       mes_isocub,                              ///< isochoric cubic hyperelastic potential summand
       mes_isoexpopow,                          ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,                     ///< isochoric Mooney-Rivlin hyperelastic potential summand

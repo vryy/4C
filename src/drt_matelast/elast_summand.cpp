@@ -47,7 +47,6 @@
 #include "elast_coupanisoneohooke_VarProp.H"
 #include "elast_coupanisopow.H"
 #include "elast_isoanisoexpo.H"
-#include "elast_isoanisoexpodispersion.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
@@ -313,13 +312,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     return Teuchos::rcp(new CoupAnisoNeoHooke_VarProp(params));
   }
   case INPAR::MAT::mes_isoanisoexpo:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoAnisoExpo(curmat));
-    MAT::ELASTIC::PAR::IsoAnisoExpo* params = static_cast<MAT::ELASTIC::PAR::IsoAnisoExpo*>(curmat->Parameter());
-    return Teuchos::rcp(new IsoAnisoExpo(params));
-  }
-  case INPAR::MAT::mes_isoanisoexpodispersion:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoAnisoExpo(curmat));
