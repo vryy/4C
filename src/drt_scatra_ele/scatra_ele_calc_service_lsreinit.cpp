@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra elements for reinitialization equation
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236
@@ -509,7 +511,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad9>;

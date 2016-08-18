@@ -160,7 +160,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    zero_field //zero_field//field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           -1
 CONVFORM                        conservative //convective
 ALPHA_M                         0.833333333333330

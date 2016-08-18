@@ -154,12 +154,10 @@ namespace INPAR
     /// parameters for flux calculation of scalar transport problems
     enum FluxType
     {
-      flux_no,
-      flux_total_domain,
-      flux_diffusive_domain,
-      flux_total_boundary,
-      flux_diffusive_boundary,
-      flux_convective_boundary
+      flux_none,
+      flux_convective,
+      flux_diffusive,
+      flux_total
     };
 
     // this parameter selects the location where tau is evaluated

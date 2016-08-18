@@ -206,8 +206,13 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
 
+  // safety checks
   if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
     dserror("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
+  if(!problem->GetDis("scatra1")->GetCondition("ScaTraFluxCalc") or !problem->GetDis("scatra2")->GetCondition("ScaTraFluxCalc"))
+    dserror("Fluid-scatra and solid-scatra discretizations must have boundary conditions for flux calculation at FSI interface!");
+
+  return;
 }
 
 
@@ -315,12 +320,6 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
   fsi_->PrepareTimeloop();
 
-  // select fsi boundaries
-  std::vector<std::string> biogrcondnames(1);
-  biogrcondnames[0] = "FSICoupling";
-
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
-
   // Calculation of growth can be based both on values averaged during the inner timeloop
   // (in this case for the time being it takes in account also the initial transient state!),
   // or only on the last values coming from the fsi-scatra simulation
@@ -371,7 +370,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     // calculation of the flux at the interface based on normal influx values before time shift of results
     // is performed in Update
-    Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField()->CalcFluxAtBoundary(biogrcondnames,false);
+    Teuchos::RCP<Epetra_MultiVector> strufluxn = scatravec_[1]->ScaTraField()->CalcFluxAtBoundary(false);
 
     UpdateScatraFields();
 
@@ -415,7 +414,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     eleparams.set("action","calc_cur_nodal_normals");
     strudis->ClearState();
     strudis->SetState("displacement",fsi_->StructureField()->Dispnp());
-    strudis->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,nodalnormals,Teuchos::null,Teuchos::null,biogrcondnames[0]);
+    strudis->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,nodalnormals,Teuchos::null,Teuchos::null,"FSICoupling");
     strudis->ClearState();
 
     const Epetra_Map* dofrowmap = strudis->DofRowMap();
@@ -447,7 +446,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       }
     }
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondnames[0]);
+    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis,"FSICoupling");
     for (int nodei=0; nodei < condnodemap->NumMyElements(); nodei++)
     {
       // Here we rely on the fact that the structure scatra discretization is a clone of the structure mesh
@@ -569,7 +568,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
 
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondnames[0]);
+    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis,"FSICoupling");
     for (int i=0; i < condnodemap->NumMyElements(); i++)
     {
       // get the processor's local node with the same lnodeid

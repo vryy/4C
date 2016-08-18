@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_aniso.cpp
+\file scatra_ele_calc_aniso.cpp
 
- \brief
+\brief scatra_ele_calc_aniso.cpp
 
- <pre>
-   Maintainer: Lasse Jagschies
-               jagschies@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10365
- </pre>
+\level 2
+
+<pre>
+  \maintainer Lasse Jagschies
+              jagschies@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10365
+</pre>
  *----------------------------------------------------------------------*/
 
 
@@ -213,7 +215,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line3,1>;
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri6,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad8>;

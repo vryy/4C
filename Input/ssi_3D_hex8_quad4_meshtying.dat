@@ -47,7 +47,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 CONVFORM                        conservative
 SKIPINITDER                     no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

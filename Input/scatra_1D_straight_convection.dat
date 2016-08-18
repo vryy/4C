@@ -52,7 +52,6 @@ VELFUNCNO                       1
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Franca_Valentin

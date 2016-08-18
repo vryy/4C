@@ -3,6 +3,8 @@
 \file scatra_timint_bdf2.cpp
 \brief BDF2 time-integration scheme
 
+\level 1
+
 <pre>
 \maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
@@ -312,10 +314,10 @@ void SCATRA::TimIntBDF2::Update(const int num)
 {
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (writeflux_!=INPAR::SCATRA::flux_no)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true, num);
+      CalcFlux(true, num);
   }
 
   // solution of this step becomes most recent solution of the last step

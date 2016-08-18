@@ -407,24 +407,43 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("CALCERRORNO",-1,"function number for scalar transport error computation",&cellscatradyn);
 
-  setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
-                               tuple<std::string>(
-                                 "No",
-                                 "totalflux_domain",
-                                 "diffusiveflux_domain",
-                                 "totalflux_boundary",
-                                 "diffusiveflux_boundary",
-                                 "convectiveflux_boundary"
-                                 ),
-                               tuple<int>(
-                                   flux_no,
-                                   flux_total_domain,
-                                   flux_diffusive_domain,
-                                   flux_total_boundary,
-                                   flux_diffusive_boundary,
-                                   flux_convective_boundary),
-                               &cellscatradyn);
+  setStringToIntegralParameter<int>(
+      "CALCFLUX_DOMAIN",
+      "No",
+      "output of diffusive/total flux vectors inside domain",
+      tuple<std::string>(
+          "No",
+          "total",
+          "diffusive"
+          ),
+      tuple<int>(
+          flux_none,
+          flux_total,
+          flux_diffusive
+          ),
+      &cellscatradyn
+      );
 
+  setStringToIntegralParameter<int>(
+      "CALCFLUX_BOUNDARY",
+      "No",
+      "output of convective/diffusive/total flux vectors on boundary",
+      tuple<std::string>(
+          "No",
+          "total",
+          "diffusive",
+          "convective"
+          ),
+      tuple<int>(
+          flux_none,
+          flux_total,
+          flux_diffusive,
+          flux_convective
+          ),
+      &cellscatradyn
+      );
+
+  BoolParameter("CALCFLUX_BOUNDARY_LUMPED","Yes","perform approximate boundary flux calculation involving matrix lumping",&cellscatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS","-1",
       "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",

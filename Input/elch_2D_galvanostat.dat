@@ -27,7 +27,7 @@ TIMESTEP                        0.5
 VELOCITYFIELD                   zero
 RESULTSEVRY                     10
 MATID                           1
-WRITEFLUX                       totalflux_boundary
+CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 MAXTIME                         10
 NUMSTEP                         20

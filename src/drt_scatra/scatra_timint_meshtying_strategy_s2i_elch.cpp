@@ -326,3 +326,5 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
 // forward declarations
 template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::tri3>;
 template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::quad4,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::quad4,DRT::Element::quad4>;

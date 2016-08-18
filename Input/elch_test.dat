@@ -35,7 +35,7 @@ THETA                           0.66
 TIMEINTEGR                      Stationary
 TIMESTEP                        1.0
 VELOCITYFIELD                   zero
-WRITEFLUX                       totalflux_domain
+CALCFLUX_DOMAIN                 total
 OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           4
@@ -61,9 +61,9 @@ FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -x+1.0 //initial pot. field
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 5.99575747103953671e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE 0.0e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 691 QUANTITY fluxz VALUE 0.0e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_x VALUE 5.99575747103953671e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_y VALUE 0.0e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_z VALUE 0.0e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 695 QUANTITY phi1 VALUE 9.98800869784398193e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 121 QUANTITY phi1 VALUE 1.02518219528410892e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1301 QUANTITY phi1 VALUE 9.70021239702316462e-01 TOLERANCE 1e-10

@@ -82,7 +82,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     is_ale_(false),
     is_conservative_(false),
     sphericalcoords_(false),
-    writeflux_(INPAR::SCATRA::flux_no),
+    calcflux_domain_(INPAR::SCATRA::flux_none),
     writefluxids_(Teuchos::null),
     fdcheck_(INPAR::SCATRA::fdcheck_none),
     fdcheckeps_(0.),
@@ -123,10 +123,10 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
   if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
 
   // flag for writing the flux vector fields
-  writeflux_ =  DRT::INPUT::get<INPAR::SCATRA::FluxType>(parameters, "writeflux");
+  calcflux_domain_ =  DRT::INPUT::get<INPAR::SCATRA::FluxType>(parameters, "calcflux_domain");
 
   //! vector containing ids of scalars for which flux vectors are calculated
-  if (writeflux_ != INPAR::SCATRA::flux_no)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none)
     writefluxids_ =  parameters.get<Teuchos::RCP<std::vector<int> > >("writeflux_ids");
 
   // set parameters for stabilization

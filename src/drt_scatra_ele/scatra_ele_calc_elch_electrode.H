@@ -4,6 +4,8 @@
 
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -151,6 +153,13 @@ namespace DRT
           const double                                       scalar     //!< scaling factor for element residual contributions
         );
 
+        //! calculate weighted current density
+        virtual void CalculateCurrent(
+            LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
+            const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+            const double                    fac         //!< integration factor
+            );
+
         /*========================================================================*/
         //! @name additional service routines
         /*========================================================================*/
@@ -181,8 +190,7 @@ namespace DRT
         virtual void CalculateFlux(
             LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
             const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-            const int                       k,          //!< index of current scalar
-            const double                    fac         //!< integration factor
+            const int                       k           //!< index of current scalar
         );
 
         //! calculate error of numerical solution with respect to analytical solution

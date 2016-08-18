@@ -58,6 +58,26 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
+  // calculate global mass matrix
+  case SCATRA::calc_mass_matrix:
+  {
+    // integration points and weights
+    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    // loop over integration points
+    for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      // evaluate values of shape functions and domain integration factor at current integration point
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // loop over dofs
+      for(int k=0; k<numdofpernode_; ++k)
+        CalcMatMass(elemat1_epetra,k,fac,1.);
+    } // loop over integration points
+
+    break;
+  }
+
   // calculate time derivative for time value t_0
   case SCATRA::calc_initial_time_deriv:
   {
@@ -76,7 +96,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
   case SCATRA::integrate_shape_functions:
   {
     // calculate integral of shape functions
-    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
+    const Epetra_IntSerialDenseVector& dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
     IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
 
     break;
@@ -119,7 +139,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     // access control parameter for flux calculation
-    INPAR::SCATRA::FluxType fluxtype = scatrapara_->WriteFlux();
+    INPAR::SCATRA::FluxType fluxtype = scatrapara_->CalcFluxDomain();
     Teuchos::RCP<std::vector<int> > writefluxids = scatrapara_->WriteFluxIds();
 
     // we always get an 3D flux vector for each node
@@ -1687,12 +1707,12 @@ const int                       k
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
-    case INPAR::SCATRA::flux_total_domain:
+    case INPAR::SCATRA::flux_total:
       // convective flux contribution
       q.Update(densnp*scatravarmanager_->Phinp(k),convelint);
 
       // no break statement here!
-    case INPAR::SCATRA::flux_diffusive_domain:
+    case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
       q.Update(-(diffmanager_->GetIsotropicDiff(k)),gradphi,1.0);
 

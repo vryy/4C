@@ -4,9 +4,10 @@
 
  \brief main file containing routines for calculation of scatra element with chemotactic AND reactive scalars
 
+\level 2
 
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -191,7 +192,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::quad9>;

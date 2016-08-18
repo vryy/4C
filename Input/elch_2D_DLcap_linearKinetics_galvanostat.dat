@@ -30,7 +30,7 @@ TIMESTEP                        0.0005
 VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
-WRITEFLUX                       totalflux_boundary
+CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes
 MAXTIME                         0.02

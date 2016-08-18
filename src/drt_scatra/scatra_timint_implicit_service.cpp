@@ -3,6 +3,8 @@
 \file scatra_timint_implicit_service.cpp
 \brief Service routines of the scalar transport time integration class
 
+\level 1
+
 <pre>
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
@@ -54,120 +56,143 @@
 /*==========================================================================*/
 
 /*----------------------------------------------------------------------*
- |  calculate mass / heat flux vector                        gjb   04/08|
+ | calculate fluxes inside domain and/or on boundary         fang 07/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile, const int num)
+void SCATRA::ScaTraTimIntImpl::CalcFlux(
+    const bool   writetofile,   //!< flag for writing flux info to file
+    const int    num            //!< field number
+    )
 {
-  switch(writeflux_)
+  switch(calcflux_domain_)
   {
-  case INPAR::SCATRA::flux_total_domain:
-  case INPAR::SCATRA::flux_diffusive_domain:
-  {
-    return CalcFluxInDomain(writeflux_);
-    break;
-  }
-  case INPAR::SCATRA::flux_total_boundary:
-  case INPAR::SCATRA::flux_diffusive_boundary:
-  case INPAR::SCATRA::flux_convective_boundary:
-  {
-    // calculate normal flux vector field only for the user-defined boundary conditions:
-    std::vector<std::string> condnames;
-    condnames.push_back("ScaTraFluxCalc");
+    case INPAR::SCATRA::flux_diffusive:
+    case INPAR::SCATRA::flux_total:
+    {
+      flux_domain_ = CalcFluxInDomain();
+      break;
+    }
 
-    return CalcFluxAtBoundary(condnames, writetofile, num);
-    break;
+    case INPAR::SCATRA::flux_none:
+    {
+      // do nothing
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid option for flux calculation inside domain!");
+      break;
+    }
   }
-  default:
-    break;
+
+  switch(calcflux_boundary_)
+  {
+    case INPAR::SCATRA::flux_convective:
+    case INPAR::SCATRA::flux_diffusive:
+    case INPAR::SCATRA::flux_total:
+    {
+      // calculate normal flux vector field only for the user-defined boundary conditions:
+      flux_boundary_ = CalcFluxAtBoundary(writetofile,num);
+
+      break;
+    }
+
+    case INPAR::SCATRA::flux_none:
+    {
+      // do nothing
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid option for flux calculation on boundary!");
+      break;
+    }
   }
-  // else: we just return a zero vector field (needed for result testing)
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  return Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+
+  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  calculate mass / heat flux vector field in comp. domain    gjb 06/09|
+ | calculate flux vector field inside computational domain   fang 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
-(const INPAR::SCATRA::FluxType fluxtype)
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
 {
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices    local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // extract dofrowmap from discretization
+  const Epetra_Map& dofrowmap = *discret_->DofRowMap();
 
-  // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+  // initialize global flux vectors
+  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(dofrowmap,3));
+  Teuchos::RCP<Epetra_MultiVector> flux_projected = Teuchos::rcp(new Epetra_MultiVector(dofrowmap,3));
 
-  // We have to treat each spatial direction separately
-  Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
-  Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
-  Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
-
-  // we need a vector for the integrated shape functions
-  Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(*dofrowmap,true);
-
-  {
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::integrate_shape_functions);
-    // we integrate shape functions for the first numscal_ dofs per node!!
-    Epetra_IntSerialDenseVector dofids(7); // make it big enough!
-    for(int rr=0;rr<7;rr++)
-    {
-      dofids(rr) = -1; // do not integrate shape functions for these dofs
-    }
-    for (std::vector<int>::iterator it = writefluxids_->begin(); it!=writefluxids_->end(); ++it)
-    {
-      dofids((*it)-1) = (*it); // do not integrate shape functions for these dofs
-    }
-    eleparams.set("dofids",dofids);
-
-    if (isale_)
-      eleparams.set<int>("ndsdisp",nds_disp_);
-
-    // evaluate fluxes in the whole computational domain
-    // (e.g., for visualization of particle path-lines) or L2 projection for better consistency
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,integratedshapefcts,Teuchos::null,Teuchos::null);
-  }
+  // parameter list for element evaluation
+  Teuchos::ParameterList params;
 
   // set action for elements
-  Teuchos::ParameterList params;
   params.set<int>("action",SCATRA::calc_flux_domain);
 
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
+  // number of dofset for velocity-related dofs
   params.set<int>("ndsvel",nds_vel_);
 
-  //provide displacement field in case of ALE
-  if (isale_)
+  // number of dofset for displacement-related dofs in ALE cases
+  if(isale_)
     params.set<int>("ndsdisp",nds_disp_);
 
-  // set vector values needed by elements
+  // provide discretization with state vector
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
 
-  // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
-  discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
+  // evaluate flux vector field inside the whole computational domain (e.g., for visualization of particle path lines)
+  discret_->Evaluate(params,Teuchos::null,Teuchos::null,Teuchos::rcp((*flux)(0),false),Teuchos::rcp((*flux)(1),false),Teuchos::rcp((*flux)(2),false));
 
-  // insert values into final flux vector for visualization
-  // we do not solve a global equation system for the flux values here
-  // but perform a lumped mass matrix approach, i.e., dividing by the values of
-  // integrated shape functions
-  for (int i = 0;i<flux->MyLength();++i)
+  if(calcflux_domain_lumped_)
   {
-    const double intshapefct = (*integratedshapefcts)[i];
-    // is zero at electric potential dofs
-    if (abs(intshapefct) > EPS13)
-    {
-      flux->ReplaceMyValue(i,0,((*fluxx)[i])/intshapefct);
-      flux->ReplaceMyValue(i,1,((*fluxy)[i])/intshapefct);
-      flux->ReplaceMyValue(i,2,((*fluxz)[i])/intshapefct);
-    }
+    // vector for integrated shape functions
+    Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(dofrowmap);
+
+    // overwrite action for elements
+    params.set<int>("action",SCATRA::integrate_shape_functions);
+
+    // integrate shape functions
+    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
+    memset(dofids.A(),1,dofids.Length()*sizeof(int));   // integrate shape functions for all dofs
+    params.set("dofids",dofids);
+    discret_->Evaluate(params,Teuchos::null,Teuchos::null,integratedshapefcts,Teuchos::null,Teuchos::null);
+
+    // insert values into final flux vector for visualization
+    // We do not solve a global, linear system of equations (exact L2 projection with good consistency),
+    // but perform mass matrix lumping, i.e., we divide by the values of the integrated shape functions
+    if(flux_projected->ReciprocalMultiply(1.,*integratedshapefcts,*flux,0.))
+      dserror("ReciprocalMultiply failed!");
+  }
+
+  else
+  {
+    // solve global, linear system of equations without lumping global mass matrix
+    // overwrite action for elements
+    params.set<int>("action",SCATRA::calc_mass_matrix);
+
+    // initialize global mass matrix
+    Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap,27,false));
+
+    // call loop over elements
+    discret_->Evaluate(params,massmatrix,Teuchos::null);
+
+    // finalize global mass matrix
+    massmatrix->Complete();
+
+    // compute flux vector field
+    solver_->Solve(massmatrix->EpetraOperator(),flux_projected,flux,true,true);
+
+    // reset solver
+    solver_->Reset();
   }
 
   // clean up
   discret_->ClearState();
 
-  return flux;
+  return flux_projected;
 } // SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
 
@@ -175,7 +200,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    std::vector<std::string>&   condnames,     //!< ?
     const bool                  writetofile,   //!< ?
     const int                   num            //!< field number
     )
@@ -185,24 +209,17 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // "THE CONSISTENT GALERKIN FEM FOR COMPUTING DERIVED BOUNDARY
   // QUANTITIES IN THERMAL AND/OR FLUIDS PROBLEMS",
   // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
-  // For the moment, we are lumping the 'boundary mass matrix' instead of solving
-  // a small linear system!
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*discret_->DofRowMap(),3,true));
 
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
   // is computed only once; for ALE formulation recalculation is necessary
   if ((normals_ == Teuchos::null) or (isale_== true))
-    normals_ = ComputeNormalVectors(condnames);
+    normals_ = ComputeNormalVectors(std::vector<std::string>(1,"ScaTraFluxCalc"));
 
-  if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
+  if (calcflux_boundary_ == INPAR::SCATRA::flux_convective)
   {
     // zero out trueresidual vector -> we do not need this info
     trueresidual_->PutScalar(0.0);
@@ -273,8 +290,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   // if desired add the convective flux contribution
   // to the trueresidual_ now.
-  if((writeflux_==INPAR::SCATRA::flux_total_boundary)
-      or (writeflux_==INPAR::SCATRA::flux_convective_boundary))
+  if(calcflux_boundary_ == INPAR::SCATRA::flux_total or calcflux_boundary_ == INPAR::SCATRA::flux_convective)
   {
     // following screen output removed, for the time being
     /*if(myrank_ == 0)
@@ -284,32 +300,28 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       std::cout << "Two flux calculation boundaries should also not share a common node!" << std::endl;
     }*/
 
-    // now we evaluate the conditions and separate via ConditionID
-    for (unsigned int i=0; i < condnames.size(); i++)
-    {
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition(condnames[i],cond);
+    std::vector<DRT::Condition*> cond;
+    discret_->GetCondition("ScaTraFluxCalc",cond);
 
-      discret_->ClearState();
-      Teuchos::ParameterList params;
+    discret_->ClearState();
+    Teuchos::ParameterList params;
 
-      params.set<int>("action",SCATRA::bd_add_convective_mass_flux);
+    params.set<int>("action",SCATRA::bd_add_convective_mass_flux);
 
-      // add element parameters according to time-integration scheme
-      AddTimeIntegrationSpecificVectors();
+    // add element parameters according to time-integration scheme
+    AddTimeIntegrationSpecificVectors();
 
-      // provide velocity field
-      // (export to column map necessary for parallel evaluation)
-      params.set<int>("ndsvel",nds_vel_);
+    // provide velocity field
+    // (export to column map necessary for parallel evaluation)
+    params.set<int>("ndsvel",nds_vel_);
 
-      //provide displacement field in case of ALE
-      if (isale_)
-        params.set<int>("ndsdisp",nds_disp_);
+    //provide displacement field in case of ALE
+    if (isale_)
+      params.set<int>("ndsdisp",nds_disp_);
 
-      // call loop over boundary elements and add integrated fluxes to trueresidual_
-      discret_->EvaluateCondition(params,trueresidual_,condnames[i]);
-      discret_->ClearState();
-    }
+    // call loop over boundary elements and add integrated fluxes to trueresidual_
+    discret_->EvaluateCondition(params,trueresidual_,"ScaTraFluxCalc");
+    discret_->ClearState();
   }
 
   // vector for effective flux over all defined boundary conditions
@@ -317,185 +329,238 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // for OUTPUT standard -> last entry is not used
   std::vector<double> normfluxsum(NumDofPerNode());
 
-  for (unsigned int i=0; i < condnames.size(); i++)
+  std::vector<DRT::Condition*> cond;
+  discret_->GetCondition("ScaTraFluxCalc",cond);
+
+  // safety check
+  if(!cond.size())
+    dserror("Flux output requested without corresponding boundary condition specification!");
+
+  if (myrank_ == 0)
   {
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition(condnames[i],cond);
+    std::cout << "Normal fluxes at boundary 'ScaTraFluxCalc' on discretization '" << discret_->Name() << "':" << std::endl;
+    std::cout <<"+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
+    std::cout << "| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |" << std::endl;
+  }
 
-    // safety check
-    if(!cond.size())
-      dserror("Flux output requested without corresponding boundary condition specification!");
-
-    if (myrank_ == 0)
+  // first, add to all conditions of interest a ConditionID
+  for (int condid = 0; condid < (int) cond.size(); condid++)
+  {
+    // is there already a ConditionID?
+    const std::vector<int>*    CondIDVec  = cond[condid]->Get<std::vector<int> >("ConditionID");
+    if (CondIDVec)
     {
-      std::cout << "Normal fluxes at boundary '" << condnames[i] << "' on discretization '" << discret_->Name() << "':" << std::endl;
-      std::cout <<"+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
-      std::cout << "| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |" << std::endl;
+      if ((*CondIDVec)[0] != condid)
+        dserror("Condition 'ScaTraFluxCalc' has non-matching ConditionID!");
     }
-
-    // first, add to all conditions of interest a ConditionID
-    for (int condid = 0; condid < (int) cond.size(); condid++)
+    else
     {
-      // is there already a ConditionID?
-      const std::vector<int>*    CondIDVec  = cond[condid]->Get<std::vector<int> >("ConditionID");
-      if (CondIDVec)
-      {
-        if ((*CondIDVec)[0] != condid)
-          dserror("Condition %s has non-matching ConditionID",condnames[i].c_str());
-      }
-      else
-      {
-        // let's add a ConditionID
-        cond[condid]->Add("ConditionID",condid);
-      }
+      // let's add a ConditionID
+      cond[condid]->Add("ConditionID",condid);
     }
+  }
 
-    // now we evaluate the conditions and separate via ConditionID
-    for (int condid = 0; condid < (int) cond.size(); condid++)
+  // now we evaluate the conditions and separate via ConditionID
+  for(unsigned icond=0; icond<cond.size(); ++icond)
+  {
+    // extract dofrowmap associated with current boundary segment
+    const Epetra_Map& dofrowmap = *flux_boundary_maps_->Map(icond+1);
+
+    // extract part of true residual vector associated with current boundary segment
+    const Teuchos::RCP<Epetra_Vector> trueresidual_boundary = flux_boundary_maps_->ExtractVector(*trueresidual_,icond+1);
+
+    // initialize vector for nodal values of normal boundary fluxes
+    Teuchos::RCP<Epetra_Vector> normalfluxes = LINALG::CreateVector(dofrowmap);
+
+    // create parameter list for boundary elements
+    Teuchos::ParameterList params;
+
+    // provide displacement field in case of ALE
+    if (isale_)
+      params.set<int>("ndsdisp",nds_disp_);
+
+    // initialize variable for value of boundary integral
+    double boundaryint(-1.);
+
+    // compute nodal values of normal boundary fluxes
+    if(calcflux_boundary_lumped_)
     {
-      Teuchos::ParameterList params;
-
-      // calculate integral of shape functions over indicated boundary and it's area
+      // lump boundary mass matrix instead of solving a small, linear system of equations
+      // calculate integral of shape functions over indicated boundary and its area
       params.set("area",0.0);
       params.set<int>("action",SCATRA::bd_integrate_shape_functions);
 
-      //provide displacement field in case of ALE
-      if (isale_)
-        params.set<int>("ndsdisp",nds_disp_);
-
       // create vector (+ initialization with zeros)
-      Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+      const Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(dofrowmap);
 
       // call loop over elements
       discret_->ClearState();
-      discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
+      discret_->EvaluateCondition(params,integratedshapefunc,"ScaTraFluxCalc",icond);
       discret_->ClearState();
 
-      // maximal number of fluxes
-      std::vector<double> normfluxintegral(NumDofPerNode());
+      // compute normal boundary fluxes
+      for(int idof=0; idof<dofrowmap.NumMyElements(); ++idof)
+        (*normalfluxes)[idof] = (*trueresidual_boundary)[idof]/(*integratedshapefunc)[idof];
 
-      // insert values into final flux vector for visualization
-      int numrownodes = discret_->NumMyRowNodes();
-      for (int lnodid = 0; lnodid < numrownodes; ++lnodid )
+      // get value of boundary integral on this processor
+      boundaryint = params.get<double>("area");
+    }
+
+    else
+    {
+      // solve small, linear system of equations without lumping boundary mass matrix
+      // add action to parameter list
+      params.set<int>("action",SCATRA::bd_calc_mass_matrix);
+
+      // initialize boundary mass matrix
+      Teuchos::RCP<LINALG::SparseMatrix> massmatrix_boundary = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap,27,false));
+
+      // call loop over elements
+      discret_->ClearState();
+      discret_->EvaluateCondition(params,massmatrix_boundary,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ScaTraFluxCalc",icond);
+      discret_->ClearState();
+
+      // finalize boundary mass matrix
+      massmatrix_boundary->Complete();
+
+      // compute normal boundary fluxes
+      solver_->Solve(massmatrix_boundary->EpetraOperator(),normalfluxes,trueresidual_boundary,true,true);
+
+      // reset solver
+      solver_->Reset();
+
+      // overwrite action in parameter list
+      params.set<int>("action",SCATRA::bd_calc_boundary_integral);
+
+      // initialize one-component result vector for value of boundary integral
+      Teuchos::RCP<Epetra_SerialDenseVector> boundaryint_vector = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+      // compute value of boundary integral
+      discret_->EvaluateScalars(params,boundaryint_vector,"ScaTraFluxCalc",icond);
+      discret_->ClearState();
+
+      // extract value of boundary integral
+      boundaryint = (*boundaryint_vector)(0);
+    }
+
+    // maximal number of fluxes
+    std::vector<double> normfluxintegral(NumDofPerNode());
+
+    // insert values into final flux vector for visualization
+    for (int lnodid = 0; lnodid < discret_->NumMyRowNodes(); ++lnodid )
+    {
+      DRT::Node* actnode = discret_->lRowNode(lnodid);
+      for (int idof = 0; idof < discret_->NumDof(0,actnode); ++idof)
       {
-        DRT::Node* actnode = discret_->lRowNode(lnodid);
-        for (int idof = 0; idof < discret_->NumDof(0,actnode); ++idof)
+        const int dofgid = discret_->Dof(0,actnode,idof);
+        if(dofrowmap.MyGID(dofgid))
         {
-          int dofgid = discret_->Dof(0,actnode,idof);
-          int doflid = dofrowmap->LID(dofgid);
+          const int doflid = dofrowmap.LID(dofgid);
 
-          if ((*integratedshapefunc)[doflid] != 0.0)
+          // compute integral value for every degree of freedom
+          normfluxintegral[idof] += (*trueresidual_boundary)[doflid];
+
+          // care for the slave nodes of rotationally symm. periodic boundary conditions
+          double rotangle(0.0);
+          bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
+
+          // do not insert slave node values here, since they would overwrite the
+          // master node values owning the same dof
+          // (rotation of slave node vectors is performed later during output)
+          if (not havetorotate)
           {
-            // this is the value of the normal flux density
-            double normflux = ((*trueresidual_)[doflid])/(*integratedshapefunc)[doflid];
-            // compute integral value for every degree of freedom
-            normfluxintegral[idof] += (*trueresidual_)[doflid];
-
-            // care for the slave nodes of rotationally symm. periodic boundary conditions
-            double rotangle(0.0);
-            bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
-
-            // do not insert slave node values here, since they would overwrite the
-            // master node values owning the same dof
-            // (rotation of slave node vectors is performed later during output)
-            if (not havetorotate)
+            // for visualization, we plot the normal flux with
+            // outward pointing normal vector
+            for (int idim = 0; idim < 3; idim++)
             {
-              // for visualization, we plot the normal flux with
-              // outward pointing normal vector
-              for (int idim = 0; idim < 3; idim++)
-              {
-                Epetra_Vector* normalcomp = (*normals_)(idim);
-                double normalveccomp =(*normalcomp)[lnodid];
-                int err=flux->ReplaceMyValue(doflid,idim,normflux*normalveccomp);
-                if (err!=0) dserror("Detected error in ReplaceMyValue");
-              }
+              Epetra_Vector* normalcomp = (*normals_)(idim);
+              double normalveccomp =(*normalcomp)[lnodid];
+              int err=flux->ReplaceGlobalValue(dofgid,idim,(*normalfluxes)[doflid]*normalveccomp);
+              if (err!=0) dserror("Detected error in ReplaceMyValue");
             }
           }
         }
       }
+    }
 
-      // get area of the boundary on this proc
-      double boundaryint = params.get<double>("area");
+    // care for the parallel case
+    std::vector<double> parnormfluxintegral(NumDofPerNode());
+    discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],NumDofPerNode());
+    double parboundaryint = 0.0;
+    discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
 
-      // care for the parallel case
-      std::vector<double> parnormfluxintegral(NumDofPerNode());
-      discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],NumDofPerNode());
-      double parboundaryint = 0.0;
-      discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
-
-      for (int idof = 0; idof < NumDofPerNode(); ++idof)
+    for (int idof = 0; idof < NumDofPerNode(); ++idof)
+    {
+      // print out results
+      if (myrank_ == 0)
       {
-        // print out results
+        printf("| %2d | %2d  |       %+10.4E       |    %10.4E    |        %+10.4E       |\n",
+            icond,idof,parnormfluxintegral[idof],parboundaryint,parnormfluxintegral[idof]/parboundaryint);
+      }
+      normfluxsum[idof]+=parnormfluxintegral[idof];
+    }
+
+    // statistics section for normfluxintegral
+    if (DoBoundaryFluxStatistics())
+    {
+      // add current flux value to the sum!
+      (*sumnormfluxintegral_)[icond] += parnormfluxintegral[0]; // only first scalar!
+      int samstep = step_-samstart_+1;
+
+      // dump every dumperiod steps (i.e., write to screen)
+      bool dumpit(false);
+      if (dumperiod_==0)
+        {dumpit=true;}
+      else
+        {if(samstep%dumperiod_==0) dumpit=true;}
+
+      if(dumpit)
+      {
+        double meannormfluxintegral = (*sumnormfluxintegral_)[icond]/samstep;
+        // dump statistical results
         if (myrank_ == 0)
         {
-          printf("| %2d | %2d  |       %+10.4E       |    %10.4E    |        %+10.4E       |\n",
-              condid,idof,parnormfluxintegral[idof],parboundaryint,parnormfluxintegral[idof]/parboundaryint);
-        }
-        normfluxsum[idof]+=parnormfluxintegral[idof];
-      }
-
-      // statistics section for normfluxintegral
-      if (DoBoundaryFluxStatistics())
-      {
-        // add current flux value to the sum!
-        (*sumnormfluxintegral_)[condid] += parnormfluxintegral[0]; // only first scalar!
-        int samstep = step_-samstart_+1;
-
-        // dump every dumperiod steps (i.e., write to screen)
-        bool dumpit(false);
-        if (dumperiod_==0)
-          {dumpit=true;}
-        else
-          {if(samstep%dumperiod_==0) dumpit=true;}
-
-        if(dumpit)
-        {
-          double meannormfluxintegral = (*sumnormfluxintegral_)[condid]/samstep;
-          // dump statistical results
-          if (myrank_ == 0)
-          {
-            printf("| %2d | Mean normal-flux integral (step %5d -- step %5d) :   %12.5E |\n", condid,samstart_,step_,meannormfluxintegral);
-          }
+          printf("| %2d | Mean normal-flux integral (step %5d -- step %5d) :   %12.5E |\n",icond,samstart_,step_,meannormfluxintegral);
         }
       }
+    }
 
-      // print out results to file as well (only if really desired)
-      if ((myrank_ == 0) and (writetofile==true))
+    // print out results to file as well (only if really desired)
+    if ((myrank_ == 0) and (writetofile==true))
+    {
+      std::ostringstream temp;
+      temp << icond;
+      temp << num;
+      const std::string fname = problem_->OutputControlFile()->FileName()+".boundaryflux_ScaTraFluxCalc_"+temp.str()+".txt";
+
+      std::ofstream f;
+      if (Step() <= 1)
       {
-        std::ostringstream temp;
-        temp << condid;
-        temp << num;
-        const std::string fname = problem_->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
-
-        std::ofstream f;
-        if (Step() <= 1)
+        f.open(fname.c_str(),std::fstream::trunc);
+        f << "#| ID | Step | Time | Area of boundary |";
+        for(int idof = 0; idof < NumDofPerNode(); ++idof)
         {
-          f.open(fname.c_str(),std::fstream::trunc);
-          f << "#| ID | Step | Time | Area of boundary |";
-          for(int idof = 0; idof < NumDofPerNode(); ++idof)
-          {
-            f<<" Integral of normal flux "<<idof<<" | Mean normal flux density "<<idof<<" |";
-          }
-          f<<"\n";
+          f<<" Integral of normal flux "<<idof<<" | Mean normal flux density "<<idof<<" |";
         }
-        else
-          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f<<"\n";
+      }
+      else
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-        f << condid << " " << Step() << " " << Time() << " "<< parboundaryint<< " ";
-        for (int idof = 0; idof < NumDofPerNode(); ++idof)
-        {
-          f << parnormfluxintegral[idof] << " "<< parnormfluxintegral[idof]/parboundaryint<< " ";
-        }
-        f << "\n";
-        f.flush();
-        f.close();
-      } // write to file
+      f << icond << " " << Step() << " " << Time() << " "<< parboundaryint<< " ";
+      for (int idof = 0; idof < NumDofPerNode(); ++idof)
+      {
+        f << parnormfluxintegral[idof] << " "<< parnormfluxintegral[idof]/parboundaryint<< " ";
+      }
+      f << "\n";
+      f.flush();
+      f.close();
+    } // write to file
 
-    } // loop over condid
+  } // loop over condid
 
-    if (myrank_==0)
-      std::cout << "+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
-  }
+  if (myrank_==0)
+    std::cout << "+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
 
   // print out the accumulated normal flux over all indicated boundaries
   // the accumulated normal flux over all indicated boundaries is not printed for numscal+1
@@ -884,13 +949,9 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
 /*----------------------------------------------------------------------*
  | add approximation to flux vectors to a parameter list      gjb 05/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
-    Teuchos::ParameterList& p,
-    const enum INPAR::SCATRA::FluxType fluxtype
-)
+void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(Teuchos::ParameterList& p)
 {
-  Teuchos::RCP<Epetra_MultiVector> flux
-    = CalcFluxInDomain(fluxtype);
+  Teuchos::RCP<Epetra_MultiVector> flux = CalcFluxInDomain();
 
   // post_drt_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filters
@@ -1095,14 +1156,20 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
   if (screen_out) std::cout << " done" << std::endl;
 } // ScaTraTimIntImpl::OutputToGmsh
 
+
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
+void SCATRA::ScaTraTimIntImpl::OutputFlux(
+    Teuchos::RCP<Epetra_MultiVector>   flux,      //!< flux vector
+    const std::string&                 fluxtype   //!< flux type ("domain" or "boundary")
+    )
 {
-  //safety check
-  if (flux == Teuchos::null)
+  // safety checks
+  if(flux == Teuchos::null)
     dserror("Null pointer for flux vector output. Output() called before Update() ??");
+  if(fluxtype != "domain" and fluxtype != "boundary")
+    dserror("Unknown flux type. Must be either 'domain' or 'boundary'!");
 
   // WORK-AROUND FOR NURBS DISCRETIZATIONS
   // using noderowmap is problematic. Thus, we do not add normal vectors
@@ -1128,7 +1195,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
 
     std::ostringstream temp;
     temp << k;
-    std::string name = "flux_phi_"+temp.str();
+    std::string name = "flux_"+fluxtype+"_phi_"+temp.str();
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);

@@ -4,6 +4,8 @@
 
 \brief evaluation of scatra elements for elch
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -191,8 +193,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
     LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-    const int                       k,          //!< index of current scalar
-    const double                    fac         //!< integration factor
+    const int                       k           //!< index of current scalar
   )
 {
   /*
@@ -210,12 +211,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-  case INPAR::SCATRA::flux_total_domain:
+  case INPAR::SCATRA::flux_total:
     // convective flux contribution
     q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
 
     // no break statement here!
-  case INPAR::SCATRA::flux_diffusive_domain:
+  case INPAR::SCATRA::flux_diffusive:
     // diffusive flux contribution
     q.Update(-myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->GradPhi(k),1.0);
 
@@ -483,7 +484,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad9>;

@@ -46,7 +46,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function // field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 CALCERROR                       No
 CALCERRORNO                     -1
 CONVFORM                        convective

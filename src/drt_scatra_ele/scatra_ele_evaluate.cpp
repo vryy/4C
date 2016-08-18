@@ -301,6 +301,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_cell_mechanotransduction:
     case SCATRA::calc_cell_growth:
     case SCATRA::calc_heteroreac_mat_and_rhs:
+    case SCATRA::calc_mass_matrix:
     {
       return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,

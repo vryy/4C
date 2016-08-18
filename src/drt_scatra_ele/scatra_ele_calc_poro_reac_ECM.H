@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro_reac_ECM.H
+\file scatra_ele_calc_poro_reac_ECM.H
 
- \brief
+\brief scatra_ele_calc_poro_reac_ECM.H
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+<pre>
+  \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15251
+</pre>
  *----------------------------------------------------------------------*/
 
 

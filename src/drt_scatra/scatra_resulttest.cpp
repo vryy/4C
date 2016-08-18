@@ -4,6 +4,8 @@
 
 \brief testing of scalar transport calculation results
 
+\level 1
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -95,41 +97,60 @@ double SCATRA::ScaTraResultTest::ResultNode(
   if(quantity == "phi")
     result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
 
-  // test result values for a system of scalars
-  else if(quantity == "phi1")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
-  else if(quantity == "phi2")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,1))];
-  else if(quantity == "phi3")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,2))];
-  else if(quantity == "phi4")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,3))];
-  else if(quantity == "phi5")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,4))];
-  else if(quantity == "phi6")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,5))];
-  else if(quantity == "phi7")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,6))];
-  else if(quantity == "phi8")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,7))];
-  else if(quantity == "phi9")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,8))];
-  else if(quantity == "phi10")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,9))];
-  else if(quantity == "phi11")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,10))];
-  else if(quantity == "phi12")
-    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,11))];
+  // test result value for a system of scalars
+  else if(!quantity.compare(0,3,"phi"))
+  {
+    // read species ID
+    std::string k_string = quantity.substr(3);
+    char* locator(NULL);
+    int k = strtol(k_string.c_str(),&locator,10) - 1;
+    if(locator == k_string.c_str())
+      dserror("Couldn't read species ID!");
+
+    // extract result
+    result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,k))];
+  }
+
+  // test result in meshfree case
   else if(quantity == "van_phi")
     result = (*scatratimint_->Phiatmeshfreenodes())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
 
-  // we support only testing of fluxes for the first scalar
-  else if(quantity == "fluxx")
-    result = ((*scatratimint_->Flux())[0])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
-  else if(quantity == "fluxy")
-    result = ((*scatratimint_->Flux())[1])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
-  else if(quantity == "fluxz")
-    result = ((*scatratimint_->Flux())[2])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
+  // test domain or boundary flux
+  else if(!quantity.compare(0,12,"flux_domain_") or !quantity.compare(0,14,"flux_boundary_"))
+  {
+    // read species ID
+    std::string suffix;
+    if(!quantity.compare(0,12,"flux_domain_"))
+      suffix = quantity.substr(12);
+    else
+      suffix = quantity.substr(14);
+    char* locator(NULL);
+    int k = strtol(suffix.c_str(),&locator,10) - 1;
+    if(locator == suffix.c_str())
+      dserror("Couldn't read species ID!");
+
+    // read spatial dimension
+    ++locator;
+    unsigned dim(-1);
+    if(*locator == 'x')
+      dim = 0;
+    else if(*locator == 'y')
+      dim = 1;
+    else if(*locator == 'z')
+      dim = 2;
+    else
+      dserror("Invalid syntax!");
+
+    // safety check
+    if(*(++locator) != '\0')
+      dserror("Invalid syntax!");
+
+    // extract result
+    if(!quantity.compare(0,12,"flux_domain_"))
+      result = ((*scatratimint_->FluxDomain())[dim])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,k))];
+    else
+      result = ((*scatratimint_->FluxBoundary())[dim])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,k))];
+  }
 
   // test result values for biofilm growth (scatra structure and scatra fluid)
   else if(quantity == "scstr_growth_displx")
@@ -232,7 +253,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
         if(locator == index)
           dserror("Couldn't read species ID!");
 
-        // move locator to position behind species ID
+        // move index to position behind species ID
         index = locator;
       }
 
@@ -244,7 +265,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
       else if(*index == '_')
       {
         // cases 3 and 4 from list above
-        // move locator to domain ID, i.e., to position behind underscore
+        // move index to domain ID, i.e., to position behind underscore
         ++index;
 
         // extract domain ID

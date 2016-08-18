@@ -77,8 +77,10 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   # In scalar transport problems involving scatra-scatra interface coupling, several nodes may be located at
   # exactly the same position. For the sorting to still be unique, we include the concentration values 'phi_1'
   # or 'c_1', and possibly also the flux components 'flux_phi_1:{0;1;2}', as additional sorting criteria.
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head1:
-    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_phi_1:0'), head1.index('flux_phi_1:1'), head1.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_domain_phi_1:0'), head1.index('flux_domain_phi_1:1'), head1.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_boundary_phi_1:0'), head1.index('flux_boundary_phi_1:1'), head1.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head1:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1')))
   elif 'c_1' in head1:
@@ -86,8 +88,10 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   else:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
 
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head2:
-    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_phi_1:0'), head2.index('flux_phi_1:1'), head2.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_domain_phi_1:0'), head2.index('flux_domain_phi_1:1'), head2.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_boundary_phi_1:0'), head2.index('flux_boundary_phi_1:1'), head2.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head2:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1')))
   elif 'c_1' in head2:
@@ -95,8 +99,10 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   else:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
 
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head_ref:
-    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_phi_1:0'), head_ref.index('flux_phi_1:1'), head_ref.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_domain_phi_1:0'), head_ref.index('flux_domain_phi_1:1'), head_ref.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_boundary_phi_1:0'), head_ref.index('flux_boundary_phi_1:1'), head_ref.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head_ref:
     sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1')))
   elif 'c_1' in head_ref:
@@ -129,7 +135,7 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
         print 'results in csv-files are NOT correct'
         print sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv'
         sys.exit(1)
-  print'results in csv-files are correct'   
+  print'results in csv-files are correct'
 
 else:
   sm.Connect()
@@ -191,8 +197,10 @@ else:
   # In scalar transport problems involving scatra-scatra interface coupling, several nodes may be located at
   # exactly the same position. For the sorting to still be unique, we include the concentration values 'phi_1'
   # or 'c_1', and possibly also the flux components 'flux_phi_1:{0;1;2}', as additional sorting criteria.
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head1:
-    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_phi_1:0'), head1.index('flux_phi_1:1'), head1.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_domain_phi_1:0'), head1.index('flux_domain_phi_1:1'), head1.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1'), head1.index('flux_boundary_phi_1:0'), head1.index('flux_boundary_phi_1:1'), head1.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head1:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1')))
   elif 'c_1' in head1:
@@ -200,8 +208,10 @@ else:
   else:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
 
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head2:
-    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_phi_1:0'), head2.index('flux_phi_1:1'), head2.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_domain_phi_1:0'), head2.index('flux_domain_phi_1:1'), head2.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1'), head2.index('flux_boundary_phi_1:0'), head2.index('flux_boundary_phi_1:1'), head2.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head2:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1')))
   elif 'c_1' in head2:
@@ -209,8 +219,10 @@ else:
   else:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
 
-  if 'phi_1' and 'flux_phi_1:0' and 'flux_phi_1:1' and 'flux_phi_1:2' in head_ref:
-    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_phi_1:0'), head_ref.index('flux_phi_1:1'), head_ref.index('flux_phi_1:2')))
+  if 'phi_1' and 'flux_domain_phi_1:0' and 'flux_domain_phi_1:1' and 'flux_domain_phi_1:2' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_domain_phi_1:0'), head_ref.index('flux_domain_phi_1:1'), head_ref.index('flux_domain_phi_1:2')))
+  elif 'phi_1' and 'flux_boundary_phi_1:0' and 'flux_boundary_phi_1:1' and 'flux_boundary_phi_1:2' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1'), head_ref.index('flux_boundary_phi_1:0'), head_ref.index('flux_boundary_phi_1:1'), head_ref.index('flux_boundary_phi_1:2')))
   elif 'phi_1' in head_ref:
     sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1')))
   elif 'c_1' in head_ref:

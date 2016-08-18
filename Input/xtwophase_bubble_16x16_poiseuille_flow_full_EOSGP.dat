@@ -135,7 +135,6 @@ VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
-WRITEFLUX                       No
 WRITEMAXINTSTATE                0
 WRITEMAXIONICCURRENTS           0
 ACTTHRES                        1

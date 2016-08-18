@@ -38,6 +38,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
 
+#include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_inpar/drt_validparameters.H"
@@ -112,9 +113,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   heteroreaccoupling_(actdis->GetCondition("ScatraHeteroReactionSlave") != NULL),
   macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1),
   micro_scale_(probnum != 0),
-  writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
+  calcflux_domain_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"CALCFLUX_DOMAIN")),
+  calcflux_domain_lumped_(DRT::INPUT::IntegralValue<bool>(*params,"CALCFLUX_DOMAIN_LUMPED")),
+  calcflux_boundary_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"CALCFLUX_BOUNDARY")),
+  calcflux_boundary_lumped_(DRT::INPUT::IntegralValue<bool>(*params,"CALCFLUX_BOUNDARY_LUMPED")),
   writefluxids_(Teuchos::rcp(new std::vector<int>)),
-  flux_(Teuchos::null),
+  flux_domain_(Teuchos::null),
+  flux_boundary_(Teuchos::null),
+  flux_boundary_maps_(Teuchos::null),
   sumnormfluxintegral_(Teuchos::null),
   lastfluxoutputstep_(-1),
   outputscalars_(DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(*params,"OUTPUTSCALARS")),
@@ -361,9 +367,9 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
-  // get desired scalar id's for flux output
-  if (writeflux_!=INPAR::SCATRA::flux_no)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
+    // safety check
     if(not scalarhandler_->EqualNumDof())
       dserror("Flux output only implement for equal number of DOFs per node within ScaTra discretization!");
 
@@ -373,6 +379,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
     std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
     while (mystream >> word1)
 
+    // get desired scalar id's for flux output
     writefluxids_->push_back(word1);
 
     // default value (-1): flux is written for all dof's
@@ -385,8 +392,11 @@ void SCATRA::ScaTraTimIntImpl::Init()
       for(int k=0;k<NumDofPerNode();++k)
         (*writefluxids_)[k]=k+1;
     }
+
     // flux_ vector is initialized when CalcFlux() is called
-    if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
+
+    // screen output
+    if(myrank_ == 0)
     {
       IO::cout << "Flux output is performed for scalars: ";
       for (unsigned int i=0; i < writefluxids_->size();i++)
@@ -397,6 +407,22 @@ void SCATRA::ScaTraTimIntImpl::Init()
           dserror("Received illegal scalar id for flux output: %d",id);
       }
       IO::cout << IO::endl;
+    }
+
+    // initialize map extractor associated with boundary segments for flux calculation
+    if(calcflux_boundary_ != INPAR::SCATRA::flux_none)
+    {
+      // extract conditions for boundary flux calculation
+      std::vector<DRT::Condition*> conditions;
+      discret_->GetCondition("ScaTraFluxCalc",conditions);
+
+      // set up map extractor
+      flux_boundary_maps_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+      DRT::UTILS::MultiConditionSelector mcs;
+      mcs.SetOverlapping(true);
+      for(unsigned icond=0; icond<conditions.size(); ++icond)
+        mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::ConditionSelector(*discret_,std::vector<DRT::Condition*>(1,conditions[icond]))));
+      mcs.SetupExtractor(*discret_,*discret_->DofRowMap(),*flux_boundary_maps_);
     }
   }
 
@@ -771,7 +797,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   eleparams.set<bool>("isale",isale_);
 
   // set flag for writing the flux vector fields
-  eleparams.set<int>("writeflux",writeflux_);
+  eleparams.set<int>("calcflux_domain",calcflux_domain_);
 
   //! set vector containing ids of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int> > >("writeflux_ids",writefluxids_);
@@ -1409,14 +1435,17 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     if (step_%uprestart_==0 and step_ !=0) OutputRestart();
 
     // write flux vector field (only writing, calculation was done during Update() call)
-    if (writeflux_!=INPAR::SCATRA::flux_no)
+    if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
     {
       // for flux output of initial field (before first solve) do:
-      // flux_ vector is initialized when CalcFlux() is called
-      if (step_==0 or flux_==Teuchos::null)
-        flux_=CalcFlux(true, num);
+      // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
+      if (step_ == 0 or (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
+        CalcFlux(true,num);
 
-      OutputFlux(flux_);
+      if(calcflux_domain_ != INPAR::SCATRA::flux_none)
+        OutputFlux(flux_domain_,"domain");
+      if(calcflux_boundary_ != INPAR::SCATRA::flux_none)
+        OutputFlux(flux_boundary_,"boundary");
     }
 
     // write mean values of scalar(s)
@@ -2450,7 +2479,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (consistency == INPAR::SCATRA::consistency_l2_projection_lumped)
   {
     // compute flux approximation and add it to the parameter list
-    AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+    AddFluxApproxToParameterList(eleparams);
   }
 
   // prepare dynamic Smagorinsky model if required,
@@ -2789,7 +2818,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
     {
       DRT::Node* node = discret_->lRowNode(inode);
       for (int idim=0; idim<nsd_; ++idim)
-        (*convel_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] = (*convel)[convel->Map().LID(discret_->Dof(nds_vel_,node,idim))];
+        (*convel_multi)[idim][inode] = (*convel)[convel->Map().LID(discret_->Dof(nds_vel_,node,idim))];
     }
 
     output_->WriteVector("convec_velocity", convel_multi, IO::DiscretizationWriter::nodevector);
@@ -2808,7 +2837,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
     {
       DRT::Node* node = discret_->lRowNode(inode);
       for (int idim=0; idim<nsd_; ++idim)
-        (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] = (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_,node,idim))];
+        (*dispnp_multi)[idim][inode] = (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_,node,idim))];
     }
 
     output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);

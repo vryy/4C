@@ -4,8 +4,10 @@
 
 \brief evaluate heat transport within electrodes on element level
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -647,7 +649,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad9>;

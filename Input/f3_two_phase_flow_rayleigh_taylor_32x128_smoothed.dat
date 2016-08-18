@@ -100,7 +100,6 @@ TIMEINTEGR                      One_Step_Theta //Gen_Alpha
 TIMESTEP                        0.02
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       No
 RESULTSEVRY                           1
 ALPHA_F                         1.0 //0.5
 ALPHA_M                         1.0 //0.5

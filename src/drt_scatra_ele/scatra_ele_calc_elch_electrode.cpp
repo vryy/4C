@@ -4,6 +4,8 @@
 
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -312,7 +314,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad9>;

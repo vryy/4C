@@ -30,7 +30,7 @@ TIMESTEP                        0.01
 VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
-WRITEFLUX                       diffusiveflux_boundary
+CALCFLUX_BOUNDARY               diffusive
 OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes
 MAXTIME                         0.2

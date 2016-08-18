@@ -4,6 +4,8 @@
 
 \brief evaluation of ScaTra elements for Nernst-Planck ion-transport equations
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -1129,7 +1131,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad9>;

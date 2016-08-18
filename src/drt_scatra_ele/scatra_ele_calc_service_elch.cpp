@@ -4,11 +4,13 @@
 
 \brief evaluation of scatra elements for elch
 
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -60,15 +62,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
   case SCATRA::check_scatra_element_parameter:
   {
     CheckElchElementParameter(ele);
-    break;
-  }
-
-  case SCATRA::integrate_shape_functions:
-  {
-    // calculate integral of shape functions
-    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-    my::IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
-
     break;
   }
 
@@ -158,7 +151,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
         GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
       // access control parameter for flux calculation
-      INPAR::SCATRA::FluxType fluxtype = my::scatrapara_->WriteFlux();
+      INPAR::SCATRA::FluxType fluxtype = my::scatrapara_->CalcFluxDomain();
       Teuchos::RCP<std::vector<int> > writefluxids = my::scatrapara_->WriteFluxIds();
 
       // do a loop for systems of transported scalars
@@ -176,7 +169,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
         if((*it) != my::numdofpernode_)
         {
           k=(*it)-1;
-          CalculateFlux(q,fluxtype,k,fac);
+          CalculateFlux(q,fluxtype,k);
         }
         else if ((*it) == my::numdofpernode_)
         {
@@ -982,7 +975,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;

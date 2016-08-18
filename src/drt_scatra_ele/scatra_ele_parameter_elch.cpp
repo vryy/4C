@@ -9,8 +9,10 @@ usually set only once at the beginning of a simulation, namely during initializa
 and then never touched again throughout the simulation. This parameter class needs to coexist with the general parameter
 class holding all general static parameters required for scalar transport element evaluation.
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -76,6 +78,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
 DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
     const std::string& disname   //!< name of discretization
     ) :
+    boundaryfluxcoupling_(true),
     equpot_(INPAR::ELCH::equpot_undefined),
     faraday_(INPAR::ELCH::faraday_const),
     epsilon_(INPAR::ELCH::epsilon_const),
@@ -92,8 +95,11 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(
     Teuchos::ParameterList& parameters   //!< parameter list
     )
 {
+  // coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries
+  boundaryfluxcoupling_ = parameters.get<bool>("boundaryfluxcoupling");
+
   // type of closing equation for electric potential
-  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(parameters, "equpot");
+  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(parameters,"equpot");
   if(equpot_ == INPAR::ELCH::equpot_undefined)
     dserror("Invalid type of closing equation for electric potential!");
 

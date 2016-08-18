@@ -1,7 +1,9 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_loma.cpp
 
-  \brief scatra time integration for loma
+\brief scatra time integration for loma
+
+\level 2
 
 <pre>
 \maintainer Ursula Rasthofer / Volker Gravemeier
@@ -121,7 +123,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+  AddFluxApproxToParameterList(eleparams);
 
   // set scalar vector values needed by elements
   discret_->ClearState();

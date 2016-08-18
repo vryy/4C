@@ -72,7 +72,7 @@ VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       totalflux_boundary
+CALCFLUX_BOUNDARY               total
 MATID                           1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin

@@ -3,6 +3,8 @@
 \file scatra_timint_genalpha.cpp
 \brief Generalized-alpha time-integration scheme
 
+\level 1
+
 <pre>
 \maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
@@ -363,10 +365,10 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (writeflux_!=INPAR::SCATRA::flux_no)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true, num);
+      CalcFlux(true, num);
     //else
       // necessary to print statistical values after each time step but the solution only
       //flux_ = CalcFlux(true);

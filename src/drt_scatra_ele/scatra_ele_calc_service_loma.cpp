@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra elements for loma
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer / Volker Gravemeier
+\maintainer Ursula Rasthofer / Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/45
@@ -267,7 +269,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad9>;

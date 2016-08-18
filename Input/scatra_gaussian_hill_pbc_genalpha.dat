@@ -46,7 +46,6 @@ VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           4
 SKIPINITDER no //yes //no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

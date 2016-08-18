@@ -47,6 +47,7 @@ namespace SCATRA
     calc_integr_pat_rhsvec,                      // integrate rhs vec for adjoint pat
     calc_integr_reaction,                        // calculate integral reaction
     calc_mass_center_smoothingfunct,             // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
+    calc_mass_matrix,                            // calculate mass matrix
     calc_mat_and_rhs,                            // calc_condif_systemmat_and_residual,
     calc_mat_and_rhs_lsreinit_correction_step,   // level-set action: setup of system for correction step
     calc_mat_initial,                            // calc initial mat for hdg
@@ -108,9 +109,10 @@ namespace SCATRA
     bd_calc_fps3i_surface_permeability,   // Kedem-Katchalsky equations --> FPS3I problem
     bd_calc_fs3i_surface_permeability,
     bd_calc_loma_therm_press,
+    bd_calc_mass_matrix,
+    bd_calc_mechanotransduction,
     bd_calc_Neumann,
     bd_calc_Neumann_inflow,
-    bd_calc_mechanotransduction,
     bd_calc_normal_vectors,
     bd_calc_Robin,                        // Robin boundary condition
     bd_calc_s2icoupling,                  // evaluate scatra-scatra interface coupling conditions

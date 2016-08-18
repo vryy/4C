@@ -41,7 +41,6 @@ VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 WRITEMAXINTSTATE                3

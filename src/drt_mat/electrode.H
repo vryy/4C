@@ -4,8 +4,10 @@
 
 \brief electrode material carrying concentration and electric potential as degrees of freedom
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -27,6 +29,7 @@ namespace MAT
     enum OCPModels
     {
       ocp_undefined,
+      ocp_constant,
       ocp_redlichkister,
       ocp_taralov
     };

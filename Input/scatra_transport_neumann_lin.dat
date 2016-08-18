@@ -68,7 +68,6 @@ RESULTSEVRY                           10
 VELCURVENO                      -1
 VELFUNCNO                       2
 VELOCITYFIELD                   function
-WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-10

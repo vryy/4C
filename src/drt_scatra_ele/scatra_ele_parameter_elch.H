@@ -9,8 +9,10 @@ usually set only once at the beginning of a simulation, namely during initializa
 and then never touched again throughout the simulation. This parameter class needs to coexist with the general parameter
 class holding all general static parameters required for scalar transport element evaluation.
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -45,6 +47,9 @@ namespace DRT
         //! singleton destruction
         virtual void Done();
 
+        //! return flag for coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries
+        bool BoundaryFluxCoupling() const {return boundaryfluxcoupling_;};
+
         //! set parameters
         void SetParameters(
             Teuchos::ParameterList& parameters   //!< parameter list
@@ -68,6 +73,9 @@ namespace DRT
         ScaTraEleParameterElch(
             const std::string& disname   //!< name of discretization
             );
+
+        //! flag for coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries
+        bool boundaryfluxcoupling_;
 
         //! equation used for closing of the elch-system
         enum INPAR::ELCH::EquPot equpot_;

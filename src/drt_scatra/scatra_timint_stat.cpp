@@ -3,6 +3,8 @@
 \file scatra_timint_stat.cpp
 \brief solution algorithm for stationary problems
 
+\level 1
+
 <pre>
 \maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
@@ -219,10 +221,10 @@ void SCATRA::TimIntStationary::Update(const int num)
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (writeflux_!=INPAR::SCATRA::flux_no)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true, num);
+      CalcFlux(true, num);
   }
 
   // compute values at nodes from nodal values for non-interpolatory basis functions

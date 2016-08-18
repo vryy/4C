@@ -964,6 +964,12 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
       break;
     }
 
+    case DRT::Element::quad4:
+    {
+      return MortarCellCalc<DRT::Element::quad4>(impltype,masterelement,mortartype,lmside,numdofpernode_slave);
+      break;
+    }
+
     default:
     {
       dserror("Invalid slave-side discretization type!");
@@ -2713,3 +2719,5 @@ void SCATRA::MortarCellAssemblyStrategy::InitCellVector(
 // forward declarations
 template class SCATRA::MortarCellCalc<DRT::Element::tri3,DRT::Element::tri3>;
 template class SCATRA::MortarCellCalc<DRT::Element::tri3,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalc<DRT::Element::quad4,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalc<DRT::Element::quad4,DRT::Element::quad4>;

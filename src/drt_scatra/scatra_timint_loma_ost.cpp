@@ -4,6 +4,8 @@
 \brief One-step-theta time-integration scheme with extensions for
        loma problems
 
+\level 2
+
 <pre>
 \maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
@@ -144,7 +146,7 @@ void SCATRA::TimIntLomaOST::ComputeThermPressure()
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+  AddFluxApproxToParameterList(eleparams);
 
   // set scalar and density vector values needed by elements
   discret_->ClearState();

@@ -255,6 +255,11 @@ public:
       Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
       );
 
+  //! calculate boundary mass matrix
+  void CalcMatMass(
+      const DRT::FaceElement* const   element,     //!< boundary element
+      Epetra_SerialDenseMatrix&       massmatrix   //!< element mass matrix
+      );
 
   /*!
   \brief Integrate scalar over conditioned surface with all prefactors for rhs and additional prefactor

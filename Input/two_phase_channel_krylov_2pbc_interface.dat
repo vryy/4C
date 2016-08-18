@@ -81,7 +81,6 @@ TIMESTEP                        0.06
 RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes                   // zero, function, function_and_curve, Navier_Stokes
-WRITEFLUX                       No                              // No, totalflux_domain, diffusiveflux_domain, totalflux_boundary, diffusiveflux_boundary
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1

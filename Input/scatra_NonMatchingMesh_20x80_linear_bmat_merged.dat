@@ -45,7 +45,7 @@ TIMEINTEGR                      BDF2
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-WRITEFLUX                       totalflux_domain
+CALCFLUX_DOMAIN                 total
 RESULTSEVRY                     1
 CALCERROR                       No
 MESHTYING                       Condensed_Bmat_merged

@@ -28,7 +28,7 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta //BDF2
 TIMESTEP                        0.1
 VELOCITYFIELD                   zero
-WRITEFLUX                       totalflux_domain
+CALCFLUX_DOMAIN                 total
 RESULTSEVRY                     1
 CALCERROR                       No
 MATID                           2

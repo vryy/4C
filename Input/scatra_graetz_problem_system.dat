@@ -80,12 +80,12 @@ MAXTIME                         1000
 NUMSTEP                         10
 RESTARTEVRY                     5
 THETA                           0.66
-TIMEINTEGR BDF2 //One_Step_Theta
+TIMEINTEGR                      BDF2
 TIMESTEP                        0.2
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       totalflux_domain
-RESULTSEVRY                           1
+CALCFLUX_DOMAIN                 total
+RESULTSEVRY                     1
 MATID                           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
@@ -185,9 +185,9 @@ FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 2.53158506398104078e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE -1.85127182186789925e-02 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 691 QUANTITY fluxz VALUE 0.000000000e+00 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_x VALUE 2.53158506398104078e-03 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_y VALUE -1.85127182186789925e-02 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_z VALUE 0.000000000e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 695 QUANTITY phi VALUE 3.42788901116303224e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 121 QUANTITY phi VALUE 8.61323497923013659e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 695 QUANTITY velx VALUE 2.06897306751908150e-01 TOLERANCE 1e-9

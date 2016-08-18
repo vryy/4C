@@ -1,16 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro_reac.H
+\file scatra_ele_calc_poro_reac.H
 
- \brief
+\brief scatra_ele_calc_poro_reac.H
 
- <pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10364
- </pre>
- *----------------------------------------------------------------------*/
+\level 2
+
+<pre>
+  \maintainer Moritz Thon
+              thon@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10364
+</pre>
+*----------------------------------------------------------------------*/
 
 
 #ifndef SCATRA_ELE_CALC_PORO_REAC_H_

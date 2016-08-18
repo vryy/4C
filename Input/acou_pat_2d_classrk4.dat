@@ -41,7 +41,6 @@ VELFUNCNO                       1
 INITIALFIELD                    zero_field
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 --------------------------------------------------------------------SOLVER 1

@@ -111,7 +111,6 @@ VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 CONVFORM                        conservative

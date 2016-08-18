@@ -49,7 +49,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 CALCERROR                       No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG //SUPG

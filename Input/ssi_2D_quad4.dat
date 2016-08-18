@@ -51,7 +51,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 CALCERROR                       error_by_function
 CALCERRORNO                     2
 CONVFORM                        conservative

@@ -29,7 +29,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELFUNCNO                       3
 VELOCITYFIELD                   function
-WRITEFLUX                       totalflux_domain
+CALCFLUX_DOMAIN                 total
 RESULTSEVRY                     1
 CALCERROR                       No
 MATID                           3

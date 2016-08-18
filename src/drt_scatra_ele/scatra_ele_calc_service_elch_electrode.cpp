@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within electrodes
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -108,6 +110,51 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity(
 
 
 /*----------------------------------------------------------------------*
+ | calculate weighted current density                        fang 07/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent(
+    LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
+    const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+    const double                    fac         //!< integration factor
+    )
+{
+  /*
+  Actually, we compute here a weighted (and integrated) form of the current density!
+  On time integration level, these contributions are then used to calculate
+  an L2-projected representation of the current density.
+  Thus, this method here DOES NOT YET provide current density values that are ready to use!
+
+  /                           \
+  |                    /   \  |
+  | w, -sigma * nabla | phi | |
+  |                    \   /  |
+  \                           /
+  */
+
+  switch (fluxtype)
+  {
+    case INPAR::SCATRA::flux_diffusive:
+    case INPAR::SCATRA::flux_total:
+    {
+      // ohmic contribution to current density
+      q.Update(-DiffManager()->GetCond(),VarManager()->GradPot());
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid flux type!");
+      break;
+    }
+  };
+
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent
+
+
+/*----------------------------------------------------------------------*
  | calculate electrode state of charge                       fang 01/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -172,8 +219,7 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux(
     LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-    const int                       k,          //!< index of current scalar
-    const double                    fac         //!< integration factor
+    const int                       k           //!< index of current scalar
     )
 {
   /*
@@ -186,9 +232,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux(
   // add convective flux contribution
   switch (fluxtype)
   {
-  case INPAR::SCATRA::flux_total_domain:
+  case INPAR::SCATRA::flux_diffusive:
+  case INPAR::SCATRA::flux_total:
   {
-    q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
+    // diffusive flux contribution
+    q.Update(-DiffManager()->GetIsotropicDiff(k),VarManager()->GradPhi(k));
     break;
   }
 
@@ -223,7 +271,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad9>;

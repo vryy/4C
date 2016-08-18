@@ -109,7 +109,7 @@ TIMEINTEGR                      Gen_Alpha
 TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       diffusiveflux_boundary
+CALCFLUX_BOUNDARY               diffusive
 RESULTSEVRY                     10
 CONVFORM                        convective
 MATID                           1

@@ -1,7 +1,9 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_elch.cpp
 
-  \brief scatra time integration for elch
+\brief scatra time integration for elch
+
+\level 2
 
 <pre>
 \maintainer Rui Fang
@@ -155,6 +157,7 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::Param
   // general elch parameters
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
   eleparams.set<int>("equpot",equpot_);
+  eleparams.set<bool>("boundaryfluxcoupling",DRT::INPUT::IntegralValue<bool>(*elchparams_,"COUPLE_BOUNDARY_FLUXES"));
 
   return;
 }
@@ -2263,6 +2266,42 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // so much code for a simple check!
   return;
 } // ScaTraTimIntImpl::CheckConcentrationValues
+
+
+/*----------------------------------------------------------------------*
+ | output flux vectors                                       fang 08/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::OutputFlux(
+    Teuchos::RCP<Epetra_MultiVector>   flux,      //!< flux vector
+    const std::string&                 fluxtype   //!< flux type ("domain" or "boundary")
+    )
+{
+  // safety check
+  if(flux == Teuchos::null)
+    dserror("Invalid flux vector!");
+
+  if(fluxtype == "domain")
+  {
+    // In this case, flux output can be straightforwardly performed without additional manipulation.
+  }
+
+  else if(fluxtype == "boundary")
+  {
+    // The closing equation for the electric potential is internally scaled by the factor 1/F for better conditioning.
+    // Therefore, the associated boundary flux computed by the function CalcFluxAtBoundary is also scaled by this factor.
+    // To avoid confusion, we remove the scaling factor from the boundary flux before outputting it, so that the result
+    // can be physically interpreted as the plain boundary current density without any scaling.
+    splitter_->Scale(*flux,1,INPAR::ELCH::faraday_const);
+  }
+
+  else
+    dserror("Unknown flux type! Must be either 'domain' or 'boundary'!");
+
+  // perform actual flux output by calling base class routine
+  ScaTraTimIntImpl::OutputFlux(flux,fluxtype);
+
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputFlux
 
 
 /*----------------------------------------------------------------------*

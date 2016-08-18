@@ -312,7 +312,6 @@ INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 CALCERROR                       No
 CALCERRORNO                     -1
-WRITEFLUX                       No
 WRITEMAXINTSTATE                0
 WRITEMAXIONICCURRENTS           0
 ACTTHRES                        1

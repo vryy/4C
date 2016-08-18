@@ -219,6 +219,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     break;
   }
 
+  case SCATRA::bd_calc_mass_matrix:
+  {
+    CalcMatMass(ele,elemat1_epetra);
+
+    break;
+  }
+
   case SCATRA::bd_calc_Neumann:
   {
     DRT::Condition* condition = params.get<DRT::Condition*>("condition");
@@ -1343,12 +1350,47 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
     const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,iquad);
 
     // add contribution from current integration point to boundary integral
-    for(int vi=0; vi<nen_; ++vi)
-      boundaryintegral += funct_(vi)*fac;
+    boundaryintegral += fac;
   } // loop over integration points
 
   // write result into result vector
   scalar(0) = boundaryintegral;
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
+
+
+/*----------------------------------------------------------------------------------*
+ | calculate boundary mass matrix                                        fang 07/16 |
+ *----------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMatMass(
+    const DRT::FaceElement* const   element,     //!< boundary element
+    Epetra_SerialDenseMatrix&       massmatrix   //!< element mass matrix
+    )
+{
+  // get integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate values of shape functions and boundary integration factor at current integration point
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,iquad);
+
+    // add contribution from current integration point to element mass matrix
+    for(int k=0; k<numdofpernode_; ++k)
+    {
+      for(int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        for(int ui=0; ui<nen_; ++ui)
+          massmatrix(fvi,ui*numdofpernode_+k) += funct_(vi)*funct_(ui)*fac;
+      }
+    }
+  } // loop over integration points
+
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
@@ -3020,6 +3062,8 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>;
 // explicit instantiation of template methods
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&,Epetra_SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&,Epetra_SerialDenseVector&);
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3>;

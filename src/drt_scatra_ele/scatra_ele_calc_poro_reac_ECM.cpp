@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro_reac_ECM.cpp
+\file scatra_ele_calc_poro_reac_ECM.cpp
 
- \brief
+\brief scatra_ele_calc_poro_reac_ECM.cpp
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+<pre>
+  \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15251
+</pre>
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_poro_reac_ECM.H"
@@ -278,7 +280,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<DRT::Element::quad9>;

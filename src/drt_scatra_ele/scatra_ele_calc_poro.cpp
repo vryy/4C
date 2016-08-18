@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro.cpp
+\file scatra_ele_calc_poro.cpp
 
- \brief
+\brief scatra_ele_calc_poro.cpp
 
- <pre>
-   \maintainer Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+\level 2
+
+<pre>
+  \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15264
+</pre>
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_poro.H"
@@ -599,7 +601,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad9>;

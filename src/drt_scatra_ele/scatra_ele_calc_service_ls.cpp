@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra elements for level sets
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236
@@ -181,7 +183,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::quad9>;

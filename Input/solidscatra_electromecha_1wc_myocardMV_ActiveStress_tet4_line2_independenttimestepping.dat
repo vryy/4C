@@ -103,7 +103,6 @@ VELOCITYFIELD                   zero
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 ACTTHRES                        0.5

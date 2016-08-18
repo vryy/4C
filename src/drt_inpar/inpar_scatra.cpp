@@ -149,23 +149,45 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   IntParameter("CALCERRORNO",-1,"function number for scalar transport error computation",&scatradyn);
 
-  setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
-                               tuple<std::string>(
-                                 "No",
-                                 "totalflux_domain",
-                                 "diffusiveflux_domain",
-                                 "totalflux_boundary",
-                                 "diffusiveflux_boundary",
-                                 "convectiveflux_boundary"
-                                 ),
-                               tuple<int>(
-                                   flux_no,
-                                   flux_total_domain,
-                                   flux_diffusive_domain,
-                                   flux_total_boundary,
-                                   flux_diffusive_boundary,
-                                   flux_convective_boundary),
-                               &scatradyn);
+  setStringToIntegralParameter<int>(
+      "CALCFLUX_DOMAIN",
+      "No",
+      "output of diffusive/total flux vectors inside domain",
+      tuple<std::string>(
+          "No",
+          "total",
+          "diffusive"
+          ),
+      tuple<int>(
+          flux_none,
+          flux_total,
+          flux_diffusive
+          ),
+      &scatradyn
+      );
+
+  BoolParameter("CALCFLUX_DOMAIN_LUMPED","Yes","perform approximate domain flux calculation involving matrix lumping",&scatradyn);
+
+  setStringToIntegralParameter<int>(
+      "CALCFLUX_BOUNDARY",
+      "No",
+      "output of convective/diffusive/total flux vectors on boundary",
+      tuple<std::string>(
+          "No",
+          "total",
+          "diffusive",
+          "convective"
+          ),
+      tuple<int>(
+          flux_none,
+          flux_total,
+          flux_diffusive,
+          flux_convective
+          ),
+      &scatradyn
+      );
+
+  BoolParameter("CALCFLUX_BOUNDARY_LUMPED","Yes","perform approximate boundary flux calculation involving matrix lumping",&scatradyn);
 
   // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
   IntParameter("WRITEMAXINTSTATE",0,"number of maximal internal state variables to be postprocessed",&scatradyn);

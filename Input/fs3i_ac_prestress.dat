@@ -101,7 +101,6 @@ RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       No
 NEUMANNINFLOW                   Yes
 LINEAR_SOLVER                   -1
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

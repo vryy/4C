@@ -4,11 +4,13 @@
 
 \brief Basis of all ELCH algorithms with moving boundaries
 
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -41,6 +43,10 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
    ittol_(elchcontrol.get<double>("MOVBOUNDARYCONVTOL")),
    theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA"))
 {
+  // safety check
+  if(!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
+    dserror("Scalar transport discretization must have boundary condition for flux calculation at FSI interface!");
+
   pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY")
           ==INPAR::ELCH::elch_mov_bndry_pseudo_transient);
 
@@ -49,8 +55,6 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
   iveln_->PutScalar(0.0);
 
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
-  std::vector<std::string> condnames(1);
-  condnames[0] = "FSICoupling";
   if (pseudotransient_ or (theta_<0.999))
   {
     SolveScaTra(); // set-up trueresidual_
@@ -63,8 +67,7 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
   );
 
   // initialize the multivector for all possible cases
-  fluxn_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
-
+  fluxn_ = ScaTraField()->CalcFluxAtBoundary(false);
 
   return;
 }
@@ -332,10 +335,8 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     Teuchos::RCP<Epetra_Vector> idispnp,
     Teuchos::RCP<Epetra_Vector> iveln)
 {
-  // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
-  std::vector<std::string> condnames(1);
-  condnames[0] = "FSICoupling";
-  fluxnp_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
+  // calculate normal flux vector field at FSI boundaries (no output to file)
+  fluxnp_ = ScaTraField()->CalcFluxAtBoundary(false);
 
   // access discretizations
   Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();

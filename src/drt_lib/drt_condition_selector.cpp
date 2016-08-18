@@ -28,11 +28,28 @@
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ConditionSelector::ConditionSelector(const DRT::Discretization& dis,
                                                  std::string condname)
-  : dis_(dis), condname_(condname)
+  : dis_(dis)
 {
   dis.GetCondition(condname, conds_);
   std::sort( conds_.begin(), conds_.end(), DRT::ConditionLess() );
 }
+
+
+/*----------------------------------------------------------------------*
+ | construct a selector from a given vector of conditions    fang 07/16 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::ConditionSelector::ConditionSelector(
+    const DRT::Discretization&            dis,    //!< discretization
+    const std::vector<DRT::Condition*>&   conds   //!< given vector of conditions
+    )
+  : dis_(dis),
+    conds_(conds)
+{
+  std::sort(conds_.begin(),conds_.end(),DRT::ConditionLess());
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

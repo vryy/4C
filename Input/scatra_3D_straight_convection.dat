@@ -54,7 +54,7 @@ VELFUNCNO                       1
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
-WRITEFLUX convectiveflux_boundary// totalflux_boundary
+CALCFLUX_BOUNDARY               convective
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -4682,8 +4682,8 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 5.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 922 QUANTITY phi VALUE 9.803921569e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 784 QUANTITY phi VALUE 9.996155325e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.000000000000000 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.000000000000000 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 5.000000000000000 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE 0.000000000000000 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE 0.000000000000000 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_z VALUE 5.000000000000000 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

@@ -75,7 +75,7 @@ GAMMA                           1.0
 TIMESTEP                        1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       totalflux_boundary
+CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           2
@@ -184,8 +184,8 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pres. field (for Boussine
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 737 QUANTITY fluxx VALUE -2.0e-04 TOLERANCE 1e-13
-SCATRA DIS scatra NODE 737 QUANTITY fluxy VALUE 0.0e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 737 QUANTITY flux_boundary_1_x VALUE -2.0e-04 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 737 QUANTITY flux_boundary_1_y VALUE 0.0e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 702 QUANTITY phi1 VALUE 7.88901578595497366e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 735 QUANTITY phi1 VALUE 1.21110946744835823e+00 TOLERANCE 1e-09
 FLUID DIS fluid NODE 704 QUANTITY velx VALUE -1.92973856304908963e-07 TOLERANCE 1e-14

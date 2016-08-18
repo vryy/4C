@@ -5,8 +5,10 @@
 
     detailed description in header file levelset_algorithm.H
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -84,7 +86,7 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(bool calcin
   eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
 
   // set flag for writing the flux vector fields
-  eleparams.set<int>("writeflux",writeflux_);
+  eleparams.set<int>("calcflux_domain",calcflux_domain_);
 
   // set vector containing IDs of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);

@@ -364,7 +364,8 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     // intermediate work-around for nurbs discretizations (no normal vectors applied)
     writer_->WriteResult("normalflux","normalflux"+name,dofbased,1,k-1);
     // write flux vectors (always 3D)
-    writer_->WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
+    writer_->WriteResult("flux_domain_"+name, "flux_domain_"+name, nodebased, 3);
+    writer_->WriteResult("flux_boundary_"+name, "flux_boundary_"+name, nodebased, 3);
   }
 
   writer_->WriteResult("activation_time_np","act_time",dofbased,1);
@@ -429,7 +430,8 @@ void ElchFilter::WriteAllResults(PostField* field)
     std::string name = "c_"+temp.str();
     writer_->WriteResult("phinp", name, dofbased, 1,k-1);
     // write flux vectors (always 3D)
-    writer_->WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
+    writer_->WriteResult("flux_domain_phi_"+temp.str(), "flux_domain_"+name, nodebased, 3);
+    writer_->WriteResult("flux_boundary_phi_"+temp.str(), "flux_boundary_"+name, nodebased, 3);
 
     // temporal mean field from turbulent statistics (if present)
     writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, k-1);
@@ -440,7 +442,8 @@ void ElchFilter::WriteAllResults(PostField* field)
   // write flux vectors (always 3D)
   std::ostringstream temp;
   temp << numdofpernode;
-  writer_->WriteResult("flux_phi_"+temp.str(), "current", nodebased, 3);
+  writer_->WriteResult("flux_domain_phi_"+temp.str(), "current_domain", nodebased, 3);
+  writer_->WriteResult("flux_boundary_phi_"+temp.str(), "current_boundary", nodebased, 3);
 
   // temporal mean field from turbulent statistics (if present)
   writer_->WriteResult("averaged_phinp", "averaged_phi", dofbased, 1,numdofpernode-1);

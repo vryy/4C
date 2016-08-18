@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro_reac.cpp
+\file scatra_ele_calc_poro_reac.cpp
 
- \brief
+\brief scatra_ele_calc_poro_reac.cpp
 
- <pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10364
- </pre>
+\level 2
+
+<pre>
+  \maintainer Moritz Thon
+              thon@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10364
+</pre>
  *----------------------------------------------------------------------*/
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_parameter_std.H"
@@ -172,7 +174,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad9>;

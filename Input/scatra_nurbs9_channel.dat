@@ -74,7 +74,7 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       diffusiveflux_boundary
+CALCFLUX_BOUNDARY               diffusive
 MATID                           2
 SKIPINITDER                     No
 OUTPUT_GMSH                     No
@@ -484,10 +484,10 @@ FLUID DIS fluid NODE 123 QUANTITY vely VALUE 1.980942970e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 123 QUANTITY pressure VALUE 6.602342237e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 123 QUANTITY phi VALUE 2.846638345e-01 TOLERANCE 1e-9
 // intermediate changes of normal vectors for NURBS -> test x instead of y-components!!
-SCATRA DIS scatra NODE 144 QUANTITY fluxx VALUE 1.148342931e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY fluxx VALUE 1.247537276e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE -2.732052180e-01 TOLERANCE 1e-9
-//SCATRA DIS 1 NODE 144 QUANTITY fluxy NAME fluxy VALUE -1.148342931e-01 TOLERANCE 1e-9
-//SCATRA DIS 1 NODE 9 QUANTITY fluxy NAME fluxy VALUE -1.247537276e-01 TOLERANCE 1e-9
-//SCATRA DIS 1 NODE 1 QUANTITY fluxy NAME fluxy VALUE -1.444444444e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 144 QUANTITY flux_boundary_1_x VALUE 1.148342931e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 9 QUANTITY flux_boundary_1_x VALUE 1.247537276e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE -2.732052180e-01 TOLERANCE 1e-9
+//SCATRA DIS 1 NODE 144 QUANTITY flux_boundary_1_y NAME flux_boundary_1_y VALUE -1.148342931e-01 TOLERANCE 1e-9
+//SCATRA DIS 1 NODE 9 QUANTITY flux_boundary_1_y NAME flux_boundary_1_y VALUE -1.247537276e-01 TOLERANCE 1e-9
+//SCATRA DIS 1 NODE 1 QUANTITY flux_boundary_1_y NAME flux_boundary_1_y VALUE -1.444444444e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END

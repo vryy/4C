@@ -4,8 +4,10 @@
 
 \brief evaluation of ScaTra boundary elements for diffusion-conduction formulation
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -209,27 +211,30 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
   my::EvaluateNeumann(ele,params,discretization,condition,la,elevec1,dmedc_->GetPhasePoro(0));
 
   // add boundary flux contributions to potential equation
-  switch(myelch::elchparams_->EquPot())
+  if(myelch::elchparams_->BoundaryFluxCoupling())
   {
-  case INPAR::ELCH::equpot_divi:
-  {
-    for(int k=0; k<my::numscal_; ++k)
+    switch(myelch::elchparams_->EquPot())
     {
-      // get valence
-      const double valence_k = GetValence(mat,k);
+      case INPAR::ELCH::equpot_divi:
+      {
+        for(int k=0; k<my::numscal_; ++k)
+        {
+          // get valence
+          const double valence_k = GetValence(mat,k);
 
-      for(int vi=0; vi<my::nen_; ++vi)
-        elevec1[vi*my::numdofpernode_+my::numscal_] += valence_k*elevec1[vi*my::numdofpernode_+k];;
-    } // loop over scalars
+          for(int vi=0; vi<my::nen_; ++vi)
+            elevec1[vi*my::numdofpernode_+my::numscal_] += valence_k*elevec1[vi*my::numdofpernode_+k];;
+        } // loop over scalars
 
-    break;
-  }
+        break;
+      }
 
-  default:
-  {
-    dserror("Closing equation for electric potential not recognized!");
-    break;
-  }
+      default:
+      {
+        dserror("Closing equation for electric potential not recognized!");
+        break;
+      }
+    }
   }
 
   return 0;

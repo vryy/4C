@@ -71,6 +71,7 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class MapExtractor;
+  class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
@@ -233,20 +234,17 @@ public:
     int nds                                   //!< number of the dofset the displacement state belongs to
   );
 
-  //! calculate mass/heat flux vectors (in domain / at boundary)
-  Teuchos::RCP<Epetra_MultiVector> CalcFlux(
-    const bool writetofile,   //!< flag for writing flux info to file
-    const int num=0           //!< field number
-  );
+  //! calculate fluxes inside domain and/or on boundary
+  void CalcFlux(
+      const bool   writetofile,   //!< flag for writing flux info to file
+      const int    num = 0        //!< field number
+      );
 
-  //! calculate mass/heat flux vector field in computational domain
-  Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain(
-    const INPAR::SCATRA::FluxType fluxtype //!< fluxtype enum
-  );
+  //! calculate flux vector field inside computational domain
+  Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain();
 
   //! calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
-      std::vector<std::string>&   condnames,     //!< ?
       const bool                  writetofile,   //!< ?
       const int                   num=0          //!< field number
       );
@@ -311,8 +309,11 @@ public:
   //! return number of dofset associated with displacement dofs
   int NdsDisp() { return nds_disp_; }
 
-  //! return flux vector
-  Teuchos::RCP<const Epetra_MultiVector> Flux() const { return flux_; };
+  //! return domain flux vector
+  Teuchos::RCP<const Epetra_MultiVector> FluxDomain() const { return flux_domain_; };
+
+  //! return boundary flux vector
+  Teuchos::RCP<const Epetra_MultiVector> FluxBoundary() const { return flux_boundary_; };
 
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -612,10 +613,7 @@ protected:
   void UpdateKrylovSpaceProjection();
 
   //! compute approximation for fluxes and add it to a parameter list
-  void AddFluxApproxToParameterList(
-    Teuchos::ParameterList&            p,       //!< parameter list
-    const enum INPAR::SCATRA::FluxType fluxtype //!< switch for flux calculation
-  );
+  void AddFluxApproxToParameterList(Teuchos::ParameterList& p);
 
   //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
   //! this function is never called directly, but only via overloading
@@ -719,9 +717,9 @@ protected:
   bool DoBoundaryFluxStatistics()
     { return( (step_>=samstart_) and (step_<=samstop_)
               and
-              ( (writeflux_==INPAR::SCATRA::flux_total_boundary)
-                or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)
-                or (writeflux_==INPAR::SCATRA::flux_convective_boundary))); };
+              ( (calcflux_boundary_==INPAR::SCATRA::flux_total)
+                or (calcflux_boundary_==INPAR::SCATRA::flux_diffusive)
+                or (calcflux_boundary_==INPAR::SCATRA::flux_convective))); };
 
   //! is output needed for the current time step?
   bool DoOutput()
@@ -740,8 +738,9 @@ protected:
   virtual void OutputRestart() = 0;
 
   //! write flux vectors to BINIO
-  void OutputFlux(
-    Teuchos::RCP<Epetra_MultiVector> flux //!< flux vector
+  virtual void OutputFlux(
+      Teuchos::RCP<Epetra_MultiVector>   flux,      //!< flux vector
+      const std::string&                 fluxtype   //!< flux type ("domain" or "boundary")
   );
 
   /*========================================================================*/
@@ -888,14 +887,29 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
-  //! flag for writing the flux vector fields
-  INPAR::SCATRA::FluxType writeflux_;
+  //! flag for calculating flux vector field inside domain
+  INPAR::SCATRA::FluxType calcflux_domain_;
+
+  //! flag for approximate domain flux calculation involving matrix lumping
+  const bool calcflux_domain_lumped_;
+
+  //! flag for calculating flux vector field on boundary
+  INPAR::SCATRA::FluxType calcflux_boundary_;
+
+  //! flag for approximate boundary flux calculation involving matrix lumping
+  const bool calcflux_boundary_lumped_;
 
   //! ids of scalars for which flux vectors are written (starting with 1)
   Teuchos::RCP<std::vector<int> > writefluxids_;
 
-  //! flux vector fields
-  Teuchos::RCP<Epetra_MultiVector> flux_;
+  //! flux vector field inside domain
+  Teuchos::RCP<Epetra_MultiVector> flux_domain_;
+
+  //! flux vector field on boundary
+  Teuchos::RCP<Epetra_MultiVector> flux_boundary_;
+
+  //! map extractor associated with boundary segments for flux calculation
+  Teuchos::RCP<LINALG::MultiMapExtractor> flux_boundary_maps_;
 
   //! vector for statistical evaluation of normal fluxes
   Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;

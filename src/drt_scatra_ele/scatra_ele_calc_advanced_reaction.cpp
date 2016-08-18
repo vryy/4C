@@ -1304,7 +1304,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line3,1>;
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri3,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri6,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad8>;

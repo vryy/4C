@@ -1,4 +1,4 @@
-"flux_phi_1:0","flux_phi_1:1","flux_phi_1:2","phi_1","Points:0","Points:1","Points:2"
+"flux_boundary_phi_1:0","flux_boundary_phi_1:1","flux_boundary_phi_1:2","phi_1","Points:0","Points:1","Points:2"
 0,0,0,300.36,-0.00035172,-0.00072559,0.0002533,1.0e-14
 0,0,0,300.36,-0.00022422,-0.0007965,0.00013329,1.0e-14
 0,0,0,300.36,-0.00035901,-0.00065643,0,1.0e-14

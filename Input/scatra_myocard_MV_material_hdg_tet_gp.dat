@@ -38,7 +38,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 WRITEMAXINTSTATE                3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

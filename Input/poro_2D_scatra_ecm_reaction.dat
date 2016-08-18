@@ -155,7 +155,6 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           -1
 CONVFORM                        convective
 SKIPINITDER                     yes

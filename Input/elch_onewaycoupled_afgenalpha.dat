@@ -79,7 +79,7 @@ THETA                           0.66
 TIMEINTEGR Gen_Alpha //One_Step_Theta
 TIMESTEP                        1.0
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       totalflux_domain
+CALCFLUX_DOMAIN                 total
 OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           5
@@ -241,9 +241,9 @@ FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0 //magnetic field
 // Af_Gen_alpha or Gen_Alpha or OneStepTheta for the fluid !!!
 // Gen_Alpha or OneStepTheta in Scatra !!!
 // Here is absolutely NO space for (even small) deviation of results!!!
-SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 2.51582112789632169e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE -3.85553216046508789e-03 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 691 QUANTITY fluxz VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_x VALUE 2.51582112789632169e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_y VALUE -3.85553216046508789e-03 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_z VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 695 QUANTITY phi1 VALUE 9.07525685022396722e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 121 QUANTITY phi1 VALUE 9.91928104720174120e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 695 QUANTITY phi2 VALUE 4.53762842511200692e-01 TOLERANCE 1e-10

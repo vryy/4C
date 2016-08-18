@@ -1,17 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_refconc_reac.cpp
+\file scatra_ele_calc_refconc_reac.cpp
 
- \brief main file containing routines for calculation of scatra element formulated in reference concentrations
-  and with advanced reaction terms
+\brief main file containing routines for calculation of scatra element formulated in reference concentrations
+       and with advanced reaction terms
 
+\level 2
 
- <pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10364
- </pre>
+<pre>
+  \maintainer Moritz Thon
+              thon@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10364
+</pre>
  *----------------------------------------------------------------------*/
 
 
@@ -362,7 +363,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad9>;

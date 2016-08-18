@@ -4,8 +4,10 @@
 
 \brief electrode material carrying concentration and electric potential as degrees of freedom
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -60,8 +62,12 @@ MAT::PAR::OCPModels MAT::PAR::Electrode::StringToOCPModel(const std::string& ocp
 {
   OCPModels ocpmodelenum(ocp_undefined);
 
+  // constant value
+  if(ocpmodelstring == "Constant")
+    ocpmodelenum = ocp_constant;
+
   // Redlich-Kister expansion
-  if(ocpmodelstring == "Redlich-Kister")
+  else if(ocpmodelstring == "Redlich-Kister")
     ocpmodelenum = ocp_redlichkister;
 
   // empirical correlation given in Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
@@ -179,6 +185,13 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
+    case MAT::PAR::ocp_constant:
+    {
+      ocp = params_->ocppara_[0];
+
+      break;
+    }
+
     case MAT::PAR::ocp_redlichkister:
     {
       // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
@@ -236,6 +249,13 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
+    case MAT::PAR::ocp_constant:
+    {
+      ocpderiv = 0.;
+
+      break;
+    }
+
     case MAT::PAR::ocp_redlichkister:
     {
       // need to avoid intercalation fraction of exactly 0.5 due to singularity in Redlich-Kister expansion
@@ -290,6 +310,13 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
+    case MAT::PAR::ocp_constant:
+    {
+      ocpderiv2 = 0.;
+
+      break;
+    }
+
     case MAT::PAR::ocp_redlichkister:
     {
       // need to avoid intercalation fraction of exactly 0.5 due to singularity in Redlich-Kister expansion

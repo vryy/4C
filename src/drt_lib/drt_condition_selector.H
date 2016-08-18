@@ -71,6 +71,12 @@ namespace UTILS
     /// with the given name
     ConditionSelector(const DRT::Discretization& dis, std::string condname);
 
+    /// construct a selector from a given vector of conditions
+    ConditionSelector(
+        const DRT::Discretization&            dis,    //!< discretization
+        const std::vector<DRT::Condition*>&   conds   //!< given vector of conditions
+        );
+
     /// Destructor
     virtual ~ConditionSelector() {}
 
@@ -95,9 +101,6 @@ namespace UTILS
 
     /// Discretization
     const DRT::Discretization& dis_;
-
-    /// Condition name
-    std::string condname_;
 
     /// Conditions
     std::vector<DRT::Condition*> conds_;

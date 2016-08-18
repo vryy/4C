@@ -46,7 +46,6 @@ VELFUNCNO                       2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      3
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 ALPHA_M                         0.833333333333333
 ALPHA_F                         0.666666666666667
 GAMMA                           0.666666666666667

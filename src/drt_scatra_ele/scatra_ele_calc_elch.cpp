@@ -4,6 +4,8 @@
 
 \brief evaluation of ScaTra elements for ion-transport equation
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -67,7 +69,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAcrossDC(discretization,la[0].lm_,elemat1_epetra,elevec1_epetra);
+  if(elchparams_->BoundaryFluxCoupling())
+    CorrectionForFluxAcrossDC(discretization,la[0].lm_,elemat1_epetra,elevec1_epetra);
 
   return 0;
 }
@@ -230,7 +233,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;

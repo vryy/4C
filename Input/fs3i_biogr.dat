@@ -217,7 +217,7 @@ RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       No
+CALCFLUX_BOUNDARY               diffusive
 LINEAR_SOLVER                   6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-06
@@ -435,7 +435,7 @@ SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10578316476621
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
-NDSURF                          8
+NDSURF                          10
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
@@ -493,6 +493,12 @@ DSURF                           2
 E 5 - 1 fluid conforming fsi_real
 //                              struct_interface
 E 6 - 1 structure conforming fsi_real
+--------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
+DSURF                           2
+//                              fluid_interface
+E 5 -
+//                              struct_interface
+E 6 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

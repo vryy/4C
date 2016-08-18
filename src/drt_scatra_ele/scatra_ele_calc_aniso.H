@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_aniso.H
+\file scatra_ele_calc_aniso.H
 
- \brief
+\brief scatra_ele_calc_aniso.H
 
- <pre>
-   Maintainer: Lasse Jagschies
-               jagschies@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10365
- </pre>
+\level 2
+
+<pre>
+  \maintainer Lasse Jagschies
+              jagschies@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10365
+</pre>
  *----------------------------------------------------------------------*/
 
 

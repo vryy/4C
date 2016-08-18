@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_cardiac_monodomain.cpp
+\file scatra_ele_calc_cardiac_monodomain.cpp
 
- \brief
+\brief scatra_ele_calc_cardiac_monodomain.cpp
 
- <pre>
-   \maintainer Lasse Jagschies
-               jagschies@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10365
- </pre>
+\level 2
+
+<pre>
+  \maintainer Lasse Jagschies
+              jagschies@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10365
+</pre>
  *----------------------------------------------------------------------*/
 
 
@@ -159,7 +161,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad8>;

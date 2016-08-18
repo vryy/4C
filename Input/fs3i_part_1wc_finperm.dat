@@ -219,7 +219,6 @@ RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       No
 LINEAR_SOLVER                   6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-06

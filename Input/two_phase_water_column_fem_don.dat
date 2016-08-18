@@ -102,7 +102,6 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
 RESULTSEVRY                           1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
 OUTPUT_GMSH                     no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

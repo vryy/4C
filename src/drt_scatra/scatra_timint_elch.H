@@ -3,6 +3,8 @@
 
 \brief scatra time integration for elch
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -240,6 +242,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! check for negative values of concentrations (ELCH)
   void CheckConcentrationValues(
     Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
+  );
+
+  //! output flux vectors
+  void OutputFlux(
+      Teuchos::RCP<Epetra_MultiVector>   flux,      //!< flux vector
+      const std::string&                 fluxtype   //!< flux type ("domain" or "boundary")
   );
 
   /*========================================================================*/

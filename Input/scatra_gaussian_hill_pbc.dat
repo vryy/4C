@@ -43,7 +43,7 @@ VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       totalflux_boundary
+CALCFLUX_BOUNDARY               total
 MATID                           4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
@@ -106,9 +106,9 @@ SCATRA DIS scatra NODE 222 QUANTITY phi VALUE 3.798361225e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 230 QUANTITY phi VALUE 3.794738768e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 246 QUANTITY phi VALUE 3.710567769e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 3.555333841e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 6 QUANTITY fluxx VALUE -5.78173229644617440e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 6 QUANTITY fluxy VALUE 0.0 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 6 QUANTITY fluxz VALUE 0.0 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_x VALUE -5.78173229644617440e-03 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

@@ -38,7 +38,6 @@ FSSUGRDIFF                      No
 VELOCITYFIELD                   function
 VELFUNCNO                       1
 RESULTSEVRY                           1
-WRITEFLUX                       No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          LAPACK_nonsym

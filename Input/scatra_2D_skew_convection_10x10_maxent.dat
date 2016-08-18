@@ -48,7 +48,6 @@ THETA                           0.5
 INITIALFIELD                    zero_field
 VELOCITYFIELD                   function
 VELFUNCNO                       1
-WRITEFLUX                       No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

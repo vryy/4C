@@ -4,6 +4,8 @@
 
 \brief Element evaluations for loma problems
 
+\level 2
+
 <pre>
 \maintainer Ursula Rasthofer/Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
@@ -720,7 +722,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad9>;

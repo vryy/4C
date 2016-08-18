@@ -4,6 +4,8 @@
 
 \brief evaluation of scatra elements for elch
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -736,8 +738,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
     LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-    const int                       k,          //!< index of current scalar
-    const double                    fac         //!< integration factor
+    const int                       k           //!< index of current scalar
 )
 {
   /*
@@ -755,12 +756,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-  case INPAR::SCATRA::flux_total_domain:
-    // call base class routine
-    myelectrode::CalculateFlux(q,fluxtype,k,fac);
+  case INPAR::SCATRA::flux_total:
+    // convective flux contribution
+    q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
 
     // no break statement here!
-  case INPAR::SCATRA::flux_diffusive_domain:
+  case INPAR::SCATRA::flux_diffusive:
     // diffusive flux contribution
     q.Update(-DiffManager()->GetIsotropicDiff(k)*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPhi(k),1.0);
     // flux due to ohmic overpotential
@@ -801,10 +802,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateCurrent(
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-  case INPAR::SCATRA::flux_total_domain:
-  case INPAR::SCATRA::flux_diffusive_domain:
+  case INPAR::SCATRA::flux_total:
+  case INPAR::SCATRA::flux_diffusive:
     // ohmic flux contribution
-    q.Update(-DiffManager()->GetCond(),VarManager()->GradPot(),1.0);
+    q.Update(-DiffManager()->GetCond(),VarManager()->GradPot());
     // diffusion overpotential flux contribution
     for (int k = 0; k<my::numscal_; ++k)
       q.Update(-VarManager()->RTF()/diffcondparams_->NewmanConstC()*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(diffcondparams_->NewmanConstA()+(diffcondparams_->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
@@ -998,7 +999,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad9>;

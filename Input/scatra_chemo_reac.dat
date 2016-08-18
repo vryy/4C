@@ -69,7 +69,6 @@ VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
-WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
 OUTINTEGRREAC                   No
 OUTPUT_GMSH                     No

@@ -46,7 +46,6 @@ VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 CONVFORM                        conservative
 MATID                           4
 --------------------------------------------------------------------SOLVER 1

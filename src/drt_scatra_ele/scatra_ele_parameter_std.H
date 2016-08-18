@@ -59,7 +59,7 @@ namespace DRT
         bool IsAle() const {return is_ale_;};
         bool IsConservative() const {return is_conservative_;};
         bool SphericalCoords() const {return sphericalcoords_;};
-        INPAR::SCATRA::FluxType WriteFlux() const {return writeflux_;};
+        INPAR::SCATRA::FluxType CalcFluxDomain() const {return calcflux_domain_;};
         const Teuchos::RCP<std::vector<int> > WriteFluxIds() const {return writefluxids_;};
         INPAR::SCATRA::FDCheck FDCheck() const {return fdcheck_;};
         double FDCheckEps() const {return fdcheckeps_;};
@@ -103,7 +103,7 @@ namespace DRT
         bool sphericalcoords_;
 
         //! flag for writing the flux vector fields
-        INPAR::SCATRA::FluxType writeflux_;
+        INPAR::SCATRA::FluxType calcflux_domain_;
 
         //! ids of scalars for which flux vectors are written (starting with 1)
         Teuchos::RCP<std::vector<int> > writefluxids_;

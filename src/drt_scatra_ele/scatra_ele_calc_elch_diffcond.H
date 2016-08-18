@@ -4,6 +4,8 @@
 
 \brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -376,8 +378,7 @@ protected:
   void CalculateFlux(
       LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
       const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-      const int                       k,          //!< index of current scalar
-      const double                    fac         //!< integration factor
+      const int                       k           //!< index of current scalar
   );
 
   //!  calculate weighted current flux (no reactive flux so far) -> elch-specific implementation

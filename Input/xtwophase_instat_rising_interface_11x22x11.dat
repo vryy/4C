@@ -140,8 +140,8 @@ TIMEINTEGR                      One_Step_Theta //One_Step_Theta
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX                       totalflux_domain
-RESULTSEVRY                           1
+CALCFLUX_DOMAIN                 total
+RESULTSEVRY                     1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

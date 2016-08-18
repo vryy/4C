@@ -4,8 +4,10 @@
 
 \brief supplementary element calculation class providing general utility for evaluation of heat transport within electrochemical substances
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -116,7 +118,7 @@ template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::line3>;
 
 // 2D elements
 template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::quad9>;

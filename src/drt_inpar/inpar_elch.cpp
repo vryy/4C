@@ -4,8 +4,10 @@
 
 \brief Input parameters for electrochemistry
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -93,6 +95,7 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("DIFFCOND_FORMULATION","No","Activation of diffusion-conduction formulation",&elchcontrol);
   BoolParameter("INITPOTCALC","No","Automatically calculate initial field for electric potential",&elchcontrol);
   BoolParameter("ONLYPOTENTIAL","no","Coupling of general ion transport equation with Laplace equation",&elchcontrol);
+  BoolParameter("COUPLE_BOUNDARY_FLUXES","Yes","Coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol
