@@ -455,6 +455,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &cellscatradyn
       );
 
+  BoolParameter("CALCFLUX_DOMAIN_LUMPED","Yes","perform approximate domain flux calculation involving matrix lumping",&cellscatradyn);
   BoolParameter("CALCFLUX_BOUNDARY_LUMPED","Yes","perform approximate boundary flux calculation involving matrix lumping",&cellscatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS","-1",
