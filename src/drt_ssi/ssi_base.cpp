@@ -40,17 +40,30 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams,
-    const std::string struct_disname,
-    const std::string scatra_disname):
+    const Teuchos::ParameterList& globaltimeparams):
     AlgorithmBase(comm, globaltimeparams),
     structure_(Teuchos::null),
     scatra_(Teuchos::null),
     zeros_(Teuchos::null),
     fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(DRT::Problem::Instance()->SSIControlParams(),"FIELDCOUPLING")),
     ssicoupling_(Teuchos::null)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Base::Setup(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -90,6 +103,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
+  return;
 }
 
 

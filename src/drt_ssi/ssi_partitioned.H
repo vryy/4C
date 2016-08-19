@@ -3,12 +3,13 @@
 
  \brief base class for partitioned scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_PARTITIONED_H_
@@ -24,14 +25,30 @@ public:
 
   /// setup SSI algorithm
   explicit SSI_Part(const Epetra_Comm& comm,
+      const Teuchos::ParameterList& globaltimeparams);
+
+  /// virtual destructor
+  virtual ~SSI_Part(){};
+
+  /*!
+  \brief Setup this object
+
+   Initializes members and performs problem specific setup.
+
+  \note Must only be called after parallel (re-)distribution of discretizations is finished !
+        Otherwise, vectors may have wrong maps.
+
+  \warning none
+  \return void
+  \date 08/16
+  \author rauch
+  */
+  virtual void Setup(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
       const std::string struct_disname,
-      const std::string scatra_disname);// Problem builder
-
-  /// virtual destructor
-  virtual ~SSI_Part(){};
+      const std::string scatra_disname);
 
   /// setup of single fields (if needed)
   virtual void SetupSystem();

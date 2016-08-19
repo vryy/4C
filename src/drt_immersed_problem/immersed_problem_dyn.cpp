@@ -303,7 +303,7 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure = Teuchos::null;
 
   // pointer to cell subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem = Teuchos::null;
+  Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
 
   // check if cell is supposed to have intracellular biochchemical reaction capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
@@ -316,7 +316,13 @@ void CellMigrationControlAlgorithm()
     switch(coupling)
     {
     case INPAR::SSI::ssi_IterStagg: // create SSI_Part2WC_PROTRUSIONFORMATION subproblem
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm, problem->CellMigrationParams(), problem->CellMigrationParams().sublist("SCALAR TRANSPORT"), problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
+      cellscatra_subproblem->Setup(comm,
+          problem->CellMigrationParams(),
+          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
+          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+          "cell",
+          "cellscatra");
       break;
     default:
       dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
@@ -331,6 +337,53 @@ void CellMigrationControlAlgorithm()
 
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
+
+    // ghost cellscatra on each proc (for search algorithm)
+    if(comm.NumProc() > 1)
+    {
+      // fill complete inside
+      CreateGhosting(problem->GetDis("cellscatra"));
+    }
+
+  }
+  else if (ssi_cell and simtype==INPAR::CELL::sim_type_pureAdhesion)
+  {
+    // get coupling algorithm from ---SSI CONTROL section
+    const INPAR::SSI::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
+
+    switch(coupling)
+    {
+    case INPAR::SSI::ssi_IterStagg: // create SSI_Part2WC subproblem
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
+      cellscatra_subproblem->Setup(comm,
+          problem->CellMigrationParams(),
+          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
+          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+          "cell",
+          "cellscatra");
+      break;
+    default:
+      dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
+      break;
+    }
+
+    // set pointer to structure inside SSI subproblem
+    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField());
+
+    if(cellstructure==Teuchos::null)
+      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+
+    if(comm.MyPID()==0)
+      std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
+
+    // ghost cellscatra on each proc (for search algorithm)
+    if(comm.NumProc() > 1)
+    {
+      // fill complete inside
+      CreateGhosting(problem->GetDis("cellscatra"));
+    }
+
   }
   else if(not ssi_cell) // cell has no intracellular biochemistry -> just create usual fsi immersed structure
   {
@@ -347,8 +400,8 @@ void CellMigrationControlAlgorithm()
   else
   {
       std::cout<<"Skipped Construction of CellScatra Subproblem.\n"
-              "The current parameter combination is not supported.\n"
-              "Check your .dat file !"<<std::endl;;
+                 "The current parameter combination is not supported.\n"
+                 "Check your .dat file !"<<std::endl;;
   }
 
   // create instance of poroelast subproblem
@@ -438,7 +491,7 @@ void CellMigrationControlAlgorithm()
   fluid_SearchTree->initializeTree(rootBox,*(problem->GetDis("porofluid")),GEO::TreeType(GEO::OCTTREE));
 
   if(comm.MyPID()==0)
-    std::cout<<"\n Build Fluid/ECM SearchTree ... "<<std::endl;
+    std::cout<<"\n Build Fluid/ECM SearchTree ... \n"<<std::endl;
 
 
 
@@ -450,7 +503,7 @@ void CellMigrationControlAlgorithm()
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell",&currpositions_cell);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM",&currpositions_ECM);
-  params.set<Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> >("RCPToCellScatra",cellscatra_subproblem);
+  params.set<Teuchos::RCP<SSI::SSI_Part2WC> >("RCPToCellScatra",cellscatra_subproblem);
 
   //////////////////////////////////////////////
   // query simulation type
@@ -556,13 +609,6 @@ void CellMigrationControlAlgorithm()
     Teuchos::RCP<IMMERSED::ImmersedPartitionedProtrusionFormation> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedProtrusionFormation(params,comm));
 
-    // ghost cellscatra on each proc (for search algorithm)
-    if(comm.NumProc() > 1)
-    {
-      // fill complete inside
-      CreateGhosting(problem->GetDis("cellscatra"));
-    }
-
     // handle restart
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -598,7 +644,15 @@ void CellMigrationControlAlgorithm()
     params.set<bool>("IsPureContraction", true);
 
     Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> algo =
-        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm, params, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm,problem->CellMigrationParams()));
+
+    algo -> Setup(comm,
+        params,
+        problem->CellMigrationParams(),
+        problem->ScalarTransportDynamicParams(),
+        problem->StructuralDynamicParams(),
+        "cell",
+        "cellscatra");
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)

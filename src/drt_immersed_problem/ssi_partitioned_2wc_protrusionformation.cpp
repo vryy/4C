@@ -44,15 +44,34 @@
  | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+: SSI_Part2WC(comm, globaltimeparams),
+  nds_disp_(-1),
+  omega_(-1.0),
+  exchange_manager_(NULL),
+  myrank_(comm.MyPID()),
+  numdof_actin_(-1)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+
+/*----------------------------------------------------------------------*
+ | Setup this object                                        rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-: SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
 {
-  // set communicator
-  myrank_ = comm.MyPID();
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
 
   // check if scatra in cell is set up with ale description
   if(not ScaTraField()->ScaTraField()->IsALE())
@@ -161,6 +180,8 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
   std::cout<<"STRUCT ELE IDs --> SCATRA ELE IDs"<<std::endl;
   for(std::map<int,int>::iterator it=structscatraelemap_->begin(); it!=structscatraelemap_->end();++it)
     std::cout<<"    "<<it->first<<"               "<<it->second<<std::endl;
+
+  return;
 }
 
 

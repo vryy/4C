@@ -291,6 +291,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--CELL DYNAMIC", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT DOF IDS", *list);
   reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);

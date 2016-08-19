@@ -3,12 +3,13 @@
 
  \brief one way coupled partitioned scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned_1wc.H"
@@ -21,15 +22,29 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part(comm, globaltimeparams),
+    isscatrafromfile_(false)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname),
-    isscatrafromfile_(false)
 {
-
+  // call setup of base class
+  SSI::SSI_Part::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -125,13 +140,27 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part1WC(comm, globaltimeparams)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC_SolidToScatra::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
+  // call setup of base class
+  SSI::SSI_Part1WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   //do some checks
   {
@@ -141,6 +170,8 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
       dserror("If the scalar tranport problem is solved on the deforming domain, the conservative form must be "
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -170,16 +201,32 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part1WC(comm, globaltimeparams)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC_ScatraToSolid::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
+  // call setup of base class
+  SSI::SSI_Part1WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
 
+  return;
 }
 
 /*----------------------------------------------------------------------*/

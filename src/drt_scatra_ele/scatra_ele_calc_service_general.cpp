@@ -768,43 +768,47 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
   case SCATRA::calc_cell_mechanotransduction:
   {
-    int NumPhi=6;
-    int NumPhiActin=8;
+    const int NumPhiROCK=DRT::Problem::Instance()->CellMigrationParams().
+        sublist("SCALAR TRANSPORT DOF IDS").get<int>("ROCK");
+    const int NumPhiActin=DRT::Problem::Instance()->CellMigrationParams().
+        sublist("SCALAR TRANSPORT DOF IDS").get<int>("ACTIN_MONOMER");;
 
-    // get immersed manager and pointers to rates
-    DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
-    Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
-    Teuchos::RCP<Epetra_MultiVector> ratesActin = immersedmanager->GetPointerToRatesActin();
-
-    if(rates == Teuchos::null)
-      dserror("rates = Teuchos::null");
-    if(ratesActin == Teuchos::null)
-      dserror("ratesActin = Teuchos::null");
-
-    double timefacrhs = scatraparatimint_->TimeFacRhs();
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-    // gp loop
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    if(NumPhiROCK>-1 and NumPhiActin>-1)
     {
-      double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      // get immersed manager and pointers to rates
+      DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
+      Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
+      Teuchos::RCP<Epetra_MultiVector> ratesActin = immersedmanager->GetPointerToRatesActin();
 
-      // loop over nodes
-      for (int inode=0;inode<nen_;inode++)
+      if(rates == Teuchos::null)
+        dserror("rates = Teuchos::null");
+      if(ratesActin == Teuchos::null)
+        dserror("ratesActin = Teuchos::null");
+
+      double timefacrhs = scatraparatimint_->TimeFacRhs();
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // gp loop
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
-        const int fvi = inode*numdofpernode_ + NumPhi;
-        const int fviActin = inode*numdofpernode_ + NumPhiActin;
-        int mylid = discretization.ElementColMap()->LID(ele->Id());
+        double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-        if(mylid==-1)
-          dserror("no corresponding LID found for EleGID %i",ele->Id());
+        // loop over nodes
+        for (int inode=0;inode<nen_;inode++)
+        {
+          const int fvi = inode*numdofpernode_ + NumPhiROCK;
+          const int fviActin = inode*numdofpernode_ + NumPhiActin;
+          int mylid = discretization.ElementColMap()->LID(ele->Id());
 
-        elevec1_epetra[fvi]+= funct_(inode)*( ((rates->Pointers())[iquad][mylid]) )*fac*timefacrhs;
-        elevec1_epetra[fviActin]+= funct_(inode)*( ((ratesActin->Pointers())[iquad][mylid]) )*fac*timefacrhs;
+          if(mylid==-1)
+            dserror("no corresponding LID found for EleGID %i",ele->Id());
 
-      } // Node loop
-    } // gp loop
+          elevec1_epetra[fvi]+= funct_(inode)*( ((rates->Pointers())[iquad][mylid]) )*fac*timefacrhs;
+          elevec1_epetra[fviActin]+= funct_(inode)*( ((ratesActin->Pointers())[iquad][mylid]) )*fac*timefacrhs;
 
+        } // Node loop
+      } // gp loop
+    } // if valid dof ids are provided
     break;
   }
 

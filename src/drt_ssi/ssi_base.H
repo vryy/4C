@@ -42,14 +42,30 @@ namespace SSI
 
     /// create using a Epetra_Comm
     explicit SSI_Base(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~SSI_Base(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);// Problem builder
-
-    /// virtual destructor
-    virtual ~SSI_Base(){};
+        const std::string scatra_disname) = 0;
 
     /// setup
     virtual void SetupSystem() = 0;

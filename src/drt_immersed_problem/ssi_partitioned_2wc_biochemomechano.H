@@ -3,12 +3,13 @@
 
 \brief specialization of ssi2wc for biochemo-mechano coupled active cell material
 
-<pre>
-Maintainers: Andreas Rauch
+\level 3
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_
 #define SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_
@@ -40,17 +41,41 @@ namespace SSI
 
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& params,
+    //! constructor
+    SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
 
-    //!virtual destructor
-    virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
+    //! special setup entry method for this class
+    void Setup(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& params,
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
 
   protected:

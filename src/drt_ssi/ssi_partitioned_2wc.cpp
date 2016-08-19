@@ -26,28 +26,36 @@
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part(comm, globaltimeparams),
+    scaincnp_(Teuchos::null),
+    dispincnp_(Teuchos::null),
+    ittol_(-1.0),
+    itmax_(-1),
+    itnum_(0)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname),
-    scaincnp_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
-    dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true)),
-    itnum_(0)
 {
+  // call setup of base class
+  SSI::SSI_Part::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   // call the SSI parameter lists
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
-
-  if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE")){
-    dserror("Different time stepping for two way coupling not implemented yet.");
-  }
-
-  // Get the parameters for the ConvergenceCheck
-  itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
-  ittol_ = ssicontrolpart.get<double>("CONVTOL"); // default: =1e-6
 
   //do some checks
   {
@@ -64,6 +72,21 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
       dserror("If the scalar transport problem is solved on the deforming domain, the conservative form must be"
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section or use RefConc_Reac as impltype!");
   }
+
+  if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE")){
+    dserror("Different time stepping for two way coupling not implemented yet.");
+  }
+
+  // Get the parameters for the ConvergenceCheck
+  itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
+  ittol_ = ssicontrolpart.get<double>("CONVTOL"); // default: =1e-6
+
+  // construct increment vectors
+  scaincnp_ = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true);
+  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+
+  return;
+
 }
 
 /*----------------------------------------------------------------------*
@@ -328,17 +351,35 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part2WC(comm, globaltimeparams),
+    omega_(-1.0)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_SolidToScatra_Relax::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   //Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -427,14 +468,32 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int it
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams),
+    dispincnpold_(Teuchos::null)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
-    dispincnpold_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
+  dispincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -495,13 +554,29 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part2WC(comm, globaltimeparams),
+    omega_(-1.0)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ScatraToSolid_Relax::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   //Get start relaxation parameter from input file
@@ -513,6 +588,8 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epet
     std::cout<<"The ScatraToSolid relaxations are not well tested . Keep your eyes open!  "<<std::endl;
     std::cout<<"\n#########################################################################\n  "<<std::endl;
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -592,14 +669,32 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int it
  | Constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams),
+    scaincnpold_(Teuchos::null)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
-    scaincnpold_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
+  scaincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

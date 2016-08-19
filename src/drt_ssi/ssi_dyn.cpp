@@ -3,12 +3,13 @@
 
  \brief control routine for scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_dyn.H"
@@ -54,27 +55,32 @@ void ssi_drt()
   switch(coupling)
   {
   case INPAR::SSI::ssi_OneWay_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
   case INPAR::SSI::ssi_OneWay_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
-  //case INPAR::SSI::ssi_SequStagg_ScatraToSolid:
-  //case INPAR::SSI::ssi_SequStagg_SolidToScatra:
   case INPAR::SSI::ssi_IterStagg:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
   case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
   case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
   case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
         break;
   case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams));
+    ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");

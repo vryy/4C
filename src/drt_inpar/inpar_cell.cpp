@@ -114,7 +114,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     &celldyn);
 
   setStringToIntegralParameter<int>(
-                                    "FLUID_INTERACTION","yes",
+                                    "FLUID_INTERACTION","no",
                                     "Switch on/off cell-fluid interaction model",
                                     tuple<std::string>(
                                                        "no",
@@ -155,6 +155,18 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("INITIAL_TIMESTEP",0.1,"Time increment dt for first time step (pre-simulation)",&celldyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&celldyn);
   DoubleParameter("kBT",4.04530016e-6,"Thermal Energy (default [micrometer, mg, s] at 293K)",&celldyn);
+
+
+
+
+  /* GIVE DOF IDs OF DIFFERENT CHEMICAL SPECIES */
+
+  Teuchos::ParameterList& scatradofdyn = celldyn.sublist("SCALAR TRANSPORT DOF IDS",false,
+                                                  "Control the dof ids of biomolecules");
+
+  IntParameter("ACTIN_MONOMER",-1,"ID of Actin monomer dof (start counting with 0)",&scatradofdyn);
+  IntParameter("ROCK",-1,"ID of ROCK dof (start counting with 0)",&scatradofdyn);
+  IntParameter("RhoGEF",-1,"ID of Rho activating protein dof (start counting with 0)",&scatradofdyn);
 
 
 

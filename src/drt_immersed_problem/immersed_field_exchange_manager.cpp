@@ -58,7 +58,6 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
 {
 
   // initialize members
-  check_counter_=0;
   num_isimmersedbry_=0;
   gap_max_=0.0;
   gap_min_=0.0;

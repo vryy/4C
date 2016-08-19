@@ -83,6 +83,10 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   // get pointer to global problem
   globalproblem_ = DRT::Problem::Instance();
 
+  // safety check
+  if (globalproblem_->CellMigrationParams().get<std::string>("FLUID_INTERACTION") != "yes")
+    dserror("Parameter FLUID_INTERACTION must be set to 'yes' in ---CELL DYNAMIC section.");
+
   // get pointer to discretizations
   backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
@@ -393,7 +397,6 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BackgroundOp(Teuchos::RCP
 
     exchange_manager_->SetImmersedSearchTree(cell_SearchTree_);
     exchange_manager_->SetCurrentPositionsImmersedDis(currpositions_cell_);
-    exchange_manager_->SetCheckCounter(0);
 
     // solve poro
     poroscatra_subproblem_->Solve();

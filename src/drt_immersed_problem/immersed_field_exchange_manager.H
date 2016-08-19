@@ -66,7 +66,6 @@ public:
 
   //! @name Misc. Counters
   //@{
-  int check_counter_;
   int num_isimmersedbry_;
   int numnlniter_;
   //@}
@@ -174,12 +173,6 @@ public:
   {
     return currpositions_immerseddis_;
   };
-
-  void IncrementCheckCounter(){check_counter_++; return;};
-
-  int GetCheckCounter(){return check_counter_;};
-
-  void SetCheckCounter(int value){check_counter_=value; return;};
 
   void IncrementNumIsImmersedBoundary(){num_isimmersedbry_++; return;};
 
@@ -310,4 +303,4 @@ protected:
 } // namespace DRT
 
 
-#endif
+#endif /*! IMMERSED_FIELD_EXCHANGE_MANAGER_H */

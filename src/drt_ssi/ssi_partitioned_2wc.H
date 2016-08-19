@@ -25,16 +25,32 @@ namespace SSI
   {
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC(const Epetra_Comm& comm,
+    //! constructor
+    SSI_Part2WC(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //!virtual destructor
-    virtual ~SSI_Part2WC(){};
 
     //!full time loop
     virtual void Timeloop();
@@ -91,16 +107,32 @@ namespace SSI
   {
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
+    //! constructor
+    SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_SolidToScatra_Relax(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //!virtual destructor
-    virtual ~SSI_Part2WC_SolidToScatra_Relax(){};
 
   protected:
     //! perform iteration loop between fields with relaxed displacements
@@ -118,16 +150,32 @@ namespace SSI
   {
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
+    //! constructor
+    SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_SolidToScatra_Relax_Aitken(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //!virtual destructor
-    virtual ~SSI_Part2WC_SolidToScatra_Relax_Aitken(){};
 
   protected:
 
@@ -144,16 +192,32 @@ namespace SSI
   {
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
+    //! constructor
+    SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_ScatraToSolid_Relax(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //!virtual destructor
-    virtual ~SSI_Part2WC_ScatraToSolid_Relax(){};
 
   protected:
     //! perform iteration loop between fields with relaxed scalar
@@ -171,16 +235,32 @@ namespace SSI
   {
   public:
 
-    //!explicit constructor
-    explicit SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
+    //! constructor
+    SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_ScatraToSolid_Relax_Aitken(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //!virtual destructor
-    virtual ~SSI_Part2WC_ScatraToSolid_Relax_Aitken(){};
 
   protected:
 

@@ -36,7 +36,7 @@ FLUID_VIS                       yes
 MIGRATIONTYPE                   ameboid
 PSEUDO2D                        yes
 SIMTYPE                         pureFSI
-ECM_INTERACTION                 no
+FLUID_INTERACTION               yes
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2

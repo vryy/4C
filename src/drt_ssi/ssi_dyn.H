@@ -3,12 +3,13 @@
 
  \brief control routine for scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_DYN_H_

@@ -3486,7 +3486,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   // check if fluid interacton is switched ON
   // if NOT : just mark isimmersed and isboundaryimmersed elements
-  static int isfluidinteraction = (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
+  int isfluidinteraction = (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
+  if(globalproblem->ProblemType()==prb_immersed_fsi or globalproblem->ProblemType()==prb_immersed_ale_fsi)
+    isfluidinteraction=1;
 
   std::string backgrddisname(discretization.Name());
   std::string immerseddisname(params.get<std::string>("immerseddisname"));

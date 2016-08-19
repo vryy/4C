@@ -14,10 +14,12 @@
 
 #include "../drt_structure/stru_aux.H"
 #include "../drt_poroelast/poro_scatra_base.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_ssi/ssi_partitioned_2wc.H"
 
 
 IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTraction(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
@@ -41,8 +43,27 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
+  // get pointer structure-scatra interaction (ssi) subproblem
+  cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Part2WC> >("RCPToCellScatra");
+
   // set pointer to poro fpsi structure
   porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
+
+  // check object pointers
+  if(fluid_SearchTree_==Teuchos::null)
+    dserror("no pointer to fluid_SearchTree_ provided !");
+  if(cell_SearchTree_==Teuchos::null)
+    dserror("no pointer to cell_SearchTree_ provided !");
+  if(currpositions_cell_==NULL)
+    dserror("no pointer to currpositions_cell_ provided !");
+  if(currpositions_ECM_==NULL)
+    dserror("no pointer to currpositions_ECM_ provided !");
+  if(cellstructure_==Teuchos::null)
+    dserror("no pointer to cellstructure_ provided !");
+  if(poroscatra_subproblem_==Teuchos::null)
+    dserror("no pointer to poroscatra_subproblem_ provided !");
+  if(cellscatra_subproblem_==Teuchos::null)
+    dserror("no pointer to cellscatra_subproblem_ provided !");
 
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
@@ -50,6 +71,10 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // get pointer to global problem
   globalproblem_ = DRT::Problem::Instance();
+
+  // safety check
+  if (globalproblem_->CellMigrationParams().get<std::string>("ADHESION_DYNAMICS") != "yes")
+    dserror("Parameter ADHESION_DYNAMICS must be set to 'yes' in ---CELL DYNAMIC section.");
 
   backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
@@ -228,12 +253,16 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
     if(IterationCounter()[0]>1)
       cellstructure_->PreparePartitionStep();
 
-    //prescribe dirichlet values at cell adhesion nodes
+    // prescribe dirichlet values at cell adhesion nodes
     CalcAdhesionDisplacements();
     DoImmersedDirichletCond(cellstructure_->WriteAccessDispnp(),cell_adhesion_disp_, cellstructure_->GetDBCMapExtractor()->CondMap());
 
      //solve cell
-    cellstructure_->Solve();
+    if (Comm().MyPID()==0)
+    {
+      std::cout<<"\n****************************************\n          ADHESION FORMATION\n****************************************\n";
+    }
+    cellscatra_subproblem_->OuterLoop();
 
     return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
@@ -314,11 +343,11 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareTimeStep()
   PrintHeader();
 
   if(myrank_==0)
-    std::cout<<"Cell Predictor: "<<std::endl;
-  cellstructure_->PrepareTimeStep();
+    std::cout<<"Cell-SSI Predictor: "<<std::endl;
+  cellscatra_subproblem_->PrepareTimeStep(false);
   if(myrank_==0)
-    std::cout<<"Poro Predictor: "<<std::endl;
-  poroscatra_subproblem_->PrepareTimeStep();
+    std::cout<<"Poro-Scatra Predictor: "<<std::endl;
+  poroscatra_subproblem_->PrepareTimeStep(false);
 
   return;
 }
@@ -716,7 +745,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::ReadRestart(int step)
 {
-  dserror("RESTART in ImmersedPartitionedAdhesionTraction not supported, yet.");
+  cellscatra_subproblem_->ReadRestart(step);
+  poroscatra_subproblem_->ReadRestart(step);
   return;
 }
 
@@ -725,7 +755,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareOutput()
 {
-  cellstructure_->PrepareOutput();
+  cellscatra_subproblem_->StructureField()->PrepareOutput();
   poroscatra_subproblem_->PrepareOutput();
   return;
 }
@@ -735,7 +765,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareOutput()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::Output()
 {
-  cellstructure_->Output();
+  cellscatra_subproblem_->StructureField()->Output();
+  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
   poroscatra_subproblem_->Output();
 
   return;
@@ -746,7 +777,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::Output()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::Update()
 {
-  cellstructure_->Update();
+  cellscatra_subproblem_->StructureField()->Update();
+  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Update();
   poroscatra_subproblem_->Update();
 }
 

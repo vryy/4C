@@ -3,12 +3,13 @@
 
 \brief specialization of ssi2wc for biochemo-mechano coupled active cell material
 
-<pre>
-Maintainers: Andreas Rauch
+\level 3
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "ssi_partitioned_2wc_biochemomechano.H"
 
@@ -30,20 +31,49 @@ Maintainers: Andreas Rauch
  | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams)
+  : SSI_Part2WC(comm, globaltimeparams),
+    myrank_(comm.MyPID()),
+    exchange_manager_(NULL)
+{
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+}
+
+
+/*----------------------------------------------------------------------*
+ | Setup this object                                        rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+{
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+}
+
+
+/*----------------------------------------------------------------------*
+ | Setup this specific object                               rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
 {
+  // call standard setup
+  Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
 
   // get pointer poroelast-scatra interaction subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
-
-  // set communicator
-  myrank_ = comm.MyPID();
 
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
@@ -62,7 +92,6 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
 
   rates_ = LINALG::CreateVector(*elementcolmap,true);
   rates_.reset(new Epetra_MultiVector(*elementcolmap,8));
-
 
   // get pointer to the ImmersedFieldExchangeManager
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();

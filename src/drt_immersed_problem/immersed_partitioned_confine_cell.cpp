@@ -44,6 +44,20 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const T
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
+  // check object pointers
+  if(fluid_SearchTree_==Teuchos::null)
+    dserror("no pointer to fluid_SearchTree_ provided !");
+  if(cell_SearchTree_==Teuchos::null)
+    dserror("no pointer to cell_SearchTree_ provided !");
+  if(currpositions_cell_==NULL)
+    dserror("no pointer to currpositions_cell_ provided !");
+  if(currpositions_ECM_==NULL)
+    dserror("no pointer to currpositions_ECM_ provided !");
+  if(cellstructure_==Teuchos::null)
+    dserror("no pointer to cellstructure_ provided !");
+  if(poroscatra_subproblem_==Teuchos::null)
+    dserror("no pointer to poroscatra_subproblem_ provided !");
+
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
   numproc_ = comm.NumProc();

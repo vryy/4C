@@ -31,6 +31,11 @@ namespace ADAPTER
   class FSIStructureWrapperImmersed;
 }
 
+namespace SSI
+{
+class SSI_Part2WC;
+}
+
 /*----------------------------------------------------------------------*/
 
 namespace IMMERSED {
@@ -203,6 +208,9 @@ private:
 
   /// poro structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper> porostructure_;
+
+  /// pointer to cellscatra subproblem (structure-scatra interaction)
+  Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem_;
 
   /// reinitialize the transfer vectors
   void ReinitTransferVectors(){  ecm_adhesion_forces_->PutScalar(0.0);

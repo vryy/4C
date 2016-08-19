@@ -3,12 +3,13 @@
 
  \brief one way coupled partitioned scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_PARTITIONED_1WC_H_
@@ -22,15 +23,31 @@ namespace SSI
   {
   public:
     //! constructor
-    explicit SSI_Part1WC(const Epetra_Comm& comm,
+    SSI_Part1WC(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //! virtual destructor
+    virtual ~SSI_Part1WC(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //! virtual destructor
-    virtual ~SSI_Part1WC(){};
 
     //! actual time loop (implemented by derived class)
     virtual void Timeloop()=0;
@@ -54,15 +71,31 @@ namespace SSI
   {
   public:
     //! constructor
-    explicit SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
+    SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //! virtual destructor
+    virtual ~SSI_Part1WC_SolidToScatra(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
-
-    //! virtual destructor
-    virtual ~SSI_Part1WC_SolidToScatra(){};
 
     //! actual time loop
     void Timeloop();
@@ -76,15 +109,31 @@ namespace SSI
   {
   public:
     //! constructor
-    explicit SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
+    SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    //! virtual destructor
+    virtual ~SSI_Part1WC_ScatraToSolid(){};
+
+    /*!
+    \brief Setup this object
+
+     Initializes members and performs problem specific setup.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Setup(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname) ;
-
-    //! virtual destructor
-    virtual ~SSI_Part1WC_ScatraToSolid(){};
+        const std::string scatra_disname);
 
     //! actual time loop
     void Timeloop();
