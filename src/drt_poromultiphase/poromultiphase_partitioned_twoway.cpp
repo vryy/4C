@@ -140,7 +140,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetupSystem()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 {
-  int  itnum = 0;
+   itnum_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -151,12 +151,12 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
   while (stopnonliniter==false)
   {
     // increment number of iteration
-    itnum++;
+    itnum_++;
 
     // update the states to the last solutions obtained
     IterUpdateStates();
 
-    if(itnum!=1)
+    if(itnum_!=1)
     {
       // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
       // we only get norm of the evaluation of the structure problem
@@ -177,7 +177,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 
     // check convergence for all fields
     // stop iteration loop if converged
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ConvergenceCheck(itnum_);
   }
 
   return;
