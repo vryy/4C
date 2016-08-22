@@ -761,30 +761,30 @@ Teuchos::RCP<Epetra_Vector> FS3I::PartFPS3I::CalcMeanConcentration()
   //Get concentration phi2 in scatrafield2
   //Hint: in the following we talk of phi1 and phi2, but they mean the same concentration just on different scatrafields
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra2 = scatravec_[1];
-  Teuchos::RCP<Epetra_Vector> scatrafield2_phi2n= scatra2->ScaTraField()->Phin();
+  Teuchos::RCP<Epetra_Vector> scatrafield2_phi2np= scatra2->ScaTraField()->Phinp();
 
   //extract interface values from phi2 but we are still on scatrafield2
-  Teuchos::RCP<Epetra_Vector> interface2_phi2n = scatrafieldexvec_[1]->ExtractVector(scatrafield2_phi2n,1);
+  Teuchos::RCP<Epetra_Vector> interface2_phi2np = scatrafieldexvec_[1]->ExtractVector(scatrafield2_phi2np,1);
 
   //insert interface values from scatrafield2 into scatrafield1; scatrafield1_phi2n is again of full length, i.e. of size of scatrafield1; all values that do not belong to the interface are zero
-  Teuchos::RCP<Epetra_Vector> scatrafield1_phi2n = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(interface2_phi2n),1);
+  Teuchos::RCP<Epetra_Vector> scatrafield1_phi2np = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(interface2_phi2np),1);
 
   //Get concentration phi1 in scatrafield1
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra1 = scatravec_[0];
-  Teuchos::RCP<Epetra_Vector> scatrafield1_phi1n= scatra1->ScaTraField()->Phin();
+  Teuchos::RCP<Epetra_Vector> scatrafield1_phi1np= scatra1->ScaTraField()->Phinp();
 
   //extract interface values from phi1 but we are still on scatrafield1
-  Teuchos::RCP<Epetra_Vector> interface1_phi1n = scatrafieldexvec_[0]->ExtractVector(scatrafield1_phi1n,1);
+  Teuchos::RCP<Epetra_Vector> interface1_phi1np = scatrafieldexvec_[0]->ExtractVector(scatrafield1_phi1np,1);
 
   //insert interface values interface1_phi1n from scatrafield1 into the full scatrafield1 again; this is just to obtain a vector whose entries are zero except for the nodes of the interface
-  Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->InsertVector(interface1_phi1n,1);
+  Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->InsertVector(interface1_phi1np,1);
 
   //nodewise calculation of mean concentration in the interface
 
   for(int i=0; i<temp->MyLength();i++)
   {
     //here the unweighted average is uses. One could also use a logarithmic average...
-    (*temp)[i]=0.5*((*temp)[i]+(*scatrafield1_phi2n)[i]); //log. average: ((*temp)[i]-(*scatrafield1_phi2n)[i])/log(((*temp)[i])/((*scatrafield1_phi2n)[i]));
+    (*temp)[i]=0.5*((*temp)[i]+(*scatrafield1_phi2np)[i]); //log. average: ((*temp)[i]-(*scatrafield1_phi2n)[i])/log(((*temp)[i])/((*scatrafield1_phi2n)[i]));
                                                           //linear approach: 0.5*((*temp)[i]+(*scatrafield1_phi2n)[i]);
   }
 
