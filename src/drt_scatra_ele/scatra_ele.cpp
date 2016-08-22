@@ -385,7 +385,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
         // some safty check for the MAT_scatra_reaction materials
         const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(actmat->ReacID(jj)));
-        const int stoichlength = reacmat->Stoich()->size();
+        const int stoichlength = reacmat->NumScal();
         if (stoichlength != numdofpernode_)
           dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
       }
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
       // some safty check for the MAT_scatra_reaction materials
       const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(actmat->ReacID(jj)));
-      const int stoichlength = reacmat->Stoich()->size();
+      const int stoichlength = reacmat->NumScal();
       if (stoichlength != numdofpernode_)
         dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
     }

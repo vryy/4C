@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file scatra_reaction_mat.H
 
- \brief
+\brief This file contains the base material for reactive scalars.
 
-This file contains the base material for reactive scalars.
-
+\level 2
 <pre>
-Maintainer: Moritz Thon
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-10364
@@ -25,6 +24,8 @@ Maintainer: Moritz Thon
 
 namespace MAT
 {
+  //forward declaration
+  class MatListReactions;
 
   namespace PAR
   {
@@ -101,6 +102,8 @@ private:
   /// wrapper for scalar transport material
   class ScatraReactionMat : public Material
   {
+  friend class MAT::MatListReactions;
+
   public:
 
     /// construct empty material object
@@ -156,6 +159,8 @@ private:
     /// return number of scalars for this reaction
     int NumScal() const { return params_->numscal_; }
 
+  protected:
+
     /// return reaction coefficient
     virtual double ReacCoeff() const { return params_->reaccoeff_; }
 
@@ -174,7 +179,70 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    /// Calculate K(c)
+    double CalcReaCoeff(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale
+        ) const;
+
+    /// calculate \frac{partial}{\partial c} K(c)
+    double CalcReaCoeffDerivMatrix(
+        const int k,
+        const int j,
+        const std::vector<double>& phinp,
+        const double scale
+        ) const;
+
+    /// Calculate f(c)
+    double CalcReaBodyForceTerm(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale
+        ) const;
+
+    /// calculate \frac{partial}{\partial c} f(c)
+    double CalcReaBodyForceDerivMatrix(
+        const int k,
+        const int j,
+        const std::vector<double>& phinp,
+        const double scale
+        ) const;
+
   private:
+
+    ///helper for calculating K(c)
+    double CalcReaCoeffFac(
+        const int k,
+        const std::vector<double>& phinp,
+        const double reacstart,              //!<reaction start coefficient
+        const double scale
+        ) const;
+
+    ///helper for calculating \frac{partial}{\partial c} K(c)
+    double CalcReaCoeffDerivFac(
+        const int k,
+        const int toderive,
+        const std::vector<double>& phinp,
+        const double reacstart,              //!<reaction start coefficient
+        const double scale
+        ) const;
+
+    ///helper for calculating f(c)
+    double CalcReaBodyForceTermFac(
+        const int k,
+        const std::vector<double>& phinp,
+        const double reacstart,              //!<reaction start coefficient
+        const double scale ) const;
+
+    ///helper for calculating calculate \frac{partial}{\partial c} f(c)
+    double CalcReaBodyForceDerivFac(
+        const int k, const int toderive,
+        const std::vector<double>& phinp,
+        const double reacstart,              //!<reaction start coefficient
+        const double scale ) const;
+
+  protected:
 
     /// my material parameters
     MAT::PAR::ScatraReactionMat* params_;

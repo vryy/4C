@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
-  advreac::ClearAdvancedReactionTerms();
+  advreac::ReaManager()->Clear(my::numscal_);
 
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each time
@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
-    const Teuchos::RCP<const MAT::MatList>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
+    const Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
     for (int k = 0;k<my::numscal_;++k)
@@ -122,10 +122,8 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
 
   else if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
   {
-    const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
+    const Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
-
-    advreac::GetAdvancedReactionCoefficients(actmat,iquad); // read all reaction input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -135,16 +133,16 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       //Note: order is important here!!
       advreac::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
 
-      advreac::SetAdvancedReactionTerms(k); //every reaction calculation stuff happens in here!!
+      advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
     }
   }
 
   else if (material->MaterialType() == INPAR::MAT::m_matlist_chemotaxis)
   {
-    const Teuchos::RCP<const MAT::MatListChemotaxis>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListChemotaxis>(material);
+    const Teuchos::RCP<MAT::MatListChemotaxis> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListChemotaxis>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    chemo::GetChemotaxisCoefficients(actmat); // read all chemotaxis input from material and copy it into local variables
+    chemo::GetChemotaxisCoefficients(material); // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -158,11 +156,10 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
 
   else if (material->MaterialType() == INPAR::MAT::m_matlist_chemoreac)
   {
-    const Teuchos::RCP<const MAT::MatListChemoReac>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListChemoReac>(material);
+    const Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    chemo::GetChemotaxisCoefficients(actmat); // read all chemotaxis input from material and copy it into local variables
-    advreac::GetAdvancedReactionCoefficients(actmat,iquad); // read all reaction input from material and copy it into local variables
+    chemo::GetChemotaxisCoefficients(material); // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -171,7 +168,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
 
       //Note: order is important here!!
       my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
-      advreac::SetAdvancedReactionTerms(k); //every reaction calculation stuff happens in here!!
+      advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
     }
   }
 

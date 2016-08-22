@@ -1,15 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_refconc_reac.H
+\file scatra_ele_calc_refconc_reac.H
 
 \brief main file containing routines for calculation of scatra element formulated in reference concentrations
   and with advanced reaction terms
 
+\level 3
+
  <pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10364
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -50,42 +52,10 @@ public:
 
 protected:
 
-  virtual double CalcReaCoeffFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                 couprole,                //!<type of coupling role
-      const double                              reacstart,               //!<reaction start coefficient
-      const int                                 k,                       //!< id of current scalar
-      const double                              scale = 1.0              //!< scale factor
-  );
-
-  virtual double CalcReaCoeffDerivFac(
-      const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>               couprole,                //!<type of coupling role
-      const double                            reacstart,               //!<reaction start coefficient
-      const int                               toderive,                //!<concentration to be derived to
-      const int                               k,                       //!< id of current scalar
-      const double                            scale = 1.0              //!< scale factor
-  );
-
-  virtual double CalcReaBodyForceTermFac(
-      const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                   couprole,               //!<type of coupling role
-      const double                                reacstart,              //!<reaction start coefficient
-      const int                                   k,                      //!< id of current scalar
-      const double                                scale = 1.0             //!< scale factor
-  );
-
-  virtual double CalcReaBodyForceDerivFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                 couprole,                //!<type of coupling role
-      const double                              reacstart,               //!<reaction start coefficient
-      const int                                 toderive,                //!<concentration to be derived to
-      const int                                 k,                       //!< id of current scalar
-      const double                              scale = 1.0              //!< scale factor
+  //! Set reac. body force, reaction coefficient and derivatives
+  virtual void SetAdvancedReactionTerms(
+      const int                                 k,          //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
   );
 
   //! calculation of convective element matrix: add conservative contributions

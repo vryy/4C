@@ -22,6 +22,12 @@
 #include "scatra_ele_calc.H"
 #include "../drt_mat/scatra_reaction_mat.H"
 
+// forward declarations
+namespace MAT
+{
+  class MatListReactions;
+}
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -111,78 +117,6 @@ protected:
   );
 
 
-  //!Calculate K(c)
-  double CalcReaCoeff(
-      const int                                 k         //!< id of current scalar
-      );
-
-
-  //! helper for calculating K(c)
-  virtual double CalcReaCoeffFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                 couprole,                //!<type of coupling role
-      const double                              reacstart,               //!<reaction start coefficient
-      const int                                 k,                       //!< id of current scalar
-      const double                              scale = 1.0              //!< scale factor
-  );
-
-
-  //! calculate \frac{partial}{\partial c} K(c)
-  double CalcReaCoeffDerivMatrix(
-      const int                 k,                  //!< id of current scalar
-      const int                 j                   //!< concentration to be derived to
-      );
-
-
-  //! helper for calculating \frac{partial}{\partial c} K(c)
-  virtual double CalcReaCoeffDerivFac(
-      const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>               couprole,                //!<type of coupling role
-      const double                            reacstart,               //!<reaction start coefficient
-      const int                               toderive,                //!<concentration to be derived to
-      const int                               k,                       //!< id of current scalar
-      const double                            scale = 1.0              //!< scale factor
-  );
-
-
-  //! calculate f(c)
-  double CalcReaBodyForceTerm(
-      const int                                 k                       //!< id of current scalar
-);
-
-
-  //! helper for calculating f(c)
-  virtual double CalcReaBodyForceTermFac(
-      const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                   couprole,               //!<type of coupling role
-      const double                                reacstart,              //!<reaction start coefficient
-      const int                                   k,                      //!< id of current scalar
-      const double                                scale = 1.0             //!< scale factor
-  );
-
-
-  //! calculate \frac{partial}{\partial c} f(c)
-  double CalcReaBodyForceDerivMatrix(
-      const int                 k,                  //!< id of current scalar
-      const int                 j                   //!< concentration to be derived to
-);
-
-
-  //! helper for calculating calculate \frac{partial}{\partial c} f(c)
-  virtual double CalcReaBodyForceDerivFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const std::vector<double>                 couprole,                //!<type of coupling role
-      const double                              reacstart,              //!<reaction start coefficient
-      const int                                 toderive,                //!<concentration to be derived to
-      const int                                 k,                       //!< id of current scalar
-      const double                              scale = 1.0              //!< scale factor
-  );
-
-
   //! calculation of reactive element matrix
   virtual void CalcMatReact(
     Epetra_SerialDenseMatrix&          emat,        //!< element matrix to be filled
@@ -196,33 +130,15 @@ protected:
   );
 
 
-  //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
-  virtual void GetAdvancedReactionCoefficients(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-      const int           iquad
-  );
-
-
   //! Set reac. body force, reaction coefficient and derivatives
-  void SetAdvancedReactionTerms(
-      const int                               k            //!< index of current scalar
+  virtual void SetAdvancedReactionTerms(
+      const int                                 k,          //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
   );
-
-
-  //! Clear all reaction related class variable (i.e. set them to zero)
-  void ClearAdvancedReactionTerms( );
-
 
   //! evaluate shape functions and their derivatives at element center
   virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
-
-  int numcond_;                                               //!< number of scatra coupling conditions
-  std::vector<std::vector<int> > stoich_;                     //!< vector containing the stoichometrie
-  std::vector<double> reaccoeff_;                             //!< constant by which the reaction coefficient is multiplied
-  std::vector<MAT::PAR::reaction_coupling> couplingtype_;     //!< how to calculate the different couplings
-  std::vector<std::vector<double> > couprole_;                //!<vector containing how to treat educts>
-  std::vector<double> reacstart_;                             //!< constant by which the reaction starts
   LINALG::Matrix<my::nen_,1> funct_elementcenter_;            //! array for shape function at element center
 
   //! get reaction manager for advanced reaction

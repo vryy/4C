@@ -5,18 +5,19 @@
 \brief main file containing routines for calculation of scatra element formulated in reference concentrations
        and with advanced reaction terms
 
-\level 2
+\level 3
 
 <pre>
   \maintainer Moritz Thon
               thon@mhpc.mw.tum.de
-              http://www.lnm.mw.tum.de
+              http://www.mhpc.mw.tum.de
               089 - 289-10364
 </pre>
  *----------------------------------------------------------------------*/
 
 
 #include "scatra_ele_calc_refconc_reac.H"
+#include "../drt_mat/matlist_reactions.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -73,82 +74,29 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Done()
   Instance( 0, 0, "", this );
 }
 
-/*----------------------------------------------------------------------*
- |  helper for calculating K(c)                              thon 02/16 |
- *----------------------------------------------------------------------*/
+//!
+/*----------------------------------------------------------------------------*
+ |  Set reac. body force, reaction coefficient and derivatives     thon 02/16 |
+ *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcReaCoeffFac(
-          const std::vector<int>                    stoich,                 //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling         couplingtype,           //!<type of coupling the stoichiometry coefficients
-          const std::vector<double>                 couprole,               //!<type of coupling role
-          const double                              reacstart,              //!<reaction start coefficient
-          const int                                 k,                      //!< id of current scalar
-          const double                              scale                   //!< scale factor
-)
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
+      const int                                 k,          //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+  )
 {
-  double rcfac = advreac::CalcReaCoeffFac( stoich, couplingtype, couprole, reacstart, k, 1.0/J_);
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
 
-  // J * r(c_0/J) * c_0(k)/J = r(c_0/J) * c_0(k)
-  return rcfac;
-}
+  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),1.0/J_)*J_ ,k );
 
-/*----------------------------------------------------------------------*
- |  helper for calculating \frac{partial}{\partial c} K(c)   thon 02/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcReaCoeffDerivFac(
-          const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
-          const std::vector<double>               couprole,                //!<type of coupling role
-          const double                            reacstart,               //!<reaction start coefficient
-          const int                               toderive,                //!<concentration to be derived to
-          const int                               k,                       //!< id of current scalar
-          const double                            scale                    //!< scale factor
-)
-{
-  double rcdmfac = advreac::CalcReaCoeffDerivFac( stoich, couplingtype, couprole, reacstart, toderive, k, 1.0/J_);
+  remanager->SetReaCoeff( matreaclist->CalcReaCoeff(k,my::scatravarmanager_->Phinp(),1.0/J_) ,k);
 
-  // \partial_{c_0} r(c_0/J) = r'(c_0/J) / J
-  return rcdmfac/J_;
-}
+  for (int j=0; j<my::numscal_ ;j++)
+  {
+    remanager->AddToReaBodyForceDerivMatrix( matreaclist->CalcReaBodyForceDerivMatrix(k,j,my::scatravarmanager_->Phinp(),1.0/J_) ,k,j );
 
-/*----------------------------------------------------------------------*
- |  helper for calculating                                   thon 02/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcReaBodyForceTermFac(
-          const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
-          const std::vector<double>                   couprole,               //!<type of coupling role
-          const double                                reacstart,              //!<reaction start coefficient
-          const int                                   k,                      //!< id of current scalar
-          const double                                scale                   //!< scale factor
-)
-{
-  double bftfac = advreac::CalcReaBodyForceTermFac( stoich, couplingtype, couprole, reacstart, k, 1.0/J_);
+    remanager->SetReaCoeffDerivMatrix( matreaclist->CalcReaCoeffDerivMatrix(k,j,my::scatravarmanager_->Phinp(),1.0/J_)/J_ ,k,j );
+  }
 
-  // f(c_0/J) *J
-  return bftfac*J_;
-}
-
-/*-------------------------------------------------------------------------------*
- |  helper for calculating calculate \frac{partial}{\partial c} f(c)  thon 02/16 |
- *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcReaBodyForceDerivFac(
-        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-        const std::vector<double>                 couprole,                //!<type of coupling role
-        const double                              reacstart,               //!<reaction start coefficient
-        const int                                 toderive,                //!<concentration to be derived to
-        const int                                 k,                       //!< id of current scalar
-        const double                              scale                    //!< scale factor
-)
-{
-  double bfdmfac = advreac::CalcReaBodyForceDerivFac( stoich, couplingtype, couprole, reacstart, toderive, k, 1.0/J_);
-
-  // \partial_{c_0} f(c_0/J) *J = f'(c_0/J)
-  return bfdmfac;
 }
 
 /*------------------------------------------------------------------------------------------*

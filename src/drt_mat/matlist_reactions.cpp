@@ -1,16 +1,15 @@
 /*!----------------------------------------------------------------------
 \file matlist_reactions.cpp
 
- \brief
-
-This file contains the material for reactive scalars. It derives from MAT_matlist
+\brief This file contains the material for reactive scalars. It derives from MAT_matlist
 and adds everything to supervise all the MAT_scatra_raction materials. The reactions
 itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
 is just a "control instance".
 
+\level 2
 
 <pre>
-Maintainer: Moritz Thon
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-10364
@@ -20,8 +19,9 @@ Maintainer: Moritz Thon
 
 #include <vector>
 #include "matlist_reactions.H"
+#include "matpar_bundle.H"
+#include "scatra_reaction_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  | rstandard constructor                                     thon 11/14 |
@@ -199,3 +199,94 @@ int MAT::MatListReactions::ReacID( const unsigned index ) const
     return -1;
   }
 }
+
+/*----------------------------------------------------------------------*
+ | calculate body force term                                 thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::MatListReactions::CalcReaBodyForceTerm(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale
+    ) const
+{
+  double bodyforcetermK=0.0;
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, scale);
+  }
+
+  return bodyforcetermK;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate reaction coefficient                            thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::MatListReactions::CalcReaCoeff(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale
+    ) const
+{
+  double reactermK=0.0;
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reactermK += reacmat->CalcReaCoeff(k, phinp, scale);
+  }
+
+  return reactermK;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate body force term derivative                      thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
+        const int k,
+        const int j,
+        const std::vector<double>& phinp,
+        const double scale
+    ) const
+{
+  double reabodyforcederivmatrixKJ=0.0;
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reabodyforcederivmatrixKJ += reacmat->CalcReaBodyForceDerivMatrix(k, j, phinp, scale);
+  }
+
+  return reabodyforcederivmatrixKJ;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate reaction coefficient derivative                 thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::MatListReactions::CalcReaCoeffDerivMatrix(
+        const int k,
+        const int j,
+        const std::vector<double>& phinp,
+        const double scale
+    ) const
+{
+  double reacoeffderivmatrixKJ=0.0;
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reacoeffderivmatrixKJ += reacmat->CalcReaCoeffDerivMatrix(k, j, phinp, scale);
+  }
+
+  return reacoeffderivmatrixKJ;
+}
+

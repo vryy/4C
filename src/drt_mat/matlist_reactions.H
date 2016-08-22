@@ -1,16 +1,14 @@
 /*!----------------------------------------------------------------------
 \file matlist_reactions.H
 
- \brief
-
-This file contains the material for reactive scalars. It derives from MAT_matlist
+ \brief This file contains the material for reactive scalars. It derives from MAT_matlist
 and adds everything to supervise all the MAT_scatra_raction materials. The reactions
 itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
 is just a "control instance".
 
-
+\level 2
 <pre>
-Maintainer: Moritz Thon
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-10364
@@ -146,6 +144,36 @@ private:
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
+
+    ///calculate body force term
+    double CalcReaBodyForceTerm(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale = 1.0
+    ) const;
+
+    ///calculate reaction coefficient
+    double CalcReaCoeff(
+        const int k,
+        const std::vector<double>& phinp,
+        const double scale = 1.0
+    ) const;
+
+    /// calculate body force term derivative
+    double CalcReaBodyForceDerivMatrix(
+            const int k,
+            const int j,
+            const std::vector<double>& phinp,
+            const double scale = 1.0
+        ) const;
+
+    /// calculate reaction coefficient derivative
+    double CalcReaCoeffDerivMatrix(
+            const int k,
+            const int j,
+            const std::vector<double>& phinp,
+            const double scale = 1.0
+        ) const;
 
   protected:
 

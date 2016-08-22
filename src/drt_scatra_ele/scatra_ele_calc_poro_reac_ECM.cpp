@@ -126,40 +126,15 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
   // call poro base class to compute porosity
   poro::ComputePorosity(ele);
 
-  // call base class
-  advreac::GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+  // get the material
+  Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------*
- |  get numcond, stoich list, reaction coefficient, couplingtpye from material  vuong 09/15 |
- *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoefficients(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int           iquad
-  )
-{
-  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-
-  if(actmat==Teuchos::null)
-    dserror("cast to MatListReactions failed");
-
-  advreac::numcond_= actmat->NumReac();
-
-  //We always have to reinitialize these vectors since our elements are singleton
-  advreac::stoich_.resize(advreac::numcond_);
-  advreac::couplingtype_.resize(advreac::numcond_);
-  advreac::reaccoeff_.resize(advreac::numcond_);
-  advreac::couprole_.resize(advreac::numcond_);
-  advreac::reacstart_.resize(advreac::numcond_);
-
+  if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
   {
-    const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
+    const Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    for (int k = 0;k<advreac::numcond_;++k)
+    for (int k = 0;k<actmat->NumReac();++k)
     {
       int matid = actmat->ReacID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
@@ -178,17 +153,10 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoeffi
     }
   }
 
-  for (int i=0;i<advreac::numcond_;i++)
-  {
-    const int reacid = actmat->ReacID(i);
-    const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(reacid));
+  // call base class
+  advreac::GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
-    advreac::stoich_[i] = *(reacmat->Stoich()); //get stoichometrie
-    advreac::couplingtype_[i] = reacmat->Coupling(); //get coupling type
-    advreac::reaccoeff_[i] = reacmat->ReacCoeff(); //get reaction coefficient
-    advreac::couprole_[i] = *(reacmat->Couprole());
-    advreac::reacstart_[i] = reacmat->ReacStart(); //get reaction start coefficient
-  }
+  return;
 }
 
 /*----------------------------------------------------------------------*

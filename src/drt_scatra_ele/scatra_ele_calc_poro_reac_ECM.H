@@ -66,12 +66,6 @@ public:
     const int           iquad=-1    //!< id of current gauss point (default = -1)
   );
 
-  //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
-  virtual void GetAdvancedReactionCoefficients(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-      const int           iquad
-  );
-
   //! evaluate material
   virtual void Materials(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
