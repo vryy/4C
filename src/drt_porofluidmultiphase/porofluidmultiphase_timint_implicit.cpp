@@ -958,7 +958,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
 
   const int dim = DRT::Problem::Instance()->NDim();
   // we assume same number of dofs per node in the whole dis here
-  const int numphases = discret_->NumDof(discret_->lRowNode(0));
+  const int numphases = discret_->NumDof(0,discret_->lRowNode(0));
   const int numvec = numphases*dim;
 
   // add state vectors according to time-integration scheme
@@ -1096,7 +1096,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
     // for now, I create single vectors that can be handled by the filter
 
     const int dim = DRT::Problem::Instance()->NDim();
-    const int numdof = discret_->NumDof(discret_->lRowNode(0));
+    const int numdof = discret_->NumDof(0,discret_->lRowNode(0));
     // get the noderowmap
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
     for (int k=0; k<numdof; k++)

@@ -321,16 +321,17 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
             //NULL,NULL,
             params);
       }
-      else if(discretization.HasState(2,"solid_pressure"))
-      {
-        // extract local values of the global vectors
-        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+      else if (la.Size()>2)
+        if(discretization.HasState(2,"solid_pressure"))
+        {
+          // extract local values of the global vectors
+          ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
 
-        //calculate tangent stiffness matrix
-        nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
-            //NULL,NULL,
-            params);
-      }
+          //calculate tangent stiffness matrix
+          nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
+              //NULL,NULL,
+              params);
+        }
 
     }
   }
@@ -382,15 +383,16 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
             //NULL,NULL,
             params);
       }
-      else if(discretization.HasState(2,"solid_pressure"))
-      {
-        // extract local values of the global vectors
-        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+      else if (la.Size()>2)
+        if(discretization.HasState(2,"solid_pressure"))
+        {
+          // extract local values of the global vectors
+          ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
 
-        nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
-             //NULL,NULL,
-             params);
-      }
+          nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
+               //NULL,NULL,
+               params);
+        }
     }
 
   }
@@ -437,25 +439,26 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
         coupling_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,//NULL,
           NULL,NULL,params);
     }
-    else if(discretization.HasState(2,"solid_pressure"))
-    {
-      LINALG::Matrix<numdim_,numnod_> myvel(true);
-      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-      LINALG::Matrix<numnod_,1> myepreaf(true);
+    else if (la.Size()>2)
+      if(discretization.HasState(2,"solid_pressure"))
+      {
+        LINALG::Matrix<numdim_,numnod_> myvel(true);
+        LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+        LINALG::Matrix<numnod_,1> myepreaf(true);
 
-      LINALG::Matrix<numdim_,numnod_> mydisp(true);
-      ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &mydisp, NULL,"displacement");
+        LINALG::Matrix<numdim_,numnod_> mydisp(true);
+        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &mydisp, NULL,"displacement");
 
-      if (discretization.HasState(0,"velocity"))
-        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
+        if (discretization.HasState(0,"velocity"))
+          ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
 
-      // extract local values of the global vectors
-      ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+        // extract local values of the global vectors
+        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
 
-      coupling_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,//NULL,
-          NULL,NULL,params);
-    }
+        coupling_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,//NULL,
+            NULL,NULL,params);
+      }
 
   }
   break;
@@ -496,21 +499,22 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
           //NULL,NULL,
           params);
     }
-    else if(discretization.HasState(2,"solid_pressure"))
-    {
-      // extract local values of the global vectors
-      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-      LINALG::Matrix<numnod_,1> myepreaf(true);
-      ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+    else if (la.Size()>2)
+      if(discretization.HasState(2,"solid_pressure"))
+      {
+        // extract local values of the global vectors
+        LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+        LINALG::Matrix<numnod_,1> myepreaf(true);
+        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
 
-      LINALG::Matrix<numdim_,numnod_> myvel(true);
-      ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
+        LINALG::Matrix<numdim_,numnod_> myvel(true);
+        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
-      //calculate tangent stiffness matrix
-      nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
-          //NULL,NULL,
-          params);
-    }
+        //calculate tangent stiffness matrix
+        nlnstiff_poroelast_presbased(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
+            //NULL,NULL,
+            params);
+      }
   }
   break;
   //==================================================================================
@@ -557,21 +561,22 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
                               params,
                               iocouplstress);
       }
-      else if(discretization.HasState(2,"solid_pressure"))
-      {
-        // extract local values of the global vectors
-        LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-        LINALG::Matrix<numnod_,1> myepreaf(true);
-        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+      else if (la.Size()>2)
+        if(discretization.HasState(2,"solid_pressure"))
+        {
+          // extract local values of the global vectors
+          LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+          LINALG::Matrix<numnod_,1> myepreaf(true);
+          ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
 
-        couplstress_poroelast(mydisp,
-                              myfluidvel,
-                              myepreaf,
-                              &couplstress,
-                              NULL,
-                              params,
-                              iocouplstress);
-      }
+          couplstress_poroelast(mydisp,
+                                myfluidvel,
+                                myepreaf,
+                                &couplstress,
+                                NULL,
+                                params,
+                                iocouplstress);
+        }
 
       // pack the data for postprocessing
       {
