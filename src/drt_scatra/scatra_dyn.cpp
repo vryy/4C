@@ -90,9 +90,15 @@ void scatra_dyn(int restart)
         dserror("Scatra discretization has illegal number of dofsets!");
 
       // allow TRANSPORT conditions, too
+      // NOTE: we can not use the conditions given by 'conditions_to_copy = clonestrategy.ConditionsToCopy()'
+      // since we than may have some scatra condition twice. So we only copy the Dirichlet and Neumann conditions:
       std::map<std::string,std::string> conditions_to_copy;
-      SCATRA::ScatraFluidCloneStrategy clonestrategy;
-      conditions_to_copy = clonestrategy.ConditionsToCopy();
+      conditions_to_copy.insert(std::pair<std::string,std::string>("TransportDirichlet","Dirichlet"));
+      conditions_to_copy.insert(std::pair<std::string,std::string>("TransportPointNeumann","PointNeumann"));
+      conditions_to_copy.insert(std::pair<std::string,std::string>("TransportLineNeumann","LineNeumann"));
+      conditions_to_copy.insert(std::pair<std::string,std::string>("TransportSurfaceNeumann","SurfaceNeumann"));
+      conditions_to_copy.insert(std::pair<std::string,std::string>("TransportVolumeNeumann","VolumeNeumann"));
+
       DRT::UTILS::DiscretizationCreatorBase creator;
       creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
 
