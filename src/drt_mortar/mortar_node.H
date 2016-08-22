@@ -554,7 +554,7 @@ public:
    contact specific quantities/information are stored.
 
    */
-  inline MORTAR::MortarNodeDataContainer& MoData()
+  inline MORTAR::MortarNodeDataContainer& MoData() const
   {
     if (modata_ == Teuchos::null)
       dserror("No mortar data attached.");

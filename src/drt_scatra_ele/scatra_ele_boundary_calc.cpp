@@ -14,11 +14,6 @@
 </pre>
  */
 /*----------------------------------------------------------------------*/
-
-// general Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is off
-// the shifted version of Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is on
-// define-flag PERCENT: how much is the curve shifted
-
 #include "scatra_ele_boundary_calc.H"
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"

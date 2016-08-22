@@ -185,7 +185,7 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
 {
-  if(mortartype_ == INPAR::S2I::mortar_saddlepoint_petrov or mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov)
+  if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov or couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
@@ -199,7 +199,7 @@ void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalcElch<distypeS,distypeM>* SCATRA::MortarCellCalcElch<distypeS,distypeM>::Instance(
-    const INPAR::S2I::MortarType&       mortartype,             //!< flag for meshtying method
+    const INPAR::S2I::CouplingType&     couplingtype,           //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
     const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
     const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
@@ -211,7 +211,7 @@ SCATRA::MortarCellCalcElch<distypeS,distypeM>* SCATRA::MortarCellCalcElch<distyp
   if(create)
   {
     if(instance == NULL)
-      instance = new MortarCellCalcElch<distypeS,distypeM>(mortartype,lmside,numdofpernode_slave,numdofpernode_master);
+      instance = new MortarCellCalcElch<distypeS,distypeM>(couplingtype,lmside,numdofpernode_slave,numdofpernode_master);
   }
 
   else if(instance != NULL)
@@ -231,7 +231,7 @@ template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationT
 void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
 {
   // delete singleton
-  Instance(INPAR::S2I::mortar_undefined,INPAR::S2I::side_undefined,0,0,false);
+  Instance(INPAR::S2I::coupling_undefined,INPAR::S2I::side_undefined,0,0,false);
 
   return;
 }
@@ -242,12 +242,12 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalcElch<distypeS,distypeM>::MortarCellCalcElch(
-    const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+    const INPAR::S2I::CouplingType&     couplingtype,          //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
     const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
     const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
     ) :
-    my::MortarCellCalc(mortartype,lmside,numdofpernode_slave,numdofpernode_master)
+    my::MortarCellCalc(couplingtype,lmside,numdofpernode_slave,numdofpernode_master)
 {
   return;
 }
@@ -318,6 +318,70 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
         r_m
         );
   }
+
+  return;
+}
+
+
+/*--------------------------------------------------------------------------------------------------------*
+ | evaluate and assemble interface linearizations and residuals for node-to-segment coupling   fang 08/16 |
+ *--------------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateConditionNTS(
+    DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
+    const MORTAR::MortarNode&                                slavenode,       //!< slave-side node
+    const double&                                            lumpedarea,      //!< lumped interface area fraction associated with slave-side node
+    MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
+    const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
+    Epetra_SerialDenseMatrix&                                k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&                                k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseMatrix&                                k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&                                k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseVector&                                r_s,             //!< slave-side residual vector
+    Epetra_SerialDenseVector&                                r_m              //!< master-side residual vector
+    )
+{
+  // safety checks
+  if(my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
+    dserror("Invalid number of degrees of freedom per node!");
+  if(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() != INPAR::ELCH::equpot_divi)
+    dserror("Invalid closing equation for electric potential!");
+
+  // access material of slave element
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition.Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  if(matelectrode == Teuchos::null)
+    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+  // evaluate shape functions at position of slave-side node
+  my::EvalShapeFuncAtSlaveNode(slavenode,slaveelement,masterelement);
+
+  // overall integration factors
+  const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac()*lumpedarea;
+  const double timefacrhsfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs()*lumpedarea;
+  if(timefacfac < 0. or timefacrhsfac < 0.)
+    dserror("Integration factor is negative!");
+
+  DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(
+      condition,
+      matelectrode,
+      ephinp_slave,
+      ephinp_master,
+      my::funct_slave_,
+      my::funct_master_,
+      my::funct_slave_,
+      my::funct_master_,
+      timefacfac,
+      timefacrhsfac,
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+      k_ss,
+      k_sm,
+      k_ms,
+      k_mm,
+      r_s,
+      r_m
+      );
 
   return;
 }

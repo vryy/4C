@@ -83,7 +83,7 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
 
     //! singleton access method
     static MortarCellCalcElch<distypeS,distypeM>* Instance(
-        const INPAR::S2I::MortarType&       mortartype,             //!< flag for meshtying method
+        const INPAR::S2I::CouplingType&     couplingtype,           //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
         const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
@@ -100,7 +100,7 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
 
     //! private constructor for singletons
     MortarCellCalcElch(
-        const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+        const INPAR::S2I::CouplingType&     couplingtype,          //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
         const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
@@ -113,6 +113,23 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
     void EvaluateCondition(
         DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
         MORTAR::IntCell&                                         cell,            //!< mortar integration cell
+        MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
+        const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
+        const std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
+        Epetra_SerialDenseMatrix&                                k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+        Epetra_SerialDenseMatrix&                                k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+        Epetra_SerialDenseMatrix&                                k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+        Epetra_SerialDenseMatrix&                                k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+        Epetra_SerialDenseVector&                                r_s,             //!< slave-side residual vector
+        Epetra_SerialDenseVector&                                r_m              //!< master-side residual vector
+        );
+
+    //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
+    void EvaluateConditionNTS(
+        DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
+        const MORTAR::MortarNode&                                slavenode,       //!< slave-side node
+        const double&                                            lumpedarea,      //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
         MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
         const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes

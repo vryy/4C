@@ -2408,7 +2408,7 @@ void MORTAR::MortarInterface::EvaluateSTL()
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                           popp 10/11|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::EvaluateNodalNormals()
+void MORTAR::MortarInterface::EvaluateNodalNormals() const
 {
   // loop over proc's slave nodes of the interface
   // use row map and export to column map later
@@ -2516,7 +2516,7 @@ void MORTAR::MortarInterface::PostEvaluate(const int step, const int iter)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::FindMEles(
     MortarNode& mrtrnode,
-    std::vector<MortarElement*>& meles)
+    std::vector<MortarElement*>& meles) const
 {
   // clear vector
   meles.clear();

@@ -1256,17 +1256,22 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
     // Newton iteration unconverged
     if (conv > MORTARCONVTOL)
     {
-      std::cout << "res= " << conv << std::endl;
-      dserror("ERROR: ProjectGaussPointAuxn3D: Newton unconverged for GP"
-          "at xi = (%f,%f,%f) onto MortarElementID %i", globgp[0], globgp[1],
-          globgp[2], ele.Id());
+//      std::cout << "res= " << conv << std::endl;
+//      dserror("ERROR: ProjectGaussPointAuxn3D: Newton unconverged for GP"
+//          "at xi = (%f,%f,%f) onto MortarElementID %i", globgp[0], globgp[1],
+//          globgp[2], ele.Id());
+      xi[0] = 1e12;
+      xi[1] = 1e12;
     }
 
-
     // Newton iteration converged
-    xi[0] = eta[0];
-    xi[1] = eta[1];
-    par   = alpha;
+    else
+    {
+      xi[0] = eta[0];
+      xi[1] = eta[1];
+    }
+
+    par = alpha;
     //std::cout << "Newton iteration converged in " << k << " steps!" << std::endl;
   }
 

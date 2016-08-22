@@ -48,7 +48,7 @@ INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
-MORTARTYPE                      NoMortar
+COUPLINGTYPE                    NoMortar
 MATRIXTYPE                      block_condition_dof
 EQUILIBRATION                   rows
 --------------------------------------------------------------------SOLVER 1

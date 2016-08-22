@@ -4,8 +4,10 @@
 
 \brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -38,16 +40,17 @@ namespace INPAR
       side_master
     };
 
-    //! type of mortar meshtying
-    enum MortarType
+    //! type of mesh coupling
+    enum CouplingType
     {
-      mortar_undefined,
-      mortar_none,
-      mortar_standard,
-      mortar_saddlepoint_petrov,
-      mortar_saddlepoint_bubnov,
-      mortar_condensed_petrov,
-      mortar_condensed_bubnov
+      coupling_undefined,
+      coupling_matching_nodes,
+      coupling_mortar_standard,
+      coupling_mortar_saddlepoint_petrov,
+      coupling_mortar_saddlepoint_bubnov,
+      coupling_mortar_condensed_petrov,
+      coupling_mortar_condensed_bubnov,
+      coupling_nts_standard
     };
 
     //! models for interface kinetics
@@ -79,8 +82,10 @@ namespace INPAR
     //! actions for mortar cell evaluation
     enum EvaluationActions
     {
+      evaluate_condition,
+      evaluate_condition_nts,
       evaluate_mortar_matrices,
-      evaluate_condition
+      evaluate_nodal_area_fractions
     };
 
     //! set valid parameters for scatra-scatra interface coupling

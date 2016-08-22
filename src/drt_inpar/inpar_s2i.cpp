@@ -4,8 +4,10 @@
 
 \brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -55,7 +57,7 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // type of mortar meshtying
   setStringToIntegralParameter<int>(
-      "MORTARTYPE",
+      "COUPLINGTYPE",
       "Undefined",
       "type of mortar meshtying",
       tuple<std::string>(
@@ -65,16 +67,18 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "SaddlePointMortar_Petrov",
           "SaddlePointMortar_Bubnov",
           "CondensedMortar_Petrov",
-          "CondensedMortar_Bubnov"
+          "CondensedMortar_Bubnov",
+          "StandardNodeToSegment"
           ),
       tuple<int>(
-          mortar_undefined,
-          mortar_none,
-          mortar_standard,
-          mortar_saddlepoint_petrov,
-          mortar_saddlepoint_bubnov,
-          mortar_condensed_petrov,
-          mortar_condensed_bubnov
+          coupling_undefined,
+          coupling_matching_nodes,
+          coupling_mortar_standard,
+          coupling_mortar_saddlepoint_petrov,
+          coupling_mortar_saddlepoint_bubnov,
+          coupling_mortar_condensed_petrov,
+          coupling_mortar_condensed_bubnov,
+          coupling_nts_standard
           ),
       &s2icoupling
       );
@@ -117,6 +121,9 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // flag for evaluation of interface linearizations and residuals on slave side only
   BoolParameter("SLAVEONLY","No","flag for evaluation of interface linearizations and residuals on slave side only",&s2icoupling);
+
+  // node-to-segment projection tolerance
+  DoubleParameter("NTSPROJTOL",0.0,"node-to-segment projection tolerance",&s2icoupling);
 }
 
 

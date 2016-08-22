@@ -253,17 +253,17 @@ public:
   /*!
   \brief Get type of search algorithm
   */
-  virtual INPAR::MORTAR::SearchAlgorithm SearchAlg() { return searchalgo_; };
+  virtual INPAR::MORTAR::SearchAlgorithm SearchAlg() const { return searchalgo_; };
 
   /*!
   \brief Get search algorithm parameter
   */
-  virtual double SearchParam() { return searchparam_; };
+  virtual double SearchParam() const { return searchparam_; };
 
   /*!
   \brief bool whether auxiliary position is used when computing dops
   */
-  virtual bool SearchUseAuxPos() { return searchuseauxpos_; };
+  virtual bool SearchUseAuxPos() const { return searchuseauxpos_; };
 
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
@@ -650,7 +650,7 @@ public:
   \brief Evaluate nodal normals
 
   */
-  virtual void EvaluateNodalNormals();
+  virtual void EvaluateNodalNormals() const;
 
   /*!
   \brief Evaluate nodal normals
@@ -726,6 +726,26 @@ public:
   \brief Ghost underlying volume elements
   */
   void CreateVolumeGhosting(DRT::Discretization& idiscret,bool onlyslave);
+
+  /*!
+  \brief Binary tree search algorithm for potentially coupling
+         slave / master pairs (element-based algorithm)
+  */
+  virtual bool EvaluateSearchBinarytree();
+
+  /*!
+  \brief Brute force search algorithm for potentially coupling
+         slave / master pairs (element-based algorithm)
+  */
+  virtual void EvaluateSearchBruteForce(const double& eps);
+
+  /*!
+  \brief find meles for one snode
+  */
+  virtual void FindMEles(
+      MortarNode& mrtrnode,
+      std::vector<MortarElement*>& meles) const;
+
   /*!
   \brief return integration time for current interface
   */
@@ -786,20 +806,6 @@ protected:
   virtual void EvaluateSTL();
 
   /*!
-  \brief Binary tree search algorithm for potentially coupling
-         slave / master pairs (element-based algorithm)
-
-  */
-  virtual bool EvaluateSearchBinarytree();
-
-  /*!
-  \brief Brute force search algorithm for potentially coupling
-         slave / master pairs (element-based algorithm)
-
-  */
-  virtual void EvaluateSearchBruteForce(const double& eps);
-
-  /*!
   \brief Export nodal normals
 
   This method exports / communicates the nodal normal vector from row to
@@ -833,14 +839,6 @@ protected:
 
   */
   virtual void PostEvaluate(const int step=0, const int iter=0);
-
-  /*!
-  \brief find meles for one snode
-
-  */
-  virtual void FindMEles(
-      MortarNode& mrtrnode,
-      std::vector<MortarElement*>& meles);
 
   /*!
   \brief find master nodes for one snode

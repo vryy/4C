@@ -325,7 +325,7 @@ public:
    \brief Evaluate nodal normals
 
    */
-   virtual void EvaluateNodalNormals();
+   virtual void EvaluateNodalNormals() const;
 
 
    /*!

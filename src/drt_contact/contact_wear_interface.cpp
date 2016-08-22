@@ -945,7 +945,7 @@ void WEAR::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgloba
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                          farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::EvaluateNodalNormals()
+void WEAR::WearInterface::EvaluateNodalNormals() const
 {
   // call mortar function
   MORTAR::MortarInterface::EvaluateNodalNormals();

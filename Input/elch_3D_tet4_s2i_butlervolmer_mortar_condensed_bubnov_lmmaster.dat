@@ -15,7 +15,7 @@ Test case for electrode-electrolyte interface coupling:
   constant initial lithium concentrations and electric potentials
 - charge transfer kinetics characterized by Butler-Volmer equation
 - discharge from fully charged state at C rate of 10
-- 1560 tet4 elements with non-matching interface nodes
+- 1276 tet4 elements with non-matching interface nodes
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1276
 //NODES       421
@@ -39,7 +39,7 @@ INITPOTCALC                     yes
 DIFFCOND_FORMULATION            yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
-MORTARTYPE                      CondensedMortar_Bubnov
+COUPLINGTYPE                    CondensedMortar_Bubnov
 LMSIDE                          master
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 no
