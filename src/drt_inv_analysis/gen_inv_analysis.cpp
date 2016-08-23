@@ -2013,7 +2013,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
-            j = j+2;
+            j = j+3;
             break;
           }
           case INPAR::MAT::mes_isoexpopow:
@@ -2272,7 +2272,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
-            j = j+2;
+            j = j+3;
             break;
           }
           case INPAR::MAT::mes_isoexpopow:
