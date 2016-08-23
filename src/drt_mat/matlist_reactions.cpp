@@ -35,10 +35,12 @@ MAT::PAR::MatListReactions::MatListReactions(
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_->size())
+
+
       dserror("number of materials %d does not fit to size of material vector %d", nummat_, reacids_->size());
 
-    if (numreac_< 1)
-      dserror("if you don't have reactions, use MAT_matlist instead of MAT_matlist_reactions!");
+  if (numreac_< 1)
+    dserror("if you don't have reactions, use MAT_matlist instead of MAT_matlist_reactions!");
 
   if (not local_)
   {

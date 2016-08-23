@@ -159,6 +159,19 @@ private:
     /// return number of scalars for this reaction
     int NumScal() const { return params_->numscal_; }
 
+    double CalcPermInfluence(
+        const int k,                         //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
+        ) const;
+
+    double CalcPermInfluenceDeriv(
+        const int k,                         //!< current scalar id
+        const int toderive,                  //!< current id to derive to
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
+        ) const;
+
   protected:
 
     /// return reaction coefficient
@@ -181,66 +194,69 @@ private:
 
     /// Calculate K(c)
     double CalcReaCoeff(
-        const int k,
-        const std::vector<double>& phinp,
-        const double scale
+        const int k,                         //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
     /// calculate \frac{partial}{\partial c} K(c)
     double CalcReaCoeffDerivMatrix(
-        const int k,
-        const int j,
-        const std::vector<double>& phinp,
-        const double scale
+        const int k,                         //!< current scalar id
+        const int toderive,                  //!< current id to derive to
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
     /// Calculate f(c)
     double CalcReaBodyForceTerm(
-        const int k,
-        const std::vector<double>& phinp,
-        const double scale
+        const int k,                         //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
     /// calculate \frac{partial}{\partial c} f(c)
     double CalcReaBodyForceDerivMatrix(
-        const int k,
-        const int j,
-        const std::vector<double>& phinp,
-        const double scale
+        const int k,                         //!< current scalar id
+        const int toderive,                  //!< current id to derive to
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
   private:
 
     ///helper for calculating K(c)
     double CalcReaCoeffFac(
-        const int k,
-        const std::vector<double>& phinp,
+        const int k,                         //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
         const double reacstart,              //!<reaction start coefficient
-        const double scale
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
     ///helper for calculating \frac{partial}{\partial c} K(c)
     double CalcReaCoeffDerivFac(
-        const int k,
-        const int toderive,
-        const std::vector<double>& phinp,
+        const int k,                         //!< current scalar id
+        const int toderive,                  //!< current id to derive to
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
         const double reacstart,              //!<reaction start coefficient
-        const double scale
+        const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
     ///helper for calculating f(c)
     double CalcReaBodyForceTermFac(
-        const int k,
-        const std::vector<double>& phinp,
+        const int k,                         //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
         const double reacstart,              //!<reaction start coefficient
-        const double scale ) const;
+        const double scale                   //!< scaling factor for reference concentrations ) const;
+        ) const;
 
     ///helper for calculating calculate \frac{partial}{\partial c} f(c)
     double CalcReaBodyForceDerivFac(
-        const int k, const int toderive,
-        const std::vector<double>& phinp,
+        const int k,                         //!< current scalar id
+        const int toderive,                  //!< current id to derive to
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
         const double reacstart,              //!<reaction start coefficient
-        const double scale ) const;
+        const double scale                   //!< scaling factor for reference concentrations ) const;
+        ) const;
 
   protected:
 
