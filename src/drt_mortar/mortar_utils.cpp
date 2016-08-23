@@ -3,12 +3,9 @@
 
 \brief A set of utility functions for mortar methods
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Alexander Popp
 
 *----------------------------------------------------------------------*/
 
@@ -384,6 +381,7 @@ int MORTAR::SortConvexHullPoints(bool out,
   std::vector<double> cotangle(0);
   std::vector<double> yvalues(0);
   std::vector<int> sorted(0);
+  std::vector<int> onxline(0);
 
   for (int i=0;i<np;++i)
   {
@@ -395,18 +393,60 @@ int MORTAR::SortConvexHullPoints(bool out,
     double ydiff = transformed(1,i) - startpoint[1];
 
     if (xdiff < 0) dserror("ERROR: Found point with x < x_start for convex hull!");
-    if (xdiff < tol) xdiff=tol;
-
-    cotangle.push_back(ydiff/xdiff);
-    sorted.push_back(i);
+    if (xdiff >= tol)
+    {
+      cotangle.push_back(ydiff/xdiff);
+      sorted.push_back(i);
+    }
+    else
+    {
+      // these points need further investigation
+      onxline.push_back(i);
+    }
   }
+
+  // check points on x-line with starting point and only add
+  // those with min and max value in y-direction
+  {
+    double y_max = std::numeric_limits<double>::min();
+    double y_min = std::numeric_limits<double>::max();
+    int i_max=-1;
+    int i_min=-1;
+    for (size_t i=0;i<onxline.size();++i)
+    {
+      const double yval = transformed(1,onxline[i]) - startpoint[1];
+      if(yval < y_min && yval < 0.0)
+      {
+        y_min = yval;
+        i_min = onxline[i];
+      }
+      else if(yval > y_max && yval > 0.0)
+      {
+        y_max = yval;
+        i_max = onxline[i];
+      }
+    }
+    if(i_max>-1)
+    {
+      cotangle.push_back(std::numeric_limits<double>::max());
+      sorted.push_back(i_max);
+    }
+    if(i_min>-1)
+    {
+      cotangle.push_back(-std::numeric_limits<double>::max());
+      sorted.push_back(i_min);
+    }
+  }
+
+  // start index not yet included
+  np = (int)sorted.size()+1;
 
   if (out)
   {
     std::cout << "Unsorted convex hull:\n";
     std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << std::endl;
     for (int i=0;i<np-1;++i)
-      std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << std::endl;
+      std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[i] << std::endl;
   }
 
   // check if sizes are correct
@@ -438,7 +478,7 @@ int MORTAR::SortConvexHullPoints(bool out,
     std::cout << "Sorted convex hull:\n";
     std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << std::endl;
     for (int i=0;i<np-1;++i)
-      std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << std::endl;
+      std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[i] << std::endl;
   }
 
   // (3) Go through sorted list of points
@@ -450,7 +490,7 @@ int MORTAR::SortConvexHullPoints(bool out,
   respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
 
   // number of points removed from convex hull
-  int removed = 0;
+  int removed = (int)collconvexhull.size() - np;
 
   // go through sorted list and check for clockwise rotation
   std::vector<bool> haveremovedthis(np-1);
