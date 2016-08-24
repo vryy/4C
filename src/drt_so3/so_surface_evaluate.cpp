@@ -25,6 +25,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_constraint/springdashpot_new.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_immersed_problem/immersed_base.H"
@@ -34,6 +35,7 @@
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
+using UTILS::SpringDashpotNew;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -335,7 +337,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
           if (functnum>0)
           {
             //Calculate reference position of GP
-            gp_coord.Multiply('T','N',1.0,funct,x,0.0);;
+            gp_coord.Multiply('T','N',1.0,funct,x,0.0);
             // write coordinates in another datatype
             double gp_coord2[numdim];
             for(int i=0;i<numdim;i++)
@@ -702,6 +704,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_fluid_traction")          act = StructuralSurface::calc_fluid_traction;
   else if (action=="calc_ecm_traction")            act = StructuralSurface::calc_ecm_traction;
   else if (action=="mark_immersed_elements")       act = StructuralSurface::mark_immersed_elements;
+  else if (action=="calc_struct_robinforcestiff")  act = StructuralSurface::calc_struct_robinforcestiff;
   else
   {
     std::cout << action << std::endl;
@@ -2357,12 +2360,271 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
   }
   break;
+
+  // a surface element routine that calculates the force and stiff contributions of a structural
+  // Robin boundary condition (a spring and/or dashpot per unit reference area) - mhv 08/2016
+  case calc_struct_robinforcestiff:
+  {
+
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> velonp = discretization.GetState("velocity");
+
+    // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
+    const double time_fac = params.get("time_fac",0.0);
+
+    const std::vector<int>*    onoff         = params.get<const std::vector<int>* >   ("onoff");
+    const std::vector<double>* springstiff   = params.get<const std::vector<double>* >("springstiff");
+    const std::vector<double>* dashpotvisc   = params.get<const std::vector<double>* >("dashpotvisc");
+    const std::vector<double>* disploffset   = params.get<const std::vector<double>* >("disploffset");
+
+    // type of Robin conditions
+    enum RobinType
+    {
+      none,
+      xyz,
+      refsurfnormal,
+      cursurfnormal
+    };
+
+    RobinType rtype = none;
+
+    // get type of Robin condition
+    const std::string* direction = params.get<const std::string*>("direction");
+    if (*direction == "xyz")
+      rtype = xyz;
+    else if (*direction == "refsurfnormal")
+      rtype = refsurfnormal;
+    else if (*direction == "cursurfnormal")
+      rtype = cursurfnormal;
+    else
+      dserror("Unknown type of Robin condition");
+
+
+    // element geometry update
+    const int numdim = 3;
+    const int numnode = NumNode();
+
+    const int numdf   = NumDofPerNode(*Nodes()[0]);
+    LINALG::SerialDenseMatrix x(numnode,numdim);
+
+    std::vector<double> mydisp(lm.size());
+    std::vector<double> myvelo(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
+    DRT::UTILS::ExtractMyValues(*velonp,myvelo,lm);
+
+    // set material configuration
+    MaterialConfiguration(x);
+
+    // --------------------------------------------------
+    // Now do the nurbs specific stuff
+    bool nurbsele=false;
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    if(nurbsdis!=NULL) nurbsele=true;
+
+    // knot vectors for parent volume and this surface
+    std::vector<Epetra_SerialDenseVector> mypknots(3);
+    std::vector<Epetra_SerialDenseVector> myknots (2);
+
+    // NURBS control point weights for all nodes, ie. CPs
+    Epetra_SerialDenseVector weights(numnode);
+
+    if(nurbsele)
+    {
+      // --------------------------------------------------
+      // get node weights for nurbs elements
+      for (int inode=0; inode<numnode; inode++)
+      {
+       DRT::NURBS::ControlPoint* cp =
+         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+       weights(inode) = cp->W();
+      }
+    }
+    // --------------------------------------------------
+
+
+    std::vector<double> mydisp_refnormal(lm.size());
+    std::vector<double> myvelo_refnormal(lm.size());
+    Epetra_SerialDenseMatrix N_otimes_N;
+    N_otimes_N.Shape(lm.size(),lm.size());
+
+    if (rtype == refsurfnormal)
+    {
+      std::vector<double> dummy(lm.size()); // dummy vector - we only want the reference normals!
+      BuildNormalsAtNodes(elevector2,dummy,true);
+
+      // norm of nodal subvectors of element normal vector
+      Epetra_SerialDenseVector norm_refnormal_sq;
+      norm_refnormal_sq.Size(numnode);
+      for (int node=0; node<numnode; ++node)
+        for (int dim=0; dim<numdim; dim++)
+          norm_refnormal_sq[node] += elevector2[node*numdf+dim] * elevector2[node*numdf+dim];
+
+      // normalize nodal subvectors of element normal vector
+      for (int node=0; node<numnode; ++node)
+        for (int dim=0; dim<numdim; dim++)
+          elevector2[node*numdf+dim] /= sqrt(norm_refnormal_sq[node]);
+
+      // build nodal N \otimes N matrix
+      for (int node=0; node<numnode; ++node)
+        for (int dim1=0; dim1<numdf; dim1++)
+          for (int dim2=0; dim2<numdf; dim2++)
+            N_otimes_N(node*numdf+dim1,node*numdf+dim2) = elevector2[node*numdf+dim1]*elevector2[node*numdf+dim2];
+
+      // (N \otimes N) disp, (N \otimes N) velo
+      for (int node=0; node<numnode; ++node)
+        for (int dim1=0; dim1<numdim; dim1++)
+          for (int dim2=0; dim2<numdim; dim2++)
+          {
+            mydisp_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * mydisp[node*numdf+dim2];
+            myvelo_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * myvelo[node*numdf+dim2];
+          }
+
+    }
+
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::SerialDenseVector  funct(numnode);
+    LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+
+    /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+    for (int gp=0; gp<intpoints.nquad; gp++)
+    {
+      // set gausspoints from integration rule
+      Epetra_SerialDenseVector e(2);
+      e(0) = intpoints.qxg[gp][0];
+      e(1) = intpoints.qxg[gp][1];
+
+      // get shape functions and derivatives in the plane of the element
+      if(!nurbsele)
+      {
+       DRT::UTILS::shape_function_2D(funct,e(0),e(1),Shape());
+       DRT::UTILS::shape_function_2D_deriv1(deriv,e(0),e(1),Shape());
+      }
+      else
+      {
+       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+         (funct,deriv,e,myknots,weights,nurbs9);
+      }
+
+      //check for correct input
+      for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
+      {
+       if ((*onoff)[checkdof] != 0)
+         dserror("Number of dimensions in Robin evaluation is 3. Further DoFs are not considered.");
+      }
+
+      LINALG::SerialDenseMatrix dxyzdrs(2,3);
+      dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+      LINALG::SerialDenseMatrix  metrictensor(2,2);
+      metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+      const double detA = sqrt( metrictensor(0,0)*metrictensor(1,1)
+                               -metrictensor(0,1)*metrictensor(1,0));
+
+      switch(rtype)
+      {
+      case xyz:
+      {
+        for (int dim=0; dim<numdim; dim++)
+        {
+          if ((*onoff)[dim]) // is this dof activated?
+          {
+            const double fac_d = intpoints.qwgt[gp] * detA * (*springstiff)[dim];
+            const double fac_v = intpoints.qwgt[gp] * detA * (*dashpotvisc)[dim];
+
+            // displacement and velocity at Gauss point
+            double dispnp_gp = 0.;
+            double velonp_gp = 0.;
+            for (int node=0; node<numnode; ++node)
+            {
+              dispnp_gp += funct[node] * mydisp[node*numdf+dim];
+              velonp_gp += funct[node] * myvelo[node*numdf+dim];
+            }
+
+            for (int node=0; node<numnode; ++node)
+              elevector1[node*numdf+dim] +=
+                  funct[node] * (fac_d * (dispnp_gp-(*disploffset)[dim]) + fac_v * velonp_gp);
+          }
+        }
+
+        for (int dim=0 ; dim<numdim; dim++)
+          if ((*onoff)[dim]) // is this dof activated?
+          {
+            const double fac_d = intpoints.qwgt[gp] * detA * (*springstiff)[dim];
+            const double fac_v = intpoints.qwgt[gp] * detA * (*dashpotvisc)[dim];
+            for (int node1=0; node1<numnode; ++node1)
+              for (int node2=0; node2<numnode; ++node2)
+                (elematrix1)(node1*numdf+dim,node2*numdf+dim) +=
+                    funct[node1]*funct[node2] * (fac_d + fac_v * time_fac);
+          }
+
+      }
+      break;
+
+      case refsurfnormal:
+      {
+        if ((*onoff)[0] != 1) dserror("refsurfnormal Robin condition on 1st dof only!");
+          for (int checkdof = 1; checkdof < 3; ++checkdof)
+            if ((*onoff)[checkdof] != 0) dserror("refsurfnormal Robin condition on 1st dof only!");
+
+        const double ref_stiff = (*springstiff)[0];
+        const double ref_visco = (*dashpotvisc)[0];
+        const double ref_disploff = (*disploffset)[0];
+
+        const double fac_d = intpoints.qwgt[gp] * detA * ref_stiff;
+        const double fac_v = intpoints.qwgt[gp] * detA * ref_visco;
+
+        for (int dim=0; dim<numdim; dim++)
+        {
+          // displacement and velocity in normal direction at Gauss point
+          double dispnp_refnormal_gp = 0.;
+          double velonp_refnormal_gp = 0.;
+          for (int node=0; node<numnode; ++node)
+          {
+            dispnp_refnormal_gp += funct[node] * mydisp_refnormal[node*numdf+dim];
+            velonp_refnormal_gp += funct[node] * myvelo_refnormal[node*numdf+dim];
+          }
+
+          for (int node=0; node<numnode; ++node)
+            elevector1[node*numdf+dim] +=
+                funct[node] * (fac_d * (dispnp_refnormal_gp-ref_disploff) + fac_v * velonp_refnormal_gp);
+        }
+
+        for (int dim1=0 ; dim1<numdim; dim1++)
+          for (int dim2=0 ; dim2<numdim; dim2++)
+            for (int node1=0; node1<numnode; ++node1)
+              for (int node2=0; node2<numnode; ++node2)
+                (elematrix1)(node1*numdf+dim1,node2*numdf+dim2) +=
+                    funct[node1]*funct[node2] * (fac_d + fac_v * time_fac) * N_otimes_N(node2*numdf+dim1,node2*numdf+dim2);
+
+      }
+      break;
+
+      case cursurfnormal:
+      {
+        dserror("cursurfnormal option not (yet) implemented in calc_struct_robinforcestiff routine!");
+      }
+      break;
+
+      default:
+        dserror("Unknown type of Robin direction");
+        break;
+      }
+    }
+  }
+  break;
+
   default:
     dserror("Unimplemented type of action for StructuralSurface");
     break;
   }
   return 0;
-  }
+}
 
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*

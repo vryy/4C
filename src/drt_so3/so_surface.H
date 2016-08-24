@@ -251,6 +251,7 @@ public: // changed to public rauch 05/2014
     calc_ecm_traction,
     calc_cur_normal_at_point,
     mark_immersed_elements,
+    calc_struct_robinforcestiff,
     calc_cell_growth
   };
 
