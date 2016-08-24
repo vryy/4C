@@ -56,7 +56,6 @@
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/springdashpot_manager.H"
-#include "../drt_constraint/springdashpot.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_patspec/patspec.H"
