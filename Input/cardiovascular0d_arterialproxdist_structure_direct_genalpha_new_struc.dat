@@ -59,7 +59,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
-DAMPING                         Rayleigh
+DAMPING                         No//Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
@@ -155,7 +155,7 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 6.49023400966116770e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 1.15903819905348904e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -183,11 +183,8 @@ DSURF                           2
 E 8 - coupling_id 0
 E 9 - coupling_id 1
 ---------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
-DSURF                           4
-E 4 - SPRING_STIFF_TENS 0.1 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.005 DIRECTION refsurfnormal COUPLING none
-E 5 - SPRING_STIFF_TENS 0.0 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 10 - SPRING_STIFF_TENS 0.0 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 11 - SPRING_STIFF_TENS 0.0 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
+DSURF                           1
+E 4 - SPRING_STIFF_TENS 0.075 SPRING_STIFF_COMP 0.075 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.005 DIRECTION refsurfnormal COUPLING none
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
