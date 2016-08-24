@@ -35,7 +35,6 @@
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
-using UTILS::SpringDashpotNew;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -2368,6 +2367,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
     Teuchos::RCP<const Epetra_Vector> velonp = discretization.GetState("velocity");
+    Teuchos::RCP<const Epetra_Vector> offset_prestress = discretization.GetState("offset_prestress");
 
     // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
     const double time_fac = params.get("time_fac",0.0);
@@ -2409,8 +2409,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     std::vector<double> mydisp(lm.size());
     std::vector<double> myvelo(lm.size());
+    std::vector<double> myoffprestr(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
     DRT::UTILS::ExtractMyValues(*velonp,myvelo,lm);
+    DRT::UTILS::ExtractMyValues(*offset_prestress,myoffprestr,lm);
 
     // set material configuration
     MaterialConfiguration(x);
@@ -2447,6 +2449,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     std::vector<double> mydisp_refnormal(lm.size());
     std::vector<double> myvelo_refnormal(lm.size());
+    std::vector<double> myoffprestr_refnormal(lm.size());
     Epetra_SerialDenseMatrix N_otimes_N;
     N_otimes_N.Shape(lm.size(),lm.size());
 
@@ -2480,6 +2483,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           {
             mydisp_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * mydisp[node*numdf+dim2];
             myvelo_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * myvelo[node*numdf+dim2];
+            myoffprestr_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * myoffprestr[node*numdf+dim2];
           }
 
     }
@@ -2487,7 +2491,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     // allocate vector for shape functions and matrix for derivatives
     LINALG::SerialDenseVector  funct(numnode);
     LINALG::SerialDenseMatrix  deriv(2,numnode);
-
 
     /*----------------------------------------------------------------------*
     |               start loop over integration points                     |
@@ -2540,15 +2543,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
             // displacement and velocity at Gauss point
             double dispnp_gp = 0.;
             double velonp_gp = 0.;
+            double offprestrn_gp = 0.;
             for (int node=0; node<numnode; ++node)
             {
               dispnp_gp += funct[node] * mydisp[node*numdf+dim];
               velonp_gp += funct[node] * myvelo[node*numdf+dim];
+              offprestrn_gp += funct[node] * myoffprestr[node*numdf+dim];
             }
 
             for (int node=0; node<numnode; ++node)
               elevector1[node*numdf+dim] +=
-                  funct[node] * (fac_d * (dispnp_gp-(*disploffset)[dim]) + fac_v * velonp_gp);
+                  funct[node] * (fac_d * (dispnp_gp-(*disploffset)[dim]+offprestrn_gp) + fac_v * velonp_gp);
           }
         }
 
@@ -2584,15 +2589,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           // displacement and velocity in normal direction at Gauss point
           double dispnp_refnormal_gp = 0.;
           double velonp_refnormal_gp = 0.;
+          double offprestrn_refnormal_gp = 0.;
           for (int node=0; node<numnode; ++node)
           {
             dispnp_refnormal_gp += funct[node] * mydisp_refnormal[node*numdf+dim];
             velonp_refnormal_gp += funct[node] * myvelo_refnormal[node*numdf+dim];
+            offprestrn_refnormal_gp += funct[node] * myoffprestr_refnormal[node*numdf+dim];
           }
 
           for (int node=0; node<numnode; ++node)
             elevector1[node*numdf+dim] +=
-                funct[node] * (fac_d * (dispnp_refnormal_gp-ref_disploff) + fac_v * velonp_refnormal_gp);
+                funct[node] * (fac_d * (dispnp_refnormal_gp-ref_disploff+offprestrn_refnormal_gp) + fac_v * velonp_refnormal_gp);
         }
 
         for (int dim1=0 ; dim1<numdim; dim1++)
