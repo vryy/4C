@@ -324,9 +324,8 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  psprdash.set("scale_gamma", theta_);
-  psprdash.set("scale_beta", theta_*theta_);
-  psprdash.set("time_step_size", (*dt_)[0]);
+  psprdash.set("time_fac", 1./(theta_*(*dt_)[0]));
+  psprdash.set("dt", (*dt_)[0]); // needed only for cursurfnormal option!!
   ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
 
   // apply forces and stiffness due to constraints

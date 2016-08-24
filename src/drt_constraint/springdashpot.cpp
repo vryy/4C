@@ -94,10 +94,8 @@ void UTILS::SpringDashpot::Evaluate(
   springstress_.clear();
 
   // get time integrator properties
-  const double gamma = parlist.get("scale_gamma",0.0);
-  const double beta = parlist.get("scale_beta",1.0);
-  const double dt = parlist.get("time_step_size",1.0);
-  const double time_scale = gamma/(beta*dt);
+  const double time_fac = parlist.get("time_fac",0.0);
+  const double dt = parlist.get("dt",1.0);
 
   if (springtype_ == cursurfnormal)
   {
@@ -150,7 +148,7 @@ void UTILS::SpringDashpot::Evaluate(
           const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
 
           const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
-          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_scale);
+          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_fac);
 
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
@@ -187,7 +185,7 @@ void UTILS::SpringDashpot::Evaluate(
           // stiffness
           for (int m=0; m<numdof; ++m)
           {
-            const double dval = nodalarea*(springstiff + viscosity_*time_scale)*normal[k]*normal[m];
+            const double dval = nodalarea*(springstiff + viscosity_*time_fac)*normal[k]*normal[m];
             stiff->Assemble(dval,dofs[k],dofs[m]);
           }
 
@@ -714,7 +712,7 @@ void UTILS::SpringDashpot::GetCurNormals(Teuchos::RCP<Epetra_Vector> disp,
                                          Teuchos::ParameterList parlist)
 {
   // get current time step size
-  const double dt = parlist.get("time_step_size",1.0);
+  const double dt = parlist.get("dt",1.0);
 
   // reset last newton step (only for curnormal)
   dgap_.clear();

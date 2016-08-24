@@ -410,9 +410,8 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  psprdash.set("scale_gamma", gamma_);
-  psprdash.set("scale_beta", beta_);
-  psprdash.set("time_step_size", (*dt_)[0]);
+  psprdash.set("time_fac", gamma_/(beta_*(*dt_)[0]));
+  psprdash.set("dt", (*dt_)[0]); // needed only for cursurfnormal option!!
   ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
 
   // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
