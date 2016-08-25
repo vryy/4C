@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     // get convective (velocity - mesh displacement) velocity at nodes
     Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, statename.str());
     if(convel == Teuchos::null)
-      dserror("Cannot get state vector %s",statename.str());
+      dserror("Cannot get state vector %s",statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_,my::nen_> >(*convel,efluxnp_[curphase],la[ndsvel].lm_);
