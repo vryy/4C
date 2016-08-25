@@ -114,11 +114,11 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     // get material and stabilization parameters (evaluation at element center)
     //----------------------------------------------------------------------
     // density at t_(n)
-    double densn(1.0);
+    std::vector<double> densn(my::numscal_,1.0);
     // density at t_(n+1) or t_(n+alpha_F)
-    double densnp(1.0);
+    std::vector<double> densnp(my::numscal_,1.0);
     // density at t_(n+alpha_M)
-    double densam(1.0);
+    std::vector<double> densam(my::numscal_,1.0);
 
     // fluid viscosity
     double visc(0.0);
@@ -291,11 +291,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
     // get material and stabilization parameters (evaluation at element center)
     //----------------------------------------------------------------------
     // density at t_(n)
-    double densn(1.0);
+    std::vector<double> densn(my::numscal_,1.0);
     // density at t_(n+1) or t_(n+alpha_F)
-    double densnp(1.0);
+    std::vector<double> densnp(my::numscal_,1.0);
     // density at t_(n+alpha_M)
-    double densam(1.0);
+    std::vector<double> densam(my::numscal_,1.0);
 
     // fluid viscosity
     double visc(0.0);

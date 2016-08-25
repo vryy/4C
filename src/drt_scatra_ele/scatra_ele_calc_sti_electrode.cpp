@@ -82,12 +82,13 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     )
 {
   // density at time t_(n+1) or t_(n+alpha_F)
-  double densnp(0.);
+  std::vector<double> densnp(my::numscal_,0.);
 
   // density at time t_(n+alpha_M)
-  double densam(0.);
+  std::vector<double> densam(my::numscal_,0.);
 
   // dummy variable
+  std::vector<double>  dummyvec(my::numscal_,0.);
   double dummy(0.);
 
   // integration points and weights
@@ -107,19 +108,19 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     SetInternalVariablesForMatAndRHS();
 
     // evaluate material parameters at current integration point
-    GetMaterialParams(ele,dummy,densnp,densam,dummy,iquad);
+    GetMaterialParams(ele,dummyvec,densnp,densam,dummy,iquad);
 
     // matrix and vector contributions arising from mass term
     if(not my::scatraparatimint_->IsStationary())
     {
-      my::CalcMatMass(emat,0,fac,densam);
-      my::CalcRHSLinMass(erhs,0,rhsfac,fac,densam,densnp);
+      my::CalcMatMass(emat,0,fac,densam[0]);
+      my::CalcRHSLinMass(erhs,0,rhsfac,fac,densam[0],densnp[0]);
     }
 
     // vector contributions arising from history value
     // need to adapt history value to time integration scheme first
     double rhsint(0.0);
-    my::ComputeRhsInt(rhsint,densam,densnp,my::scatravarmanager_->Hist(0));
+    my::ComputeRhsInt(rhsint,densam[0],densnp[0],my::scatravarmanager_->Hist(0));
     my::CalcRHSHistAndSource(erhs,0,fac,rhsint);
 
     // matrix and vector contributions arising from diffusion term
@@ -351,7 +352,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
 
     // evaluate material parameters at current integration point
     double dummy(0.);
-    GetMaterialParams(ele,dummy,dummy,dummy,dummy,iquad);
+    std::vector<double> dummyvec(my::numscal_,0.);
+    GetMaterialParams(ele,dummyvec,dummyvec,dummyvec,dummy,iquad);
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals w.r.t. scatra dofs
     mystielch::CalcMatSourceOD(emat,my::scatraparatimint_->TimeFac()*fac);
@@ -547,9 +549,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ExtractElementAndNodeVal
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(
     const DRT::Element*   ele,           //!< current element
-    double&               densn,         //!< density at time t_(n)
-    double&               densnp,        //!< density at time t_(n+1) or t_(n+alpha_F)
-    double&               densam,        //!< density at time t_(n+alpha_M)
+    std::vector<double>&  densn,         //!< density at t_(n)
+    std::vector<double>&  densnp,        //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>&  densam,        //!< density at t_(n+alpha_M)
     double&               visc,          //!< fluid viscosity
     const int             iquad          //!< ID of current integration point
     )
@@ -557,7 +559,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(
   // get parameters of primary, thermal material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
   if(material->MaterialType() == INPAR::MAT::m_soret)
-    MatSoret(material,densn,densnp,densam);
+    MatSoret(material,densn[0],densnp[0],densam[0]);
   else
     dserror("Invalid thermal material!");
 

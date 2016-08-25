@@ -146,9 +146,16 @@ public:
 
   //! set convective velocity field (+ pressure and acceleration field as
   //! well as fine-scale velocity field, if required)
-  virtual void SetVelocityField(
+  void SetVelocityField(
     Teuchos::RCP<const Epetra_Vector>   vel                       //!< velocity vector
     );
+
+  //! set state on discretization
+  void SetState(
+     unsigned nds,
+     const std::string& name,
+     Teuchos::RCP<const Epetra_Vector> state
+  );
 
   //! calculate error compared to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
@@ -243,6 +250,9 @@ public:
 
   //! return saturation field
   Teuchos::RCP<const Epetra_Vector> Saturation() const { return saturation_; }
+
+  //! return phase flux field at time n+1
+  Teuchos::RCP<const Epetra_MultiVector> Flux() const { return flux_; }
 
   //! output mean values of pressure(s)
   //virtual void OutputMeanPressures(const int num=0);

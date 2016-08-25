@@ -936,9 +936,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
     const DRT::Element*   ele,       //!< the element we are dealing with
-    double&               densn,     //!< density at t_(n)
-    double&               densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&               densam,    //!< density at t_(n+alpha_M)
+    std::vector<double>&  densn,     //!< density at t_(n)
+    std::vector<double>&  densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>&  densam,    //!< density at t_(n+alpha_M)
     double&               visc,      //!< fluid viscosity
     const int             iquad      //!< id of current gauss point (default = -1)
   )
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
   }
   else
@@ -997,7 +997,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     std::vector<double>&                        tau,         //!< stabilization parameters (one per transported scalar)
     std::vector<LINALG::Matrix<my::nen_,1> >&   tauderpot,   //!< derivatives of stabilization parameters w.r.t. electric potential
-    const double                                densnp,      //!< density at t_(n+1) or t_(n+alpha_f)
+    const std::vector<double>&                  densnp,      //!< density at t_(n+1) or t_(n+alpha_f)
     const double                                vol          //!< element volume
     )
 {
@@ -1015,10 +1015,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     {
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
-        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp[k],VarManager()->ConVel(),vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp[k],VarManager()->ConVel(),vol);
     }
   }
 
@@ -1048,7 +1048,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
       veleff.Update(myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->MigVelInt(),1.);
 
       // calculate stabilization parameter tau
-      my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,veleff,vol);
+      my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp[k],veleff,vol);
 
       switch(my::scatrapara_->TauDef())
       {
@@ -1056,7 +1056,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
         case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
         {
           // Calculate derivative of tau w.r.t. electric potential
-          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,VarManager()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
+          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp[k],VarManager()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
           break;
         }
         default:

@@ -4,8 +4,10 @@
 
 \brief evaluate heat transport within electrodes on element level
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -147,9 +149,9 @@ namespace DRT
         //! get material parameters
         void GetMaterialParams(
             const DRT::Element*   ele,           //!< current element
-            double&               densn,         //!< density at time t_(n)
-            double&               densnp,        //!< density at time t_(n+1) or t_(n+alpha_F)
-            double&               densam,        //!< density at time t_(n+alpha_M)
+            std::vector<double>&  densn,         //!< density at t_(n)
+            std::vector<double>&  densnp,        //!< density at t_(n+1) or t_(n+alpha_F)
+            std::vector<double>&  densam,        //!< density at t_(n+alpha_M)
             double&               visc,          //!< fluid viscosity
             const int             iquad          //!< ID of current integration point
             );

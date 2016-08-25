@@ -65,7 +65,7 @@ namespace POROMULTIPHASE
     void ReadRestart( int restart );
 
     /// test results (if necessary)
-    void TestResults(const Epetra_Comm& comm);
+    void CreateFieldTest();
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -91,6 +91,27 @@ namespace POROMULTIPHASE
 
     /// set fluid solution on structure field
     void SetSolidPressure( Teuchos::RCP<const Epetra_Vector> phi ) ;
+
+    /// unknown displacements at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> StructDispnp() const;
+
+    /// unknown velocity at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> StructVelnp() const;
+
+    /// return fluid flux
+    Teuchos::RCP<const Epetra_MultiVector> FluidFlux() const;
+
+    /// return fluid solution variable
+    Teuchos::RCP<const Epetra_Vector> FluidPhinp() const;
+
+    /// return fluid solution variable
+    Teuchos::RCP<const Epetra_Vector> FluidSaturation() const;
+
+    /// return fluid solution variable
+    Teuchos::RCP<const Epetra_Vector> FluidPressure() const;
+
+    /// return fluid solution variable
+    Teuchos::RCP<const Epetra_Vector> SolidPressure() const;
 
   private:
 

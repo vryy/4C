@@ -14,9 +14,7 @@
 
 
 #include "poromultiphase_dyn.H"
-
-#include "poromultiphase_partitioned.H"
-#include "poromultiphase_partitioned_twoway.H"
+#include "poromultiphase_base.H"
 
 #include "poromultiphase_utils.H"
 
@@ -72,11 +70,7 @@ void poromultiphase_dyn(int restart)
   // access scatra params list
   const Teuchos::ParameterList& structdyn =  problem->StructuralDynamicParams();
   // access poro fluid dynamic params list
-  const Teuchos::ParameterList& fluiddyn  = DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams();
-
-
-  // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> algo = Teuchos::null;
+  const Teuchos::ParameterList& fluiddyn  = problem->PoroFluidMultiPhaseDynamicParams();
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -85,20 +79,8 @@ void poromultiphase_dyn(int restart)
   INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
     DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(poroparams,"COUPALGO");
 
-  switch(solscheme)
-  {
-  case INPAR::POROMULTIPHASE::solscheme_twoway:
-  {
-    // call constructor
-    algo = Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(
-        comm,
-        poroparams));
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
-  }
+  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> algo =
+      POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme,poroparams,comm);
 
   // initialize
   algo->Init(
@@ -134,7 +116,8 @@ void poromultiphase_dyn(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test if required
-  algo->TestResults(comm);
+  algo->CreateFieldTest();
+  problem->TestAll(comm);
 
   return;
 

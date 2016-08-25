@@ -39,7 +39,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
 }
 
 /*----------------------------------------------------------------------*
- | read restart information for given time step (public)   vuong 08/16  |
+ | initialize algorithm                                    vuong 08/16  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::Init(
     const Teuchos::ParameterList& globaltimeparams,
@@ -116,13 +116,12 @@ void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart( int restart )
 /*----------------------------------------------------------------------*
  | Test the results of all subproblems                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::TestResults(const Epetra_Comm& comm)
+void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(fluid_->CreateFieldTest());
-  problem->TestAll(comm);
 }
 
 /*------------------------------------------------------------------------*
@@ -162,4 +161,60 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetSolidPressure(
 {
   const int nds_solidpressure = fluid_->GetDofSetNumberOfSolidPressure();
   structure_->Discretization()->SetState(nds_solidpressure,"solid_pressure",pressure);
+}
+
+/*------------------------------------------------------------------------*
+ | return structure displacements                             vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::StructDispnp() const
+{
+  return structure_->Dispnp();
+}
+
+/*------------------------------------------------------------------------*
+ | return structure velocities                               vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::StructVelnp() const
+{
+  return structure_->Velnp();
+}
+
+/*------------------------------------------------------------------------*
+ | return fluid Flux                                         vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_MultiVector> POROMULTIPHASE::PoroMultiPhaseBase::FluidFlux() const
+{
+  return fluid_->Flux();
+}
+
+/*------------------------------------------------------------------------*
+ | return fluid Flux                                         vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::FluidPhinp() const
+{
+  return fluid_->Phinp();
+}
+
+/*------------------------------------------------------------------------*
+ | return fluid Flux                                         vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::FluidSaturation() const
+{
+  return fluid_->Saturation();
+}
+
+/*------------------------------------------------------------------------*
+ | return fluid Flux                                         vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::FluidPressure() const
+{
+  return fluid_->Pressure();
+}
+
+/*------------------------------------------------------------------------*
+ | return fluid Flux                                         vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::SolidPressure() const
+{
+  return fluid_->SolidPressure();
 }

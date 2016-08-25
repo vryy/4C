@@ -564,6 +564,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/scatra_mat_multiscale.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
+  src/drt_mat/scatra_mat_multiporo.cpp
   src/drt_mat/scatra_reaction_mat.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
   src/drt_mat/matlist_reactions.cpp
@@ -787,6 +788,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_plasticity.cpp
   src/drt_inpar/inpar_poroscatra.cpp
   src/drt_inpar/inpar_poromultiphase.cpp
+  src/drt_inpar/inpar_poromultiphase_scatra.cpp
   src/drt_inpar/inpar_porofluidmultiphase.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
@@ -1106,6 +1108,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_std_elch.cpp
   src/drt_scatra/scatra_timint_elch.cpp
   src/drt_scatra/scatra_timint_elch_scheme.cpp
+  src/drt_scatra/scatra_timint_poromulti.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
   src/drt_scatra/turbulence_hit_scalar_forcing.cpp
@@ -1294,6 +1297,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_OD.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
+  src/drt_scatra_ele/scatra_ele_calc_multiporo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac_ECM.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
@@ -2309,6 +2313,10 @@ set(OBJS_DRT_POROMULTIPHASE
   src/drt_poromultiphase/poromultiphase_partitioned_twoway.cpp
   src/drt_poromultiphase/poromultiphase_utils_clonestrategy.cpp
   src/drt_poromultiphase/poromultiphase_utils.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_dyn.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_base.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_partitioned_twoway.cpp
 )
 
 set(OBJS_DRT_FPSI

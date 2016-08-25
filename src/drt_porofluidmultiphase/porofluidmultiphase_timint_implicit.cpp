@@ -285,15 +285,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetElementGeneralParameters() const
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeLoop()
 {
+  // compute pressure and saturations
+  ReconstructPressuresAndSaturations();
+
+  // compute velocities
+  ReconstructFlux();
+
   // provide information about initial field (do not do for restarts!)
   if(step_ == 0)
   {
-    // compute pressure and saturations from initial state
-    ReconstructPressuresAndSaturations();
-
-    // compute velocities from initial state
-    ReconstructFlux();
-
     // write out initial state
     Output();
 
@@ -429,22 +429,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp
 )
 {
-  //---------------------------------------------------------------------------
-  // only required in ALE case
-  //---------------------------------------------------------------------------
-  if (isale_)
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE: apply mesh movement");
+  TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE: apply mesh movement");
 
-    if(nds_disp_==-1) dserror("Dof set number of displacment related dofs"
-        " has not been set!");
+  if(nds_disp_==-1) dserror("Dof set number of displacment related dofs"
+      " has not been set!");
 
-    // check existence of displacement vector
-    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
+  // check existence of displacement vector
+  if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
 
-    // provide POROFLUIDMULTIPHASE discretization with displacement field
-    discret_->SetState(nds_disp_,"dispnp",dispnp);
-  } // if (isale_)
+  // provide POROFLUIDMULTIPHASE discretization with displacement field
+  SetState(nds_disp_,"dispnp",dispnp);
 
   return;
 } // TimIntImpl::ApplyMeshMovement
@@ -1261,8 +1255,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::UpdateIter(
 
 
 /*----------------------------------------------------------------------*
- | set convective velocity field (+ pressure and acceleration field as  |
- | well as fine-scale velocity field, if required)          vuong 08/16 |
+ | set convective velocity field                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::SetVelocityField(
     Teuchos::RCP<const Epetra_Vector>   vel            //!< velocity vector
@@ -1288,12 +1281,25 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetVelocityField(
         " do not match!");
 
   // provide discretization with velocity
-  discret_->SetState(nds_vel_,"velocity field",vel);
-
+  SetState(nds_vel_,"velocity field",vel);
 
   return;
 
 } // TimIntImpl::SetVelocityField
+
+/*----------------------------------------------------------------------*
+ | set state on discretization                                          |
+ |                                                          vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::SetState(
+    unsigned nds,
+    const std::string& name,
+    Teuchos::RCP<const Epetra_Vector> state
+    )
+{
+  // provide discretization with velocity
+  discret_->SetState(nds,name,state);
+}
 
 
 /*----------------------------------------------------------------------*

@@ -251,6 +251,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC", *list);
+  reader.ReadGidSection("--POROMULTIPHASESCATRA DYNAMIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
@@ -1729,6 +1730,36 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
 
+    break;
+  }
+  case prb_poromultiphasescatra:
+  {
+    // create empty discretizations
+    if(distype == "Nurbs")
+    {
+      structdis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      porofluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("porofluid",reader.Comm()));
+      scatradis     = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+    }
+    else
+    {
+      structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid",reader.Comm()));
+      scatradis     = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    }
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
+    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+
+    AddDis("structure", structdis);
+    AddDis("porofluid", porofluiddis);
+    AddDis("scatra",    scatradis);
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
     break;
   }
   case prb_porofluidmultiphase:

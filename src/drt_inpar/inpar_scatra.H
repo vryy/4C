@@ -192,6 +192,7 @@ namespace INPAR
       impltype_poro,
       impltype_advreac,
       impltype_refconcreac,
+      impltype_multipororeac,
       impltype_pororeac,
       impltype_pororeacECM,
       impltype_aniso,

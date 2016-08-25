@@ -29,6 +29,7 @@
 #include "scatra_ele_calc_chemo_reac.H"
 #include "scatra_ele_calc_poro_reac_ECM.H"
 #include "scatra_ele_calc_poro_reac.H"
+#include "scatra_ele_calc_multiporo_reac.H"
 #include "scatra_ele_calc_aniso.H"
 #include "scatra_ele_calc_cardiac_monodomain.H"
 #include "scatra_ele_calc_elch_diffcond_sti_thermo.H"
@@ -500,6 +501,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   case INPAR::SCATRA::impltype_chemoreac:
   {
     return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
+  case INPAR::SCATRA::impltype_multipororeac:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_pororeac:

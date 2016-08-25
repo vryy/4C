@@ -15,6 +15,8 @@
 #ifndef SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
 #define SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
 
+#include "../drt_inpar/inpar_poromultiphase.H"
+
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
 
@@ -25,6 +27,8 @@ namespace DRT
 
 namespace POROMULTIPHASE
 {
+class PoroMultiPhaseBase;
+
 /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
 namespace UTILS
 {
@@ -44,6 +48,12 @@ void AssignMaterialPointers(
     const std::string& fluid_disname
     );
 
+/// create solution algorithm depending on input file
+Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> CreatePoroMultiPhaseAlgorithm(
+    INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme, //!< solution scheme to build (i)
+    const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
+    const Epetra_Comm& comm //!< communicator(i)
+    );
 }
 }
 

@@ -270,6 +270,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // scalar transport reaction material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo",
+                                            "advanced reaction material for multiphase porous flow",
+                                            INPAR::MAT::m_scatra_multiporo));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedInt(m,"PHASEID","ID of fluid phase the scalar is associated with");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // scalar transport chemotaxis material
   {
     Teuchos::RCP<MaterialDefinition> m

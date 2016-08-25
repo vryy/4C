@@ -2,7 +2,8 @@
 /*!
 \file scatra_ele_calc_poro.cpp
 
-\brief scatra_ele_calc_poro.cpp
+ \brief evaluation class containing routines for calculation of scalar transport
+        within porous medium
 
 \level 2
 
@@ -329,12 +330,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
-  const DRT::Element* ele,       //!< the element we are dealing with
-  double&             densn,     //!< density at t_(n)
-  double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-  double&             densam,    //!< density at t_(n+alpha_M)
-  double&             visc,      //!< fluid viscosity
-  const int           iquad      //!< id of current gauss point
+  const DRT::Element*   ele,       //!< the element we are dealing with
+  std::vector<double>&  densn,     //!< density at t_(n)
+  std::vector<double>&  densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+  std::vector<double>&  densam,    //!< density at t_(n+alpha_M)
+  double&               visc,      //!< fluid viscosity
+  const int             iquad      //!< id of current gauss point
   )
 {
   //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
@@ -355,11 +356,11 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
   }
   else
-    my::Materials(material,0,densn,densnp,densam,visc,iquad);
+    my::Materials(material,0,densn[0],densnp[0],densam[0],visc,iquad);
 
   return;
 } //ScaTraEleCalcPoro::GetMaterialParams
@@ -490,7 +491,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     const double J = det/det0;
 
     //fluid pressure at gauss point
-    const double pres = my::eprenp_.Dot(my::funct_);
+    const double pres = ComputePorePressure();
 
     //empty parameter list
     Teuchos::ParameterList             params;
@@ -532,6 +533,15 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   DiffManager()->SetPorosity(porosity);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get the material constants  (protected)                  vuong 10/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
+{
+  return my::eprenp_.Dot(my::funct_);
 }
 
 /*----------------------------------------------------------------------*

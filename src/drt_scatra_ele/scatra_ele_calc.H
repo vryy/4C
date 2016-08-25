@@ -395,12 +395,12 @@ namespace ELEMENTS
 
     //! get the material parameters
     virtual void GetMaterialParams(
-      const DRT::Element* ele,       //!< the element we are dealing with
-      double&             densn,     //!< density at t_(n)
-      double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-      double&             densam,    //!< density at t_(n+alpha_M)
-      double&             visc,       //!< fluid viscosity
-      const int           iquad=-1    //!< id of current gauss point (default = -1)
+      const DRT::Element*  ele,       //!< the element we are dealing with
+      std::vector<double>& densn,     //!< density at t_(n)
+      std::vector<double>& densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+      std::vector<double>& densam,    //!< density at t_(n+alpha_M)
+      double&              visc,       //!< fluid viscosity
+      const int            iquad=-1    //!< id of current gauss point (default = -1)
     );
 
     //! evaluate material
@@ -421,8 +421,8 @@ namespace ELEMENTS
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      double&                                 visc,      //!< fluid viscosity
-      const int                               iquad=-1   //!< id of current gauss point (default = -1)
+      double&                                 visc,     //!< fluid viscosity
+      const int                               iquad=-1  //!< id of current gauss point (default = -1)
     );
 
     //! evaluate multi-scale scalar transport material
@@ -799,7 +799,7 @@ namespace ELEMENTS
     );
 
     //! calculation of convective element matrix in convective form
-    void CalcMatConv(
+    virtual void CalcMatConv(
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
@@ -1391,9 +1391,9 @@ namespace ELEMENTS
     //! return scalar value at t_(n)
     virtual const double& Phin(const int k) const {return phin_[k];};
     //! return convective velocity
-    virtual const LINALG::Matrix<NSD,1>& ConVel() const {return convelint_;};
+    virtual const LINALG::Matrix<NSD,1>& ConVel(const int k=0) const {return convelint_;};
     //! return convective part in convective form
-    virtual const LINALG::Matrix<NEN,1>& Conv() const {return conv_;};
+    virtual const LINALG::Matrix<NEN,1>& Conv(const int k=0) const {return conv_;};
     //! return spatial gradient of all scalar values
     virtual const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return gradphi_;};
     //! return spatial gradient of current scalar value

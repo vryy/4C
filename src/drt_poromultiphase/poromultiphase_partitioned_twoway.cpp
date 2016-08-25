@@ -27,7 +27,7 @@ POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams):
     PoroMultiPhasePartitioned(comm, globaltimeparams),
-    presincnp_(Teuchos::null),
+    phiincnp_(Teuchos::null),
     dispincnp_(Teuchos::null),
     ittol_(0.0),
     itmax_(0),
@@ -64,8 +64,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
       nds_vel,
       nds_solidpressure);
 
-
-  presincnp_ = LINALG::CreateVector(*fluid_->DofRowMap(0),true);
+  // initialize increment vectors
+  phiincnp_ = LINALG::CreateVector(*fluid_->DofRowMap(0),true);
   dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
 
   // Get the parameters for the ConvergenceCheck
@@ -140,7 +140,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetupSystem()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 {
-   itnum_ = 0;
+  // reset counter
+  itnum_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -206,25 +207,25 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   //
 
   // variables to save different L2 - Norms
-  // define L2-norm of incremental scalar and scalar
-  double scaincnorm_L2(0.0);
-  double scanorm_L2(0.0);
+  // define L2-norm of increments
+  double phiincnorm_L2(0.0);
+  double phinorm_L2(0.0);
   double dispincnorm_L2(0.0);
   double dispnorm_L2(0.0);
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  presincnp_->Update(1.0,*(fluid_->Phinp()),-1.0);
+  phiincnp_->Update(1.0,*(fluid_->Phinp()),-1.0);
   dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
-  presincnp_->Norm2(&scaincnorm_L2);
-  fluid_->Phinp()->Norm2(&scanorm_L2);
+  phiincnp_->Norm2(&phiincnorm_L2);
+  fluid_->Phinp()->Norm2(&phinorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
   structure_->Dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero scalar
-  if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
+  if (phinorm_L2 < 1e-6) phinorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
@@ -237,13 +238,13 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
     printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
     printf("|-  step/max  -|-  tol      [norm]  -|-  scalar-inc  -|-  disp-inc      -|-  scalar-rel-inc  -|-  disp-rel-inc  -|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |",
-         itnum,itmax_,ittol_,scaincnorm_L2/Dt()/sqrt(presincnp_->GlobalLength()),dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()),scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
+         itnum,itmax_,ittol_,phiincnorm_L2/Dt()/sqrt(phiincnp_->GlobalLength()),dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()),phiincnorm_L2/phinorm_L2,dispincnorm_L2/dispnorm_L2);
     printf("\n");
     printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
   }
 
   // converged
-  if ( ((scaincnorm_L2/scanorm_L2) <= ittol_) and ((dispincnorm_L2/dispnorm_L2) <= ittol_) and ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))<=ittol_) and ((scaincnorm_L2/Dt()/sqrt(presincnp_->GlobalLength()))<=ittol_) )
+  if ( ((phiincnorm_L2/phinorm_L2) <= ittol_) and ((dispincnorm_L2/dispnorm_L2) <= ittol_) and ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))<=ittol_) and ((phiincnorm_L2/Dt()/sqrt(phiincnp_->GlobalLength()))<=ittol_) )
   {
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
@@ -255,7 +256,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
 
   // stop if itemax is reached without convergence
   // timestep
-  if ( (itnum==itmax_) and (((scaincnorm_L2/scanorm_L2) > ittol_) or ((dispincnorm_L2/dispnorm_L2) > ittol_) or ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))>ittol_) or (scaincnorm_L2/Dt()/sqrt(presincnp_->GlobalLength()))>ittol_ ) )
+  if ( (itnum==itmax_) and (((phiincnorm_L2/phinorm_L2) > ittol_) or ((dispincnorm_L2/dispnorm_L2) > ittol_) or ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))>ittol_) or (phiincnorm_L2/Dt()/sqrt(phiincnp_->GlobalLength()))>ittol_ ) )
   {
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
@@ -296,7 +297,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoFluidStep()
   if (Comm().MyPID() == 0)
   {
     std::cout
-        << "\n******************\n  PORO MULTIPHASE FLUID SOLVER \n*******************\n";
+        << "\n****************************\n  PORO MULTIPHASE FLUID SOLVER \n****************************\n";
   }
 
   // -------------------------------------------------------------------
@@ -335,7 +336,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::IterUpdateStates()
   // store last solutions (current states).
   // will be compared in ConvergenceCheck to the solutions,
   // obtained from the next Struct and Scatra steps.
-  presincnp_ ->Update(1.0,*fluid_->Phinp(),0.0);
+  phiincnp_ ->Update(1.0,*fluid_->Phinp(),0.0);
   dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
   return;

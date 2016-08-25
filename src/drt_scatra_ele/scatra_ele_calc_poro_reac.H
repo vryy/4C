@@ -2,15 +2,16 @@
 /*!
 \file scatra_ele_calc_poro_reac.H
 
-\brief scatra_ele_calc_poro_reac.H
+ \brief evaluation class containing routines for calculation of scalar transport
+        within porous medium including advanced reactions
 
 \level 2
 
 <pre>
-  \maintainer Moritz Thon
-              thon@mhpc.mw.tum.de
+  \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
               http://www.lnm.mw.tum.de
-              089 - 289-10364
+              089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -67,12 +68,12 @@ protected:
 
   //! get the material parameters
   virtual void GetMaterialParams(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    double&             densn,     //!< density at t_(n)
-    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&             densam,    //!< density at t_(n+alpha_M)
-    double&             visc,       //!< fluid viscosity
-    const int           iquad=-1    //!< id of current gauss point (default = -1)
+    const DRT::Element*   ele,       //!< the element we are dealing with
+    std::vector<double>&  densn,     //!< density at t_(n)
+    std::vector<double>&  densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>&  densam,    //!< density at t_(n+alpha_M)
+    double&               visc,       //!< fluid viscosity
+    const int             iquad=-1    //!< id of current gauss point (default = -1)
   );
 
   //! material ScaTra

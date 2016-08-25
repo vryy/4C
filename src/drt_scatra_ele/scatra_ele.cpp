@@ -320,7 +320,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
      mat->MaterialType() == INPAR::MAT::m_yoghurt or
      mat->MaterialType() == INPAR::MAT::m_scatra_growth_scd or
-     mat->MaterialType() == INPAR::MAT::m_soret
+     mat->MaterialType() == INPAR::MAT::m_soret or
+     mat->MaterialType() == INPAR::MAT::m_scatra_multiporo
      )
     numdofpernode_ = 1; // we only have a single scalar
   else if(mat->MaterialType() == INPAR::MAT::m_electrode)
@@ -371,8 +372,9 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       for (int ii=0; ii<numdofpernode_; ++ii)
       {
         // In the context of reactions the only valid material combination is m_matlist and m_scatra
-        if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
-          dserror("The material Mat_matlist_reaction only supports MAT_scatra as valid main Material");
+        if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra and
+            actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra_multiporo)
+          dserror("The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo as valid main Material");
       }
 
       int numreac = actmat->NumReac();

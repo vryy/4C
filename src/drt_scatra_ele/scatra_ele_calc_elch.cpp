@@ -95,12 +95,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   //-----------------------------------------------------------------------------------------------
   // calculate material and stabilization parameters (one per transported scalar) at element center
   //-----------------------------------------------------------------------------------------------
-  // density at t_(n)
-  double densn(1.0);
-  // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
-  // density at t_(n+alpha_M)
-  double densam(1.0);
+  // density at t_(n) (one per transported scalar)
+  std::vector<double> densn(my::numscal_,1.0);
+  // density at t_(n+1) or t_(n+alpha_F) (one per transported scalar)
+  std::vector<double> densnp(my::numscal_,1.0);
+  // density at t_(n+alpha_M) (one per transported scalar)
+  std::vector<double> densam(my::numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      my::GetRhsInt(rhsint,densnp,k);
+      my::GetRhsInt(rhsint,densnp[k],k);
 
       // Compute element matrix and rhs
       CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],rhsint);

@@ -257,11 +257,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
   const double frt = VarManager()->FRT();
 
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(my::numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(my::numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(my::numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);

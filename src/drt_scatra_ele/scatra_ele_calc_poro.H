@@ -2,7 +2,8 @@
 /*!
 \file scatra_ele_calc_poro.H
 
-\brief scatra_ele_calc_poro.H
+ \brief evaluation class containing routines for calculation of scalar transport
+        within porous medium
 
 \level 2
 
@@ -146,18 +147,21 @@ protected:
 
   //! get the material parameters
   virtual void GetMaterialParams(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    double&             densn,     //!< density at t_(n)
-    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&             densam,    //!< density at t_(n+alpha_M)
-    double&             visc,       //!< fluid viscosity
-    const int           iquad=-1    //!< id of current gauss point (default = -1)
+    const DRT::Element*   ele,       //!< the element we are dealing with
+    std::vector<double>&  densn,     //!< density at t_(n)
+    std::vector<double>&  densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>&  densam,    //!< density at t_(n+alpha_M)
+    double&               visc,       //!< fluid viscosity
+    const int             iquad=-1    //!< id of current gauss point (default = -1)
   );
 
   //! compute porosity based on solid, fluid and (potentially) scatra solution
   virtual void ComputePorosity(
       const DRT::Element* ele       //!< the element we are dealing with
     );
+
+  //! compute pore pressure
+  virtual double ComputePorePressure();
 
   //! material ScaTra
   virtual void MatScaTra(
@@ -172,17 +176,17 @@ protected:
 
 
   //! set diffusivity for poro scatra problem (i.e. scale by porosity)
-  void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
+  virtual  void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
                      const int                                 k,
                      const double                              scale);
 
   //! set reaction coefficient for poro scatra problem (i.e. scale by porosity)
-  void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
+  virtual void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
                         const int                                 k,
                         const double                              scale);
 
   //! set densisties for poro scatra problem (i.e. scale by porosity)
-  void SetDensities(double  porosity,
+  virtual void SetDensities(double  porosity,
                    double& densn,    //!< density at t_(n)
                    double& densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
                    double& densam   //!< density at t_(n+alpha_M));

@@ -174,6 +174,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphase::Saturation() con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_MultiVector> ADAPTER::PoroFluidMultiphase::Flux() const
+{
+  return porofluid_->Flux();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphase::PrepareTimeStep()
 {
   porofluid_->PrepareTimeStep();

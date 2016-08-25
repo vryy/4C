@@ -398,11 +398,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
         // density at t_(n)
-        double densn(1.0);
+        std::vector<double> densn(numscal_,1.0);
         // density at t_(n+1) or t_(n+alpha_F)
-        double densnp(1.0);
+        std::vector<double> densnp(numscal_,1.0);
         // density at t_(n+alpha_M)
-        double densam(1.0);
+        std::vector<double> densam(numscal_,1.0);
 
         // diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
 
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         strainnorm /= sqrt(2.0);
 
         // get Re from strain rate
-        double Re_ele_str = strainnorm * hk * hk * densnp / visc;
+        double Re_ele_str = strainnorm * hk * hk * densnp[0] / visc;
         if (Re_ele_str < 0.0) dserror("Something went wrong!");
         // ensure positive values
         if (Re_ele_str < 1.0)
@@ -1461,12 +1461,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
   //------------------------------------------------------------------------------------
   // get material parameters and stabilization parameters (evaluation at element center)
   //------------------------------------------------------------------------------------
-    // density at t_(n)
-  double densn(1.0);
+  // density at t_(n)
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -1485,7 +1485,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(),vol);
       }
     }
   }
@@ -1514,7 +1514,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       const double& phiint = scatravarmanager_->Phinp(k);
 
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      LINALG::Matrix<nen_,1> conv = scatravarmanager_->Conv();
+      LINALG::Matrix<nen_,1> conv = scatravarmanager_->Conv(k);
 
       // velocity divergence required for conservative form
       double vdiv(0.0);
@@ -1531,7 +1531,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       }
 
       // calculation of stabilization parameter at integration point
-      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
+      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(),vol);
 
       const double fac_tau = fac*tau[k];
 
@@ -1539,7 +1539,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       // element matrix: transient term
       //----------------------------------------------------------------
       // transient term
-      CalcMatMass(emat,k,fac,densam);
+      CalcMatMass(emat,k,fac,densam[k]);
 
       //----------------------------------------------------------------
       // element matrix: stabilization of transient term
@@ -1549,13 +1549,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       {
         // subgrid-scale velocity (dummy)
         LINALG::Matrix<nen_,1> sgconv(true);
-        CalcMatMassStab(emat,k,fac_tau,densam,densnp,sgconv,diff);
+        CalcMatMassStab(emat,k,fac_tau,densam[k],densnp[k],sgconv,diff);
 
         // remove convective stabilization of inertia term
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
-          erhs(fvi)+=fac_tau*densnp*conv(vi)*densnp*phiint;
+          erhs(fvi)+=fac_tau*densnp[k]*conv(vi)*densnp[k]*phiint;
         }
       }
 
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       // whereas the rhs is based on the standard element evaluation routine
       // including contributions resulting from the time discretization.
       // The contribution from the time discretization has to be removed before solving the system:
-      CorrectRHSFromCalcRHSLinMass(erhs,k,fac,densnp,phiint);
+      CorrectRHSFromCalcRHSLinMass(erhs,k,fac,densnp[k],phiint);
     } // loop over each scalar k
   } // integration loop
 
@@ -1663,11 +1663,11 @@ const int                       k
   */
 
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -1713,7 +1713,7 @@ const int                       k
     {
     case INPAR::SCATRA::flux_total:
       // convective flux contribution
-      q.Update(densnp*scatravarmanager_->Phinp(k),convelint);
+      q.Update(densnp[k]*scatravarmanager_->Phinp(k),convelint);
 
       // no break statement here!
     case INPAR::SCATRA::flux_diffusive:
@@ -2329,11 +2329,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
   // get material and stabilization parameters (evaluation at element center)
   //----------------------------------------------------------------------
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -2349,7 +2349,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
     {
       // calculation of stabilization parameter at element center
-      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
+      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],convelint,vol);
     }
   }
 
@@ -2387,23 +2387,23 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
     {
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k]*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      GetRhsInt(rhsint,densnp,k);
+      GetRhsInt(rhsint,densnp[k],k);
 
       double scatrares(0.0);
       //calculate strong residual
-      CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+      CalcStrongResidual(k,scatrares,densam[k],densnp[k],rea_phi,rhsint,tau[k]);
 
       if (scatrapara_->TauGP())
       {
         // (re)compute stabilization parameter at integration point, since diffusion may have changed
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
       }
 
       //----------------------------------------------------------------
@@ -2432,7 +2432,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
       // including stabilization
       if (reamanager_->Active())
       {
-        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
+        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp[k],sgconv,diff);
       }
 
       //----------------------------------------------------------------
@@ -2447,9 +2447,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
       double rhsfac    = scatraparatimint_->TimeFacRhs() * fac;
       double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
 
-      ComputeRhsInt(rhsint,densam,densnp,0.0);
+      ComputeRhsInt(rhsint,densam[k],densnp[k],0.0);
 
-      RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,rhsint);
+      RecomputeScatraResForRhs(scatrares,k,diff,densn[k],densnp[k],rea_phi,rhsint);
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
@@ -2461,7 +2461,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
       //----------------------------------------------------------------
 
       if (reamanager_->Active())
-        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares);
+        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp[k],scatrares);
 
     }// end loop all scalars
   }// end loop Gauss points

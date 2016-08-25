@@ -57,6 +57,7 @@
 // cell migration specific files
 #include "../drt_immersed_problem/scatra_timint_ost_endoexocytosis.H"
 
+#include "../drt_scatra/scatra_timint_poromulti.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -395,6 +396,40 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       dserror("Unknown time integration scheme for cell migration problem! Use One-Step-Theta Scheme!");
       break;
     }
+  }
+  else if (probtype == prb_poromultiphasescatra)
+  {
+
+    switch(timintscheme)
+    {
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntPoroMultiGenAlpha(actdis, solver, Teuchos::null, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_one_step_theta:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntPoroMultiOST(actdis, solver, Teuchos::null, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_bdf2:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntPoroMultiBDF2(actdis, solver, Teuchos::null, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_stationary:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntPoroMultiStationary(actdis, solver, Teuchos::null, scatratimeparams,extraparams, output));
+        break;
+      }
+      default:
+        dserror("Unknown time integration scheme for porous medium multiphase problem!");
+        break;
+    }// switch(timintscheme)
   }
   // everything else
   else

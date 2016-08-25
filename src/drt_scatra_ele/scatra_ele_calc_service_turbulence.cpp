@@ -4,8 +4,10 @@
 
 \brief Internal implementation of ScaTra element
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -1394,11 +1396,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::StoreModelParametersForOutpu
 
           // get material  at element center
           // density at t_(n)
-          double densn(1.0);
+          std::vector<double> densn(numscal_,1.0);
           // density at t_(n+1) or t_(n+alpha_F)
-          double densnp(1.0);
+          std::vector<double> densnp(numscal_,1.0);
           // density at t_(n+alpha_M)
-          double densam(1.0);
+          std::vector<double> densam(numscal_,1.0);
 
           // fluid viscosity
           double visc(0.0);
@@ -1407,7 +1409,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::StoreModelParametersForOutpu
 
           GetMaterialParams(ele,densn,densnp,densam,visc);
 
-          CalcSubgrDiff(visc,vol,0,densnp);
+          CalcSubgrDiff(visc,vol,0,densnp[0]);
 
           (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffmanager_->GetIsotropicDiff(0);
         }
@@ -1608,11 +1610,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   //----------------------------------------------------------------------
 
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -1644,7 +1646,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
         or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
          or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
     {
-      CalcSubgrDiff(visc,vol,0,densnp);
+      CalcSubgrDiff(visc,vol,0,densnp[0]);
     }
 
     // calculation of fine-scale artificial subgrid diffusivity at element center
@@ -1652,10 +1654,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // special case (computation of fine-scale subgrid diffusivity for non-incremental
     // solver -> only artificial subgrid diffusivity) not considered here
     Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-    if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
+    if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
     // calculation of stabilization parameter at element center
-    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,scatravarmanager_->ConVel(),vol);
+    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp[0],scatravarmanager_->ConVel(),vol);
   }
 
 
@@ -1685,7 +1687,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[0],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
     }
   }
 
@@ -1725,7 +1727,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     gradphi.Multiply(derxy_,ephinp_[0]);
 
     // reactive part of the form: (reaction coefficient)*phi
-    const double rea_phi = densnp*phinp*reamanager_->GetReaCoeff(0);
+    const double rea_phi = densnp[0]*phinp*reamanager_->GetReaCoeff(0);
 
     // get fine-scale velocity and its derivatives at integration point
     LINALG::Matrix<nsd_,1> fsvelint(true);
@@ -1738,7 +1740,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       fsgradphi.Multiply(derxy_,fsphinp_[0]);
 
     double rhsint(0.0);
-    GetRhsInt(rhsint,densnp,0);
+    GetRhsInt(rhsint,densnp[0],0);
 
     //--------------------------------------------------------------------
     // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
@@ -1762,7 +1764,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
           or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
           or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
-        CalcSubgrDiff(visc,vol,0,densnp);
+        CalcSubgrDiff(visc,vol,0,densnp[0]);
       }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
@@ -1770,23 +1772,23 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       // special case (computation of fine-scale subgrid diffusivity for non-incremental
       // solver -> only artificial subgrid diffusivity) not considered here
       Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
+      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
       // calculation of subgrid-scale velocity at integration point if required
       if (scatrapara_->RBSubGrVel())
       {
         // calculation of stabilization parameter related to fluid momentum
         // equation at integration point
-        CalcTau(tau[0],visc,0.0,densnp,convelint,vol);
+        CalcTau(tau[0],visc,0.0,densnp[0],convelint,vol);
         // calculation of residual-based subgrid-scale velocity
-        CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,convelint,tau[0]);
+        CalcSubgrVelocity(ele,sgvelint,densam[0],densnp[0],visc,convelint,tau[0]);
 
         // calculation of subgrid-scale convective part
         sgconv.MultiplyTN(derxy_,sgvelint);
       }
 
       // calculation of stabilization parameter at integration point
-      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol);
+      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp[0],convelint,vol);
     }
 
     // prepare multifractal subgrid-scale modeling
@@ -1801,7 +1803,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     {
       if (turbparams_->BD_Gp())
         // calculate model coefficients
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),visc,convelint,fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),visc,convelint,fsvelint);
 
       // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
       for (int idim=0; idim<nsd_; idim++)
@@ -1827,7 +1829,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    CalcStrongResidual(0,scatrares,densam,densnp,rea_phi,rhsint,tau[0]);
+    CalcStrongResidual(0,scatrares,densam[0],densnp[0],rea_phi,rhsint,tau[0]);
 
     //--------------------------------------------------------------------
     // calculation of subgrid-scale part of scalar
@@ -1879,7 +1881,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // dissipation by supg-stabilization
     if (scatrapara_->StabType() == INPAR::SCATRA::stabtype_SUPG)
     {
-      eps_supg -= densnp * sgphi * convelint.Dot(gradphi) * fac; //sgphi_ is negative
+      eps_supg -= densnp[0] * sgphi * convelint.Dot(gradphi) * fac; //sgphi_ is negative
 
     }
     else if (scatrapara_->StabType() == INPAR::SCATRA::stabtype_no_stabilization)
@@ -1893,8 +1895,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // dissipation by reynolds-stress-stabilization
     if (scatrapara_->RBSubGrVel())
     {
-      eps_cross -= densnp * phinp * sgvelint.Dot(gradphi) * fac;
-      eps_rey -= densnp * sgphi * sgvelint.Dot(gradphi) * fac;
+      eps_cross -= densnp[0] * phinp * sgvelint.Dot(gradphi) * fac;
+      eps_rey -= densnp[0] * sgphi * sgvelint.Dot(gradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1904,12 +1906,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // dissipation multifractal subgrid-scales
     if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     {
-      eps_mfs -= densnp * (mfssgphi * convelint.Dot(gradphi)
+      eps_mfs -= densnp[0] * (mfssgphi * convelint.Dot(gradphi)
                               + phinp * mfsgvelint.Dot(gradphi)
                               + mfssgphi * mfsgvelint.Dot(gradphi)) * fac;
-      eps_mfscross -= densnp * (mfssgphi * convelint.Dot(gradphi)
+      eps_mfscross -= densnp[0] * (mfssgphi * convelint.Dot(gradphi)
                                    + phinp * mfsgvelint.Dot(gradphi)) * fac;
-      eps_mfsrey -= densnp * mfssgphi * mfsgvelint.Dot(gradphi) * fac;
+      eps_mfsrey -= densnp[0] * mfssgphi * mfsgvelint.Dot(gradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1939,7 +1941,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     //---------------------------------------------------------------
 
     // convective (Galerkin)
-    eps_conv -= densnp * phinp * convelint.Dot(gradphi) * fac;
+    eps_conv -= densnp[0] * phinp * convelint.Dot(gradphi) * fac;
 
     // dissipation (Galerkin) (diffus is diffus+sgdiff here)
     eps_visc += (diffmanager_->GetIsotropicDiff(0) - diffmanager_->GetSubGrDiff(0)) * gradphi.Dot(gradphi) * fac;

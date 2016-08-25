@@ -32,6 +32,7 @@
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_poromultiphase/poromultiphase_dyn.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_dyn.H"
 #include "../drt_porofluidmultiphase/porofluidmultiphase_dyn.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
@@ -171,6 +172,9 @@ void ntacal()
       break;
     case prb_poromultiphase:
       poromultiphase_dyn(restart);
+      break;
+    case prb_poromultiphasescatra:
+      poromultiphasescatra_dyn(restart);
       break;
     case prb_fpsi:
       fpsi_drt();

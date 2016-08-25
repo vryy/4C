@@ -15,8 +15,11 @@
 #include "poromultiphase_utils.H"
 #include "poromultiphase_utils_clonestrategy.H"
 
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
+#include "poromultiphase_partitioned.H"
+#include "poromultiphase_partitioned_twoway.H"
 
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
+#include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 
@@ -50,14 +53,6 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
     DRT::UTILS::CloneDiscretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
         structdis,
         fluiddis);
-
-    // set implementation type
-    for(int i=0; i<fluiddis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::PoroFluidMultiPhase* element = dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(fluiddis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-    }
   }
   else
   {
@@ -105,18 +100,36 @@ void POROMULTIPHASE::UTILS::AssignMaterialPointers(
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
 
-  const int numelements = fluiddis->NumMyColElements();
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+}
 
-  for (int i=0; i<numelements; ++i)
+/*----------------------------------------------------------------------*
+ | setup algorithm                                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
+    INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
+    const Teuchos::ParameterList& timeparams,
+    const Epetra_Comm& comm)
+{
+  // Creation of Coupled Problem algorithm.
+  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> algo = Teuchos::null;
+
+  switch(solscheme)
   {
-    DRT::Element* fluidtele = fluiddis->lColElement(i);
-    const int gid = fluidtele->Id();
-
-    DRT::Element* structele = structdis->gElement(gid);
-
-    //for coupling we add the source material to the target element and vice versa
-    fluidtele->AddMaterial(structele->Material());
-    structele->AddMaterial(fluidtele->Material());
+  case INPAR::POROMULTIPHASE::solscheme_twoway:
+  {
+    // call constructor
+    algo =
+        Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(
+                comm,
+                timeparams));
+    break;
   }
+  default:
+    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+    break;
+  }
+
+  return algo;
 }
 

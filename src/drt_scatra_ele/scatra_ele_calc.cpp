@@ -3,11 +3,13 @@
 
 \brief main file containing routines for calculation of scatra element
 
+\level 1
+
 <pre>
-\maintainer Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -419,12 +421,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
   //----------------------------------------------------------------------
   // get material and stabilization parameters (evaluation at element center)
   //----------------------------------------------------------------------
-  // density at t_(n)
-  double densn(1.0);
-  // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
-  // density at t_(n+alpha_M)
-  double densam(1.0);
+  // density at t_(n) (one per transported scalar)
+  std::vector<double> densn(numscal_,1.0);
+  // density at t_(n+1) or t_(n+alpha_F) (one per transported scalar)
+  std::vector<double> densnp(numscal_,1.0);
+  // density at t_(n+alpha_M) (one per transported scalar)
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -462,14 +464,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
           or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
           or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
-        CalcSubgrDiff(visc,vol,k,densnp);
+        CalcSubgrDiff(visc,vol,k,densnp[k]);
       }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
-      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),convelint);
+      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),convelint);
 
       // calculation of stabilization parameter at element center
-      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
+      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],convelint,vol);
     }
   }
 
@@ -500,7 +502,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(k),fsvelint);
     }
   }
 
@@ -538,7 +540,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
     {
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k]*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
 
       // compute gradient of fine-scale part of scalar value
       LINALG::Matrix<nsd_,1> fsgradphi(true);
@@ -550,7 +552,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      GetRhsInt(rhsint,densnp,k);
+      GetRhsInt(rhsint,densnp[k],k);
 
       //--------------------------------------------------------------------
       // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
@@ -564,7 +566,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       double scatrares(0.0);
       //calculate strong residual
-      CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+      CalcStrongResidual(k,scatrares,densam[k],densnp[k],rea_phi,rhsint,tau[k]);
 
       if (scatrapara_->TauGP())
       {
@@ -572,13 +574,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         if (scatrapara_->ASSGD())
         {
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
-          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
+          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(),vol);
 
           // compute artificial diffusion
-          CalcArtificialDiff(vol,k,densnp,scatravarmanager_->ConVel(),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
+          CalcArtificialDiff(vol,k,densnp[k],scatravarmanager_->ConVel(k),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
 
           // recompute strong residual since now diffus_new = diffus_old + artdiff
-          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]); //TODO:(Thon) do we really have to do this??
+          CalcStrongResidual(k,scatrares,densam[k],densnp[k],rea_phi,rhsint,tau[k]); //TODO:(Thon) do we really have to do this??
         }
 
         // calculation of all-scale subgrid diffusivity (by, e.g.,
@@ -587,31 +589,31 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
             or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
             or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
         {
-          CalcSubgrDiff(visc,vol,k,densnp);
+          CalcSubgrDiff(visc,vol,k,densnp[k]);
 
           // recompute strong residual since now diffus_new = diffus_old + sgdiff
-          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+          CalcStrongResidual(k,scatrares,densam[k],densnp[k],rea_phi,rhsint,tau[k]);
         }
 
         // calculation of fine-scale artificial subgrid diffusivity at element center
         if (turbparams_->FSSGD())
-          CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
+          CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
 
         // calculation of subgrid-scale velocity at integration point if required
         if (scatrapara_->RBSubGrVel())
         {
           // calculation of stabilization parameter related to fluid momentum
           // equation at integration point
-          CalcTau(tau[k],visc,0.0,densnp,scatravarmanager_->ConVel(),vol);
+          CalcTau(tau[k],visc,0.0,densnp[k],scatravarmanager_->ConVel(k),vol);
           // calculation of residual-based subgrid-scale velocity
-          CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,scatravarmanager_->ConVel(),tau[k]);
+          CalcSubgrVelocity(ele,sgvelint,densam[k],densnp[k],visc,scatravarmanager_->ConVel(k),tau[k]);
 
           // calculation of subgrid-scale convective part
           sgconv.MultiplyTN(derxy_,sgvelint);
         }
 
         // (re)compute stabilization parameter at integration point, since diffusion may have changed
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(k),vol); //TODO:(Thon) do we really have to do this??
       }
 
       LINALG::Matrix<nen_,1> diff(true);
@@ -635,7 +637,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       {
         if (turbparams_->BD_Gp())
           // calculate model coefficients
-          CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
+          CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(k),fsvelint);
 
         // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
         for (int idim=0; idim<nsd_; idim++)
@@ -670,11 +672,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       //----------------------------------------------------------------
 
       // calculation of convective element matrix in convective form
-      CalcMatConv(emat,k,timefacfac,densnp,sgconv);
+      CalcMatConv(emat,k,timefacfac,densnp[k],sgconv);
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
-        CalcMatConvAddCons(emat,k,timefacfac,vdiv,densnp);
+        CalcMatConvAddCons(emat,k,timefacfac,vdiv,densnp[k]);
 
       // calculation of diffusive element matrix
       CalcMatDiff(emat,k,timefacfac);
@@ -686,7 +688,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       // convective stabilization of convective term (in convective form)
       // transient stabilization of convective term (in convective form)
       if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        CalcMatTransConvDiffStab(emat,k,timetaufac,densnp,sgconv,diff);
+        CalcMatTransConvDiffStab(emat,k,timetaufac,densnp[k],sgconv,diff);
 
       //----------------------------------------------------------------
       // 2) element matrix: instationary terms
@@ -694,10 +696,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       if (not scatraparatimint_->IsStationary())
       {
-        CalcMatMass(emat,k,fac,densam);
+        CalcMatMass(emat,k,fac,densam[k]);
 
         if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-          CalcMatMassStab(emat,k,taufac,densam,densnp,sgconv,diff);
+          CalcMatMassStab(emat,k,taufac,densam[k],densnp[k],sgconv,diff);
       }
 
       //----------------------------------------------------------------
@@ -706,14 +708,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       // including stabilization
       if (reamanager_->Active())
-        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
+        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp[k],sgconv,diff);
 
       //----------------------------------------------------------------
       // 4) element matrix: chemotactic term
       //----------------------------------------------------------------
 
       //including stabilization
-      CalcMatChemo(emat,k,timefacfac,timetaufac,densnp,scatrares,sgconv,diff);
+      CalcMatChemo(emat,k,timefacfac,timetaufac,densnp[k],scatrares,sgconv,diff);
 
       //----------------------------------------------------------------
       // 5) element right hand side
@@ -728,15 +730,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
 
       if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
-        CalcRHSLinMass(erhs,k,rhsfac,fac,densam,densnp);
+        CalcRHSLinMass(erhs,k,rhsfac,fac,densam[k],densnp[k]);
 
       // the order of the following three functions is important
       // and must not be changed
-      ComputeRhsInt(rhsint,densam,densnp,scatravarmanager_->Hist(k));
+      ComputeRhsInt(rhsint,densam[k],densnp[k],scatravarmanager_->Hist(k));
 
-      RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,rhsint);
+      RecomputeScatraResForRhs(scatrares,k,diff,densn[k],densnp[k],rea_phi,rhsint);
 
-      RecomputeConvPhiForRhs(k,sgvelint,densnp,densn,vdiv);
+      RecomputeConvPhiForRhs(k,sgvelint,densnp[k],densn[k],vdiv);
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
@@ -757,20 +759,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       // stabilization terms
       //----------------------------------------------------------------
       if (scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        CalcRHSTransConvDiffStab(erhs,k,rhstaufac,densnp,scatrares,sgconv,diff);
+        CalcRHSTransConvDiffStab(erhs,k,rhstaufac,densnp[k],scatrares,sgconv,diff);
 
       //----------------------------------------------------------------
       // reactive terms (standard Galerkin and stabilization) on rhs
       //----------------------------------------------------------------
 
       if (reamanager_->Active())
-        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares);
+        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp[k],scatrares);
 
       //----------------------------------------------------------------
       // chemotactic terms (standard Galerkin and stabilization) on rhs
       //----------------------------------------------------------------
 
-      CalcRHSChemo(erhs,k,rhsfac,rhstaufac,scatrares,densnp);
+      CalcRHSChemo(erhs,k,rhsfac,rhstaufac,scatrares,densnp[k]);
 
       //----------------------------------------------------------------
       // 6) advanced turbulence models
@@ -786,7 +788,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       // multifractal subgrid-scale modeling on right hand side only
       //---------------------------------------------------------------
       if (scatraparatimint_->IsIncremental() and turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
-        CalcRHSMFS(erhs,k,rhsfac,densnp,mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
+        CalcRHSMFS(erhs,k,rhsfac,densnp[k],mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
 
       //----------------------------------------------------------------
       // 7) macro-scale matrix and vector contributions arising from
@@ -1179,11 +1181,11 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMaterialParams(
   const DRT::Element* ele,       //!< the element we are dealing with
-  double&             densn,     //!< density at t_(n)
-  double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-  double&             densam,    //!< density at t_(n+alpha_M)
-  double&             visc,      //!< fluid viscosity
-  const int           iquad      //!< id of current gauss point
+  std::vector<double>& densn,     //!< density at t_(n)
+  std::vector<double>& densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+  std::vector<double>& densam,    //!< density at t_(n+alpha_M)
+  double&              visc,      //!< fluid viscosity
+  const int            iquad      //!< id of current gauss point
   )
 {
 // get the material
@@ -1200,11 +1202,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
   }
   else
-    Materials(material,0,densn,densnp,densam,visc,iquad);
+    Materials(material,0,densn[0],densnp[0],densam[0],visc,iquad);
 
   return;
 } //ScaTraEleCalc::GetMaterialParams
@@ -1416,7 +1418,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConv(
   const LINALG::Matrix<nen_,1>& sgconv
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
 
   // convective term in convective form
   const double densfac = timefacfac*densnp;
@@ -1507,7 +1509,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
 
   const double dens2taufac = timetaufac*densnp*densnp;
   for (int vi=0; vi<nen_; ++vi)
@@ -1623,7 +1625,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMassStab(
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
   const double densamnptaufac = taufac*densam*densnp;
   //----------------------------------------------------------------
   // stabilization of transient term
@@ -1678,7 +1680,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
   const LINALG::Matrix<nen_,1>&      diff
   )
 {
-  const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv();
+  const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv(k);
 
   const double fac_reac        = timefacfac*densnp*reamanager_->GetReaCoeff(k);
   const double timetaufac_reac = timetaufac*densnp*reamanager_->GetReaCoeff(k);
@@ -1881,7 +1883,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::RecomputeScatraResForRhs(
   const double                  rhsint
   )
 {
-  const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();
+  const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel(k);
   const double&                 phin = scatravarmanager_->Phin(k);
 
   if (scatraparatimint_->IsGenAlpha())
@@ -2087,7 +2089,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSTransConvDiffStab(
   )
 {
 
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
 
   // convective rhs stabilization (in convective form)
   double vrhs = rhstaufac*scatrares*densnp;
@@ -2200,7 +2202,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
 {
   const double&                  phinp = scatravarmanager_->Phinp(k);
   const LINALG::Matrix<nsd_,1>&  gradphi = scatravarmanager_->GradPhi(k);
-  const LINALG::Matrix<nsd_,1>&  convelint = scatravarmanager_->ConVel();
+  const LINALG::Matrix<nsd_,1>&  convelint = scatravarmanager_->ConVel(k);
 
   if (nsd_<3) dserror("Turbulence is 3D!");
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf

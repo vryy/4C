@@ -87,7 +87,7 @@ namespace POROMULTIPHASE
     virtual bool ConvergenceCheck(int itnum);
 
     //! pressure increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> presincnp_;
+    Teuchos::RCP<Epetra_Vector> phiincnp_;
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 

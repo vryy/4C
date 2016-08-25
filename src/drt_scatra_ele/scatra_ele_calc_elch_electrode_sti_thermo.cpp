@@ -94,9 +94,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ExtractElement
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams(
     const DRT::Element*   ele,           //!< current element
-    double&               densn,         //!< density at time t_(n)
-    double&               densnp,        //!< density at time t_(n+1) or t_(n+alpha_F)
-    double&               densam,        //!< density at time t_(n+alpha_M)
+    std::vector<double>&  densn,         //!< density at t_(n)
+    std::vector<double>&  densnp,        //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>&  densam,        //!< density at t_(n+alpha_M)
     double&               visc,          //!< fluid viscosity
     const int             iquad          //!< ID of current integration point
     )
@@ -225,7 +225,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
 
     // evaluate material parameters at current integration point
     double dummy(0.);
-    GetMaterialParams(ele,dummy,dummy,dummy,dummy,iquad);
+    std::vector<double> dummyvec(my::numscal_,0.);
+    GetMaterialParams(ele,dummyvec,dummyvec,dummyvec,dummy,iquad);
 
     // provide element matrix with linearizations of Soret term in discrete scatra residuals w.r.t. thermo dofs
     mythermo::CalcMatSoretOD(

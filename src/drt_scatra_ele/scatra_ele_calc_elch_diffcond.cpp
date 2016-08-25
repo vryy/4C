@@ -1269,9 +1269,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
   const DRT::Element*   ele,      //!< current element
-  double&               densn,    //!< density at t_(n)
-  double&               densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&               densam,   //!< density at t_(n+alpha_M)
+  std::vector<double>&  densn,    //!< density at t_(n)
+  std::vector<double>&  densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  std::vector<double>&  densam,   //!< density at t_(n+alpha_M)
   double&               visc,     //!< fluid viscosity
   const int             iquad     //!< ID of current integration point
   )

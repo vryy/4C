@@ -209,6 +209,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   case INPAR::SCATRA::impltype_poro:
   case INPAR::SCATRA::impltype_pororeac:
   case INPAR::SCATRA::impltype_pororeacECM:
+  case INPAR::SCATRA::impltype_multipororeac:
     // do nothing in these cases
     break;
 

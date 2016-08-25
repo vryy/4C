@@ -4,6 +4,8 @@
 
  \brief routines for calculation of off diagonal terms of scatra element
 
+ \level 3
+
  <pre>
    \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
@@ -150,11 +152,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
   // get material and stabilization parameters (evaluation at element center)
   //----------------------------------------------------------------------
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -212,14 +214,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
 
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k]*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      GetRhsInt(rhsint,densnp,k);
+      GetRhsInt(rhsint,densnp[k],k);
 
 
       // subgrid-scale convective term
@@ -234,8 +236,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       // subgrid-scale part of scalar
       CalcStrongResidual(         k,
                                   scatrares,
-                                  densam,
-                                  densnp,
+                                  densam[k],
+                                  densnp[k],
                                   rea_phi,
                                   rhsint,
                                   tau[k]);
@@ -252,8 +254,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
             ndofpernodemesh,
             rhsfac,
             fac,
-            densam,
-            densnp,
+            densam[k],
+            densnp[k],
             scatravarmanager_->Phinp(k),
             scatravarmanager_->Hist(k),
             J,
@@ -261,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
 
       // the order of the following three functions is important
       // and must not be changed
-      ComputeRhsInt(rhsint,densam,densnp,scatravarmanager_->Hist(k));
+      ComputeRhsInt(rhsint,densam[k],densnp[k],scatravarmanager_->Hist(k));
 
       // diffusive part used in stabilization terms
       LINALG::Matrix<nen_,1> diff(true);
@@ -276,16 +278,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       RecomputeScatraResForRhs( scatrares,
                                 k,
                                 diff,
-                                densn,
-                                densnp,
+                                densn[k],
+                                densnp[k],
                                 rea_phi,
                                 rhsint);
 
       RecomputeConvPhiForRhs(
                               k,
                               sgvelint,
-                              densnp,
-                              densn,
+                              densnp[k],
+                              densn[k],
                               vdiv);
 
       //----------------------------------------------------------------
@@ -296,7 +298,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
-      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel());
+      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp[k],J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel());
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
@@ -335,11 +337,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
   // get material and stabilization parameters (evaluation at element center)
   //----------------------------------------------------------------------
   // density at t_(n)
-  double densn(1.0);
+  std::vector<double> densn(numscal_,1.0);
   // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
+  std::vector<double> densnp(numscal_,1.0);
   // density at t_(n+alpha_M)
-  double densam(1.0);
+  std::vector<double> densam(numscal_,1.0);
 
   // fluid viscosity
   double visc(0.0);
@@ -399,11 +401,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
       //----------------------------------------------------------------
 
       // calculation of convective element matrix in convective form
-      CalcMatConvODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,scatravarmanager_->GradPhi(k));
+      CalcMatConvODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp[k],scatravarmanager_->GradPhi(k));
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
-        CalcMatConvAddConsODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,scatravarmanager_->Phinp(k));
+        CalcMatConvAddConsODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp[k],scatravarmanager_->Phinp(k));
 
     }// end loop all scalars
 

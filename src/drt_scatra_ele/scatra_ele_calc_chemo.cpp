@@ -247,12 +247,12 @@ int DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::GetPartner(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::GetMaterialParams(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    double&             densn,     //!< density at t_(n)
-    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&             densam,    //!< density at t_(n+alpha_M)
-    double&             visc,      //!< fluid viscosity
-    const int           iquad      //!< id of current gauss point
+    const DRT::Element*  ele,       //!< the element we are dealing with
+    std::vector<double>& densn,     //!< density at t_(n)
+    std::vector<double>& densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,    //!< density at t_(n+alpha_M)
+    double&              visc,      //!< fluid viscosity
+    const int            iquad      //!< id of current gauss point
     )
 {
   // get the material
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist_chemotaxis)
@@ -287,13 +287,13 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
 
   }
   else
   {
-    my::Materials(material,0,densn,densnp,densam,visc,iquad);
+    my::Materials(material,0,densn[0],densnp[0],densam[0],visc,iquad);
   }
   return;
 } //ScaTraEleCalc::GetMaterialParams

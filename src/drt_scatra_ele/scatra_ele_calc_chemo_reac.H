@@ -4,9 +4,10 @@
 
  \brief main file containing routines for calculation of scatra element with chemotactic AND reactive scalars
 
+\level 2
 
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -57,10 +58,10 @@ protected:
 
   //! get the material parameters
   virtual void GetMaterialParams(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    double&             densn,     //!< density at t_(n)
-    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&             densam,    //!< density at t_(n+alpha_M)
+    const DRT::Element* ele,        //!< the element we are dealing with
+    std::vector<double>& densn,     //!< density at t_(n)
+    std::vector<double>& densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,    //!< density at t_(n+alpha_M)
     double&             visc,       //!< fluid viscosity
     const int           iquad=-1    //!< id of current gauss point (default = -1)
   );

@@ -87,11 +87,11 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::Done()
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       const DRT::Element* ele,       //!< the element we are dealing with
-      double&             densn,     //!< density at t_(n)
-      double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-      double&             densam,    //!< density at t_(n+alpha_M)
-      double&             visc,       //!< fluid viscosity
-      const int           iquad    //!< id of current gauss point (default = -1)
+      std::vector<double>& densn,    //!< density at t_(n)
+      std::vector<double>& densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+      std::vector<double>& densam,   //!< density at t_(n+alpha_M)
+      double&             visc,      //!< fluid viscosity
+      const int           iquad      //!< id of current gauss point (default = -1)
     )
 {
   // get the material
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
   }
 
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
       //Note: order is important here!!
-      advreac::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      advreac::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
 
       advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
     }
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
     }
 
   }
@@ -167,14 +167,14 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
       //Note: order is important here!!
-      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
+      my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
       advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
     }
   }
 
   else
   {
-    advreac::Materials(material,0,densn,densnp,densam,visc,iquad);
+    advreac::Materials(material,0,densn[0],densnp[0],densam[0],visc,iquad);
   }
 
   return;

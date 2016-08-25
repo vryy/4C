@@ -1786,7 +1786,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ReconFlux(
 
       // diffusive flux
       static LINALG::Matrix<nsd_,1> diffflux(true);
-      diffflux.Multiply(difftensor,gradpres);
+      diffflux.Multiply(-1.0,difftensor,gradpres);
 
       // Compute element vectors. For L2-Projection
       for (int node_i=0;node_i<nen_;node_i++)
