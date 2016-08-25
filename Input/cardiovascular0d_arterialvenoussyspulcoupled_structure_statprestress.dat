@@ -168,9 +168,9 @@ E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF                           2
 E 6 - 0
 E 7 - 1
----------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
+---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
-E 4 - SPRING_STIFF_TENS 0.075 SPRING_STIFF_COMP 0.075 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.005 DIRECTION refsurfnormal COUPLING none
+E 4 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 VISCO 0.005 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION refsurfnormal COUPLING none
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

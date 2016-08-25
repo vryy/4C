@@ -132,9 +132,9 @@ DLINE                           0
 DSURF                           2
 E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
 E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
----------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
+---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF 1
-E 13 - SPRING_STIFF_TENS 1.0e3 SPRING_STIFF_COMP 1.0e3 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all COUPLING none
+E 13 - NUMDOF 3 ONOFF 1 1 1 STIFF 1.0e3 1.0e3 1.0e3 VISCO 0.0 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION xyz COUPLING none
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

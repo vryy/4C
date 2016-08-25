@@ -182,9 +182,9 @@ E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalv
 DSURF                           2
 E 8 - coupling_id 0
 E 9 - coupling_id 1
----------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
+---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
-E 4 - SPRING_STIFF_TENS 0.075 SPRING_STIFF_COMP 0.075 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.005 DIRECTION refsurfnormal COUPLING none
+E 4 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 VISCO 0.005 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION refsurfnormal COUPLING none
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

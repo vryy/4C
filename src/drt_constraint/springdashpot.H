@@ -36,6 +36,7 @@ namespace Teuchos
 
 namespace LINALG
 {
+  class SparseMatrix;
   class SparseOperator;
 }
 
@@ -58,7 +59,7 @@ namespace UTILS
       // type of spring
       enum SpringType
       {
-        all, ///<
+        xyz, ///<
         refsurfnormal,  ///<
         cursurfnormal  ///<
       };
@@ -78,6 +79,7 @@ namespace UTILS
       };
 
       //! add contribution of spring dashpot BC to residual vector and stiffness matrix
+      // old version, NOT consistently integrated over element surface!!
       void Evaluate(
           Teuchos::RCP<LINALG::SparseOperator> stiff,
           Teuchos::RCP<Epetra_Vector> fint,
@@ -85,12 +87,24 @@ namespace UTILS
           Teuchos::RCP<Epetra_Vector> veln,
           Teuchos::ParameterList parlist);
 
+      // NEW version, consistently integrated over element surface!!
+      void EvaluateRobin(
+          Teuchos::RCP<LINALG::SparseOperator> stiff,
+          Teuchos::RCP<Epetra_Vector> fint,
+          const Teuchos::RCP<const Epetra_Vector> disp,
+          const Teuchos::RCP<const Epetra_Vector> velo,
+          Teuchos::ParameterList p);
+
       //! reset after prestressing with MULF
       void Reset(
           Teuchos::RCP<Epetra_Vector> dis);
 
       //! set reset after prestressing with MULF
       void SetRestart(
+          Teuchos::RCP<Epetra_Vector> vec);
+
+      //! set reset after prestressing with MULF
+      void SetRestartOld(
           Teuchos::RCP<Epetra_MultiVector> vec);
 
       //! output of gap, normal, and nodal stiffness
@@ -110,6 +124,9 @@ namespace UTILS
 
       //! output of spring offset
       void OutputPrestrOffset(
+          Teuchos::RCP<Epetra_Vector> &springprestroffset);
+      //! output of spring offset
+      void OutputPrestrOffsetOld(
           Teuchos::RCP<Epetra_MultiVector> &springprestroffset);
 
       //! udpate condition for new time step
@@ -151,7 +168,7 @@ namespace UTILS
       const double stiff_comp_; ///< spring stiffness when spring is in compression
       const double offset_; ///< spring offset
       const double viscosity_; ///< dashpot viscosity
-      const double coupling_; ///< coupling id of reference DSURFACE
+      const int coupling_; ///< coupling id of reference DSURFACE
 
       // condition properties
       const std::vector<int>* nodes_; ///< condition nodes
@@ -167,6 +184,10 @@ namespace UTILS
       std::map<int, std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
       std::map<int, std::vector<double> > springstress_; //< nodal force applied by spring dashpot BC for output
       std::map<int, std::vector<double> > offset_prestr_; //< prestressing offset
+
+      // this is a pointer to the accumulated whole displacement vector of all last load steps
+      // has dimension of full problem
+      Teuchos::RCP<Epetra_Vector> offset_prestr_new_; //< new prestressing offset
 
     private:
       SpringType springtype_;

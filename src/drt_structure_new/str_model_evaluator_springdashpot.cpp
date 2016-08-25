@@ -51,7 +51,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<DRT::Condition> > springdashpots;
-  Discret().GetCondition("SpringDashpot",springdashpots);
+  Discret().GetCondition("RobinSpringDashpot",springdashpots);
 
   // number of spring dashpot conditions
   n_conds_ = (int)springdashpots.size();
@@ -63,6 +63,9 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();
   velnp_ptr_ = GState().GetMutableVelNp();
+
+  fspring_np_ptr_ =
+      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   stiff_spring_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *GState().DofRowMapView(), 81, true, true));
 
@@ -86,7 +89,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
   // update the structural displacement vector
   velnp_ptr_ = GState().GetVelNp();
 
-  // Zero out the stiffness contributions matrix
+  fspring_np_ptr_->Scale(0.0);
   stiff_spring_ptr_->Zero();
 }
 
@@ -96,10 +99,12 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
 {
   CheckInitSetup();
 
+  Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   for (int i=0; i<n_conds_; ++i)
     springs_[i]->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_);
+//    springs_[i]->EvaluateRobin(Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
 
   return true;
 }
@@ -119,12 +124,13 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
   const double fac_disp = EvalData().GetTimIntFactorDisp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
-  springdashpotparams.set("time_fac", time_fac);
+  if(fac_vel>0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
     springs_[i]->EvaluateForceStiff(*stiff_spring_ptr_, *fspring_np_ptr_,
         disnp_ptr_, velnp_ptr_, springdashpotparams);
+//    springs_[i]->EvaluateRobin(stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
 
   if (not stiff_spring_ptr_->Filled())
     stiff_spring_ptr_->Complete();
@@ -148,12 +154,13 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
   const double fac_disp = EvalData().GetTimIntFactorDisp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
-  springdashpotparams.set("time_fac", time_fac);
+  if(fac_vel>0.0) springdashpotparams.set("time_fac", time_fac);
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
     springs_[i]->EvaluateForceStiff(*stiff_spring_ptr_, *fspring_np_ptr_,
         disnp_ptr_, velnp_ptr_, springdashpotparams);
+//    springs_[i]->EvaluateRobin(stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
 
   if (not stiff_spring_ptr_->Filled())
     stiff_spring_ptr_->Complete();

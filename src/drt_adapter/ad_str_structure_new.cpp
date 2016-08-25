@@ -410,7 +410,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
   std::vector<DRT::Condition*> sdp_cond(0);
-  actdis_->GetCondition("SpringDashpot",sdp_cond);
+  actdis_->GetCondition("RobinSpringDashpot",sdp_cond);
   if (sdp_cond.size())
     modeltypes.insert(INPAR::STR::model_springdashpot);
   // ---------------------------------------------------------------------------

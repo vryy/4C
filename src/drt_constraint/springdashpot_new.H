@@ -56,7 +56,7 @@ namespace UTILS
       // type of spring
       enum SpringType
       {
-        all, ///<
+        xyz, ///<
         refsurfnormal,  ///<
         cursurfnormal  ///<
       };
@@ -76,17 +76,29 @@ namespace UTILS
       };
 
       //! add contribution of spring dashpot BC to residual vector
+      // old version, NOT consistently integrated over element surface!!
       void EvaluateForce(
           Epetra_Vector& fint,
           const Teuchos::RCP<const Epetra_Vector> disp,
           const Teuchos::RCP<const Epetra_Vector> velp);
 
       //! add contribution of spring dashpot BC to stiffness matrix
+      // old version, NOT consistently integrated over element surface!!
+      // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
+      // -> however should migrate to new EvaluateRobin... mhv 08/2016
       void EvaluateForceStiff(
           LINALG::SparseMatrix& stiff,
           Epetra_Vector& fint,
           const Teuchos::RCP<const Epetra_Vector> disp,
           const Teuchos::RCP<const Epetra_Vector> velp,
+          Teuchos::ParameterList p);
+
+      // NEW version, consistently integrated over element surface!!
+      void EvaluateRobin(
+          Teuchos::RCP<LINALG::SparseMatrix> stiff,
+          Teuchos::RCP<Epetra_Vector> fint,
+          const Teuchos::RCP<const Epetra_Vector> disp,
+          const Teuchos::RCP<const Epetra_Vector> velo,
           Teuchos::ParameterList p);
 
       //! reset after Newton step
@@ -154,7 +166,7 @@ namespace UTILS
       const double stiff_comp_; ///< spring stiffness when spring is in compression
       const double offset_; ///< spring offset
       const double viscosity_; ///< dashpot viscosity
-      const double coupling_; ///< coupling id of reference DSURFACE
+      const int coupling_; ///< coupling id of reference DSURFACE
 
       // condition properties
       const std::vector<int>* nodes_; ///< condition nodes
@@ -169,6 +181,10 @@ namespace UTILS
       std::map<int, std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
       std::map<int, std::vector<double> > springstress_; //< nodal force applied by spring dashpot BC for output
       std::map<int, std::vector<double> > offset_prestr_; //< prestressing offset
+
+      // this is a pointer to the accumulated whole displacement vector of all last load steps
+      // has dimension of full problem
+      Teuchos::RCP<Epetra_Vector> offset_prestr_new_; //< new prestressing offset
 
     private:
       SpringType springtype_;

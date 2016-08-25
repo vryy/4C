@@ -547,43 +547,55 @@ namespace INPAR
   {
     using namespace DRT::INPUT;
 
-
     /*--------------------------------------------------------------------*/
 
-    // structural spring dashpot boundary condition (spring and dashpot in parallel) - mhv 01/14
+    // structural Robin spring dashpot boundary condition (spring and dashpot in parallel) - mhv 08/16
 
-    Teuchos::RCP<ConditionDefinition> springdashpotcond =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURF SPRING DASHPOT CONDITIONS",
-                                           "SpringDashpot",
-                                           "Spring Dashpot",
-                                           DRT::Condition::SpringDashpot,
+    Teuchos::RCP<ConditionDefinition> robinspringdashpotcond =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
+                                           "RobinSpringDashpot",
+                                           "Robin Spring Dashpot",
+                                           DRT::Condition::RobinSpringDashpot,
                                            true,
                                            DRT::Condition::Surface));
 
 
-    AddNamedReal(springdashpotcond,"SPRING_STIFF_TENS");
-    AddNamedReal(springdashpotcond,"SPRING_STIFF_COMP");
-    AddNamedReal(springdashpotcond,"SPRING_OFFSET");
-    AddNamedReal(springdashpotcond,"DASHPOT_VISCOSITY");
-    springdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
-    springdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction", "all",
-                                                                                         Teuchos::tuple<std::string>("all","refsurfnormal","cursurfnormal"),
-                                                                                         Teuchos::tuple<std::string>("all","refsurfnormal","cursurfnormal"),
-                                                                                         true)));
-    springdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
-    springdashpotcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("coupling id", 1, true, true)));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new IntConditionComponent     ("numdof")));
 
-    condlist.push_back(springdashpotcond);
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("onoff", 3)));
+
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("STIFF")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("stiff", 3)));
+
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VISCO")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("visco", 3)));
+
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("DISPLOFFSET")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("disploffset", 3)));
+
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction", "xyz",
+                                                                                         Teuchos::tuple<std::string>("xyz","refsurfnormal","cursurfnormal"),
+                                                                                         Teuchos::tuple<std::string>("xyz","refsurfnormal","cursurfnormal"),
+                                                                                         false)));
+
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLING", true)));
+    robinspringdashpotcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("coupling id", 1, true, true)));
+
+    condlist.push_back(robinspringdashpotcond);
+
 
     /*--------------------------------------------------------------------*/
     // surface coupling for spring dashpot DIRECTION cursurfnormal
     // pfaller Apr15
 
     Teuchos::RCP<ConditionDefinition> springdashpotcoupcond =
-          Teuchos::rcp(new ConditionDefinition("DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS",
-              "SpringDashpotCoupling",
-              "Spring Dashpot Coupling",
-              DRT::Condition::SpringDashpotCoupling,
+          Teuchos::rcp(new ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS",
+              "RobinSpringDashpotCoupling",
+              "RobinSpring Dashpot Coupling",
+              DRT::Condition::RobinSpringDashpotCoupling,
               true,
               DRT::Condition::Surface));
 

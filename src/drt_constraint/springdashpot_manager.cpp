@@ -26,7 +26,7 @@ havespringdashpot_(false)
 {
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<DRT::Condition> > springdashpots;
-  actdisc_->GetCondition("SpringDashpot",springdashpots);
+  actdisc_->GetCondition("RobinSpringDashpot",springdashpots);
 
   // number of spring dashpot conditions
   n_conds_ = (int)springdashpots.size();
@@ -55,6 +55,7 @@ void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
   // evaluate all spring dashpot conditions
   for (int i=0; i<n_conds_; ++i)
     springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
+//    springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
 
   return;
 }
@@ -120,16 +121,24 @@ void UTILS::SpringDashpotManager::OutputRestart(
     Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
-  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
-
+  Teuchos::RCP<Epetra_Vector> springoffsetprestr = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
   // collect outputs from all spring dashpot conditions
   for (int i=0; i<n_conds_; ++i)
-  {
     springs_[i]->OutputPrestrOffset(springoffsetprestr);
-  }
 
   // write vector to output for restart
   output->WriteVector("springoffsetprestr", springoffsetprestr);
+
+
+  // ToDo: delete, old version! (mhv 08/2016)
+  // row maps for export
+  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+  // collect outputs from all spring dashpot conditions
+  for (int i=0; i<n_conds_; ++i)
+    springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
+
+  // write vector to output for restart
+  output->WriteVector("springoffsetprestr_old", springoffsetprestr_old);
 
   return;
 }
@@ -142,16 +151,25 @@ void UTILS::SpringDashpotManager::OutputRestart(
 void UTILS::SpringDashpotManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
 {
 
-  Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
-
-  reader.ReadMultiVector(tempvec, "springoffsetprestr");
-  // loop over all spring dashpot conditions and reset them
+  Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  reader.ReadVector(tempvec, "springoffsetprestr");
+  // loop over all spring dashpot conditions and set restart
   for (int i=0; i<n_conds_; ++i)
   {
     springs_[i]->SetRestart(tempvec);
   }
 
+  // ToDo: delete, old version! (mhv 08/2016)
+  Teuchos::RCP<Epetra_MultiVector> tempvec2 = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+  reader.ReadMultiVector(tempvec2, "springoffsetprestr_old");
+  // loop over all spring dashpot conditions and reset them
+  for (int i=0; i<n_conds_; ++i)
+  {
+    springs_[i]->SetRestartOld(tempvec2);
+  }
+
   return;
+
 }
 
 
