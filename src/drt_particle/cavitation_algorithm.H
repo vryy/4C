@@ -297,11 +297,12 @@ namespace CAVITATION
 
     /// use analytical integration for solving volume integral to obtain void volume
     virtual void DoAnalyticalIntegrationFluidFrac(
-      DRT::Element*         ele,
-      LINALG::Matrix<3,1>&  particleposition,
-      const double          influence,
-      double&               vol_ele,
-      bool&                 surfaceoverlap
+      DRT::Element*               ele,
+      const int                   bubbleid,
+      const LINALG::Matrix<3,1>&  particleposition,
+      const double                influence,
+      double&                     vol_ele,
+      bool&                       surfaceoverlap
       );
 
     /// compute integration points for analytic integration
@@ -309,10 +310,12 @@ namespace CAVITATION
       std::vector<LINALG::Matrix<3,1> >& surfacenodes,
       const LINALG::Matrix<3,1>&       n,
       const LINALG::Matrix<3,1>&       centerele ,
-      LINALG::Matrix<3,1>&             particleposition,
+      const LINALG::Matrix<3,1>&       particleposition,
       const double                     influence,
       double&                          vol_ele,
-      bool&                            surfaceoverlap
+      bool&                            surfaceoverlap,
+      const int                        eleid,
+      const int                        isurface
       );
 
     /// find penetration points of bubble surfaces (+x and -x)
@@ -323,7 +326,8 @@ namespace CAVITATION
       const LINALG::Matrix<3,1>&         particleposition,
       std::vector<LINALG::Matrix<3,1> >& bubbleX,
       std::vector<LINALG::Matrix<3,1> >& bubble_X,
-      bool&                              surfaceoverlap
+      bool&                              surfaceoverlap,
+      const int                          eleid
       );
 
     /// calculation of bubble corner points
@@ -406,6 +410,15 @@ namespace CAVITATION
       const bool approxelecoordsinit
       );
 
+    /// unwarp surfaces of fluid element for analytical integration
+    virtual void UnwarpElement(
+      const DRT::Element* ele,
+      const std::vector<Teuchos::RCP<DRT::Element> >& surfaces,
+      const int numsurfacenodes,
+      std::map<int, LINALG::Matrix<3,1> >& currentpositions,
+      std::vector<LINALG::Matrix<3,1> >& normals
+      );
+
     /// compute superconvergent patch recovery for fluid fraction
     virtual void ComputePatchRecoveredFluidFraction(
       Teuchos::RCP<const Epetra_MultiVector> fluidfraction
@@ -416,12 +429,26 @@ namespace CAVITATION
       Teuchos::RCP<const Epetra_MultiVector>
       );
 
-     /// solve for a node based linear system
+    /// solve for a node based linear system
     virtual Teuchos::RCP<Epetra_Vector> SolveOnNodeBasedVector(
       const int solvernumber,
       Teuchos::RCP<Epetra_Map> noderowmap,
       Teuchos::RCP<LINALG::SparseMatrix> matrix,
       Teuchos::RCP<Epetra_Vector> rhs
+      );
+
+    /// print cut situation for analytical void fraction computation to GMSH
+    virtual void PrintBubbleAndFluidEleToGMSH(
+      DRT::Element* ele,
+      const int bubbleid,
+      const LINALG::Matrix<3,1>& particleposition,
+      const double influence
+      );
+
+    /// print integration lines for analytical void fraction computation to GMSH
+    virtual void PrintIntegrationLinesToGMSH(
+      const std::vector<LINALG::Matrix<3,1> >& integrationpoints,
+      const int isurface
       );
 
   private:
@@ -559,6 +586,9 @@ namespace CAVITATION
     Teuchos::RCP<const Epetra_Vector> storedtsub_;
 
     //@}
+
+    /// gmsh output
+    std::ofstream gmshfilecontent_;
 
 
   }; // Algorithm

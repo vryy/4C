@@ -274,6 +274,7 @@ baci_test(cavitation_bcf16x5x5_detailedforces 3 80)
 baci_test(cavitation_bcf16x5x5_spr_twowayfull 3 18)
 baci_test(cavitation_bcf16x5x5_twowayfull 3 18)
 baci_test(cavitation_voidfrac_gaussint 2 15)
+baci_test(cavitation_voidfrac_constpoly 2 15)
 baci_test(cavitation_voidfrac_quadpoly 2 15)
 baci_test(cavitation_voidfrac_quarticpoly 2 "")
 # these tests are not intended for nightly testing
