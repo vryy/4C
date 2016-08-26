@@ -166,10 +166,10 @@ MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COU
 MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
 MAT 74 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
 MAT 75 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative
-MAT 76 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 5.0
+MAT 76 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0
 MAT 77 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 0 REACCOEFF 2.0 COUPLING simple_multiplicative
-MAT 78 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 3.0
-MAT 79 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative REACSTART 3.0
+MAT 78 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
+MAT 79 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 4
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5

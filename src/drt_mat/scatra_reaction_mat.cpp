@@ -31,7 +31,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
   reaccoeff_(matdata->GetDouble("REACCOEFF")),
   coupling_(SetCouplingType(matdata)),
   couprole_(matdata->Get<std::vector<double> >("ROLE")),
-  reacstart_((matdata->GetDouble("REACSTART")))
+  reacstart_(matdata->Get<std::vector<double> >("REACSTART")),
+  isreacstart_(false)
 {
   //Some checks for more safety
   if (coupling_ == reac_coup_none)
@@ -42,6 +43,21 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
 
   if (numscal_ != (int)couprole_->size())
     dserror("number of scalars %d does not fit to size of the ROLE vector %d", numscal_, stoich_->size());
+
+  if (numscal_ != (int)reacstart_->size())
+    dserror("number of scalars %d does not fit to size of the REACSTART vector %d", numscal_, reacstart_->size());
+
+  for (int ii=0; ii < numscal_; ii++)
+  {
+    if (reacstart_->at(ii)<0)
+    {
+      dserror("In the REACSTART vector only non-negative values are allowed!");
+    }
+    else if (reacstart_->at(ii)>0)
+    {
+      isreacstart_=true;
+    }
+  }
 
   switch (coupling_)
   {
@@ -130,11 +146,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraReactionMat::CreateMaterial()
 
 MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
 
-
-void MAT::PAR::ScatraReactionMat::OptParams(std::map<std::string,int>* pnames)
-{
-  pnames->insert(std::pair<std::string,int>("REACSTART", reacstart_));
-}
 
 MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata )
 {
@@ -247,7 +258,7 @@ double MAT::ScatraReactionMat::CalcReaCoeff(
 
   if ( (Stoich()->at(k)<0 or (Coupling()==MAT::PAR::reac_coup_michaelis_menten and Stoich()->at(k)!=0)) and fabs(ReacCoeff())>1e-12)
   {
-    const double rcfac= CalcReaCoeffFac(k,phinp,ReacStart(),scale);
+    const double rcfac= CalcReaCoeffFac(k,phinp,scale);
 
     reactermK -= ReacCoeff()*Stoich()->at(k)*rcfac; // scalar at integration point np
   }
@@ -269,7 +280,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivMatrix(
 
   if ( (Stoich()->at(k)<0 or (Coupling()==MAT::PAR::reac_coup_michaelis_menten and Stoich()->at(k)!=0)) and fabs(ReacCoeff())>1e-12)
   {
-    const double rcdmfac = CalcReaCoeffDerivFac(k,toderive,phinp,ReacStart(),scale);
+    const double rcdmfac = CalcReaCoeffDerivFac(k,toderive,phinp,scale);
 
     reacoeffderivmatrixKJ -= ReacCoeff()*Stoich()->at(k)*rcdmfac;
   }
@@ -291,7 +302,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
 
   if ( (Stoich()->at(k)>0 or (Coupling()==MAT::PAR::reac_coup_michaelis_menten and Stoich()->at(k)!=0)) and fabs(ReacCoeff())>1e-12)
   {
-    const double bftfac = CalcReaBodyForceTermFac(k,phinp,ReacStart(),scale);// scalar at integration point np
+    const double bftfac = CalcReaBodyForceTermFac(k,phinp,scale);// scalar at integration point np
 
     bodyforcetermK += ReacCoeff()*Stoich()->at(k)*bftfac;
   }
@@ -313,7 +324,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
 
   if ( (Stoich()->at(k)>0 or (Coupling()==MAT::PAR::reac_coup_michaelis_menten and Stoich()->at(k)!=0)) and fabs(ReacCoeff())>1e-12)
   {
-    const double bfdmfac = CalcReaBodyForceDerivFac(k,toderive,phinp,ReacStart(),scale);
+    const double bfdmfac = CalcReaBodyForceDerivFac(k,toderive,phinp,scale);
 
     reabodyforcederivmatrixKJ += ReacCoeff()*Stoich()->at(k)*bfdmfac;
   }
@@ -322,18 +333,43 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
 }
 
 /*----------------------------------------------------------------------*
+ |  Modify concentrations according to reacstart vector      thon 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::ApplyReacStartAndScaling(
+        std::vector<double>& phinp,
+        const std::vector<double>* reacstart,
+        const double scale
+        ) const
+{
+
+  for (unsigned int ii=0; ii < phinp.size(); ii++)
+  {
+    phinp.at(ii) -= reacstart->at(ii);
+    if (phinp.at(ii) < 0)
+      phinp.at(ii)=0;
+
+    phinp.at(ii)*=scale;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  helper for calculating K(c)                              thon 08/16 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaCoeffFac(
     const int k,                         //!< current scalar id
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double reacstart,              //!<reaction start coefficient
-    const double scale                   //!< scaling factor for reference concentrations
+    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
+    const double scale,                  //!< scaling factor for reference concentrations
+    const bool skipreacstart
     ) const
 {
   const std::vector<int> stoich = *Stoich();
   const std::vector<double> couprole = *Couprole();
-//  const double reacstart = ReacStart();
+
+  std::vector<double> phinp(phinp_org);
+  if ( (IsReacStart() or scale != 1.0) and not skipreacstart )
+    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
 
   double rcfac=1.0;
 
@@ -346,7 +382,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
         if (stoich[ii]<0)
         {
           if (ii!=k)
-            rcfac *=phinp.at(ii)*scale;
+            rcfac *=phinp.at(ii);
         }
       }
       break;
@@ -359,13 +395,13 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
         if (stoich[ii]<0)
         {
           if (ii!=k)
-            rcfac *= std::pow(phinp.at(ii)*scale,couprole[ii]);
+            rcfac *= std::pow(phinp.at(ii),couprole[ii]);
           else
-            rcfac *= std::pow(phinp.at(ii)*scale,couprole[ii]-1.0);
+            rcfac *= std::pow(phinp.at(ii),couprole[ii]-1.0);
         }
       }
 
-      if ( reacstart > 0 )
+      if ( IsReacStart() )
         dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
       break;
     }
@@ -374,36 +410,36 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
     {
       rcfac = 0.0;
 
-      if ( reacstart > 0 )
+      if ( IsReacStart() )
         dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
       break;
     }
 
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+     case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
     {
       for (int ii=0; ii < NumScal(); ii++)
       {
         if (couprole[k]<0)
         {
           if ((couprole[ii] < 0) and (ii != k))
-            rcfac *= phinp.at(ii)*scale;
+            rcfac *= phinp.at(ii);
           else if ((couprole[ii] > 0) and (ii!=k))
-            rcfac *= (phinp.at(ii)*scale/(phinp.at(ii)*scale + couprole[ii]));
+            rcfac *= (phinp.at(ii)/(phinp.at(ii) + couprole[ii]));
         }
         else if (couprole[k]>0)
         {
           if (ii == k)
-            rcfac *= (1/(phinp.at(ii)*scale+couprole[ii]));
+            rcfac *= (1/(phinp.at(ii)+couprole[ii]));
           else if (couprole[ii] < 0)
-            rcfac *= phinp.at(ii)*scale;
+            rcfac *= phinp.at(ii);
           else if (couprole[ii] > 0)
-            rcfac *= (phinp.at(ii)*scale/(phinp.at(ii)*scale + couprole[ii]));
+            rcfac *= (phinp.at(ii)/(phinp.at(ii) + couprole[ii]));
         }
         else //if (couprole[k] == 0)
           rcfac = 0;
       }
 
-      if ( reacstart > 0 )
+      if ( IsReacStart() )
         dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
       break;
     }
@@ -418,13 +454,10 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
   }
 
   //reaction start feature
-  if ( reacstart > 0 )
+  if ( ReacStart()->at(k) > 0 and not skipreacstart )
   {
-    //product of ALL educts (with according kinematics)
-    const double prod = CalcReaBodyForceTermFac(k,phinp,-1.0,scale);
-
-    if (prod > reacstart ) //! Calculate (K(c)-reacstart(c)./c)_{+}
-      rcfac -= reacstart/(phinp.at(k)*scale);
+    if ( phinp.at(k) > 0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
+      rcfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
     else
       rcfac = 0;
   }
@@ -438,14 +471,16 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
 double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
     const int k,                         //!< current scalar id
     const int toderive,                  //!< current id to derive to
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double reacstart,              //!<reaction start coefficient
+    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
   const std::vector<int> stoich = *Stoich();
   const std::vector<double> couprole = *Couprole();
-//  const double reacstart = ReacStart();
+
+  std::vector<double> phinp(phinp_org);
+  if ( IsReacStart() or scale != 1.0 )
+    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
 
   double rcdmfac=1.0;
 
@@ -458,7 +493,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
         for (int ii=0; ii < NumScal(); ii++)
         {
           if (stoich[ii]<0 and ii!=k and ii!= toderive)
-            rcdmfac *= phinp.at(ii)*scale;
+            rcdmfac *= phinp.at(ii);
         }
       }
       else
@@ -473,11 +508,11 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
         for (int ii=0; ii < NumScal(); ii++)
         {
           if (stoich[ii]<0 and ii!=k and ii!= toderive)
-            rcdmfac *= std::pow(phinp.at(ii)*scale,couprole[ii]);
+            rcdmfac *= std::pow(phinp.at(ii),couprole[ii]);
           else if(stoich[ii]<0 and ii!=k and ii== toderive)
-            rcdmfac *= couprole[ii]*std::pow(phinp.at(ii)*scale,couprole[ii]-1.0);
+            rcdmfac *= couprole[ii]*std::pow(phinp.at(ii),couprole[ii]-1.0);
           else if(stoich[ii]<0 and ii==k and ii== toderive and couprole[ii]!=1.0)
-            rcdmfac *= (couprole[ii]-1.0)*std::pow(phinp.at(ii)*scale,couprole[ii]-2.0);
+            rcdmfac *= (couprole[ii]-1.0)*std::pow(phinp.at(ii),couprole[ii]-2.0);
         }
       }
       else
@@ -504,9 +539,9 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
             if (ii==k)
               rcdmfac *= 1;
             else if (ii!=toderive and couprole[ii]<0)
-              rcdmfac *= phinp.at(ii)*scale;
+              rcdmfac *= phinp.at(ii);
             else if (ii!=toderive and couprole[ii]>0)
-              rcdmfac *= phinp.at(ii)*scale/(couprole[ii]+phinp.at(ii)*scale);
+              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
             else if (ii!=toderive and couprole[ii] == 0)
               rcdmfac *= 1;
             else if (ii == toderive)
@@ -517,13 +552,13 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
             if (ii==k)
               rcdmfac *= 1;
             else if (ii!=toderive and couprole[ii]<0)
-              rcdmfac *= phinp.at(ii)*scale;
+              rcdmfac *= phinp.at(ii);
             else if (ii!=toderive and couprole[ii]>0)
-              rcdmfac *= phinp.at(ii)*scale/(couprole[ii]+phinp.at(ii)*scale);
+              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
             else if (ii!=toderive and couprole[ii]==0)
               rcdmfac *= 1;
             else if (ii == toderive)
-              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)*scale),2);
+              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)),2);
           }
         }
         else if (couprole[k] > 0 )
@@ -533,11 +568,11 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
           else if ( (k!=toderive) and couprole[toderive]<0)
           {
             if (ii==k)
-              rcdmfac *= 1/(couprole[ii]+phinp.at(ii)*scale);
+              rcdmfac *= 1/(couprole[ii]+phinp.at(ii));
             else if ((ii !=toderive) and (couprole[ii]<0))
-              rcdmfac *= phinp.at(ii)*scale;
+              rcdmfac *= phinp.at(ii);
             else if ((ii!=toderive) and (couprole[ii]>0))
-              rcdmfac *= phinp.at(ii)*scale/(couprole[ii]+phinp.at(ii)*scale);
+              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
             else if ((ii!=toderive) and (couprole[ii]==0))
               rcdmfac *= 1;
             else if (ii==toderive)
@@ -546,24 +581,24 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
           else if ( (k!=toderive) and couprole[toderive]>0)
           {
             if (ii==k)
-              rcdmfac *= 1/(couprole[ii]+phinp.at(ii)*scale);
+              rcdmfac *= 1/(couprole[ii]+phinp.at(ii));
             else if ((ii!=toderive) and couprole[ii]<0)
-              rcdmfac *= phinp.at(ii)*scale;
+              rcdmfac *= phinp.at(ii);
             else if ((ii!=toderive) and couprole[ii]>0)
-              rcdmfac *= phinp.at(ii)*scale/(couprole[ii] + phinp.at(ii)*scale);
+              rcdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
             else if ((ii!=toderive) and (couprole[ii]==0))
               rcdmfac *= 1;
             else if (ii==toderive)
-              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)*scale),2);
+              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)),2);
           }
           else if (k==toderive)
           {
             if (ii==k)
-              rcdmfac *= -1/std::pow((couprole[ii]+phinp.at(ii)*scale),2);
+              rcdmfac *= -1/std::pow((couprole[ii]+phinp.at(ii)),2);
             else if ((ii!=toderive) and (couprole[ii]<0))
-              rcdmfac *= phinp.at(ii)*scale;
+              rcdmfac *= phinp.at(ii);
             else if ((ii!=toderive) and (couprole[ii]>0))
-              rcdmfac *= phinp.at(ii)*scale/(couprole[ii] + phinp.at(ii)*scale);
+              rcdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
             else if ((ii!=toderive) and (couprole[ii]==0))
               rcdmfac *= 1;
           }
@@ -585,15 +620,20 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
   }
 
   //reaction start feature
-  if ( reacstart > 0 )
+  if ( ReacStart()->at(k) > 0 )
   {
-    //product of ALL educts (with according kinematics)
-    const double prod = CalcReaBodyForceTermFac(k,phinp,-1.0,scale);
-
-    if ( prod > reacstart) //! Calculate \frac{\partial}{\partial_c} (K(c)-reacstart(c)./c)_{+}
+    if ( phinp.at(k) > 0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
     {
-      if (k==toderive)
-        rcdmfac -= -reacstart / pow(phinp.at(k)*scale,2);
+      rcdmfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
+
+      if ( k==toderive )
+      {
+        const double rcfac= CalcReaCoeffFac(k,phinp,1.0,true);
+
+        rcdmfac += rcfac*ReacStart()->at(k)/std::pow(phinp_org.at(k)*scale,2);
+      }
+      else
+        ;
     }
     else
       rcdmfac = 0;
@@ -607,14 +647,16 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
  *----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
     const int k,                         //!< current scalar id
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double reacstart,              //!<reaction start coefficient
+    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
   const std::vector<int> stoich = *Stoich();
   const std::vector<double> couprole = *Couprole();
-//  const double reacstart = ReacStart();
+
+  std::vector<double> phinp(phinp_org);
+  if ( IsReacStart() or scale != 1.0 )
+    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
 
   double bftfac=1.0;
 
@@ -626,7 +668,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
       {
         if (stoich[ii]<0)
         {
-          bftfac *=phinp[ii]*scale;
+          bftfac *=phinp[ii];
         }
       }
       break;
@@ -638,7 +680,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
       {
         if (stoich[ii]<0)
         {
-          bftfac *= std::pow(phinp[ii]*scale,couprole[ii]);
+          bftfac *= std::pow(phinp[ii],couprole[ii]);
         }
       }
       break;
@@ -651,7 +693,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
       break;
     }
 
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+     case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
       if (couprole[k] != 0)
         bftfac = 0;
       else // if (couprole[k] == 0)
@@ -659,9 +701,9 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
         for (int ii=0; ii < NumScal() ; ii++)
         {
           if (couprole[ii]>0) //and (ii!=k))
-            bftfac *= phinp[ii]*scale/(couprole[ii]+phinp[ii]*scale);
+            bftfac *= phinp[ii]/(couprole[ii]+phinp[ii]);
           else if (couprole[ii]<0) //and (ii!=k))
-            bftfac *= phinp[ii]*scale;
+            bftfac *= phinp[ii];
         }
       }
       break;
@@ -675,18 +717,6 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
       break;
   }
 
-  //reaction start feature
-  if ( reacstart > 0 )
-  {
-    //product of ALL educts (with according kinematics)
-    const double prod = bftfac; //=CalcReaBodyForceTermFac(stoich,couplingtype,couprole,-1.0,k,scale);
-
-    if (prod > reacstart ) //! Calculate (f(c)-reacstart(c))_{+}
-      bftfac -= reacstart;
-    else
-      bftfac = 0;
-  }
-
   return bftfac;
 }
 
@@ -696,15 +726,16 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
 double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
     const int k,                         //!< current scalar id
     const int toderive,                  //!< current id to derive to
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double reacstart,              //!<reaction start coefficient
+    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
   const std::vector<int> stoich = *Stoich();
   const std::vector<double> couprole = *Couprole();
-//  const double reacstart = ReacStart();
 
+  std::vector<double> phinp(phinp_org);
+  if ( IsReacStart() or scale != 1.0 )
+    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
 
   double bfdmfac=1.0;
 
@@ -717,7 +748,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
           for (int ii=0; ii < NumScal(); ii++)
           {
             if (stoich[ii]<0 and ii!=toderive)
-              bfdmfac *= phinp.at(ii)*scale;
+              bfdmfac *= phinp.at(ii);
           }
         }
       else
@@ -732,9 +763,9 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
           for (int ii=0; ii < NumScal(); ii++)
           {
             if (stoich[ii]<0 and ii!=toderive)
-              bfdmfac *= std::pow(phinp.at(ii)*scale,couprole[ii]);
+              bfdmfac *= std::pow(phinp.at(ii),couprole[ii]);
             else if(stoich[ii]<0 and ii==toderive)
-              bfdmfac *= std::pow(phinp.at(ii)*scale,couprole[ii]-1.0);
+              bfdmfac *= std::pow(phinp.at(ii),couprole[ii]-1.0);
           }
         }
       else
@@ -761,16 +792,16 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
             if (ii != toderive)
             {
               if (couprole[ii] > 0)
-                bfdmfac *= phinp.at(ii)*scale/(couprole[ii] + phinp.at(ii)*scale);
+                bfdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
               else if (couprole[ii] < 0)
-                bfdmfac *= phinp.at(ii)*scale;
+                bfdmfac *= phinp.at(ii);
               else
                 bfdmfac *= 1;
             }
             else
             {
               if (couprole[ii] > 0)
-                bfdmfac *= couprole[ii]/(std::pow((phinp.at(ii)*scale+couprole[ii]), 2));
+                bfdmfac *= couprole[ii]/(std::pow((phinp.at(ii)+couprole[ii]), 2));
               else if (couprole[ii] < 0)
                 bfdmfac *= 1;
               else
@@ -793,18 +824,6 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
       break;
   }
 
-  //reaction start feature
-  if ( reacstart > 0 )
-  {
-    //product of ALL educts (with according kinematics)
-    const double prod = CalcReaBodyForceTermFac(k,phinp,-1.0,scale);
-
-    if ( prod > reacstart) //! Calculate \frac{\partial}{\partial_c} (f(c)-reacstart(c))_{+}
-      { /*nothing to do here :-) */}
-    else
-      bfdmfac = 0;
-  }
-
   return bfdmfac;
 
 }
@@ -812,24 +831,24 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-double MAT::ScatraReactionMat::CalcPermInfluence(
+inline double MAT::ScatraReactionMat::CalcPermInfluence(
     const int k,                         //!< current scalar id
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
-  return CalcReaBodyForceTermFac(k,phinp,ReacStart(),scale);
+  return CalcReaBodyForceTermFac(k,phinp,scale);
 }
 
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-double MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
+inline double MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
     const int k,                         //!< current scalar id
     const int toderive,                  //!< current id to derive to
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
-  return CalcReaBodyForceDerivFac(k,toderive,phinp,ReacStart(),scale);
+  return CalcReaBodyForceDerivFac(k,toderive,phinp,scale);
 }

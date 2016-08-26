@@ -247,7 +247,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REACSCALE","scaling for reaction coefficient");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,true);
-    AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
+    AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -264,7 +264,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,true);
-    AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
+    AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
