@@ -139,7 +139,7 @@ void FS3I::ACFSI::SetMeanFluidScatraConcentration()
 {
   Teuchos::RCP<const Epetra_Vector> MeanFluidConc = meanmanager_->GetMeanValue("mean_phi");
 
-  scatravec_[0]->ScaTraField()->SetMeanConcentration( FluidToFluidScalar(MeanFluidConc) );
+  scatravec_[0]->ScaTraField()->SetMeanConcentration( MeanFluidConc );
 }
 
 /*----------------------------------------------------------------------*
