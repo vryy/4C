@@ -335,7 +335,7 @@ void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
 
     // check GP projection
     DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
-    const double tol = 0.00;
+    const double tol = 1e-8;
     if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)

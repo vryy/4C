@@ -28,16 +28,16 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 {
   public:
 
-    //! Standard constructor
-  CoLagrangeStrategy(
-      const Epetra_Map* DofRowMap,
-      const Epetra_Map* NodeRowMap,
-      Teuchos::ParameterList params,
-      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-      int dim,
-      Teuchos::RCP<const Epetra_Comm> comm,
-      double alphaf,
-      int maxdof);
+//    //! Standard constructor
+//  CoLagrangeStrategy(
+//      const Epetra_Map* DofRowMap,
+//      const Epetra_Map* NodeRowMap,
+//      Teuchos::ParameterList params,
+//      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+//      int dim,
+//      Teuchos::RCP<const Epetra_Comm> comm,
+//      double alphaf,
+//      int maxdof);
 
   //! Shared data constructor
   CoLagrangeStrategy(
@@ -99,9 +99,62 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     int ActiveSetSteps() { return activesetsteps_; }
 
+    /*! \brief Return the desired right-hand-side block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint,*/
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+       const enum STR::VecBlockType& bt) const;
+
+    /*! \brief Recover the current state
+     *
+     *  The main task of this method is to recover the Lagrange multiplier solution.
+     *  The Lagrange multiplier solution will be stored inside the corresponding strategy
+     *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
+     *  is condensed, this method is the right place to recover it from the displacement solution.
+     *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine instead.
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time integration
+     *  \param xold    (in): old solution vector of the NOX solver
+     *  \param dir     (in): current search direction (in general NOT the actual step, keep in mind that the step length can differ from 1.0)
+     *  \param xnew    (in): new solution vector of the NOX solver*/
+    virtual void RecoverState(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold,
+        const Epetra_Vector& dir,
+        const Epetra_Vector& xnew);
+
+    /*! \brief Return the desired matrix block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...*/
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum STR::MatBlockType& bt) const;
+
+    //! Evaluate contact contributions to stiff matrix
+    virtual void AssembleContactStiff();
+
+    //! The contributions to the structural right-hand-side block are calculated.
+    virtual void EvalStrContactRHS();
+
+    //! Assemble contact contributions to the rhs
+    virtual void AssembleContactRHS();
+
+    virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
+    {
+      if ((not redist) and ParRedist())
+        dserror("The original / not redistributed slave normal row map is not available!");
+
+      return *gsdofrowmap_;
+    }
+
     //! Get the active node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
-    { dserror("Currently unsupported for the Lagrangian strategies!"); return Teuchos::null; };
+    { return gOldActiveSlaveNodes_; };
 
     //! Get the slip node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
@@ -148,6 +201,11 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     void EvalConstrRHS();
 
+    /*! \brief Compute force and stiffness terms
+     *
+     * \param cparams (in): parameter interface between the contact objects and the structural time integration*/
+    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+
     /*!
     \brief Recovery method
 
@@ -158,6 +216,19 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     */
     void Recover(Teuchos::RCP<Epetra_Vector> disi);
+
+    /*! \brief Reset the internal stored Lagrange multipliers
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time integration
+     *  \param xnew    (in): new solution vector of the NOX solver*/
+    virtual void ResetLagrangeMultipliers(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xnew);
+
+    /*! \brief Compute force terms
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time integration*/
+    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
 
     /*!
     \brief Update active set and check for convergence
@@ -334,6 +405,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Teuchos::RCP<Epetra_Map> zigzagtwo_;   // active node set of second-last active set try
     Teuchos::RCP<Epetra_Map> zigzagthree_; // active node set of third-last active set try
 
+    Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodes_; // active slave nodes from previous newton step
 }; // class CoLagrangeStrategy
 } // namespace CONTACT
 

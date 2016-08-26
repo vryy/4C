@@ -1089,6 +1089,7 @@ protected:
     INPAR::MORTAR::AlgorithmType                     algo_;        // contact algorithm
     double                                           ppn_;         // penalty param in normal direction (needed for gpts)
     INPAR::CONTACT::SolvingStrategy                  stype_;       // solution stratety
+    bool                                             cppnormal_;   // flag for closest point normal -> change in linsize
 
     // wear inputs from parameter list
     INPAR::WEAR::WearLaw                             wearlaw_;     // type of wear law

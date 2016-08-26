@@ -666,23 +666,6 @@ void CONTACT::CoNode::BuildAveragedNormal()
     CoData().teta()[j]=0.0;
   }
 
-//  MoData().n()[0]=0.0;
-//  MoData().n()[1]=0.0;
-//  MoData().n()[2]=-1.0;
-//
-//  CoData().txi()[0]=1.0;
-//  CoData().txi()[1]=0.0;
-//  CoData().txi()[2]=0.0;
-//
-//  CoData().teta()[0]=0.0;
-//  CoData().teta()[1]=1.0;
-//  CoData().teta()[2]=0.0;
-//
-//  if ((int)CoData().GetDerivN().size()==0) CoData().GetDerivN().resize(3,0);
-//  if ((int)CoData().GetDerivTxi().size()==0) CoData().GetDerivTxi().resize(3,0);
-//  if ((int)CoData().GetDerivTeta().size()==0) CoData().GetDerivTeta().resize(3,0);
-//  return;
-
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
 

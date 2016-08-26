@@ -632,6 +632,7 @@ public:
    *  \author hiermeier */
   virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const
   {
+    dserror("ERROR: Map not available in abstract strategy!");
     if ((not redist) and ParRedist())
       dserror("The original / not redistributed slave normal row map is not available!");
 

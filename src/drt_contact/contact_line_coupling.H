@@ -56,7 +56,7 @@ public:
       Teuchos::ParameterList& params,
       CoElement& sele,
       Teuchos::RCP<MORTAR::MortarElement>& lsele,
-      CoElement& mele,
+      std::vector<CoElement* > surfEles,
       LineCoupling3d::intType itype);
 
   /*!
@@ -185,12 +185,42 @@ private:
   }
 
   /*!
-   \brief Get coupling master element
+   \brief Get coupling master elements
+
+   */
+  virtual std::vector<CoElement* > SurfaceElements() const
+  {
+    return surfEles_;
+  }
+
+  /*!
+   \brief Get coupling master elements
 
    */
   virtual CoElement& SurfaceElement() const
   {
-    return surfEle_;
+    if(currEle_< 0 or currEle_ > ((int)surfEles_.size()-1))
+      dserror("ERROR: currEle invalid!");
+
+    return *surfEles_[currEle_];
+  }
+
+  /*!
+   \brief Get number of master elements
+
+   */
+  virtual int NumberSurfaceElements() const
+  {
+    return (int)surfEles_.size();
+  }
+
+  /*!
+   \brief Get current master element in loop
+
+   */
+  virtual int& CurrEle()
+  {
+    return currEle_;
   }
 
   /*!
@@ -243,6 +273,12 @@ private:
 
    */
   virtual void IntegrateLine();
+
+  /*!
+   \brief initialize internal variables
+
+   */
+  virtual void Initialize();
 
   /*!
    \brief calculate proper dual shape functions
@@ -333,7 +369,8 @@ private:
 
   CoElement& pEle_;  // parent element connected to line element
   Teuchos::RCP<MORTAR::MortarElement>& lEle_; // line element to perform coupling for
-  CoElement& surfEle_;                       // surface element to perform coupling for
+  std::vector<CoElement* > surfEles_;         // surface elements to perform coupling for
+  int currEle_;                               // number of current element
 
   Teuchos::ParameterList& imortar_; // containing contact input parameters
   double auxc_[3]; // center of auxiliary plane

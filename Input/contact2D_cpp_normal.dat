@@ -1,10 +1,8 @@
 //
-// Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
+// Maintainer: Philipp Farah
+// farah.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15238
-//
-// necessary defines: BINIO
+// 089 - 289-15257
 //
 ==================================================================
 General Data File CCARAT
@@ -16,6 +14,7 @@ General Data File CCARAT
 // - standard Lagrange multiplier interpolation
 // - solution of saddle point system
 // - generalized alpha time integration
+// - with cpp normal
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        63
 NODES                           92
@@ -39,7 +38,6 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -68,6 +66,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 FRICTION                        None
+CPP_NORMALS                     yes
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
@@ -491,8 +490,6 @@ NODE 92 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 61 WALL QUAD4 50 44 51 57 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_stress GP 2 2
 62 WALL QUAD4 41 49 51 44 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_stress GP 2 2
 63 WALL QUAD4 62 57 51 49 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000.0 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
@@ -502,18 +499,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 0.0 6.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.2 1.2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 // note that these are the unmodified result from the augmented version
-STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE 5.88558588991432541e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -1.07366432951395496e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE 6.03603594395622944e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -1.07209627262149287e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

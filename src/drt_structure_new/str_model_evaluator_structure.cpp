@@ -276,6 +276,9 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
     }
     case INPAR::STR::damp_rayleigh:
     {
+      // do nothing! the damping matrix is constant over the whole simululation
+      // and calculated in STR::Integrator::EquilibriateInitialState()
+
       // reset stiffness matrix
       stiff_ptr_->Zero();
       // set stiffness matrix
@@ -298,6 +301,9 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
         case INPAR::STR::ml_standard:
         case INPAR::STR::ml_rotations:
         {
+          dserror("ERROR: Nonlinear mass is not considered in combination "
+              "with Rayleigh damping!");
+
           // -------------------------------------------------------------
           /* evaluate the current (static) state and non-linear inertia
            * effects */
@@ -374,22 +380,6 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
     default:
       dserror("Unsupported damping type!");
       break;
-  }
-
-  /* We have to do it here, since we assemble directly into the
-   * stiffness block during the call of the remaining model
-   * evaluators. */
-  if (EvalData().GetDampingType()==INPAR::STR::damp_rayleigh)
-  {
-    stiff_ptr_->Complete();
-    const double& dampk =
-        TimInt().GetDataSDyn().GetDampingStiffnessFactor();
-    const double& dampm =
-        TimInt().GetDataSDyn().GetDampingMassFactor();
-
-    damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
-    damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
-    damp_ptr_->Complete();
   }
 
   if (masslin_type_==INPAR::STR::ml_none)
@@ -472,16 +462,21 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
   eval_mat[0] = stiff_ptr_;
   eval_vec[0] = fintnp_ptr_;
 
-  // set vector values needed by elements
-  Discret().ClearState();
-  Discret().SetState(0,"residual displacement", dis_incr_ptr_);
-  Discret().SetState(0,"displacement", disnp_ptr_);
-
   // -------------------------------------------------------------
   // evaluate initial dynamic state
   // -------------------------------------------------------------
   if (Int().IsEquilibriateInitialState())
   {
+    // create vector with zero entries
+    Teuchos::RCP<Epetra_Vector>  zeros =
+        Teuchos::rcp(new Epetra_Vector(disnp_ptr_->Map(),true));
+
+    // set vector values needed by elements
+    // --> initially zero !!!
+    Discret().ClearState();
+    Discret().SetState(0,"residual displacement", zeros);
+    Discret().SetState(0,"displacement", zeros);
+
     // overwrite the standard element action, if lumping is desired
     if (TimInt().GetDataSDyn().IsMassLumping())
       EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstifflmass);
@@ -498,9 +493,31 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
     // evaluate ...
     EvaluateInternal(&eval_mat[0],&eval_vec[0]);
     mass_ptr_->Complete();
+
+    /* We have to do it here, since we assemble directly into the
+     * stiffness block during the call of the remaining model
+     * evaluators. */
+    if (EvalData().GetDampingType()==INPAR::STR::damp_rayleigh)
+    {
+      stiff_ptr_->Complete();
+      const double& dampk =
+          TimInt().GetDataSDyn().GetDampingStiffnessFactor();
+      const double& dampm =
+          TimInt().GetDataSDyn().GetDampingMassFactor();
+
+      // damping matrix with initial stiffness
+      damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
+      damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
+      damp_ptr_->Complete();
+    }
   }
   else
   {
+    // set vector values needed by elements
+    Discret().ClearState();
+    Discret().SetState(0,"residual displacement", dis_incr_ptr_);
+    Discret().SetState(0,"displacement", disnp_ptr_);
+
     switch (EvalData().GetDampingType())
     {
       case INPAR::STR::damp_material:
@@ -577,21 +594,6 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
         dserror("Unsupported damping type!");
         break;
     }
-  }
-  /* We have to do it here, since we assemble directly into the
-   * stiffness block during the call of the remaining model
-   * evaluators. */
-  if (EvalData().GetDampingType()==INPAR::STR::damp_rayleigh)
-  {
-    stiff_ptr_->Complete();
-    const double& dampk =
-        TimInt().GetDataSDyn().GetDampingStiffnessFactor();
-    const double& dampm =
-        TimInt().GetDataSDyn().GetDampingMassFactor();
-
-    damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
-    damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
-    damp_ptr_->Complete();
   }
 
   if (masslin_type_==INPAR::STR::ml_none)

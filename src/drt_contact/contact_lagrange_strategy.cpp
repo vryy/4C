@@ -15,6 +15,7 @@
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_defines.H"
+#include "contact_paramsinterface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -22,27 +23,27 @@
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*
- | ctor (public)                                              popp 05/09|
- *----------------------------------------------------------------------*/
-CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-    int dim,
-    Teuchos::RCP<const Epetra_Comm> comm,
-    double alphaf,
-    int maxdof)
-    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-      activesetssconv_(false),
-      activesetconv_(false),
-      activesetsteps_(1)
-{
-  // empty constructor body
-  return;
-}
+///*----------------------------------------------------------------------*
+// | ctor (public)                                              popp 05/09|
+// *----------------------------------------------------------------------*/
+//CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
+//    const Epetra_Map* DofRowMap,
+//    const Epetra_Map* NodeRowMap,
+//    Teuchos::ParameterList params,
+//    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+//    int dim,
+//    Teuchos::RCP<const Epetra_Comm> comm,
+//    double alphaf,
+//    int maxdof)
+//    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
+//        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+//      activesetssconv_(false),
+//      activesetconv_(false),
+//      activesetsteps_(1)
+//{
+//  // empty constructor body
+//  return;
+//}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2308,7 +2309,8 @@ void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RC
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
 {
-  if (SystemType()==INPAR::CONTACT::system_condensed) return;
+  if (SystemType()==INPAR::CONTACT::system_condensed)
+    return;
 
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
@@ -2384,9 +2386,494 @@ void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
 
   constrrhs->ReplaceMap(*glmdofrowmap_);
 
-  constrrhs_ = constrrhs;                                 // set constraint rhs vector
+  // export and set constraint rhs vector
+  if (ParRedist())
+  {
+    constrrhs_ = Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(false)));
+    LINALG::Export(*constrrhs,*constrrhs_);
+  }
+  else
+    constrrhs_ = constrrhs;
+
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::EvalForce(
+    CONTACT::ParamsInterface& cparams)
+{
+  //---------------------------------------------------------------
+  // For selfcontact the master/slave sets are updated within the -
+  // contact search, see SelfBinaryTree.                          -
+  // Therefore, we have to initialize the mortar matrices after   -
+  // interface evaluations.                                       -
+  //---------------------------------------------------------------
+  if (IsSelfContact())
+  {
+    InitEvalInterface(); // evaluate mortar terms (integrate...)
+    InitMortar();        // initialize mortar matrices and vectors
+    AssembleMortar();    // assemble mortar terms into global matrices
+  }
+  else
+  {
+    InitMortar();        // initialize mortar matrices and vectors
+    InitEvalInterface(); // evaluate mortar terms (integrate...)
+    AssembleMortar();    // assemble mortar terms into global matrices
+  }
+
+  // evaluate relative movement for friction
+  if (cparams.IsPredictor())
+    EvaluateRelMovPredict();
+  else
+    EvaluateRelMov();
+
+  // update active set
+  UpdateActiveSetSemiSmooth();
+
+  // apply contact forces and stiffness
+  Initialize();         // init lin-matrices
+
+  // --- Assemble the ride hand side terms -------------------------------
+  AssembleContactRHS();
+
+  EvalStrContactRHS();  // evaluate the structure/displacement rhs
+  EvalConstrRHS();      // evaluate the constraint rhs (saddle-point system only)
+
+  if(constrrhs_ != Teuchos::null)
+    constrrhs_->Scale(-1.0);// scale with -1.0 --> when old structure is deleted change this!!!
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AssembleContactRHS()
+{
+
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+    return;
+
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    if (SystemType() != INPAR::CONTACT::system_condensed)
+    {
+      interface_[i]->AssembleInactiverhs(*inactiverhs_);
+      interface_[i]->AssembleTangrhs(*tangrhs_);
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::EvalStrContactRHS()
+{
+  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+  {
+    strcontactrhs_ = Teuchos::null;
+    return;
+  }
+
+  strcontactrhs_ =
+      Teuchos::rcp(new Epetra_Vector(*ProblemDofs(),true));
+
+  // for self contact, slave and master sets may have changed,
+  // thus we have to export the products Dold^T * zold / D^T * z to fit
+  // thus we have to export the products Mold^T * zold / M^T * z to fit
+  if (IsSelfContact())
+  {
+    // add contact force terms
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecd  = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+    Teuchos::RCP<Epetra_Vector> zexp  = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
+    if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+    dmatrix_->Multiply(true,*zexp,*tempvecd);
+    LINALG::Export(*tempvecd,*fsexp);
+    strcontactrhs_->Update(-1.0,*fsexp,1.0);
+
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecm  = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+    mmatrix_->Multiply(true,*zexp,*tempvecm);
+    LINALG::Export(*tempvecm,*fmexp);
+    strcontactrhs_->Update(1.0,*fmexp,1.0);
+  }
+  // if there is no self contact everything is ok
+  else
+  {
+    // add contact force terms
+    Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(true,*z_,*fs);
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fs,*fsexp);
+    strcontactrhs_->Update(-1.0,*fsexp,1.0);
+
+    Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+    mmatrix_->Multiply(true,*z_,*fm);
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fm,*fmexp);
+    strcontactrhs_->Update(1.0,*fmexp,1.0);
+
+    // Check linear and angular momentum conservation
+#ifdef CHECKCONSERVATIONLAWS
+    CheckConservationLaws(*fs,*fm);
+#endif
+  }
+  strcontactrhs_->Scale(-1.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::EvalForceStiff(
+    CONTACT::ParamsInterface& cparams)
+{
+  // call the evaluate force routine
+  EvalForce(cparams);
+
+  // --- Assemble stiffness matrix ---------------------------------------
+  AssembleContactStiff();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
+{
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+    return;
+
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  {
+    gact = LINALG::CreateVector(*gactivedofs_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+    }
+  }
+  else
+  {
+    gact = LINALG::CreateVector(*gactivenodes_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+      gact->ReplaceMap(*gactiven_);
+    }
+  }
+  /**********************************************************************/
+  /* calculate                                                          */
+  /**********************************************************************/
+  /* build global matrix tmatrix_ with tangent vectors of active nodes  */
+  /* and global matrix nmatrix_ with normal vectors of active nodes     */
+  /* and global matrix s with normal+D+M derivatives of active nodes    */
+  /* and global matrix tderivmatrix_ with tangent derivatives           */
+  /*     of active nodes                                                */
+  /* and global matrix nderivmatrix_ with normal derivatives            */
+  /*     of active nodes                                                */
+  /* and inactive right-hand side with old lagrange multipliers (incr)  */
+  /* and tangential right-hand side (incr)                              */
+  /**********************************************************************/
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->AssembleTN(tmatrix_,nmatrix_);
+    interface_[i]->AssembleS(*smatrix_);
+    interface_[i]->AssembleTNderiv(tderivmatrix_,nderivmatrix_);
+    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
+
+//    if (SystemType() != INPAR::CONTACT::system_condensed)
+//    {
+//      interface_[i]->AssembleInactiverhs(*inactiverhs_);
+//      interface_[i]->AssembleTangrhs(*tangrhs_);
+//    }
+  }
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  {
+    // FillComplete() global matrix T
+    tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
+
+    // FillComplete() global matrix N
+    if (nmatrix_ != Teuchos::null)
+      nmatrix_->Complete(*gactivedofs_,*gactivedofs_);
+    smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+    tderivmatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+    if (nderivmatrix_ != Teuchos::null)
+      nderivmatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+  }
+  else
+  {
+    // FillComplete() global matrix T
+    tmatrix_->Complete(*gactivedofs_,*gactivet_);
+
+    // FillComplete() global matrix N
+    if (nmatrix_ != Teuchos::null)
+      nmatrix_->Complete(*gactivedofs_,*gactiven_);
+
+    // FillComplete() global matrix S
+    smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
+
+    // FillComplete() global matrix Tderiv
+    // (actually gsdofrowmap_ is in general sufficient as domain map,
+    // but in the edge node modification case, master entries occur!)
+    tderivmatrix_->Complete(*gsmdofrowmap_,*gactivet_);
+
+    // FillComplete() global matrix Nderiv
+    if (nderivmatrix_ != Teuchos::null)
+      nderivmatrix_->Complete(*gsmdofrowmap_,*gactiven_);
+  }
+
+  // FillComplete() global matrices LinD, LinM
+  // (again for linD gsdofrowmap_ is sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  lindmatrix_->Complete(*gsmdofrowmap_,*gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_,*gmdofrowmap_);
+
+  //----------------------------------------------------------------------
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  // LinD      ---->   T^(-T) * LinD
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+    // modify lindmatrix_
+    Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+    lindmatrix_   = temp1;
+  }
+
+  // do reagularization scaling
+  if(regularized_)
+    EvaluateRegularizationScaling(gact);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
+        const enum STR::MatBlockType& bt) const
+{
+  // if there are no active contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+    return Teuchos::null;
+
+  Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case STR::block_displ_displ:
+    {
+      mat_ptr = Teuchos::rcp(
+          new LINALG::SparseMatrix(SlMaDoFRowMap(true),100,false,true));
+
+      // build matrix kdd
+      mat_ptr->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+      mat_ptr->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+      mat_ptr->Complete();
+
+      // transform parallel row/column distribution of matrix kdd
+      // (only necessary in the parallel redistribution case)
+      if (ParRedist())
+        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
+            SlMaDoFRowMapPtr(false),SlMaDoFRowMapPtr(false));
+
+      break;
+    }
+    case STR::block_displ_lm:
+    {
+      // build constraint matrix kdz
+      Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
+          Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
+
+      kdz_ptr->Add(*dmatrix_,true,1.0-alphaf_,1.0);
+      kdz_ptr->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
+      kdz_ptr->Complete(*gsdofrowmap_,*gdisprowmap_);
+
+      // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+      mat_ptr = MORTAR::MatrixColTransformGIDs(kdz_ptr,LMDoFRowMapPtr(true));
+
+      // transform parallel row/column distribution of matrix kdz
+      // (only necessary in the parallel redistribution case)
+      if (ParRedist())
+        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
+            ProblemDofs(),LMDoFRowMapPtr(false));
+
+      break;
+    }
+    case STR::block_lm_displ:
+    {
+      // build constraint matrix kzd
+      Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
+          Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,false,true));
+
+
+      // build constraint matrix kzd
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+      {
+        if (gactivedofs_->NumGlobalElements())
+        {
+          kzd_ptr->Add(*smatrix_,false,1.0,1.0);
+          kzd_ptr->Add(*tderivmatrix_,false,1.0,1.0);
+        }
+      }
+      else
+      {
+        if (gactiven_->NumGlobalElements())
+          kzd_ptr->Add(*smatrix_,false,1.0,1.0);
+        if (gactivet_->NumGlobalElements())
+          kzd_ptr->Add(*tderivmatrix_,false,1.0,1.0);
+      }
+      kzd_ptr->Complete(*gdisprowmap_,*gsdofrowmap_);
+
+      // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
+      mat_ptr = MORTAR::MatrixRowTransformGIDs(kzd_ptr,LMDoFRowMapPtr(true));
+
+      // transform parallel row/column distribution of matrix kzd
+      // (only necessary in the parallel redistribution case)
+      if (ParRedist())
+        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
+            LMDoFRowMapPtr(false),ProblemDofs());
+
+      break;
+    }
+    case STR::block_lm_lm:
+    {
+      // build constraint matrix kzz
+      Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr =
+          Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,false,true));
+
+      // build unity matrix for inactive dofs
+      Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
+      Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gidofs));
+      ones->PutScalar(1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+      onesdiag->Complete();
+
+      // build constraint matrix kzz
+      if (gidofs->NumGlobalElements())
+        kzz_ptr->Add(*onesdiag,false,1.0,1.0);
+      if (gactivet_->NumGlobalElements())
+        kzz_ptr->Add(*tmatrix_,false,1.0,1.0);
+      kzz_ptr->Complete(*gsdofrowmap_,*gsdofrowmap_);
+
+      // transform constraint matrix kzz to lmdofmap
+      mat_ptr = MORTAR::MatrixRowColTransformGIDs(kzz_ptr,
+           LMDoFRowMapPtr(true),LMDoFRowMapPtr(true));
+
+      // transform parallel row/column distribution of matrix kzz
+      // (only necessary in the parallel redistribution case)
+      if (ParRedist())
+        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
+            LMDoFRowMapPtr(false),LMDoFRowMapPtr(false));
+
+      break;
+    }
+    default:
+    {
+      dserror("Unknown STR::MatBlockType!");
+      break;
+    }
+  }
+
+  return mat_ptr;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::RecoverState(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xold,
+    const Epetra_Vector& dir,
+    const Epetra_Vector& xnew)
+{
+  Teuchos::RCP<Epetra_Vector> zdir_ptr =
+      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
+  LINALG::Export(dir,*zdir_ptr);
+  // get the current step length
+  const double stepLength = cparams.GetStepLength();
+  // ---------------------------------------------------------------------
+  // store the SCALED Lagrange multiplier increment in the contact
+  // strategy
+  // ---------------------------------------------------------------------
+  zdir_ptr->ReplaceMap(zincr_->Map());
+  zincr_->Scale(stepLength,*zdir_ptr);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
+       const enum STR::VecBlockType& bt) const
+{
+  // if there are no active contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+    return Teuchos::null;
+
+  Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case STR::block_displ:
+    {
+      vec_ptr = strcontactrhs_;
+      break;
+    }
+    case STR::block_constraint:
+    {
+      vec_ptr = constrrhs_;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown STR::VecBlockType!");
+      break;
+    }
+  }
+
+  return vec_ptr;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xnew)
+{
+  if (systype_ == INPAR::CONTACT::system_condensed)
+  {
+    dserror("ERROR: not yet implemented for condensed system!");
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> znew_ptr =
+        Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
+    LINALG::Export(xnew,*znew_ptr);
+    // ---------------------------------------------------------------------
+    // Update the current lagrange multiplier
+    // ---------------------------------------------------------------------
+    znew_ptr->ReplaceMap(z_->Map());
+
+    z_->Scale(1.0,*znew_ptr);
+
+    // ---------------------------------------------------------------------
+    // store the new Lagrange multiplier in the nodes
+    // ---------------------------------------------------------------------
+    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | Recovery method                                            popp 04/08|
@@ -2809,6 +3296,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 {
   // FIXME: Here we do not consider zig-zagging yet!
+//  PrintActiveSet();
 
   // get out gof here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
@@ -3069,30 +3557,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           } // if (ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz - cn*wgap <= 0)
       } // if (cnode->Active()==false)
-
-      if(cnode->Active())
-      {
-//        std::cout << "active node= " << cnode->Id() << std::endl;
-//        for(int alph = 0; alph< cnode->NumElement();++alph)
-//        {
-////          std::cout << "alpha= " << (cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()] << std::endl;
-//          if((cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()]>1-1e-8)
-//            std::cout << "MORTAR" << std::endl;
-//          else if((cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()]<0+1e-8)
-//            std::cout << "NTS" << std::endl;
-//          else
-//            std::cout << "MIXED" << std::endl;
-//        }
-
-//          std::cout << "alpha= " << (cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()] << std::endl;
-//          if((cnode->CoData().GetAlphaN())>1-1e-8)
-//            std::cout << "MORTAR" << std::endl;
-//          else if((cnode->CoData().GetAlphaN())<0+1e-8)
-//            std::cout << "NTS" << std::endl;
-//          else
-//            std::cout << "MIXED" << std::endl;
-      }
-
     } // loop over all slave nodes
   } // loop over all interfaces
 
@@ -3107,6 +3571,16 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   {
     activesetconv_ = false;
     activesetsteps_ += 1;
+  }
+
+  // only if it's a full Newton step...
+  if (iterls_ <= 0)
+  {
+    // store the previous active set
+    if (gactivenodes_ != Teuchos::null)
+      gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
+    else
+      gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
   }
 
   // also update special flag for semi-smooth Newton convergence
@@ -3273,8 +3747,6 @@ void CONTACT::CoLagrangeStrategy::CheckConservationLaws(const Epetra_Vector& fs,
   else
     dserror("ERROR: File could not be opened.");
 
-
-
   /*-------------------------------*
    | ANGULAR MOMENTUM CONSERVATION |
    *-------------------------------*/
@@ -3408,91 +3880,93 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
   scalevec->PutScalar(1.0);
 
   {
-  //setting of the parameters is still under investigation Ager Chr.
- // DRT::Problem* problem = DRT::Problem::Instance();
- // const Teuchos::ParameterList& structdyn   = problem->StructuralDynamicParams(); //just for now!
+    //setting of the parameters is still under investigation Ager Chr.
+   // DRT::Problem* problem = DRT::Problem::Instance();
+   // const Teuchos::ParameterList& structdyn   = problem->StructuralDynamicParams(); //just for now!
 
-  double scaling = 1e6;//structdyn.get<double>("TOLRES"); //1e6
-  //
-  //sign of the term lambda*n (std is +1.0)?
-  static double sign = 1.0;
-  //scaling also with (1-alpha) of lambda*n term?
-  static double scal1ma = 1.0;
+    double scaling = 1e6;//structdyn.get<double>("TOLRES"); //1e6
+    //
+    //sign of the term lambda*n (std is +1.0)?
+    static double sign = 1.0;
+    //scaling also with (1-alpha) of lambda*n term?
+    static double scal1ma = 1.0;
 
-  double epsilon = 1e-6;//structdyn.get<double>("TOLINCO");//1e-5;+
+    double epsilon = 1e-6;//structdyn.get<double>("TOLINCO");//1e-5;+
 
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all slave nodes on the current interface
-      for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+      // loop over all interfaces
+      for (int i=0; i<(int)interface_.size(); ++i)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-        if (cnode->Active())
+        // loop over all slave nodes on the current interface
+        for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
         {
-          //normal lagrange multiplier! ... replace by multiplication
-          double lmval = cnode->MoData().n()[0]*cnode->MoData().lm()[0] + cnode->MoData().n()[1]*cnode->MoData().lm()[1] + cnode->MoData().n()[2]*cnode->MoData().lm()[2];
-          double alpha;
-          double alphaderiv;
+          int gid = interface_[i]->SlaveRowNodes()->GID(j);
+          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-          std::cout << "cnode->CoData().Getg(): " << cnode->CoData().Getg() << "( eps = "<< epsilon << ", scal = " << scaling << " ) / lambdan: " << lmval << std::endl;
+          CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-
-          if (cnode->CoData().Getg() >= 0)
+          if (cnode->Active())
           {
-            alpha = 0.0;
-            alphaderiv= 0.0;
+            //normal lagrange multiplier! ... replace by multiplication
+            double lmval = cnode->MoData().n()[0]*cnode->MoData().lm()[0] + cnode->MoData().n()[1]*cnode->MoData().lm()[1] + cnode->MoData().n()[2]*cnode->MoData().lm()[2];
+            double alpha;
+            double alphaderiv;
+
+            std::cout << "cnode->CoData().Getg(): " << cnode->CoData().Getg() << "( eps = "<< epsilon << ", scal = " << scaling << " ) / lambdan: " << lmval << std::endl;
+
+
+            if (cnode->CoData().Getg() >= 0)
+            {
+              alpha = 0.0;
+              alphaderiv= 0.0;
+            }
+            else
+            {
+              double scaledgsum = (5*cnode->CoData().Getg()/epsilon+0.5);
+              alpha = 0.5*(1-tanh(scaledgsum));
+              alphaderiv= -0.5*5/(cosh(scaledgsum)*cosh(scaledgsum)*epsilon);
+
+              alphaderiv= alphaderiv*(scaling*cnode->CoData().Getg()-sign*lmval);
+            }
+
+            int lid = gactiven_->LID(cnode->Dofs()[0]);
+            if (lid != -1)
+            {
+              (*scalevec)[lid] = alpha;
+              (*derivscalevec)[lid] = alphaderiv;
+            }
+            else
+            {
+              dserror("ERROR: lid = -1!");
+            }
+
+            std::cout << std::setprecision(32) <<"cnode->CoPoroData().GetnScale() for node " << cnode->Id() << " is: " << alpha << std::endl;
           }
-          else
-          {
-            double scaledgsum = (5*cnode->CoData().Getg()/epsilon+0.5);
-            alpha = 0.5*(1-tanh(scaledgsum));
-            alphaderiv= -0.5*5/(cosh(scaledgsum)*cosh(scaledgsum)*epsilon);
+        } // loop over all slave nodes
+      } // loop over all interfaces
 
-            alphaderiv= alphaderiv*(scaling*cnode->CoData().Getg()-sign*lmval);
-          }
+    //Evaluate final scaling vetors!
+    {
+      scalevec2->PutScalar(sign);
+      scalevec2->Update(-sign*scal1ma,*scalevec,1.0); // 1-alpha
 
-          int lid = gactiven_->LID(cnode->Dofs()[0]);
-          if (lid != -1)
-          {
-            (*scalevec)[lid] = alpha;
-            (*derivscalevec)[lid] = alphaderiv;
-          }
-          else
-          {
-            dserror("ERROR: lid = -1!");
-          }
-
-        std::cout << std::setprecision(32) <<"cnode->CoPoroData().GetnScale() for node " << cnode->Id() << " is: " << alpha << std::endl;
-        }
-      } // loop over all slave nodes
-    } // loop over all interfaces
-
-  //Evaluate final scaling vetors!
-  {
-    scalevec2->PutScalar(sign);
-    scalevec2->Update(-sign*scal1ma,*scalevec,1.0); // 1-alpha
-
-    scalevec->Scale(scaling);
-    derivscalevec->Update(1.0,*scalevec,1.0);
+      scalevec->Scale(scaling);
+      derivscalevec->Update(1.0,*scalevec,1.0);
+    }
   }
-  }
 
-//scale all matrixes!!!
-int err = smatrix_->LeftScale(*derivscalevec); //scale with (alpha + dalpha/dgap*scaling + d(1-alpha)/dgap*lambda*n
-if (err) dserror("LeftScale failed!");
+  //scale all matrixes!!!
+  int err = smatrix_->LeftScale(*derivscalevec); //scale with (alpha + dalpha/dgap*scaling + d(1-alpha)/dgap*lambda*n
+  if (err) dserror("LeftScale failed!");
 
-err = nderivmatrix_->LeftScale(*scalevec2); //scale with 1.0-alpha
-if (err) dserror("LeftScale failed!");
+  err = nderivmatrix_->LeftScale(*scalevec2); //scale with 1.0-alpha
+  if (err) dserror("LeftScale failed!");
 
-err = nmatrix_->LeftScale(*scalevec2); //scale with 1.0-alpha
-if (err) dserror("LeftScale failed!");
+  err = nmatrix_->LeftScale(*scalevec2); //scale with 1.0-alpha
+  if (err) dserror("LeftScale failed!");
 
-Teuchos::RCP<Epetra_Vector> tmpgact = Teuchos::rcp(new Epetra_Vector(*gact)); //check later if this is required!!!
-gact->Multiply(1.0,*scalevec,*tmpgact,0.0);
+  Teuchos::RCP<Epetra_Vector> tmpgact = Teuchos::rcp(new Epetra_Vector(*gact)); //check later if this is required!!!
+  gact->Multiply(1.0,*scalevec,*tmpgact,0.0);
+
+  return;
 }

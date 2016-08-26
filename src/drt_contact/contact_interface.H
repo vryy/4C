@@ -774,6 +774,18 @@ protected:
   virtual void EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
+  \brief export master nodal normals for cpp calculation
+
+  */
+  virtual void ExportMasterNodalNormals();
+
+  /*!
+  \brief evaluate cpp normals on slave side based on averaged normal field on master side
+
+  */
+  virtual void EvaluateCPPNormals();
+
+  /*!
   \brief do calculations which are required after contact term evaluation:
          for example: scale nodal entries
 
@@ -782,6 +794,45 @@ protected:
   */
   virtual void PostEvaluate(const int step, const int iter);
 
+  /*!
+  \brief Compute cpp normal based on averaged nodal normal field on master side.
+
+  */
+  virtual double ComputeCPPNormal(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarElement*> meles,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  /*!
+  \brief 2D routine for cpp normal
+
+  */
+  virtual double ComputeCPPNormal2D(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarElement*> meles,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  /*!
+  \brief 3D routine for cpp normal
+
+  */
+  virtual double ComputeCPPNormal3D(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarElement*> meles,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  /*!
+  \brief Compute normal between slave and master node
+
+  */
+  virtual double ComputeNormalNodeToNode(
+      MORTAR::MortarNode& snode,
+      MORTAR::MortarNode& mnode,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltonodelin);
   /*!
   \brief Compute scaling factors for transition between nts, mortar etc.
 
@@ -868,28 +919,8 @@ protected:
   \brief These functions are not properly implemented/used!!!!
 
   */
-  virtual void EvaluateCPPNormalsForAll();
-  virtual void PrepareNonSmoothContact();
   virtual void DetectNonSmoothGeometries();
   virtual void EvaluateAveragedNodalNormals();
-  virtual void SpecialContactScenarios();
-  virtual void EvaluateCPPEleNormals();
-  virtual void EvaluateCPPNodalNormals();
-  virtual double ComputeNormalToLine(
-      MORTAR::MortarNode& mrtrnode,
-      std::vector<MORTAR::MortarElement*> meles,
-      double* normal,
-      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
-  virtual double ComputeNormalToLineAV(
-      MORTAR::MortarNode& mrtrnode,
-      std::vector<MORTAR::MortarElement*> meles,
-      double* normal,
-      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
-  virtual double ComputeNormalToNode(
-      MORTAR::MortarNode& mrtrnode,
-      std::vector<MORTAR::MortarNode*> mnodes,
-      double* normal,
-      std::vector<GEN::pairedvector<int,double> >& normaltonodeLin);
 
 protected:
   // don't want = operator and cctor

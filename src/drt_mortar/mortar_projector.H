@@ -309,6 +309,13 @@ protected:
                          double& dist,
                          std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
 
+  bool ProjectSNodeByMNodalNormal3DLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
   bool ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
                          MORTAR::MortarElement& mele,
                          double* xi,

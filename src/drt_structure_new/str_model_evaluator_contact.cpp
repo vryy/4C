@@ -735,8 +735,21 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
   INPAR::CONTACT::SystemType      systype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact,"SYSTEM");
   INPAR::MORTAR::AlgorithmType    algorithm = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar,"ALGORITHM");
   bool smoothing = DRT::INPUT::IntegralValue<int>(scontact,"DISCR_SMOOTHING");
+  bool nonSmoothGeometries = DRT::INPUT::IntegralValue<int>(scontact,"NONSMOOTH_GEOMETRIES");
 
-  if(smoothing)
+  if(nonSmoothGeometries)
+  {
+    if(soltype == INPAR::CONTACT::solution_lagmult)
+    {
+      std::cout << "================================================================\n";
+      std::cout << "===== Lagrange Multiplier Strategy =============================\n";
+      std::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
+      std::cout << "================================================================\n\n";
+    }
+    else
+      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
+  }
+  else if(smoothing)
   {
     if(soltype == INPAR::CONTACT::solution_lagmult)
     {
@@ -881,6 +894,18 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
     {
       std::cout << "================================================================\n";
       std::cout << "===== Node-To-Segment approach =================================\n";
+      std::cout << "================================================================\n\n";
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_lts)
+    {
+      std::cout << "================================================================\n";
+      std::cout << "===== Line-To-Segment approach =================================\n";
+      std::cout << "================================================================\n\n";
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_stl)
+    {
+      std::cout << "================================================================\n";
+      std::cout << "===== Segment-To-Line approach =================================\n";
       std::cout << "================================================================\n\n";
     }
     else if(algorithm == INPAR::MORTAR::algorithm_gpts)

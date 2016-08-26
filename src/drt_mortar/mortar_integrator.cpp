@@ -2128,7 +2128,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     else
     {
       sele.EvaluateShapeLagMult(shapefcn_, psxi, lmval, lmderiv, nrow);
-      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv, nintrow);
+      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv, nintrow,false);
     }
 
     // evaluate trace space shape functions (on both elements)

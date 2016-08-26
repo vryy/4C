@@ -38,8 +38,13 @@ STR::IMPLICIT::Statics::Statics()
 void STR::IMPLICIT::Statics::Setup()
 {
   CheckInit();
+
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
+
+  // check for valid parameter combinations:
+  if(EvalData().GetDampingType() != INPAR::STR::damp_none)
+    dserror("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
 }

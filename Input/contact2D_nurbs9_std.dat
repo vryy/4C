@@ -25,6 +25,7 @@ SHAPEFCT                        Nurbs
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1

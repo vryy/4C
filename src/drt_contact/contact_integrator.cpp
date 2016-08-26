@@ -50,6 +50,7 @@ gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")),
 ppn_(imortar_.get<double>("PENALTYPARAM")),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")),
+cppnormal_(DRT::INPUT::IntegralValue<int>(imortar_,"CPP_NORMALS")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_,"WEARLAW")),
 wearimpl_(false),
 wearside_(INPAR::WEAR::wear_slave),
@@ -1503,11 +1504,26 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   int linsize = 0;
-  for (int i=0;i<nrow;++i)
+  if(cppnormal_)
   {
-    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
-    linsize += cnode->GetLinsize();
+    for (int i=0;i<ncol;++i)
+    {
+      CoNode* cnode = dynamic_cast<CoNode*> (mele.Nodes()[i]);
+      linsize += cnode->GetLinsize();
+    }
+    linsize += 1 + mele.NumNode();
   }
+  else
+  {
+    for (int i=0;i<nrow;++i)
+    {
+      CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
+      linsize += cnode->GetLinsize();
+    }
+  }
+
+  // for cpp normal we have more lin entries
+
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
@@ -6432,7 +6448,7 @@ void CONTACT::CoIntegrator::Gap_3D(
   }
 
   // normalize interpolated GP normal back to length 1.0 !!!
-    double lengthn = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+  double lengthn = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
   if (lengthn<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i=0;i<3;++i)
@@ -6446,10 +6462,22 @@ void CONTACT::CoIntegrator::Gap_3D(
   // Linearization
   // **************************
   int linsize = 0;
-  for (int i=0;i<nrow;++i)
+  if(cppnormal_)
   {
-    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
-    linsize += cnode->GetLinsize();
+    for (int i=0;i<ncol;++i)
+    {
+      CoNode* cnode = dynamic_cast<CoNode*> (mnodes[i]);
+      linsize += cnode->GetLinsize();
+    }
+    linsize += 1 + mele.NumNode();
+  }
+  else
+  {
+    for (int i=0;i<nrow;++i)
+    {
+      CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
+      linsize += cnode->GetLinsize();
+    }
   }
 
   // build directional derivative of slave GP normal (non-unit)

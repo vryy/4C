@@ -43,6 +43,7 @@
 // supported startegies
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
+#include "contact_lagrange_strategy.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -960,6 +961,26 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
             PrepareNURBSNode(node,cnode);
           }
 
+          // get edge and corner information:
+          std::vector<DRT::Condition*> contactcornercond(0);
+          Discret().GetCondition("mrtrcorner", contactcornercond);
+          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          {
+            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnCorner() = true;
+            }
+          }
+          std::vector<DRT::Condition*> contactedgecond(0);
+          Discret().GetCondition("mrtredge", contactedgecond);
+          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          {
+            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnEdge() = true;
+            }
+          }
+
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym",contactSymconditions);
@@ -1000,6 +1021,26 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
           if (nurbs)
           {
             PrepareNURBSNode(node,cnode);
+          }
+
+          // get edge and corner information:
+          std::vector<DRT::Condition*> contactcornercond(0);
+          Discret().GetCondition("mrtrcorner", contactcornercond);
+          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          {
+            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnCorner() = true;
+            }
+          }
+          std::vector<DRT::Condition*> contactedgecond(0);
+          Discret().GetCondition("mrtredge", contactedgecond);
+          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          {
+            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            {
+              cnode->SetOnEdge() = true;
+            }
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
@@ -1281,7 +1322,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   }
   Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr =
       Teuchos::null;
-  Teuchos::RCP<CONTACT::AugStratDataContainer> data_ptr =
+  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::null;
 
   // get input par.
@@ -1338,15 +1379,17 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     }
     else
     {
-      dserror("This contact strategy is not yet considered!");
-//      strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(
-//          Discret().DofRowMap(),
-//          Discret().NodeRowMap(),
-//          cparams,
-//          interfaces,
-//          Dim(),
-//          Comm(),
-//          maxdof));
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(
+          data_ptr,
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          Dim(),
+          CommPtr(),
+          0.0,        // TODO: time integration factor --> 0.0 for statics. remove this!
+          dof_offset));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty)

@@ -426,7 +426,7 @@ namespace TIMINT {
       return finertialnp_;
     }
 
-    /// Return inertial force \f$finertial_{n+1}\f$
+    /// Return visco force \f$fvisco_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> GetFviscoNp() const
     {
       CheckInitSetup();

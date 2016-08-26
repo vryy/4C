@@ -43,13 +43,14 @@ CONTACT::LineCoupling3d::LineCoupling3d(
     Teuchos::ParameterList& params,
     CoElement& pEle,
     Teuchos::RCP<MORTAR::MortarElement>& lEle,
-    CoElement& surfEle,
+    std::vector<CoElement* > surfEles,
     LineCoupling3d::intType type) :
   idiscret_(idiscret),
   dim_(dim),
   pEle_(pEle),
   lEle_(lEle),
-  surfEle_(surfEle),
+  surfEles_(surfEles),
+  currEle_(-1),
   imortar_(params),
   intType_(type)
 {
@@ -63,49 +64,96 @@ CONTACT::LineCoupling3d::LineCoupling3d(
  *----------------------------------------------------------------------*/
 void CONTACT::LineCoupling3d::EvaluateCoupling()
 {
-  // 1. create aux plane for master ele
-  AuxiliaryPlane();
+  int numintline = 0;
+  // loop over all found master elements
+  for(int nele = 0; nele<NumberSurfaceElements(); ++nele)
+  {
+    // set internal counter
+    CurrEle() = nele;
 
-  // 2. check orientation
-  if(!CheckOrientation())
-    return;
+    // 1. init internal data
+    Initialize();
 
-  // 3. project master nodes onto auxplane
-  ProjectMaster();
+    // 2. create aux plane for master ele
+    AuxiliaryPlane();
 
-  // 4. project slave line elements onto auxplane
-  ProjectSlave();
+    // 3. check orientation
+    if(!CheckOrientation())
+      return;
 
-  // 5. perform line clipping
-  LineClipping();
+    // 4. project master nodes onto auxplane
+    ProjectMaster();
 
-  // 6. intersections found?
-  if((int)InterSections().size() == 0 or (int)InterSections().size() == 1 )
-    return;
+    // 5. project slave line elements onto auxplane
+    ProjectSlave();
 
-  // 7. check length of Integration Line
-  bool check = CheckLength();
-  if(check==false)
-    return;
+    // 6. perform line clipping
+    LineClipping();
 
-  // create empty lin vector
-  std::vector<std::vector<GEN::pairedvector<int, double> > > linvertex(
-      2,
-      std::vector<GEN::pairedvector<int, double> >(
-          3,
-          3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+    // 7. intersections found?
+    if((int)InterSections().size() == 0 or (int)InterSections().size() == 1 )
+      continue;
 
-  // 8. linearize vertices
-  LinearizeVertices(linvertex);
+//    std::cout << "InterSections().size() " << InterSections().size() << std::endl;
 
-  // 9. create intlines
-  CreateIntegrationLines(linvertex);
+    // 8. check length of Integration Line
+    bool check = CheckLength();
+    if(check==false)
+      continue;
 
-  // 10. consistent dual shape
-  ConsistDualShape();
+    // create empty lin vector
+    std::vector<std::vector<GEN::pairedvector<int, double> > > linvertex(
+        2,
+        std::vector<GEN::pairedvector<int, double> >(
+            3,
+            3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
 
-  // 11. integration
-  IntegrateLine();
+    // 9. linearize vertices
+    LinearizeVertices(linvertex);
+
+    // 10. create intlines
+    CreateIntegrationLines(linvertex);
+
+    // 11. consistent dual shape
+    ConsistDualShape();
+
+    // 12. integration
+    IntegrateLine();
+    numintline += 1;
+
+  }// end loop
+
+//  std::cout << "numintline = " << numintline << std::endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  init internal variables                                  farah 08/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::LineCoupling3d::Initialize()
+{
+  // reset auxplane normal, center and length
+  Auxn()[0] = 0.0;
+  Auxn()[1] = 0.0;
+  Auxn()[2] = 0.0;
+
+  Auxc()[0] = 0.0;
+  Auxc()[1] = 0.0;
+  Auxc()[2] = 0.0;
+
+  Lauxn() = 0.0;
+  GetDerivAuxn().clear();
+
+  // clear all slave and master vertices
+  SlaveVertices().clear();
+  MasterVertices().clear();
+
+  // clear previously found intersections
+  InterSections().clear();
+
+  // clear integration line
+  IntLine() = Teuchos::null;
 
   return;
 }
@@ -504,8 +552,14 @@ void CONTACT::LineCoupling3d::LineClipping()
     {
       if (out)
         std::cout << "WARNING: Detected two parallel edges! (" << j << "," << j << ")" << std::endl;
+
       continue;
     }
+
+
+
+
+
 
     // check for intersection of non-parallel edges
     double wec_p1 = 0.0;

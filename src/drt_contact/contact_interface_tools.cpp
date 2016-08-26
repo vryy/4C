@@ -1264,7 +1264,7 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
     // compute element areas
     SetElementAreas();
 
-    EvaluateCPPEleNormals();
+    EvaluateCPPNormals();
 
     // compute finite difference derivative
     for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
@@ -1273,6 +1273,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      if(!kcnode->IsOnCorner())
+        continue;
 
       // build NEW averaged normal at each slave node
 //      kcnode->BuildAveragedNormal();
@@ -1445,7 +1448,7 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
     CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[i%dim];
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << mdof << std::endl;
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
 
     // do step forward (modify nodal displacement)
@@ -1466,7 +1469,7 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
     // compute element areas
     SetElementAreas();
 
-    EvaluateCPPEleNormals();
+    EvaluateCPPNormals();
 
     // compute finite difference derivative
     for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
@@ -1475,6 +1478,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      if(!kcnode->IsOnCorner())
+        continue;
 
       // build NEW averaged normal at each slave node
 //      kcnode->BuildAveragedNormal();
