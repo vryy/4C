@@ -430,7 +430,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     }
 
     // normal of auxiliary plane
-    LINALG::Matrix<3,1> n(normals[isurface], true);
+    const LINALG::Matrix<3,1> n(normals[isurface], true);
 
     // fill corner points of surface (already unwarped)
     std::map<int, LINALG::Matrix<3,1> > currentpositionssurf;
@@ -440,7 +440,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     }
 
     // get XAABB of this single surface element
-    LINALG::Matrix<3,2> xaabb = GEO::getXAABBofPositions(currentpositionssurf);
+    const LINALG::Matrix<3,2> xaabb = GEO::getXAABBofPositions(currentpositionssurf);
     bool boundingbox = true;
 
     // bubble surfaces of the cubic bubble
@@ -459,7 +459,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     if(boundingbox == true)
     {
       // is there divergence in x-direction?
-      if (n(0)<-0.00001 or n(0)>0.00001)
+      if (std::abs(n(0)) > 1.0e-5)
       {
         EvaluateSurface(surfacenodes, n, centerele , particleposition, influence, vol_ele, surfaceoverlap, ele->Id(), isurface);
       }
@@ -617,7 +617,7 @@ void CAVITATION::Algorithm::EvaluateSurface(
       }
     }
   // if normal vector in y-direction == 0: line of bubble is parallel to the fluid surface and can be omitted
-  if(n(1)>tol or n(1)<-tol)
+  if(std::abs(n(1)) > tol)
     for(int x=0; x<2; x++)
       for(int z=4; z<6; z++)
       {
@@ -632,7 +632,7 @@ void CAVITATION::Algorithm::EvaluateSurface(
         }
       }
   // if normal vector in z-direction == 0: line of bubble is parallel to the fluid surface and can be omitted
-  if(n(2)>tol or n(2)<-tol)
+  if(std::abs(n(2)) > tol)
     for(int x=0; x<2; x++)
       for(int y=2; y<4; y++)
       {
@@ -842,6 +842,8 @@ void CAVITATION::Algorithm::CalculateBubbleCornerPoint(
   double *bubblesurface,
   LINALG::Matrix<3,1>& bubblecorner)
 {
+  const double tol=1.0e-4;
+
   // calculates the bubble corner intersection point of the two surfaces
   // A bubble corner point is a intersection point of the fluid surface with the bubble edges
   // surface 0 is +x
@@ -872,7 +874,7 @@ void CAVITATION::Algorithm::CalculateBubbleCornerPoint(
   // y direction variable
   if(iset[1] == 0)
   {
-    if(n(1)>0.0001 or n(1)<-0.0001)
+    if(std::abs(n(1)) > tol)
     {
       bubblecorner(1) = (n(0)*centersurface(0)+n(1)*centersurface(1)+n(2)*centersurface(2)-n(0)*bubblecorner(0)-n(2)*bubblecorner(2))/n(1);
     }
@@ -884,7 +886,7 @@ void CAVITATION::Algorithm::CalculateBubbleCornerPoint(
   // z direction variable
   if(iset[2] == 0)
   {
-    if(n(2)>0.0001 or n(2)<-0.0001)
+    if(std::abs(n(2)) > tol)
     {
       bubblecorner(2) = (n(0)*centersurface(0)+n(1)*centersurface(1)+n(2)*centersurface(2)-n(1)*bubblecorner(1)-n(0)*bubblecorner(0))/n(2);
     }
