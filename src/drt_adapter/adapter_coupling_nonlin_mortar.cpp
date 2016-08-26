@@ -658,12 +658,12 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
 
   // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
   std::vector<DRT::Condition*> coup_conds;
-  slavedis->GetCondition("SpringDashpotCoupling",coup_conds);
+  slavedis->GetCondition("RobinSpringDashpotCoupling",coup_conds);
 
   // number of coupling conditions
   const int n_coup_conds = (int)coup_conds.size();
   if (!n_coup_conds)
-    dserror("No section DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS found.");
+    dserror("No section DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS found.");
 
   // slave surface = spring dashpot condition
   conds_slave.push_back(&(*spring));
@@ -688,7 +688,6 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
   input.setParameters(DRT::Problem::Instance()->ContactDynamicParams());
   input.setParameters(DRT::Problem::Instance()->WearParams());
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
-  input.set<double>("SEARCH_PARAM", 10.0);
 
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();

@@ -5687,19 +5687,13 @@ void CONTACT::CoInterface::EvaluateDistances(
   if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
 
-  //**********************************************************************
-  // search algorithm
-  //**********************************************************************
-  if (SearchAlg() == INPAR::MORTAR::search_bfele)
-    EvaluateSearchBruteForce(SearchParam());
-  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-    EvaluateSearchBinarytree();
-  else
-    dserror("ERROR: Invalid search algorithm");
-
   // get out of here if not participating in interface
   if (!lComm())
     return;
+
+  // create an interpolator instance
+  Teuchos::RCP<NTS::CoInterpolator> interpolator =
+      Teuchos::rcp(new NTS::CoInterpolator(imortar_,Dim()));
 
   // create normals
   PreEvaluate();
@@ -5715,6 +5709,12 @@ void CONTACT::CoInterface::EvaluateDistances(
     if (!ele1)
       dserror("ERROR: Cannot find slave element with gid %", gid1);
     CONTACT::CoElement* selement = dynamic_cast<CONTACT::CoElement*>(ele1);
+
+    if(selement->MoData().NumSearchElements()<1)
+    {
+      std::cout << "WARNING: No elements found!" << std::endl;
+      continue;
+    }
 
     // skip zero-sized nurbs elements (slave)
     if (selement->ZeroSized())
@@ -5755,20 +5755,16 @@ void CONTACT::CoInterface::EvaluateDistances(
       //**************************************************************
 //      int gid = snoderowmapbound_->GID(snodes);
       int gid = mynode->Id();
-      DRT::Node* node = idiscret_->gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
-
-      // build averaged normal at each slave node
-      mynode->BuildAveragedNormal();
 
       int numdofs = mynode->NumDof();
       std::vector<double> temp(numdofs, 0.0);
-      for (int i = 0; i < numdofs; i++)
+      for (int kk = 0; kk < numdofs; kk++)
       {
-        temp[i] = mynode->MoData().n()[i];
+        temp[kk] = mynode->MoData().n()[kk];
       }
       mynormals.insert(std::pair<int, std::vector<double> >(gid, temp));
+      dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int,double> > >(gid, mynode->CoData().GetDerivN()));
+
       //**************************************************************
       double sxi[2] = {0.0, 0.0};
 
@@ -5810,7 +5806,6 @@ void CONTACT::CoInterface::EvaluateDistances(
       // create vectors to store projection information for several master elements in case projection is not unique
       std::vector<double> gap_vec;
       std::vector<std::map<int,double> > dgap_vec;
-      std::vector<std::vector<GEN::pairedvector<int,double> > > dnormal_vec;
 
       for (int nummaster=0;nummaster<(int)melements.size();++nummaster)
       {
@@ -5824,7 +5819,7 @@ void CONTACT::CoInterface::EvaluateDistances(
 
         // check GP projection
         DRT::Element::DiscretizationType dt = melements[nummaster]->Shape();
-        const double tol = 0.00;
+        const double tol = 1e-8;
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
           if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
@@ -5861,32 +5856,32 @@ void CONTACT::CoInterface::EvaluateDistances(
           std::vector<GEN::pairedvector<int,double> > dsxi(2,0);
           std::vector<GEN::pairedvector<int,double> > dmxi(2,4*linsize+ncol*ndof);
 
-          // create an interpolator instance
-          Teuchos::RCP<NTS::CoInterpolator> interpolator =
-              Teuchos::rcp(new NTS::CoInterpolator(imortar_,Dim()));
-
           (*interpolator).DerivXiGP3D(*selement, *melements[nummaster],sxi,mxi, dsxi, dmxi, projalpha);
           (*interpolator).nwGap3D(*mynode, *melements[nummaster], mval, mderiv, dmxi, gpn);
 
           // store linearization for node
-          std::map<int,double> dgap = mynode->CoData().GetDerivG(); // (dof,value)
-          std::vector<GEN::pairedvector<int,double> > dnormal = mynode->CoData().GetDerivN(); // (direction,dof,value)
+          std::map<int,double> dgap = mynode->CoData().GetDerivGnts(); // (dof,value)
 
           // store gap information
-          gap_vec.push_back(projalpha);
+          gap_vec.push_back(mynode->CoData().Getgnts());
           dgap_vec.push_back(dgap);
-          dnormal_vec.push_back(dnormal);
+
+          // reset nodal weighted gap and derivative
+          mynode->CoData().Getgnts() = 1.0e12;
+          (mynode->CoData().GetDerivGnts()).clear();
         }//End hit ele
       }//End Loop over all Master Elements
 
-      // find projection with smallest absoluate value of gap
-      std::vector<double>::iterator iter_min = std::min_element(gap_vec.begin(), gap_vec.end(), abs_compare);
-      const int i_min = std::distance(gap_vec.begin(), iter_min);
+      if (gap_vec.size()>0)
+      {
+        // find projection with smallest absoluate value of gap
+        std::vector<double>::iterator iter_min = std::min_element(gap_vec.begin(), gap_vec.end(), abs_compare);
+        const int i_min = std::distance(gap_vec.begin(), iter_min);
 
-      // save to map at GID
-      mygap.insert(std::pair<int, double>(gid, gap_vec[i_min]));
-      dmygap.insert(std::pair<int, std::map<int,double> >(gid, dgap_vec[i_min]));
-      dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int,double> > >(gid, dnormal_vec[i_min]));
+        // save to map at GID
+        mygap.insert(std::pair<int, double>(gid, gap_vec[i_min]));
+        dmygap.insert(std::pair<int, std::map<int,double> >(gid, dgap_vec[i_min]));
+      }
     }
   }
 

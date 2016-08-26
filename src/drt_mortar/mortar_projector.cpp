@@ -1185,14 +1185,16 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     {
       xi[0] = 1e12;
       xi[1] = 1e12;
+      par = alpha;
+
+      return false;
     }
     else
     {
       xi[0] = eta[0];
       xi[1] = eta[1];
+      par = alpha;
     }
-
-    par = alpha;
   }
 
   else
