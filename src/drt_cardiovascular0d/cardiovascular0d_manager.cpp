@@ -188,8 +188,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     strdisplincrement_=Teuchos::rcp(new Epetra_Vector(*dofrowmap));
     cv0ddofn_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cv0ddofm_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    dcv0ddof_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    dcv0ddofn_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     dcv0ddofm_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     v_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     vn_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
@@ -218,8 +216,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     strdisplincrement_->PutScalar(0.0);
     cv0ddofn_->PutScalar(0.0);
     cv0ddofm_->PutScalar(0.0);
-    dcv0ddof_->PutScalar(0.0);
-    dcv0ddofn_->PutScalar(0.0);
     dcv0ddofm_->PutScalar(0.0);
     v_->PutScalar(0.0);
     vn_->PutScalar(0.0);
@@ -347,11 +343,8 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   cv0ddofm_->Update(theta, *cv0ddofn_, 1.-theta, *cv0ddof_, 0.0);
   vm_->Update(theta, *vn_, 1.-theta, *v_, 0.0);
 
-  // update rate of solution
-  dcv0ddofn_->Update(1.0,*cv0ddofn_,-1.0,*cv0ddof_,0.0);
-  dcv0ddofn_->Update((theta-1.)/theta,*dcv0ddof_,1./(theta*ts_size));
-  dcv0ddofm_->Update(theta, *dcv0ddofn_, 1.-theta, *dcv0ddof_, 0.0);
-  //dcv0ddofm_->Update(1./ts_size, *cv0ddofn_, -1./ts_size, *cv0ddof_, 0.0);
+  // update rate of solution at generalized mid-point
+  dcv0ddofm_->Update(1./ts_size, *cv0ddofn_, -1./ts_size, *cv0ddof_, 0.0);
 
   // update flux - watch the signs! Q = -dV/dt
   Qn_->Update(-1.0,*vn_,1.0,*v_,0.0);
@@ -420,12 +413,9 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   return;
 }
 
-
-
 void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 {
   cv0ddof_->Update(1.0,*cv0ddofn_,0.0);
-  dcv0ddof_->Update(1.0,*dcv0ddofn_,0.0);
   v_->Update(1.0,*vn_,0.0);
   Q_->Update(1.0,*Qn_,0.0);
   dQ_->Update(1.0,*dQn_,0.0);
@@ -435,12 +425,9 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 
 }
 
-
 void UTILS::Cardiovascular0DManager::ResetStep()
 {
-
   cv0ddofn_->Update(1.0,*cv0ddof_,0.0);
-  dcv0ddofn_->Update(1.0,*dcv0ddof_,0.0);
   vn_->Update(1.0,*v_,0.0);
   Qn_->Update(1.0,*Q_,0.0);
   dQn_->Update(1.0,*dQ_,0.0);
@@ -448,7 +435,6 @@ void UTILS::Cardiovascular0DManager::ResetStep()
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
@@ -605,15 +591,11 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus puts a minus infront of the load linearization matrix !!
       elematrix.Scale(1.0);
       if (assmat) systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
-
     }
-
   }
 
   return;
 }
-
-
 
 
 void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
@@ -737,7 +719,6 @@ void UTILS::Cardiovascular0DManager::SolverSetup
     Teuchos::ParameterList params
 )
 {
-
   solver_ = Teuchos::rcp(&solver,false);
 
   // different setup for #adapttol_
@@ -762,7 +743,6 @@ int UTILS::Cardiovascular0DManager::Solve
   const Teuchos::RCP<Epetra_Vector> rhsstruct
 )
 {
-
   // create old style dirichtoggle vector (supposed to go away)
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));

@@ -318,8 +318,6 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> cv0ddof_; ///< cvdof vector at t_{n}
     Teuchos::RCP<Epetra_Vector> cv0ddofn_; ///< cvdof vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cv0ddofm_; ///< cvdof vector at mid-point
-    Teuchos::RCP<Epetra_Vector> dcv0ddof_; ///< cvdof rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> dcv0ddofn_; ///< cvdof rate vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> dcv0ddofm_; ///< cvdof rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
     Teuchos::RCP<Epetra_Vector> strdisplincrement_; ///< increment of struct displacements
@@ -368,7 +366,6 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
     bool enhanced_output_;
-    double pstime_;
     double totaltime_;
     int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
