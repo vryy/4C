@@ -4,11 +4,13 @@
 
 \brief pre_exodus .dat-file writer
 
+\level 1
+
 <pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 
 Here is everything related with writing a dat-file
@@ -434,6 +436,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   std::vector<EXODUS::elem_def> ales;
   std::vector<EXODUS::elem_def> lubrication;
   std::vector<EXODUS::elem_def> transport;
+  std::vector<EXODUS::elem_def> transport2;
   std::vector<EXODUS::elem_def> thermo;
   std::vector<EXODUS::elem_def> acou;
   std::vector<EXODUS::elem_def> cell;
@@ -447,6 +450,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
     else if (acte.sec.compare("LUBRICATION")==0) lubrication.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
+    else if (acte.sec.compare("TRANSPORT2")==0) transport2.push_back(acte);
     else if (acte.sec.compare("THERMO")==0) thermo.push_back(acte);
     else if (acte.sec.compare("ACOUSTIC")==0) acou.push_back(acte);
     else if (acte.sec.compare("CELL")==0) cell.push_back(acte);
@@ -499,6 +503,15 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // print transport elements
   dat << "------------------------------------------------TRANSPORT ELEMENTS" << std::endl;
   for(i_et=transport.begin();i_et!=transport.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
+  }
+
+  // print transport2 elements
+  dat << "------------------------------------------------TRANSPORT2 ELEMENTS" << std::endl;
+  for(i_et=transport2.begin();i_et!=transport2.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
