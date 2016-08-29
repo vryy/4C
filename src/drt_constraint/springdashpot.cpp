@@ -184,7 +184,7 @@ void UTILS::SpringDashpot::Evaluate(
   springstress_.clear();
 
   // get time integrator properties
-  const double time_fac = parlist.get("time_fac",0.0);
+//  const double time_fac = parlist.get("time_fac",0.0); // unused for cursurfnormal ?!?
   const double dt = parlist.get("dt",1.0);
 
   if (springtype_ == cursurfnormal)
@@ -225,65 +225,11 @@ void UTILS::SpringDashpot::Evaluate(
       switch (springtype_)
       {
       case xyz: // spring dashpot acts in every surface dof direction
-        // assemble into residual and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          if (stiff_tens_ != stiff_comp_)
-            dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
-                "when specifying 'xyz' as DIRECTION (no ref surface normal information is calculated for that case)! "
-                "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
-
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
-          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_fac);
-
-          const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-          stiff->Assemble(dval,dofs[k],dofs[k]);
-        }
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case refsurfnormal: // spring dashpot acts in refnormal direction
-        for (int k=0; k<numdof; ++k)
-        {
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          // projection of displacement/velocity onto nodal reference normal
-          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
-          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
-
-          // save for output
-          gapnp_[gid] = gap;
-        }
-
-        // select spring stiffness
-        springstiff = SelectStiffness(gap);
-
-        // assemble into residual vector and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          // force
-          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
-          const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-
-          // stiffness
-          for (int m=0; m<numdof; ++m)
-          {
-            const double dval = nodalarea*(springstiff + viscosity_*time_fac)*normal[k]*normal[m];
-            stiff->Assemble(dval,dofs[k],dofs[m]);
-          }
-
-          // store negative value of internal force for output (=reaction force)
-          out_vec[k] = - val;
-        }
-        // add to output
-        springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case cursurfnormal: // spring dashpot acts in curnormal direction

@@ -199,60 +199,24 @@ void UTILS::SpringDashpotNew::EvaluateForce(
 
       // initialize
       double gap = 0.;   // displacement
-      double gapdt = 0.; // velocity
+//      double gapdt = 0.; // velocity // unused ?!?
       double springstiff = 0.; // spring stiffness
 
       // calculation of normals and displacements differs for each spring variant
       switch (springtype_)
       {
       case xyz: // spring dashpot acts in every surface dof direction
-        // assemble into residual and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          if (stiff_tens_ != stiff_comp_)
-            dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
-                "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
-                "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
-
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
-
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-        }
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case refsurfnormal: // spring dashpot acts in refnormal direction
-        for (int k=0; k<numdof; ++k)
-        {
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          // projection of displacement/velocity onto nodal reference normal
-          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
-          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
-        }
-
-        // select spring stiffness
-        springstiff = SelectStiffness(gap);
-
-        // assemble into residual vector
-        for (int k=0; k<numdof; ++k)
-        {
-          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-        }
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case cursurfnormal: // spring dashpot acts in curnormal direction
         // spring displacement
         gap = gap_[gid];
-        gapdt = gapdt_[gid];
+//        gapdt = gapdt_[gid]; // unused ?!?
 
         // select spring stiffnes
         springstiff = SelectStiffness(gap);
@@ -301,7 +265,7 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
   }
 
   // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
-  const double time_fac = p.get("time_fac",1.0);
+//  const double time_fac = p.get("time_fac",1.0); // unused for cursurfnormal ?!?
 
   // loop nodes of current condition
   const std::vector<int>& nds = *nodes_;
@@ -332,57 +296,11 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
       switch (springtype_)
       {
       case xyz: // spring dashpot acts in every surface dof direction
-        // assemble into residual and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          if (stiff_tens_ != stiff_comp_)
-            dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
-                "when specifying 'xyz' as DIRECTION (no ref surface normal information is calculated for that case)! "
-                "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
-
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
-          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_fac);
-
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-          stiff.Assemble(dval,dofs[k],dofs[k]);
-        }
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case refsurfnormal: // spring dashpot acts in refnormal direction
-        for (int k=0; k<numdof; ++k)
-        {
-          // extract nodal displacement and velocity
-          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
-          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
-
-          // projection of displacement/velocity onto nodal reference normal
-          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
-          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
-        }
-
-        // select spring stiffness
-        springstiff = SelectStiffness(gap);
-
-        // assemble into residual vector and stiffness matrix
-        for (int k=0; k<numdof; ++k)
-        {
-          // force
-          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
-          const int err = fint.SumIntoGlobalValues(1,&val,&dofs[k]);
-          if (err) dserror("SumIntoGlobalValues failed!");
-
-          // stiffness
-          for (int m=0; m<numdof; ++m)
-          {
-            const double dval = nodalarea*(springstiff + viscosity_*time_fac)*normal[k]*normal[m];
-            stiff.Assemble(dval,dofs[k],dofs[m]);
-          }
-        }
+        dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
         break;
 
       case cursurfnormal: // spring dashpot acts in curnormal direction
