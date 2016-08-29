@@ -63,23 +63,104 @@ UTILS::SpringDashpotNew::SpringDashpotNew(
   if (springtype_ == cursurfnormal && viscosity_ != 0.)
     dserror("Viscous damping not yet implemented for DIRECTION cursurfnormal.");
 
+  //ToDo: delete rest until return statement!
   // get geometry
   std::map<int,Teuchos::RCP<DRT::Element> >& geom = spring_->Geometry();
 
-  // calculate nodal area
-  if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
-  GetArea(geom);
-
   // get normal vectors if necessary
   if (springtype_ == cursurfnormal)
+  {
+    // calculate nodal area
+    if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
+    GetArea(geom);
     InitializeCurSurfNormal();
-  else if (springtype_ == refsurfnormal)
-    GetRefNormals(geom);
+  }
+
+  // ToDo: do we really need this??
   // initialize prestressing offset
   InitializePrestrOffset();
 
   return;
 }
+
+// NEW version, consistently integrated over element surface!!
+/*----------------------------------------------------------------------*
+ * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
+ * ---------------------------------------------------------------------*/
+void UTILS::SpringDashpotNew::EvaluateRobin(
+    Teuchos::RCP<LINALG::SparseMatrix> stiff,
+    Teuchos::RCP<Epetra_Vector> fint,
+    const Teuchos::RCP<const Epetra_Vector> disp,
+    const Teuchos::RCP<const Epetra_Vector> velo,
+    Teuchos::ParameterList p)
+{
+
+  const bool assvec = fint!=Teuchos::null;
+  const bool assmat = stiff!=Teuchos::null;
+
+  actdisc_->ClearState();
+  actdisc_->SetState("displacement",disp);
+  actdisc_->SetState("velocity",velo);
+  actdisc_->SetState("offset_prestress",offset_prestr_new_);
+
+  // get values and switches from the condition
+  const std::vector<int>*    onoff         = spring_->Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* springstiff   = spring_->Get<std::vector<double> >("stiff");
+  const std::vector<double>* dashpotvisc   = spring_->Get<std::vector<double> >("visco");
+  const std::vector<double>* disploffset   = spring_->Get<std::vector<double> >("disploffset");
+  const std::string* direction = spring_->Get<std::string>("direction");
+
+  // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
+  const double time_fac = p.get("time_fac",0.0);
+
+  Teuchos::ParameterList params;
+  params.set("action","calc_struct_robinforcestiff");
+  params.set("onoff",onoff);
+  params.set("springstiff",springstiff);
+  params.set("dashpotvisc",dashpotvisc);
+  params.set("disploffset",disploffset);
+  params.set("time_fac",time_fac);
+  params.set("direction",direction);
+
+  std::map<int,Teuchos::RCP<DRT::Element> >& geom = spring_->Geometry();
+
+  // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+  // no check for empty geometry here since in parallel computations
+  // can exist processors which do not own a portion of the elements belonging
+  // to the condition geometry
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+  for (curr=geom.begin(); curr!=geom.end(); ++curr)
+  {
+    // get element location vector and ownerships
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+
+    const int eledim = (int)lm.size();
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+
+    elevector1.Size(eledim);
+    elevector2.Size(eledim);
+    elematrix1.Shape(eledim,eledim);
+
+    int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    if (err) dserror("error while evaluating elements");
+
+    if (assvec) LINALG::Assemble(*fint,elevector1,lm,lmowner);
+    if (assmat) stiff->Assemble(curr->second->Id(),lmstride,elematrix1,lm,lmowner);
+
+  } /* end of loop over geometry */
+
+  return;
+}
+
 
 // old version, NOT consistently integrated over element surface!!
 /*----------------------------------------------------------------------*
@@ -358,85 +439,6 @@ void UTILS::SpringDashpotNew::EvaluateForceStiff(
   return;
 }
 
-// NEW version, consistently integrated over element surface!!
-/*----------------------------------------------------------------------*
- * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
- * ---------------------------------------------------------------------*/
-void UTILS::SpringDashpotNew::EvaluateRobin(
-    Teuchos::RCP<LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<Epetra_Vector> fint,
-    const Teuchos::RCP<const Epetra_Vector> disp,
-    const Teuchos::RCP<const Epetra_Vector> velo,
-    Teuchos::ParameterList p)
-{
-
-  const bool assvec = fint!=Teuchos::null;
-  const bool assmat = stiff!=Teuchos::null;
-
-  actdisc_->ClearState();
-  actdisc_->SetState("displacement",disp);
-  actdisc_->SetState("velocity",velo);
-  actdisc_->SetState("offset_prestress",offset_prestr_new_);
-
-  // get values and switches from the condition
-  const std::vector<int>*    onoff         = spring_->Get<std::vector<int> >   ("onoff");
-  const std::vector<double>* springstiff   = spring_->Get<std::vector<double> >("stiff");
-  const std::vector<double>* dashpotvisc   = spring_->Get<std::vector<double> >("visco");
-  const std::vector<double>* disploffset   = spring_->Get<std::vector<double> >("disploffset");
-  const std::string* direction = spring_->Get<std::string>("direction");
-
-  // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
-  const double time_fac = p.get("time_fac",0.0);
-
-  Teuchos::ParameterList params;
-  params.set("action","calc_struct_robinforcestiff");
-  params.set("onoff",onoff);
-  params.set("springstiff",springstiff);
-  params.set("dashpotvisc",dashpotvisc);
-  params.set("disploffset",disploffset);
-  params.set("time_fac",time_fac);
-  params.set("direction",direction);
-
-  std::map<int,Teuchos::RCP<DRT::Element> >& geom = spring_->Geometry();
-
-  // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-  // no check for empty geometry here since in parallel computations
-  // can exist processors which do not own a portion of the elements belonging
-  // to the condition geometry
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-  for (curr=geom.begin(); curr!=geom.end(); ++curr)
-  {
-    // get element location vector and ownerships
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
-
-    const int eledim = (int)lm.size();
-
-    // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
-
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
-    elematrix1.Shape(eledim,eledim);
-
-    int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
-    if (err) dserror("error while evaluating elements");
-
-    if (assvec) LINALG::Assemble(*fint,elevector1,lm,lmowner);
-    if (assmat) stiff->Assemble(curr->second->Id(),lmstride,elematrix1,lm,lmowner);
-
-  } /* end of loop over geometry */
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
@@ -508,6 +510,18 @@ void UTILS::SpringDashpotNew::ResetPrestress(
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpotNew::SetRestart(
+    Teuchos::RCP<Epetra_Vector> vec)
+{
+
+  offset_prestr_new_->Update(1.0,*vec,0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             mhv 12/15|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpotNew::SetRestartOld(
     Teuchos::RCP<Epetra_MultiVector> vec)
 {
 
@@ -609,6 +623,18 @@ void UTILS::SpringDashpotNew::OutputGapNormal(
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpotNew::OutputPrestrOffset(
+    Teuchos::RCP<Epetra_Vector> &springprestroffset) const
+{
+
+  springprestroffset->Update(1.0,*offset_prestr_new_,0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             mhv Dec15|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpotNew::OutputPrestrOffsetOld(
     Teuchos::RCP<Epetra_MultiVector> &springprestroffset) const
 {
 
@@ -785,77 +811,6 @@ void UTILS::SpringDashpotNew::GetArea(const std::map<int,Teuchos::RCP<DRT::Eleme
   return;
 }
 
-// ToDo: this function should vanish completely
-// obsolete when using new EvaluateRobin function!
-/*-----------------------------------------------------------------------*
-|(private) adapted from mhv 01/14                           pfaller Apr15|
- *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpotNew::GetRefNormals(const std::map<int,Teuchos::RCP<DRT::Element> >& geom)
-{
-  // a vector for all row dofs to hold normals interpolated to the nodes
-  Epetra_Vector refnodalnormals(*actdisc_->DofRowMap(),true);
-
-  std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator ele;
-  for (ele=geom.begin(); ele != geom.end(); ++ele)
-  {
-    DRT::Element* element = ele->second.get();
-
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    element->LocationVector(*(actdisc_),lm,lmowner,lmstride);
-    Epetra_SerialDenseMatrix dummat(0,0);
-    Epetra_SerialDenseVector dumvec(0);
-    Epetra_SerialDenseVector elevector;
-    const int eledim = (int)lm.size();
-    elevector.Size(eledim);
-
-    Teuchos::ParameterList eparams2;
-    eparams2.set("action","calc_ref_nodal_normals");
-    element->Evaluate(eparams2,*(actdisc_),lm,dummat,dummat,elevector,dumvec,dumvec);
-    LINALG::Assemble(refnodalnormals,elevector,lm,lmowner);
-  }
-
-  const std::vector<int>& nds = *nodes_;
-  for (int j=0; j<(int)nds.size(); ++j)
-  {
-    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
-    {
-      int gid = nds[j];
-
-      DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d",gid);
-
-      int numdof = actdisc_->NumDof(0,node);
-      std::vector<int> dofs = actdisc_->Dof(0,node);
-
-      assert (numdof==3);
-
-      std::vector<double> temp(numdof, 0.0);
-      double temp_norm_sq = 0.;
-      for (int k=0; k<numdof; ++k)
-      {
-        temp[k] = refnodalnormals[refnodalnormals.Map().LID(dofs[k])];
-        temp_norm_sq += temp[k]*temp[k];
-      }
-
-      // calculate vector length
-      const double temp_norm = sqrt(temp_norm_sq);
-
-      if (temp_norm == 0.)
-        dserror("Nodal normal has length 0.");
-
-      // normalize vector
-      for (int k=0; k<numdof; ++k)
-        temp[k] /= temp_norm;
-
-      // insert to map
-      normals_.insert(std::pair<int, std::vector<double> >(gid, temp));
-    }
-  }
-
-  return;
-}
 
 /*-----------------------------------------------------------------------*
 |(private)                                                    mhv 12/2015|

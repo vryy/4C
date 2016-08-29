@@ -99,11 +99,8 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.44
-ALPHA_M                         0.33
-BETA                            0.31
-GAMMA                           0.61
 GENAVG                          TrLike
+RHO_INF                         0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
@@ -149,8 +146,7 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.59524819355249026e-01 TOLERANCE 1e-6 // OLD, WRONG
-// STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.50939451532222035e-01 TOLERANCE 1e-6 // with newly integrated spring dashpot
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.50580490807208633e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

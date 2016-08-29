@@ -130,11 +130,8 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.44
-ALPHA_M                         0.33
-BETA                            0.31
-GAMMA                           0.61
 GENAVG                          TrLike
+RHO_INF                         0.8
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 11 12 13 DENS 1.0e-6
 MAT 11 ELAST_IsoNeoHooke MUE 5.0
@@ -177,10 +174,10 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -3.92065178300453665e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE 6.42279378169535864e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.32152902917704385e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 77 QUANTITY dispx VALUE 6.64205876912375004e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -4.12272450803086610e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE 6.24764483997209474e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.38600075398721190e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 77 QUANTITY dispx VALUE 6.56208828510317410e+00 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

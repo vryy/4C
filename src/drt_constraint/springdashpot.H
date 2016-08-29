@@ -146,11 +146,8 @@ namespace UTILS
       //! set up MORTAR interface for direction cursurfnormal
       void InitializeCurSurfNormal();
 
-      //! calculate nodal area
+      //! calculate nodal area - old!
       void GetArea(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
-
-      //! get reference normal
-      void GetRefNormals(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
 
       //! get current normal
       void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp,

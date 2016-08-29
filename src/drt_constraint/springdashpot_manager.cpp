@@ -54,8 +54,15 @@ void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
 {
   // evaluate all spring dashpot conditions
   for (int i=0; i<n_conds_; ++i)
-    springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
-//    springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
+  {
+    // get spring type from current condition
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+
+    if(stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+      springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
+    if(stype == UTILS::SpringDashpot::cursurfnormal)
+      springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
+  }
 
   return;
 }
@@ -74,9 +81,7 @@ void UTILS::SpringDashpotManager::ResetPrestress(
 {
   // loop over all spring dashpot conditions and reset them
   for (int i=0; i<n_conds_; ++i)
-  {
     springs_[i]->Reset(dis);
-  }
 
   return;
 }
@@ -120,23 +125,25 @@ void UTILS::SpringDashpotManager::OutputRestart(
     Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<Epetra_Vector> disp)
 {
+
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+
   // collect outputs from all spring dashpot conditions
   for (int i=0; i<n_conds_; ++i)
-    springs_[i]->OutputPrestrOffset(springoffsetprestr);
+  {
+    // get spring type from current condition
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
+
+    if(stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+      springs_[i]->OutputPrestrOffset(springoffsetprestr);
+    if(stype == UTILS::SpringDashpot::cursurfnormal)
+      springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
+  }
 
   // write vector to output for restart
   output->WriteVector("springoffsetprestr", springoffsetprestr);
-
-
-  // ToDo: delete, old version! (mhv 08/2016)
-  // row maps for export
-  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
-  // collect outputs from all spring dashpot conditions
-  for (int i=0; i<n_conds_; ++i)
-    springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
-
   // write vector to output for restart
   output->WriteVector("springoffsetprestr_old", springoffsetprestr_old);
 
@@ -152,20 +159,21 @@ void UTILS::SpringDashpotManager::ReadRestart(IO::DiscretizationReader& reader,c
 {
 
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  Teuchos::RCP<Epetra_MultiVector> tempvecold = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+
   reader.ReadVector(tempvec, "springoffsetprestr");
+  reader.ReadMultiVector(tempvecold, "springoffsetprestr_old");
+
   // loop over all spring dashpot conditions and set restart
   for (int i=0; i<n_conds_; ++i)
   {
-    springs_[i]->SetRestart(tempvec);
-  }
+    // get spring type from current condition
+    const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
 
-  // ToDo: delete, old version! (mhv 08/2016)
-  Teuchos::RCP<Epetra_MultiVector> tempvec2 = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
-  reader.ReadMultiVector(tempvec2, "springoffsetprestr_old");
-  // loop over all spring dashpot conditions and reset them
-  for (int i=0; i<n_conds_; ++i)
-  {
-    springs_[i]->SetRestartOld(tempvec2);
+    if(stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+      springs_[i]->SetRestart(tempvec);
+    if(stype == UTILS::SpringDashpot::cursurfnormal)
+      springs_[i]->SetRestartOld(tempvecold);
   }
 
   return;

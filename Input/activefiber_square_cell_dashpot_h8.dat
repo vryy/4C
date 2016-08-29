@@ -4203,8 +4203,8 @@ NODE 1352    COORD  5.0000000000000003e-02  5.0000000000000003e-02  5.0000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -2.17602273602282548e-05 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 2.21431323469365017e-05 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -2.17946699186344025e-05 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 2.21769095178239859e-05 TOLERANCE 1e-09
 
 ---------------------------------------------------------------END
 // END

@@ -99,11 +99,8 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.44
-ALPHA_M                         0.33
-BETA                            0.31
-GAMMA                           0.61
 GENAVG                          TrLike
+RHO_INF                         0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY

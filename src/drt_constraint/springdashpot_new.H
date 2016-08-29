@@ -110,6 +110,10 @@ namespace UTILS
 
       //! set reset after prestressing with MULF
       void SetRestart(
+          Teuchos::RCP<Epetra_Vector> vec);
+
+      //! set reset after prestressing with MULF
+      void SetRestartOld(
           Teuchos::RCP<Epetra_MultiVector> vec);
 
       //! output of gap, normal, and nodal stiffness
@@ -129,6 +133,10 @@ namespace UTILS
 
       //! output of spring offset
       void OutputPrestrOffset(
+          Teuchos::RCP<Epetra_Vector> &springprestroffset) const;
+
+      //! output of spring offset
+      void OutputPrestrOffsetOld(
           Teuchos::RCP<Epetra_MultiVector> &springprestroffset) const;
 
       //! return type of spring
@@ -145,11 +153,8 @@ namespace UTILS
       //! set up MORTAR interface for direction cursurfnormal
       void InitializeCurSurfNormal();
 
-      //! calculate nodal area
+      //! calculate nodal area - old!
       void GetArea(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
-
-      //! get reference normal
-      void GetRefNormals(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
 
       //! get current normal
       void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp);
