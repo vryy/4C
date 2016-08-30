@@ -192,19 +192,19 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
     //! Return initial density
-    virtual const double initDensity() = 0;
+    virtual double initDensity() = 0;
 
     //! Return specific heat -constant pressure - solid state of particles
-    virtual const double CPS() = 0;
+    virtual double CPS() = 0;
 
     //! Return specific heat -constant pressure - liquid state of particles
-    virtual const double CPL() = 0;
+    virtual double CPL() = 0;
 
     //! Return specific latent heat - solid <-> liquid
-    virtual const double MaxSpecificLatentHeat() = 0;
+    virtual double MaxSpecificLatentHeat() = 0;
 
     //! transition temperature - solid <-> liquid
-    virtual const double SL_TransitionTemperature() = 0;
+    virtual double SL_TransitionTemperature() = 0;
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;

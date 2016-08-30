@@ -57,11 +57,18 @@ void PARTICLE::TimIntCentrDiff::Init()
 
   switch(particle_algorithm_->ParticleInteractionType())
   {
+  case INPAR::PARTICLE::MeshFree:
+  {
+    interhandler_ = Teuchos::rcp(new PARTICLE::MeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams));
+    break;
+  }
   case INPAR::PARTICLE::Normal_DEM:
   case INPAR::PARTICLE::Normal_DEM_thermo:
   case INPAR::PARTICLE::NormalAndTang_DEM:
+  {
     collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEM(discret_, particle_algorithm_, particleparams));
-  break;
+    break;
+  }
   case INPAR::PARTICLE::Normal_MD:
     dserror("central difference time integrator cannot be combined with molecular dynamics collision mechanism");
   break;

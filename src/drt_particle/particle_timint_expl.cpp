@@ -105,12 +105,15 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   case INPAR::PARTICLE::MeshFree :
     //    P_{n} := P_{n+1}, P_{n-1} := P_{n}
     pressure_->UpdateSteps(*pressuren_);
+    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     //    D_{n} := T_{n+1}, D_{n-1} := D_{n}
     density_->UpdateSteps(*densityn_);
     //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
     temperature_->UpdateSteps(*temperaturen_);
     break;
+  }
   default : // do nothing
     break;
   }

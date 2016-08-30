@@ -114,9 +114,14 @@ void PARTICLE::Algorithm::Timeloop()
     Integrate();
 
     // dismembering if necessary
-    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
+    switch (particleInteractionType_)
     {
+    case INPAR::PARTICLE::MeshFree :
+    case INPAR::PARTICLE::Normal_DEM_thermo :
       ParticleDismemberer();
+      break;
+    default : //do nothing
+      break;
     }
 
     // calculate stresses, strains, energies
@@ -2107,7 +2112,9 @@ int PARTICLE::Algorithm::ComputeSemiLengthInParticlesForParticleDismemberer(cons
   return (oldRadius-semiStep)/(2 * semiStep) + 2; /// +2 is just to be sure that everything is included
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | get neighbouring particles and walls                    ghamm 09/13  |
+ *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
     DRT::Node* particle,
     std::list<DRT::Node*>& neighboring_particles,

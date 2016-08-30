@@ -114,7 +114,6 @@ namespace PARTICLE
 
   };  // class InteractionHandlerBase
 
-
   /*====================================================================*/
   /*!
    * \brief Collision handler base for particle contact
@@ -654,11 +653,13 @@ namespace PARTICLE
     public:
 
       /// struct to store node data for faster access
-      struct NodeInterData {
+      struct ParticleInterData {
         LINALG::Matrix<3,1> pos;
         LINALG::Matrix<3,1> vel;
+        double rho;
         double rad;
         double mass;
+        double press;
         std::vector<int> lm;
         int owner;
       };
@@ -681,6 +682,12 @@ namespace PARTICLE
       //! @name Actions
       //@{
 
+      /// set state partial overload from time integrator to prepare collision calculation
+      virtual void SetState(
+        Teuchos::RCP<Epetra_Vector> radius,
+        Teuchos::RCP<Epetra_Vector> mass
+        );
+
       /// compute collisions (inter-particle and particle-wall), returns contact energy
       void PreFetchInterData(
         const int numcolparticles
@@ -688,27 +695,22 @@ namespace PARTICLE
 
       /// compute interactions, returns 0
       void EvaluateParticleInteraction(
-        const double dt,
-        Teuchos::RCP<Epetra_Vector> f_contact,
-        Teuchos::RCP<Epetra_Vector> m_contact
-        );
-
-      /// compute density for meshfree interactions
-      void CalcDensity(
-        DRT::Node* particle_i,
-        const NodeInterData& data_i,
-        const std::list<DRT::Node*>& neighboring_particles
+        Teuchos::RCP<Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> mass
         );
 
     protected:
 
-      //! @name Collision parameters
+      //! @name Interaction parameters
       //@{
 
-      std::vector<NodeInterData> nodedata_;   ///< temporary storage for all particle collision relevant data
+      std::vector<ParticleInterData> particledata_;   ///< temporary storage for all particle collision relevant data
 
       /// weight function for meshfree interactions
       INPAR::PARTICLE::WeightFunction weight_function_;
+
+      Teuchos::RCP<Epetra_Vector> densityncol_;
+      Teuchos::RCP<Epetra_Vector> pressurencol_;
 
     };  // class MeshFreeInteractionHandler
 

@@ -1759,6 +1759,7 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
+  src/drt_particle/particleMeshFree_weightFunction.cpp
 )
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp

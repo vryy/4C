@@ -51,6 +51,7 @@ namespace PARTICLE
 {
   class Algorithm;
   class ParticleCollisionHandlerBase;
+  class MeshFreeInteractionHandler;
 }
 
 
@@ -305,22 +306,22 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
     //! Return initial density
-    virtual const double initDensity() { return initDensity_; }
+    virtual double initDensity() { return initDensity_; }
 
     //! Return initial radius
-    virtual const double initRadius() { return initRadius_; }
+    virtual double initRadius() { return initRadius_; }
 
     //! extract heat source - constant pressure - solid state
-    virtual const double CPS() { return CPS_; }
+    virtual double CPS() { return CPS_; }
 
     //! extract heat source - constant pressure - liquid state
-    virtual const double CPL() { return CPL_; }
+    virtual double CPL() { return CPL_; }
 
     //! Return specific latent heat - solid <-> liquid
-    virtual const double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
+    virtual double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
 
     //! transition temperature - solid <-> liquid
-    virtual const double SL_TransitionTemperature() {return SL_transitionTemperature_; }
+    virtual double SL_TransitionTemperature() {return SL_transitionTemperature_; }
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
@@ -542,6 +543,9 @@ namespace PARTICLE
 
     //! collision handler for particles
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
+
+    //! interaction handler for meshfree
+    Teuchos::RCP<PARTICLE::MeshFreeInteractionHandler> interhandler_;
 
     //@}
 

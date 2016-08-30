@@ -17,6 +17,7 @@
 #include "particle_contact.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
+#include "particleMeshFree_weightFunction.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -29,6 +30,7 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 
 #include "../drt_mat/stvenantkirchhoff.H"
 
@@ -108,12 +110,16 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
     //id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     std::cout << "\n\n\n Warning! Initial safety checks for MeshFree still in the TODO list\n\n\n";
     return;
+  }
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     break;
+  }
   default :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
   }
@@ -3758,6 +3764,26 @@ PARTICLE::MeshFreeInteractionHandler::MeshFreeInteractionHandler(
 
 
 /*----------------------------------------------------------------------*
+ | set states overload for meshfree                        katta 08/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::MeshFreeInteractionHandler::SetState(
+  Teuchos::RCP<Epetra_Vector> radius,
+  Teuchos::RCP<Epetra_Vector> mass)
+{
+  // call the base function
+  PARTICLE::InteractionHandlerBase::SetState(radius,mass);
+
+  // node based vectors
+  densityncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*radius,*densityncol_);
+  pressurencol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*mass,*pressurencol_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | collect collision data for faster access                ghamm 04/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
@@ -3777,16 +3803,18 @@ void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
     // extract global dof ids and fill into lm_i
     discret_->Dof(particle, lm);
 
-    NodeInterData& data = nodedata_[lid];
+    ParticleInterData& data = particledata_[lid];
 
     //position, velocity and angular velocity of particle
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,data.pos,lm);
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,data.vel,lm);
 
 
-    // radius and mass of particle
+    // pressure, density, radius and mass of particle
+    data.rho = (*densityncol_)[lid];
     data.rad = (*radiusncol_)[lid];
     data.mass = (*masscol_)[lid];
+    data.press = (*pressurencol_)[lid];
     // lm vector and owner
     data.lm.swap(lm);
     data.owner = particle->Owner();
@@ -3805,15 +3833,13 @@ void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
  | compute MeshFree interactions                           katta 08/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
-  const double dt,
-  Teuchos::RCP<Epetra_Vector> f_contact,
-  Teuchos::RCP<Epetra_Vector> m_contact
+  Teuchos::RCP<Epetra_Vector> densityn,
+  Teuchos::RCP<const Epetra_Vector> mass
   )
 {
-
   // gather data for all particles initially
   const int numcolparticles = discret_->NodeColMap()->NumMyElements();
-  nodedata_.resize(numcolparticles);
+  particledata_.resize(numcolparticles);
   PreFetchInterData(numcolparticles);
 
   // store bins, which have already been examined
@@ -3822,6 +3848,17 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
   // list of all particles in the neighborhood of currparticle
   std::list<DRT::Node*> neighboring_particles;
 
+  Teuchos::RCP<PARTICLE::WeightFunctionBase> weightFunction;
+  switch (weight_function_)
+  {
+  case INPAR::PARTICLE::CubicBspline :
+  {
+    weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline() );
+    break;
+  }
+  default :
+    dserror("unknown weight function");
+  }
   // loop over all particles
   for(int i=0; i<numcolparticles; ++i)
   {
@@ -3858,27 +3895,49 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
       DRT::Node *particle_i = NodesInCurrentBin[i];
 
       // extract data
-      NodeInterData& data_i = nodedata_[particle_i->LID()];
+      const int lidNode_i = particle_i->LID();
+      ParticleInterData& data_i = particledata_[lidNode_i];
 
-      // compute meshfree density
-      CalcDensity(particle_i, data_i, neighboring_particles);
+      //inverse of the radius for faster computations
+      const double invrad_i = 1/data_i.rad;
 
-      /*
-       *       // compute contact with neighboring walls
-      CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt,
-          walldiscret, walldisn, wallveln, f_contact, m_contact, f_structure);
+      //loop over the neighbouring particles
+      for(std::list<DRT::Node*>::const_iterator ineighborparticle=neighboring_particles.begin(); ineighborparticle!=neighboring_particles.end(); ++ineighborparticle)
+      {
+        const int lidNode_j = (*ineighborparticle)->LID();
 
-      // compute contact with neighboring particles
-      CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-          havepbc, dt, f_contact, m_contact);
-       */
+        // no auto-interactions. They are handled before in the initialization of the vectors (desityn, etc.)
+        if(lidNode_i == lidNode_j)
+          continue;
 
+        // extract data
+        const ParticleInterData& data_j = particledata_[lidNode_j];
 
+        // evaluate interactions only once just if the influence radius is the same
+        const bool trg_equalRadii = (data_i.rad == data_j.rad);
+        if(lidNode_i > lidNode_j && trg_equalRadii)
+          continue;
+
+        // distance vector and distance between two particles
+        static LINALG::Matrix<3,1> r_rel;
+        for(unsigned dim=0; dim<3; ++dim)
+          r_rel(dim) = data_j.pos(dim) - data_i.pos(dim);
+        const double norm_r_rel = r_rel.Norm2();
+
+        const double weight = weightFunction->ComputeWeight(norm_r_rel,data_i.rad);
+
+/*
+          // add the mass with the weight
+          (*densityn)[lidNode_i] += weight * data_i.mass;
+          if (trg_equalRadii) //in case there is a relation of equivalence, write the result for the second particle too
+            (*densityn)[lidNode_j] += weight * data_j.mass;
+*/
+      }
     }
   }
 
   // erase temporary storage for collision data
-  nodedata_.clear();
+  particledata_.clear();
 
   radiusncol_ = Teuchos::null;
   masscol_ = Teuchos::null;
@@ -3886,54 +3945,4 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
   disncol_ = Teuchos::null;
   ang_velncol_ = Teuchos::null;
 
-}
-
-
-/*----------------------------------------------------------------------*
- | calculate density for meshfree nodes                    katta 04/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::MeshFreeInteractionHandler::CalcDensity(
-  DRT::Node* particle_i,
-  const NodeInterData& data_i,
-  const std::list<DRT::Node*>& neighboring_particles
-  )
-{
-
-  // check whether there is contact between particle i and all other particles in the neighborhood except those which
-  // have a lower or equal ID than particle i (--> ignoring self-contact)
-  const int gid_i = particle_i->Id();
-
-  // inverse of the radius for faster computations
-  const double invrad_i = 1/data_i.rad;
-
-  for(std::list<DRT::Node*>::const_iterator ineighborparticle=neighboring_particles.begin(); ineighborparticle!=neighboring_particles.end(); ++ineighborparticle)
-  {
-    const int gid_j = (*ineighborparticle)->Id();
-    // evaluate contact only once!
-    if(gid_i >= gid_j)
-      continue;
-
-    // extract data
-    const NodeInterData& data_j = nodedata_[(*ineighborparticle)->LID()];
-
-    // distance vector and distance between two particles
-    static LINALG::Matrix<3,1> r_rel;
-    for(unsigned dim=0; dim<3; ++dim)
-      r_rel(dim) = data_j.pos(dim) - data_i.pos(dim);
-    const double norm_r_rel = r_rel.Norm2();
-
-    double weight = 0;
-    switch (weight_function_)
-    {
-    case INPAR::PARTICLE::CubicBspline :
-    {
-      const double norm_norm_r_rel = 2*norm_r_rel*invrad_i;
-      // just to be sure that nothing strange happens
-      assert(norm_norm_r_rel>=0);
-      dserror("TODO");
-    }
-    default :
-      dserror("unknown weight function");
-    }
-  }
 }

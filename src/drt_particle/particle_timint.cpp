@@ -107,7 +107,8 @@ PARTICLE::TimInt::TimInt
   SL_thermalExpansion_(-1.0),
   fifc_(Teuchos::null),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  collhandler_(Teuchos::null)
+  collhandler_(Teuchos::null),
+  interhandler_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -154,7 +155,9 @@ void PARTICLE::TimInt::Init()
   case INPAR::PARTICLE::MeshFree :
     // pressures P_{n}
     pressure_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     // densities D_{n}
     density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     // temperatures T_{n}
@@ -162,6 +165,7 @@ void PARTICLE::TimInt::Init()
     // latent heat
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     break;
+  }
   default : //do nothing
     break;
   }
@@ -205,12 +209,15 @@ void PARTICLE::TimInt::Init()
   case INPAR::PARTICLE::MeshFree :
     // pressures P_{n+1} at p_{n+1}
     pressuren_ = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
+    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     // densities D_{n+1} at d_{n+1}
     densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
     // temperatures T_{n+1} at t_{n+1}
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
     break;
+  }
   default : //do nothing
     break;
   }
@@ -234,8 +241,10 @@ void PARTICLE::TimInt::SetInitialFields()
   {
   case INPAR::PARTICLE::MeshFree :
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     break;
+  }
   default :
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
   }
@@ -372,10 +381,11 @@ void PARTICLE::TimInt::SetInitialFields()
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
-    {
     case INPAR::PARTICLE::MeshFree :
       // here density_ and pressure_ should be inizialized with the initial values. Yet, they can be zero without a loss of generality.
+      // no break here
     case INPAR::PARTICLE::Normal_DEM_thermo :
+    {
       // set density. Warining! use for meshfree this density leads only to the node masses. For everything else it must be discarded
       (*density_)(0)->PutScalar(initDensity_);
       const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
@@ -758,10 +768,14 @@ void PARTICLE::TimInt::ReadRestartState()
     switch (particle_algorithm_->ParticleInteractionType())
     {
     case INPAR::PARTICLE::MeshFree :
+    {
       // read pressure
       reader.ReadVector(pressuren_, "pressure");
       pressure_->UpdateSteps(*pressuren_);
+      // no break here
+    }
     case INPAR::PARTICLE::Normal_DEM_thermo :
+    {
       // read density
       reader.ReadVector(densityn_, "density");
       density_->UpdateSteps(*densityn_);
@@ -769,6 +783,7 @@ void PARTICLE::TimInt::ReadRestartState()
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
       break;
+    }
     default : //do nothing
       break;
     }
@@ -867,9 +882,13 @@ void PARTICLE::TimInt::OutputRestart
   {
   case INPAR::PARTICLE::MeshFree :
     output_->WriteVector("pressure", (*pressure_)(0));
+    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     output_->WriteVector("density", (*density_)(0));
     output_->WriteVector("temperature", (*temperature_)(0));
+    break;
+  }
   default : // do nothing
     break;
   }
@@ -941,10 +960,13 @@ void PARTICLE::TimInt::OutputState
   {
   case INPAR::PARTICLE::MeshFree :
     output_->WriteVector("pressure", (*pressure_)(0), output_->nodevector);
+    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
     output_->WriteVector("density", (*density_)(0), output_->nodevector);
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
     break;
+  }
   default : //do nothing
     break;
   }
