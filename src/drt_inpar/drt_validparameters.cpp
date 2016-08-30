@@ -588,6 +588,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LIMIT_OUTP_TO_PROC", -1,  "Only the specified procs will write output",&io);
 
   DoubleParameter("RESTARTWALLTIMEINTERVAL",-1.0,"Enforce restart after this walltime interval (in seconds), smaller zero to disable",&io);
+  IntParameter("RESTARTEVRY", -1,  "write restart every RESTARTEVRY steps",&io);
 
 
   /*----------------------------------------------------------------------*/

@@ -506,7 +506,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   // Set restart time based on walltime
   const double restartinterval = IOParams().get<double>("RESTARTWALLTIMEINTERVAL");
-  RestartManager()->SetRestartTimeInterval(restartinterval);
+  const int restartevry = IOParams().get<int>("RESTARTEVRY");
+  RestartManager()->SetupRestartManager(restartinterval, restartevry);
 
   // 3) set random seed
   // time is in seconds, therefore we add the global processor id to obtain a unique seed on each proc

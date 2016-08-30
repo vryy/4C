@@ -19,13 +19,15 @@
 #include <map>
 #include <string>
 
+#include<Epetra_Comm.h>
+#include <Epetra_FEVector.h>
+
 #include "drt_utils.H"
 #include "drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include <Epetra_FEVector.h>
 #include "../linalg/linalg_gauss.H"
 
 
@@ -1131,20 +1133,34 @@ DRT::UTILS::RestartManager::RestartManager():
       restartevrytime_(-1.0),
       restartcounter_(0),
       lastacceptedstep_(-1),
-      lasttestedstep_(-1)
-{}
+      lasttestedstep_(-1),
+      restartevrystep_(-1)
+{
+  // setup signal handler
+  signal_ = -1;
+  struct sigaction the_action;
+  the_action.sa_sigaction = restart_signal_handler;
+  sigemptyset(&the_action.sa_mask);
+  the_action.sa_flags = SA_SIGINFO;
+
+  if(sigaction(SIGUSR1,&the_action,NULL))
+    dserror("signal handler for action SIGUSR1 could not be registered");
+  if(sigaction(SIGUSR2,&the_action,NULL))
+    dserror("signal handler for action SIGUSR2 could not be registered");
+}
 
 DRT::UTILS::RestartManager::~RestartManager()
 {}
 
 /// set the time interval to enforce restart writing
-void DRT::UTILS::RestartManager::SetRestartTimeInterval(const double restartinterval)
+void DRT::UTILS::RestartManager::SetupRestartManager(const double restartinterval, const int restartevry)
 {
   restartevrytime_ = restartinterval;
+  restartevrystep_ = restartevry;
 }
 
 /// return whether it is time for a restart after a certain walltime interval
-bool DRT::UTILS::RestartManager::WalltimeRestart(const int step)
+bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm)
 {
   // make sure that all after the first field write restart, too
   if(step == lastacceptedstep_)
@@ -1155,18 +1171,36 @@ bool DRT::UTILS::RestartManager::WalltimeRestart(const int step)
   {
     lasttestedstep_ = step;
 
-    // compute elapsed walltime
-    const double elapsedtime = DRT::Problem::Walltime() - startwalltime_;
-    if((int)(elapsedtime/restartevrytime_) > restartcounter_)
+    // compute elapsed walltime on proc 0 and let it decide for all other procs, too
+    int restarttime = 0;
+    if(comm.MyPID() == 0)
     {
-      ++restartcounter_;
-      lastacceptedstep_ = step;
-      return true;
+      const double elapsedtime = DRT::Problem::Walltime() - startwalltime_;
+      if(step > 0 and (
+          ((restartevrystep_ > 0) and (step%restartevrystep_ == 0))
+          or ((int)(elapsedtime/restartevrytime_) > restartcounter_)
+          or signal_ > 0))
+      {
+        ++restartcounter_;
+        lastacceptedstep_ = step;
+        restarttime = 1;
+        signal_ = -1;
+      }
     }
+    comm.Broadcast(&restarttime, 1, 0);
+    return restarttime;
   }
 
   return false;
 }
+
+void DRT::UTILS::RestartManager::restart_signal_handler(int signal_number, siginfo_t *signal_information,  void* ignored)
+{
+  signal_ = signal_information->si_signo;
+  return;
+}
+
+volatile int DRT::UTILS::RestartManager::signal_;
 
 
 /*-----------------------------------------------------------------------------*

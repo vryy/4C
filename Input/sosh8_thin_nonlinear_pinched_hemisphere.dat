@@ -32,6 +32,7 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
+RESTARTWALLTIMEINTERVAL         2
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
 THERM_HEATFLUX                  No

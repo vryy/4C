@@ -2271,9 +2271,6 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
     return;
   }
 
-  // check whether restart is enforced after a certain walltime interval
-  forced_writerestart = forced_writerestart or DRT::Problem::Instance()->RestartManager()->WalltimeRestart(step_);
-
   // special treatment is necessary when restart is forced
   if(forced_writerestart)
   {
@@ -2297,7 +2294,9 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if ( (writerestartevery_ and (step_%writerestartevery_ == 0) and step_!=0) or forced_writerestart )
+  if ( (writerestartevery_ and (step_%writerestartevery_ == 0) and step_!=0)
+      or forced_writerestart
+      or DRT::Problem::Instance()->RestartManager()->Restart(step_,discret_->Comm()) )
   {
     OutputRestart(datawritten);
   }

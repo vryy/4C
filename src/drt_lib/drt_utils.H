@@ -15,15 +15,15 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <signal.h>
+#include <boost/random.hpp>
+
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 
 #include "drt_node.H"
 #include "drt_element.H"
-
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-
-#include <boost/random.hpp>
 
 
 namespace DRT
@@ -339,7 +339,7 @@ protected:
 };
 
 /*!
-\brief handles restart after a certain walltime interval -> to be extended
+\brief handles restart after a certain walltime interval, step interval or on a user signal
 
 \author hammerl
 */
@@ -350,29 +350,44 @@ public:
 
   virtual ~RestartManager();
 
-  /// set the time interval to enforce restart writing
-  void SetRestartTimeInterval(const double restartinterval);
+  /// setup of restart manager
+  void SetupRestartManager(const double restartinterval, const int restartevry);
 
-  /// return whether it is time for a forced restart due to walltime limit
+  /// return whether it is time for a restart
   /// \param step [in] : current time step for multi-field syncronisation
-  bool WalltimeRestart(const int step);
+  /// \param comm [in] : get access to involved procs
+  bool Restart(const int step, const Epetra_Comm& comm);
+
+  /// the signal handler that gets passed to the kernel and listens for SIGUSR1 and SIGUSR2
+  static void restart_signal_handler(int signal_number, siginfo_t *signal_information,  void* ignored);
 
 protected:
+
+  /// @name wall time parameters
+  //@{
 
   /// start time of simulation
   double startwalltime_;
 
-  /// after this time interval a restart is enforced
+  /// after this wall time interval a restart is enforced
   double restartevrytime_;
 
   /// check to enforce restart only once during time interval
   int restartcounter_;
+
+  //@}
 
   /// store the step which was allowed to write restart
   int lastacceptedstep_;
 
   /// member to detect time step increment
   int lasttestedstep_;
+
+  /// after this number of steps a restart is enforced
+  int restartevrystep_;
+
+  /// signal which was caught by the signal handler
+  volatile static int signal_;
 
 };
 

@@ -28,6 +28,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
+RESTARTEVRY                     1
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 FLUID_SOL                       No
@@ -37,7 +38,6 @@ FLUID_VIS                       No
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
-RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.5
 NUMSTEP                         3
