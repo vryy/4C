@@ -224,7 +224,7 @@ MAT 75 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 REACCOEFF 
 MAT 76 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0
 MAT 77 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
 MAT 78 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
-MAT 79 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
+MAT 79 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 1 0 0 0 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 0 -1 0 0 0 0 REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
 MAT 80 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 0 0 REACCOEFF -2.0 COUPLING simple_multiplicative
 MAT 81 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 -2 1 REACCOEFF 5.0 COUPLING simple_multiplicative REACSTART 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.8 0.0
 -------------------------------------------------------------CURVE1

@@ -438,9 +438,6 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
         else //if (couprole[k] == 0)
           rcfac = 0;
       }
-
-      if ( IsReacStart() )
-        dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
       break;
     }
 
@@ -456,7 +453,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
   //reaction start feature
   if ( ReacStart()->at(k) > 0 and not skipreacstart )
   {
-    if ( phinp.at(k) > 0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
+    if ( phinp.at(k) > 1.0e-14 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
       rcfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
     else
       rcfac = 0;
@@ -622,7 +619,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
   //reaction start feature
   if ( ReacStart()->at(k) > 0 )
   {
-    if ( phinp.at(k) > 0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
+    if ( phinp.at(k) > 1.0e-14 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
     {
       rcdmfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
 
@@ -632,8 +629,6 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
 
         rcdmfac += rcfac*ReacStart()->at(k)/std::pow(phinp_org.at(k)*scale,2);
       }
-      else
-        ;
     }
     else
       rcdmfac = 0;
@@ -824,6 +819,9 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
       break;
   }
 
+  if ( ReacStart()->at(toderive) > 0 and phinp.at(toderive)<1.0e-14 )
+    bfdmfac=0.0;
+
   return bfdmfac;
 
 }
@@ -831,24 +829,34 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-inline double MAT::ScatraReactionMat::CalcPermInfluence(
+double MAT::ScatraReactionMat::CalcPermInfluence(
     const int k,                         //!< current scalar id
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
-  return CalcReaBodyForceTermFac(k,phinp,scale);
+  // NOTE: we must fulfill some requirements we better check.
+  if ( Coupling() != MAT::PAR::reac_coup_michaelis_menten)
+    dserror("Only michaelis_menten kinetic is allowed as COUPLING type!");
+  if ( Stoich()->at(k) == 0 )
+    dserror("You need to specify a scaling for scalar %i",k);
+  if ( Stoich()->at(k) < 0 )
+    dserror("You need to specify a positive scaling for scalar %i",k);
+  if ( fabs(ReacCoeff())>1e-12 )
+    dserror("You need to set REACOEFF to 0.0!");
+
+  return (Stoich()->at(k)*CalcReaBodyForceTermFac(k,phinp,scale));
 }
 
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-inline double MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
+double MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
     const int k,                         //!< current scalar id
     const int toderive,                  //!< current id to derive to
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     const double scale                   //!< scaling factor for reference concentrations
     ) const
 {
-  return CalcReaBodyForceDerivFac(k,toderive,phinp,scale);
+  return (Stoich()->at(k)*CalcReaBodyForceDerivFac(k,toderive,phinp,scale));
 }

@@ -266,109 +266,11 @@ namespace MAT
         const double scale                   //!< scaling factor for reference concentrations ) const;
         ) const;
 
-  protected:
+  private:
 
     /// my material parameters
     MAT::PAR::ScatraReactionMat* params_;
   };
-
-  /*----------------------------------------------------------------------*/
-    /// wrapper for scalar transport material
-    class ScatraReactionMatCalcBase
-    {
-    friend class MAT::ScatraReactionMat;
-
-    protected:
-
-    /// construct empty material object
-    ScatraReactionMatCalcBase();
-
-    /// destructor
-    virtual ~ScatraReactionMatCalcBase() { ; }
-
-    ///helper for calculating K(c)
-    virtual double CalcReaCoeffFac(
-        const int k,                         //!< current scalar id
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations
-        ) const = 0;
-
-    ///helper for calculating \frac{partial}{\partial c} K(c)
-    virtual double CalcReaCoeffDerivFac(
-        const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations
-        ) const = 0;
-
-    ///helper for calculating f(c)
-    virtual double CalcReaBodyForceTermFac(
-        const int k,                         //!< current scalar id
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations ) const;
-        ) const = 0;
-
-    ///helper for calculating calculate \frac{partial}{\partial c} f(c)
-    virtual double CalcReaBodyForceDerivFac(
-        const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations ) const;
-        ) const = 0;
-    };
-
-    /*----------------------------------------------------------------------*/
-      /// wrapper for scalar transport material
-    class ScatraReactionMatCalcSimpleMultiplicative : public ScatraReactionMatCalcBase
-    {
-    friend class MAT::ScatraReactionMat;
-
-    protected:
-
-    /// construct empty material object
-    ScatraReactionMatCalcSimpleMultiplicative();
-
-    /// destructor
-    virtual ~ScatraReactionMatCalcSimpleMultiplicative() { ; }
-
-    ///helper for calculating K(c)
-    virtual double CalcReaCoeffFac(
-        const int k,                         //!< current scalar id
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations
-        ) const;
-
-    ///helper for calculating \frac{partial}{\partial c} K(c)
-    virtual double CalcReaCoeffDerivFac(
-        const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations
-        ) const;
-
-    ///helper for calculating f(c)
-    virtual double CalcReaBodyForceTermFac(
-        const int k,                         //!< current scalar id
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations ) const;
-        ) const;
-
-    ///helper for calculating calculate \frac{partial}{\partial c} f(c)
-    virtual double CalcReaBodyForceDerivFac(
-        const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
-        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const bool isreacstart,              //!< is reaction start coefficient
-        const double scale                   //!< scaling factor for reference concentrations ) const;
-        ) const;
-    };
 
 }
 
