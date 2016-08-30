@@ -857,16 +857,20 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   AddTimeIntegrationSpecificVectors();
 
   // replace phinp by the mean of phinp if this has been set
-  if ( meanconc_!=Teuchos::null )
+  if ( mean_conc_!=Teuchos::null )
   {
     // TODO: (thon) this is not a nice way of using the mean concentration instead of phinp!
     // Note: meanconc_ is not cleared by calling 'discret_->ClearState()', hence if you
     // don't want to do this replacement here any more call 'ClearMeanConcentration()'
-    discret_->SetState("phinp",meanconc_);
+    discret_->SetState("phinp",mean_conc_);
 
     if (myrank_ == 0)
       std::cout<<"Replacing 'phinp' by 'meanconc_' in the evaluation of the surface permeability" <<std::endl;
   }
+
+  if ( membrane_conc_==Teuchos::null )
+    dserror("Membrane concentration must already been saved before calling this function!");
+  discret_->SetState("MembraneConcentration",membrane_conc_);
 
   // test if all necessary ingredients had been set
   Teuchos::RCP<const Epetra_Vector> wss = discret_->GetState(nds_wss_,"WallShearStress");
@@ -922,9 +926,9 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   if ( pressure == Teuchos::null )
     dserror("Pressure must already been set into one of the secondary dofset before calling this function!");
 
-  if ( meanconc_==Teuchos::null )
-    dserror("Mean concentration must already been saved before calling this function!");
-  discret_->SetState("MeanConcentration",meanconc_);
+  if ( membrane_conc_==Teuchos::null )
+    dserror("Membrane concentration must already been saved before calling this function!");
+  discret_->SetState("MembraneConcentration",membrane_conc_);
 
   //Evaluate condition
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");

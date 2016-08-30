@@ -513,14 +513,14 @@ void FS3I::PartFPS3I::SetFPSISolution()
     scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->ScaTraField()->ClearMeanConcentration();
+    scatravec_[i]->ScaTraField()->ClearExternalConcentrations();
   }
 
   SetMeshDisp();
   SetVelocityFields();
   SetWallShearStresses();
   SetPressureFields();
-  SetMeanConcentration();
+  SetMembraneConcentration();
 }
 
 /*----------------------------------------------------------------------*
@@ -618,28 +618,14 @@ void FS3I::PartFPS3I::SetPressureFields()
 }
 
 /*----------------------------------------------------------------------*
- |  Set mean concentration                                hemmler 07/14 |
- *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::SetMeanConcentration()
-{
-    std::vector<Teuchos::RCP<Epetra_Vector> > MeanConc;
-    ExtractMeanConcentration(MeanConc);
-
-    for (unsigned i=0; i<scatravec_.size(); ++i)
-    {
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-      scatra->ScaTraField()->SetMeanConcentration(MeanConc[i]);
-    }
-}
-
-/*----------------------------------------------------------------------*
  |  Evaluate scatra fields                                hemmler 07/14 |
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::EvaluateScatraFields()
 {
-  //mean concentration at the interface needed for membrane equation of Kedem and Katchalsky.
-  //needs to be set here, since it depends on the scalar interface values on both discretisations
-  SetMeanConcentration();
+  // membrane concentration at the interface needed for membrane equation of Kedem and Katchalsky.
+  // NOTE: needs to be set here, since it depends on the scalar interface values on both discretisations
+  // changing with each Newton iteration
+  SetMembraneConcentration();
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -730,66 +716,5 @@ void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vect
 
   //############ Poro Field ###############
   pressure.push_back(fpsi_->PoroField()->FluidField()->Velnp()); //we extract the velocities as well. We sort them out later.
-}
-
-/*----------------------------------------------------------------------*
- |  Extract mean concentration                            hemmler 07/14 |
- *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::ExtractMeanConcentration(std::vector<Teuchos::RCP<Epetra_Vector> >& MeanConc)
-{
-  //############ Fluid Field ###############
-  Teuchos::RCP<Epetra_Vector> MeanConcentration1 = CalcMeanConcentration();
-  MeanConc.push_back(MeanConcentration1);
-
-  //############ Poro Field ###############
-  //Hint: The mean concentration is not calculated again; we just map the values from the Fluid Field into the Poro Field
-
-  //extract interface values
-  Teuchos::RCP<Epetra_Vector> interface_phin = scatrafieldexvec_[0]->ExtractVector(MeanConcentration1,1);
-
-  //insert interface values from Fluid Field into Poro Field;
-  Teuchos::RCP<Epetra_Vector> MeanConcentration2 = scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(interface_phin),1);
-  MeanConc.push_back(MeanConcentration2);
-}
-
-
-/*----------------------------------------------------------------------*
- |  Calculate mean concentration                          hemmler 07/14 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::PartFPS3I::CalcMeanConcentration()
-{
-  //Get concentration phi2 in scatrafield2
-  //Hint: in the following we talk of phi1 and phi2, but they mean the same concentration just on different scatrafields
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra2 = scatravec_[1];
-  Teuchos::RCP<Epetra_Vector> scatrafield2_phi2np= scatra2->ScaTraField()->Phinp();
-
-  //extract interface values from phi2 but we are still on scatrafield2
-  Teuchos::RCP<Epetra_Vector> interface2_phi2np = scatrafieldexvec_[1]->ExtractVector(scatrafield2_phi2np,1);
-
-  //insert interface values from scatrafield2 into scatrafield1; scatrafield1_phi2n is again of full length, i.e. of size of scatrafield1; all values that do not belong to the interface are zero
-  Teuchos::RCP<Epetra_Vector> scatrafield1_phi2np = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(interface2_phi2np),1);
-
-  //Get concentration phi1 in scatrafield1
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra1 = scatravec_[0];
-  Teuchos::RCP<Epetra_Vector> scatrafield1_phi1np= scatra1->ScaTraField()->Phinp();
-
-  //extract interface values from phi1 but we are still on scatrafield1
-  Teuchos::RCP<Epetra_Vector> interface1_phi1np = scatrafieldexvec_[0]->ExtractVector(scatrafield1_phi1np,1);
-
-  //insert interface values interface1_phi1n from scatrafield1 into the full scatrafield1 again; this is just to obtain a vector whose entries are zero except for the nodes of the interface
-  Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->InsertVector(interface1_phi1np,1);
-
-  //nodewise calculation of mean concentration in the interface
-
-  for(int i=0; i<temp->MyLength();i++)
-  {
-    //here the unweighted average is uses. One could also use a logarithmic average...
-    (*temp)[i]=0.5*((*temp)[i]+(*scatrafield1_phi2np)[i]); //log. average: ((*temp)[i]-(*scatrafield1_phi2n)[i])/log(((*temp)[i])/((*scatrafield1_phi2n)[i]));
-                                                          //linear approach: 0.5*((*temp)[i]+(*scatrafield1_phi2n)[i]);
-  }
-
-  //return mean concentration in the interface
-  //this vector now belongs to scatrafield1!!!
-  return temp;
 }
 

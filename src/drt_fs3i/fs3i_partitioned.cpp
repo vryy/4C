@@ -583,12 +583,13 @@ void FS3I::PartFS3I::SetFSISolution()
     scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->ScaTraField()->ClearMeanConcentration();
+    scatravec_[i]->ScaTraField()->ClearExternalConcentrations();
   }
 
   SetMeshDisp();
   SetVelocityFields();
   SetWallShearStresses();
+  SetMembraneConcentration();
 }
 
 /*----------------------------------------------------------------------*/

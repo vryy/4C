@@ -104,6 +104,9 @@ namespace FS3I
     //! evaluate ScaTra fields
     virtual void EvaluateScatraFields();
 
+    //! set Membrane concentration in scatra fields
+    void SetMembraneConcentration() const;
+
     //! set-up of global matrix and rhs of the monolithic ScaTra problem
     void SetupCoupledScatraSystem();
 
@@ -138,6 +141,14 @@ namespace FS3I
       Teuchos::RCP<const Epetra_Vector>& vec1,      //!< resulting vector in fluid ScaTra map
       Teuchos::RCP<const Epetra_Vector>& vec2       //!< resulting vector in solid ScaTra map
     );
+
+  private:
+
+    ///extracts membrane concentration in membrane (interface)
+    void ExtractMembraneConcentration(std::vector<Teuchos::RCP<Epetra_Vector> >& MeanConc) const;
+
+    ///Calculation of membane concentration in the membrane between fluid-scatra and structure-scatra
+    Teuchos::RCP<Epetra_Vector> CalcMembraneConcentration() const;
 
   protected:
     /// vector of scatra algorithms

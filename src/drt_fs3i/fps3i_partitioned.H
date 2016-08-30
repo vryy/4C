@@ -109,9 +109,6 @@ namespace FS3I
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
-    ///extracts mean concentration in membrane (interface)
-    void ExtractMeanConcentration(std::vector<Teuchos::RCP<Epetra_Vector> >& MeanConc);
-
     ///extracts pressures at the interface
     void ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector> >& pressure);
 
@@ -124,15 +121,8 @@ namespace FS3I
     ///provide pressures from FPSI subproblem for scatra subproblem
     void SetPressureFields();
 
-    ///provide information of mean concentration in membrane (interface)
-    void SetMeanConcentration();
-
     ///provide displacements from FPSI subproblem for scatra subproblem
     void SetMeshDisp();
-
-    ///Calculation of mean concentration in the membrane between fluid and poro
-    Teuchos::RCP<Epetra_Vector> CalcMeanConcentration();
-
 
   protected:
 

@@ -170,9 +170,17 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(
     const int i //id of scalar to evaluate
 )
 {
-  //Note: 0 corresponds to fluidscatra
-  //      1 corresponds to structurescatra
+  //Note: 0 corresponds to fluid-scatra
+  //      1 corresponds to structure-scatra
 
+  //----------------------------------------------------------------------
+  // set membrane concentrations
+  //----------------------------------------------------------------------
+  SetMembraneConcentration();
+
+  //----------------------------------------------------------------------
+  // evaluate simplified kedem-katchalsy condtion
+  //----------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> rhs_scal = scatracoupforce_[i];
   Teuchos::RCP<LINALG::SparseMatrix> mat_scal = scatracoupmat_[i];
 
@@ -715,12 +723,13 @@ void FS3I::ACFSI::LargeTimeScaleSetFSISolution()
     scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->ScaTraField()->ClearMeanConcentration();
+    scatravec_[i]->ScaTraField()->ClearExternalConcentrations();
   }
 
   SetMeshDisp();
   SetMeanWallShearStresses();
   SetMeanFluidScatraConcentration();
+  SetMembraneConcentration();
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
   SetZeroVelocityField();
 }

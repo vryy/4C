@@ -199,9 +199,14 @@ public:
 
   void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres);
 
+  void SetMembraneConcentration(Teuchos::RCP<const Epetra_Vector> MembraneConc);
+
   void SetMeanConcentration(Teuchos::RCP<const Epetra_Vector> MeanConc);
 
-  void ClearMeanConcentration(){ meanconc_ = Teuchos::null; };
+  void ClearExternalConcentrations(){
+    mean_conc_ = Teuchos::null;
+    membrane_conc_ = Teuchos::null;
+  };
 
   //! read restart data
   virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
@@ -1011,8 +1016,11 @@ protected:
   //! type of velocity field ? rename!!!
   const INPAR::SCATRA::VelocityField cdvel_;
 
-  //! mean concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
-  Teuchos::RCP<const Epetra_Vector> meanconc_;
+  //! mean in time at the interface concentration
+  Teuchos::RCP<const Epetra_Vector> mean_conc_;
+
+  //! Membrane concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
+  Teuchos::RCP<const Epetra_Vector> membrane_conc_;
 
   //! number of dofset associated with velocity related dofs
   int nds_vel_;

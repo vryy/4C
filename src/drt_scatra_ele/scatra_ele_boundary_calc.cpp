@@ -366,10 +366,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
 
-    //------------get mean concentration in the interface (i.e. within the membrane)------------------
-    Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MeanConcentration");
+    //------------get membrane concentration at the interface (i.e. within the membrane)------------------
+    Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MembraneConcentration");
     if (phibar==Teuchos::null)
-      dserror("Cannot get state vector 'MeanConcentration'");
+      dserror("Cannot get state vector 'MembraneConcentration'");
     // extract local values from global vector
     std::vector<LINALG::Matrix<nen_,1> > ephibar(numdofpernode_,LINALG::Matrix<nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phibar,ephibar,lm);
@@ -1529,6 +1529,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
+  //------------get membrane concentration at the interface (i.e. within the membrane)------------------
+  Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MembraneConcentration");
+  if (phibar==Teuchos::null)
+    dserror("Cannot get state vector 'MembraneConcentration'");
+  // extract local values from global vector
+  std::vector<LINALG::Matrix<nen_,1> > ephibar(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phibar,ephibar,lm);
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
@@ -1565,7 +1572,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   const double perm = cond->GetDouble("permeability coefficient");
 
   //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
-  bool wss_onoff = (bool)cond->GetInt("wss onoff");
+  const bool wss_onoff = (bool)cond->GetInt("wss onoff");
 
   const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
 
@@ -1760,10 +1767,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(LINALG::Matrix<
     {
       //euklidian norm of act node wss
       const double wss_i_2norm = sqrt(ewss(0,i)*ewss(0,i)+ewss(1,i)*ewss(1,i)+ewss(2,i)*ewss(2,i));
-      f_ewss(i) =log10(1+((*coeffs)[0])/(wss_i_2norm+(*coeffs)[1]))/log10(2); //empirical function (log law) to account for influence of WSS;
+      f_ewss(i) =log10( 1+ coeffs->at(0)/(wss_i_2norm+coeffs->at(1)) )/log10(2); //empirical function (log law) to account for influence of WSS;
     }
     else //no WSS influence
+    {
       f_ewss(i) = 1.0;
+    }
   }
 }
 

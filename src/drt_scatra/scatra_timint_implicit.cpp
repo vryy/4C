@@ -151,7 +151,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   hist_(Teuchos::null),
   densafnp_(Teuchos::null),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
-  meanconc_(Teuchos::null),
+  mean_conc_(Teuchos::null),
+  membrane_conc_(Teuchos::null),
   nds_vel_(-1),
   nds_disp_(-1),
   nds_pres_(-1),
@@ -318,10 +319,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // history vector (a linear combination of phinm, phin (BDF)
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
   hist_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // velocities (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  meanconc_ = LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
@@ -1159,7 +1156,33 @@ void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector
 }
 
 /*----------------------------------------------------------------------*
- | Set Pressure Field                                     hemmler 05/14 |
+ | Set membrane concentration                                thon 08/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetMembraneConcentration(Teuchos::RCP<const Epetra_Vector> MembraneConc)
+{
+  if (MembraneConc == Teuchos::null)
+    dserror("MeanConc state is Teuchos::null");
+
+#ifdef DEBUG
+  // We rely on the fact, that the nodal distribution of both fields is the same.
+  // Although Scatra discretization was constructed as a clone of the fluid or
+  // structure mesh, respectively, at the beginning, the nodal distribution may
+  // have changed meanwhile (e.g., due to periodic boundary conditions applied only
+  // to the fluid field)!
+  // We have to be sure that everything is still matching.
+  if (not MembraneConc->Map().SameAs(*discret_->DofRowMap(0)))
+    dserror("Maps are NOT identical. Emergency!");
+#endif
+
+  // Note: we can not simply write this into the secondary discretisation here
+  // since it is a variable of the primary dofset and is hence cleared
+  // in between
+  membrane_conc_=MembraneConc;
+return;
+} // ScaTraTimIntImpl::SetMeanConcentration
+
+/*----------------------------------------------------------------------*
+ | Set mean concentrations                                hemmler 05/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Vector> MeanConc)
 {
@@ -1180,7 +1203,7 @@ void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Ve
   // Note: we can not simply write this into the secondary discretisation here
   // since it is a variable of the primary dofset and is hence cleared
   // in between
-  meanconc_=MeanConc;
+  mean_conc_=MeanConc;
 return;
 } // ScaTraTimIntImpl::SetMeanConcentration
 
