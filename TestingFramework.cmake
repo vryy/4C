@@ -17,10 +17,15 @@ endmacro (baci_test)
 
 # Restart test case from test case previously run
 macro (baci_test_restartonly arg nproc restart)
-  if (${restart})
-    add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
-  endif (${restart})
+  # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
+  if(${ARGC} GREATER 3)
+    set(IDENTIFIER ${ARGV3})
+  else()
+    set(IDENTIFIER "")
+  endif()
+
+  add_test(NAME ${arg}-p${nproc}-restart
+    COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
 
   set_tests_properties ( ${arg}-p${nproc}-restart PROPERTIES TIMEOUT 1000)
 endmacro (baci_test_restartonly)
@@ -1001,10 +1006,14 @@ baci_test(scatra_instatdiff1D_harari04_usfem 2 "")
 baci_test(scatra_isodiff3D_cent_stab_hdg 2 "")
 baci_test(scatra_myocard_FHN_material 2 "")
 baci_test(scatra_myocard_MV_material 2 "40")
+baci_test(scatra_myocard_MV_material_tet_gp 2 "")
+baci_test(scatra_myocard_MV_material_hex_gp_semiimp 2 "")
 baci_test(scatra_myocard_MV_material_hdg 2 "")
 baci_test(scatra_myocard_MV_material_hdg_neumann 2 "")
 baci_test(scatra_myocard_MV_material_hdg_tri 2 "")
 baci_test(scatra_myocard_MV_material_hdg_tet_gp 2 "")
+baci_test(scatra_myocard_MV_material_hdg_padapt 2 "")
+baci_test(scatra_myocard_MV_material_hdg_semiimp 2 "")
 baci_test(scatra_myocard_TNNP_material 2 "")
 baci_test(scatra_natconv_onescalar_boussinesq 2 "")
 baci_test(scatra_NonMatchingMesh_20x80_linear_bmat_merged 1 "")
@@ -1057,6 +1066,10 @@ baci_test(solidscatra_electromecha_2wc_myocardMV_ActiveStress_tet4 2 "3")
 baci_test(solidscatra_electromecha_2wc_solidtoscatra_aitken_myocardMV_ActiveStress_tet4 3 "")
 baci_test(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_line2 2 "3")
 baci_test(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_line2_independenttimestepping 1 "")
+baci_test(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_1 4 "")
+baci_test_restartonly(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_2 4 0 x) #this one MUST be placed behind test case 'solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_1'
+baci_test(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_hdg_1 4 "")
+baci_test_restartonly(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_hdg_2 4 0 x) #this one MUST be placed behind test case 'solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_hdg_1'
 baci_test(sonurbs27 3 " ")
 baci_test(sosh8_cooks_nl 2 "")
 baci_test(sosh8_freeflying_ruler 2 "")

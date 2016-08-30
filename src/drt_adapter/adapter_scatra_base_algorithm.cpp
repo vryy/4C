@@ -24,6 +24,7 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
+#include "../drt_inpar/inpar_cardiac_monodomain.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_scatra/scatra_resulttest.H"
@@ -349,7 +350,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // cardiac monodomain
   else if (probtype == prb_cardiac_monodomain or (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_cardiac_monodomain))
   {
-    Teuchos::RCP<Teuchos::ParameterList> cmonoparams = Teuchos::null;
+    Teuchos::RCP<Teuchos::ParameterList> cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
+
     // HDG implements all time stepping schemes within gen-alpha
     if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(actdis, solver, cmonoparams, scatratimeparams, extraparams, output));

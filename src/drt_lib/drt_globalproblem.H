@@ -318,6 +318,7 @@ public:
   const Teuchos::ParameterList& LOMAControlParams() const { return getParameterList()->sublist("LOMA CONTROL"); }
   const Teuchos::ParameterList& BIOFILMControlParams() const { return getParameterList()->sublist("BIOFILM CONTROL"); }
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
+  const Teuchos::ParameterList& EPControlParams() const { return getParameterList()->sublist("CARDIAC MONODOMAIN CONTROL"); }
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
   const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const { return getParameterList()->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC"); }

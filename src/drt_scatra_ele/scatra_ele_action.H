@@ -52,6 +52,7 @@ namespace SCATRA
     calc_mat_and_rhs_lsreinit_correction_step,   // level-set action: setup of system for correction step
     calc_mat_initial,                            // calc initial mat for hdg
     calc_mean_Cai,                               // calc_mean_Cai (multifractal subgrid-scales)
+    calc_padaptivity,                            // calc error and set p-adativity on element
     calc_total_and_mean_scalars,                 // calculate total and mean values of transported scalars
     calc_node_based_reinit_velocity,             // level-set action: compute node-based velocity field for reinitialization equation
     calc_scatra_box_filter,                      // calc_scatra_box_filter,
@@ -76,6 +77,8 @@ namespace SCATRA
     micro_scale_read_restart,                    // read restart on micro scale in multi-scale simulations
     micro_scale_update,                          // update micro scale in multi-scale simulations
     project_dirich_field,                        // project dirichlet field for hdg
+    project_field,                               // project field
+    project_neumann_field,                       // project neumann field for hdg
     recon_curvature_at_nodes,                    // reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,                    // reconstruct gradients at node points through L2-projection
     reinitialize_levelset,                       // reinitialize_levelset,

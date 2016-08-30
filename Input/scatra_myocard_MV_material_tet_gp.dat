@@ -1,16 +1,21 @@
 //
+// Maintainer: Julia Hörmann
+// hoermann@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15264
+////
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
+Minimal Ventricular Model Myocard material test for material integration on
+more than one Gauss points
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    12
 //NODES       12
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Cardiac_Monodomain
-SHAPEFCT                        HDG
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
@@ -44,9 +49,8 @@ WRITEMAXINTSTATE                3
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        centered
-DEFINITION_TAU                  Numerical_Value
-TAU_VALUE                       10.0   // Main Diffusion / element length
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
 --------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          20
 ABSTOLRES                       1e-12
@@ -97,18 +101,18 @@ NODE        12 COORD  2.0000000000000001e-01  1.0000000000000001e-01  1.00000000
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
-   1 TRANSPHDG TET4  1 2 3 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   2 TRANSPHDG TET4  1 2 4 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   3 TRANSPHDG TET4  1 6 2 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   4 TRANSPHDG TET4  1 6 5 7    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   5 TRANSPHDG TET4  1 8 7 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   6 TRANSPHDG TET4  1 8 5 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   7 TRANSPHDG TET4  9 10 5 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   8 TRANSPHDG TET4  9 10 4 11    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   9 TRANSPHDG TET4  9 12 7 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   10 TRANSPHDG TET4  9 12 5 10    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   11 TRANSPHDG TET4  9 8 4 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
-   12 TRANSPHDG TET4  9 8 5 7    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   1 TRANSP TET4  1 2 3 4    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   2 TRANSP TET4  1 2 4 5    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   3 TRANSP TET4  1 6 2 5    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   4 TRANSP TET4  1 6 5 7    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   5 TRANSP TET4  1 8 7 5    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   6 TRANSP TET4  1 8 5 4    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   7 TRANSP TET4  9 10 5 4    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   8 TRANSP TET4  9 10 4 11    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   9 TRANSP TET4  9 12 7 5    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   10 TRANSP TET4  9 12 5 10    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   11 TRANSP TET4  9 8 4 5    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
+   12 TRANSP TET4  9 8 5 7    MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS

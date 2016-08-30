@@ -339,6 +339,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/NONLINEAR TRUSS", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
+  reader.ReadGidSection("--CARDIAC MONODOMAIN CONTROL", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);

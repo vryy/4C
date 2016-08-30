@@ -43,6 +43,7 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes
+--------------------------------------------------CARDIAC MONODOMAIN CONTROL
 WRITEMAXINTSTATE                3
 WRITEMAXIONICCURRENTS           3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

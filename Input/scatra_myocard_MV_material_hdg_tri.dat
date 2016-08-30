@@ -41,6 +41,7 @@ VELFUNCNO                       -2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
+--------------------------------------------------CARDIAC MONODOMAIN CONTROL
 WRITEMAXINTSTATE                3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
@@ -54,7 +55,7 @@ ITEMAX                          40
 ABSTOLRES                       1e-12
 CONVTOL                         1e-10
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 16
+MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 12
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -92,6 +93,6 @@ NODE        6 COORD  2.0e-01  1.0e-01  0.0e-01
 3 TRANSPHDG TRI3  1 2 5      MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
 4 TRANSPHDG TRI3  2 6 5     MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.33927357343218922e+00 TOLERANCE 1E-7
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.33941982974922569e+00 TOLERANCE 1E-7
 -------------------------------------------------------------------------END
 // END

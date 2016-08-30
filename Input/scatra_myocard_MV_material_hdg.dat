@@ -41,6 +41,7 @@ VELFUNCNO                       -2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
+--------------------------------------------------CARDIAC MONODOMAIN CONTROL
 WRITEMAXINTSTATE                3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
@@ -96,6 +97,6 @@ NODE        12 COORD  2.0e-01  1.0e-01  1.0e-01
 1 TRANSPHDG HEX8  1 2 5 4 7 8 11 10    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
 2 TRANSPHDG HEX8  2 3 6 5 8 9 12 11    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.33941967706724441e+00 TOLERANCE 1E-6
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.33941967667231543e+00 TOLERANCE 1E-6
 -------------------------------------------------------------------------END
 // END

@@ -76,6 +76,14 @@ namespace DRT
       //! @name material and related and related functions
       /*========================================================================*/
 
+      //! extract element based or nodal values
+      virtual void ExtractElementAndNodeValues(
+        DRT::Element*                 ele,
+        Teuchos::ParameterList&       params,
+        DRT::Discretization&          discretization,
+        DRT::Element::LocationArray&  la
+      );
+
       //! evaluate material
       virtual void Materials(
         const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
@@ -98,6 +106,13 @@ namespace DRT
         const int                               iquad=-1   //!< id of current gauss point (default = -1)
       );
 
+      //! calculate matrix and rhs for ep
+      virtual void Sysmat(
+          DRT::Element*                         ele,        ///< the element whose matrix is calculated
+          Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
+          Epetra_SerialDenseVector&             erhs,       ///< element rhs to calculate
+          Epetra_SerialDenseVector&             subgrdiff   ///< subgrid-diff.-scaling vector
+          );
     };
 
   }

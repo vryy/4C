@@ -166,6 +166,33 @@ public:
   }
 
   //! Returns the degree of the element
+  int DegreeOld() const
+  {
+    return degree_old_;
+  }
+
+  //! Sets the degree of the element
+  void SetDegree(int degree)
+  {
+    degree_old_ = degree_;
+    degree_ = degree;
+    return;
+  }
+
+  //! Sets the number of all interior dofs of the element
+  void SetDofs(int ndofs)
+  {
+     ndofs_ = ndofs;
+  }
+
+  //! Sets the number of all dofs on faces of the element
+  void SetOnfDofs(int onfdofs)
+  {
+    onfdofs_old_ = onfdofs_;
+    onfdofs_ = onfdofs;
+  }
+
+  //! Returns the degree of the element
   int UsesCompletePolynomialSpace() const
   {
     return completepol_;
@@ -276,6 +303,9 @@ public:
   Epetra_SerialDenseMatrix  BTAMmat_;
   Epetra_SerialDenseMatrix  invCondmat_;
   Epetra_SerialDenseMatrix  Xmat_;
+  Epetra_SerialDenseVector  Ivecnp_;
+  Epetra_SerialDenseVector  Ivecn_;
+  Epetra_SerialDenseMatrix  Imatnpderiv_;
   //!@}
 
   //! diffusion tensor
@@ -285,16 +315,31 @@ public:
   //! main diffusivity
   double diff1_;
 
+
+  //! stores the number of all interior dofs of the element
+  unsigned int ndofs_;
+
+  //! stores the number of all dofs for all faces
+  unsigned int onfdofs_;
+
+  //! stores the number of all old dofs for all faces
+  unsigned int onfdofs_old_;
+
+
 private:
 
   //! don't want = operator
   ScaTraHDG& operator = (const ScaTraHDG& old);
 
   //! stores the degree of the element
-  unsigned char degree_;
+  int degree_;
+
+  //! stores the degree of the element
+  int degree_old_;
 
   //! stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
+
 }; // class ScaTraHDG
 
 
@@ -768,8 +813,17 @@ public:
     return degree_;
   }
 
+  /*!
+   \brief Returns the old degree of the element
+   */
+  virtual int DegreeOld() const
+  {
+    return degree_old_;
+  }
+
   void SetDegree(int degree)
   {
+    degree_old_ = degree_;
     degree_ = degree;
     return;
   }
@@ -891,6 +945,9 @@ private:
 
   // degree of this face element
   int degree_;
+
+  // old degree of this face element
+  int degree_old_;
 
 }; // class ScaTraHDGIntFace
 

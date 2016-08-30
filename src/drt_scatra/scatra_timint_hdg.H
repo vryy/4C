@@ -81,9 +81,6 @@ public:
 
   //! prepare time loop
   void PrepareTimeLoop();
-//
-//  //! Set elch-specific parameters
-//  void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
 
 protected:
 
@@ -144,6 +141,32 @@ protected:
   //! fd check
   virtual void FDCheck();
 
+  //! adapt degree of test functions and change dofsets accordingly
+  virtual void AdaptDegree();
+
+  //! adapt variable vectors required due to the change of the degrees of the test functions
+  virtual void AdaptVariableVector(
+      std::vector<bool>                          adaptelements,
+      Teuchos::RCP<Epetra_Vector> *              phi_new,
+      Teuchos::RCP<Epetra_Vector>                phi_old,
+      Teuchos::RCP<Epetra_Vector> *              intphi_new,
+      Teuchos::RCP<Epetra_Vector>                intphi_old,
+      int                                        nds_var_old,
+      int                                        nds_intvar_old,
+      std::vector<DRT::Element::LocationArray>   la_old,
+      const Epetra_Map*                          dofrowmap_old,
+      const Epetra_Map*                          intdofrowmap_old
+      );
+
+  //! calculate matrices on element
+  virtual void CalcMatInitial();
+
+  //! chooses the assemble process (assemble matrix and rhs or only rhs)
+  void AssembleMatAndRHS();
+
+  //! contains the assembly process only for rhs
+  void AssembleRHS();
+
 private:
 
   //! time algorithm flag actually set (we internally reset it)
@@ -157,6 +180,25 @@ private:
 
   //! activation_time at times n+1
   Teuchos::RCP<Epetra_Vector> activation_time_interpol_np_;
+
+  //! HDG discretization
+  DRT::DiscretizationHDG* hdgdis_;
+
+  //! p-adativitity
+  bool padaptivity_;
+
+  //! error tolerance for p-adativitity
+  double padapterrortol_;
+
+  //! error tolerance base for p-adativitity (delta p=log_padapterrorbase_(E/padapterrortol_))
+  double padapterrorbase_;
+
+
+  //! max. degree of shape functions for p-adativitity
+  double padaptdegreemax_;
+
+  //! element degree
+  Teuchos::RCP<Epetra_Vector> elementdegree_;
 
 }; // class TimIntHDG
 } // namespace SCATRA

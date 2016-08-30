@@ -158,25 +158,38 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
   // Call function from base class
   SCATRA::TimIntHDG::OutputState();
 
-  material_internal_state_np_->PutScalar(0.0);
-  Teuchos::ParameterList params;
-  params.set<int>("action", SCATRA::get_material_internal_state);
-  params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state_np_);
-  discret_->Evaluate(params);
-  material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
-  if (material_internal_state_np_==Teuchos::null)
-    dserror("Cannot get state vector material internal state");
+  if(nb_max_mat_int_state_vars_)
+  {
+    material_internal_state_np_->PutScalar(0.0);
+    Teuchos::ParameterList params;
+    params.set<int>("action", SCATRA::get_material_internal_state);
+    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state_np_);
+    discret_->Evaluate(params);
+    material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
+    if (material_internal_state_np_==Teuchos::null)
+      dserror("Cannot get state vector material internal state");
 
-  output_->WriteVector("ionic_currents_hdg",material_internal_state_np_);
+    output_->WriteVector("ionic_currents_hdg",material_internal_state_np_);
 
- for(int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
-   {
-     std::ostringstream temp;
-     temp << k+1;
-     material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
-     output_->WriteVector("mat_int_state_hdg"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
-   }
+   for(int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
+     {
+       std::ostringstream temp;
+       temp << k+1;
+       material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
+       output_->WriteVector("mat_int_state_hdg"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
+     }
+  }
 
+
+  //copy values from node to dof vector
+  Teuchos::RCP<Epetra_Vector> dofphi = LINALG::CreateVector(*dofmap_);
+
+  for (int i = 0;i<dofphi->MyLength();++i)
+  {
+    int dofgid = discret_->NodeRowMap()->GID(i);
+    dofphi->ReplaceMyValue(dofmap_->LID(dofgid),0,(*interpolatedPhinp_)[i]);
+  }
+  output_->WriteVector("phinp",dofphi);
 
   return;
 }

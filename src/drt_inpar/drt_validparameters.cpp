@@ -47,6 +47,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_tsi.H"
 #include "inpar_turbulence.H"
 #include "inpar_elch.H"
+#include "inpar_cardiac_monodomain.H"
 #include "inpar_invanalysis.H"
 #include "inpar_statinvanalysis.H"
 #include "inpar_searchtree.H"
@@ -629,6 +630,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::SCATRA::SetValidParameters(list);
   INPAR::LEVELSET::SetValidParameters(list);
   INPAR::ELCH::SetValidParameters(list);
+  INPAR::EP::SetValidParameters(list);
 
   INPAR::S2I::SetValidParameters(list);
   INPAR::FS3I::SetValidParameters(list);

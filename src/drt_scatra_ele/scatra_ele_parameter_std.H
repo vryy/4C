@@ -27,6 +27,7 @@ additional singleton classes are not meant to be derived from, but rather to coe
 #include "scatra_ele_parameter_base.H"
 
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_cardiac_monodomain.H"
 
 namespace DRT
 {
@@ -79,6 +80,7 @@ namespace DRT
         bool TauGP() const {return tau_gp_;};
         bool MatGP() const {return mat_gp_;};
         double TauValue() const {return tau_value_;};
+        bool SemiImplicit() const {return semiimplicit_;};
         //! @}
 
       private:
@@ -152,6 +154,9 @@ namespace DRT
 
         //! problem number
         int probnum_;
+
+        //! evaluation type
+        bool semiimplicit_;
         //! @}
 
         //! parameter class for time integration

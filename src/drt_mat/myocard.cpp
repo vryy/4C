@@ -316,7 +316,10 @@ double MAT::Myocard::ReaCoeff(const double phi, const double dt) const
 double MAT::Myocard::ReaCoeff(const double phi, const double dt, int gp) const
 {
   double reacoeff = params_->time_scale;
-  reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale, gp);
+  if(gp == -1)
+    reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale);
+  else
+    reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale, gp);
 
   return reacoeff;
 }

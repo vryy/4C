@@ -1,8 +1,12 @@
 /*!
 \file scatra_ele_calc_utils.H
 
+\brief Utility methods for scatra
+
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -73,6 +77,323 @@ namespace SCATRA
   template<> struct DisTypeToOptGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
+
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToMatGaussRule {};
+  template<> struct DisTypeToMatGaussRule<DRT::Element::hex8>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_hex_1point;
+        break;
+      case 8:
+        return DRT::UTILS::intrule_hex_8point;
+        break;
+      case 27:
+        return DRT::UTILS::intrule_hex_27point;
+        break;
+      case 64:
+        return DRT::UTILS::intrule_hex_64point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule3D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::hex20>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_hex_1point;
+        break;
+      case 8:
+        return DRT::UTILS::intrule_hex_8point;
+        break;
+      case 27:
+        return DRT::UTILS::intrule_hex_27point;
+        break;
+      case 64:
+        return DRT::UTILS::intrule_hex_64point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule3D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::hex27>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_hex_1point;
+        break;
+      case 8:
+        return DRT::UTILS::intrule_hex_8point;
+        break;
+      case 27:
+        return DRT::UTILS::intrule_hex_27point;
+        break;
+      case 64:
+        return DRT::UTILS::intrule_hex_64point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule3D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::tet4>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_tet_1point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_tet_4point;
+        break;
+      case 10:
+        return DRT::UTILS::intrule_tet_10point;
+        break;
+      case 24:
+        return DRT::UTILS::intrule_tet_24point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 4, 10, 24 points for TET elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule3D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::tet10>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_tet_1point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_tet_4point;
+        break;
+      case 10:
+        return DRT::UTILS::intrule_tet_10point;
+        break;
+      case 24:
+        return DRT::UTILS::intrule_tet_24point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 4, 10, 24 points for TET elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule3D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::wedge6>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for WEDGE elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule3D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::pyramid5>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for PYRAMID elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule3D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs8>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule3D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs27>
+  {
+    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule3D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::quad4>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_quad_1point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_quad_4point;
+        break;
+      case 9:
+        return DRT::UTILS::intrule_quad_9point;
+        break;
+      case 16:
+        return DRT::UTILS::intrule_quad_16point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule2D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::quad8>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_quad_1point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_quad_4point;
+        break;
+      case 9:
+        return DRT::UTILS::intrule_quad_9point;
+        break;
+      case 16:
+        return DRT::UTILS::intrule_quad_16point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule2D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::quad9>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_quad_1point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_quad_4point;
+        break;
+      case 9:
+        return DRT::UTILS::intrule_quad_9point;
+        break;
+      case 16:
+        return DRT::UTILS::intrule_quad_16point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule2D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::tri3>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_tri_1point;
+        break;
+      case 3:
+        return DRT::UTILS::intrule_tri_3point;
+        break;
+      case 7:
+        return DRT::UTILS::intrule_tri_7point;
+        break;
+      case 12:
+        return DRT::UTILS::intrule_tri_12point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 3, 7, 12 points for TRI elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule2D_undefined;
+        break;
+      }
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::tri6>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      return DRT::UTILS::intrule_tri_16point;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs4>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule2D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs9>
+  {
+    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule2D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::line2>
+  {
+    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule1D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::line3>
+  {
+    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule1D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs2>
+  {
+    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule1D_undefined;
+    };
+  };
+  template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs3>
+  {
+    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    {
+      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      return DRT::UTILS::intrule1D_undefined;
+    };
+  };
+
 
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>

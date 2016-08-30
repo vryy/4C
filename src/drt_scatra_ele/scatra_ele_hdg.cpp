@@ -202,7 +202,11 @@ void DRT::ELEMENTS::ScaTraHDGType
 DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(int id, int owner) :
 Transport(id,owner),
 diff1_(0.0),
+ndofs_(0),
+onfdofs_(0),
+onfdofs_old_(0),
 degree_(1),
+degree_old_(0),
 completepol_(true)
 {}
 
@@ -214,7 +218,11 @@ completepol_(true)
 DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(const DRT::ELEMENTS::ScaTraHDG& old) :
 Transport(old),
 diff1_(0.0),
+ndofs_(0),
+onfdofs_(0),
+onfdofs_old_(0),
 degree_(old.degree_),
+degree_old_(old.degree_old_),
 completepol_(old.completepol_)
 {}
 
@@ -479,12 +487,14 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList&    params,
   case SCATRA::interpolate_hdg_to_node:
   case SCATRA::update_interior_variables:
   case SCATRA::project_dirich_field:
-  case SCATRA::bd_calc_Neumann:
+  case SCATRA::project_neumann_field:
   case SCATRA::set_initial_field:
   case SCATRA::time_update_material:
   case SCATRA::get_material_internal_state:
   case SCATRA::set_material_internal_state:
   case SCATRA::calc_mat_initial:
+  case SCATRA::project_field:
+  case SCATRA::calc_padaptivity:
 
   {
     return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(Shape(),ImplType(),numdofpernode,numscal,discretization.Name())->EvaluateService(
@@ -786,15 +796,23 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(
     const int lsurface_slave,                  ///< local surface index with respect to slave parent element
     const std::vector<int> localtrafomap       ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
     ):
-DRT::FaceElement(id,owner)
+DRT::FaceElement(id,owner),
+degree_(0),
+degree_old_(0)
 {
   SetParentMasterElement(parent_master,lsurface_master);
   SetParentSlaveElement(parent_slave,lsurface_slave);
 
   if(parent_slave != NULL)
+  {
     degree_ = std::max(parent_master->Degree(),parent_slave->Degree());
+    degree_old_ = std::max(parent_master->DegreeOld(),parent_slave->DegreeOld());
+  }
   else
+  {
     degree_ = parent_master->Degree();
+    degree_old_ = parent_master->DegreeOld();
+  }
 
   SetLocalTrafoMap(localtrafomap);
 
@@ -808,7 +826,8 @@ DRT::FaceElement(id,owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(const DRT::ELEMENTS::ScaTraHDGIntFace& old) :
 DRT::FaceElement(old),
-degree_(old.degree_)
+degree_(old.degree_),
+degree_old_(old.degree_old_)
 {
   return;
 }

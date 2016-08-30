@@ -319,6 +319,13 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatradyn
       );
 
+  // parameter for using p-adpativity and semi-implicit evaluation of the reaction term (at the moment only used for HDG and cardiac monodomain problems)
+  BoolParameter("PADAPTIVITY", "no","Flag to (de)activate p-adativity",&scatradyn);
+  DoubleParameter("PADAPTERRORTOL",1e-6,"The error tolerance to calculate the variation of the elemental degree",&scatradyn);
+  DoubleParameter("PADAPTERRORBASE",1.66,"The error tolerance base to calculate the variation of the elemental degree",&scatradyn);
+  IntParameter("PADAPTDEGREEMAX",4,"The max. degree of the shape functions",&scatradyn);
+  BoolParameter("SEMIIMPLICIT", "no","Flag to (de)activate semi-implicit calculation of the reaction term",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",

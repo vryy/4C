@@ -137,6 +137,23 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&   elevec2
     );
 
+    //! project field
+    int ProjectField(
+        const DRT::Element*                  ele,
+        DRT::Discretization &                discretization,
+        Teuchos::ParameterList&              params,
+        Epetra_SerialDenseVector&            elevec1,
+        Epetra_SerialDenseVector&            elevec2,
+        DRT::Element::LocationArray&         la
+    );
+
+    //! calc p-adaptivity
+    int CalcPAdaptivity(
+        const DRT::Element*                  ele,
+        DRT::Discretization &                discretization,
+        Teuchos::ParameterList&              params
+    );
+
   protected:
 
     /// (private) protected constructor, since we are a Singleton.
@@ -210,7 +227,7 @@ namespace ELEMENTS
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
 
-    //! ues complete polynomial space
+    //! use complete polynomial space
     bool usescompletepoly_;
 
   private:
@@ -282,8 +299,6 @@ namespace ELEMENTS
           double*                     diff1           //!< main diffusivity
           );
 
-      //! number of dofs
-      const unsigned int ndofs_;
 
       // convention: we sort the entries in the matrices the following way:
       // first come the concentration, then the concentration  gradients, and finally the trace
@@ -310,13 +325,13 @@ namespace ELEMENTS
       // @name variables for the reaction term
       //!@{
       //! reaction term at time n
-      Epetra_SerialDenseVector  Ivecn_;
+//      Epetra_SerialDenseVector  Ivecn_;
 
       //! reaction term at time n+1
-      Epetra_SerialDenseVector  Ivecnp_;
+      //Epetra_SerialDenseVector  Ivecnp_;
 
       //! derivative of reaction term at time n+1
-      Epetra_SerialDenseMatrix  Imatnpderiv_;
+//      Epetra_SerialDenseMatrix  Imatnpderiv_;
       //!@}
 
 ////      Epetra_SerialDenseMatrix  invAmat;     /// inverse of Amat

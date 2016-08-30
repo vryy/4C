@@ -4,6 +4,8 @@
 \brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
         Cardiac-monodomain-specific implementation (class TimIntCardiacMonodomain)
 
+\level 2
+
 <pre>
 \maintainer Lasse Jagschies
             lasse.jagschies@tum.de
@@ -58,6 +60,12 @@ protected:
   //! write additional data required for restart
   void OutputRestart();
 
+  /// add parameters specific for time-integration scheme
+  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
+
+  //! do not calculate initial scalar time derivatives for ep
+  virtual void CalcInitialTimeDerivative() {return;};
+
 }; // class TimIntCardiacMonodomainOST
 
 
@@ -93,6 +101,9 @@ protected:
   //! write additional data required for restart
   void OutputRestart();
 
+  //! do not calculate initial scalar time derivatives for ep
+  virtual void CalcInitialTimeDerivative() {return;};
+
 }; // class TimIntCardiacMonodomainBDF2
 
 
@@ -127,6 +138,9 @@ protected:
 
   //! write additional data required for restart
   void OutputRestart();
+
+  //! do not calculate initial scalar time derivatives for ep
+  virtual void CalcInitialTimeDerivative() {return;};
 
 }; // class TimIntCardiacMonodomainGenAlpha
 

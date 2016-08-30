@@ -140,28 +140,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
     for (unsigned int j=0; j<this->nsd_; ++j)
       (*difftensor)(i,j) = diff(i,j);
 
-
-//  // get membrane potential at n+1 or n+alpha_F at gauss point
-//  // loop over quadrature points
-//  for (unsigned int q = 0; q < this->shapes_->nqpoints_; ++q)
-//  {
-//    double phinpgp = 0.0;
-//    double phingp = 0.0;
-//    // loop over shape functions
-//    for (unsigned int i = 0; i < this->shapes_->ndofs_; ++i)
-//    {
-//      phingp += this->shapes_->shfunct(i,q)*this->interiorPhin_(i);
-//      phinpgp += this->shapes_->shfunct(i,q)*this->interiorPhinp_(i);
-//    }
-//
-//    // calculate reaction term at Gauss point
-//
-//    (*ivecnpderiv)(q) = actmat->ReaCoeffDeriv(phinpgp,this->Dt(),q);
-//    (*ivecn)(q) = actmat->ReaCoeff(phingp, this->Dt(),q);
-//    (*ivecnp)(q) = actmat->ReaCoeff(phinpgp, this->Dt(),q);
-//
-//  }
-
   // coordinate of material gauss points
   LINALG::Matrix<probdim,1> mat_gp_coord(true);
   // values of shape function at material gauss points
@@ -179,22 +157,19 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
   Epetra_SerialDenseVector ivecnp_gp(this->shapes_->ndofs_);
   Epetra_SerialDenseVector ivecn_gp(this->shapes_->ndofs_);
 
-  if (probdim == 3)
-  {
-    const DRT::UTILS::GaussRule3D gaussrule = GetGaussRule3D(material);
-    const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(actmat->Parameter()->num_gp));
 
-    for (int q = 0; q < actmat->Parameter()->num_gp; q++)
+    for (int q = 0; q < intpoints.IP().nquad; q++)
     {
       double phinpgp = 0.0;
       double phingp = 0.0;
 
       // gaussian points coordinates
-      for (unsigned int idim=0;idim<probdim;idim++)
-        mat_gp_coord(idim) = intpoints.qxg[q][idim];
+      for (unsigned int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;idim++)
+        mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
       //gaussian weight
-      double gp_mat_alpha = intpoints.qwgt[q];
+      double gp_mat_alpha = intpoints.IP().qwgt[q];
 
       polySpace_->Evaluate(mat_gp_coord,values_mat_gp);
 
@@ -219,49 +194,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
         ivecn_gp(i) += imatgpn*values_mat_gp(i)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
       }
     }
-  }
-  else if (probdim == 2)
-  {
-    const DRT::UTILS::GaussRule2D gaussrule = GetGaussRule2D(material);
-    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
-
-    for (int q = 0; q < actmat->Parameter()->num_gp; q++)
-    {
-      double phinpgp = 0.0;
-      double phingp = 0.0;
-
-      // gaussian points coordinates
-      for (unsigned int idim=0;idim<probdim;idim++)
-        mat_gp_coord(idim) = intpoints.qxg[q][idim];
-
-      //gaussian weight
-      double gp_mat_alpha = intpoints.qwgt[q];
-
-      polySpace_->Evaluate(mat_gp_coord,values_mat_gp);
-
-      // loop over shape functions
-      for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
-      {
-        phingp += values_mat_gp(i)*this->interiorPhin_(i);
-        phinpgp += values_mat_gp(i)*this->interiorPhinp_(i);
-      }
-
-      // Reaction term at material gauss points
-      imatgpnpderiv = actmat->ReaCoeffDeriv(phinpgp,this->Dt(),q);
-      imatgpn = actmat->ReaCoeff(phingp, this->Dt(),q);
-      imatgpnp = actmat->ReaCoeff(phinpgp, this->Dt(),q);
-
-      // loop over shape functions
-      for (unsigned int i=0; i<this->shapes_->ndofs_; i++)
-      {
-        for (unsigned int j=0; j<this->shapes_->ndofs_; j++)
-          ivecnpderiv_gp(i,j) += imatgpnpderiv*values_mat_gp(i)*values_mat_gp(j)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
-        ivecnp_gp(i) += imatgpnp*values_mat_gp(i)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
-        ivecn_gp(i) += imatgpn*values_mat_gp(i)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
-      }
-    }
-  }
-
 
   *ivecnpderiv = ivecnpderiv_gp;
   *ivecnp = ivecnp_gp;
@@ -406,96 +338,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::SetMater
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Get Gauss Rule 3D                                    hoermann 09/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-const DRT::UTILS::GaussRule3D DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::GetGaussRule3D(
-    const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
-    )
-{
-  const Teuchos::RCP<const MAT::Myocard>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
-
-  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined ;
-
-  if (distype == DRT::Element::hex8)
-  {
-    if (actmat->Parameter()->num_gp == 1)
-      gaussrule = DRT::UTILS::intrule_hex_1point;
-    else if (actmat->Parameter()->num_gp == 8)
-      gaussrule = DRT::UTILS::intrule_hex_8point;
-    else if (actmat->Parameter()->num_gp == 27)
-      gaussrule = DRT::UTILS::intrule_hex_27point;
-    else if (actmat->Parameter()->num_gp == 64)
-      gaussrule = DRT::UTILS::intrule_hex_64point;
-    else
-      dserror("Gauss rule only for 1, 8, 27 and 64 points for Hex elements defined. You specified %d points",actmat->Parameter()->num_gp);
-  }
-  else if (distype == DRT::Element::tet4)
-  {
-    if (actmat->Parameter()->num_gp == 1)
-      gaussrule = DRT::UTILS::intrule_tet_1point;
-    else if (actmat->Parameter()->num_gp == 4)
-      gaussrule = DRT::UTILS::intrule_tet_4point;
-    else if (actmat->Parameter()->num_gp == 10)
-      gaussrule = DRT::UTILS::intrule_tet_10point;
-    else if (actmat->Parameter()->num_gp == 24)
-      gaussrule = DRT::UTILS::intrule_tet_24point;
-    else
-      dserror("Gauss rule only for 1, 4, 10 and 24 points for TET elements defined. You specified %d points",actmat->Parameter()->num_gp);
-  }
-  else
-    dserror("Gauss rule not defined");
-
-  return gaussrule;
-}
-
-/*----------------------------------------------------------------------*
- |  Get Gauss Rule 2D                                    hoermann 09/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-const DRT::UTILS::GaussRule2D DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::GetGaussRule2D(
-    const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
-    )
-{
-  const Teuchos::RCP<const MAT::Myocard>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
-
-  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined ;
-
-  if (distype == DRT::Element::quad4)
-  {
-    if (actmat->Parameter()->num_gp == 1)
-      gaussrule = DRT::UTILS::intrule_quad_1point;
-    else if (actmat->Parameter()->num_gp == 4)
-      gaussrule = DRT::UTILS::intrule_quad_4point;
-    else if (actmat->Parameter()->num_gp == 16)
-      gaussrule = DRT::UTILS::intrule_quad_16point;
-    else if (actmat->Parameter()->num_gp == 36)
-      gaussrule = DRT::UTILS::intrule_quad_36point;
-    else
-      dserror("Gauss rule only for 1, 4, 16 and 36 points for QUAD elements defined. You specified %d points",actmat->Parameter()->num_gp);
-  }
-  else if (distype == DRT::Element::tri3)
-  {
-    if (actmat->Parameter()->num_gp == 1)
-      gaussrule = DRT::UTILS::intrule_tri_1point;
-    else if (actmat->Parameter()->num_gp == 3)
-      gaussrule = DRT::UTILS::intrule_tri_3point;
-    else if (actmat->Parameter()->num_gp == 6)
-      gaussrule = DRT::UTILS::intrule_tri_6point;
-    else if (actmat->Parameter()->num_gp == 16)
-      gaussrule = DRT::UTILS::intrule_tri_16point;
-    else
-      dserror("Gauss rule only for 1, 3, 6 and 16 points for TRI elements defined. You specified %d points",actmat->Parameter()->num_gp);
-  }
-  else
-    dserror("Gauss rule not defined");
-
-  return gaussrule;
-}
 
 // template classes
 // 1D elements

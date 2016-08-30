@@ -1,13 +1,15 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_cardiac_monodomain.cpp
 
-  \brief scatra time integration for cardiac monodomain
+\brief scatra time integration for cardiac monodomain
+
+\level 2
 
 <pre>
-   Maintainer: Lasse Jagschies
-               jagschies@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10365
+\maintainer Lasse Jagschies
+            jagschies@mhpc.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-10365
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -46,7 +48,8 @@ SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(
     material_internal_state_np_component_(Teuchos::null),
     nb_max_mat_ionic_currents_(0),
     material_ionic_currents_np_(Teuchos::null),
-    material_ionic_currents_np_component_(Teuchos::null)
+    material_ionic_currents_np_component_(Teuchos::null),
+    ep_params_(params)
 {
   return;
 }
@@ -62,21 +65,30 @@ void SCATRA::TimIntCardiacMonodomain::Init()
 
   // Activation time at time n+1
   activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
-  activation_threshold_ = params_->get<double>("ACTTHRES");
+  activation_threshold_ = ep_params_->get<double>("ACTTHRES");
   // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
-  nb_max_mat_int_state_vars_=params_->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
+  nb_max_mat_int_state_vars_=ep_params_->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
   if(nb_max_mat_int_state_vars_)
   {
     material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
     material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
   }
   // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
-  nb_max_mat_ionic_currents_=params_->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
+  nb_max_mat_ionic_currents_=ep_params_->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
   if(nb_max_mat_ionic_currents_)
   {
     material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
     material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
   }
+
+  //create dofmap for output writing
+  std::vector<int> globaldof;
+  for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
+    globaldof.push_back(discret_->NodeRowMap()->GID(i));
+  // create dof map (one dof for each node)
+  dofmap_ = Teuchos::rcp(new Epetra_Map(-1, (int) globaldof.size(), &globaldof[0], 0, discret_->Comm()));
+
+
   return;
 }
 
@@ -171,3 +183,12 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
 }
 
 
+/*----------------------------------------------------------------------*
+ | set ep-specific element parameters                    heormann 06/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const
+{
+  eleparams.set<bool>("semiimplicit",DRT::INPUT::IntegralValue<int>(*params_,"SEMIIMPLICIT"));
+
+  return;
+}

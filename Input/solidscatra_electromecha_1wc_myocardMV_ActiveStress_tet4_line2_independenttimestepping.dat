@@ -105,8 +105,9 @@ INITFUNCNO                      -1
 FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes
-ACTTHRES                        0.5
+--------------------------------------------------CARDIAC MONODOMAIN CONTROL
 WRITEMAXINTSTATE                0
+ACTTHRES                        0.5
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 ABSTOLRES                       1e-8

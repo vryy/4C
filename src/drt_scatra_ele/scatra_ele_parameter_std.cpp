@@ -98,6 +98,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     mat_gp_(false),
     tau_value_(0.),
     probnum_(0),
+    semiimplicit_(false),
     // we have to know the time parameters here to check for illegal combinations
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
@@ -223,6 +224,9 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 
   // set problem number
   probnum_ = parameters.get<int>("probnum",0);
+
+  // set evaluation type
+  semiimplicit_ = parameters.get<bool>("semiimplicit",false);
 
   return;
 }

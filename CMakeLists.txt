@@ -764,7 +764,8 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beampotential.cpp
   src/drt_inpar/inpar_bio.cpp
-    src/drt_inpar/inpar_particle.cpp
+  src/drt_inpar/inpar_cardiac_monodomain.cpp
+  src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_combust.cpp

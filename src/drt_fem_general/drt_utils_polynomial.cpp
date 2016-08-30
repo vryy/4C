@@ -1070,14 +1070,21 @@ LagrangeBasisTet<3>::FillFeketePoints(const unsigned int degree)
 {
   feketePoints_.Shape(3, Size(degree));
   unsigned int c=0;
-  for (unsigned int i=0; i<=degree; ++i)
-    for (unsigned int j=0; j<=degree-i; ++j)
-      for (unsigned int k=0; k<=degree-i-j; ++k, ++c)
-      {
-        feketePoints_(0,c) = (double)k/degree;
-        feketePoints_(1,c) = (double)j/degree;
-        feketePoints_(2,c) = (double)i/degree;
-      }
+  if(degree == 0)
+  {
+    feketePoints_(0,c) = 0.25;
+    feketePoints_(1,c) = 0.25;
+    feketePoints_(2,c) = 0.25;
+  }
+  else
+    for (unsigned int i=0; i<=degree; ++i)
+      for (unsigned int j=0; j<=degree-i; ++j)
+        for (unsigned int k=0; k<=degree-i-j; ++k, ++c)
+        {
+          feketePoints_(0,c) = (double)k/degree;
+          feketePoints_(1,c) = (double)j/degree;
+          feketePoints_(2,c) = (double)i/degree;
+        }
   dsassert(c==Size(degree), "Dimension mismatch");
   if (degree > 3)
     std::cout << "Currently equidistant points are used for Lagrange nodes in 3D. This "

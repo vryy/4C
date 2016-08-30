@@ -4,6 +4,8 @@
 \brief time-integration scheme with extensions for
        cardiac monodomain problems
 
+\level 2
+
 <pre>
 \maintainer Lasse Jagschies
             lasse.jagschies@tum.de
@@ -109,7 +111,17 @@ void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step,Teuchos::RCP
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ | add global state vectors specific for time-integration scheme  hoe 06/16 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainOST::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+{
+  // Call function from baseclass
+  TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  discret_->SetState("phin",phin_);
 
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ljag 01/14 |

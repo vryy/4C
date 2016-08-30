@@ -31,6 +31,7 @@
 #include "inpar_xfem.H"
 #include "inpar_mortar.H"
 #include "inpar_elch.H"
+#include "inpar_cardiac_monodomain.H"
 #include "inpar_acou.H"
 #include "inpar_invanalysis.H"
 #include "inpar_levelset.H"
@@ -1627,6 +1628,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::SCATRA::SetValidConditions(condlist);
 
   INPAR::ELCH::SetValidConditions(condlist);
+
+  INPAR::EP::SetValidConditions(condlist);
 
   INPAR::FLUID::SetValidConditions(condlist);
 

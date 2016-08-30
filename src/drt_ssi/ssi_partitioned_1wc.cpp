@@ -20,6 +20,9 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_cardiac_monodomain.H"
+
+#include "../drt_io/io.H"
 
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams)
@@ -89,8 +92,21 @@ void SSI::SSI_Part1WC::DoScatraStep()
   if(isscatrafromfile_)
   {
     int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
-    if (scatra_->ScaTraField()->Step() % diffsteps ==0){
-      scatra_->ScaTraField()->ReadRestart(scatra_->ScaTraField()->Step()); // read results from restart file
+    if (scatra_->ScaTraField()->Step() % diffsteps ==0)
+    {
+      // check if this is a cardiac monodomain problem
+      Teuchos::RCP<SCATRA::TimIntCardiacMonodomain> cardmono = Teuchos::rcp_dynamic_cast<SCATRA::TimIntCardiacMonodomain>(scatra_->ScaTraField());
+      if(cardmono == Teuchos::null)
+        dserror("SCATRA_FROM_RESTART_FILE works only for Cardiac Monodoamin problems");
+      // create vector with dofrowmap from previously performed scarta calculation
+      Teuchos::RCP<Epetra_Vector> phinptemp = LINALG::CreateVector(*cardmono->DofRowMapScatra());
+      Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(scatra_->ScaTraField()->Discretization(),scatra_->ScaTraField()->Step()));
+      // read phinp from restart file
+      reader->ReadVector(phinptemp, "phinp");
+      // replace old scatra map with new map since ssi map has more dofs
+      phinptemp->ReplaceMap(*scatra_->ScaTraField()->DofRowMap());
+      // update phinp
+      scatra_->ScaTraField()->Phinp()->Update(1.0,*phinptemp,0.0);
     }
   }
   else scatra_->ScaTraField()->Solve(); // really solve scatra problem

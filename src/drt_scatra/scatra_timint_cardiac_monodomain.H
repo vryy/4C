@@ -3,8 +3,10 @@
 
 \brief scatra time integration for cardiac monodomain
 
+\level 2
+
 <pre>
-Maintainer: Lasse Jagschies
+\maintainer Lasse Jagschies
             lasse.jagschies@tum.de
             http://www.lnm.mw.tum.de
             089 - 289-10365
@@ -56,6 +58,12 @@ class TimIntCardiacMonodomain : public virtual ScaTraTimIntImpl
 
   void OutputState();
 
+  //! Set ep-specific parameters
+  void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
+
+  //! return pointer to old scatra dofrowmap for coupled problems
+  virtual Teuchos::RCP<const Epetra_Map> DofRowMapScatra() { return dofmap_; };
+
   /*========================================================================*/
   //! @name electrophysiology
   /*========================================================================*/
@@ -84,6 +92,11 @@ class TimIntCardiacMonodomain : public virtual ScaTraTimIntImpl
   //! one component of the material ionic currents at times n+1 (for separated postprocessing)
   Teuchos::RCP<Epetra_Vector> material_ionic_currents_np_component_;
 
+  //! parameter list
+  const Teuchos::RCP<Teuchos::ParameterList> ep_params_;
+
+  //! row map of dofs (one dof for each node)
+  Teuchos::RCP<Epetra_Map> dofmap_;
 
 };
 

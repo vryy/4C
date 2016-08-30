@@ -26,6 +26,8 @@
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/matlist.H"
 
+#include "../drt_inpar/inpar_cardiac_monodomain.H"
+#include "scatra_ele_parameter_std.H"
 
 
 /*----------------------------------------------------------------------*
@@ -98,9 +100,16 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Materials(
 
   )
 {
-  if (material->MaterialType() == INPAR::MAT::m_myocard)
-    MatMyocard(material,k,densn,densnp,densam,visc,iquad);
-  else dserror("Material type is not supported");
+  // safety check
+  if (material->MaterialType() != INPAR::MAT::m_myocard)
+    dserror("Material type is not supported");
+
+  // safety check
+  const Teuchos::RCP<const MAT::Myocard>& actmat = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
+  if(actmat->Parameter()->num_gp != 1 and not my::scatrapara_->MatGP())
+    dserror("Evaluation of material at element center not possible with more Gauss points. Fix your input file!");
+
+  MatMyocard(material,k,densn,densnp,densam,visc,iquad);
 
   return;
 }
@@ -135,14 +144,26 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
 
   diffmanageraniso->SetAnisotropicDiff(difftensor,k);
 
-  // get membrane potential at n+1 or n+alpha_F at integration point
-  const double phinp = my::scatravarmanager_->Phinp(k);
-
-  //clear
+    //clear
   advreamanager->Clear(my::numscal_);
-  // get reaction coefficient
-  advreamanager->AddToReaBodyForce(-actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt()),k);
-  advreamanager->AddToReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt()),k,k);
+
+  if(my::scatrapara_->SemiImplicit())
+  {
+    // get membrane potential at n at integration point
+    const double phin = my::scatravarmanager_->Phin(k);
+    // get reaction coefficient
+    advreamanager->AddToReaBodyForce(-actmat->ReaCoeff(phin, my::scatraparatimint_->Dt(),iquad),k);
+    advreamanager->AddToReaBodyForceDerivMatrix(0.0,k,k);
+  }
+  else
+  {
+    // get membrane potential at n+1 or n+alpha_F at integration point
+    const double phinp = my::scatravarmanager_->Phinp(k);
+    // get reaction coefficient
+    advreamanager->AddToReaBodyForce(-actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(),iquad),k);
+    advreamanager->AddToReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt(),iquad),k,k);
+  }
+
   advreamanager->SetReaCoeff(0.0, k);
   advreamanager->SetReaCoeffDerivMatrix(0.0,k,k);
 
@@ -150,7 +171,179 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
 } // ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard
 
 
+/*----------------------------------------------------------------------*
+|  calculate system matrix and rhs for ep                 hoermann 06/16|
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Sysmat(
+  DRT::Element*                         ele,        ///< the element whose matrix is calculated
+  Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs,       ///< element rhs to calculate
+  Epetra_SerialDenseVector&             subgrdiff   ///< subgrid-diff.-scaling vector
+  )
+{
+  // density at t_(n) (one per transported scalar)
+  std::vector<double> densn(my::numscal_,1.0);
+  // density at t_(n+1) or t_(n+alpha_F) (one per transported scalar)
+  std::vector<double> densnp(my::numscal_,1.0);
+  // density at t_(n+alpha_M) (one per transported scalar)
+  std::vector<double> densam(my::numscal_,1.0);
 
+  // fluid viscosity
+  double visc(0.0);
+
+  // calculation of material parameter at element center
+  if(not my::scatrapara_->MatGP())
+  {
+    advreac::EvalShapeFuncAndDerivsAtEleCenter();
+    //set Gauss point variables needed for evaluation of mat and rhs
+    my::SetInternalVariablesForMatAndRHS();
+    advreac::GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
+  // calculation of material at integration points (different number of integration points possible)
+  else
+  {
+    const Teuchos::RCP<const MAT::Myocard>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(ele->Material());
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(actmat->Parameter()->num_gp));
+
+    //loop over integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      //set gauss point variables needed for evaluation of mat and rhs
+      my::SetInternalVariablesForMatAndRHS();
+
+      // get material parameters (evaluation at integration point)
+      advreac::GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+
+      // loop all scalars
+      for (int k=0;k<my::numscal_;++k) // deal with a system of transported scalars
+      {
+        double rhsint(0.0);
+        advreac::GetRhsInt(rhsint,densnp[k],k);
+
+        LINALG::Matrix<my::nen_,1> dummy(true);
+        const double timefacfac = my::scatraparatimint_->TimeFac()*fac;
+
+        // reactive terms on integration point on rhs
+        my::ComputeRhsInt(rhsint,densam[k],densnp[k],my::scatravarmanager_->Hist(k));
+
+        // standard Galerkin transient, old part of rhs and bodyforce term
+        my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
+
+        // element matrix: reactive term
+        advreac::CalcMatReact(emat,k,timefacfac,0.,0.,densnp[k],dummy,dummy);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    //set gauss point variables needed for evaluation of mat and rhs
+    my::SetInternalVariablesForMatAndRHS();
+
+    // loop all scalars
+    for (int k=0;k<my::numscal_;++k) // deal with a system of transported scalars
+    {
+
+      // compute rhs containing bodyforce
+      double rhsint(0.0);
+      advreac::GetRhsInt(rhsint,densnp[k],k);
+
+      // integration factors
+      const double timefacfac = my::scatraparatimint_->TimeFac()*fac;
+
+      //----------------------------------------------------------------
+      // 1) element matrix: stationary terms
+      //----------------------------------------------------------------
+
+      // calculation of diffusive element matrix
+      aniso::CalcMatDiff(emat,k,timefacfac);
+
+      //----------------------------------------------------------------
+      // 2) element matrix: instationary terms
+      //----------------------------------------------------------------
+
+      if (not my::scatraparatimint_->IsStationary())
+        my::CalcMatMass(emat,k,fac,densam[k]);
+
+      //----------------------------------------------------------------
+      // 3) element matrix: reactive term
+      //----------------------------------------------------------------
+
+      LINALG::Matrix<my::nen_,1> dummy(true);
+      if(not my::scatrapara_->MatGP())
+        advreac::CalcMatReact(emat,k,timefacfac,0.,0.,densnp[k],dummy,dummy);
+
+      //----------------------------------------------------------------
+      // 5) element right hand side
+      //----------------------------------------------------------------
+      //----------------------------------------------------------------
+      // computation of bodyforce (and potentially history) term,
+      // residual, integration factors and standard Galerkin transient
+      // term (if required) on right hand side depending on respective
+      // (non-)incremental stationary or time-integration scheme
+      //----------------------------------------------------------------
+      double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
+
+      if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
+        my::CalcRHSLinMass(erhs,k,rhsfac,fac,densam[k],densnp[k]);
+
+
+      if(not my::scatrapara_->MatGP())
+      {
+        my::ComputeRhsInt(rhsint,densam[k],densnp[k],my::scatravarmanager_->Hist(k));
+        // standard Galerkin transient, old part of rhs and bodyforce term
+        my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
+      }
+
+      //----------------------------------------------------------------
+      // standard Galerkin terms on right hand side
+      //----------------------------------------------------------------
+
+      // diffusive term
+      aniso::CalcRHSDiff(erhs,k,rhsfac);
+
+    }// end loop all scalars
+  }// end loop Gauss points
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | extract element based or nodal values                 hoermann 06/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::ExtractElementAndNodeValues(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
+)
+{
+  my::ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  // extract additional local values from global vector
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phin,my::ephin_,la[0].lm_);
+
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 // template classes
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,1>;
