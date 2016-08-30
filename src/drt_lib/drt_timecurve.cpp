@@ -309,10 +309,10 @@ namespace UTILS {
   private:
 
     /// parsed expression as syntax tree
-    DRT::PARSER::Parser<double> parsexpr_;
+    Teuchos::RCP<DRT::PARSER::Parser<double> > parsexpr_;
 
     /// parsed expression twice automatically differentiated
-    DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > parsexprdd_;
+    Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parsexprdd_;
   };
 
 }
@@ -1228,10 +1228,29 @@ std::vector<double> DRT::UTILS::PeriodicTimeSlice::FctDer(const double t,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, std::string buf)
-  : TimeSlice(begin,end),
-    parsexpr_(DRT::PARSER::Parser<double>(buf)),
-    parsexprdd_(DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf))
+  : TimeSlice(begin,end)
 {
+  // build the parser for the function evaluation
+  parsexpr_ = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  // add standard variables: Cartesian coordinates and time
+  parsexpr_->AddVariable("x",0);
+  parsexpr_->AddVariable("y",0);
+  parsexpr_->AddVariable("z",0);
+  parsexpr_->AddVariable("t",0);
+  // parse
+  parsexpr_->ParseFunction();
+
+  // build the parser for the function derivative evaluation
+  parsexprdd_ =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  // add standard variables: Cartesian coordinates and time
+  parsexprdd_->AddVariable("x",0);
+  parsexprdd_->AddVariable("y",0);
+  parsexprdd_->AddVariable("z",0);
+  parsexprdd_->AddVariable("t",0);
+  // parse
+  parsexprdd_->ParseFunction();
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -1245,8 +1264,16 @@ DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 double DRT::UTILS::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
-  //cout << "Curve factor " << parsexpr_.EvaluateCurve(t) << endl;
-  return parsexpr_.EvaluateCurve(t);
+
+  // set spatial variables to zero
+  parsexpr_->SetValue("x",0);
+  parsexpr_->SetValue("y",0);
+  parsexpr_->SetValue("z",0);
+  // set temporal variable as requested
+  parsexpr_->SetValue("t",t);
+
+  //evaluate curve
+  return parsexpr_->Evaluate();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1280,8 +1307,15 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
     tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
 
     // 1st & 2nd derivative of time curve function
+    // set spatial variables to zero
+    parsexprdd_->SetValue("x",0);
+    parsexprdd_->SetValue("y",0);
+    parsexprdd_->SetValue("z",0);
+    // set temporal variable as requested
+    parsexprdd_->SetValue("t",tfad);
+    //evaluate curve
     Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad
-      = parsexprdd_.EvaluateCurve(tfad);
+      = parsexprdd_->Evaluate();
 
     // return 1st derivative value at time t
     res[1] = fdfad.dx(ivar).val();

@@ -202,3 +202,96 @@ void DRT::PARSER::Lexer::Lexan()
     }
   }
 }
+
+// list of all valid operators
+const std::string DRT::PARSER::Lexer::operator_list_[] =
+    {
+        "+", "-","*","/","^",".",","
+    };
+// number of all valid operators
+const std::size_t DRT::PARSER::Lexer::operator_list_size_ =
+    sizeof(DRT::PARSER::Lexer::operator_list_)/sizeof(std::string);
+
+// list of all valid function names
+const std::string DRT::PARSER::Lexer::function_list_[] =
+    {
+       "acos","asin","atan","cos","sin","tan","cosh","sinh","tanh","exp","log","log10","sqrt","ceil","heaviside",
+       "fabs","floor","atan2"
+    };
+// number of all valid function names
+const std::size_t DRT::PARSER::Lexer::function_list_size_ =
+    sizeof(DRT::PARSER::Lexer::function_list_)/sizeof(std::string);
+
+// list of all valid brackets
+const std::string DRT::PARSER::Lexer::bracket_list_[] =
+    {
+        "(", ")"
+    };
+// number of all valid brackets
+const std::size_t DRT::PARSER::Lexer::bracket_list_size_ =
+    sizeof(DRT::PARSER::Lexer::bracket_list_)/sizeof(std::string);
+
+// list of all reserved 'words'
+const std::string DRT::PARSER::Lexer::reserved_words_list_[] =
+    {
+        "pi","e","E","\t","\n"," "
+    };
+// number of all reserved 'words'
+const std::size_t DRT::PARSER::Lexer::reserved_words_list_size_ =
+    sizeof(DRT::PARSER::Lexer::reserved_words_list_)/sizeof(std::string);
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief check if given string is an operator
+\author vuong
+\date 08/16
+*/
+bool DRT::PARSER::Lexer::IsOperator(const std::string& s) const
+{
+  for(std::size_t i=0; i<operator_list_size_; i++)
+    if(operator_list_[i]==s)
+      return true;
+  return false;
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief check if given string is a function name
+\author vuong
+\date 08/16
+*/
+bool DRT::PARSER::Lexer::IsFunction(const std::string& s) const
+{
+  for(std::size_t i=0; i<function_list_size_; i++)
+    if(function_list_[i]==s)
+      return true;
+  return false;
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief check if given string is a bracket
+\author vuong
+\date 08/16
+*/
+bool DRT::PARSER::Lexer::IsBracket(const std::string& s) const
+{
+  for(std::size_t i=0; i<bracket_list_size_; i++)
+    if(bracket_list_[i]==s)
+      return true;
+  return false;
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief check if given string is a reserved word
+\author vuong
+\date 08/16
+*/
+bool DRT::PARSER::Lexer::IsReservedWord(const std::string& s) const
+{
+  for(std::size_t i=0; i<reserved_words_list_size_; i++)
+    if(reserved_words_list_[i]==s)
+      return true;
+  return false;
+}

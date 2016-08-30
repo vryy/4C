@@ -146,7 +146,7 @@ private:
    -----------------------------------------+-------+-------+-------
 
 
-    for vector-valued spatial functions, returning seperate values
+    for vector-valued spatial functions, returning separate values
     for all dimensions:
 
    -----------------------------------------+-------+-------+-------
@@ -1665,12 +1665,35 @@ DRT::UTILS::ExprFunction::ExprFunction(char* buf,
 {
   dim_ = DRT::Problem::Instance()->NDim();
 
+  // build the parser for the function evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  // add standard variables: Cartesian coordinates and time
+  parser->AddVariable("x",0);
+  parser->AddVariable("y",0);
+  parser->AddVariable("z",0);
+  parser->AddVariable("t",0);
+  // parse
+  parser->ParseFunction();
+
+  // build the parser for the function derivative evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  // add standard variables: Cartesian coordinates and time
+  parserd->AddVariable("x",0);
+  parserd->AddVariable("y",0);
+  parserd->AddVariable("z",0);
+  parserd->AddVariable("t",0);
+  // parse
+  parserd->ParseFunction();
+
+  // save the parsers
+  expr_.push_back(parser);
+  exprd_.push_back(parserd);
+
+  // save the coordinates of the origin
   x_.push_back(x);
   y_.push_back(y);
   z_.push_back(z);
-
-  expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
-  exprd_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf)));
 
   return;
 }
@@ -1691,9 +1714,32 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
                                        double z
   )
 {
-  expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
-  exprd_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf)));
+  // build the parser for the function evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  // add standard variables: Cartesian coordinates and time
+  parser->AddVariable("x",0);
+  parser->AddVariable("y",0);
+  parser->AddVariable("z",0);
+  parser->AddVariable("t",0);
+  // parse
+  parser->ParseFunction();
 
+  // build the parser for the function derivative evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  // add standard variables: Cartesian coordinates and time
+  parserd->AddVariable("x",0);
+  parserd->AddVariable("y",0);
+  parserd->AddVariable("z",0);
+  parserd->AddVariable("t",0);
+  // parse
+  parserd->ParseFunction();
+
+  // save the parsers
+  expr_.push_back(parser);
+  exprd_.push_back(parserd);
+
+  // save the coordinates of the origin
   x_.push_back(x);
   y_.push_back(y);
   z_.push_back(z);
@@ -1715,9 +1761,39 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
 
   switch(dim_)
   {
-  case 3: return expr_[index]->EvaluateFunct(x[0]-x_[index], x[1]-y_[index], x[2]-z_[index], t);
-  case 2: return expr_[index]->EvaluateFunct(x[0]-x_[index], x[1]-y_[index], 0, t);
-  case 1: return expr_[index]->EvaluateFunct(x[0]-x_[index], 0, 0, t);
+  case 3:
+  {
+    // set spatial variables as requested
+    expr_[index]->SetValue("x",x[0]-x_[index]);
+    expr_[index]->SetValue("y",x[1]-y_[index]);
+    expr_[index]->SetValue("z",x[2]-z_[index]);
+    // set temporal variable as requested
+    expr_[index]->SetValue("t",t);
+    // evaluate the function
+    return expr_[index]->Evaluate();
+  }
+  case 2:
+  {
+    // set spatial variables as requested
+    expr_[index]->SetValue("x",x[0]-x_[index]);
+    expr_[index]->SetValue("y",x[1]-y_[index]);
+    expr_[index]->SetValue("z",0);
+    // set temporal variable as requested
+    expr_[index]->SetValue("t",t);
+    // evaluate the function
+    return expr_[index]->Evaluate();
+  }
+  case 1:
+  {
+    // set spatial variables as requested
+    expr_[index]->SetValue("x",x[0]-x_[index]);
+    expr_[index]->SetValue("y",0);
+    expr_[index]->SetValue("z",0);
+    // set temporal variable as requested
+    expr_[index]->SetValue("t",t);
+    // evaluate the function
+    return expr_[index]->Evaluate();
+  }
   }
 
   dserror("Problem dimension has to be 1, 2, or 3.");
@@ -1760,9 +1836,42 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
   FAD fdfad;
   switch(dim_)
   {
-  case 3: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], yfad-y_[index], zfad-z_[index], tfad); break;
-  case 2: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], yfad-y_[index], 0, tfad); break;
-  case 1: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], 0, 0, tfad); break;
+  case 3:
+  {
+    // set spatial variables as requested
+    exprd_[index]->SetValue("x",xfad-x_[index]);
+    exprd_[index]->SetValue("y",yfad-y_[index]);
+    exprd_[index]->SetValue("z",zfad-z_[index]);
+    // set temporal variable as requested
+    exprd_[index]->SetValue("t",tfad);
+    // evaluate the function
+    fdfad = expr_[index]->Evaluate();
+    break;
+  }
+  case 2:
+  {
+    // set spatial variables as requested
+    exprd_[index]->SetValue("x",xfad-x_[index]);
+    exprd_[index]->SetValue("y",yfad-y_[index]);
+    exprd_[index]->SetValue("z",0);
+    // set temporal variable as requested
+    exprd_[index]->SetValue("t",tfad);
+    // evaluate the function
+    fdfad = expr_[index]->Evaluate();
+    break;
+  }
+  case 1:
+  {
+    // set spatial variables as requested
+    exprd_[index]->SetValue("x",xfad-x_[index]);
+    exprd_[index]->SetValue("y",0);
+    exprd_[index]->SetValue("z",0);
+    // set temporal variable as requested
+    exprd_[index]->SetValue("t",tfad);
+    // evaluate the function
+    fdfad = expr_[index]->Evaluate();
+    break;
+  }
   default: dserror("Problem dimension has to be 1, 2, or 3."); break;
   }
 

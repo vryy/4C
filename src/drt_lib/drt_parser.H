@@ -71,16 +71,15 @@ public:
   //! type of the node, ie operator, literal, ...
   NodeType type_;
 
-  typedef T (*mathfunc)(T);
-
   //! particularise the node content: a literal number is double, an operatir has a character
   union
   {
     double number;  // holds 1.0, 7.e-9, etc
-    char variable;  // holds 't', 'x', etc
     char op;  // hold '+', '*', etc
   } v_;
 
+  //! input string expressing the variable, holds 't', 'x', etc
+  std::string variable_;
   //! input string expressing the function
   std::string function_;
 
@@ -108,6 +107,12 @@ protected:
   //! identifies a token (value and kind) in the funct_ string
   void Lexan();
 
+  //! helper methods
+  bool IsOperator(const std::string& s) const;
+  bool IsFunction(const std::string& s) const;
+  bool IsBracket(const std::string& s) const;
+  bool IsReservedWord(const std::string& s) const;
+
   //! type of identifiable tokens in string funct_
   enum TokenType
   {
@@ -133,8 +138,20 @@ protected:
   char* str_;  // pointer to current character in funct_
   int integer_;  // translated integer number or length of operator word
   double real_;  // translated real number
-};
 
+  static const std::string operator_list_[]; // list of all valid operators
+  static const std::size_t operator_list_size_; // number of all valid operators
+
+  static const std::string function_list_[]; // list of all valid functions
+  static const std::size_t function_list_size_; // number of all valid functions
+
+  static const std::string bracket_list_[];  // list of all valid brackets
+  static const std::size_t bracket_list_size_; // number of all valid brackets
+
+  static const std::string reserved_words_list_[];  // list of all special words
+  static const std::size_t reserved_words_list_size_; // number of all special words
+
+};
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -151,10 +168,20 @@ public:
   //! destructor
   ~Parser();
 
-  //! evaluate function in time (Curve)
-  T EvaluateCurve(T t);
-  //! evaluate function in space (Function)
-  T EvaluateFunct(T x, T y, T z, T t);  // could be templated x,y,z for spatial gradients
+  //! parse the function
+  void ParseFunction();
+
+  //! evaluate function depending on set variables
+  T Evaluate();
+
+  //! Add variable to parser object
+  void AddVariable(const std::string& varname,const T& value);
+  //! Set value of an existing variable to parser object
+  void SetValue(const std::string& varname,const T& value);
+  //! Check if a variable with name 'varname' exists
+  bool IsVariable(const std::string& varname) const;
+  //! Check if variable name is valid
+  bool IsValidVariableName(const std::string& varname) const;
 
 private:
 
@@ -170,12 +197,10 @@ private:
   //! syntax tree root
   SyntaxTreeNode<T>* expr_;
 
-  // evaluation values of independent variables
-  T parse_x_;
-  T parse_y_;
-  T parse_z_;
-  T parse_t_;
+  //! map of all independent variables
+  std::map<std::string,T> variable_list_;
 };
+
 
 /*======================================================================*/
 /* Parser methods */
@@ -190,9 +215,6 @@ template <class T>
 Parser<T>::Parser(std::string funct)
   : Lexer(funct)
 {
-  Lexan();  // retrieve first token of funct_
-            // it is stored in (base) Lexer variables of Parser object
-  expr_ = Parse();  // create syntax tree equivalent to funct_
 }
 
 
@@ -210,38 +232,98 @@ Parser<T>::~Parser()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief global interpreter call for time curves.
-\author u.kue
-\date 12/05
+\brief Parse the function, i.e. create the syntax tree
+\author vuong
+\date 08/16
 */
 template <class T>
-T Parser<T>::EvaluateCurve(T t)
+void Parser<T>::ParseFunction()
 {
-  // set spatial variables to zero
-  parse_x_ = 0;
-  parse_y_ = 0;
-  parse_z_ = 0;
-  // set temporal variable as requested
-  parse_t_ = t;
-  // evaluate syntax tree of function depending on set variables
-  return Interpret(expr_);
+  Lexan();  // retrieve first token of funct_
+            // it is stored in (base) Lexer variables of Parser object
+  expr_ = Parse();  // create syntax tree equivalent to funct_
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Add a variable definition to the parser object
+\author vuong
+\date 08/16
+*/
+template <class T>
+void Parser<T>::AddVariable(const std::string& varname,const T& value)
+{
+  // check if variable is valid
+  if( IsValidVariableName(varname) )
+      // set default value
+      variable_list_[varname]=value;
+  else
+    dserror("Variable name '%s' already defined or invalid!",varname.c_str());
 }
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Global interpreter call for space functions.
-\author u.kue
-\date 12/05
+\brief Set value of a variable in the parser object
+\author vuong
+\date 08/16
 */
 template <class T>
-T Parser<T>::EvaluateFunct(T x, T y, T z, T t)
+void Parser<T>::SetValue(const std::string& varname,const T& value)
 {
-  // set spatial variables as requested
-  parse_x_ = x;
-  parse_y_ = y;
-  parse_z_ = z;
-  // set temporal variable to zero
-  parse_t_ = t;
+  // check if variable exists
+  if(IsVariable(varname))
+    // set value
+    variable_list_[varname]=value;
+  else
+    dserror("Variable '%s' not defined or invalid!",varname.c_str());
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Check if input is a variable name
+\author vuong
+\date 08/16
+*/
+template <class T>
+bool Parser<T>::IsVariable(const std::string& varname) const
+{
+  // check if variable exists
+  return (variable_list_.find(varname)!=variable_list_.end());
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Check if input is a valid variable name
+\author vuong
+\date 08/16
+*/
+template <class T>
+bool Parser<T>::IsValidVariableName(const std::string& varname) const
+{
+  // check if variable is valid
+  return ( not varname.empty()     and    // there must be a name
+           not isdigit(varname[0]) and    // the first character must not be a digit
+           not iscntrl(varname[0]) and    // the first character must not be a control character
+           not IsVariable(varname) and    // it must not be a variable defined yet
+           not IsOperator(varname) and    // it must not be a operator
+           not IsFunction(varname) and    // it must not be a function name
+           not IsBracket(varname)  and    // it must not be a bracket
+           not IsReservedWord(varname)    // it must not be a reserved 'word'
+         );
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief global interpreter call.
+\author vuong
+\date 08/16
+*/
+template <class T>
+T Parser<T>::Evaluate()
+{
+  if(expr_==NULL)
+    dserror("Function has not been parsed! Call ParseFunction()!");
   // evaluate syntax tree of function depending on set variables
   return Interpret(expr_);
 }
@@ -298,24 +380,16 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
     break;
   }
   case tok_name:
-    lhs = NULL;
-    if (integer_==1)
+  {
+    // get substring starting from str_ with length of integer_
+    std::string name(str_, integer_);
+    if(IsVariable(name))
     {
-      switch (str_[0])
-      {
-      case 'x':
-      case 'y':
-      case 'z':
-      case 't':
-        lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_variable,NULL,NULL);
-        lhs->v_.variable = str_[0];
-        Lexan();
-        break;
-      default:
-        break;
-      }
+      lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_variable,NULL,NULL);
+      lhs->variable_ = name;
+      Lexan();
     }
-    if (lhs==NULL)
+    else
     {
       if ((integer_ == 2) && (std::strncmp("pi", str_, integer_)==0))
       {
@@ -326,10 +400,6 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
       }
       else
       {
-        // get substring from str_ to &(str_[integer_])
-        //std::string name(str_, &str_[integer_]);
-        // get substring starting from str_ with length of integer_
-        std::string name(str_, integer_);
         if (name=="acos" or
             name=="asin" or
             name=="atan" or
@@ -386,6 +456,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
       }
     }
     break;
+  }
   default:
     dserror("unexpected token %d", tok_);
     break;
@@ -575,27 +646,16 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
     }
     break;
   }
-  // independent variables: as set in EvaluateFunct or EvaluateCurve
+  // independent variables: as set by user
   case SyntaxTreeNode<T>::lt_variable:
-    switch (node->v_.variable)
-    {
-    case 'x':
-      res = parse_x_;
-      break;
-    case 'y':
-      res = parse_y_;
-      break;
-    case 'z':
-      res = parse_z_;
-      break;
-    case 't':
-      res = parse_t_;
-      break;
-    default:
-      dserror("unknown variable '%c'", node->v_.variable);
-      break;
-    }
+  {
+    typename std::map<std::string,T>::iterator iter = variable_list_.find(node->variable_);
+    if(iter!=variable_list_.end())
+      res = iter->second;
+    else
+      dserror("unknown variable '%s'", node->variable_.c_str());
     break;
+  }
   // unary operators
   case SyntaxTreeNode<T>::lt_function:
   {
