@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file global_control.cpp
+
+\brief the basic baci routine
+
+\level 0
+
+\maintainer Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include <unistd.h>
 #include <sys/times.h>
@@ -9,17 +21,7 @@
 #include "../drt_comm/comm_utils.H"
 
 
-static double cputime()
-{
-  double ret;
-  double clk_tck;
-  struct tms buf;
 
-  times(&buf);
-  clk_tck = (double)sysconf(_SC_CLK_TCK);
-  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
-  return ret;
-}
 
 void ntacal();
 
@@ -44,22 +46,22 @@ void ntam(
 
   /* input phase, input of all information */
 
-  t0=cputime();
+  t0=DRT::Problem::Walltime();
 
   ntainp_ccadiscret(inputfile_name,outputfile_kenner,restartfile_kenner);
 
-  ti=cputime()-t0;
+  ti=DRT::Problem::Walltime()-t0;
   if (gcomm->MyPID()==0)
   {
     IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3) << std::scientific << ti << " sec \n\n";
   }
 
   /*--------------------------------------------------calculation phase */
-  t0=cputime();
+  t0=DRT::Problem::Walltime();
 
   ntacal();
 
-  tc=cputime()-t0;
+  tc=DRT::Problem::Walltime()-t0;
   if (gcomm->MyPID()==0)
   {
     IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3) << std::scientific << tc << " sec \n\n";

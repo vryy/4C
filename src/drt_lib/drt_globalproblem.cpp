@@ -13,7 +13,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-
+#include <sys/time.h>
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
@@ -175,6 +175,16 @@ int DRT::Problem::NDim() const
 {
   const Teuchos::ParameterList& sizeparams = ProblemSizeParams();
   return sizeparams.get<int>("DIM");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::Problem::Walltime()
+{
+  struct timeval  tp;
+  gettimeofday(&tp, NULL);
+  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
 
@@ -464,7 +474,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   const Teuchos::ParameterList& type = ProblemTypeParams();
   probtype_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
 
-  // 2) do the restart business with the two options we support
+  // 2) do the restart business with the four options we support (partially)
   if (restartstep_==0 )
   {
     // no restart flag on the command line, so check the restart flag from the input file
@@ -493,6 +503,10 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     if (restartstep_==0)
       dserror("Restart with time option needs a RESTART flag different from 0");
   }
+
+  // Set restart time based on walltime
+  const double restartinterval = IOParams().get<double>("RESTARTWALLTIMEINTERVAL");
+  RestartManager()->SetRestartTimeInterval(restartinterval);
 
   // 3) set random seed
   // time is in seconds, therefore we add the global processor id to obtain a unique seed on each proc

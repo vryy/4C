@@ -338,6 +338,44 @@ protected:
 //@}
 };
 
+/*!
+\brief handles restart after a certain walltime interval -> to be extended
+
+\author hammerl
+*/
+class RestartManager
+{
+public:
+  RestartManager();
+
+  virtual ~RestartManager();
+
+  /// set the time interval to enforce restart writing
+  void SetRestartTimeInterval(const double restartinterval);
+
+  /// return whether it is time for a forced restart due to walltime limit
+  /// \param step [in] : current time step for multi-field syncronisation
+  bool WalltimeRestart(const int step);
+
+protected:
+
+  /// start time of simulation
+  double startwalltime_;
+
+  /// after this time interval a restart is enforced
+  double restartevrytime_;
+
+  /// check to enforce restart only once during time interval
+  int restartcounter_;
+
+  /// store the step which was allowed to write restart
+  int lastacceptedstep_;
+
+  /// member to detect time step increment
+  int lasttestedstep_;
+
+};
+
 } // namespace UTILS
 } // namespace DRT
 

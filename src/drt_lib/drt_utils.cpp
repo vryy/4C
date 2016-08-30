@@ -1126,6 +1126,49 @@ void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
 }
 
 
+DRT::UTILS::RestartManager::RestartManager():
+      startwalltime_(DRT::Problem::Walltime()),
+      restartevrytime_(-1.0),
+      restartcounter_(0),
+      lastacceptedstep_(-1),
+      lasttestedstep_(-1)
+{}
+
+DRT::UTILS::RestartManager::~RestartManager()
+{}
+
+/// set the time interval to enforce restart writing
+void DRT::UTILS::RestartManager::SetRestartTimeInterval(const double restartinterval)
+{
+  restartevrytime_ = restartinterval;
+}
+
+/// return whether it is time for a restart after a certain walltime interval
+bool DRT::UTILS::RestartManager::WalltimeRestart(const int step)
+{
+  // make sure that all after the first field write restart, too
+  if(step == lastacceptedstep_)
+    return true;
+
+  // make sure that only the first field tests the time limit
+  if(step > lasttestedstep_)
+  {
+    lasttestedstep_ = step;
+
+    // compute elapsed walltime
+    const double elapsedtime = DRT::Problem::Walltime() - startwalltime_;
+    if((int)(elapsedtime/restartevrytime_) > restartcounter_)
+    {
+      ++restartcounter_;
+      lastacceptedstep_ = step;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 /*-----------------------------------------------------------------------------*
 *------------------------------------------------------------------------------*/
 std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* const ele)

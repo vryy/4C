@@ -2271,6 +2271,9 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
     return;
   }
 
+  // check whether restart is enforced after a certain walltime interval
+  forced_writerestart = forced_writerestart or DRT::Problem::Instance()->RestartManager()->WalltimeRestart(step_);
+
   // special treatment is necessary when restart is forced
   if(forced_writerestart)
   {

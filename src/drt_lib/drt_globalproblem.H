@@ -225,6 +225,9 @@ public:
   /// number of space dimensions (as specified in the input file)
   int NDim() const;
 
+  /// current wall time in seconds with micro second precision
+  static double Walltime();
+
   // do bandwith optimization of dofsets (as specified in the input file)
   //bool BandWidthOpt() const;
 
@@ -412,6 +415,9 @@ public:
   /// Return the class that handles random numbers globally
   DRT::UTILS::Random* Random() { return &random_; }
 
+  /// Return the class that handles restart initiating -> to be extended
+  DRT::UTILS::RestartManager* RestartManager() { return &restartmanager_; }
+
 private:
 
   /// private default constructor to disallow creation of instances
@@ -479,6 +485,9 @@ private:
 
   /// handles all sorts of random numbers
   DRT::UTILS::Random random_;
+
+  /// handles restart
+  DRT::UTILS::RestartManager restartmanager_;
 
 };
 
