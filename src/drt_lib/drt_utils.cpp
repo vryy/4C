@@ -1176,15 +1176,19 @@ bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm
     if(comm.MyPID() == 0)
     {
       const double elapsedtime = DRT::Problem::Walltime() - startwalltime_;
+      const bool walltimerestart = (int)(elapsedtime/restartevrytime_) > restartcounter_;
+
       if(step > 0 and (
           ((restartevrystep_ > 0) and (step%restartevrystep_ == 0))
-          or ((int)(elapsedtime/restartevrytime_) > restartcounter_)
+          or walltimerestart
           or signal_ > 0))
       {
-        ++restartcounter_;
         lastacceptedstep_ = step;
         restarttime = 1;
         signal_ = -1;
+        // only increment counter for walltime based restart functionality
+        if(walltimerestart)
+          ++restartcounter_;
       }
     }
     comm.Broadcast(&restarttime, 1, 0);
