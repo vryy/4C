@@ -67,6 +67,25 @@ namespace SSI
         const std::string struct_disname,
         const std::string scatra_disname) = 0;
 
+    /*!
+    \brief Setup discretizations and dofsets
+
+     Fill discretizations and setup coupling object \ref ssicoupling_
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
+
+    \warning Parallel redistribution inside !
+
+    \return void
+    \date 08/16
+    \author vuong, rauch
+    */
+    virtual void SetupDiscretizationsAndFieldCoupling(
+        const Epetra_Comm& comm,
+        const std::string& struct_disname,
+        const std::string& scatra_disname);
+
     /// setup
     virtual void SetupSystem() = 0;
 
@@ -114,9 +133,6 @@ namespace SSI
     /// setup adapters for transport on boundary if necessary
     void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
 
-    /// setup discretizations and dofsets
-    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
-
     ///Set material pointers for matching structure and scatra grids
     void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
 
@@ -125,12 +141,6 @@ namespace SSI
 
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
-
-    /// setup discretizations and dofsets
-    void SetupDiscretizationsAndFieldCoupling(
-        const Epetra_Comm& comm,
-        const std::string& struct_disname,
-        const std::string& scatra_disname);
 
   private:
 

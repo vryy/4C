@@ -305,9 +305,9 @@ void CellMigrationControlAlgorithm()
   // pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
 
-  // check if cell is supposed to have intracellular biochchemical reaction capabilities
+  // check if cell is supposed to have intracellular biochchemical signaling capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
-  if(ssi_cell and simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+  if(ssi_cell)
   {
     // get coupling algorithm from ---SSI CONTROL section
     const INPAR::SSI::SolutionSchemeOverFields coupling
@@ -315,93 +315,59 @@ void CellMigrationControlAlgorithm()
 
     switch(coupling)
     {
-    case INPAR::SSI::ssi_IterStagg: // create SSI_Part2WC_PROTRUSIONFORMATION subproblem
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
-      cellscatra_subproblem->Setup(comm,
-          problem->CellMigrationParams(),
-          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
-          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
-          "cell",
-          "cellscatra");
+    case INPAR::SSI::ssi_IterStagg:
+      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+        cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
+      else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
+        cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
       break;
     default:
       dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
       break;
     }
 
-    // set pointer to structure inside SSI subproblem
-    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField());
-
-    if(cellstructure==Teuchos::null)
-      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
-
-    if(comm.MyPID()==0)
-      std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
-
+    // parallel redistribution may happen inside
+    cellscatra_subproblem->SetupDiscretizationsAndFieldCoupling(comm,"cell","cellscatra");
     // ghost cellscatra on each proc (for search algorithm)
     if(comm.NumProc() > 1)
     {
       // fill complete inside
       CreateGhosting(problem->GetDis("cellscatra"));
     }
+    // parallel redistriution is finished. It is time to call setup.
+    cellscatra_subproblem->Setup(comm,
+        problem->CellMigrationParams(),
+        problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
+        problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+        "cell",
+        "cellscatra");
 
-  }
-  else if (ssi_cell and simtype==INPAR::CELL::sim_type_pureAdhesion)
-  {
-    // get coupling algorithm from ---SSI CONTROL section
-    const INPAR::SSI::SolutionSchemeOverFields coupling
-    = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
-
-    switch(coupling)
-    {
-    case INPAR::SSI::ssi_IterStagg: // create SSI_Part2WC subproblem
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
-      cellscatra_subproblem->Setup(comm,
-          problem->CellMigrationParams(),
-          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
-          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
-          "cell",
-          "cellscatra");
-      break;
-    default:
-      dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
-      break;
-    }
-
-    // set pointer to structure inside SSI subproblem
-    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField());
-
-    if(cellstructure==Teuchos::null)
-      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+    cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField(),true);
 
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
 
-    // ghost cellscatra on each proc (for search algorithm)
-    if(comm.NumProc() > 1)
-    {
-      // fill complete inside
-      CreateGhosting(problem->GetDis("cellscatra"));
-    }
-
   }
-  else if(not ssi_cell) // cell has no intracellular biochemistry -> just create usual fsi immersed structure
+  else // cell has no intracellular biochemistry -> just create usual structure
   {
-    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
-                                                                                                                                     (problem->CellMigrationParams()).sublist("STRUCTURAL DYNAMIC"),
-                                                                                                                                     problem->GetDis("cell")))->StructureField() );
-
-    if(cellstructure==Teuchos::null)
-      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+    cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
+                                                                     problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+                                                                     problem->GetDis("cell")))
+                                                              ->StructureField(),true);
 
     if(comm.MyPID()==0)
       std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
   }
-  else
+
+  // set pointer to structure inside SSI subproblem
+  if(cellstructure==Teuchos::null)
+    dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+
+  // ghost cellscatra on each proc (for search algorithm)
+  if(comm.NumProc() > 1)
   {
-      std::cout<<"Skipped Construction of CellScatra Subproblem.\n"
-                 "The current parameter combination is not supported.\n"
-                 "Check your .dat file !"<<std::endl;;
+    // fill complete inside
+    CreateGhosting(problem->GetDis("cellscatra"));
   }
 
   // create instance of poroelast subproblem

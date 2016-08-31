@@ -65,7 +65,7 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   // for level-set problems
   conditions_to_copy.insert(std::pair<std::string,std::string>("LsContact","LsContact"));
 
-  // for cell migration ( rauch 01/16 )
+  // for cell migration ( rauch 08/16 )
   conditions_to_copy.insert(std::pair<std::string,std::string>("CellFocalAdhesion","CellFocalAdhesion"));
 
   return conditions_to_copy;
@@ -166,7 +166,6 @@ std::map<std::string,std::string> SCATRA::ScatraReactionCloneStrategy::Condition
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraCoupling","ScaTraCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionMaster","ScatraHeteroReactionMaster"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionSlave","ScatraHeteroReactionSlave"));
-
 
   return conditions_to_copy;
 }

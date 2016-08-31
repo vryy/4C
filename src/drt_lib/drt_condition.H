@@ -250,6 +250,8 @@ public:
     PoroPartInt,
     PoroPresInt,
     SSICoupling,
+    SSICouplingSolidToScatra,
+    SSICouplingScatraToSolid,
     RedAirwayVentilatorCond,
     RedAirwayTissue,
     RedAirwayNodeTissue,
@@ -286,7 +288,6 @@ public:
     ThermoRobin,
     ScatraMultiScaleCoupling,
     CellFocalAdhesion,
-    CellSurfVolCoupling,
     ScatraHeteroReactionCondMaster,
     ScatraHeteroReactionCondSlave
   };

@@ -70,9 +70,6 @@ void SSI::SSI_Base::Setup(const Epetra_Comm& comm,
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
-  //2.- Setup discretizations and coupling.
-  SetupDiscretizationsAndFieldCoupling(comm,struct_disname, scatra_disname);
-
   //3.- Create the two uncoupled subproblems.
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis(struct_disname);

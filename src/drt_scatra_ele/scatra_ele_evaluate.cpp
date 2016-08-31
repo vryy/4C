@@ -300,7 +300,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
     case SCATRA::calc_cell_mechanotransduction:
-    case SCATRA::calc_cell_growth:
+    case SCATRA::calc_cell_growth_sourcesandsinks:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     case SCATRA::calc_mass_matrix:
     {

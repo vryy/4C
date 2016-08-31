@@ -143,26 +143,67 @@ void INPAR::SSI::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
 {
   using namespace DRT::INPUT;
 
+
   /*--------------------------------------------------------------------*/
-  Teuchos::RCP<ConditionDefinition> linessi =
+  Teuchos::RCP<ConditionDefinition> linessiplain =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING LINE CONDITIONS",
           "SSICoupling",
           "SSI Coupling",
           DRT::Condition::SSICoupling,
           true,
           DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfssi =
+  Teuchos::RCP<ConditionDefinition> surfssiplain =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SURF CONDITIONS",
           "SSICoupling",
           "SSI Coupling",
           DRT::Condition::SSICoupling,
           true,
           DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volssi =
+  Teuchos::RCP<ConditionDefinition> volssiplain =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING VOL CONDITIONS",
           "SSICoupling",
           "SSI Coupling",
           DRT::Condition::SSICoupling,
+          true,
+          DRT::Condition::Volume));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent> > ssicoupcomponentsplain;
+  ssicoupcomponentsplain.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  // insert input file line components into condition definitions
+  for (unsigned i=0; i<ssicoupcomponentsplain.size(); ++i)
+  {
+    linessiplain->AddComponent(ssicoupcomponentsplain[i]);
+    surfssiplain->AddComponent(ssicoupcomponentsplain[i]);
+    volssiplain ->AddComponent(ssicoupcomponentsplain[i]);
+  }
+
+  condlist.push_back(linessiplain);
+  condlist.push_back(surfssiplain);
+  condlist.push_back(volssiplain);
+
+  /*--------------------------------------------------------------------*/
+  //! set solid dofset on scatra discretization
+  Teuchos::RCP<ConditionDefinition> linessi =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA LINE CONDITIONS",
+          "SSICouplingSolidToScatra",
+          "SSI Coupling SolidToScatra",
+          DRT::Condition::SSICouplingSolidToScatra,
+          true,
+          DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfssi =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA SURF CONDITIONS",
+          "SSICouplingSolidToScatra",
+          "SSI Coupling SolidToScatra",
+          DRT::Condition::SSICouplingSolidToScatra,
+          true,
+          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volssi =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA VOL CONDITIONS",
+          "SSICouplingSolidToScatra",
+          "SSI Coupling SolidToScatra",
+          DRT::Condition::SSICouplingSolidToScatra,
           true,
           DRT::Condition::Volume));
 
@@ -181,6 +222,46 @@ void INPAR::SSI::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
   condlist.push_back(linessi);
   condlist.push_back(surfssi);
   condlist.push_back(volssi);
+
+  /*--------------------------------------------------------------------*/
+  //! set scatra dofset on solid discretization
+  Teuchos::RCP<ConditionDefinition> linessi2 =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID LINE CONDITIONS",
+          "SSICouplingScatraToSolid",
+          "SSI Coupling ScatraToSolid",
+          DRT::Condition::SSICouplingScatraToSolid,
+          true,
+          DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfssi2 =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID SURF CONDITIONS",
+          "SSICouplingScatraToSolid",
+          "SSI Coupling ScatraToSolid",
+          DRT::Condition::SSICouplingScatraToSolid,
+          true,
+          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volssi2 =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID VOL CONDITIONS",
+          "SSICouplingScatraToSolid",
+          "SSI Coupling ScatraToSolid",
+          DRT::Condition::SSICouplingScatraToSolid,
+          true,
+          DRT::Condition::Volume));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent> > ssicoupcomponents2;
+  ssicoupcomponents2.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  // insert input file line components into condition definitions
+  for (unsigned i=0; i<ssicoupcomponents2.size(); ++i)
+  {
+    linessi2->AddComponent(ssicoupcomponents2[i]);
+    surfssi2->AddComponent(ssicoupcomponents2[i]);
+    volssi2 ->AddComponent(ssicoupcomponents2[i]);
+  }
+
+  condlist.push_back(linessi2);
+  condlist.push_back(surfssi2);
+  condlist.push_back(volssi2);
 
 }
 

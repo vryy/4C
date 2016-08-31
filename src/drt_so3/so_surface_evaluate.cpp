@@ -2697,63 +2697,57 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   break;
   case calc_cell_growth:
   {
-    // frequently used constants
-    double delta = 2.7e-3;   //< actin monomer size [micrometer]
-    double beta = 0.61;      //< 35° in rad --> half branching angle, for calc of growth value to gp normal
-    //double k_bT = 0.004114;//< unused
-
     //////////////////////////////////////////////////////////////
     // get parameters, pointers, and perform safety checks
     /////////////////////////////////////////////////////////////
     DRT::Problem* globalproblem = DRT::Problem::Instance();    //< the problem instance
-    int numNode = this->NumNode();                             //< number of nodes of FaceElement
-    int numdofpernode = this->NumDofPerNode(*this->Nodes()[0]);//< numdof of FaceElemet nodes
+
+    // get time step
+    const double dt = params.get<double>("dt");
+
+    // dof number of pointed end (of actin filaments) concentration
+    static int numdof_barbedends = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BARBEDENDS");
+    // dof number of actin monomer concentration
+    static int numdof_actin = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
+    if(numdof_barbedends == -1 or numdof_actin==-1)
+      dserror("provide the dof numbers for pointed ends and actin monomers in section ---CELL DYNAMIC/PROTRUSION MODULE !");
+    // frequently used constants
+    static const double delta = globalproblem->CellMigrationParams().
+        sublist("PROTRUSION MODULE").get<double>("ACTIN_MONOMER_SIZE"); //< actin monomer size [micrometer]
+    if(delta<=0.0)
+      dserror("Parameter ACTIN_MONOMER_SIZE in --CELL DYNAMIC/PROTRUSION FORMATION is invalid: delta = %f",delta);
+    // get theta params from input file
+    const double theta = globalproblem->StructuralDynamicParams().sublist("ONESTEPTHETA").get<double>("THETA");
+    if (theta != 1.0)
+      dserror("THETA for OST-Time integration not equal 1. This case is not implemented, yet.\n"
+              "(1-\theta) part of equations must be implemented. ");
+
+    const double beta = 0.6109; //< 35° in rad --> half branching angle, for calc of growth value to gp normal
+    const int numNode = this->NumNode();                             //< number of nodes of FaceElement
+    const int numdofpernode = this->NumDofPerNode(*this->Nodes()[0]);//< numdof of FaceElemet nodes
 
     // get displacement state from structure discretization
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
     if (dispnp == Teuchos::null)
       dserror("Cannot get displacement vector of structure");
 
-    // get mapping from struct bdry ele id to scatra bdry ele id
-    const Teuchos::RCP<std::map<int,int> > structscatraelemap = params.get<Teuchos::RCP<std::map<int,int> > >("structscatraelemap");
-    if(structscatraelemap==Teuchos::null)
-      dserror("could not get structscatraelemap from parameterlist");
-
-    // get matched node maps of structure and scatra dis.
-    Teuchos::RCP<Epetra_Map> structnodemap = params.get<Teuchos::RCP<Epetra_Map> >("masternodemap");
-    if(structnodemap == Teuchos::null)
-      dserror("could not get structnodemap");
-    Teuchos::RCP<Epetra_Map> scatranodemap = params.get<Teuchos::RCP<Epetra_Map> >("slavenodemap");
-    if(scatranodemap == Teuchos::null)
-      dserror("could not get scatranodemap");
-
-    // get scatra dis
-    std::string scatradisname(params.get<std::string>("scatradisname"));
-    Teuchos::RCP<DRT::Discretization> scatradis  = globalproblem->GetDis(scatradisname);
-
-    // get condition string
-    std::string condstring(params.get<std::string>("condstring"));
-
-    // get time step
-    const double dt = params.get<double>("dt");
-
-    // get theta params from input file
-    double theta = -1.0;
-    theta = globalproblem->StructuralDynamicParams().sublist("ONESTEPTHETA").get<double>("THETA");
-    if (theta != 1.0)
-      dserror("wrong theta!");
-
     // get pointer to immersedmanager
     DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
     if(immersedmanager==NULL)
       dserror("failed to get immersed data manager");
 
-    // dof number of pointed end (of actin filaments) concentration
-    static int numofcaps = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_PE");
-    // dof number of actin monomer concentration
-    static int numofcams = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
-    if(numofcaps == -1 or numofcams==-1)
-      dserror("provide the dof numbers for pointed ends and actin monomers in section ---CELL DYNAMIC/PROTRUSION MODULE !");
+    // get phinp pointer from scatra
+    Teuchos::RCP<Epetra_MultiVector> phinp = immersedmanager->GetPointerToPhinps();
+    if(phinp == Teuchos::null)
+      dserror("phinp = Teuchos::null");
+    // get phin pointer from scatra
+    Teuchos::RCP<Epetra_MultiVector> phin = immersedmanager->GetPointerToPhins();
+    if (phin == Teuchos::null)
+      dserror("phin = Teuchos::null");
+    // get rates from scatra
+    Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
+    if (rates == Teuchos::null)
+      dserror("rates = Teuchos::null");
 
 
     //////////////////////////////////////////////////////////////
@@ -2766,6 +2760,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     if (numnodeparentele != 8)
       dserror("only tested for hex8 elements.\n"
               "check this implementation before using other element types !");
+
+    // define const int for LINALG::Matrix
+    const int numdim = 3;
+    const int numnod = 8;
 
     DRT::Element::LocationArray  parentele_la(discretization.NumDofSets());
     parentele->LocationVector(discretization, parentele_la, false);
@@ -2843,31 +2841,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     if (mat == Teuchos::null)
       dserror("cast to MAT::So3Material failed");
 
-    // get scatra element matching to ParentElement from matched element map
-    int scatraeleID = structscatraelemap->find(this->Id())->second;
-    // get scatra element corresponding to structure element
-    DRT::Element* scatraele = scatradis->gElement(scatraeleID);
-    DRT::Element::LocationArray scatra_la(1);
-    scatraele->LocationVector(*scatradis, scatra_la, false);
-    const std::vector<int>& scatra_lm = scatra_la[0].lm_;
-    // number of scatra element nodes
-    const int numofnodes_scatra = scatraele->NumNode();
-    // number of scatra element node dofs
-    const int numdofpernode_scatra = scatraele->NumDofPerNode(*scatraele->Nodes()[0]);
-    int scatranodeID = -1234;
-
-    // get phinp pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phinp = immersedmanager->GetPointerToPhinps();
-    if(phinp == Teuchos::null)
-      dserror("phinp = Teuchos::null");
-    // get phin pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phin = immersedmanager->GetPointerToPhins();
-    if (phin == Teuchos::null)
-      dserror("phin = Teuchos::null");
-    // get rates from scatra
-    Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
-    if (rates == Teuchos::null)
-      dserror("rates = Teuchos::null");
+    // get scatra lm from second dofset.
+    // the second dofset belongs to the scatra volume dofs, i.e.,
+    // the dofs of the boundary of the scatra volume discretization.
+    // the third dofset belongs to the scatra surface discretization.
+    // if we need to extract scatra surface values, e.g. of membrane-bound
+    // species, we can extract them from the scatra state vectors via
+    // scatra_la[2].lm_
+    DRT::Element::LocationArray scatra_la(2);
+    this->LocationVector(discretization, scatra_la, false);
+    const std::vector<int>& scatra_volume_lm = scatra_la[1].lm_;
+    const int numdofpernode_scatra_volume = scatra_volume_lm.size()/numNode;
 
     /////////////////////////////////////////////////////////////////////////////////
     // loop over all integration points
@@ -2884,8 +2868,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       xsi(0) = intpoints.IP().qxg[iquad][0];
       xsi(1) = intpoints.IP().qxg[iquad][1];
 
-      const int numdim = 3;
-      const int numnod = 8;
 
       // derivatives of parent element shape functions in parent element coordinates system
       LINALG::Matrix<numdim,numnod> pderiv_loc(true);
@@ -2987,76 +2969,62 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       // initialize growth value
       double growth = -1234.0;
 
-      // PHI CONCENTRATION FOR CALC
       // phinp concentrations at nodes
-      LINALG::Matrix<4,1> capen_nd(true);   //< nodal actin pointed end concentration
+      LINALG::Matrix<4,1> conc_be_n_nd(true);   //< nodal actin barbed end concentration
       LINALG::Matrix<4,1> camnp_nd(true);   //< nodal actin monomer concentration
       LINALG::Matrix<4,1> rate_am_nd(true); //< nodal actin monomer rate
       LINALG::Matrix<4,1> rate_be_nd(true); //< nodal barbed end rate (equal to nodal rate of change of branching points)
 
       // concentrations at n+1
-      std::vector<double> myphinp(scatra_lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,scatra_lm);
+      std::vector<double> myphinp(scatra_volume_lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,scatra_volume_lm);
 
       // concentrations at n
-      std::vector<double> myphin(scatra_lm.size());
-      DRT::UTILS::ExtractMyValues(*phin,myphin,scatra_lm);
+      std::vector<double> myphin(scatra_volume_lm.size());
+      DRT::UTILS::ExtractMyValues(*phin,myphin,scatra_volume_lm);
 
       // rates at n+1
-      std::vector<double> myrates(scatra_lm.size());
-      DRT::UTILS::ExtractMyValues(*rates,myrates,scatra_lm);
+      std::vector<double> myrates(scatra_volume_lm.size());
+      DRT::UTILS::ExtractMyValues(*rates,myrates,scatra_volume_lm);
 
-      // loop over all scatra element nodes to get actin monomer and actin pointed end concentration at nodes (HEX8)
-      for (int node=0; node<numofnodes_scatra; node++)
+      // loop over all scatra element nodes to get actin monomer
+      // and actin pointed end concentration at nodes (quad4)
+      for (int node=0; node<numNode; node++)
       {
-        // find corresponding struct - scatra nodes
-        scatranodeID = scatraele->NodeIds()[node];
-        int lid = scatranodemap->LID(scatranodeID);
-        int gid = structnodemap->GID(lid);
-        // loop over all structure element nodes (QUAD4)
-        for (int nd=0; nd<numNode; nd++)
-        {
-          // check gid
-          int fgid = this->NodeIds()[nd];
-          if (fgid == gid)
-          {
-            const int dof_cams = node*numdofpernode_scatra + numofcams;
-            const int dof_caps = node*numdofpernode_scatra + numofcaps;
+        conc_be_n_nd(node) = myphin[node*numdofpernode_scatra_volume + numdof_barbedends];
+        camnp_nd(node) = myphinp[node*numdofpernode_scatra_volume + numdof_actin];
 
-            capen_nd(nd) = myphin[dof_caps];
-            camnp_nd(nd) = myphinp[dof_cams];
+        rate_am_nd(node) = myrates[node*numdofpernode_scatra_volume + numdof_actin];
+        rate_be_nd(node) = myrates[node*numdofpernode_scatra_volume + numdof_barbedends];
 
-            rate_am_nd(nd) = myrates[dof_cams];
-            rate_be_nd(nd) = myrates[dof_caps];
-          }
-        }// end structure element node loop
-      }// end scatra element node loop
+      }// end structure element node loop
 
       // concentration at gp
-      double capsn_gp   = 0.0;
+      double conc_be_n_gp = 0.0;
       double camsnp_gp  = 0.0;
       double rate_am_gp = 0.0;
       double rate_be_gp = 0.0;
 
-      for (int i=0; i<numNode; i++)
+      for (int node=0; node<numNode; node++)
       {
-        capsn_gp += shapefunct(i)  * capen_nd(i);
-        camsnp_gp += shapefunct(i) * camnp_nd(i);
+        conc_be_n_gp += shapefunct(node)  * conc_be_n_nd(node);
+        camsnp_gp += shapefunct(node) * camnp_nd(node);
 
-        rate_am_gp += shapefunct(i) * rate_am_nd(i);
-        rate_be_gp += shapefunct(i) * rate_be_nd(i);
+        rate_am_gp += shapefunct(node) * rate_am_nd(node);
+        rate_be_gp += shapefunct(node) * rate_be_nd(node);
       }
 
-      if ((capsn_gp > 0.0) and (camsnp_gp > 0.0))
+      if ((conc_be_n_gp > 0.0) and (camsnp_gp > 0.0))
       {
-//        std::cout<<"rate actin at gp "<<iquad<<"      ="<<rate_am_gp<<std::endl;
-//        std::cout<<"2 * rate barbed ends at gp "<<iquad<<" ="<<rate_be_gp<<std::endl;
-        growth = -1.0*( ( rate_am_gp - (2.0 * rate_be_gp) )*dt*delta*cos(beta) )/(2.0*capsn_gp);
-//        std::cout<<"growth at gp "<<iquad<<" ="<<growth<<std::endl;
+        //std::cout<<"rate actin at gp "<<iquad<<"      ="<<rate_am_gp<<std::endl;
+        //std::cout<<"2 * rate barbed ends at gp "<<iquad<<" ="<<rate_be_gp<<std::endl;
+        //std::cout<<"old barbed ends at gp  "<<iquad<<" ="<<conc_be_n_gp<<std::endl;
+        growth = -1.0*( ( rate_am_gp - (2.0 * rate_be_gp) )*dt*delta*cos(beta) )/(2.0*conc_be_n_gp);
+        //std::cout<<"growth at gp "<<iquad<<" ="<<growth<<std::endl;
       }
       else
       {
-        std::cout<<"WARNING!!! "<<"capsn_gp="<<capsn_gp<<"   camsnp_gp="<<camsnp_gp<<std::endl;
+        std::cout<<"WARNING!!! "<<"conc_be_n_gp="<<conc_be_n_gp<<"   camsnp_gp="<<camsnp_gp<<"   -> growth="<<0.0<<std::endl;
         growth = 0.0;
       }
 

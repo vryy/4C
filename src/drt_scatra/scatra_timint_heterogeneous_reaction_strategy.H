@@ -61,6 +61,33 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     //! initialize meshtying objects
     void InitMeshtying();
 
+    /*!
+    \brief Evaluate a given condition
+
+     Evaluate terms of your weak formulation on elements marked with a given condition.
+
+    \note The implementation of EvaluateCondition in this class, calls
+          \ref DRT::Discretization::EvaluateCondition on the auxiliary
+          discretization. Since, this discretization has the dofs of both,
+          the volume-bound scalars and the surface bound scalars, every
+          term involving one or both kinds of scalars can easily be evaluated.
+
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void EvaluateCondition
+        (
+          Teuchos::ParameterList& params,
+          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+          Teuchos::RCP<Epetra_Vector> systemvector1,
+          Teuchos::RCP<Epetra_Vector> systemvector2,
+          Teuchos::RCP<Epetra_Vector> systemvector3,
+          const std::string& condstring,
+          const int condid
+        );
+
   private:
 
     //! the discretization for the reaction

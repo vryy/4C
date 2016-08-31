@@ -3,7 +3,7 @@
 
 \brief specialization of ssi2wc, including "structale"-surface growth
 
-\level 3
+\level 2
 
 \maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
@@ -31,7 +31,9 @@
 #include "../drt_so3/so3_scatra.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_base.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_wear/wear_utils.H"
@@ -77,9 +79,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
   if(not ScaTraField()->ScaTraField()->IsALE())
     dserror("We need an ALE description for the cell-scatra field!");
 
-  // additional setup for ale
-  SetupDiscretizations(comm,"cell","cellscatra");
-
   // initialize pointer to structure
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
@@ -96,15 +95,15 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
   // build coupling objects for dof transfer between structure and ale
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  // create ale-struct coupling
-  const Epetra_Map* celldofmap =
-      StructureField()->Discretization()->NodeRowMap();
-  const Epetra_Map* aledofmap = AleField()->Discretization()->NodeRowMap();
-
-  // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an error !!!
+  // create and seup coupling objects for matching grid
   coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupalestru_->SetupCoupling(*AleField()->Discretization(),
-      *StructureField()->Discretization(), *aledofmap, *celldofmap, ndim, true, 1e-06);
+                              *StructureField()->Discretization(),
+                              *(StructureField()->Discretization()->NodeRowMap()),
+                              *(AleField()->Discretization()->NodeRowMap()),
+                              ndim,
+                              true,
+                              1e-06);
 
   // set-up aux FSI interface
   Teuchos::RCP<STR::AUX::MapExtractor> interface = Teuchos::rcp(new STR::AUX::MapExtractor);
@@ -133,8 +132,14 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
 
   // numdof actin
   numdof_actin_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
+  int numdof_ARP23 = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BRANCHES");
+  int numdof_BarbedEnds = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BARBEDENDS");
   if(myrank_==0)
-    std::cout<<"\n  Number of Actin Dof in Scalar Transport System: "<<numdof_actin_<<"\n"<<std::endl;
+  {
+    std::cout<<"\n  Number of Actin Monomer Dof (Volume) in Scalar Transport System: "<<numdof_actin_<<std::endl;
+      std::cout<<"  Number of ARP2/3 Dof (Volume) in Scalar Transport System: "<<numdof_ARP23<<std::endl;
+      std::cout<<"  Number of Barbed End Dof (Volume) in Scalar Transport System: "<<numdof_BarbedEnds<<"\n"<<std::endl;
+  }
 
   // get pointer to the ImmersedFieldExchangeManager
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
@@ -155,31 +160,11 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
   // relaxation
   omega_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("RELAX_GROWTH");
   if(myrank_==0)
-    std::cout<<"\n  Use fixed relaxation parameter for protrusion formation omega="<<omega_<<"\n"<<std::endl;
+    std::cout<<"\n  Use fixed relaxation parameter for protrusion formation omega = "<<omega_<<"\n"<<std::endl;
 
-  // NODE MATCHING
-  // do the matching
-  MatchNodes(*(StructureField()->Discretization()),
-             *(scatra_->ScaTraField()->Discretization()),
-             structnodemap_,
-             scatranodemap_,
-             "CellSurfVolCoupling");
-
-  // build an element map associating matched elements of struct and scatra discretisations
-  BuildMasterGeometryToSlaveDisEleMap(*(StructureField()->Discretization()),
-                                      *(scatra_->ScaTraField()->Discretization()),
-                                      structnodemap_,
-                                      scatranodemap_,
-                                      structscatraelemap_,
-                                      "CellSurfVolCoupling");
   // build map
   BuildConditionDofRowMap((StructureField()->Discretization())->GetCondition("FSICoupling"),StructureField()->Discretization(),conditiondofrowmap_);
-  // print map
-  std::cout<<"MAPPING CELL 'CellSurfVolCoupling' GEOMETRY TO SCATRA 'CellSurfVolCoupling' ELEMENTS ... "<<std::endl;
-  std::cout<<structscatraelemap_->size()<<" MAPPED ELEMENTS.\n"<<std::endl;
-  std::cout<<"STRUCT ELE IDs --> SCATRA ELE IDs"<<std::endl;
-  for(std::map<int,int>::iterator it=structscatraelemap_->begin(); it!=structscatraelemap_->end();++it)
-    std::cout<<"    "<<it->first<<"               "<<it->second<<std::endl;
+
 
   return;
 }
@@ -240,10 +225,10 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector>
                "======================================="<<std::endl;
 
   // get lagrangian structure displacements
-  Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(StructureField()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> dispnp_ale = StructureToAle(StructureField()->Dispnp());
 
   // update ale field with lagrangian structure displacements
-  AleField()->WriteAccessDispnp()->Update(1.0, *dispnpstru, 0.0);
+  AleField()->WriteAccessDispnp()->Update(1.0, *dispnp_ale, 0.0);
 
   // application of interface displacements as dirichlet conditions
   AleField()->ApplyInterfaceDisplacements(growthincrement);
@@ -645,12 +630,15 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::AleToStructure
 
 
 /*----------------------------------------------------------------------*
- |                                                          rauch 01/16 |
+ |                                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname)
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizationsAndFieldCoupling(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
 {
   // call SetupDiscretizations in base class
-  // Done in constructor of ssi_base
+  SSI::SSI_Base::SetupDiscretizationsAndFieldCoupling(comm,struct_disname,scatra_disname);
 
   // new ale part
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -682,7 +670,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizations(const Epetra_Com
 
 
 /*----------------------------------------------------------------------*
- | Calculate source values                                  rauch 01/16 |
+ | Calculate source/sink values                             rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateSources()
 {
@@ -702,16 +690,16 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateSources()
   params.set<double>("dt",Dt());
 
   // add action for growth evaluation
-  params.set<int>("action",SCATRA::calc_cell_growth);
-  // evaluate condition
-  scatra_->ScaTraField()->Discretization()->EvaluateCondition(params,
-                                                              Teuchos::null,
-                                                              Teuchos::null,
-                                                              sources_,
-                                                              Teuchos::null,
-                                                              Teuchos::null,
-                                                              "CellSurfVolCoupling",
-                                                              -1);
+  params.set<int>("action",SCATRA::calc_cell_growth_sourcesandsinks);
+  // evaluate condition on auxiliary discretization in strategy
+  scatra_->ScaTraField()->Strategy()->EvaluateCondition(params,
+                                                        Teuchos::null,
+                                                        Teuchos::null,
+                                                        sources_,
+                                                        Teuchos::null,
+                                                        Teuchos::null,
+                                                        "ScatraHeteroReactionSlave",
+                                                        -1);
 
   // initialize norm
   double sourcenorm=-1234.0;
@@ -725,7 +713,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateSources()
 
 
 /*----------------------------------------------------------------------*
- | Calculate growth values                                  rauch 01/16 |
+ | Calculate growth values from source/sink values          rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
 {
@@ -737,18 +725,16 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
   //////////////////////////////////////////////////////////////////////////////////////
   Teuchos::ParameterList params;
 
-  // add master (structure) nodemap to parameterlist
-  params.set<Teuchos::RCP<Epetra_Map> >("masternodemap",structnodemap_);
-  // add slave (scatra) nodemap to parameterlist
-  params.set<Teuchos::RCP<Epetra_Map> >("slavenodemap",scatranodemap_);
+//  // add master (structure) nodemap to parameterlist
+//  params.set<Teuchos::RCP<Epetra_Map> >("masternodemap",structnodemap_);
+//  // add slave (scatra) nodemap to parameterlist
+//  params.set<Teuchos::RCP<Epetra_Map> >("slavenodemap",scatranodemap_);
   // add action for growth evaluation
   params.set<std::string>("action","calc_cell_growth");
-  // add scatra discretization
-  params.set<std::string>("scatradisname", "cellscatra");
-  // add condition string
-  params.set<std::string>("condstring", "FSICoupling");
-  // add rcp to struct<->scatra brdy ele map to parameterlist
-  params.set<Teuchos::RCP<std::map<int,int> > >("structscatraelemap",structscatraelemap_);
+//  // add scatra discretization
+//  params.set<std::string>("scatradisname", "cellscatra");
+//  // add rcp to struct<->scatra brdy ele map to parameterlist
+//  params.set<Teuchos::RCP<std::map<int,int> > >("structscatraelemap",structscatraelemap_);
   // add timestep to parameterlit
   params.set<double>("dt",Dt());
 
@@ -767,7 +753,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
       leastsquares_rhs,
       Teuchos::null,
       Teuchos::null,
-      "CellSurfVolCoupling",
+      "FSICoupling",
       -1);
 
   /////////////////////////////////////////////////////
@@ -886,197 +872,6 @@ bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
   // tell if we converged
   return stopnonliniter;
 }
-
-
-/*------------------------------------------------------------------------*
- | matching nodes of master and slave field                   rauch 03/16 |
- *------------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::MatchNodes(
-    DRT::Discretization& masterdis,
-    DRT::Discretization& slavedis,
-    Teuchos::RCP<Epetra_Map>& masternodemap_matched,
-    Teuchos::RCP<Epetra_Map>& slavenodemap_matched,
-    const std::string& condname)
-{
-  // get conditioned master nodes
-  const std::vector<int>* masternodes = masterdis.GetCondition(condname)->Nodes();
-
-  // get conditioned slave nodes
-  const std::vector<int>* slavenodes = slavedis.GetCondition(condname)->Nodes();
-
-  // sanity check
-  if(masternodes->size()!=slavenodes->size())
-    dserror("current algorithm relies on matching nodes of scatra surface discretization and cell boundary discretization!");
-
-  // node vector of matched nodes
-  std::vector<int> permslavenodes;
-
-  // match master and slave nodes using Peter's octtree
-  DRT::UTILS::NodeMatchingOctree tree(masterdis, *masternodes, 150, 1e-8);
-
-  // coupled nodes - find matching nodes between master and slave dis.
-  // coupled = nodes are at same location
-  std::map<int,std::pair<int,double> > coupling;
-  tree.FindMatch(slavedis, *slavenodes, coupling);
-
-  // extract permutation
-  std::vector<int> patchedmasternodes;
-  patchedmasternodes.reserve(coupling.size());
-  permslavenodes.reserve(slavenodes->size());
-
-  for (unsigned i=0; i<masternodes->size(); ++i)
-  {
-    // get master node gid
-    int gid = (*masternodes)[i];
-
-    // We allow to hand in master nodes that do not take part in the
-    // coupling. If this is undesired behaviour, the user has to make
-    // sure all nodes were used.
-    if (coupling.find(gid) != coupling.end())
-    {
-      std::pair<int,double>& coupled = coupling[gid];
-#if 0
-      if (coupled.second > 1e-7)
-        dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);
-#endif
-      patchedmasternodes.push_back(gid);       //< coupled masternodes
-      permslavenodes.push_back(coupled.first); //< coupled slavenodes
-    }
-  }
-
-  // epetra maps in original distribution
-  // new masternode map (with coupled node IDs)
-  masternodemap_matched = Teuchos::rcp(new Epetra_Map(
-                     -1,
-                     masternodes->size(),
-                     &patchedmasternodes[0],
-                     0,
-                     masterdis.Comm()));
-
-  // new slavenode map (with coupled node IDs)
-  slavenodemap_matched = Teuchos::rcp(new Epetra_Map(
-                    -1, permslavenodes.size(),
-                    &permslavenodes[0],
-                    0,
-                    slavedis.Comm()));
-  // new slavenodes
-  std::vector<int> permslavenodes_new (slavenodemap_matched->MyGlobalElements(),
-      slavenodemap_matched->MyGlobalElements() + slavenodemap_matched->NumMyElements());
-
-} // MatchNodes
-
-
-/*------------------------------------------------------------------------*
- | matching nodes of master and slave field                   rauch 03/16 |
- *------------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildMasterGeometryToSlaveDisEleMap(
-    const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis,
-    const Teuchos::RCP<Epetra_Map>& masternodemap,
-    const Teuchos::RCP<Epetra_Map>& slavenodemap,
-    Teuchos::RCP<std::map<int,int> > maptofill,
-    const std::string& condname)
-{
-  if(maptofill==Teuchos::null)
-    dserror("RCP to map object needs to be provided to this method");
-
-  if(masternodemap->NumGlobalElements()==0)
-    dserror("masternodemap is empty");
-
-  if(slavenodemap->NumGlobalElements()==0)
-    dserror("slavenodemap is empty");
-
-  int structeleID=-1234; //< structure element ID to be matched -> key value
-  int scatraeleID=-1234; //< scatra element ID to be matched -> second value
-
-  // get geometry of condition 'condname' on 'masterdis'
-  std::map<int,Teuchos::RCP<DRT::Element> >& mastergeom = masterdis.GetCondition(condname)->Geometry();
-
-  // loop over master geometry elements
-  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it=mastergeom.begin(); it!=mastergeom.end(); ++it)
-  {
-    // get current structure element ID
-    structeleID = it->second->Id();
-    // get number of nodes of current structure element
-    int numnode = it->second->NumNode();
-    if(numnode!=4)
-      dserror("in this context, we expect only geometry elements with 4 nodes");
-
-    // create vector
-    std::vector<int> adjacentslaveeleIds_gathered;
-    // prepare vector
-    if(adjacentslaveeleIds_gathered.size())
-      adjacentslaveeleIds_gathered.clear();
-
-    // loop over master geometry element nodes
-    for (int node=0; node<numnode; node++)
-    {
-      // find corresponding scatra node ID
-      // gid of current structure element node
-      int gid_master_node = (it->second->NodeIds())[node];
-      // lid of current master node in masternodemap
-      int lid_master_node = masternodemap->LID(gid_master_node);
-      // gid of corresponding scatra element node (slavenodemap == nodemap of conditioned nodes - corresponds to currscatra elements)
-      int gid_slave_node = slavenodemap->GID(lid_master_node);
-      // get scatra node corresponding to structure node (with gidscatra)
-      DRT::Node* node_slave = slavedis.gNode(gid_slave_node);
-
-      ///////////////////////////////////////////////////
-      // FIND SLAVE ELEMENT MATCHING MASTER ELEMENT
-      ///////////////////////////////////////////////////
-      // get pointer to adjacent elements of slave node
-      DRT::Element** ElementPtr = node_slave->Elements();
-      if (ElementPtr == NULL)
-        dserror("could not get element pointer");
-
-      // loop over all adjacent elements
-      for (int jele=0; jele<node_slave->NumElement(); jele++)
-      {
-        // write IDs of adjacent elements in vector
-        int adjacentslaveeleId = ElementPtr[jele]->Id();
-        // we can only match elements with equal number of nodes
-        if(ElementPtr[jele]->NumNode()==numnode)
-        {
-          adjacentslaveeleIds_gathered.push_back(adjacentslaveeleId);
-        }
-      }// end loop over all adjacent elements
-
-    }//end loop over master geometry element nodes
-
-    // FIND MATCHING ELEMENT ID OF ELEMENT ID VECTOR
-    // count variable
-    int count = 0;
-    // if a slave element is an adjacent element to every node of the master element,
-    // then it is the matching slave element (count should then be numnode-1)
-    const int check = numnode-1;
-
-    // loop over adjacent element ID vector
-    for (unsigned int i=0; i<adjacentslaveeleIds_gathered.size(); i++)
-    {
-
-      for (unsigned int j=i+1; j<adjacentslaveeleIds_gathered.size(); j++)
-      {
-        if (adjacentslaveeleIds_gathered[i] == adjacentslaveeleIds_gathered[j])
-        {
-          count ++;
-        }
-      }
-
-      if (count == check)
-      {
-        scatraeleID = adjacentslaveeleIds_gathered[i];
-        break;
-      }
-      count = 0;
-    }// end loop over element ID vector
-
-    // fill element map (first : ID of structure element, second: ID of corresponding scatra element
-    maptofill->insert( std::pair<int,int>(structeleID, scatraeleID) );
-
-  }// end loop over master geometry elements
-
-  return;
-}// end BuildStructToScatraEleMap
 
 
 /*------------------------------------------------------------------------*

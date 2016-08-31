@@ -25,12 +25,14 @@
  *----------------------------------------------------------------------*/
 DRT::DofSetMappedProxy::DofSetMappedProxy( Teuchos::RCP<DofSet>  dofset,
                                           const Teuchos::RCP<const DRT::Discretization> sourcedis,
-                                          const std::string& couplingcond)
+                                          const std::string& couplingcond,
+                                          const std::set<int> condids)
   : DofSetProxy(&(*dofset)),
-    sourcetotargetnodemapping_(Teuchos::null),
+    targetlidtosourcegidmapping_(Teuchos::null),
     dofset_(dofset),
     sourcedis_(sourcedis),
-    couplingcond_(couplingcond)
+    couplingcond_(couplingcond),
+    condids_(condids)
 {
 }
 
@@ -49,12 +51,6 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   std::vector<DRT::Condition*> conds_source;
   sourcedis_->GetCondition(couplingcond_, conds_source);
 
-  // at least one condition needs to be defined on each discretization
-  if(conds.size() == 0 or conds_source.size() == 0)
-    dserror("No coupling condition defined on one or both discretizations!");
-  if(conds.size() != conds_source.size())
-    dserror("Unequal number of coupling conditions '%s' on discretizations!",couplingcond_.c_str());
-
   // get the respective nodes which are in the condition
   std::map<int, Teuchos::RCP<std::vector<int> > > nodes;
   DRT::UTILS::FindConditionedNodes(dis, conds, nodes);
@@ -66,46 +62,48 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   std::map<int,std::pair<int,double> > coupling;
 
   // define iterators
-  std::map<int, Teuchos::RCP<std::vector<int> > >::iterator iter;
+  std::map<int, Teuchos::RCP<std::vector<int> > >::iterator iter_target;
   std::map<int, Teuchos::RCP<std::vector<int> > >::iterator iter_source;
 
-  // loop over nodal clouds of target condition
-  for (iter = nodes.begin(); iter != nodes.end(); ++iter)
+  for (std::set<int>::iterator it=condids_.begin(); it!=condids_.end(); ++it)
   {
-    //get condition ID
-    const int condID = iter->first;
+    // find corresponding condition on source discretization
+    iter_target = nodes.find(*it);
+    if(iter_target == nodes.end())
+      dserror("Condition ID %i not found in Coupling condition on source discretization!",*it);
+
 
     // find corresponding condition on source discretization
-    iter_source = nodes_source.find(condID);
+    iter_source = nodes_source.find(*it);
     if(iter_source == nodes_source.end())
-      dserror("Condition ID %i not found in Coupling condition on source discretization!");
+      dserror("Condition ID %i not found in Coupling condition on source discretization!",*it);
+
 
     // get the nodes
     Teuchos::RCP<std::vector<int> > sourcenodes = iter_source->second;
 
     // initialize search tree for search
-    DRT::UTILS::NodeMatchingOctree tree(dis, *iter->second);
+    DRT::UTILS::NodeMatchingOctree tree(dis, *iter_target->second);
 
     // map that will be filled with coupled nodes for this condition
     // mapping: target node gid to (source node gid, distance)
+    // note: FindMatch loops over all SOURCE (i.e. slave) nodes
+    //       and finds corresponding target nodes.
     std::map<int,std::pair<int,double> > condcoupling;
     // match target and source nodes using octtree
     tree.FindMatch(*sourcedis_, *sourcenodes, condcoupling);
 
     // check if all nodes where matched for this condition ID
-    if (sourcenodes->size() != condcoupling.size())
-      dserror("Did not get 1:1 correspondence. \nsourcenodes.size()=%d, coupling.size()=%d."
+    if (iter_target->second->size() != condcoupling.size())
+      dserror("Did not get unique target to source spatial node coordinate mapping.\n"
+          "targetnodes.size()=%d, coupling.size()=%d.\n"
           "The heterogeneous reaction strategy requires matching source and target meshes!",
-          sourcenodes->size(), condcoupling.size());
+          iter_target->second->size(), condcoupling.size());
 
     // insert found coupling of this condition ID into map of all match nodes
     coupling.insert(condcoupling.begin(), condcoupling.end());
-  }
 
-  // check if all nodes where matched for coupling
-  if(dis.NodeRowMap()->NumMyElements() != (int) coupling.size())
-    dserror("All nodes of the discretization need to be coupled. Number of nodes in discretization: %i, number of coupled nodes: %i",
-        dis.NodeRowMap()->NumMyElements(), coupling.size());
+  }// loop over all condition ids
 
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( dis.Comm().Clone());
@@ -148,13 +146,16 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   // export target nodes to source node distribution
 
   Teuchos::RCP<Epetra_IntVector> permsourcenodevec =
-      Teuchos::rcp(new Epetra_IntVector(Copy, *dis.NodeRowMap(), permsourcenodemap->MyGlobalElements()));
+      Teuchos::rcp(new Epetra_IntVector(Copy, *targetnodemap, permsourcenodemap->MyGlobalElements()));
 
-  sourcetotargetnodemapping_ =
+  targetlidtosourcegidmapping_ =
     Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
+  targetlidtosourcegidmapping_->PutValue(-1);
+
   // export to column map
-  LINALG::Export(*permsourcenodevec,*sourcetotargetnodemapping_);
+  LINALG::Export(*permsourcenodevec,*targetlidtosourcegidmapping_);
+
 
   return start;
 }

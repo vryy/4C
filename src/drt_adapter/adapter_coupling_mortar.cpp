@@ -74,15 +74,26 @@ void ADAPTER::CouplingMortar::Setup(
     std::vector<DRT::Condition*> conds;
     std::vector<DRT::Condition*> conds_master(0);
     std::vector<DRT::Condition*> conds_slave(0);
-    masterdis->GetCondition(couplingcond, conds);
 
+    // first the master side
+    masterdis->GetCondition(couplingcond, conds);
     for (unsigned i=0; i<conds.size(); i++)
     {
       const std::string* side = conds[i]->Get<std::string>("Side");
 
       if (*side == "Master")
         conds_master.push_back(conds[i]);
-      else if(*side == "Slave")
+    }
+
+    // now the slave side
+    // we reuse the vector 'conds'
+    conds.clear();
+    slavedis->GetCondition(couplingcond, conds);
+    for (unsigned i=0; i<conds.size(); i++)
+    {
+      const std::string* side = conds[i]->Get<std::string>("Side");
+
+      if(*side == "Slave")
         conds_slave.push_back(conds[i]);
     }
 

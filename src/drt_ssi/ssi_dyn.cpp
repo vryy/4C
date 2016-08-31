@@ -81,6 +81,7 @@ void ssi_drt()
   }
 
   //3.1.1 setup the chosen ssi algorithm
+  ssi -> SetupDiscretizationsAndFieldCoupling(comm,"structure","scatra");
   ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
 
   //3.2- Read restart if needed. (Discretization called inside)

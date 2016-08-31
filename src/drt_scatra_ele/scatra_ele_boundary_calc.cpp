@@ -1867,8 +1867,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
     {
       // get integration factor and normal at current boundary gp
       const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
-      //std::cout <<"at gp: "<< iquad << '\n';
-
 
       // (Jo) coordinates of the current integration point in parent coordinate system
       for (int idim=0;idim<nsd_+1 ;idim++)

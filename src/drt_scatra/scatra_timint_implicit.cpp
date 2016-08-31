@@ -150,7 +150,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
   densafnp_(Teuchos::null),
-  cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  velocity_field_type_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   mean_conc_(Teuchos::null),
   membrane_conc_(Teuchos::null),
   nds_vel_(-1),
@@ -947,7 +947,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //     update velocity field if given by function AND time curve
   // -------------------------------------------------------------------
-  if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
+  if (velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve)
     SetVelocityField(nds_vel_);
 
   // -------------------------------------------------------------------
@@ -1038,7 +1038,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
   Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(nds),true);
   Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds),true);
 
-  switch(cdvel_)
+  switch(velocity_field_type_)
   {
     case INPAR::SCATRA::velocity_zero:
     {
@@ -1064,7 +1064,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
         for(int index=0;index<nsd_;++index)
         {
           double value = problem_->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
-          if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
+          if (velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve)
           {
             value *= problem_->Curve(velcurveno-1).f(time_);
           }
@@ -1086,7 +1086,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 
     default:
     {
-      dserror("Wrong SetVelocity() action for velocity field type %d!",cdvel_);
+      dserror("Wrong SetVelocity() action for velocity field type %d!",velocity_field_type_);
       break;
     }
   }
@@ -1231,8 +1231,8 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(
   if (convvel == Teuchos::null)
     dserror("Velocity state is Teuchos::null");
 
-  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
-    dserror("Wrong SetVelocityField() called for velocity field type %d!",cdvel_);
+  if (velocity_field_type_ != INPAR::SCATRA::velocity_Navier_Stokes)
+    dserror("Wrong SetVelocityField() called for velocity field type %d!",velocity_field_type_);
 
   if (nds >= discret_->NumDofSets())
     dserror("Too few dofsets on scatra discretization!");
@@ -2829,7 +2829,9 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->WriteVector("phinp", phinp_);
 
   // convective velocity (written in case of coupled simulations since volmortar is now possible)
-  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve or cdvel_ == INPAR::SCATRA::velocity_Navier_Stokes)
+  if ( velocity_field_type_ == INPAR::SCATRA::velocity_function or
+       velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve or
+       velocity_field_type_ == INPAR::SCATRA::velocity_Navier_Stokes)
   {
     Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
     if(convel == Teuchos::null)

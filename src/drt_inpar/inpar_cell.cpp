@@ -148,7 +148,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&celldyn);
   IntParameter("RESULTSEVRY",1,"Increment for writing solution",&celldyn);
-  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&celldyn);
+  IntParameter("RESTARTEVRY",9999,"Increment for writing restart",&celldyn);
   IntParameter("INITIALIZATION_STEPS",1,"Num of time steps for initialization (pre-simulation)",&celldyn);
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&celldyn);
@@ -279,13 +279,17 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     &protdyn);
 
   IntParameter("NUMDOF_ACTIN",-1,"Number of Scalar for Actin Monomer Concentration",&protdyn);
-  IntParameter("NUMDOF_PE",-1,"Number of Scalar for Pointed End Concentration at surface",&protdyn);
+  IntParameter("NUMDOF_BARBEDENDS",-1,"Number of Scalar for Pointed End Concentration at surface",&protdyn);
   IntParameter("NUMDOF_BRANCHES",-1,"Number of Scalar for Branch Concentration",&protdyn);
+  IntParameter("NUM_SURF_SCALARS",-1,"Total Number of Surface Scalars",&protdyn);
   IntParameter("NUM_FIL_ON_aBr",3,"Number of filament barbed ends on reference length(2D)/area(3D) aBr",&protdyn);
 
   DoubleParameter("aBr",37.1677531,"Minimal length (2D)/area (3D) between actin filament barbed ends\n"
                                    "above which branching can occur (default for simple 2D micro model).",&protdyn);
   DoubleParameter("RELAX_GROWTH",1.0,"Fixed relaxation parameter for growth",&protdyn);
+  DoubleParameter("K_ON",10.0,"Actin polymerisation base rate",&protdyn);
+  DoubleParameter("K_BR",5.0,"Actin web branching base rate",&protdyn);
+  DoubleParameter("ACTIN_MONOMER_SIZE",2.7e-3,"Size of actin monomer",&protdyn);
 
 
   /* CELL-FLOW INTERACTION PARAMETERS */
@@ -462,7 +466,19 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",
       &cellscatradyn);
 
-  BoolParameter("OUTPUTSCALARS","No","Output of total and mean values for transported scalars",&cellscatradyn);
+  setStringToIntegralParameter<int>("OUTPUTSCALARS","none","Output of total and mean values for transported scalars",
+                               tuple<std::string>(
+                                   "none",
+                                   "entire_domain",
+                                   "by_condition",
+                                   "entire_domain_and_by_condition"
+                                 ),
+                               tuple<int>(
+                                   outputscalars_none,
+                                   outputscalars_entiredomain,
+                                   outputscalars_condition,
+                                   outputscalars_entiredomain_condition),
+                               &cellscatradyn);
   BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&cellscatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&cellscatradyn);
 
@@ -1217,28 +1233,6 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
 
   condlist.push_back(linefa);
   condlist.push_back(surffa);
-
-  /*--------------------------------------------------------------------*/
-  // SURFSCATRA - VOLSCATRA COUPLING
-  /*--------------------------------------------------------------------*/
-  std::vector<Teuchos::RCP<ConditionComponent> > couplcomponents;
-
-  couplcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-
-  Teuchos::RCP<ConditionDefinition> surfcoup =
-      Teuchos::rcp(new ConditionDefinition("DESIGN CELL SURF VOL COUPLING",
-                                           "CellSurfVolCoupling",
-                                           "Cell Surf Vol Coupling",
-                                           DRT::Condition::CellSurfVolCoupling,
-                                           true,
-                                           DRT::Condition::Surface));
-
-  for (unsigned i=0; i<couplcomponents.size(); ++i)
-  {
-    surfcoup->AddComponent(couplcomponents[i]);
-  }
-
-  condlist.push_back(surfcoup);
 
   /*--------------------------------------------------------------------*/
   // SURFACE FOR INTERNALIZATION AND EXTERNALIZATION

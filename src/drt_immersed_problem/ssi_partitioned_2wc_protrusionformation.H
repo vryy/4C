@@ -3,7 +3,7 @@
 
 \brief specialization of ssi2wc, including "structale"-surface growth
 
-\level 3
+\level 2
 
 \maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
@@ -36,7 +36,61 @@ namespace DRT
 namespace SSI
 {
 
-//! specialized class to deal with partitioned 2WC SSI during protrusion formation in cell migration.
+/*!
+\brief Specialized class to deal with partitioned 2WC SSI during protrusion formation in cell migration.
+
+Protrusion formation, means actin polymerization in the cytosol, pushing the cell membrane forward. This
+is a Biochemo-Mechano coupled model, meaning, that there is a biochemical model and a mechanical model
+acting at the same time. These two submodels have to be in equilibrium. This equilibrium is established by
+a two way coupled partitioned Structure-Scalar Interaction (SSI) approach, implemented in this class.
+
+<h3>Biochemical Part</h3>
+
+The biochemical model consists of reaction networks in the cytosol. They can be defined in the input file.
+Note, that there are a volume scatra discretization, modeling transport in the cytosol, AND a surface scatra
+discretization modeling transport at the cell membrane. We may also model binding/unbinding at the membrane
+by reactions in the input file. This is important because some species, like the Rho-GTPases cycle between
+inactivated cytosol-bound and activated membrane-bound form.
+Furthermore, we model source/sink terms at the transport boundary of the cytosolic volume. Note, that actin
+polymerization is happening in the volume, however directly underneath the membrane. Actin polymerization
+introduces a sink on the actin monomer concentration. At the same time new branches may form. This is modeled by
+a source on the branch concentration. Branches start at the side of actin filaments. The branch concentration
+determines to how many actin filaments the polymerized actin monomers are distributed. At a fixed amount of polymerized
+actin monomers in a given time step, the more branches there are, the lower the growth value is, because the actin
+monomers a distributed to more filaments. Each actin monomer polymerizing below the membrane, may displace the membrane
+by a value, proportional to the actin monomer size.
+
+<h3>Mechanical Part</h3>
+
+<h3>Implementation</h3>
+
+For the implementation of the actual growth equation and the corresponding source/sink terms, it is important to note,
+that this class relies on the \ref ssicoupling_ object in SSI::SSI_Base::SSI_Base. In this coupling object we build
+\ref DRT::DofSetMappedProxy::DofSetMappedProxy . See also the documentation for this class. The cell discretization
+wears three dofsets: 1) the cell structural dofs, 2) the scatra volume dofs, and 3) the scatra surface dofs. By
+scatra surface we mean actual surface elements that are given in the input file. The coupling between the surface
+discretization and the volume discretization (actually they are both combined in one large discretization) is managed
+in \ref SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy .
+
+
+<h3>Usage</h3>
+
+For an example on how to use this model see test case 'immersed_cell_biochemo_mechano_pureProtrusion_h8.dat'
+
+
+<h3>Result Filter</h3>
+
+If you filter your results using post_drt_ensight, the maximum dof number of all nodes in the Transport discretization is determined. This gives
+the amount of phis which are written. If your membrane wears e.g. 2 dofs and the cell volume only 1, fields phi_1 and phi_2 are written.
+For the cell volume phi_2 then has no meaning, i.e. it should just be zero everywhere in the domain.
+
+You can split cell membrane discretization and volume discretization by applying the Connectivity Filter to the scatra.case. If you apply the Threshold
+filter subsequently, you get either the volume or the surface depending on your threshold value (0 or 1).
+
+\date 08/2016
+
+\author rauch (rauch@lnm.mw.tum.de)
+*/
 class SSI_Part2WC_PROTRUSIONFORMATION : public SSI_Part2WC
 {
 public:
@@ -67,6 +121,25 @@ public:
       const Teuchos::ParameterList& structparams,
       const std::string struct_disname,
       const std::string scatra_disname);
+
+  /*!
+  \brief Setup discretizations and dofsets
+
+   Fill discretizations and setup coupling object \ref ssicoupling_
+
+  \note Must only be called after parallel (re-)distribution of discretizations is finished !
+        Otherwise, vectors may have wrong maps.
+
+  \warning Parallel redistribution inside !
+
+  \return void
+  \date 08/16
+  \author rauch
+  */
+  virtual void SetupDiscretizationsAndFieldCoupling(
+      const Epetra_Comm& comm,
+      const std::string& struct_disname,
+      const std::string& scatra_disname);
 
   //! access to ale field
   const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
@@ -123,60 +196,6 @@ protected:
   void UpdateSpatConf();
 
   /*!
-    \brief match conditioned nodes of master and slave fields and fill maps
-
-    \param masterdis             (in)  : master discretization conditioned with 'condition' whose nodes should be matched
-    \param slavedis              (in)  : slave discretization conditioned with 'condition' that is matched to the masterdis
-    \param masternodemap_matched (out) : map containing ids of matched master nodes
-    \param slavenodemap_matched  (out) : map containing ids of matched slave nodes
-    \param condname              (in)  : condition to be matched
-
-    \remark The condition has to build a geometry.
-
-    \note Currently it is checked whether 4 noded elements are conditioned. This is just for current debugging purposes.
-          This check can be removed any time and the method works for general purposes.
-
-   */
-  void MatchNodes(
-      DRT::Discretization& masterdis,
-      DRT::Discretization& slavedis,
-      Teuchos::RCP<Epetra_Map>& masternodemap_matched,
-      Teuchos::RCP<Epetra_Map>& slavenodemap_matched,
-      const std::string& condname);
-
-  //! match nodes of master and slave field that have specified condition
-  void MatchConditionedNodes(
-      DRT::Discretization& masterdis,
-      DRT::Discretization& slavedis,
-      Teuchos::RCP<Epetra_Map>& masternodemap_matched,
-      Teuchos::RCP<Epetra_Map>& slavenodemap_matched,
-      const std::string& condname);
-
-  /*!
-    \brief build map associating master elements to matching slaveelements
-
-    \param masterdis             (in)  : master discretization conditioned with 'condition' whose nodes should be matched
-    \param slavedis              (in)  : slave discretization conditioned with 'condition' that is matched to the masterdis
-    \param masternodemap_matched (in)  : map containing ids of matched master nodes
-    \param slavenodemap_matched  (in)  : map containing ids of matched slave nodes
-    \param maptofill             (out) : map that is filled master id (key) -> slave id (value)
-    \param condname              (in)  : condition to be matched
-
-    \remark The condition has to build a geometry.
-
-    \note Currently it is checked whether 4-node elements are conditioned. This is just for current debugging purposes.
-          This check can be removed any time and the method works for general purposes.
-
-   */
-  void BuildMasterGeometryToSlaveDisEleMap(
-      const DRT::Discretization& masterdis,
-      const DRT::Discretization& slavedis,
-      const Teuchos::RCP<Epetra_Map>& masternodemap_matched,
-      const Teuchos::RCP<Epetra_Map>& slavenodemap_matched,
-      Teuchos::RCP<std::map<int,int> > maptofill,
-      const std::string& condname);
-
-  /*!
     \brief build map containing row dofs of conditioned nodes
 
     \param condition  (in)  : condition to be considered
@@ -199,9 +218,6 @@ protected:
 
   //! transform from ale to structure dofs
   virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec);
-
-  //! setup discretizations and dofsets
-  virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
 
   //! convergence check of outer loop
   virtual bool ConvergenceCheck(int itnum);
@@ -264,8 +280,6 @@ private:
   //! @name coupling objects declaration
   //@{
   Teuchos::RCP< ::ADAPTER::Coupling> coupalestru_;    //!< ale struct coupling
-  Teuchos::RCP< ::ADAPTER::Coupling> coupstrualei_;   //!< ale struct coupling on ale interface
-  Teuchos::RCP< ::ADAPTER::Coupling> coupscatrastrui_;//!< scatra struct coupling on whole interface
   //@}
 
   //! underlying ALE
@@ -274,7 +288,7 @@ private:
   //! underlying structure of the SSI problem
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> specialized_structure_;
 
-  //! map associating structure to scatra element ids
+  //! map associating structure to scatra (bdry) element ids
   Teuchos::RCP<std::map<int,int> > structscatraelemap_;
 
   //! map containing the dofs of conditioned growth nodes

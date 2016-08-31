@@ -2532,13 +2532,13 @@ void STR::TimInt::OutputRestart
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
-    IO::cout << "====== Restart for field 'Structure' written in step " << step_ << IO::endl;
+    IO::cout << "====== Restart for field '"<<discret_->Name()<<"' written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file
   if (printerrfile_)
   {
-    fprintf(errfile_, "====== Restart for field 'Structure' written in step %d\n", step_);
+    fprintf(errfile_, "====== Restart for field 'structure' written in step %d\n", step_);
     fflush(errfile_);
   }
 
@@ -2671,7 +2671,7 @@ void STR::TimInt::AddRestartToOutputState()
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
-    IO::cout << "====== Restart for field 'Structure' written in step " << step_ << IO::endl;
+    IO::cout << "====== Restart for field '"<<discret_->Name()<<"' written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file

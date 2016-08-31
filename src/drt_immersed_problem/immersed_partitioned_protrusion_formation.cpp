@@ -44,7 +44,8 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
   // get pointer structure-scatra interaction (ssi) subproblem
-  cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> >("RCPToCellScatra");
+  Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = params.get<Teuchos::RCP<SSI::SSI_Part2WC> >("RCPToCellScatra");
+  cellscatra_subproblem_ = Teuchos::rcp_dynamic_cast<SSI::SSI_Part2WC_PROTRUSIONFORMATION>(cellscatra_subproblem);
 
   // check object pointers
   if(fluid_SearchTree_==Teuchos::null)
@@ -133,18 +134,6 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareTimeStep()
   poroscatra_subproblem_->PrepareTimeStep(false);
 
   cellscatra_subproblem_->AleField()->PrepareTimeStep();
-
-
-
-  // Extra steps done in SSI 2WC Timeloop().
-  // Timeloop() is not called from outside.
-  // Therefore, the following has to be done here.
-  //initial output
-  //cellscatra_subproblem_->StructureField()-> PrepareOutput();
-  //cellscatra_subproblem_->StructureField()-> Output();
-  //cellscatra_subproblem_->SetStructSolution(cellscatra_subproblem_->StructureField()->Dispnp(),cellscatra_subproblem_->StructureField()->Velnp());
-  //cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
-  //cellscatra_subproblem_->AleField()->Output();
 
   return;
 }
@@ -263,7 +252,6 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareImmersedOp()
 void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareOutput()
 {
   poroscatra_subproblem_->PrepareOutput();
-  cellscatra_subproblem_->StructureField()->PrepareOutput();
 
   return;
 }
@@ -286,7 +274,6 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::Output()
 void IMMERSED::ImmersedPartitionedProtrusionFormation::Update()
 {
   poroscatra_subproblem_->Update();
-  cellscatra_subproblem_->StructureField()->Update();
   cellscatra_subproblem_->AleField()->Update();
 
   return;

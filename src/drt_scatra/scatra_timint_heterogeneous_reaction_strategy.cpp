@@ -170,7 +170,35 @@ void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
 }
 
 
+/*----------------------------------------------------------------------*
+ | Evaluate conditioned elements                            rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::HeterogeneousReactionStrategy::EvaluateCondition
+    (
+      Teuchos::ParameterList& params,
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+      Teuchos::RCP<Epetra_Vector> systemvector1,
+      Teuchos::RCP<Epetra_Vector> systemvector2,
+      Teuchos::RCP<Epetra_Vector> systemvector3,
+      const std::string& condstring,
+      const int condid
+    )
+{
+  // Call EvaluateCondition on auxiliary discretization.
+  // This condition has all dofs, both from the volume-
+  // bound scalars and from the surface-bound scalars.
+  discret_->EvaluateCondition(params,
+      systemmatrix1,
+      systemmatrix2,
+      systemvector1,
+      systemvector2,
+      systemvector3,
+      condstring,
+      condid);
 
+  return;
+}
 
 
 

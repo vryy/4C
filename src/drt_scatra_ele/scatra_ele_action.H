@@ -27,8 +27,8 @@ namespace SCATRA
   /*--------------------------------------------------------------------------*/
   enum Action {
     // domain action
-    calc_cell_growth,                            // calculate response of cell surface growth to growth biochemical stimulus
     calc_cell_mechanotransduction,               // calculate response of cell internal transport to mechanical stimulus
+    calc_cell_growth_sourcesandsinks,            // calculate sources and sinks of actin polymerization related biomolecules
     calc_dissipation,                            // calculate dissipation introduced by stabilization and turbulence models
     calc_domain_and_bodyforce,                   // calc_domain_and_bodyforce,
     calc_domain_integral,                        // n/a
@@ -102,6 +102,7 @@ namespace SCATRA
    *///                                                             nis Mar12
   /*--------------------------------------------------------------------------*/
   enum BoundaryAction {
+    bd_calc_Neumann,
     bd_add_convective_mass_flux,
     bd_integrate_weighted_scalar,
     bd_calc_boundary_integral,
@@ -114,7 +115,6 @@ namespace SCATRA
     bd_calc_loma_therm_press,
     bd_calc_mass_matrix,
     bd_calc_mechanotransduction,
-    bd_calc_Neumann,
     bd_calc_Neumann_inflow,
     bd_calc_normal_vectors,
     bd_calc_Robin,                        // Robin boundary condition

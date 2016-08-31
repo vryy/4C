@@ -1013,8 +1013,8 @@ protected:
   //! subgrid-scale velocity required for multifractal subgrid-scale modeling
   Teuchos::RCP<Epetra_MultiVector> fsvel_;
 
-  //! type of velocity field ? rename!!!
-  const INPAR::SCATRA::VelocityField cdvel_;
+  //! type of velocity field
+  const INPAR::SCATRA::VelocityField velocity_field_type_;
 
   //! mean in time at the interface concentration
   Teuchos::RCP<const Epetra_Vector> mean_conc_;

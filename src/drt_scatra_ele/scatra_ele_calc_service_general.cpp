@@ -765,7 +765,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
-
+  /*----------------------------------------------------------------------*
+   | computes sources and sinks due to stress fiber assembly / disassembly|
+   |                                                          rauch 08/16 |
+   *----------------------------------------------------------------------*/
   case SCATRA::calc_cell_mechanotransduction:
   {
     const int NumPhiROCK=DRT::Problem::Instance()->CellMigrationParams().
@@ -811,56 +814,57 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     } // if valid dof ids are provided
     break;
   }
-
-  case SCATRA::calc_cell_growth:
+  /*----------------------------------------------------------------------*
+   | computes sources and sinks due to cell protrusion        rauch 08/16 |
+   *----------------------------------------------------------------------*/
+  case SCATRA::calc_cell_growth_sourcesandsinks:
   {
     // get general stuff
     DRT::Problem* globalproblem = DRT::Problem::Instance();      //< global problem instance
     int numNode = ele->NumNode();                                //< number of nodes of FaceElement
     int numdofpernode = ele->NumDofPerNode(*ele->Nodes()[0]);    //< number of dofs at each node
     if(numNode != 4)
-      dserror("numofnodes is not equal 4 ! so far, this method is only tested for quad4 surface elements.\n"
-              "review this implementation if you want to use other element types !");
+      dserror("Error! numofnodes is not equal 4 !\n"
+          "So far, this method is only tested for quad4 surface elements.\n"
+          "Review this implementation if you want to use other element types !");
 
     // get one-step-theta parameter from input file
-    const double theta = globalproblem->StructuralDynamicParams().sublist("ONESTEPTHETA").get<double>("THETA");
+    static const double theta = globalproblem->StructuralDynamicParams().sublist("ONESTEPTHETA").get<double>("THETA");
     if (theta != 1.0)
       dserror("THETA for OST-Time integration not equal 1. This case is not implemented, yet.\n"
-              "(1-\theta) part of equations must be implemented. ");
+          "(1-\theta) part of equations must be implemented. ");
 
     // get branching limit parameter, i.e. spatial reference lenght(2D)/area(3D) parameter,
     // determining if branching is possible or not
-    const double aBr = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("aBr");
+    static const double aBr = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("aBr");
     if (aBr < 0.0)
       dserror("Invalid Parameter a_Br.");
-
     // get number of filaments per spatial reference lenght(2D)/area(3D) aBr
-    const int num_fil_on_aBr = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUM_FIL_ON_aBr");
+    static const int num_fil_on_aBr = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUM_FIL_ON_aBr");
     if (num_fil_on_aBr < 0)
       dserror("Invalid Parameter NUM_FIL_ON_aBr.");
 
     // define limit concentration clim for branching (branching if c_barbedends < clim)
-    const double clim = (const double)num_fil_on_aBr / aBr;
+    static const double clim = (const double)num_fil_on_aBr / aBr;
+
+    // frequently used parameters
+    static const double k_on = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("K_ON");  //< actin polymerisation base rate
+    static const double k_br = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("K_BR");  //< branching base rate (assumed to be half as fast as filament polymerization)
+    if(k_on <= 0.0 or k_br <= 0.0)
+      dserror("Invalid Parameters K_ON = %f or K_BR = %f in --CELL DYNAMIC/PROTRUSION MODULE !", k_on, k_br);
+
+    // get phi position of concentration from input file
+    static const int offset    = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUM_SURF_SCALARS");
+    static const int numofcape = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BARBEDENDS")+offset;
+    static const int numofcam  = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN")+offset;
+    static const int numofcbr  = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BRANCHES")+offset;
+    if(numofcape==-1 or numofcam==-1 or numofcbr==-1 or offset==-1)
+      dserror("Define input parameters NUMDOF_BARBEDENDS , NUMDOF_ACTIN, NUMDOF_BRANCHES, and NUM_SURF_SCALARS in ---CELL DYNAMIC/PROTRUSION MODULE");
 
     // get the timefac for the right-hand side
     const double timefacrhs = scatraparatimint_->TimeFacRhs();
 
-    // get scatra discretization
-    std::string scatradisname(params.get<std::string>("scatradisname"));
-    Teuchos::RCP<DRT::Discretization> scatradis  = globalproblem->GetDis(scatradisname);
-
-//    // get time step size from parameter list
-//    double dt = params.get<double>("dt");
-
-    // get location matrix
-    const std::vector<int>& lm = la[0].lm_;
-
-    // frequently used parameters
-    const double k_on = 10;   //< actin polymerisation base rate
-    const double k_br = 5.0;  //< branching base rate (assumed to be half as fast as filament polymerization)
-    //double k_bT = 0.004114; //< unused
-
-    // integration points and weights for boundary (!) gp --> quad4
+    // integration points and weights
     const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
     // get pointer to immersed data manager
@@ -874,22 +878,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     if (phin == Teuchos::null)
       dserror("phin = Teuchos::null");
 
-    // get phi position of concentration from input file
-    static const int numofcape = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_PE");
-    static const int numofcam  = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
-    static const int numofcbr  = globalproblem->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_BRANCHES");
-    if(numofcape==-1 or numofcam==-1 or numofcbr==-1)
-      dserror("define input parameters NUMDOF_PE , NUMDOF_ACTIN, and NUMDOF_BRANCHES in ---CELL DYNAMIC/PROTRUSION MODULE");
-
 
     /////////////////////////////////////////////////////////////////////////////////
     // loop over all integration points
     ////////////////////////////////////////////////////////////////////////////////
-    for (int iquad = 0; iquad<intpoints.IP().nquad; iquad++)
+    for (int gpid = 0; gpid<intpoints.IP().nquad; gpid++)
     {
       // get coordinates of current integration point in face element coordinate system --> quad4
       // returns fac := gp_weight * jacobian determinant
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
 
       // concentrations at n+1
       std::vector<double> myphinp(lm.size());
@@ -967,26 +964,27 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         p_br = 1.0;
       }
 
-//      // DEBUG output
-//      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  capen_gp = "<<capen_gp<<std::endl;
-//      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  camnp_gp = "<<camnp_gp<<std::endl;
-//      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  cbrn_gp  = "<<cbrn_gp<<std::endl;
-//      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  p_br     = "<<p_br<<std::endl;
+      //      // DEBUG output
+      //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  capen_gp = "<<capen_gp<<std::endl;
+      //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  camnp_gp = "<<camnp_gp<<std::endl;
+      //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  cbrn_gp  = "<<cbrn_gp<<std::endl;
+      //      std::cout<<"Ele "<<ele->Id()<<"  gp "<<iquad<<"  p_br     = "<<p_br<<std::endl;
 
       // polymerized actin monomers (1. part to actin filaments and 2. part to branches)
-      // NOTE!!!!! implemented for case THETA == 1!!!
-      double cams_dot = (-1.0)*(k_poly * capen_gp * camnp_gp + p_br*k_br*cbrn_gp*camnp_gp*2.0);
+      // NOTE !!!!! implemented for case THETA == 1 !!!
+      double branching_part = p_br*k_br*cbrn_gp*camnp_gp;
+      double cams_dot = (-1.0)*(k_poly * capen_gp * camnp_gp + branching_part*2.0);
 
       if(capen_gp<0.0)
         cams_dot=0.0;
 
-      double cape_dot = 0.0;
+      double conc_barbed_ends_gp_dot = 0.0; //< rate of change of barbed end concentration
       if (abs(p_br) > 1e-14)
       {
-        cape_dot = p_br*k_br*cbrn_gp*camnp_gp;
+        conc_barbed_ends_gp_dot = branching_part;
       }
       // concentration of used arp2/3 complexes for nucleation
-      double cbr_dot = (-1.0)*cape_dot;
+      double cbr_dot = (-1.0)*conc_barbed_ends_gp_dot;
 
       // fill elevec1 for assembly
       for (int node=0; node<numNode; node++)
@@ -995,13 +993,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         elevec1_epetra[node*numdofpernode + numofcam] += funct_(node) * cams_dot * fac * timefacrhs;
 
         // no actin filament aging and severing included, yet
-        if (cape_dot < 0.0)
+        if (conc_barbed_ends_gp_dot < 0.0)
         {
           elevec1_epetra[node*numdofpernode + numofcape] += 0.0;
         }
         else
         {
-          elevec1_epetra[node*numdofpernode + numofcape] += funct_(node) * cape_dot * fac * timefacrhs;
+          elevec1_epetra[node*numdofpernode + numofcape] += funct_(node) * conc_barbed_ends_gp_dot * fac * timefacrhs;
         }
         elevec1_epetra[node*numdofpernode + numofcbr] += funct_(node) * cbr_dot * fac * timefacrhs;
       }// loop node
@@ -1029,7 +1027,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         elemat1_epetra,
         elevec1_epetra);
 
-    //dserror("calc_heteroreac_mat_and_rhs");
     break;
   }
 
@@ -2311,7 +2308,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
 
 
 /*----------------------------------------------------------------------*
-|  calculate system matrix and rhs (public)                 g.bau 08/08|
+|  calculate system matrix and rhs (public)                  vuong 07/16|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(

@@ -3,12 +3,13 @@
 
 \brief Abstract interface for meshtying strategies in scalar transport problems (including standard strategy without meshtying)
 
-<pre>
+\level 2
+
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
-</pre>
+
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
@@ -107,6 +108,45 @@ class MeshtyingStrategyBase
         const int&                                     iteration,      //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const = 0;
+
+    /*!
+    \brief Evaluate a given condition
+
+     Evaluate terms of your weak formulation on elements marked with a given condition.
+
+    \param params (in):         List of parameters for use at element level
+    \param systemmatrix1 (out): Sparse matrix that may be changed by
+                                assembly of boundary element contributions.
+                                May not be Teuchos::null.
+                                Matrix must be systemmatrix->Filled()==false on input.
+    \param systemmatrix2 (out): Sparse matrix that may be changed by
+                                assembly of boundary element contributions.
+                                May not be Teuchos::null.
+                                Matrix must be systemmatrix->Filled()==false on input.
+    \param systemvector1 (out): Vector to assemble BCs to.
+                                The vector is NOT initialized to zero by this method.
+    \param systemvector2 (out): Vector to assemble BCs to.
+                                The vector is NOT initialized to zero by this method.
+    \param systemvector3 (out): Vector to assemble BCs to.
+                                The vector is NOT initialized to zero by this method.
+    \param condstring (in):     Name of condition to be evaluated
+    \param condid (in):         Condition ID
+
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void EvaluateCondition(
+        Teuchos::ParameterList& params,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Epetra_Vector> systemvector1,
+        Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3,
+        const std::string& condstring,
+        const int condid
+        )
+      {dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");};
 
   protected:
 
