@@ -2446,7 +2446,7 @@ void CONTACT::CoAbstractStrategy::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | print active set information                               popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::PrintActiveSet()
+void CONTACT::CoAbstractStrategy::PrintActiveSet() const
 {
   // output message
   Comm().Barrier();

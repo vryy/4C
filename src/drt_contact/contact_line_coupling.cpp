@@ -37,14 +37,14 @@
 /*----------------------------------------------------------------------*
  |  ctor for lts/stl (public)                                farah 07/16|
  *----------------------------------------------------------------------*/
-CONTACT::LineCoupling3d::LineCoupling3d(
+CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(
     DRT::Discretization& idiscret,
     int dim,
     Teuchos::ParameterList& params,
     CoElement& pEle,
     Teuchos::RCP<MORTAR::MortarElement>& lEle,
     std::vector<CoElement* > surfEles,
-    LineCoupling3d::intType type) :
+    LineToSurfaceCoupling3d::intType type) :
   idiscret_(idiscret),
   dim_(dim),
   pEle_(pEle),
@@ -62,7 +62,7 @@ CONTACT::LineCoupling3d::LineCoupling3d(
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::EvaluateCoupling()
+void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
 {
   int numintline = 0;
   // loop over all found master elements
@@ -131,7 +131,7 @@ void CONTACT::LineCoupling3d::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  init internal variables                                  farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::Initialize()
+void CONTACT::LineToSurfaceCoupling3d::Initialize()
 {
   // reset auxplane normal, center and length
   Auxn()[0] = 0.0;
@@ -161,7 +161,7 @@ void CONTACT::LineCoupling3d::Initialize()
 /*----------------------------------------------------------------------*
  |  calculate dual shape functions                           farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::CheckOrientation()
+bool CONTACT::LineToSurfaceCoupling3d::CheckOrientation()
 {
   // tolerance for line clipping
   const double sminedge = ParentElement().MinEdgeSize();
@@ -200,7 +200,7 @@ bool CONTACT::LineCoupling3d::CheckOrientation()
 /*----------------------------------------------------------------------*
  |  calculate dual shape functions                           farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::ConsistDualShape()
+void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
 {
   INPAR::MORTAR::ShapeFcn shapefcn =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN");
@@ -214,7 +214,7 @@ void CONTACT::LineCoupling3d::ConsistDualShape()
   if (consistent==INPAR::MORTAR::consistent_none)
     return;
 
-  if(IType() == LineCoupling3d::lts)
+  if(IType() == LineToSurfaceCoupling3d::lts)
     return;
   dserror("ERROR: consistent dual shapes for stl is experimental!");
 
@@ -415,7 +415,7 @@ void CONTACT::LineCoupling3d::ConsistDualShape()
 /*----------------------------------------------------------------------*
  |  integration for LTS (public)                             farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::IntegrateLine()
+void CONTACT::LineToSurfaceCoupling3d::IntegrateLine()
 {
   // get solution strategy
   INPAR::CONTACT::SolvingStrategy sol =
@@ -430,7 +430,7 @@ void CONTACT::LineCoupling3d::IntegrateLine()
           Comm());
 
   // perform integration
-  if(IType() == LineCoupling3d::lts)
+  if(IType() == LineToSurfaceCoupling3d::lts)
   {
     integrator->IntegrateDerivCell3DAuxPlaneLTS(
         ParentElement(),
@@ -440,7 +440,7 @@ void CONTACT::LineCoupling3d::IntegrateLine()
         Auxn(),
         Comm());
   }
-  else if(IType() == LineCoupling3d::stl)
+  else if(IType() == LineToSurfaceCoupling3d::stl)
   {
     integrator->IntegrateDerivCell3DAuxPlaneSTL(
         ParentElement(),
@@ -459,7 +459,7 @@ void CONTACT::LineCoupling3d::IntegrateLine()
 /*----------------------------------------------------------------------*
  |  geometric stuff (private)                                farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::LineClipping()
+void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 {
   // output variable
   const bool out = false;
@@ -763,7 +763,7 @@ void CONTACT::LineCoupling3d::LineClipping()
 /*----------------------------------------------------------------------*
  |  create integration lines                                 farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::CreateIntegrationLines(std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex)
+void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex)
 {
   // get coordinates
   LINALG::Matrix<3,3> coords;
@@ -793,7 +793,7 @@ void CONTACT::LineCoupling3d::CreateIntegrationLines(std::vector<std::vector<GEN
 /*----------------------------------------------------------------------*
  |  linearize vertices                                       farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::LinearizeVertices(std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex)
+void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex)
 {
   // linearize all aux.plane slave and master nodes only ONCE
   // and use these linearizations later during lineclip linearization
@@ -925,7 +925,7 @@ void CONTACT::LineCoupling3d::LinearizeVertices(std::vector<std::vector<GEN::pai
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
+void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
     std::vector<GEN::pairedvector<int, double> >& currlin,
     MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
     MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
@@ -1179,7 +1179,7 @@ void CONTACT::LineCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
 /*----------------------------------------------------------------------*
  |  compute and check length of intLine                      farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::CheckLength()
+bool CONTACT::LineToSurfaceCoupling3d::CheckLength()
 {
   // tolerance
   const double sminedge = ParentElement().MinEdgeSize();
@@ -1204,7 +1204,7 @@ bool CONTACT::LineCoupling3d::CheckLength()
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::AuxiliaryPlane()
+bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
 {
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -1243,7 +1243,7 @@ bool CONTACT::LineCoupling3d::AuxiliaryPlane()
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::HasProjStatus()
+bool CONTACT::LineToSurfaceCoupling3d::HasProjStatus()
 {
 
   return true;
@@ -1253,7 +1253,7 @@ bool CONTACT::LineCoupling3d::HasProjStatus()
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::ProjectSlave()
+bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
 {
   // project slave nodes onto auxiliary plane
   int nnodes = LineElement()->NumNode();
@@ -1306,7 +1306,7 @@ bool CONTACT::LineCoupling3d::ProjectSlave()
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane              farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::SlaveVertexLinearization(
+void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
     std::vector<std::vector<GEN::pairedvector<int, double> > >& currlin)
 {
   // we first need the slave element center:
@@ -1464,7 +1464,7 @@ void CONTACT::LineCoupling3d::SlaveVertexLinearization(
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineCoupling3d::ProjectMaster()
+bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
 {
   // project master nodes onto auxiliary plane
   int nnodes = SurfaceElement().NumNode();
@@ -1517,7 +1517,7 @@ bool CONTACT::LineCoupling3d::ProjectMaster()
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineCoupling3d::MasterVertexLinearization(
+void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
     std::vector<std::vector<GEN::pairedvector<int, double> > >& currlin)
 {
   // we first need the slave element center:
@@ -1657,7 +1657,7 @@ void CONTACT::LineCoupling3d::MasterVertexLinearization(
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineCoupling3d::Comm() const
+const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::Comm() const
 {
   return idiscret_.Comm();
 }
@@ -1666,7 +1666,7 @@ const Epetra_Comm& CONTACT::LineCoupling3d::Comm() const
 /*----------------------------------------------------------------------*
  |  ctor for ltl (public)                                    farah 07/16|
  *----------------------------------------------------------------------*/
-CONTACT::LineToLineCoupling3d::LineToLineCoupling3d(
+CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(
       DRT::Discretization& idiscret,
       int dim,
       Teuchos::ParameterList& params,
@@ -1685,7 +1685,7 @@ CONTACT::LineToLineCoupling3d::LineToLineCoupling3d(
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToLineCoupling3d::Comm() const
+const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::Comm() const
 {
   return idiscret_.Comm();
 }
@@ -1693,7 +1693,7 @@ const Epetra_Comm& CONTACT::LineToLineCoupling3d::Comm() const
 /*----------------------------------------------------------------------*
  |  eval                                                     farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToLineCoupling3d::EvaluateCoupling()
+void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
 {
   // 1. check parallelity
   bool parallel = CheckParallelity();
@@ -1725,7 +1725,7 @@ void CONTACT::LineToLineCoupling3d::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  line-line intersection                                   farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToLineCoupling3d::EvaluateTerms(
+void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
     double* sxi,
     double* mxi,
     GEN::pairedvector<int,double>& dsxi,
@@ -2266,7 +2266,7 @@ void CONTACT::LineToLineCoupling3d::EvaluateTerms(
 /*----------------------------------------------------------------------*
  |  line-line intersection                                   farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToLineCoupling3d::LineIntersection(
+void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
     double* sxi,
     double* mxi,
     GEN::pairedvector<int,double>& dsxi,
@@ -2488,7 +2488,7 @@ void CONTACT::LineToLineCoupling3d::LineIntersection(
 /*----------------------------------------------------------------------*
  |  check if intersection is in para space interval          farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineToLineCoupling3d::CheckIntersection(double* sxi,double* mxi)
+bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(double* sxi,double* mxi)
 {
   if(sxi[0]>=-1.0-1e-12 and sxi[0]<=1.0+1e-12 and
       mxi[0]>=-1.0-1e-12 and mxi[0]<=1.0+1e-12 )
@@ -2500,7 +2500,7 @@ bool CONTACT::LineToLineCoupling3d::CheckIntersection(double* sxi,double* mxi)
 /*----------------------------------------------------------------------*
  |  check if line eles parallel                              farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineToLineCoupling3d::CheckParallelity()
+bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
 {
   double vs[3] = {0.0, 0.0, 0.0};
   double vm[3] = {0.0, 0.0, 0.0};

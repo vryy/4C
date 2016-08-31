@@ -206,6 +206,21 @@ class CoLagrangeStrategy : public CoAbstractStrategy
      * \param cparams (in): parameter interface between the contact objects and the structural time integration*/
     virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
 
+    /*! \brief Run at the beginning of the Evaluate() routine
+     *         set force evaluation flag
+     *
+     */
+    virtual void PreEvaluate(
+        CONTACT::ParamsInterface& cparams);
+
+    /*! \brief Run in the end of the Evaluate() routine to reset
+     *         force evaluation flag
+     *
+     *
+     */
+    virtual void PostEvaluate(
+        CONTACT::ParamsInterface& cparams);
+
     /*!
     \brief Recovery method
 
@@ -373,6 +388,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
                               Teuchos::RCP<LINALG::SparseMatrix> invda)
     {return;}
 
+    bool evalForceCalled_;    // flag for evaluate force call
     bool activesetssconv_;    // convergence flag for semi-smooth active set search
     bool activesetconv_;      // convergence flag for fixed-point active set search
     int  activesetsteps_;     // number of fixed-point active set steps in this time step

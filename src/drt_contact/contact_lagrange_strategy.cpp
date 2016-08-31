@@ -58,6 +58,7 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
     double alphaf,
     int maxdof)
     : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      evalForceCalled_(false),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1)
@@ -2443,6 +2444,7 @@ void CONTACT::CoLagrangeStrategy::EvalForce(
   if(constrrhs_ != Teuchos::null)
     constrrhs_->Scale(-1.0);// scale with -1.0 --> when old structure is deleted change this!!!
 
+  // bye bye
   return;
 }
 
@@ -2524,21 +2526,94 @@ void CONTACT::CoLagrangeStrategy::EvalStrContactRHS()
 #endif
   }
   strcontactrhs_->Scale(-1.0);
+
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | set force evaluation flag before evaluation step          farah 08/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::PreEvaluate(
+    CONTACT::ParamsInterface& cparams)
+{
+  const enum MORTAR::ActionType& act = cparams.GetActionType();
+
+  switch(act)
+  {
+  // -------------------------------------------------------------------
+  // reset force evaluation flag for predictor step
+  // -------------------------------------------------------------------
+    case MORTAR::eval_force_stiff:
+    {
+      if(cparams.IsPredictor())
+        evalForceCalled_ = false;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // default
+    // -------------------------------------------------------------------
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set force evaluation flag after evaluation                farah 08/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::PostEvaluate(
+    CONTACT::ParamsInterface& cparams)
+{
+  const enum MORTAR::ActionType& act = cparams.GetActionType();
+
+  switch(act)
+  {
+    // -------------------------------------------------------------------
+    // set flag to false after force stiff evaluation
+    // -------------------------------------------------------------------
+    case MORTAR::eval_force_stiff:
+    {
+      evalForceCalled_ = false;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // set flag for force evaluation to true
+    // -------------------------------------------------------------------
+    case MORTAR::eval_force:
+    {
+      evalForceCalled_ = true;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // default
+    // -------------------------------------------------------------------
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::EvalForceStiff(
     CONTACT::ParamsInterface& cparams)
 {
-  // call the evaluate force routine
-  EvalForce(cparams);
+  // call the evaluate force routine if not done before
+  if(!evalForceCalled_)
+    EvalForce(cparams);
 
   // --- Assemble stiffness matrix ---------------------------------------
   AssembleContactStiff();
 
+  // bye bye
   return;
 }
 
@@ -2591,12 +2666,6 @@ void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleTNderiv(tderivmatrix_,nderivmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
-
-//    if (SystemType() != INPAR::CONTACT::system_condensed)
-//    {
-//      interface_[i]->AssembleInactiverhs(*inactiverhs_);
-//      interface_[i]->AssembleTangrhs(*tangrhs_);
-//    }
   }
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {

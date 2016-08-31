@@ -4122,13 +4122,6 @@ void CONTACT::CoInterface::SetCPPNormal(
 //      (cnode.CoData().GetDerivTeta()[2])[p->first] -= (p->second) * cnode.MoData().n()[1];
   }
 
-  if(snode.IsOnCorner())
-  {
-    std::cout << "normal3 = " << cnode.MoData().n()[0]<< "  " << cnode.MoData().n()[1] << "  "<< cnode.MoData().n()[2] << std::endl;
-    std::cout << "tan = " << cnode.CoData().txi()[0]<< "  " << cnode.CoData().txi()[1] << "  "<< cnode.CoData().txi()[2] << std::endl;
-
-  }
-
   return;
 }
 
@@ -4586,14 +4579,14 @@ void CONTACT::CoInterface::EvaluateSTL()
              seleElements.push_back(selement);
 
              // create coupling object
-             LineCoupling3d coup(
+             LineToSurfaceCoupling3d coup(
                  *idiscret_,
                  3,
                  IParams(),
                  *melement,
                  lineEle,
                  seleElements,
-                 LineCoupling3d::stl);
+                 LineToSurfaceCoupling3d::stl);
 
              // perform evaluate!
              coup.EvaluateCoupling();
@@ -4841,14 +4834,14 @@ void CONTACT::CoInterface::EvaluateLTS()
     for(int l = 0; l<(int)lineElements.size(); ++l)
     {
       // create coupling object
-      LineCoupling3d coup(
+      LineToSurfaceCoupling3d coup(
           *idiscret_,
           3,
           IParams(),
           *selement,
           lineElements[l],
           meleElements,
-          LineCoupling3d::lts);
+          LineToSurfaceCoupling3d::lts);
 
       // perform evaluate!
       coup.EvaluateCoupling();
@@ -5081,7 +5074,7 @@ void CONTACT::CoInterface::EvaluateLTL()
       for( int m = 0; m<(int)lineElementsM.size(); ++m)
       {
         // create coupling object
-        LineToLineCoupling3d coup(
+        LineToLineCouplingPoint3d coup(
             *idiscret_,
             3,
             IParams(),

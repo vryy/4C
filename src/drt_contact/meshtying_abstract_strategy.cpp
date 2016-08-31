@@ -1110,7 +1110,7 @@ void CONTACT::MtAbstractStrategy::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | print active set information                               popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::PrintActiveSet()
+void CONTACT::MtAbstractStrategy::PrintActiveSet() const
 {
   //**********************************************************************
   // only do this if corresponding output option is chosen

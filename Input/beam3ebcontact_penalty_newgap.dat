@@ -44,7 +44,7 @@ NLNSOL                          fullnewton                    // fullnewton modn
 TIMESTEP                        0.2
 NUMSTEP                         5
 MAXTIME                         1
-DAMPING                         Material
+DAMPING                         no
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDis

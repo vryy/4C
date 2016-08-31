@@ -271,7 +271,7 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
     virtual int NumberOfSlipNodes() const = 0;
     virtual void OutputStresses() = 0;
     virtual void Print(std::ostream& os) const = 0;
-    virtual void PrintActiveSet() = 0;
+    virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void RedistributeMeshtying() = 0;

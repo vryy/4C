@@ -310,7 +310,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Print current active set to screen for debugging purposes
 
     */
-    void PrintActiveSet();
+    void PrintActiveSet() const;
 
     /*!
     \brief Visualize contact stuff with gmsh

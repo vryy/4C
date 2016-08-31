@@ -1105,7 +1105,7 @@ public:
   virtual void Print(std::ostream& os) const;
 
   //! Print current active set to screen for debugging purposes
-  virtual void PrintActiveSet();
+  virtual void PrintActiveSet() const;
 
   /*! \brief Visualize contact stuff with gmsh
 

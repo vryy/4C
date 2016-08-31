@@ -346,8 +346,11 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::PostUpdateStepState()
 {
+  // initialize integration time for time measurement
   strategy_ptr_->Inttime_init();
+  // redistribute contact
   strategy_ptr_->RedistributeContact(GState().GetDisN());
+  // initialize binning strategy for new time step
   strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
 }
 
@@ -411,6 +414,11 @@ void STR::MODELEVALUATOR::Contact::DetermineEnergy()
 void STR::MODELEVALUATOR::Contact::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
+  // *********************************************************************
+  // print active set
+  // *********************************************************************
+  Strategy().PrintActiveSet();
+
   // *********************************************************************
   // active contact set and slip set
   // *********************************************************************

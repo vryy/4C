@@ -31,7 +31,7 @@ class CoElement;
 /*----------------------------------------------------------------------*
  |  LTS / STL coupling                                       farah 07/16|
  *----------------------------------------------------------------------*/
-class LineCoupling3d
+class LineToSurfaceCoupling3d
 {
 
 public:
@@ -50,20 +50,20 @@ public:
    performed in parallel by individual processes.
 
    */
-  LineCoupling3d(
+  LineToSurfaceCoupling3d(
       DRT::Discretization& idiscret,
       int dim,
       Teuchos::ParameterList& params,
       CoElement& sele,
       Teuchos::RCP<MORTAR::MortarElement>& lsele,
       std::vector<CoElement* > surfEles,
-      LineCoupling3d::intType itype);
+      LineToSurfaceCoupling3d::intType itype);
 
   /*!
    \brief Destructor
 
    */
-  virtual ~LineCoupling3d()
+  virtual ~LineToSurfaceCoupling3d()
   {
   }
 
@@ -356,13 +356,13 @@ private:
   \brief Return integration type
 
   */
-  virtual LineCoupling3d::intType& IType() {return intType_; }
+  virtual LineToSurfaceCoupling3d::intType& IType() {return intType_; }
 
 private:
 
   // don't want = operator and cctor
-  LineCoupling3d operator =(const LineCoupling3d& old);
-  LineCoupling3d(const LineCoupling3d& old);
+  LineToSurfaceCoupling3d operator =(const LineToSurfaceCoupling3d& old);
+  LineToSurfaceCoupling3d(const LineToSurfaceCoupling3d& old);
 
   DRT::Discretization& idiscret_;         // discretization of the contact interface
   int dim_;                               // problem dimension (here: 3D)
@@ -384,13 +384,13 @@ private:
   std::vector<GEN::pairedvector<int, double> > derivauxn_; // derivatives of auxiliary plane normal
 
   // integration type:
-  LineCoupling3d::intType intType_;
+  LineToSurfaceCoupling3d::intType intType_;
 };
 
 /*----------------------------------------------------------------------*
- |  LTL coupling                                             farah 07/16|
+ |  LTL coupling with point contact                          farah 07/16|
  *----------------------------------------------------------------------*/
-class LineToLineCoupling3d
+class LineToLineCouplingPoint3d
 {
 
 public:
@@ -402,7 +402,7 @@ public:
    performed in parallel by individual processes.
 
    */
-  LineToLineCoupling3d(
+  LineToLineCouplingPoint3d(
       DRT::Discretization& idiscret,
       int dim,
       Teuchos::ParameterList& params,
@@ -413,7 +413,7 @@ public:
    \brief Destructor
 
    */
-  virtual ~LineToLineCoupling3d()
+  virtual ~LineToLineCouplingPoint3d()
   {
   }
 
@@ -513,8 +513,8 @@ private:
 private:
 
   // don't want = operator and cctor
-  LineToLineCoupling3d operator =(const LineToLineCoupling3d& old);
-  LineToLineCoupling3d(const LineToLineCoupling3d& old);
+  LineToLineCouplingPoint3d operator =(const LineToLineCouplingPoint3d& old);
+  LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old);
 
   DRT::Discretization& idiscret_;         // discretization of the contact interface
   int dim_;                               // problem dimension (here: 3D)

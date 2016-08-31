@@ -36,6 +36,7 @@ FLUID_STRESS         No
 FLUID_VIS            No
 FILESTEPS            1000
 ------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY         Standard
 LINEAR_SOLVER        1
 DYNAMICTYP           GenAlpha//GEMM
 RESULTSEVRY          1
@@ -47,14 +48,24 @@ MAXTIME              1.0
 DAMPING              Yes//Yes
 M_DAMP               0.0005
 K_DAMP               0.0005
-TOLRES               1.0E-7
-TOLDISP              1.0E-7
+TOLRES               1.0E-9
+TOLDISP              1.0E-9
 NORM_RESF            Abs
 NORM_DISP            Abs
 NORMCOMBI_RESFDISP   And
-MAXITER              100
-DIVERCONT            continue
-PREDICT              TangDis
+MAXITER              10
+PREDICT              ConstDis
+--------------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG               TrLike
 RHO_INF              0.8
@@ -1264,8 +1275,7 @@ NODE       505 COORD  0.0000000000000000e+00  8.5000000000000000e+00  0.00000000
    448 WALL QUAD4  504 496 495 503    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    449 WALL QUAD4  505 497 496 504    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-// note that these are the unmodified result from the augmented version
-STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE -2.11520134979935386e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE 5.51491963678579344e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE -1.66813729898413225e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE 5.08855804745852319e-03 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
