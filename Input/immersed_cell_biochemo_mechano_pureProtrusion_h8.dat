@@ -250,13 +250,13 @@ MAT 20 MAT_matlist_reactions LOCAL No NUMMAT 8 MATIDS 31 32 33 34 41 42 43 44 NU
 // reaction equations :
 // again first slave dofs and then master dofs in reaction definitions
 //PI3K activates PIP at membrane (here simple transformation)
-MAT 601 MAT_scatra_reaction NUMSCAL 8 STOICH -1  1  0 0 0  0  0 0 REACCOEFF 0.2 COUPLING simple_multiplicative
+MAT 601 MAT_scatra_reaction NUMSCAL 8 STOICH -1  1  0 0 0  0  0 0 REACCOEFF 0.2 COUPLING simple_multiplicative ROLE 1 0 0 0 0 0 0 0
 
 //PIP activates Rac1 at membrane (sink for Rac1-GDP in volume)
-MAT 602 MAT_scatra_reaction NUMSCAL 8 STOICH  0 -1  1 0 0 -1  0 0 REACCOEFF 0.2 COUPLING simple_multiplicative
+MAT 602 MAT_scatra_reaction NUMSCAL 8 STOICH  0 -1  1 0 0 -1  0 0 REACCOEFF 0.2 COUPLING simple_multiplicative ROLE 0 1 0 0 0 1 0 0
 
 // Rac1-GTP + ARP2/3 -> Branching-Complex
-MAT 603 MAT_scatra_reaction NUMSCAL 8 STOICH  0  0 -1 1 0  0 -1 0 REACCOEFF 0.2 COUPLING simple_multiplicative
+MAT 603 MAT_scatra_reaction NUMSCAL 8 STOICH  0  0 -1 1 0  0 -1 0 REACCOEFF 0.2 COUPLING simple_multiplicative ROLE 0 0 1 0 0 0 1 0
 
 
 // for now only dummy materials !

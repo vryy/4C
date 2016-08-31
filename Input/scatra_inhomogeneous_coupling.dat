@@ -212,11 +212,11 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 101 102 103 END
 MAT 101 MAT_scatra DIFFUSIVITY 0.0
 MAT 102 MAT_scatra DIFFUSIVITY 0.0
 MAT 103 MAT_scatra DIFFUSIVITY 0.0
-MAT 11 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
-MAT 12 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
-MAT 13 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative
-MAT 22 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
-MAT 32 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative
+MAT 11 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative ROLE 1 0 0
+MAT 12 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 1 0
+MAT 13 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1 0
+MAT 22 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 1 0
+MAT 32 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1 0
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
 -------------------------------------------------------------CURVE3

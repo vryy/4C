@@ -191,8 +191,8 @@ MAT 5 MAT_GrowthAC SCALAR1 2 ALPHA 5.0
 MAT 10 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 101 102 NUMREAC 2 REACIDS 103 104 END
 MAT 101 MAT_scatra DIFFUSIVITY 0.1
 MAT 102 MAT_scatra DIFFUSIVITY 0.05
-MAT 103 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
-MAT 104 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 0.0 COUPLING simple_multiplicative
+MAT 103 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
+MAT 104 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 10
 ----------------------------------------------------------------------CURVE1

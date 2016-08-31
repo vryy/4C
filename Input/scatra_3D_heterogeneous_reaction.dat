@@ -62,7 +62,7 @@ SOLVER                          UMFPACK                       // Aztec_MSR vm3 S
 MAT 1 MAT_scatra DIFFUSIVITY 10.00
 MAT 2 MAT_scatra DIFFUSIVITY 10.00
 MAT 3 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 1 2 NUMREAC 1 REACIDS 10 END //collect Concentrations
-MAT 10 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 10 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3
 ----------------------------------------------------------------------CURVE1

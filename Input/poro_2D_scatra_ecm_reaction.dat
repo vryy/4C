@@ -232,10 +232,10 @@ MAT 9 MAT_scatra DIFFUSIVITY 0.0          // C1
 MAT 11 MAT_scatra DIFFUSIVITY 0.0          // M2C1
 MAT 20 MAT_ElastHyper NUMMAT 1 MATIDS 21 DENS 2.0
 MAT 21 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
-MAT 101 MAT_scatra_reaction NUMSCAL 5 STOICH -1 -1 1 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative         //T2
-MAT 102 MAT_scatra_reaction NUMSCAL 5 STOICH 1 1 -1 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative           // M2T2
-MAT 103 MAT_scatra_reaction_poro NUMSCAL 5 STOICH -1 0 0 -1 1 REACCOEFF 1.0 REACSCALE -0.001 COUPLING simple_multiplicative         //MMP2\
-MAT 104 MAT_scatra_reaction_poro NUMSCAL 5 STOICH 1 0 0 1 -1 REACCOEFF 1.0 REACSCALE -0.001 COUPLING simple_multiplicative         //MMP2
+MAT 101 MAT_scatra_reaction NUMSCAL 5 STOICH -1 -1 1 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 1 0 0 0         //T2
+MAT 102 MAT_scatra_reaction NUMSCAL 5 STOICH 1 1 -1 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 1 0 0           // M2T2
+MAT 103 MAT_scatra_reaction_poro NUMSCAL 5 STOICH -1 0 0 -1 1 REACCOEFF 1.0 REACSCALE -0.001 COUPLING simple_multiplicative ROLE 1 0 0 1 0         //MMP2\
+MAT 104 MAT_scatra_reaction_poro NUMSCAL 5 STOICH 1 0 0 1 -1 REACCOEFF 1.0 REACSCALE -0.001 COUPLING simple_multiplicative ROLE 0 0 0 0 1         //MMP2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1954 QUANTITY phi VALUE 2.48152357605556720e-02 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 3658 QUANTITY phi VALUE 9.89298358389978105e+00 TOLERANCE 1e-8

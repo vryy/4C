@@ -214,9 +214,9 @@ MAT 13 MAT_scatra DIFFUSIVITY 0.0
 MAT 14 MAT_scatra DIFFUSIVITY 0.0
 MAT 15 MAT_scatra DIFFUSIVITY 0.0
 MAT 16 MAT_scatra DIFFUSIVITY 0.0
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 1 2 0 0 0 0 0 0 0 REACCOEFF 3.0 COUPLING constant
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 -2 1 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -1 -1 0
+//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 0 1 1 0 0 0 0
+//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 1 2 0 0 0 0 0 0 0 REACCOEFF 3.0 COUPLING constant ROLE 0 0 0 0 0 0 0 0 0
+//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 -2 1 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 1 1 0
 MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 1.5 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
 MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 2.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
 MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -10.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7

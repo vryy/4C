@@ -216,17 +216,17 @@ MAT 16 MAT_scatra DIFFUSIVITY 0.0 //000000000001//collect Concentrations
 MAT 17 MAT_scatra DIFFUSIVITY 0.0 //000000000001
 MAT 18 MAT_scatra DIFFUSIVITY 0.0 //000000000001
 MAT 19 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 71 MAT_scatra_reaction NUMSCAL 12 STOICH -1 0 0 0 0 0 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
-MAT 72 MAT_scatra_reaction NUMSCAL 12 STOICH 0 -1 1 0 0 0 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
-MAT 73 MAT_scatra_reaction NUMSCAL 12 STOICH 0 1 -1 0 0 0 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
-MAT 74 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 -1 -2 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING power_multiplicative ROLE 0 0 0 1 1 1 0 0 0 0 0 0
+MAT 71 MAT_scatra_reaction NUMSCAL 12 STOICH -1 0 0 0 0 0 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative ROLE 1 0 0 0 0 0 0 0 0 0 0 0
+MAT 72 MAT_scatra_reaction NUMSCAL 12 STOICH 0 -1 1 0 0 0 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 1 0 0 0 0 0 0 0 0 0 0
+MAT 73 MAT_scatra_reaction NUMSCAL 12 STOICH 0 1 -1 0 0 0 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative ROLE 0 0 1 0 0 0 0 0 0 0 0 0
+MAT 74 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 -1 -2 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING power_multiplicative ROLE 0 0 0 1 1 0 0 0 0 0 0 0
 MAT 75 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 REACCOEFF -1.0 COUPLING power_multiplicative ROLE 0 0 0 0 0 0 1 0 0 0 0 0
-MAT 76 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0
-MAT 77 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
-MAT 78 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
+MAT 76 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 1 0 0 0 0 0 REACSTART 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0
+MAT 77 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 1 0 0 0 0
+MAT 78 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 1 0 0 0 0 REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
 MAT 79 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 1 0 0 0 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 0 -1 0 0 0 0 REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
-MAT 80 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 0 0 REACCOEFF -2.0 COUPLING simple_multiplicative
-MAT 81 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 -2 1 REACCOEFF 5.0 COUPLING simple_multiplicative REACSTART 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.8 0.0
+MAT 80 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 0 0 REACCOEFF -2.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 0 0 1 0 0
+MAT 81 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 -2 1 REACCOEFF 5.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 0 0 1 1 0 REACSTART 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.8 0.0
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
 -------------------------------------------------------------CURVE3

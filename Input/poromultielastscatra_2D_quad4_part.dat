@@ -135,7 +135,7 @@ MAT 200 MAT_PoroLawConstant
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 1 REACIDS 401 END
 MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1
 MAT 302 MAT_scatra_multiporo PHASEID 3 DIFFUSIVITY 0.1
-MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
 
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1

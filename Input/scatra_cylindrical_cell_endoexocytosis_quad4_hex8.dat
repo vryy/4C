@@ -66,8 +66,8 @@ MAT 102 MAT_scatra DIFFUSIVITY 0.3  // volume-bound diffusing species
 // first slave dofs and then master dofs in reaction list
 MAT 20 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 100 101 102 NUMREAC 2 REACIDS 40 41 END
 // first slave dofs and then master dofs in reaction list
-MAT 40 MAT_scatra_reaction NUMSCAL 3 STOICH  1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative // reaction of scalar 102 to membrane
-MAT 41 MAT_scatra_reaction NUMSCAL 3 STOICH -1 1 0 REACCOEFF 0.2 COUPLING simple_multiplicative // internalization at surface
+MAT 40 MAT_scatra_reaction NUMSCAL 3 STOICH  1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative ROLE 0 0 1// reaction of scalar 102 to membrane
+MAT 41 MAT_scatra_reaction NUMSCAL 3 STOICH -1 1 0 REACCOEFF 0.2 COUPLING simple_multiplicative ROLE 1 0 0// internalization at surface
 --------------------------------------------------------CLONING MATERIAL MAP
 // clone surface phi to matlist_reactions
 // auxialiary dis gets mat 20 assigned

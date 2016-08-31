@@ -96,7 +96,7 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.35 DENS 0.1
 MAT 10 MAT_scatra DIFFUSIVITY 0.1
 MAT 11 MAT_scatra DIFFUSIVITY 0.1
 // first slave dofs and then master dofs in reaction list
-MAT 20 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative
+MAT 20 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative ROLE 0 0 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
 ----------------------------------------------------------------------CURVE1

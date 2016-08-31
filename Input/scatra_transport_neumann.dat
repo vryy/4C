@@ -133,7 +133,7 @@ MAT 26 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 27 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 28 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 29 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 31 MAT_scatra_reaction NUMSCAL 8 STOICH -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 31 MAT_scatra_reaction NUMSCAL 8 STOICH -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0 0 0 0 0 0 0
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------CURVE1
 CURVE 1 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
