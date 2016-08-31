@@ -2,6 +2,7 @@
 \file acou_expl_worker_sol.cpp
 \brief Control routine for acoustic explicit time integration for solids
        or aka elastodynamics
+\level 2
 
 <pre>
 \maintainer Svenja Schoeder
@@ -158,8 +159,8 @@ local_apply_solid_face (const MatrixFree<dim,value_type> &,
   // There is some overhead in the methods in FEEvaluation, so it is faster
   // to combine pressure and velocity in the same object and just combine
   // them at the level of quadrature points
-  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi(this->data, true, 0, 0, true);
-  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi_neighbor(this->data, false, 0, 0, true);
+  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi(this->data, true, 0, 0, 0, true);
+  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi_neighbor(this->data, false, 0, 0, 0, true);
 
   for (unsigned int face=face_range.first; face<face_range.second; face++)
   {
@@ -264,7 +265,7 @@ local_apply_solid_boundary_face (const MatrixFree<dim,value_type> &,
                            const std::vector<parallel::distributed::Vector<value_type> > &src,
                            const std::pair<unsigned int,unsigned int>               &face_range) const
 {
-  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi(this->data, true, 0, 0, true);
+  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim*dim+dim+1,value_type> phi(this->data, true, 0, 0, 0, true);
 
   // quantities we need in the loop
   Point<dim> point;
