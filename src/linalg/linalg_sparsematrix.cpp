@@ -475,13 +475,16 @@ void LINALG::SparseMatrix::Assemble(
         // test continuity of data in sparsematrix
         bool reachedlength=false;
         bool continuous = true;
-        for (int j=1; j<stride; ++j)
-          if (indices[pos+j] == localcol[dofcount+j]) continue;
-          else
-          {
-            continuous = false;
-            break;
-          }
+        if (stride+pos > length)
+          continuous = false;
+        else
+          for (int j=1; j<stride; ++j)
+            if (indices[pos+j] == localcol[dofcount+j]) continue;
+            else
+            {
+              continuous = false;
+              break;
+            }
 
         if (continuous)
         {
