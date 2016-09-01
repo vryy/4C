@@ -289,10 +289,12 @@ namespace CAVITATION
 
     /// use Gaussian integration for solving volume integral to obtain void volume
     virtual void DoGaussianIntegrationFluidFrac(
-      DRT::Element*         ele,
-      LINALG::Matrix<3,1>&  particleposition,
-      const double          influence,
-      double&               vol_ele
+      DRT::Element*              ele,
+      LINALG::Matrix<3,1>&       particleposition,
+      const double               influence,
+      double&                    vol_ele,
+      const bool                 pbcdetected,
+      const LINALG::Matrix<3,1>& pbceleoffset
       );
 
     /// use analytical integration for solving volume integral to obtain void volume
@@ -302,7 +304,9 @@ namespace CAVITATION
       const LINALG::Matrix<3,1>&  particleposition,
       const double                influence,
       double&                     vol_ele,
-      bool&                       surfaceoverlap
+      bool&                       surfaceoverlap,
+      const bool                  bcpbcdetected,
+      const LINALG::Matrix<3,1>&  pbceleoffset
       );
 
     /// compute integration points for analytic integration
@@ -386,19 +390,24 @@ namespace CAVITATION
 
     //@}
 
-    /// test for overlap of the XAABB of bubble and element
+    /// test for overlap of the XAABB of bubble and element and compute pbc offset if necessary
     virtual bool XAABBoverlap(
       DRT::Element* ele,
       const double influence,
-      LINALG::Matrix<3,1> particleposition
+      const LINALG::Matrix<3,1>& particleposition,
+      const bool havepbc,
+      bool& pbcdetected,
+      LINALG::Matrix<3,1>& pbceleoffset
       );
 
     /// assign bubble volume to the underlying fluid element
     virtual void AssignSmallBubbles(
       const double bubblevol,
-      const LINALG::Matrix<3,1> particleposition,
-      const std::vector<int> insideeles,
-      Teuchos::RCP<Epetra_FEVector> void_volumes
+      const LINALG::Matrix<3,1>& particleposition,
+      const std::vector<int>& insideeles,
+      Teuchos::RCP<Epetra_FEVector> void_volumes,
+      const std::vector<bool>& pbcdetected,
+      const std::vector<LINALG::Matrix<3,1> >& pbceleoffset
       );
 
     /// get underlying element as well as position in element space

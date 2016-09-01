@@ -50,6 +50,8 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
 
+  const bool havepbc = HavePBCs();
+
   std::set<int> examinedbins;
   int numrownodes = particledis_->NodeRowMap()->NumMyElements();
   for(int i=0; i<numrownodes; ++i)
@@ -86,21 +88,22 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     int ijk[3];
     ConvertGidToijk(binId, ijk);
 
-    // minimal bin size
-    double minbin = std::numeric_limits<double>::max();
-    for(int dim=0; dim<3; ++dim)
-      minbin = std::min(minbin, bin_size_[dim]);
-
     // scaling factor in order to account for influence of bubble
-    const int ibinrange = (int)((maxradius*influencescaling_)/minbin) + 1;
-    int ijk_range[] = {ijk[0]-ibinrange, ijk[0]+ibinrange, ijk[1]-ibinrange, ijk[1]+ibinrange, ijk[2]-ibinrange, ijk[2]+ibinrange};
+    int ibinrange[3];
+    for(int dim=0; dim<3; ++dim)
+    {
+      ibinrange[dim] = (int)((maxradius*influencescaling_)/bin_size_[dim]) + 1;
+      if(ibinrange[dim] > 1)
+        dserror("not yet tested for such large bubbles -> think about extending ghosting!");
+    }
 
-    if(ibinrange > 3)
-      dserror("not yet tested for such large bubbles");
+    int ijk_range[] = {ijk[0]-ibinrange[0], ijk[0]+ibinrange[0],
+                       ijk[1]-ibinrange[1], ijk[1]+ibinrange[1],
+                       ijk[2]-ibinrange[2], ijk[2]+ibinrange[2]};
 
     // variable to store bin ids of surrounding bins
     std::vector<int> binIds;
-    binIds.reserve((2*ibinrange+1) * (2*ibinrange+1) * (2*ibinrange+1));
+    binIds.reserve((2*ibinrange[0]+1) * (2*ibinrange[1]+1) * (2*ibinrange[2]+1));
 
     // get corresponding bin ids in ijk range and fill them into binIds (in gid)
     GidsInijkRange(&ijk_range[0], binIds, false);
@@ -150,6 +153,10 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
       // bubble volume which is assigned to fluid elements
       const double bubblevol = 4.0/3.0*M_PI*std::pow(r_p,3);
 
+      // variables for periodic boundary condition corrections
+      std::vector<bool> pbcdetected;
+      std::vector<LINALG::Matrix<3,1> > pbceleoffset;
+
       // store all elements in which the bubble might be located fully inside
       std::vector<int> insideeles;
 
@@ -169,12 +176,18 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
           for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
           {
             DRT::Element* ele = *ineighbor;
-            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition);
+            bool pbcdetected_ele;
+            static LINALG::Matrix<3,1> pbceleoffset_ele;
+            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition, havepbc, pbcdetected_ele, pbceleoffset_ele);
             if(xaabboverlap == true)
+            {
               insideeles.push_back(ele->Id());
+              pbcdetected.push_back(pbcdetected_ele);
+              pbceleoffset.push_back(pbceleoffset_ele);
+            }
           }
           // assign to the correct fluid element
-          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction);
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction, pbcdetected, pbceleoffset);
 
           continue; // with next particle in this bin
         }
@@ -203,21 +216,25 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
           for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
           {
             DRT::Element* ele = *ineighbor;
-
-            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition);
+            bool pbcdetected_ele;
+            static LINALG::Matrix<3,1> pbceleoffset_ele;
+            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition, havepbc, pbcdetected_ele, pbceleoffset_ele);
 
             double vol_ele = 0.0;
             if(xaabboverlap == true)
             {
-              // store element id
+              // store element id and pbc information
               insideeles.push_back(ele->Id());
+              pbcdetected.push_back(pbcdetected_ele);
+              pbceleoffset.push_back(pbceleoffset_ele);
+
               switch(void_frac_strategy_)
               {
               case INPAR::CAVITATION::analytical_constpoly:
               case INPAR::CAVITATION::analytical_quadraticpoly:
               case INPAR::CAVITATION::analytical_quarticpoly:
               {
-                DoAnalyticalIntegrationFluidFrac(ele, currparticle->Id(), particleposition, influence, vol_ele, surfaceoverlap);
+                DoAnalyticalIntegrationFluidFrac(ele, currparticle->Id(), particleposition, influence, vol_ele, surfaceoverlap, pbcdetected_ele, pbceleoffset_ele);
 
                 // suppress close to -0.0 void values in case of tight cut situations
                 if(vol_ele < 0.0)
@@ -233,7 +250,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
               break;
               case INPAR::CAVITATION::gaussian_integration:
               {
-                DoGaussianIntegrationFluidFrac(ele, particleposition, influence, vol_ele);
+                DoGaussianIntegrationFluidFrac(ele, particleposition, influence, vol_ele, pbcdetected_ele, pbceleoffset_ele);
               }
               break;
               default:
@@ -278,7 +295,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
         }
         else
         {
-          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction);
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction, pbcdetected, pbceleoffset);
         }
       }
 
@@ -335,7 +352,9 @@ void CAVITATION::Algorithm::DoGaussianIntegrationFluidFrac(
   DRT::Element* ele,
   LINALG::Matrix<3,1>& particleposition,
   const double influence,
-  double& vol_ele
+  double& vol_ele,
+  const bool pbcdetected,
+  const LINALG::Matrix<3,1>& pbceleoffset
   )
 {
   // define element matrices and vectors
@@ -357,10 +376,14 @@ void CAVITATION::Algorithm::DoGaussianIntegrationFluidFrac(
   // set action in order to calculate fluid fraction in this element
   Teuchos::ParameterList params;
   params.set<int>("action",FLD::calc_volume_gaussint);
-  params.set<LINALG::Matrix<3,1> >("particlepos", particleposition);
   params.set<double>("influence", influence);
-
   params.set<int>("gp_per_dir", gauss_rule_per_dir_);
+
+  // in case of pbcs: it is faster to modify the particle position than the element coordinates
+  LINALG::Matrix<3,1> modifiedparticlepos(particleposition);
+  if(pbcdetected)
+    modifiedparticlepos.Update(-1.0, pbceleoffset, 1.0);
+  params.set<LINALG::Matrix<3,1> >("particlepos", modifiedparticlepos);
 
   // call the element specific evaluate method (elevec1 = void volume)
   ele->Evaluate(params,*fluiddis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
@@ -380,7 +403,9 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
   const LINALG::Matrix<3,1>& particleposition,
   const double influence,
   double& vol_ele,
-  bool& surfaceoverlap
+  bool& surfaceoverlap,
+  const bool pbcdetected,
+  const LINALG::Matrix<3,1>& pbceleoffset
   )
 {
   // pull out each volume element and ask for surfaces
@@ -401,8 +426,13 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
   }
   centerele.Scale(1.0/ele->NumNode());
 
+  // in case of pbcs: it is faster to modify the particle position than the element coordinates
+  LINALG::Matrix<3,1> modifiedparticlepos(particleposition);
+  if(pbcdetected)
+    modifiedparticlepos.Update(-1.0, pbceleoffset, 1.0);
+
 #ifdef GMSHOUT
- PrintBubbleAndFluidEleToGMSH(ele, bubbleid, particleposition, influence);
+ PrintBubbleAndFluidEleToGMSH(ele, bubbleid, modifiedparticlepos, influence);
 #endif
 
   std::map<int, LINALG::Matrix<3,1> > currentpositions;
@@ -444,9 +474,9 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     bool boundingbox = true;
 
     // bubble surfaces of the cubic bubble
-    const double bubblesurface[] = {particleposition(0)+influence, particleposition(0)-influence,
-                              particleposition(1)+influence, particleposition(1)-influence,
-                              particleposition(2)+influence, particleposition(2)-influence};
+    const double bubblesurface[] = {modifiedparticlepos(0)+influence, modifiedparticlepos(0)-influence,
+                                    modifiedparticlepos(1)+influence, modifiedparticlepos(1)-influence,
+                                    modifiedparticlepos(2)+influence, modifiedparticlepos(2)-influence};
 
     // test the bounding box touching the bubble influence
     for(int dim=0; dim<3; ++dim)
@@ -461,12 +491,12 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
       // is there divergence in x-direction?
       if (std::abs(n(0)) > 1.0e-5)
       {
-        EvaluateSurface(surfacenodes, n, centerele , particleposition, influence, vol_ele, surfaceoverlap, ele->Id(), isurface);
+        EvaluateSurface(surfacenodes, n, centerele , modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), isurface);
       }
     }
 
     //store penetration points of +x and -x surfaces of the bubble
-    GetPenetrationPointsOfXSurfaces(n, surfacenodes, influence, particleposition, bubbleX, bubble_X, surfaceoverlap, ele->Id());
+    GetPenetrationPointsOfXSurfaces(n, surfacenodes, influence, modifiedparticlepos, bubbleX, bubble_X, surfaceoverlap, ele->Id());
   }
 
   // integration over x-oriented bubble surface
@@ -482,7 +512,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
       BuildConvexHull(bubbleX);
     }
 
-    EvaluateSurface(bubbleX, n, particleposition , particleposition, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface());
+    EvaluateSurface(bubbleX, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface());
   }
 
   // integration over -x-oriented bubble surface
@@ -497,7 +527,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     {
       BuildConvexHull(bubble_X);
     }
-    EvaluateSurface(bubble_X, n, particleposition , particleposition, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface()+1);
+    EvaluateSurface(bubble_X, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface()+1);
   }
 
 #ifdef GMSHOUT
@@ -1287,9 +1317,37 @@ void CAVITATION::Algorithm::EvaluateTwoPointsQuarticPoly(
 bool CAVITATION::Algorithm::XAABBoverlap(
   DRT::Element* ele,
   const double influence,
-  LINALG::Matrix<3,1> particleposition
+  const LINALG::Matrix<3,1>& particleposition,
+  const bool havepbc,
+  bool& pbcdetected,
+  LINALG::Matrix<3,1>& pbceleoffset
   )
 {
+  pbcdetected = false;
+  if(havepbc)
+  {
+    static LINALG::Matrix<3,1> distance;
+    pbceleoffset.PutScalar(0.0);
+
+    for(unsigned idim=0; idim<3; ++idim)
+    {
+      // check distance of fluid element and particle position roughly
+      distance(idim) = ele->Nodes()[0]->X()[idim] - particleposition(idim);
+      // use heuristic to find out whether fluid element and bubble are connected via a pbc bound
+      if(HavePBCs(idim) and (std::abs(distance(idim)) > PBCDelta(idim)*0.5))
+      {
+        // fluid element and bubble are (hopefully) connected via a pbc bound
+        pbcdetected = true;
+
+        // compute necessary offset to account for pbc
+        if(distance(idim) > 0.0)
+          pbceleoffset(idim) = -PBCDelta(idim);
+        else
+          pbceleoffset(idim) = +PBCDelta(idim);
+      }
+    }
+  }
+
   // get bounding box of current element
   double xaabb[6] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
                       std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
@@ -1308,6 +1366,16 @@ bool CAVITATION::Algorithm::XAABBoverlap(
   double bubblesurface[6] = {particleposition(0)+influence, particleposition(1)+influence,
                              particleposition(2)+influence, particleposition(0)-influence,
                              particleposition(1)-influence, particleposition(2)-influence};
+
+  // modify xaabb in case of pbc
+  if(pbcdetected)
+  {
+    for (size_t i = 0; i < 3; ++i)
+    {
+      xaabb[i] +=  pbceleoffset(i);
+      xaabb[3+i] +=  pbceleoffset(i);
+    }
+  }
 
   bool overlap = true;
   // test whether the bounding box of the fluid element touches the bubble influence
@@ -1329,9 +1397,11 @@ bool CAVITATION::Algorithm::XAABBoverlap(
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::AssignSmallBubbles(
   const double bubblevol,
-  const LINALG::Matrix<3,1> particleposition,
-  const std::vector<int> insideeles,
-  Teuchos::RCP<Epetra_FEVector> void_volumes
+  const LINALG::Matrix<3,1>& particleposition,
+  const std::vector<int>& insideeles,
+  Teuchos::RCP<Epetra_FEVector> void_volumes,
+  const std::vector<bool>& pbcdetected,
+  const std::vector<LINALG::Matrix<3,1> >& pbceleoffset
   )
 {
   // safety check
@@ -1342,6 +1412,11 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
   // just add the contribution to the underlying fluid element
   if(insideeles.size() == 1)
   {
+    // in case of pbcs: it is faster to modify the particle position than the element coordinates
+    LINALG::Matrix<3,1> modifiedparticlepos(particleposition);
+    if(pbcdetected[0])
+      modifiedparticlepos.Update(-1.0, pbceleoffset[0], 1.0);
+
     // do assembly of void fraction into fluid
     int err = void_volumes->SumIntoGlobalValues(1, &insideeles[0], &bubblevol);
     if (err<0)
@@ -1353,7 +1428,7 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
 
       static LINALG::Matrix<3,1> dummy;
       // get coordinates of the particle position in parameter space of the element
-      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
+      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], modifiedparticlepos, dummy);
 
       if(insideele == false)
         dserror("bubble at position x: %f y: %f z: %f is expected to lie inside fluid "
@@ -1365,11 +1440,16 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
     bool insideele = false;
     for(size_t i=0; i<insideeles.size(); ++i)
     {
+      // in case of pbcs: it is faster to modify the particle position than the element coordinates
+      LINALG::Matrix<3,1> modifiedparticlepos(particleposition);
+      if(pbcdetected[i])
+        modifiedparticlepos.Update(-1.0, pbceleoffset[i], 1.0);
+
       DRT::Element* fluidele = fluiddis_->gElement(insideeles[i]);
 
       static LINALG::Matrix<3,1> dummy;
       // get coordinates of the particle position in parameter space of the element
-      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
+      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], modifiedparticlepos, dummy);
 
       if(insideele == true)
       {
