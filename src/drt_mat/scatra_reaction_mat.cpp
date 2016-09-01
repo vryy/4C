@@ -64,19 +64,17 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
     case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
     {
       bool stoichallzero = true;
-      bool isonerolepositive = false;
+      bool roleallzero = true;
       for (int ii=0; ii < numscal_; ii++)
         {
           if (stoich_->at(ii) != 0)
             stoichallzero = false;
-          if (couprole_->at(ii) > 0.0)
-            isonerolepositive = true;
-          if (couprole_->at(ii) < 0.0)
-            dserror("reac_coup_simple_multiplicative must only contain positive entries in the ROLE list");
+          if (couprole_->at(ii) != 0.0)
+            roleallzero = false;
         }
-      if (not isonerolepositive)
-        dserror("reac_coup_simple_multiplicative must contain at least one positive entry in the ROLE list");
-      if (stoichallzero and fabs(reaccoeff_)>1.0e-14)
+      if (roleallzero)
+        dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the ROLE list");
+      if (stoichallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
 
       break;
@@ -95,7 +93,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         }
       if (roleallzero)
         dserror("reac_coup_power_multiplicative must contain at least one positive entry in the ROLE list");
-      if (stoichallzero and fabs(reaccoeff_)>1.0e-14)
+      if (stoichallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
 
       break;
@@ -109,11 +107,11 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
           if (stoich_->at(ii)<0)
             dserror("reac_coup_constant must only contain positive entries in the STOICH list");
           if (couprole_->at(ii) != 0.0)
-                      dserror("reac_coup_constant must only contain positive entries in the STOICH list");
+            dserror("reac_coup_constant must only contain zero entries in the ROLE list");
           if (stoich_->at(ii)>0)
             issomepositiv=true;
         }
-      if ( (not issomepositiv) and fabs(reaccoeff_)>1.0e-14)
+      if (not issomepositiv)
         dserror("reac_coup_constant must contain at least one positive entry in the STOICH list");
       break;
     }
@@ -131,7 +129,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         }
       if (roleallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the ROLE list");
-      if (stoichallzero and fabs(reaccoeff_)>1.0e-14 )
+      if (stoichallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
       break;
     }
