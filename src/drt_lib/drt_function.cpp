@@ -20,752 +20,12 @@
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "standardtypes_cpp.H"
-#include "drt_timecurve.H"
 #include "drt_linedefinition.H"
 #include "../drt_combust/combust_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_io/io.H"
-
-namespace DRT
-{
-namespace UTILS
-{
-
-/// spatial function based on parsed expression
-class ExprFunction : public Function
-{
-public:
-  /*!
-
-  \brief construct spatial function from expression with given origin
-
-  \note  Upon construction, the object defines a spatial function
-         returning the same function value for every spatial dimension.
-         If a vector-valued spatial function is required, further
-         expressions can be added via the AddExpr function. In this
-         case, the spatial function defined upon construction will be
-         the first component of the vector-valued spatial function.
-
-  \param buf (i) (c-string) expression to be parsed during evaluation
-  \param x   (i) x-coordinate of the origin of the coordinate system
-  \param y   (i) y-coordinate of the origin of the coordinate system
-  \param z   (i) z-coordinate of the origin of the coordinate system
-
-  */
-  ExprFunction(char* buf, double x, double y, double z);
-
-  /*!
-
-  \brief Default constructor creating empty object. Expressions are
-         added with add function
-
-  */
-  ExprFunction();
-
-  /*!
-
-  \brief clean up parse tree
-
-  */
-  ~ExprFunction();
-
-
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) For vector-valued functions, index defines the
-                   function-component which should be evaluated
-                   For scalar functionsb, index is always set to 0
-  \param x     (i) The point in 3-dimensional space in which the
-                   function will be evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief evaluate derivatives function at given position in space
-
-  \param index (i) For vector-valued functions, index defines the
-                   function-component which should be evaluated
-                   For scalar functionsb, index is always set to 0
-  \param x     (i) The point in 3-dimensional space in which the
-                   function will be evaluated
-  \param t     (i) Absolut time in which the
-                   function will be evaluated
-  \param dis   (i) discretization
-
-  */
-  virtual std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief add expression to an existing ExprFunction in order to extend
-         it to a vector-valued spatial function.
-
-         Every call to AddExpr adds one more component to the
-         vector-valued function.
-
-  \param buf (i) (c-string) expression to be parsed during evaluation of this component
-  \param x   (i) x-coordinate of the origin of the coordinate system of this component
-  \param y   (i) y-coordinate of the origin of the coordinate system of this component
-  \param z   (i) z-coordinate of the origin of the coordinate system of this component
-
-  */
-  void AddExpr(std::string buf, double x, double y, double z);
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (1 for scalar functions, dim for vector-valued functions)
-
-  \return number of components
-
-  */
-  virtual int NumberComponents()
-  {
-    return(expr_.size());
-  };
-
-private:
-
-  /*
-    for scalar spatial functions returning the same value for all
-    dimensions:
-
-   -----------------------------------------+-------+-------+-------
-    spatial function for dimension          |   0   |   1   |   2
-   -----------------------------------------+-------+-------+-------
-    origin of spatial function, x-component |         x_[0]
-   -----------------------------------------+-----------------------
-    origin of spatial function, y-component |         y_[0]
-   -----------------------------------------+-------+-------+-------
-    origin of spatial function, x-component |         z_[0]
-   -----------------------------------------+-------+-------+-------
-
-
-    for vector-valued spatial functions, returning separate values
-    for all dimensions:
-
-   -----------------------------------------+-------+-------+-------
-    spatial function for dimension          |   0   |   1   |   2
-   -----------------------------------------+-------+-------+-------
-    origin of spatial function, x-component | x_[0] | x_[1] | x_[2]
-   -----------------------------------------+-------+-------+-------
-    origin of spatial function, y-component | y_[0] | y_[1] | y_[2]
-   -----------------------------------------+-------+-------+-------
-    origin of spatial function, x-component | z_[0] | z_[1] | z_[2]
-   -----------------------------------------+-------+-------+-------
-
-  */
-
-  int dim_; //! problem dimension determining evaluated components
-
-  std::vector<double> x_; //! origin(s) of spatial function, x-component
-  std::vector<double> y_; //! origin(s) of spatial function, y-component
-  std::vector<double> z_; //! origin(s) of spatial function, z-component
-
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_; //! expression syntax tree(s)
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > > exprd_;
-};
-
-
-/// special implementation for 3d Beltrami flow
-class BeltramiFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(4);
-  };
-
-};
-
-
-/// special implementation for 2d Kim-Moin flow
-class KimMoinFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (this is a vector-valued functions)
-
-  \return number of components (u,v,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(3);
-  };
-
-};
-
-
-/// special implementation for 2d Bochev test case (velocity and pressure)
-class BochevUPFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(3);
-  };
-
-};
-
-
-/// special implementation for 2d Bochev test case (rhs function)
-class BochevRHSFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (f1,f2)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(2);
-  };
-
-};
-
-
-
-/// special implementation for beltrami flow (rhs)
-class BeltramiRHS : public Function
-{
-public:
-
-
-  BeltramiRHS(int mat_id, bool is_stokes);
-
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(3);
-  };
-
-private:
-  double kinviscosity_;
-  bool is_stokes_;
-
-};
-
-
-
-/// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
-class KimMoinRHS : public Function
-{
-public:
-
-
-  KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes);
-
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(3);
-  };
-
-private:
-  double kinviscosity_;
-  bool is_stationary_;
-  bool is_stokes_;
-
-};
-
-
-/// special implementation for (randomly) disturbed 3d turbulent
-/// boundary-layer profile
-/// (currently fixed for low-Mach-number flow through a backward-facing step,
-///  but may be easily manipulated to fit other profiles in other geometries)
-class TurbBouLayerFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(4);
-  };
-
-};
-
-
-/// special implementation for (randomly) disturbed 3d turbulent
-/// boundary-layer profile
-/// (incompressible flow over backward-facing step,
-///  corresponding to geometry of DNS by Le, Moin and Kim)
-class TurbBouLayerFunctionBFS : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(4);
-  };
-
-};
-
-
-/// special implementation for (randomly) disturbed 3d turbulent boundary-layer profile
-/// (incompressible flow in the ORACLES test rig)
-class TurbBouLayerFunctionORACLES : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-};
-
-
-/// special implementation for Womersley blood flow
-class WomersleyFunction : public Function
-{
-public:
-
-  // ctor
-  WomersleyFunction(bool locsys, int e, int mat, int curve, bool fsi);
-
-
-  // evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-  // Bessel Functions of the first kind and order 0 or 1 for a complex argument
-  std::complex<double> BesselJ01(std::complex<double> z, bool order);
-  // perform a discrete fourier transformation on given array
-  void DFT(std::vector<double> *data, std::vector< std::complex<double> > *resdata, const int N);
-
-private:
-
-  bool                   isinit_;
-  // switch for use of local coordinate systems
-  bool                   locsys_;
-  int                    locsysid_;
-  // current edge node radius
-  double                  radius_;
-  // a time curve
-  DRT::UTILS::TimeCurve& tc_;
-  // number of the material in the input file
-  int                    mat_;
-  double                 viscosity_;
-  // FSI switch
-  bool                   fsi_;
-  // toggle coordinate transformation of edge node (once per time step)
-  bool                    dotrafo_;
-  // store t_(n-1) for comparison with t_n
-  double                 tnminus1_;
-
-  // further variables
-  // number of harmonics that are used in the synthesis of the timecurve
-  int                     noharm_;
-  // time curve frequency
-  double                 fbase_;
-         // time curve value of the previous time step (needed in current version to circumvent division by 0)
-        double                 tcprevious_;
-  // imaginary number i
-  std::complex<double>   i_;
-  // storage vector for velocity@1s for profile transition 0<t<1
-  std::vector<double>     vtemp_;
-  // storage vector for Fourier Transform output
-  std::vector< std::complex<double> > fouphyscurve_;
-
-  // exist after init phase if locsys_==true
-  // to do: move this stuff to separate class in locsys.H/.cpp
-  // with functionality to transform spatial vectors from/to local system
-  Condition*             locsyscond_;
-  std::vector<double>    normal_;
-  std::vector<double>    tangent1_;
-  std::vector<double>    tangent2_;
-  std::vector<double>    origin_;
-
-  // exist after init phase if dirich_==true
-  // for edge nodes (polar coordinates)
-  // location of smallest modulus of phi, phi<0
-  int                    iminminus_;
-  // location of smallest modulus of phi, phi>0
-  int                    iminplus_;
-  // location of largest modulus of phi, phi<0
-  int                    imaxminus_;
-  // location of largest modulus of phi, phi>0
-  int                    imaxplus_;
-  // vector with inflow surface ids
-  std::vector<int>       surfnodeids_;
-  // vector with edge node ids
-  std::vector<int>       nodeids_;
-  // phase vector
-  std::vector<double>    phi_;
-  // distances between center of cross section and nodes
-  std::vector<double>    noderadius_;
-};
-
-
-/// special implementation for stationary 2d Jeffery-Hamel flow
-class JefferyHamelFlowFunction : public Function
-{
-public:
-  /*!
-
-  \brief evaluate function at given position in space
-
-  \param index (i) index defines the function-component which will
-                   be evaluated
-  \param x     (i) The point in space in which the function will be
-                   evaluated
-
-  */
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  /*!
-
-  \brief Return the number of components of this spatial function
-  (This is a vector-valued function)
-
-  \return number of components (u,v,w,p)
-
-  */
-  virtual int NumberComponents()
-  {
-    return(4);
-  };
-
-  /*!
-
-  compute radial flow u as a function of the angle alpha
-
-  \return radial velocity u
-
-  \note this function is static such that we can get the radial velocity
-        without creating the Function object
-
-  */
-  static double RadialVelocity(
-    const double& theta ///< angle between 0 and PI/4 (range is checked in debug mode)
-    );
-
-};
-
-
-/// special implementation for controlled rotations
-class ControlledRotationFunction : public Function
-{
-public:
-
-  /// ctor
-  ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z);
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-private:
-  // Condition type: STRUCTURE=1, FLUID=2
-  int type_;
-
-  // Origin, about which the rotation shall be performed
-  LINALG::Matrix<3,1> origin_;
-
-  // Time of previous time step (at t-deltaT)
-  double timeOld_;
-
-  // Number of maneuver cells (variables)
-  const int NUMMANEUVERCELLS_;
-
-  // Number of maneuvers
-  int numManeuvers_;
-
-  // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
-  std::vector<double> maneuvers_;
-
-  // Previous angular acceleration (at t-deltaT)
-  LINALG::Matrix<3,1> omegaDotOld_B_;
-
-  // Current angular rate (at t)
-  LINALG::Matrix<3,1> omega_B_;
-
-  // Satellite's current attitude trafo matrix from B- to I-system (at t)
-  LINALG::Matrix<3,3> satAtt_dcm_IB_;
-
-  // Satellite's current attitude quaternion from B- to I-system (at t)
-  LINALG::Matrix<4,1> satAtt_q_IB_;
-};
-
-/// special implementation for acceleration profiles
-class AccelerationProfileFunction : public Function
-{
-public:
-
-  /// ctor
-  AccelerationProfileFunction(std::string fileName);
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-private:
-  // Time of previous time step (at t-deltaT)
-  double timeOld_;
-
-  // Number of cells (variables) (time + 3-dim acc = 4)
-  const int NUMACCELERATIONCELLS_;
-
-  // Number of acceleration rows
-  int numAccelerations_;
-
-  // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
-  std::vector<double> accelerations_;
-
-  // Current acceleration (at t)
-  LINALG::Matrix<3,1> acc_B_;
-};
-
-/// special implementation for ramping to a specified value
-class RampToValueFunction : public Function
-{
-public:
-
-  /// ctor
-  RampToValueFunction(double value, double startTime, double duration, std::string type);
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-private:
-  // Time of previous time step (at t-deltaT)
-  double timeOld_;
-
-  // Value to which is ramped
-  double value_;
-
-  // Time to start the ramping
-  double startTime_;
-
-  // Duration of the ramping
-  double duration_;
-
-  // Ramping type (1: ZERORAMPCONST, 2: ZERORAMPZERO)
-  int type_;
-
-  // Current value (at t)
-  double valueCurrent_;
-};
-
-/// special implementation for the node normals of a specified geometry
-class NodeNormalFunction : public Function
-{
-public:
-  /// ctor
-  NodeNormalFunction(std::string type, std::vector<double>* origin, double radius, double cylinderHeight, std::vector<double>* orientation, double CassiniA);
-
-  /// Evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  // Determine node normal of a sphere
-  double NodeNormalSphere(int index, const double* xp, std::vector<double> origin);
-
-  // Determine node normal of a Cassini volume
-  double NodeNormalCassini(int index, const double* xp, std::vector<double> origin);
-
-private:
-  // Problem dimension (2D or 3D, i.e. 2 or 3)
-  int dim_;
-
-  // Geometry type
-  int type_;
-
-  // Origin of the geometry
-  std::vector<double> origin_;
-
-  // Radius
-  double radius_;
-
-  // Cylinder height, divided by 2
-  double cylinderHeightHalf_;
-
-  // Orientation of the geometry (symmetry axis)
-  std::vector<double> orientation_;
-
-  // Cassini value a
-  double CassiniA_;
-
-  // New reference origin, if nodes lie in the positive or negative spherical part
-  std::vector<double> originRefSpherePos_;
-  std::vector<double> originRefSphereNeg_;
-};
-
-/// special implementation for the rotation vector used in locsys conditions
-class RotationVectorForNormalSystemFunction : public Function
-{
-public:
-
-  /// ctor
-  RotationVectorForNormalSystemFunction(int geoFunct);
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-private:
-  // Problem dimension (2D or 3D, i.e. 2 or 3)
-  int dim_;
-
-  // Function that calculates the node normal for the specified geometry
-  int geoFunct_;
-};
-
-} // end namespace UTILS
-} // end namespace DRT
-
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -1082,6 +342,21 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("FUNCTFORGEOMETRY")
     ;
 
+  DRT::INPUT::LineDefinition componentvarexpr;
+  componentvarexpr
+    .AddNamedInt("FUNCT")
+    .AddNamedInt("COMPONENT")
+    .AddNamedDoubleVector("VAREXPR",3)
+    .AddNamedString("FUNCTION")
+    ;
+
+  DRT::INPUT::LineDefinition varexpr;
+  varexpr
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("VAREXPR",3)
+    .AddNamedString("FUNCTION")
+    ;
+
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr
     .AddNamedInt("FUNCT")
@@ -1140,6 +415,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(ramptovalue);
   lines->Add(nodenormal);
   lines->Add(rotationvectorfornormalsystem);
+  lines->Add(componentvarexpr);
+  lines->Add(varexpr);
   lines->Add(componentexpr);
   lines->Add(expr);
   return lines;
@@ -1576,6 +853,18 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.push_back(Teuchos::rcp(new RotationVectorForNormalSystemFunction(geoFunct)));
       }
+      else if (function->HaveNamed("VAREXPR"))
+      {
+        Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
+
+        std::vector<double> origin;
+        function->ExtractDoubleVector("VAREXPR",origin);
+        std::string component;
+        function->ExtractString("FUNCTION",component);
+
+        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+        functions_.push_back(vecfunc);
+      }
       else if (function->HaveNamed("EXPR"))
       {
         Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
@@ -1592,34 +881,76 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         dserror("unrecognized function");
     }
 
-    else
+    else // function.size()>1
     {
-      Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
-
-      for (unsigned j=0; j<functions.size(); ++j)
+      Teuchos::RCP<ExprFunction> vecfunc = Teuchos::null;
+      if(functions[0]->HaveNamed("EXPR"))
       {
-        int id;
-        functions[j]->ExtractInt("FUNCT",id);
-        if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
-
-        if (not functions[j]->HaveNamed("COMPONENT"))
-          dserror("component based expression function expected");
-
-        int dim;
-        functions[j]->ExtractInt("COMPONENT", dim);
-
-        if (dim!=static_cast<int>(j))
+        vecfunc = Teuchos::rcp(new ExprFunction());
+        for (unsigned j=0; j<functions.size(); ++j)
         {
-          dserror("For vector valued functions the components have to be\n"
-                  "specified succesively, e.g. 0,1,..,ndof");
+          if (functions[j]->HaveNamed("EXPR"))
+          {
+            int id;
+            functions[j]->ExtractInt("FUNCT",id);
+            if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
+
+            if (not functions[j]->HaveNamed("COMPONENT"))
+              dserror("component based expression function expected");
+
+            int dim;
+            functions[j]->ExtractInt("COMPONENT", dim);
+
+            if (dim!=static_cast<int>(j))
+            {
+              dserror("For vector valued functions the components have to be\n"
+                      "specified successively, e.g. 0,1,..,ndof");
+            }
+
+            std::vector<double> origin;
+            functions[j]->ExtractDoubleVector("EXPR",origin);
+            std::string component;
+            functions[j]->ExtractString("FUNCTION",component);
+
+            vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+          }
+          else
+            dserror("unrecognized component for 'EXPR' function");
         }
+      }
+      else if(functions[0]->HaveNamed("VAREXPR"))
+      {
+        vecfunc = Teuchos::rcp(new VariableExprFunction());
+        for (unsigned j=0; j<functions.size(); ++j)
+        {
+          if (functions[j]->HaveNamed("VAREXPR"))
+          {
+            int id;
+            functions[j]->ExtractInt("FUNCT",id);
+            if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
 
-        std::vector<double> origin;
-        functions[j]->ExtractDoubleVector("EXPR",origin);
-        std::string component;
-        functions[j]->ExtractString("FUNCTION",component);
+            if (not functions[j]->HaveNamed("COMPONENT"))
+              dserror("component based expression function expected");
 
-        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+            int dim;
+            functions[j]->ExtractInt("COMPONENT", dim);
+
+            if (dim!=static_cast<int>(j))
+            {
+              dserror("For vector valued functions the components have to be\n"
+                      "specified successively, e.g. 0,1,..,ndof");
+            }
+
+            std::vector<double> origin;
+            functions[j]->ExtractDoubleVector("VAREXPR",origin);
+            std::string component;
+            functions[j]->ExtractString("FUNCTION",component);
+
+            vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+          }
+          else
+            dserror("unrecognized component for 'VAREXPR' function");
+        }
       }
       functions_.push_back(vecfunc);
     }
@@ -1882,6 +1213,210 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
 
   // return function (and its derivatives)
   return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::VariableExprFunction::VariableExprFunction():
+    isparsed_(false)
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::VariableExprFunction::~VariableExprFunction()
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::VariableExprFunction::AddExpr(std::string buf,
+                                       double x,
+                                       double y,
+                                       double z
+  )
+{
+  // do the almost same as the expression function (base class) but do not yet parse!
+
+  // build the parser for the function evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+
+  // build the parser for the function derivative evaluation
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+
+  // save the parsers
+  expr_.push_back(parser);
+  exprd_.push_back(parserd);
+
+  // save the coordinates of the origin
+  x_.push_back(x);
+  y_.push_back(y);
+  z_.push_back(z);
+
+  isparsed_=false;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::VariableExprFunction::IsVariable(
+    int index,
+    const std::string& varname) const
+{
+  if(index>(int)expr_.size()-1 || index<0)
+    dserror("Tried to add a variable to a function in a not available dimension.");
+
+  return expr_[index]->IsVariable(varname);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::VariableExprFunction::AddVariable(
+    int index,
+    const std::string& varname,
+    double varvalue)
+{
+  if(index>(int)expr_.size()-1 || index<0)
+    dserror("Tried to add a variable to a function in a not available dimension.");
+  if(isparsed_)
+    dserror("Function has already been parsed! Variables can no longer be added!");
+
+  expr_[index]->AddVariable(varname,varvalue);
+  exprd_[index]->AddVariable(varname,varvalue);
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::VariableExprFunction::ParseExpressions()
+{
+  // define iterators
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > >::iterator it;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > >::iterator itd;
+
+  // loop over expressions and parse them
+  for( it=expr_.begin() ; it!=expr_.end() ; it++)
+    (*it)->ParseFunction();
+  // loop over expressions for derivatives and parse them
+  for( itd=exprd_.begin() ; itd!=exprd_.end() ; itd++)
+    (*itd)->ParseFunction();
+
+  isparsed_=true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::VariableExprFunction::Evaluate(
+    int index,
+    const std::vector<std::pair<std::string,double> >& variables)
+{
+  if(not isparsed_)
+    ParseExpressions();
+  // set the values of the variables
+  std::vector<std::pair<std::string,double> >::const_iterator it;
+  for( it=variables.begin() ; it!=variables.end() ; it++)
+    expr_[index]->SetValue(it->first,it->second);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
+    int index,
+    const std::vector<std::pair<std::string,double> >& variables)
+{
+  if(not isparsed_)
+    ParseExpressions();
+
+  // Fad object for evaluation
+  // sacado data type replaces "double"
+  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+
+  // number of variables
+  int numvariables = variables.size();
+
+  // counter for variable numbering
+  int counter = 0;
+
+  // set the values of the variables
+  std::vector<std::pair<std::string,double> >::const_iterator it;
+  for( it=variables.begin() ; it!=variables.end() ; it++)
+  {
+    // for 1st order derivatives
+    FAD varfad(numvariables, counter, it->second);
+    // set the value in expression
+    exprd_[index]->SetValue(it->first,varfad);
+    //update counter
+    counter++;
+  }
+
+  // evaluate the expression
+  FAD fdfad = exprd_[index]->Evaluate();
+
+  // initialize result vector
+  const unsigned deg =1;
+  // resulting vector holding
+  std::vector<std::vector<double> > res(deg);
+  for(unsigned i=0;i<deg;i++)
+    res[i]= std::vector<double> (numvariables,0.0);
+
+  // fill the result vector
+  for(int i=0;i<numvariables;i++)
+    res[0][i]=fdfad.dx(i).val();
+
+  return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x, double t, DRT::Discretization* dis)
+{
+  std::vector<std::pair<std::string,double> > variables;
+
+  switch(dim_)
+  {
+  case 3:
+  {
+    variables.push_back(std::pair<std::string,double>("x",x[0]));
+    variables.push_back(std::pair<std::string,double>("y",x[1]));
+    variables.push_back(std::pair<std::string,double>("z",x[2]));
+  }
+  case 2:
+  {
+    variables.push_back(std::pair<std::string,double>("x",x[0]));
+    variables.push_back(std::pair<std::string,double>("y",x[1]));
+  }
+  case 1:
+  {
+    variables.push_back(std::pair<std::string,double>("x",x[0]));
+  }
+  }
+
+  variables.push_back(std::pair<std::string,double>("t",t));
+
+  return Evaluate(index,variables);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
+    int                  index,
+    const double*        x,
+    const double         t,
+    DRT::Discretization* dis)
+{
+  std::vector<std::pair<std::string,double> > variables(4);
+
+  variables[0] = std::pair<std::string,double>("x",x[0]);
+  variables[1] = std::pair<std::string,double>("y",x[1]);
+  variables[2] = std::pair<std::string,double>("z",x[2]);
+  variables[3] = std::pair<std::string,double>("t",t);
+
+  return FctDer(index,variables);
 }
 
 /*----------------------------------------------------------------------*/
