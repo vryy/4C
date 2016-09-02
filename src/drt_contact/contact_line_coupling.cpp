@@ -64,7 +64,9 @@ CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
 {
-  int numintline = 0;
+  // clear entries of master vertices
+  DoneBefore().clear();
+
   // loop over all found master elements
   for(int nele = 0; nele<NumberSurfaceElements(); ++nele)
   {
@@ -77,26 +79,27 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     // 2. create aux plane for master ele
     AuxiliaryPlane();
 
-    // 3. check orientation
+    // 3. create aux line for slave ele
+    AuxiliaryLine();
+
+    // 4. check orientation
     if(!CheckOrientation())
       return;
 
-    // 4. project master nodes onto auxplane
+    // 5. project master nodes onto auxplane
     ProjectMaster();
 
-    // 5. project slave line elements onto auxplane
+    // 6. project slave line elements onto auxplane
     ProjectSlave();
 
-    // 6. perform line clipping
+    // 7. perform line clipping
     LineClipping();
 
-    // 7. intersections found?
+    // 8. intersections found?
     if((int)InterSections().size() == 0 or (int)InterSections().size() == 1 )
       continue;
 
-//    std::cout << "InterSections().size() " << InterSections().size() << std::endl;
-
-    // 8. check length of Integration Line
+    // 9. check length of Integration Line
     bool check = CheckLength();
     if(check==false)
       continue;
@@ -106,24 +109,20 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
         2,
         std::vector<GEN::pairedvector<int, double> >(
             3,
-            3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+            3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode() + linsize_));
 
-    // 9. linearize vertices
+    // 10. linearize vertices
     LinearizeVertices(linvertex);
 
-    // 10. create intlines
+    // 11. create intlines
     CreateIntegrationLines(linvertex);
 
-    // 11. consistent dual shape
+    // 12. consistent dual shape
     ConsistDualShape();
 
-    // 12. integration
+    // 13. integration
     IntegrateLine();
-    numintline += 1;
-
   }// end loop
-
-//  std::cout << "numintline = " << numintline << std::endl;
 
   return;
 }
@@ -145,12 +144,19 @@ void CONTACT::LineToSurfaceCoupling3d::Initialize()
   Lauxn() = 0.0;
   GetDerivAuxn().clear();
 
+  // reset normal of aux line
+//  AuxnLine()[0] = 0.0;
+//  AuxnLine()[1] = 0.0;
+//  AuxnLine()[2] = 0.0;
+//  GetDerivAuxnLine().clear();
+
   // clear all slave and master vertices
   SlaveVertices().clear();
   MasterVertices().clear();
 
   // clear previously found intersections
   InterSections().clear();
+  TempInterSections().clear();
 
   // clear integration line
   IntLine() = Teuchos::null;
@@ -159,10 +165,12 @@ void CONTACT::LineToSurfaceCoupling3d::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- |  calculate dual shape functions                           farah 07/16|
+ |  check orientation of line and surface element            farah 07/16|
  *----------------------------------------------------------------------*/
 bool CONTACT::LineToSurfaceCoupling3d::CheckOrientation()
 {
+  // check if surface normal and line ele are parallel!
+
   // tolerance for line clipping
   const double sminedge = ParentElement().MinEdgeSize();
   const double mminedge = SurfaceElement().MinEdgeSize();
@@ -180,13 +188,13 @@ bool CONTACT::LineToSurfaceCoupling3d::CheckOrientation()
 
   // calculate lengths
   const double lengthS = sqrt(lvec[0] * lvec[0] + lvec[1] * lvec[1] + lvec[2] * lvec[2]);
-  const double lengthA = sqrt(Auxn()[0] * Auxn()[0] + Auxn()[1] * Auxn()[1] + Auxn()[2] * Auxn()[2]);
+  const double lengthA = sqrt(AuxnSurf()[0] * AuxnSurf()[0] + AuxnSurf()[1] * AuxnSurf()[1] + AuxnSurf()[2] * AuxnSurf()[2]);
   const double prod = lengthS*lengthA;
   if(prod<1e-12)
     return false;
 
   // calculate scalar product
-  double scaprod = lvec[0] * Auxn()[0] + lvec[1] * Auxn()[1] + lvec[2] * Auxn()[2];
+  double scaprod = lvec[0] * AuxnSurf()[0] + lvec[1] * AuxnSurf()[1] + lvec[2] * AuxnSurf()[2];
   scaprod = scaprod/(prod);
   double diff = abs(scaprod) -1.0;
 
@@ -457,6 +465,776 @@ void CONTACT::LineToSurfaceCoupling3d::IntegrateLine()
 }
 
 /*----------------------------------------------------------------------*
+ |  check if all vertices are along one line                 farah 09/16|
+ *----------------------------------------------------------------------*/
+bool CONTACT::LineToSurfaceCoupling3d::CheckLineOnLine(
+    MORTAR::Vertex& edgeVertex1,
+    MORTAR::Vertex& edgeVertex0,
+    MORTAR::Vertex& lineVertex1,
+    MORTAR::Vertex& lineVertex0)
+{
+  // tolerance for line clipping
+  const double sminedge = ParentElement().MinEdgeSize();
+  const double mminedge = SurfaceElement().MinEdgeSize();
+  const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
+
+  // check if point of edge is on line
+  bool lineOnLine    = false;
+  double line[3]     = { 0.0, 0.0, 0.0 };
+  double edgeLine[3] = { 0.0, 0.0, 0.0 };
+
+  for (int k = 0; k < 3; ++k)
+  {
+    line[k]     = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
+    edgeLine[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
+  }
+
+  double lengthLine = sqrt(line[0]*line[0] + line[1]*line[1] + line[2]*line[2]);
+  double lengthedge = sqrt(edgeLine[0]*edgeLine[0] + edgeLine[1]*edgeLine[1] + edgeLine[2]*edgeLine[2]);
+
+  if(lengthLine<tol)
+    dserror("ERROR: Line Element is of zero length!");
+
+  if(lengthedge<tol)
+  {
+    lineOnLine = true;
+  }
+  else
+  {
+    // calc scalar product
+    double scaprod = line[0]*edgeLine[0] + line[1]*edgeLine[1] + line[2]*edgeLine[2];
+    scaprod /= (lengthLine * lengthedge);
+
+    if( (abs(scaprod)-tol < 1.0) and (abs(scaprod) + tol > 1.0) )
+      lineOnLine = true;
+  }
+
+  if(!lineOnLine)
+    return false;
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  geometric stuff (private)                                farah 08/16|
+ *----------------------------------------------------------------------*/
+bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(
+    MORTAR::Vertex& edgeVertex1,
+    MORTAR::Vertex& edgeVertex0,
+    MORTAR::Vertex& lineVertex1,
+    MORTAR::Vertex& lineVertex0)
+{
+  // output bool
+  const bool out = false;
+
+  // tolerance for line clipping
+  const double sminedge = ParentElement().MinEdgeSize();
+  const double mminedge = SurfaceElement().MinEdgeSize();
+  const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
+
+  bool lineOnLine = CheckLineOnLine(edgeVertex1,
+                                    edgeVertex0,
+                                    lineVertex1,
+                                    lineVertex0);
+
+  if(!lineOnLine)
+    dserror("ERROR: vertices not along a line, but already checked!");
+
+  double line[3]     = { 0.0, 0.0, 0.0 };
+  for (int k = 0; k < 3; ++k)
+    line[k]     = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
+
+  // LINE ON LINE!!! go on with real line to line clipping
+  bool e0v0 = false;
+  bool e0v1 = false;
+  bool e1v0 = false;
+  bool e1v1 = false;
+  double prod0 = 0.0;
+  double prod1 = 0.0;
+  double prod2 = 0.0;
+  double prod3 = 0.0;
+  // check of both master vertices are out of line in 0 direction
+  double lineEdge0Vert0[3] = { 0.0, 0.0, 0.0 };
+  double lineEdge1Vert0[3] = { 0.0, 0.0, 0.0 };
+  for (int k = 0; k < 3; ++k)
+  {
+    lineEdge0Vert0[k] = edgeVertex0.Coord()[k] - lineVertex0.Coord()[k];
+    lineEdge1Vert0[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
+  }
+
+  for (int k = 0; k < 3; ++k)
+  {
+    prod0 += lineEdge0Vert0[k] * line[k];
+    prod1 += lineEdge1Vert0[k] * line[k];
+  }
+
+  if(prod0<0.0) e0v0 = false;
+  else          e0v0 = true;
+  if(prod1<0.0) e1v0 = false;
+  else          e1v0 = true;
+
+
+  // check of both master vertices are out of line in 1 direction
+  double lineEdge0Vert1[3] = { 0.0, 0.0, 0.0 };
+  double lineEdge1Vert1[3] = { 0.0, 0.0, 0.0 };
+  for (int k = 0; k < 3; ++k)
+  {
+    lineEdge0Vert1[k] = edgeVertex0.Coord()[k] - lineVertex1.Coord()[k];
+    lineEdge1Vert1[k] = edgeVertex1.Coord()[k] - lineVertex1.Coord()[k];
+  }
+
+  for (int k = 0; k < 3; ++k)
+  {
+    prod2 -= lineEdge0Vert1[k] * line[k];
+    prod3 -= lineEdge1Vert1[k] * line[k];
+  }
+
+  if(prod2<0.0) e0v1 = false;
+  else          e0v1 = true;
+  if(prod3<0.0) e1v1 = false;
+  else          e1v1 = true;
+
+  // check if vertices are lying on each other
+  bool e0isV0 = true;
+  bool e0isV1 = true;
+  bool e1isV0 = true;
+  bool e1isV1 = true;
+
+  double test0[3] = { 0.0, 0.0, 0.0 };
+  double test1[3] = { 0.0, 0.0, 0.0 };
+  double test2[3] = { 0.0, 0.0, 0.0 };
+  double test3[3] = { 0.0, 0.0, 0.0 };
+
+  for (int k = 0; k < 3; ++k)
+  {
+    test0[k] = edgeVertex0.Coord()[k] - lineVertex0.Coord()[k];
+    test1[k] = edgeVertex0.Coord()[k] - lineVertex1.Coord()[k];
+    test2[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
+    test3[k] = edgeVertex1.Coord()[k] - lineVertex1.Coord()[k];
+  }
+
+  double l0 = sqrt(test0[0]*test0[0] + test0[1]*test0[1] + test0[2]*test0[2]);
+  double l1 = sqrt(test1[0]*test1[0] + test1[1]*test1[1] + test1[2]*test1[2]);
+  double l2 = sqrt(test2[0]*test2[0] + test2[1]*test2[1] + test2[2]*test2[2]);
+  double l3 = sqrt(test3[0]*test3[0] + test3[1]*test3[1] + test3[2]*test3[2]);
+
+  if(abs(l0)>tol)
+    e0isV0 = false;
+  if(abs(l1)>tol)
+    e0isV1 = false;
+  if(abs(l2)>tol)
+    e1isV0 = false;
+  if(abs(l3)>tol)
+    e1isV1 = false;
+
+  // ========================================================
+  // 1.: nodes on each other
+  if(e0isV0 and e1isV1)
+  {
+    if(out)
+      std::cout << "CASE 1" << std::endl;
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 2.: nodes on each other
+  else if(e0isV1 and e1isV0)
+  {
+    if(out)
+      std::cout << "CASE 2" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 3.: e0 on v0 and e1 valid
+  else if(e0isV0 and e1v0 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 3" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 4.: e1 on v0 and e0 valid
+  else if(e1isV0 and e0v0 and e0v1)
+  {
+    if(out)
+      std::cout << "CASE 4" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 5.: e0 on v1 and e1 valid
+  else if(e0isV1 and e1v0 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 5" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 6.: e1 on v1 and e0 valid
+  else if(e1isV1 and e0v0 and e0v1)
+  {
+    if(out)
+      std::cout << "CASE 6" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 7.: e0 on v0 and e1 out of v1 but in v0
+  else if(e0isV0 and e1v0 and !e1v1)
+  {
+    if(out)
+      std::cout << "CASE 7" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 8.: e1 on v0 and e0 out of v1 but in v0
+  else if(e1isV0 and e0v0 and !e0v1)
+  {
+    if(out)
+      std::cout << "CASE 8" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 9.: e1 on v1 and e0 out of v0 but in v1
+  else if(e1isV1 and !e0v0 and e0v1)
+  {
+    if(out)
+      std::cout << "CASE 9" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 10.: e0 on v1 and e1 out of v0 but in v1
+  else if(e0isV1 and !e1v0 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 10" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 11.: e0 on v0 and e1 out of v0 but in v1
+  else if(e0isV0 and !e1v0 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 11" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // 12.: e1 on v0 and e0 out of v0 but in v1
+  else if(e1isV0 and !e0v0 and e0v1)
+  {
+    if(out)
+      std::cout << "CASE 12" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // 13.: e0 on v1 and e1 out of v1 but in v0
+  else if(e0isV1 and !e1v1 and e1v0)
+  {
+    if(out)
+      std::cout << "CASE 13" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // 14.: e1 on v1 and e0 out of v1 but in v0
+  else if(e1isV1 and !e0v1 and e0v0)
+  {
+    if(out)
+      std::cout << "CASE 14" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // 15.: all true --> both intersections master nodes
+  else if(e0v1 and e1v1 and e0v0 and e1v0)
+  {
+    if(out)
+      std::cout << "CASE 15" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 16.: all slave nodes are projected: E0 out of V0  and E1 out of V1
+  else if(!e0v0 and e1v0 and e0v1 and !e1v1)
+  {
+    if(out)
+      std::cout << "CASE 16" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 17.: all slave nodes are projected: E1 out of V0  and E0 out of V1
+  else if(e0v0 and !e1v0 and !e0v1 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 17" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 18.: mixed: E0 and E1 pos to V0 and E0 pos to V1
+  else if(e0v0 and e1v0 and e0v1 and !e1v1)
+  {
+    if(out)
+      std::cout << "CASE 18" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 19.: mixed: E0 and E1 pos to V0 and E1 pos to V1
+  else if(e0v0 and e1v0 and !e0v1 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 19" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex1.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 20.: mixed: E0 neg and E1 pos to V0 and E0 and E1 pos to V1
+  else if(!e0v0 and e1v0 and e0v1 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 20" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex1.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex1.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 21.: mixed: E1 neg and E0 pos to V0 and E0 and E1 pos to V1
+  else if(e0v0 and !e1v0 and e0v1 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 21" << std::endl;
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            edgeVertex0.Coord(),
+            MORTAR::Vertex::master,
+            edgeVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+
+    InterSections().push_back(
+        MORTAR::Vertex(
+            lineVertex0.Coord(),
+            MORTAR::Vertex::projslave,
+            lineVertex0.Nodeids(),
+            NULL,
+            NULL,
+            false,
+            false,
+            NULL,
+            -1));
+  }
+  // ========================================================
+  // 22.: out: E0 and E1 in V0 and out of V1
+  else if(e0v0 and e1v0 and !e0v1 and !e1v1)
+  {
+    if(out)
+      std::cout << "CASE 22" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // 23.: out: E0 and E1 in V1 and out of V0
+  else if(!e0v0 and !e1v0 and e0v1 and e1v1)
+  {
+    if(out)
+      std::cout << "CASE 23" << std::endl;
+
+    // true because no more intersections expected
+    return true;
+  }
+  // ========================================================
+  // no valid intersection
+  else
+  {
+    std::cout << "e0isV0 = " << e0isV0 << std::endl;
+    std::cout << "e0isV1 = " << e0isV1 << std::endl;
+    std::cout << "e1isV0 = " << e1isV0 << std::endl;
+    std::cout << "e1isV1 = " << e1isV1 << std::endl;
+
+    std::cout << "e0v0 = " << e0v0 << std::endl;
+    std::cout << "e1v0 = " << e1v0 << std::endl;
+    std::cout << "e0v1 = " << e0v1 << std::endl;
+    std::cout << "e1v1 = " << e1v1 << std::endl;
+
+    dserror("ERROR: Something went terribly wrong!");
+  }
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
  |  geometric stuff (private)                                farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::LineClipping()
@@ -471,9 +1249,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 
   // vector with vertices
   InterSections().clear();
-
-  // vector with temp intersections vertices
-  std::vector<MORTAR::Vertex> tempintersec;
+  TempInterSections().clear();
 
   // safety
   if(MasterVertices().size()<3)
@@ -512,10 +1288,14 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
   for (int k = 0; k < 3; ++k)
     slaveLine[k] = SlaveVertices()[1].Coord()[k] - SlaveVertices()[0].Coord()[k];
 
+
+  // check for parallelity of line and edges and perform line to line clipping
+  bool foundValidParallelity = false;
+
   // loop over master vertices to create master polygon lines
   for (int j = 0; j < (int) MasterVertices().size(); ++j)
   {
-    // we need two edges first
+    // we need one edge first
     double edge[3] = { 0.0, 0.0, 0.0 };
     for (int k = 0; k < 3; ++k)
       edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
@@ -523,12 +1303,12 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
     // outward edge normals of polygon and slave line
     double np[3] = { 0.0, 0.0, 0.0 };
     double nl[3] = { 0.0, 0.0, 0.0 };
-    np[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    np[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    np[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
-    nl[0] = slaveLine[1] * Auxn()[2] - slaveLine[2] * Auxn()[1];
-    nl[1] = slaveLine[2] * Auxn()[0] - slaveLine[0] * Auxn()[2];
-    nl[2] = slaveLine[0] * Auxn()[1] - slaveLine[1] * Auxn()[0];
+    np[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
+    np[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
+    np[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
+    nl[0] = slaveLine[1] * AuxnSurf()[2] - slaveLine[2] * AuxnSurf()[1];
+    nl[1] = slaveLine[2] * AuxnSurf()[0] - slaveLine[0] * AuxnSurf()[2];
+    nl[2] = slaveLine[0] * AuxnSurf()[1] - slaveLine[1] * AuxnSurf()[0];
 
     if(out)
     {
@@ -550,205 +1330,363 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
     double parallel = edge[0] * nl[0] + edge[1] * nl[1] + edge[2] * nl[2];
     if (abs(parallel) < tol)
     {
-      if (out)
-        std::cout << "WARNING: Detected two parallel edges! (" << j << "," << j << ")" << std::endl;
+      // safety checks
+      if(MasterVertices()[j].Next()->Nodeids().size()>1)
+        dserror("ERROR: Only one node id per master vertex allowed!");
+      if(MasterVertices()[j].Nodeids().size()>1)
+        dserror("ERROR: Only one node id per master vertex allowed!");
 
-      continue;
+      // store master node ids in set to guarantee uniquness
+      std::pair<int,int> actIDs =
+          std::pair<int,int>(
+              MasterVertices()[j].Next()->Nodeids()[0],
+              MasterVertices()[j].Nodeids()[0]);
+      std::pair<int,int> actIDsTw =
+          std::pair<int,int>(
+              MasterVertices()[j].Nodeids()[0],
+              MasterVertices()[j].Next()->Nodeids()[0]);
+
+      // check if edge on line element
+      foundValidParallelity = CheckLineOnLine(
+          *MasterVertices()[j].Next(),
+          MasterVertices()[j],
+          SlaveVertices()[1],
+          SlaveVertices()[0]);
+
+      // check if processed before
+      std::set<std::pair<int,int> >::iterator iter   = DoneBefore().find(actIDs);
+      std::set<std::pair<int,int> >::iterator itertw = DoneBefore().find(actIDsTw);
+
+      // if not perform clipping of lines
+      if (iter == DoneBefore().end() and itertw == DoneBefore().end() )
+      {
+        // add to set of processed nodes
+        DoneBefore().insert(actIDs);
+        DoneBefore().insert(actIDsTw);
+
+        if(foundValidParallelity)
+        {
+          // perform line-line clipping
+          LineToLineClipping(
+                      *MasterVertices()[j].Next(),
+                      MasterVertices()[j],
+                      SlaveVertices()[1],
+                      SlaveVertices()[0]);
+          if(out)
+            std::cout << "MASTER IDS = " << MasterVertices()[j].Next()->Nodeids()[0] << "  " << MasterVertices()[j].Nodeids()[0] << std::endl;
+          break;
+        }
+        else
+          continue;
+      }
     }
+  } // end master vertex loop
 
-
-
-
-
-
-    // check for intersection of non-parallel edges
-    double wec_p1 = 0.0;
-    double wec_p2 = 0.0;
-    for (int k = 0; k < 3; ++k)
+  // if there is a line to line setting --> jump to node check
+  if(!foundValidParallelity)
+  {
+    // loop over master vertices to create master polygon lines
+    for (int j = 0; j < (int) MasterVertices().size(); ++j)
     {
-      wec_p1 += (SlaveVertices()[0].Coord()[k] - MasterVertices()[j].Coord()[k]) * np[k];
-      wec_p2 += (SlaveVertices()[1].Coord()[k] - MasterVertices()[j].Coord()[k]) * np[k];
-    }
+      // we need two edges first
+      double edge[3] = { 0.0, 0.0, 0.0 };
+      for (int k = 0; k < 3; ++k)
+        edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
 
-    if(out)
-    {
-      std::cout << "WecP1 = " << wec_p1 << std::endl;
-      std::cout << "WecP2 = " << wec_p2 << std::endl;
-    }
+      // outward edge normals of polygon and slave line
+      double np[3] = { 0.0, 0.0, 0.0 };
+      double nl[3] = { 0.0, 0.0, 0.0 };
+      np[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
+      np[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
+      np[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
+      nl[0] = slaveLine[1] * AuxnSurf()[2] - slaveLine[2] * AuxnSurf()[1];
+      nl[1] = slaveLine[2] * AuxnSurf()[0] - slaveLine[0] * AuxnSurf()[2];
+      nl[2] = slaveLine[0] * AuxnSurf()[1] - slaveLine[1] * AuxnSurf()[0];
+
+      if(out)
+      {
+        std::cout << "==============================================" << std::endl;
+        std::cout << "SLine= " << slaveLine[0] <<"  " << slaveLine[1] << "  " << slaveLine[2] << std::endl;
+        std::cout << "Pos1= " << SlaveVertices()[0].Coord()[0] <<"  " << SlaveVertices()[0].Coord()[1] << "  " << SlaveVertices()[0].Coord()[2] << std::endl;
+        std::cout << "Pos2= " << SlaveVertices()[1].Coord()[0] <<"  " << SlaveVertices()[1].Coord()[1] << "  " << SlaveVertices()[1].Coord()[2] << std::endl;
+        std::cout << "N slave= " << nl[0] <<"  " << nl[1] << "  " << nl[2] << std::endl;
 
 
-    // change of sign means we have an intersection!
-    if (wec_p1 * wec_p2 <= 0.0)
-    {
-      double wec_q1 = 0.0;
-      double wec_q2 = 0.0;
+        std::cout << "==============================================" << std::endl;
+        std::cout << "MEdge= " << edge[0] <<"  " << edge[1] << "  " << edge[2] << std::endl;
+        std::cout << "Pos1= " << (MasterVertices()[j].Next())->Coord()[0] <<"  " << (MasterVertices()[j].Next())->Coord()[1] << "  " << (MasterVertices()[j].Next())->Coord()[2] << std::endl;
+        std::cout << "Pos2= " << MasterVertices()[j].Coord()[0] <<"  " << MasterVertices()[j].Coord()[1] << "  " << MasterVertices()[j].Coord()[2] << std::endl;
+        std::cout << "N master= " << np[0] <<"  " << np[1] << "  " << np[2] << std::endl;
+      }
+
+      // check for parallelity of edges
+      double parallel = edge[0] * nl[0] + edge[1] * nl[1] + edge[2] * nl[2];
+      if (abs(parallel) < tol)
+      {
+        continue;
+      }
+
+      // check for intersection of non-parallel edges
+      double wec_p1 = 0.0;
+      double wec_p2 = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        wec_q1 += (MasterVertices()[j].Coord()[k]           - SlaveVertices()[0].Coord()[k]) * nl[k];
-        wec_q2 += ((MasterVertices()[j].Next())->Coord()[k] - SlaveVertices()[0].Coord()[k]) * nl[k];
+        wec_p1 += (SlaveVertices()[0].Coord()[k] - MasterVertices()[j].Coord()[k]) * np[k];
+        wec_p2 += (SlaveVertices()[1].Coord()[k] - MasterVertices()[j].Coord()[k]) * np[k];
       }
 
       if(out)
       {
-        std::cout << "WecQ1 = " << wec_q1 << std::endl;
-        std::cout << "WecQ2 = " << wec_q2 << std::endl;
+        std::cout << "WecP1 = " << wec_p1 << std::endl;
+        std::cout << "WecP2 = " << wec_p2 << std::endl;
       }
 
-      if (wec_q1 * wec_q2 <= 0.0)
+
+      // change of sign means we have an intersection!
+      if (wec_p1 * wec_p2 <= 0.0)
       {
-        double alpha  = wec_p1 / (wec_p1 - wec_p2);
-        double alphaq = wec_q1 / (wec_q1 - wec_q2);
-
-        if(alpha<0.0 or alpha >1.0)
-          continue;
-        if(alphaq<0.0 or alphaq >1.0)
-          continue;
-
-        std::vector<double> coords(3);
+        double wec_q1 = 0.0;
+        double wec_q2 = 0.0;
         for (int k = 0; k < 3; ++k)
         {
-          coords[k] = (1 - alpha) * SlaveVertices()[0].Coord()[k]  + alpha * SlaveVertices()[1].Coord()[k];
-          if (abs(coords[k]) < tol)
-            coords[k] = 0.0;
+          wec_q1 += (MasterVertices()[j].Coord()[k]           - SlaveVertices()[0].Coord()[k]) * nl[k];
+          wec_q2 += ((MasterVertices()[j].Next())->Coord()[k] - SlaveVertices()[0].Coord()[k]) * nl[k];
         }
 
-        if (out)
+        if(out)
         {
-          std::cout << "Found intersection! (" << j << ") " << alpha << std::endl;
-          std::cout << "coords 1: " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
+          std::cout << "WecQ1 = " << wec_q1 << std::endl;
+          std::cout << "WecQ2 = " << wec_q2 << std::endl;
         }
 
-        // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
-        std::vector<int> lcids(4);
-        lcids[0] = (int) (SlaveVertices()[0].Nodeids()[0]);
-        lcids[1] = (int) (SlaveVertices()[1].Nodeids()[0]);
-        lcids[2] = (int) (MasterVertices()[j].Nodeids()[0]);
-        lcids[3] = (int) ((MasterVertices()[j].Next())->Nodeids()[0]);
+        if (wec_q1 * wec_q2 <= 0.0)
+        {
+          double alpha  = wec_p1 / (wec_p1 - wec_p2);
+          double alphaq = wec_q1 / (wec_q1 - wec_q2);
 
-        // store intersection points
-        tempintersec.push_back(
-            MORTAR::Vertex(
-                coords,
-                MORTAR::Vertex::lineclip,
-                lcids,
-                &SlaveVertices()[1],
-                &SlaveVertices()[0],
-                true,
-                false,
-                NULL,
-                alpha));
+          if(alpha<0.0 or alpha >1.0)
+            continue;
+          if(alphaq<0.0 or alphaq >1.0)
+            continue;
+
+          std::vector<double> coords(3);
+          for (int k = 0; k < 3; ++k)
+          {
+            coords[k] = (1 - alpha) * SlaveVertices()[0].Coord()[k]  + alpha * SlaveVertices()[1].Coord()[k];
+            if (abs(coords[k]) < tol)
+              coords[k] = 0.0;
+          }
+
+          if (out)
+          {
+            std::cout << "Found intersection! (" << j << ") " << alpha << std::endl;
+            std::cout << "coords 1: " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
+          }
+
+          // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
+          std::vector<int> lcids(4);
+          lcids[0] = (int) (SlaveVertices()[0].Nodeids()[0]);
+          lcids[1] = (int) (SlaveVertices()[1].Nodeids()[0]);
+          lcids[2] = (int) (MasterVertices()[j].Nodeids()[0]);
+          lcids[3] = (int) ((MasterVertices()[j].Next())->Nodeids()[0]);
+
+          // store intersection points
+          TempInterSections().push_back(
+              MORTAR::Vertex(
+                  coords,
+                  MORTAR::Vertex::lineclip,
+                  lcids,
+                  &SlaveVertices()[1],
+                  &SlaveVertices()[0],
+                  true,
+                  false,
+                  NULL,
+                  alpha));
+        }
       }
-    }
-  }
+    } // end vertex loop
 
-  // check if intersection is close to a node
-  for (int i = 0; i < (int) tempintersec.size(); ++i)
-  {
-    // keep track of comparisons
-    bool close = false;
-
-    // check against all poly1 (slave) points
-    for (int j = 0; j < (int) SlaveVertices().size(); ++j)
+    // ===================================================
+    // find interior node intersections
+//    if((int)TempInterSections().size()!=2)
     {
-      // distance vector
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      for (int k = 0; k < 3; ++k)
-        diff[k] = tempintersec[i].Coord()[k] - SlaveVertices()[j].Coord()[k];
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-
-      // only keep intersection point if not close
-      if (dist <= tol)
+      for (int i = 0; i < (int) SlaveVertices().size(); ++i)
       {
-        close = true;
-        break;
+        // keep track of inside / outside status
+        bool outside = false;
+
+        // check against all poly1 (slave) edges
+        for (int j = 0; j < (int) MasterVertices().size(); ++j)
+        {
+          // we need diff vector and edge2 first
+          double diff[3] = { 0.0, 0.0, 0.0 };
+          double edge[3] = { 0.0, 0.0, 0.0 };
+          for (int k = 0; k < 3; ++k)
+          {
+            diff[k] = SlaveVertices()[i].Coord()[k]            - MasterVertices()[j].Coord()[k];
+            edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
+          }
+
+          // compute distance from point on poly1 to edge
+          double n[3] = { 0.0, 0.0, 0.0 };
+          n[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
+          n[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
+          n[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
+          double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+          for (int k = 0; k < 3; ++k)
+            n[k] /= ln;
+
+          double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
+
+          // only keep point if not in outside halfspace
+          if (dist - tol > 0.0) // tends to include nodes
+          {
+            outside = true;
+            break;
+          }
+        } // end master loop
+
+        if(outside)
+        {
+          // next slave vertex
+          continue;
+        }
+        else
+        {
+          TempInterSections().push_back(
+              MORTAR::Vertex(
+                  SlaveVertices()[i].Coord(),
+                  MORTAR::Vertex::projslave,
+                  SlaveVertices()[i].Nodeids(),
+                  NULL,
+                  NULL,
+                  false,
+                  false,
+                  NULL,
+                  -1));
+        }
+      }
+    } // if intersections != 2
+
+    // check positions of all found intersections
+    std::vector<int> redundantLocalIDs;
+    for (int i = 0; i < (int) TempInterSections().size(); ++i)
+    {
+      for (int j = i; j < (int) TempInterSections().size(); ++j)
+      {
+        // do not check same intersections
+        if(i==j)
+          continue;
+
+        // distance vector
+        double diff[3] = { 0.0, 0.0, 0.0 };
+        for (int k = 0; k < 3; ++k)
+          diff[k] = TempInterSections()[i].Coord()[k] - TempInterSections()[j].Coord()[k];
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist < tol)
+        {
+          // store redundant id
+          redundantLocalIDs.push_back(j);
+        }
       }
     }
 
-    // do only if no close poly1 (slave) point found
-    if (!close)
+    std::vector<MORTAR::Vertex> aux;
+    for (int i = 0; i < (int) TempInterSections().size(); ++i)
     {
-      // check against all poly2 (master) points
-      for (int j = 0; j < (int) MasterVertices().size(); ++j)
+      bool vanish = false;
+      for (int j = 0; j < (int) redundantLocalIDs.size(); ++j)
+      {
+        if(i==redundantLocalIDs[j])
+          vanish = true;
+      }
+
+      if(!vanish)
+        aux.push_back(TempInterSections()[i]);
+    }
+
+    // store right vector to TempIntersections
+    TempInterSections().clear();
+    for (int i = 0; i < (int) aux.size(); ++i)
+      TempInterSections().push_back(aux[i]);
+
+    // ===================================================
+    // check if intersection is close to a node
+    for (int i = 0; i < (int) TempInterSections().size(); ++i)
+    {
+      // keep track of comparisons
+      bool close = false;
+
+      // check against all poly1 (slave) points
+      for (int j = 0; j < (int) SlaveVertices().size(); ++j)
       {
         // distance vector
         double diff[3] = { 0.0, 0.0, 0.0 };
         for (int k = 0; k < 3; ++k)
-          diff[k] = tempintersec[i].Coord()[k] - MasterVertices()[j].Coord()[k];
+          diff[k] = TempInterSections()[i].Coord()[k] - SlaveVertices()[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
         if (dist <= tol)
         {
+          // intersection is close to slave vertex!
           close = true;
+
+          // store slave vertex as intersection point
+          InterSections().push_back(
+              MORTAR::Vertex(
+                  SlaveVertices()[j].Coord(),
+                  MORTAR::Vertex::projslave,
+                  SlaveVertices()[j].Nodeids(),
+                  NULL,
+                  NULL,
+                  false,
+                  false,
+                  NULL,
+                  -1));
           break;
         }
       }
-    }
 
-    // keep intersection point only if not close to any Slave/Master point
-    if (!close)
-      InterSections().push_back(tempintersec[i]);
-  }
-
-  // 1. intersection: find interior node
-  if((int)InterSections().size()!=2)
-  {
-    for (int i = 0; i < (int) SlaveVertices().size(); ++i)
-    {
-      // keep track of inside / outside status
-      bool outside = false;
-
-      // check against all poly1 (slave) edges
-      for (int j = 0; j < (int) MasterVertices().size(); ++j)
+      // do only if no close slave point found
+      if (!close)
       {
-        // we need diff vector and edge2 first
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        double edge[3] = { 0.0, 0.0, 0.0 };
-        for (int k = 0; k < 3; ++k)
+        // check against all poly2 (master) points
+        for (int j = 0; j < (int) MasterVertices().size(); ++j)
         {
-          diff[k] = SlaveVertices()[i].Coord()[k]            - MasterVertices()[j].Coord()[k];
-          edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
+          // distance vector
+          double diff[3] = { 0.0, 0.0, 0.0 };
+          for (int k = 0; k < 3; ++k)
+            diff[k] = TempInterSections()[i].Coord()[k] - MasterVertices()[j].Coord()[k];
+          double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+
+          // only keep intersection point if not close
+          if (dist <= tol)
+          {
+            // intersection is close to master vertex!
+            close = true;
+
+            InterSections().push_back(
+                MORTAR::Vertex(
+                    MasterVertices()[j].Coord(),
+                    MORTAR::Vertex::master,
+                    MasterVertices()[j].Nodeids(),
+                    NULL,
+                    NULL,
+                    false,
+                    false,
+                    NULL,
+                    -1));
+            break;
+          }
         }
-
-        // compute distance from point on poly1 to edge
-        double n[3] = { 0.0, 0.0, 0.0 };
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
-        double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        for (int k = 0; k < 3; ++k)
-          n[k] /= ln;
-
-        double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
-
-        // only keep point if not in outside halfspace
-        if (dist > tol)
-        {
-          outside = true;
-          break;
-        }
-      } // end master loop
-
-      if(outside)
-      {
-        continue;
       }
-      else
-      {
-        InterSections().push_back(
-            MORTAR::Vertex(
-                SlaveVertices()[i].Coord(),
-                MORTAR::Vertex::projslave,
-                SlaveVertices()[i].Nodeids(),
-                NULL,
-                NULL,
-                false,
-                false,
-                NULL,
-                -1));
-      }
+
+      // keep intersection point only if not close to any Slave/Master point
+      if (!close)
+        InterSections().push_back(TempInterSections()[i]);
     }
-  }
+  } // end found valid parallity
 
   // 2. check plausibility
   if(InterSections().size()>2)
@@ -806,9 +1744,9 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(std::vector<std::vector
 
   // prepare storage for slave and master linearizations
   std::vector<std::vector<GEN::pairedvector<int, double> > > linsnodes(nsrows,
-      std::vector<GEN::pairedvector<int, double> >(3, 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+      std::vector<GEN::pairedvector<int, double> >(3, linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
   std::vector<std::vector<GEN::pairedvector<int, double> > > linmnodes(nmrows,
-      std::vector<GEN::pairedvector<int, double> >(3, 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+      std::vector<GEN::pairedvector<int, double> >(3, linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
 
   // compute slave linearizations (nsrows)
   SlaveVertexLinearization(linsnodes);
@@ -1230,15 +2168,65 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
   SurfaceElement().LocalToGlobal(loccenter, Auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = SurfaceElement().ComputeUnitNormalAtXi(loccenter, Auxn());
-
-  // compute aux normal linearization
-  SurfaceElement().DerivUnitNormalAtXi(loccenter, GetDerivAuxn());
+  Lauxn() = SurfaceElement().ComputeUnitNormalAtXi(loccenter, AuxnSurf());
+//
+//  // compute aux normal linearization
+//  SurfaceElement().DerivUnitNormalAtXi(loccenter, GetDerivAuxn());
 
   // bye
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  create auxiliary line + normal                           farah 08/16|
+ *----------------------------------------------------------------------*/
+bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
+{
+  typedef GEN::pairedvector<int, double>  :: const_iterator _CI;
+
+  int nnodes = LineElement()->NumNode();
+  if(nnodes!=2)
+    dserror("ERROR: Auxiliary line calculation only for line2 elements!");
+
+  // average nodal normals of line element
+  linsize_ = 0;
+  for (int i = 0; i < nnodes; ++i)
+  {
+    DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[i]);
+    if (!node)
+      dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
+    CoNode* mycnode = dynamic_cast<CoNode*>(node);
+    if (!mycnode)
+      dserror("ERROR: ProjectSlave: Null pointer!");
+
+    linsize_ += mycnode->GetLinsize();
+  }
+  GetDerivAuxn().resize(3,linsize_);
+
+  // average nodal normals of line element
+  for (int i = 0; i < nnodes; ++i)
+  {
+    DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[i]);
+    if (!node)
+      dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
+    CoNode* mycnode = dynamic_cast<CoNode*>(node);
+    if (!mycnode)
+      dserror("ERROR: ProjectSlave: Null pointer!");
+
+    Auxn()[0] -= 0.5 * mycnode->MoData().n()[0];
+    Auxn()[1] -= 0.5 * mycnode->MoData().n()[1];
+    Auxn()[2] -= 0.5 * mycnode->MoData().n()[2];
+
+    for (_CI p = mycnode->CoData().GetDerivN()[0].begin(); p != mycnode->CoData().GetDerivN()[0].end(); ++p)
+      (GetDerivAuxn()[0])[p->first] -= 0.5 * (p->second);
+    for (_CI p = mycnode->CoData().GetDerivN()[1].begin(); p != mycnode->CoData().GetDerivN()[1].end(); ++p)
+      (GetDerivAuxn()[1])[p->first] -= 0.5 * (p->second);
+    for (_CI p = mycnode->CoData().GetDerivN()[2].begin(); p != mycnode->CoData().GetDerivN()[2].end(); ++p)
+      (GetDerivAuxn()[2])[p->first] -= 0.5 * (p->second);
+  }
+
+  return true;
+}
 
 /*----------------------------------------------------------------------*
  |  eval (public)                                            farah 07/16|
@@ -1296,9 +2284,6 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
             false,
             NULL,
             -1.0));
-
-    //std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl;
-    //std::cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
   }
   return true;
 }

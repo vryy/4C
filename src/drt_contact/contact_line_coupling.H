@@ -77,7 +77,7 @@ public:
 private:
 
   /*!
-   \brief Build auxiliary plane from slave element (3D)
+   \brief Build auxiliary plane from master element (3D)
 
    This method builds an auxiliary plane based on the possibly
    warped slave element of this coupling class. This plane is
@@ -85,6 +85,12 @@ private:
 
    */
   virtual bool AuxiliaryPlane();
+
+  /*!
+   \brief Build auxiliary line from slave line (3D)
+
+   */
+  virtual bool AuxiliaryLine();
 
   /*!
    \brief Return center of auxiliary plane
@@ -96,12 +102,21 @@ private:
   }
 
   /*!
-   \brief Return normal of auxiliary plane
+   \brief Return normal of auxiliary line
 
    */
   virtual double* Auxn()
   {
     return auxn_;
+  }
+
+  /*!
+   \brief Return normal of auxiliary plane
+
+   */
+  virtual double* AuxnSurf()
+  {
+    return auxnSurf_;
   }
 
   /*!
@@ -148,6 +163,26 @@ private:
 
    */
   virtual void LineClipping();
+
+  /*!
+   \brief create intersections
+
+   */
+  virtual bool LineToLineClipping(
+      MORTAR::Vertex& edgeVertex0,
+      MORTAR::Vertex& edgeVertex1,
+      MORTAR::Vertex& lineVertex0,
+      MORTAR::Vertex& lineVertex1);
+
+  /*!
+   \brief check if all vertices are along a line
+
+   */
+  virtual bool CheckLineOnLine(
+      MORTAR::Vertex& edgeVertex1,
+      MORTAR::Vertex& edgeVertex0,
+      MORTAR::Vertex& lineVertex1,
+      MORTAR::Vertex& lineVertex0);
 
   /*!
    \brief perform linearization
@@ -242,6 +277,24 @@ private:
   }
 
   /*!
+    \brief Return vector of (projected) slave node vertex objects
+
+  */
+  virtual std::vector<MORTAR::Vertex>& TempInterSections()
+  {
+    return tempIntersections_;
+  }
+
+  /*!
+    \brief Return set which guarantee uniqueness of master lines
+
+  */
+  virtual std::set<std::pair<int,int> >& DoneBefore()
+  {
+    return donebefore_;
+  }
+
+  /*!
    \brief Return vector of (projected) slave node vertex objects
 
    */
@@ -300,6 +353,15 @@ private:
   {
     return derivauxn_;
   }
+
+//  /*!
+//   \brief Return the 'DerivAuxnLine' map (vector) of this coupling pair
+//
+//   */
+//  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivAuxnLine()
+//  {
+//    return derivauxnLine_;
+//  }
 
   /*!
    \brief perform linearization of master vertices
@@ -376,12 +438,16 @@ private:
   double auxc_[3]; // center of auxiliary plane
   double auxn_[3]; // normal of auxiliary plane
   double lauxn_;   // length of interpolated Auxn() before normalization
+  double auxnSurf_[3]; // normal of auxiliary plane of surface element
+  int linsize_; // size of lin entries
   std::vector<MORTAR::Vertex> svertices_; // slave node vertex objects
   std::vector<MORTAR::Vertex> mvertices_; // master node vertex objects
   std::vector<MORTAR::Vertex> intersections_; // vertex objects for intline
-
+  std::vector<MORTAR::Vertex> tempIntersections_; // vertex objects for intline temporary
+  std::set<std::pair<int,int> > donebefore_; // set of master node pairs to guarantee uniqueness of line-line clipping
   Teuchos::RCP<MORTAR::IntCell> intCell_;              // vector of integration lines
   std::vector<GEN::pairedvector<int, double> > derivauxn_; // derivatives of auxiliary plane normal
+  std::vector<GEN::pairedvector<int, double> > derivauxnLine_; // derivatives of auxiliary line normal
 
   // integration type:
   LineToSurfaceCoupling3d::intType intType_;

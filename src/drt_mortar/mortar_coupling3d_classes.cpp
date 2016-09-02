@@ -801,7 +801,7 @@ void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& d
     double fac  = 0.25*linv;
 
     // linearizarion of v
-    std::vector<GEN::pairedvector<int, double> >vg(3,100);
+    std::vector<GEN::pairedvector<int, double> >vg(3,1000);
 
     // first entry (x component lin)
     for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
@@ -822,7 +822,7 @@ void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& d
       vg[2][p->first] -= (p->second);
 
     // linearizarion of v^t * v
-    GEN::pairedvector<int, double> vv(100);
+    GEN::pairedvector<int, double> vv(1000);
 
     // delta v^T * v
     for (CI p=vg[0].begin();p!=vg[0].end();++p)

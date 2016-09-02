@@ -2481,6 +2481,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
     CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
+  linsize *= 100;
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
@@ -2492,7 +2493,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
   const double jac=cell->Jacobian(eta);
 
   // directional derivative of cell Jacobian
-  GEN::pairedvector<int,double> jacintcellmap((nrowL+ncol)*ndof);
+  GEN::pairedvector<int,double> jacintcellmap((nrowL+ncol)*ndof + linsize);
   cell->DerivJacobian(eta, jacintcellmap);
 
   //**********************************************************************
@@ -2615,7 +2616,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
     static LINALG::Matrix<3,2> sderivcell;
     cell->EvaluateShape(eta,svalcell,sderivcell);
 
-    GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nrowS+ncol)*ndof);
+    GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nrowS+ncol)*ndof + linsize);
 
     for (int v=0;v<2;++v)
       for (int d=0; d<3; ++d)
@@ -2623,15 +2624,15 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
           lingp[p->first](d) += svalcell(v) * (p->second);
 
     // evalute the GP slave coordinate derivatives
-    std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nrowS+ncol)*ndof);
+    std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nrowS+ncol)*ndof + linsize);
     DerivXiGP3DAuxPlane(sele,sxi,cell->Auxn(),dsxigp,sprojalpha,cell->GetDerivAuxn(),lingp);
 
     // evalute the GP master coordinate derivatives
-    std::vector<GEN::pairedvector<int,double> > dmxigp(2,(nrowS+ncol)*ndof);
+    std::vector<GEN::pairedvector<int,double> > dmxigp(2,(nrowS+ncol)*ndof + linsize);
     DerivXiGP3DAuxPlane(mele,mxi,cell->Auxn(),dmxigp,mprojalpha,cell->GetDerivAuxn(),lingp);
 
     // convert deriv sxi
-    std::vector<GEN::pairedvector<int,double> > dlxigp(1,(nrowS+ncol)*ndof);
+    std::vector<GEN::pairedvector<int,double> > dlxigp(1,(nrowS+ncol)*ndof + linsize);
 
     if(lsele.Id()==0)
     {
