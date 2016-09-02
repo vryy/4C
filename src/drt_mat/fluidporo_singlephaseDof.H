@@ -17,6 +17,7 @@
 
 
 #include "matpar_parameter.H"
+#include "../drt_inpar/inpar_material.H"
 
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -75,6 +76,10 @@ namespace PAR
             int phasenum,
             int doftoderive,
             const std::vector<double>& state) const =0;
+
+  protected:
+    //! build the phase law
+    MAT::PAR::FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
 
   };
 
