@@ -213,7 +213,8 @@ private:
 */
 template <class T>
 Parser<T>::Parser(std::string funct)
-  : Lexer(funct)
+  : Lexer(funct),
+    expr_(NULL)
 {
 }
 
