@@ -32,7 +32,8 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
   bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
-  phasedofID_(matdata->GetInt("DOFTYPEID"))
+  phasedofID_(matdata->GetInt("DOFTYPEID")),
+  isinit_(false)
 {
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -89,6 +90,19 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSinglePhase::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroSinglePhase(this));
+}
+
+/*----------------------------------------------------------------------*
+ *  Create Material (public)                             vuong 08/16      |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroSinglePhase::Initialize()
+{
+  if(not isinit_)
+  {
+    phasedof_->Initialize();
+    isinit_=true;
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -171,6 +185,15 @@ void MAT::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
   dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*
+ *  initialize                                              vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroSinglePhase::Initialize()
+{
+  params_->Initialize();
+  return;
 }
 
 /*----------------------------------------------------------------------*

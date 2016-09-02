@@ -55,6 +55,9 @@ namespace MAT
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+        /// initialize
+        void Initialize();
+
         /// @name material parameters
         //@{
 
@@ -72,6 +75,9 @@ namespace MAT
         FluidPoroPhaseDof* phasedof_;
 
         //@}
+
+      private:
+        bool isinit_;
 
     }; // class FluidPoroSinglePhase
 
@@ -154,6 +160,9 @@ namespace MAT
       virtual void Unpack(const std::vector<char>& data);
 
       //@}
+
+      /// initialize
+      void Initialize();
 
       /// material type
       virtual INPAR::MAT::MaterialType MaterialType() const

@@ -133,10 +133,8 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::FluidPoroMultiPhase* Parameter() const { return paramsporo_; }
 
-  protected:
-
-    /// setup of material map
-    virtual void SetupMatMap();
+    /// initialize the material
+    virtual void Initialize();
 
   private:
 

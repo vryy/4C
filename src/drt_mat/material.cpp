@@ -467,6 +467,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::FluidPoroPhaseLawTangent* params = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
+    MAT::PAR::FluidPoroPhaseLawByFunction* params = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
   {
     if (curmat->Parameter() == NULL)

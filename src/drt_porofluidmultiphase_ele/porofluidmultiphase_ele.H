@@ -55,6 +55,9 @@ public:
   /// setup the dat file input line definitions for this type of element
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+  /// initialize element
+  virtual int Initialize(DRT::Discretization& dis);
+
   /// pre-evaluation
   virtual void PreEvaluate(DRT::Discretization&                dis,
                           Teuchos::ParameterList&              p,
@@ -74,6 +77,9 @@ private:
 */
 class PoroFluidMultiPhase : public DRT::Element
 {
+  //! @name Friends
+  friend class PoroFluidMultiPhaseType;
+
 public:
 
   //! @name Constructors and destructors and related methods
@@ -310,7 +316,8 @@ public:
 
   //@}
 
-  //@}
+protected:
+  virtual void Initialize();
 
 private:
 

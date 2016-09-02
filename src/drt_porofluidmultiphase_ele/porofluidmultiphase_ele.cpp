@@ -180,6 +180,22 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Creat
 }
 
 /*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::PoroFluidMultiPhase* actele = dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(dis.lColElement(i));
+    if (!actele) dserror("cast to PoroFluidMultiPhase* failed");
+    actele->Initialize();
+  }
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*
 *********************  PoroFluidMultiPhase Element **********************
 *---------------------------------------------------------------------- *
@@ -226,6 +242,19 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const
 {
   return distype_;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize element                                      (protected) |
+ |                                                          vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::PoroFluidMultiPhase::Initialize()
+{
+  Teuchos::RCP<MAT::FluidPoroMultiPhase> actmat =
+      Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(),true);
+
+  actmat->Initialize();
+  return;
 }
 
 /*----------------------------------------------------------------------*

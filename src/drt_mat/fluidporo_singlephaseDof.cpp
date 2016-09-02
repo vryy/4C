@@ -71,11 +71,27 @@ MAT::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
     phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     break;
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
+    phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    break;
+  }
   default:
     dserror("invalid pressure-saturation law for material %d", curmat->Type());
     break;
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *  Initialize                                               vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroPhaseDofDiffPressure::Initialize()
+{
+  phaselaw_->Initialize();
   return;
 }
 
@@ -193,6 +209,13 @@ MAT::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
     phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     break;
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
+    phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    break;
+  }
   default:
     dserror("invalid pressure-saturation law for material %d", curmat->Type());
     break;
@@ -200,6 +223,14 @@ MAT::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *  Initialize                                               vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroPhaseDofPressure::Initialize()
+{
+  phaselaw_->Initialize();
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
@@ -394,12 +425,29 @@ MAT::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
     phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     break;
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
+    phaselaw_ = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    break;
+  }
   default:
     dserror("invalid pressure-saturation law for material %d", curmat->Type());
     break;
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *  Initialize                                               vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroPhaseDofSaturation::Initialize()
+{
+  phaselaw_->Initialize();
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |

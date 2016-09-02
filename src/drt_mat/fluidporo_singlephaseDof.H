@@ -45,6 +45,9 @@ namespace PAR
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial() {return Teuchos::null;};
 
+    /// initialize
+    virtual void Initialize()=0;
+
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
         Epetra_SerialDenseMatrix& dofmat,
@@ -89,6 +92,9 @@ namespace PAR
     {
       ;
     }
+
+    /// initialize
+    virtual void Initialize();
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
@@ -140,6 +146,9 @@ namespace PAR
       ;
     }
 
+    /// initialize
+    virtual void Initialize(){return;};
+
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
         Epetra_SerialDenseMatrix& dofmat,
@@ -184,6 +193,9 @@ namespace PAR
     {
       ;
     }
+
+    /// initialize
+    virtual void Initialize();
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
@@ -236,6 +248,9 @@ namespace PAR
     {
       ;
     }
+
+    /// initialize
+    virtual void Initialize();
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(

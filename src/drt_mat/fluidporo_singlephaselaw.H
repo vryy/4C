@@ -18,6 +18,14 @@
 
 #include "matpar_parameter.H"
 
+namespace DRT
+{
+namespace UTILS
+{
+  class VariableExprFunction;
+}
+}
+
 namespace MAT
 {
 namespace PAR
@@ -40,6 +48,8 @@ namespace PAR
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial() {return Teuchos::null;};
 
+    /// initialize
+    virtual void Initialize()=0;
 
     /// @name material parameters
     //@{
@@ -80,6 +90,9 @@ namespace PAR
     {
       ;
     }
+
+    /// initialize
+    virtual void Initialize(){return;};
 
     /// @name material parameters
     //@{
@@ -123,6 +136,9 @@ namespace PAR
       ;
     }
 
+    /// initialize
+    virtual void Initialize(){return;};
+
     /// @name material parameters
     //@{
     //! relative tension coefficient
@@ -149,6 +165,53 @@ namespace PAR
         int doftoderive,
         double saturation) const;
 
+  };
+  // class FluidPoroPhaseLawTangent
+
+  /*----------------------------------------------------------------------*/
+  //! pressure-saturation relationship defined by function
+  class FluidPoroPhaseLawByFunction: public FluidPoroPhaseLaw
+  {
+  public:
+
+    /// standard constructor
+    explicit FluidPoroPhaseLawByFunction(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+    /// destructor
+    virtual ~FluidPoroPhaseLawByFunction()
+    {
+      ;
+    }
+
+    /// initialize
+    virtual void Initialize();
+
+    /// @name material parameters
+    //@{
+    //! relative tension coefficient
+    const int functionID_saturation_;
+    //! exponent within phase law
+    const int functionID_pressure_;
+    //@}
+
+    //! evaluate saturation of phase
+    virtual double EvaluateSaturation(const std::vector<double>& pressure) const;
+
+    //! evaluate derivative of saturation w.r.t. pressure
+    virtual double EvaluateDerivOfSaturationWrtPressure(
+        int doftoderive,
+        const std::vector<double>& state) const;
+
+    //! evaluate generalized pressure related to phase law
+    virtual double EvaluateGenPressure(double saturation) const;
+
+    //! evaluate derivative of pressure w.r.t. saturation
+    virtual double EvaluateDerivOfPressureWrtSaturation(
+        int doftoderive,
+        double saturation) const;
+
+  private:
+    inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
   };
   // class FluidPoroPhaseLawTangent
 

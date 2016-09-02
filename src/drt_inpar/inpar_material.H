@@ -71,6 +71,7 @@ namespace INPAR
       m_fluidporo_phasedof_diffpressure,       ///< diffrenetial pressure DOF for multiphase flow through porous medium
       m_fluidporo_phaselaw_linear,             ///< linear pressure-saturation relationship
       m_fluidporo_phaselaw_tangent,            ///< tangent pressure-saturation relationship
+      m_fluidporo_phaselaw_byfunction,         ///< pressure-saturation relationship defined by functions in input file
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations

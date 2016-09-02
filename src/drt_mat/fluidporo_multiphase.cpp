@@ -17,6 +17,7 @@
 
 #include <vector>
 #include "fluidporo_multiphase.H"
+#include "fluidporo_singlephase.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -71,30 +72,6 @@ MAT::FluidPoroMultiPhase::FluidPoroMultiPhase(MAT::PAR::FluidPoroMultiPhase* par
   : MatList(params),
     paramsporo_(params)
 {
-  // setup of material map
-  if (paramsporo_->local_)
-  {
-    SetupMatMap();
-  }
-}
-
-/*----------------------------------------------------------------------*
- | setup of material map                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::SetupMatMap()
-{
-  // We just have to add the reaction materials, since the rest is already done in MAT::MatList::SetupMatMap() called from the MatList constructor
-
-  // here's the recursive creation of materials
-//  std::vector<int>::const_iterator m;
-//  for (m=paramsporo_->ReacIds()->begin(); m!=paramsporo_->ReacIds()->end(); ++m)
-//  {
-//    const int reacid = *m;
-//    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
-//    if (mat == Teuchos::null) dserror("Failed to allocate this material");
-//    MaterialMapWrite()->insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
-//  }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -103,6 +80,31 @@ void MAT::FluidPoroMultiPhase::SetupMatMap()
 void MAT::FluidPoroMultiPhase::Clear()
 {
   paramsporo_ = NULL;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | initialize                                               vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::Initialize()
+{
+  std::map<int,Teuchos::RCP<MAT::Material> >* materials;
+
+  if (Parameter() != NULL) // params is null pointer in post-process mode
+  {
+    if(Parameter()->local_)
+      materials = MaterialMapWrite();
+    else
+      materials = Parameter()->MaterialMapWrite();
+
+    std::map<int,Teuchos::RCP<MAT::Material> >::iterator it;
+    for(it=materials->begin();it!=materials->end();it++)
+    {
+      Teuchos::RCP<MAT::FluidPoroSinglePhase> actphase =
+          Teuchos::rcp_dynamic_cast<FluidPoroSinglePhase>(it->second,true);
+      actphase->Initialize();
+    }
+  }
   return;
 }
 

@@ -2289,15 +2289,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"RELTENSION","relative interface tensions");
     AddNamedReal(m,"SATURATION_0","saturation at zero differential pressure");
-    AddNamedInt(m,"NUMDOF","number of DoFs",0,true);
-    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0,true);
-    AddNamedSeparator(m,"END","indicating end of line",true);
+    AddNamedInt(m,"NUMDOF","number of DoFs",0);
+    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0);
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // tangent law for pressure-saturation law in porous media problems
+  // tangent law for pressure-saturation law in porous media multiphase problems
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawTangent",
@@ -2307,9 +2307,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"RELTENSION","relative interface tensions");
     AddNamedReal(m,"EXP","exponent in pressure-saturation law");
     AddNamedReal(m,"SATURATION_0","saturation at zero differential pressure");
-    AddNamedInt(m,"NUMDOF","number of DoFs",0,true);
-    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0,true);
-    AddNamedSeparator(m,"END","indicating end of line",true);
+    AddNamedInt(m,"NUMDOF","number of DoFs",0);
+    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // pressure-saturation law defined by functions in porous media multiphase problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawByFunction",
+                                            "fluid phase of porous medium defined by functions",
+                                            INPAR::MAT::m_fluidporo_phaselaw_byfunction));
+
+    AddNamedInt(m,"FUNCTPRES","ID of function for differential pressure",0);
+    AddNamedInt(m,"FUNCTSAT","ID of function for saturation",0);
+    AddNamedInt(m,"NUMDOF","number of DoFs",0);
+    AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0);
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }
