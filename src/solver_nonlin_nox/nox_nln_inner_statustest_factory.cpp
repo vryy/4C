@@ -129,6 +129,11 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
 {
   // Get upper bound as specified in xml file
   double upperboundval = p.get("Value",1.0e10);
+  if (upperboundval < 1e-14)
+  {
+    std::string msg = "\"Value\" for Inner Status Test \"UpperBound\" must be greater than zero!";
+    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
+  }
 
   // Norm Type
   std::string norm_type_string = p.get("Norm Type", "Two Norm");

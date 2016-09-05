@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linesearch_generic.H
 
+\brief generic class for %NOX::NLN backtracking line search
+
 \maintainer Michael Hiermeier
 
 \date Aug 19, 2015
@@ -37,6 +39,9 @@ namespace LineSearch {
 
     //! returns the stepSize
     virtual const double& GetStepLength() const = 0;
+
+    //! sets the stepSize
+    virtual void SetStepLength(double& step) = 0;
     //! @}
 
     //! @name NOX::LineSearch::Generic

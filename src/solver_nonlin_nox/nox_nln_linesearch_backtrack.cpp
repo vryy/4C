@@ -122,16 +122,10 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   if (not epetraOldGrpPtr->isJacobian())
     throwError("compute()","Ownership changed unexpectedly!");
 
+  /* If the solution passed into the line search method fulfills the inner
+   * stopping criterion already during the setup process, the line search
+   * method will not attempt to find a capable step length. */
   status_ = innerTestsPtr_->CheckStatus(*this,oldGrp,checkType_);
-  if ((status_ == NOX::NLN::INNER::StatusTest::status_converged) and
-      (utils_->isPrintType(NOX::Utils::Warning)))
-  {
-    utils_->out() << "Warning: NOX::NLN::LineSearch::Backtrack::compute() - "
-        << "The solution passed into the line search method fulfills the inner\n"
-        << "stopping criterion already during the setup process.\n"
-        << "The line search method will not attempt to find a capable "
-        << "step length." << std::endl;
-  }
 
   // increase iteration counter after initialization
   ++lsIters_;
@@ -289,6 +283,16 @@ const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
     throwError("GetStepLength","Step pointer is NULL!");
 
   return *stepPtr_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LineSearch::Backtrack::SetStepLength(double& step)
+{
+  if (stepPtr_==NULL)
+    throwError("GetMutableStepLength","Step pointer is NULL!");
+
+  *stepPtr_ = step;
 }
 
 /*----------------------------------------------------------------------*

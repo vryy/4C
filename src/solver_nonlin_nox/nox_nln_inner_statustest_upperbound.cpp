@@ -67,11 +67,43 @@ NOX::NLN::INNER::StatusTest::StatusType
     throwError("CheckStatus",msg.str());
   }
 
-  // setup for the current line search loop
+  /* we reduce the step length according to the upper bound criterion in the first
+   * line search (i.e. inner) iteration and do nothing in all following iterations */
   if (interface.GetNumIterations()==0)
   {
     Setup(*linesearch,grp);
-    status_ = status_unevaluated;
+
+    double steplength = linesearch->GetStepLength();
+
+    // compute specified norm
+    stepmaxval_ = steplength * linesearch->GetSearchDirection().norm(normtype_);
+
+    // check the value for specified upper bound
+    status_ = (stepmaxval_ < upperboundval_) ? status_converged : status_step_too_long;
+
+    /* in opposite to classical line search, there is no need to find the new step
+     * length iteratively.
+     * instead, we can immediately reduce the step length appropriately and avoid
+     * several unnecessary evaluations of rhs (computeF calls). */
+    if (status_ == status_step_too_long)
+    {
+      NOX::NLN::LineSearch::Generic* linesearch_mutable =
+          const_cast<NOX::NLN::LineSearch::Generic*>(linesearch);
+
+      /* the following is equivalent to dividing the step successively by two until
+       * criterion is met. note: upperboundval_!=0 is checked in
+       * NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest */
+      double reduction_fac = std::pow(0.5 ,
+          std::ceil(std::log(stepmaxval_/upperboundval_) / std::log(2)) );
+
+      steplength *= reduction_fac;
+      linesearch_mutable->SetStepLength(steplength);
+
+      // adapt the stepmaxval_ variable accordingly to get correct output from Print()
+      stepmaxval_ *= reduction_fac;
+
+      status_ = status_converged;
+    }
   }
   else if (checkType == NOX::StatusTest::None)
   {
@@ -81,15 +113,6 @@ NOX::NLN::INNER::StatusTest::StatusType
       the status should be set to NOX::StatusTest::Unevaluated.
     */
     status_ = status_unevaluated;
-  }
-  else
-  {
-    // compute specified norm
-    stepmaxval_ = linesearch->GetSearchDirection().norm(normtype_)
-        * linesearch->GetStepLength();
-
-    // check the value for specified upper bound
-    status_ = (stepmaxval_ < upperboundval_) ? status_converged : status_step_too_long;
   }
 
   return status_;

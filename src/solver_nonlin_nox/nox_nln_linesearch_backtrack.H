@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linesearch_backtrack.H
 
+\brief %NOX::NLN backtracking line search implementation.
+
 \maintainer Michael Hiermeier
 
 \date Jun 11, 2015
@@ -74,6 +76,13 @@ namespace LineSearch {
     const double& GetStepLength() const;
 
     //!@}
+
+    //! @name Mutator functionality
+    //@{
+    //! set current step length
+    virtual void SetStepLength(double& step);
+    //!@}
+
   protected:
     //! print inner status test results
     void PrintUpdate();
