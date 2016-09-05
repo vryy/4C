@@ -52,11 +52,17 @@ searchradiuspot_(0.0),
 alphaf_(alphaf),
 constrnorm_(0.0),
 btsolconstrnorm_(0.0),
-maxtotalsimgap_(0.0),
-maxtotalsimrelgap_(0.0),
-mintotalsimgap_(0.0),
-mintotalsimrelgap_(0.0),
-mintotalsimunconvgap_(0.0),
+maxtotalsimgap_(-1000.0),
+maxtotalsimgap_cp_(-1000.0),
+maxtotalsimgap_gp_(-1000.0),
+maxtotalsimgap_ep_(-1000.0),
+maxtotalsimrelgap_(-1000.0),
+mintotalsimgap_(1000.0),
+mintotalsimgap_cp_(1000.0),
+mintotalsimgap_gp_(1000.0),
+mintotalsimgap_ep_(1000.0),
+mintotalsimrelgap_(1000.0),
+mintotalsimunconvgap_(1000.0),
 totpenaltyenergy_(0.0),
 totpenaltywork_(0.0),
 maxdeltadisp_(0.0),
@@ -524,14 +530,16 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  std::cout << "      Pair management: " << t_end << " seconds. "<< std::endl;
+  if(!pdiscret_.Comm().MyPID())
+    std::cout << "      Pair management: " << t_end << " seconds. "<< std::endl;
   t_start = Teuchos::Time::wallTime();
 
   // evaluate all element pairs (BTB, BTSOL, BTSPH; Contact and Potential)
   EvaluateAllPairs(timeintparams);
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  std::cout << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< std::endl;
+  if(!pdiscret_.Comm().MyPID())
+    std::cout << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< std::endl;
   double sumproc_evaluationtime=0.0;
   Comm().SumAll(&t_end,&sumproc_evaluationtime,1);
   contactevaluationtime_+=sumproc_evaluationtime;
@@ -573,7 +581,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   #endif
 
   t_end = Teuchos::Time::wallTime() - t_start;
-  std::cout << "      Post-manage Pairs: " << t_end << " seconds. "<< std::endl;
+  if(!pdiscret_.Comm().MyPID())
+    std::cout << "      Post-manage Pairs: " << t_end << " seconds. "<< std::endl;
 
   return;
 }
@@ -3613,14 +3622,26 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   //Next we want to find out the maximal and minimal gap
   //We have to distinguish between maximal and minimal gap, since our penalty
   //force law can already become active for positive gaps.
-  double maxgap = 0.0;
-  double maxallgap = 0.0;
-  double mingap = 0.0;
-  double minallgap = 0.0;
-  double maxrelgap = 0.0;
-  double maxallrelgap = 0.0;
-  double minrelgap = 0.0;
-  double minallrelgap = 0.0;
+  double maxgap = -1000.0;
+  double maxgap_cp = -1000.0;
+  double maxgap_gp = -1000.0;
+  double maxgap_ep = -1000.0;
+  double maxallgap = -1000.0;
+  double maxallgap_cp = -1000.0;
+  double maxallgap_gp = -1000.0;
+  double maxallgap_ep = -1000.0;
+  double mingap = 1000.0;
+  double mingap_cp = 1000.0;
+  double mingap_gp = 1000.0;
+  double mingap_ep = 1000.0;
+  double minallgap = 1000.0;
+  double minallgap_cp = 1000.0;
+  double minallgap_gp = 1000.0;
+  double minallgap_ep = 1000.0;
+  double maxrelgap = -1000.0;
+  double maxallrelgap = -1000.0;
+  double minrelgap = 1000.0;
+  double minallrelgap = 1000.0;
 
   //Clear class variable
   totpenaltyenergy_=0.0;
@@ -3664,9 +3685,41 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
         smallerradius=radius2;
 
       std::vector<double> pairgaps = pairs_[i]->GetGap();
+      int numcps=pairs_[i]->GetNumCps();
+      int numgps=pairs_[i]->GetNumGps();
+      int numeps=pairs_[i]->GetNumEps();
+
+      dsassert(pairgaps.size() == numcps+numgps+numeps, "size mismatch! total"
+          " number of gaps unequal sum of individual contact type gaps");
+
       for(int i=0;i<(int)pairgaps.size();i++)
       {
         double gap = pairgaps[i];
+
+        if (i<numcps)
+        {
+          if (gap>maxgap_cp)
+            maxgap_cp = gap;
+
+          if (gap<mingap_cp)
+            mingap_cp = gap;
+        }
+        else if (i<numcps+numgps)
+        {
+          if (gap>maxgap_gp)
+            maxgap_gp = gap;
+
+          if (gap<mingap_gp)
+            mingap_gp = gap;
+        }
+        else if (i<numcps+numgps+numeps)
+        {
+          if (gap>maxgap_ep)
+            maxgap_ep = gap;
+
+          if (gap<mingap_ep)
+            mingap_ep = gap;
+        }
 
         double relgap = gap/smallerradius;
 
@@ -3690,7 +3743,13 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   //don't need this procedure. However, for future applications (i.e. when abstain from a fully overlapping
   //discretization) it might be useful.
   Comm().MaxAll(&maxgap,&maxallgap,1);
+  Comm().MaxAll(&maxgap_cp,&maxallgap_cp,1);
+  Comm().MaxAll(&maxgap_gp,&maxallgap_gp,1);
+  Comm().MaxAll(&maxgap_ep,&maxallgap_ep,1);
   Comm().MinAll(&mingap,&minallgap,1);
+  Comm().MinAll(&mingap_cp,&minallgap_cp,1);
+  Comm().MinAll(&mingap_gp,&minallgap_gp,1);
+  Comm().MinAll(&mingap_ep,&minallgap_ep,1);
   Comm().MaxAll(&maxrelgap,&maxallrelgap,1);
   Comm().MinAll(&minrelgap,&minallrelgap,1);
 
@@ -3700,9 +3759,21 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   //extrema of the total simulation:
   if (maxallgap>maxtotalsimgap_)
     maxtotalsimgap_ = maxallgap;
+  if (maxallgap_cp>maxtotalsimgap_cp_)
+    maxtotalsimgap_cp_ = maxallgap_cp;
+  if (maxallgap_gp>maxtotalsimgap_gp_)
+    maxtotalsimgap_gp_ = maxallgap_gp;
+  if (maxallgap_ep>maxtotalsimgap_ep_)
+    maxtotalsimgap_ep_ = maxallgap_ep;
 
   if (minallgap<mintotalsimgap_)
     mintotalsimgap_ = minallgap;
+  if (minallgap_cp<mintotalsimgap_cp_)
+    mintotalsimgap_cp_ = minallgap_cp;
+  if (minallgap_gp<mintotalsimgap_gp_)
+    mintotalsimgap_gp_ = minallgap_gp;
+  if (minallgap_ep<mintotalsimgap_ep_)
+    mintotalsimgap_ep_ = minallgap_ep;
 
   if (maxallrelgap>maxtotalsimrelgap_)
     maxtotalsimrelgap_ = maxallrelgap;
@@ -3725,17 +3796,23 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
   {
     std::cout << std::endl << "      ***********************************BTB************************************"<<std::endl;
-    std::cout << "      Penalty parameter         = " << currentpp_ << std::endl;
-    std::cout << "      Minimal current Gap       = " << minallgap << std::endl;
-    std::cout << "      Minimal total Gap         = " << mintotalsimgap_ << std::endl;
-    std::cout << "      Minimal total unconv. Gap = " << mintotalsimunconvgap_ << std::endl;
-    std::cout << "      Minimal current rel. Gap  = " << minallrelgap << std::endl;
-    std::cout << "      Current Constraint Norm   = " << constrnorm_ << std::endl;
-    std::cout << "      Minimal total rel. Gap    = " << mintotalsimrelgap_ << std::endl;
-    std::cout << "      Maximal current Gap       = " << maxallgap << std::endl;
-    std::cout << "      Maximal total Gap         = " << maxtotalsimgap_ << std::endl;
-    std::cout << "      Maximal current rel. Gap  = " << maxallrelgap << std::endl;
-    std::cout << "      Maximal total rel. Gap    = " << maxtotalsimrelgap_ << std::endl;
+    std::cout << "      Penalty parameter                = " << currentpp_ << std::endl;
+    std::cout << "      Minimal current Gap              = " << minallgap << std::endl;
+    std::cout << "      Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << std::endl;
+    std::cout << "      Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << std::endl;
+    std::cout << "      Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << std::endl;
+    std::cout << "      Minimal total Gap                = " << mintotalsimgap_ << std::endl;
+    std::cout << "      Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << std::endl;
+    std::cout << "      Minimal current rel. Gap         = " << minallrelgap << std::endl;
+    std::cout << "      Current Constraint Norm          = " << constrnorm_ << std::endl;
+    std::cout << "      Minimal total rel. Gap           = " << mintotalsimrelgap_ << std::endl;
+    std::cout << "      Maximal current Gap              = " << maxallgap << std::endl;
+    std::cout << "      Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << std::endl;
+    std::cout << "      Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << std::endl;
+    std::cout << "      Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << std::endl;
+    std::cout << "      Maximal total Gap                = " << maxtotalsimgap_ << std::endl;
+    std::cout << "      Maximal current rel. Gap         = " << maxallrelgap << std::endl;
+    std::cout << "      Maximal total rel. Gap           = " << maxtotalsimrelgap_ << std::endl;
     if ((int)btsolpairs_.size())
     {
       std::cout << std::endl << "      ***********************************BTS************************************"<<std::endl;
@@ -5594,7 +5671,20 @@ void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
   reader.ReadVector(fcold_, "fcold");
   reader.ReadVector(dis_old_, "dis_old");
   totpenaltywork_ = reader.ReadDouble("totpenaltywork");
-  //outputcounter_ = reader.ReadInt("outputcounter");
+
+  maxtotalsimgap_ = reader.ReadDouble("maxtotalsimgap");
+  maxtotalsimgap_cp_ = reader.ReadDouble("maxtotalsimgap_cp");
+  maxtotalsimgap_gp_ = reader.ReadDouble("maxtotalsimgap_gp");
+  maxtotalsimgap_ep_ = reader.ReadDouble("maxtotalsimgap_ep");
+  maxtotalsimrelgap_ = reader.ReadDouble("maxtotalsimrelgap");
+  mintotalsimgap_ = reader.ReadDouble("mintotalsimgap");
+  mintotalsimgap_cp_ = reader.ReadDouble("mintotalsimgap_cp");
+  mintotalsimgap_gp_ = reader.ReadDouble("mintotalsimgap_gp");
+  mintotalsimgap_ep_ = reader.ReadDouble("mintotalsimgap_ep");
+  mintotalsimrelgap_ = reader.ReadDouble("mintotalsimrelgap");
+  mintotalsimunconvgap_ = reader.ReadDouble("mintotalsimunconvgap");
+
+  outputcounter_ = reader.ReadInt("outputcounter");
 
   return;
 }
@@ -5618,7 +5708,20 @@ void CONTACT::Beam3cmanager::WriteRestart(IO::DiscretizationWriter& output)
   output.WriteVector("fcold", fcold_);
   output.WriteVector("dis_old", dis_old_);
   output.WriteDouble("totpenaltywork", totpenaltywork_);
-  output.WriteInt("outputcounter", outputcounter_);
+
+  output.WriteDouble("maxtotalsimgap",maxtotalsimgap_);
+  output.WriteDouble("maxtotalsimgap_cp",maxtotalsimgap_cp_);
+  output.WriteDouble("maxtotalsimgap_gp",maxtotalsimgap_gp_);
+  output.WriteDouble("maxtotalsimgap_ep",maxtotalsimgap_ep_);
+  output.WriteDouble("maxtotalsimrelgap",maxtotalsimrelgap_);
+  output.WriteDouble("mintotalsimgap",mintotalsimgap_);
+  output.WriteDouble("mintotalsimgap_cp",mintotalsimgap_cp_);
+  output.WriteDouble("mintotalsimgap_gp",mintotalsimgap_gp_);
+  output.WriteDouble("mintotalsimgap_ep",mintotalsimgap_ep_);
+  output.WriteDouble("mintotalsimrelgap",mintotalsimrelgap_);
+  output.WriteDouble("mintotalsimunconvgap",mintotalsimunconvgap_);
+
+  output.WriteInt("outputcounter", outputcounter_);  // ToDo needed?
 
   return;
 }

@@ -1,13 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3contactnew.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief contact element for contact between two 3D beam elements
+
+\level 3
+
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef BEAM3CNEW_H
 #define BEAM3CNEW_H
 
@@ -97,6 +99,8 @@ public:
   \brief Get number of contact points on this element pair
   */
   int GetNumCps(){return 1;};
+  int GetNumGps(){return 0;};
+  int GetNumEps(){return 0;};
 
   /*!
   \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end point contact) of all contact pairs
@@ -297,6 +301,11 @@ public:
   };
   //@}
 
+  /** \brief print this beam contact element pair to screen
+   *
+   *  \author grill
+   *  \date 05/16 */
+  void Print() const {};
 
   //! @name Public evaluation methods
   /*!

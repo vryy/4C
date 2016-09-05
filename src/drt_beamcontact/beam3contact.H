@@ -101,11 +101,21 @@ public:
   inline const DRT::Element* Element2() { return element2_;};
 
   /*!
-  \brief Get number of standard large angle contact points on this element pair
+  \brief Get number of standard large angle/small angle/endpoint contact points on this element pair
   */
   int GetNumCps()
   {
     return cpvariables_.size();
+  };
+
+  int GetNumGps()
+  {
+    return gpvariables_.size();
+  };
+
+  int GetNumEps()
+  {
+    return epvariables_.size();
   };
 
   /*!
@@ -435,6 +445,13 @@ public:
       energy += ppfac*e;
     }
 
+    for (int i=0;i<(int)epvariables_.size();i++)
+    {
+      double ppfac = FADUTILS::CastToDouble(epvariables_[i]->GetPPfac());
+      double e = -epvariables_[i]->GetIntegratedEnergy();
+      energy += ppfac*e;
+    }
+
     return energy;
   };
 
@@ -545,6 +562,11 @@ public:
   */
   void UpdateEleSmoothTangents(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
+  /** \brief print information about this beam contact element pair to screen
+   *
+   *  \author grill
+   *  \date 05/16 */
+  void Print() const;
 
   //@}
 private:

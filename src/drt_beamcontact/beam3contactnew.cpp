@@ -1,13 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3contactnew.cpp
-\brief One beam contact pair (two beam elements)
+
+\brief contact element for contact between two 3D beam elements
+
+\level 3
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *-----------------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "beam3contactnew.H"
 #include "beam3contact_defines.H"

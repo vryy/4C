@@ -473,12 +473,20 @@ private:
 
   //! maximal converged absolute gap during the simulation
   double maxtotalsimgap_;
+  //! maximal converged absolute gap during the simulation (for individual contact types)
+  double maxtotalsimgap_cp_;
+  double maxtotalsimgap_gp_;
+  double maxtotalsimgap_ep_;
 
   //! maximal converged relative gap during the simulation
   double maxtotalsimrelgap_;
 
   //! minimal converged absolute gap during the simulation
   double mintotalsimgap_;
+  //! minimal converged absolute gap during the simulation (for individual contact types)
+  double mintotalsimgap_cp_;
+  double mintotalsimgap_gp_;
+  double mintotalsimgap_ep_;
 
   //! minimal converged relative gap during the simulation
   double mintotalsimrelgap_;

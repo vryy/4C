@@ -2281,7 +2281,10 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
       if( eta_left1 - XIETAITERATIVEDISPTOL <= eta1 and eta1 <= eta_right1 + XIETAITERATIVEDISPTOL and eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
         if(fabs(eta1-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta1+1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
-            dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
+        {
+          this->Print();
+          dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
+        }
 
         if(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(r1_xi))<1.0e-8 or FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(r2_xi))<1.0e-8)
           dserror("Tangent vector of zero length, choose smaller time step!");
@@ -2576,6 +2579,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
 
 
       //TODO:
+      this->Print();
       dserror("Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge contact!");
 
       eta1 = 1e+12;
@@ -2617,7 +2621,10 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
             throw_error=false;
 
           if(throw_error)
+          {
+            this->Print();
             dserror("eta2=-1, danger of multiple gauss point evaluation!");
+          }
         }
 
         if(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(r1_xi))<1.0e-8 or FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(r2_xi))<1.0e-8)
@@ -5103,6 +5110,17 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::GetJacobi(DRT::Element* 
   }
 
   return jacobi;
+}
+
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::Print() const
+{
+  printf("\nInstance of Beam3contact: element GIDs %i and %i",this->element1_->Id(),this->element2_->Id());
+  std::cout << "\nele1pos_: " << ele1pos_;
+  std::cout << "\nele2pos_: " << ele2pos_;
+  // Todo add more relevant information here, e.g. num cp gp and ep pairs, contact stati, angles ...
+
+  return;
 }
 
 #ifdef FADCHECKS

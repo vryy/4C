@@ -251,9 +251,6 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::ResetStepState()
 {
-  CheckInitSetup();
-
-  dserror("Not yet implemented");
 
   return;
 }

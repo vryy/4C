@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3contactinterface.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief interface class for templated classes beam3contact and beam3contactnew
+
+\level 2
+
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 #ifndef BEAM3CIF_H
 #define BEAM3CIF_H
 
@@ -89,6 +90,8 @@ public:
   \brief Get number of contact points on this element pair
   */
   virtual int GetNumCps()=0;
+  virtual int GetNumGps()=0;
+  virtual int GetNumEps()=0;
 
   /*!
   \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end point contact) of all contact pairs
@@ -173,6 +176,12 @@ public:
   */
   virtual bool GetShiftStatus()=0;
   //@}
+
+  /** \brief print this beam contact element pair to screen
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual void Print() const=0;
 
 
   //! @name Public evaluation methods
