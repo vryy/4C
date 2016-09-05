@@ -21,15 +21,15 @@
  *----------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_CubicBspline::ComputeWeight(
   const double dist_rel,
-  const double radius
+  const double invRadius
   )
 {
   // assertions for the sake of safety
   assert(dist_rel >= 0);
-  assert(radius >= 0);
+  assert(invRadius >= 0);
 
   const double norm_const = 3 / (2 * M_PI);
-  const double norm_dist_rel = 2 * dist_rel / radius;
+  const double norm_dist_rel = 2 * dist_rel * invRadius;
 
   double weight = 0;
   if (norm_dist_rel< 1)
@@ -50,13 +50,26 @@ double PARTICLE::WeightFunction_CubicBspline::ComputeWeight(
 /*-----------------------------------------------------------------------------*
  | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
-double PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight(
-  const double dist_rel,
-  const double radius
+LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight(
+  const LINALG::Matrix<3,1>& r_rel,
+  const double invRadius
   )
 {
 
-  double weight = 0;
+  assert(invRadius >= 0);
+
+  const double norm_const = 3 / (2 * M_PI);
+  const double resizer = 2 * invRadius;
+
+  const double norm_dist_rel = resizer * r_rel.Norm2();
+
+  LINALG::Matrix<3,1> weight;
+
+  if (norm_dist_rel< 1)
+    weight.Update(norm_const * resizer * ((3 / 2) * norm_dist_rel - 2),r_rel);
+  else if (norm_dist_rel< 2)
+    weight.Update(- norm_const * resizer * (0.5 * (norm_dist_rel - 2) * (norm_dist_rel - 2) / norm_dist_rel),r_rel);
+
   return weight;
 }
 

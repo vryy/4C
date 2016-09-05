@@ -695,8 +695,8 @@ namespace PARTICLE
 
       /// compute interactions, returns 0
       void EvaluateParticleInteraction(
-        Teuchos::RCP<Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> mass
+        Teuchos::RCP<Epetra_Vector> densityInter,
+        Teuchos::RCP<Epetra_Vector> velocityInter
         );
 
     protected:

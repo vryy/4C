@@ -3833,8 +3833,8 @@ void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
  | compute MeshFree interactions                           katta 08/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
-  Teuchos::RCP<Epetra_Vector> densityn,
-  Teuchos::RCP<const Epetra_Vector> mass
+  Teuchos::RCP<Epetra_Vector> densityInter,
+  Teuchos::RCP<Epetra_Vector> velocityInter
   )
 {
   // gather data for all particles initially
@@ -3898,19 +3898,20 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
       const int lidNode_i = particle_i->LID();
       ParticleInterData& data_i = particledata_[lidNode_i];
 
-      //inverse of the radius for faster computations
+      //inverse of the radius  and p/rho^2 for faster computations
       const double invrad_i = 1/data_i.rad;
+      const double pOverRho2_i = data_i.press / (data_i.rho * data_i.rho);
 
       //loop over the neighbouring particles
       for(std::list<DRT::Node*>::const_iterator ineighborparticle=neighboring_particles.begin(); ineighborparticle!=neighboring_particles.end(); ++ineighborparticle)
       {
         const int lidNode_j = (*ineighborparticle)->LID();
 
-        // no auto-interactions. They are handled before in the initialization of the vectors (desityn, etc.)
-        if(lidNode_i == lidNode_j)
-          continue;
+        // auto-interactions allowed. Uncomment to erase them
+        //if(lidNode_i == lidNode_j)
+          //continue;
 
-        // extract data
+        // extract data j
         const ParticleInterData& data_j = particledata_[lidNode_j];
 
         // evaluate interactions only once just if the influence radius is the same
@@ -3919,19 +3920,51 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
           continue;
 
         // distance vector and distance between two particles
-        static LINALG::Matrix<3,1> r_rel;
-        for(unsigned dim=0; dim<3; ++dim)
-          r_rel(dim) = data_j.pos(dim) - data_i.pos(dim);
-        const double norm_r_rel = r_rel.Norm2();
+        LINALG::Matrix<3,1> r_rel;
+        r_rel.Update(1,data_j.pos,-1,data_i.pos);
 
-        const double weight = weightFunction->ComputeWeight(norm_r_rel,data_i.rad);
+        // compute the specific gradient weight
+        const LINALG::Matrix<3,1> gradientWeight = weightFunction->ComputeGradientWeight(r_rel,invrad_i);
 
-/*
-          // add the mass with the weight
-          (*densityn)[lidNode_i] += weight * data_i.mass;
-          if (trg_equalRadii) //in case there is a relation of equivalence, write the result for the second particle too
-            (*densityn)[lidNode_j] += weight * data_j.mass;
-*/
+        // compute the relative velocity
+        LINALG::Matrix<3,1> v_rel;
+        v_rel.Update(1,data_i.vel,-1,data_j.vel);
+        const double velDotWeightGradient = v_rel.Dot(gradientWeight);
+
+        // compute the density interaction i
+        (*densityInter)[lidNode_i] += data_j.mass * velDotWeightGradient;
+
+        // the total p/rho^2
+        const double total_pOverRho2 = pOverRho2_i + data_j.press / (data_j.rho * data_j.rho);
+
+        // preparation for LINALG::Assemble
+        Epetra_SerialDenseVector divp_i(3);
+        std::vector<int> lmowner_i(3);
+        for(int dim=0; dim<3; ++dim)
+        {
+          lmowner_i[dim] = data_i.owner;
+          divp_i[dim] = - data_j.mass * total_pOverRho2 * gradientWeight(dim);
+        }
+        // velocity interaction
+        LINALG::Assemble(*velocityInter, divp_i, data_i.lm, lmowner_i);
+
+        // mutual density interaction j. Reaction-like behavior only if the influence radii are equal!
+        if (trg_equalRadii)
+        {
+          // density interaction
+          (*densityInter)[lidNode_j] += data_i.mass * velDotWeightGradient;
+
+          // preparation for LINALG::Assemble
+          Epetra_SerialDenseVector divp_j(3);
+          std::vector<int> lmowner_j(3);
+          for(int dim=0; dim<3; ++dim)
+          {
+            lmowner_j[dim] = data_j.owner;
+            divp_j[dim] = data_i.mass * total_pOverRho2 * gradientWeight(dim);
+          }
+          // velocity interaction
+          LINALG::Assemble(*velocityInter, divp_j, data_j.lm, lmowner_j);
+        }
       }
     }
   }

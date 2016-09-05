@@ -14,6 +14,10 @@
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_WEIGHTFUNCTION_H_
 
 /*----------------------------------------------------------------------*/
+/* headers */
+#include "../linalg/linalg_fixedsizematrix.H"
+
+/*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
 {
@@ -40,7 +44,7 @@ namespace PARTICLE
      virtual double ComputeWeight(const double dist_rel, const double radius) = 0;
 
      //!
-     virtual double ComputeGradientWeight(const double dist_rel, const double radius) = 0;
+     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& r_rel, const double radius) = 0;
 
      //@}
 
@@ -67,7 +71,7 @@ namespace PARTICLE
      virtual double ComputeWeight(const double dist_rel, const double radius);
 
      //!
-     virtual double ComputeGradientWeight(const double dist_rel, const double radius);
+     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& r_rel, const double radius);
 
      //@}
 
