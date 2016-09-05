@@ -928,7 +928,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   {
     // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
     // (([|u|]-u_0)*P^n) Apply from right for consistency
-    velint_diff_normal_.Update(configmap.at(INPAR::XFEM::F_Adj_n_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_n_Col).second, velint_s_, 0.0);
+    velint_diff_normal_.Update(configmap.at(INPAR::XFEM::F_Pen_n_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Pen_n_Col).second, velint_s_, 0.0);
     // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
     velint_diff_normal_.Update(-1.0,ivelint_jump,1.0);
     velint_diff_proj_normal_.MultiplyTN(proj_normal_,velint_diff_normal_);
@@ -949,7 +949,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   {
     // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
     // (([|u|]-u_0)*P^t) Apply from right for consistency
-    velint_diff_tangential_.Update(configmap.at(INPAR::XFEM::F_Adj_t_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_t_Col).second, velint_s_, 0.0);
+    velint_diff_tangential_.Update(configmap.at(INPAR::XFEM::F_Pen_t_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Pen_t_Col).second, velint_s_, 0.0);
     // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
     velint_diff_tangential_.Update(-1.0,ivelint_jump,1.0);
     velint_diff_proj_tangential_.MultiplyTN(proj_tangential_,velint_diff_tangential_);

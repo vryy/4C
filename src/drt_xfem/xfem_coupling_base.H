@@ -214,10 +214,6 @@ public:
        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
       dserror("Your consistent constraint for Penalty and Adjoint term is not equal, go to element level and split up velint_diff_ for penalty and adjoint!");
 
-    //At the moment you cannot use different consistent constraints for normal or full direction!
-    if(fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second) > 1e-16 ||
-        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second - configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second) > 1e-16)
-      dserror("Your consistent constraint for Adjoint in normal and full direction are different, this is an issure for the pressure adjoint term, fix velint_diff_ used for this term!; ");
     #endif
     return configuration_map_;
   }
