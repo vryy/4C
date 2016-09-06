@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
       double phingp = 0.0;
 
       // gaussian points coordinates
-      for (unsigned int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;idim++)
+      for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;idim++)
         mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
       //gaussian weight

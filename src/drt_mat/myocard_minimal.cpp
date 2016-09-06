@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file myocard_minimal.cpp
 
-\brief minimal modoel for myocard material
+\brief minimal model for myocard material
 
 <pre>
 \level 3
@@ -283,6 +283,7 @@ double Myocard_Minimal::GetInternalState(const int k, int gp) const
 void Myocard_Minimal::SetInternalState(const int k, const double val)
 {
   SetInternalState(k, val, 0);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -298,6 +299,7 @@ void Myocard_Minimal::SetInternalState(const int k, const double val, int gp)
     case 2: {s0_[gp] = val; s_[gp] = val; break;}
     default: {dserror("There are only 3 internal variables in this myocard material!"); break;}
   }
+  return;
 }
 
 /*----------------------------------------------------------------------*

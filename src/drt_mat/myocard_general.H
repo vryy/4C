@@ -50,8 +50,14 @@ public:
   /// compute reaction coefficient for multiple Gauss points
   virtual double ReaCoeff(const double phi, const double dt, int gp)
   {
-    dserror("Multiple Gauss points only implemented for MV model");
-    return 0.;
+    if(gp>0)
+    {
+      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      return 0.;
+    }
+
+    else
+      return ReaCoeff(phi,dt);
   };
 
   /// compute reaction coefficient
@@ -66,7 +72,7 @@ public:
   ///  returns current internal state of the material
   virtual double GetInternalState(const int k, int gp) const
   {
-    dserror("Multiple Gauss points only implemented for MV model");
+    dserror("Multiple Gauss points only implemented for MV and FHN model");
     return 0.;
   };
 
@@ -76,7 +82,7 @@ public:
   ///  set internal state of the material for multiple Gauss points
   virtual void SetInternalState(const int k, const double val, int gp)
   {
-    dserror("Multiple Gauss points only implemented for MV model");
+    dserror("Multiple Gauss points only implemented for MV and FHN model");
     return;
   };
 
@@ -89,7 +95,7 @@ public:
   ///  return ionic currents
   virtual double GetIonicCurrents(const int k, int gp) const
   {
-    dserror("Multiple Gauss Points only implemented for MV model");
+    dserror("Multiple Gauss Points only implemented for MV and FHN model");
     return 0.;
   };
 
