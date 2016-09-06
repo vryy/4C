@@ -283,10 +283,8 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 {
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
-  const double fact1 = 1.0/(theta_*dta_);
-  const double fact2 = 1.0 - (1.0/theta_);
-  phidtnp_->Update(fact2,*phidtn_,0.0);
-  phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+  const double fact = 1.0/(theta_*dta_);
+  phidtnp_->Update(fact,*phinp_,-fact,*hist_,0.0);
 
   // We know the first time derivative on Dirichlet boundaries
   // so we do not need an approximation of these values!

@@ -282,17 +282,14 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
     // time derivative of phi for first time step:
     // phidt(n+1) = (phi(n+1)-phi(n))/dt
     const double fact = 1.0/dta_;
-    phidtnp_->Update(fact,*phinp_,-fact,*phin_,0.0);
+    phidtnp_->Update(fact,*phinp_,-fact,*hist_,0.0);
   }
   else
   {
     // time derivative of phi:
     // phidt(n+1) = ((3/2)*phi(n+1)-2*phi(n)+(1/2)*phi(n-1))/dt
-    const double fact1 = 3.0/(2.0*dta_);
-    const double fact2 = -2.0/dta_;
-    const double fact3 = 1.0/(2.0*dta_);
-    phidtnp_->Update(fact3,*phinm_,0.0);
-    phidtnp_->Update(fact1,*phinp_,fact2,*phin_,1.0);
+    const double fact = 3.0/(2.0*dta_);
+    phidtnp_->Update(fact,*phinp_,-fact,*hist_,0.0);
   }
 
   // We know the first time derivative on Dirichlet boundaries
