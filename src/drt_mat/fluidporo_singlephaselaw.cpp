@@ -225,13 +225,15 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroPhaseLawByFunction::
   {
     DRT::UTILS::VariableExprFunction& funct =
         dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+
+    return funct;
   }
   catch(std::bad_cast & exp)
   {
     dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
         "Check your input file!");
+    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
   }
-  return static_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
 }
 
 /*----------------------------------------------------------------------*
