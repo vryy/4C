@@ -45,6 +45,14 @@ namespace TIMINT {
 } // namespace TIMINT
 namespace MODELEVALUATOR {
   class Data;
+  /*! \brief This is the abstract base class of all model evaluators
+   *
+   *  This class summarizes the functionality which all model evaluators share
+   *  and/or have to implement. Look in the derived classes for examples. A minimal
+   *  example can be found at \ref STR::MODELEVALUATOR::PartitionedFSI.
+   *
+   *  \date 08/15
+   *  \author hiermeier */
   class Generic
   {
   public:
@@ -79,12 +87,13 @@ namespace MODELEVALUATOR {
     virtual void CheckInit() const;
 
   public:
+    //! Returns the type of the current model evaluator
     virtual INPAR::STR::ModelType Type() const = 0;
 
     /*! \brief reset model specific variables (without jacobian)
      *
      *  This function is always called before the actual Evaluate() routine is going to start.
-     *  You can use it to reset model specific stuff at the beginning of a new Evaluate round.
+     *  You can use it to reset model specific stuff at the beginning of a new evaluation round.
      *
      *  \param x   (in) : current full state vector
      *
@@ -152,6 +161,12 @@ namespace MODELEVALUATOR {
      *  \author hiermeier */
     virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
+
+    /*! \brief Recover condensed solution variables
+     *
+     *  This method is supposed to be used to recover condensed solution variables.
+     *  Typical examples are the eas degrees of freedom or the dual lagrange multipliers.
+     *  Do NOT use it to reset your model variables! Use the Reset() method instead.  */
     virtual void RecoverState(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
@@ -161,8 +176,24 @@ namespace MODELEVALUATOR {
 
     virtual void UpdateStepElement() = 0;
 
+    /*! \brief calculate the stress/strain contributions of each model evaluator
+     *
+     *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+     *  missing quantities, which were not evaluated during the standard evaluate call and are
+     *  only calculated once per load/time step. You can not do the calculations during the
+     *  OutputStepState() routine, because of the const status of the named function!
+     *
+     *  \author hiermeier*/
     virtual void DetermineStressStrain() = 0;
 
+    /*! \brief calculate energy contributions of each model evaluator
+     *
+     *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+     *  missing quantities, which were not evaluated during the standard evaluate call and are
+     *  only calculated once per load/time step. You can not do the calculations during the
+     *  OutputStepState() routine, because of the const status of the named function!
+     *
+     *  \author hiermeier*/
     virtual void DetermineEnergy() = 0;
 
     //! output routine for model evlaluator
@@ -238,7 +269,7 @@ namespace MODELEVALUATOR {
     //! pointer to input/ouput data container
     Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
-    //! problem discretization
+    //! pointer to the problem discretization
     Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
     //! pointer to the structural (time) integrator
@@ -247,7 +278,13 @@ namespace MODELEVALUATOR {
     //! pointer to the time integrator strategy object
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
+    /*! \brief initial dof offset
+     *
+     *  This variable becomes important when you plan to create a
+     *  block for the system of equations. E.g. saddle-point system
+     *  in contact case. */
     int dof_offset_;
+
   }; // class Generic
 
 } // namespace MODELEVALUATOR

@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "str_model_evaluator_cardiovascular0d.H"
+#include "str_model_evaluator_data.H"
 
 #include "str_timint_base.H"
 #include "str_utils.H"
@@ -271,13 +272,10 @@ void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(
     const double& timefac_n)
 {
   cardvasc0dman_->UpdateTimeStep();
+
   // only print state variables after a finished time step, not when we're
   // in the equilibriate initial state routine
-
-  // ToDo Currently, this doesn't work, since the flag
-  // isequalibriate_initial_state_ is always FALSE when UpdateStepState is
-  // called inside EquilibriateInitialState() !
-  if(!(Int().IsEquilibriateInitialState()))
+  if (EvalData().GetTotalTime()==GState().GetTimeNp())
     cardvasc0dman_->PrintPresFlux(false);
 
   // add the 0D cardiovascular force contributions to the old structural

@@ -68,6 +68,7 @@ namespace TIMINT {
     virtual void SetState(const Epetra_Vector& x) = 0;
 
     /*! \brief Reset state variables of all models
+     *  (incl. the structural dynamic state variables)
      *
      *  \param x (in) : current full state vector */
     void ResetModelStates(const Epetra_Vector& x);
@@ -139,12 +140,6 @@ namespace TIMINT {
 
     //! @name Accessors
     //! @{
-    //! return the EquilibriateInitalState flag
-    const bool& IsEquilibriateInitialState() const
-    {
-      CheckInit();
-      return isequalibriate_initial_state_;
-    }
 
     double GetCondensedUpdateNorm(
         const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
@@ -190,8 +185,9 @@ namespace TIMINT {
     //! Check the setup state
     void CheckInitSetup() const;
 
-    /*! Equilibriate system at initial state and
-     *  identify consistent accelerations */
+    /*! \brief Equilibriate system at initial state and identify consistent accelerations
+     *
+     *  \author hiermeier */
     void EquilibriateInitialState();
 
     /*! check if current state is equilibrium (with respect to
@@ -259,9 +255,6 @@ namespace TIMINT {
 
     //! pointer to the underlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
-
-    //! indicates that the EquilibriateInitialState() routine is active
-    bool isequalibriate_initial_state_;
   };
 } // namespace STR
 

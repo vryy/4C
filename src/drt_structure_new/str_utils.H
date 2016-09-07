@@ -98,7 +98,7 @@ namespace NLN {
   /*! \brief Convert the structural model type enumerator to a nox nln solution
    *  type enumerator and check if the conversion was successful
    *
-   *  \param modeltype (in) : Model type enumerator which has to be converted. */
+   *  \param soltype (in) : Solution type enumerator which has to be converted. */
   inline enum INPAR::STR::ModelType ConvertSolType2ModelType(
       const enum NOX::NLN::SolutionType& soltype)
   { return ConvertSolType2ModelType(soltype,true); }

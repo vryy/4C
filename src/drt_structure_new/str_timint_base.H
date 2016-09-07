@@ -502,7 +502,8 @@ namespace TIMINT {
     /** \brief Get data that is written during restart
      *
      *  This routine is only for simple structure problems!
-     *  \author biehler \data 06/13 */
+     *  \date 06/13
+     *  \author biehler */
     virtual void GetRestartData(
         Teuchos::RCP<int> step,
         Teuchos::RCP<double> time,
@@ -755,9 +756,10 @@ namespace TIMINT {
     /** \brief Output to file
      *
      *  This routine always prints the last converged state, i.e.
-     *  \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
-     *  upon object prior to writing stuff here.
-     *  \author mwgee (originally)                        \date 03/07 */
+     *  \f$D_{n}, V_{n}, A_{n}\f$.
+     *
+     *  \date 03/07
+     *  \author mwgee (originally) */
     void OutputStep(bool forced_writerestart);
   private:
     /// create a new input/output step in the output writer, if no data were written till now

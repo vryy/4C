@@ -130,7 +130,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // Reset the state variables
   const NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
-  // set the consistent state in the active implicit time integrator
+  // set the consistent state in the models (e.g. structure and contact models)
   ImplInt().ResetModelStates(x_eptra.getEpetraVector());
 
   // For safety purposes, we set the dbc_incr vector to zero

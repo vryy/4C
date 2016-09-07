@@ -41,8 +41,7 @@ STR::Integrator::Integrator()
       gstate_ptr_(Teuchos::null),
       io_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null),
-      isequalibriate_initial_state_(false)
+      timint_ptr_(Teuchos::null)
 {
   // empty constructor
 }
@@ -114,7 +113,7 @@ void STR::Integrator::CheckInitSetup() const
 void STR::Integrator::ResetModelStates(const Epetra_Vector& x)
 {
   CheckInitSetup();
-  ModelEval().Reset(x);
+  ModelEval().ResetStates(x);
 }
 
 /*----------------------------------------------------------------------------*
@@ -158,17 +157,15 @@ void STR::Integrator::EquilibriateInitialState()
   // !!! evaluate the initial state !!!
   EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
 
-  /* set flag to indicate, that we are at the very most beginning of our dynamic
-   * calcualtion */
-  isequalibriate_initial_state_ = true;
-  // evaluate the stiffness only on the structural model evaluator
-  ModelEval().ApplyStiff(INPAR::STR::model_structure,*disnp_ptr,*stiff_ptr,1.0);
-  // build the entire right-hand-side
-  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr,1.0);
+  // initialize the mass matrix and the Rayleigh damping matrix (optional)
+  if (not ModelEval().InitializeInertiaAndDamping(*disnp_ptr,*stiff_ptr))
+    dserror("InitializeInertiaAndDamping failed!");
+  // build the entire initial right-hand-side
+  if (not ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr))
+    dserror("ApplyInitialForce failed!");
+
   // add viscous contributions to rhs
   rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);
-  /* release the flag again */
-  isequalibriate_initial_state_ = false;
 
   /* If we are restarting the simulation, we do not have to calculate a
    * consistent acceleration, since we get it anyway from the restart file.
@@ -238,7 +235,7 @@ void STR::Integrator::EquilibriateInitialState()
   // ---------------------------------------------------------------------------
   // solve the linear system
   linsys_ptr->applyJacobianInverse(p_ls,*nox_rhs_ptr,*nox_soln_ptr);
-  nox_soln_ptr->scale(-1);
+  nox_soln_ptr->scale(-1.0);
 
   // get the solution vector and copy it into the acceleration vector
   accnp_ptr->PutScalar(0.0);
@@ -246,10 +243,8 @@ void STR::Integrator::EquilibriateInitialState()
   //*) Add contributions of inhomogeneous DBCs
   accnp_ptr->Update(1.0,*acc_aux_ptr,1.0);
 
-  isequalibriate_initial_state_ = true;
-  // re-build the entire right-hand-side with correct accelerations
-  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr,1.0);
-  isequalibriate_initial_state_ = false;
+  // re-build the entire initial right-hand-side with correct accelerations
+  ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr);
 
   // call update routines to copy states from t_{n+1} to t_{n}
   // note that the time step is not incremented
@@ -283,10 +278,8 @@ bool STR::Integrator::CurrentStateIsEquilibrium(const double& tol)
   // !!! evaluate the initial state !!!
   EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
 
-  isequalibriate_initial_state_ = true;
   // build the entire right-hand-side
-  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr,1.0);
-  isequalibriate_initial_state_ = false;
+  ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr);
 
   // add viscous contributions to rhs
   rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);

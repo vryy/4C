@@ -78,7 +78,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
     /* ToDo tolerance value is experience and based on following consideration:
      * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
      * initial, stress free state of order 1e-8 */
-    if(not CurrentStateIsEquilibrium(1e-6))
+    if(not CurrentStateIsEquilibrium(1.0e-6))
       dserror("Lie group GenAlpha only supports initially vanishing acceleration state,"
           " i.e. an initial state where the system is equilibrated");
 
@@ -97,7 +97,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  if (IsPredictorState() or IsEquilibriateInitialState())
+  if (IsPredictorState())
     return;
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];

@@ -68,6 +68,12 @@ namespace MODELEVALUATOR {
 
     //! @name General evaluate routines
     //! @{
+    bool InitializeInertiaAndDamping(const Epetra_Vector& x,
+        LINALG::SparseOperator& jac);
+
+    bool ApplyInitialForce(const Epetra_Vector& x,
+        Epetra_Vector& f);
+
     //! apply force
     bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f,
         const double& timefac_np) const;
@@ -91,10 +97,10 @@ namespace MODELEVALUATOR {
 
     //! @}
 
-    /*! \brief reset all model states
+    /*! \brief reset all model states (incl. the structural dynamic state)
      *
      *  \param x (in) : current full state vector */
-    void Reset(const Epetra_Vector& x);
+    void ResetStates(const Epetra_Vector& x);
 
     //! Write current restart
     void WriteRestart(IO::DiscretizationWriter& iowriter,
@@ -168,7 +174,7 @@ namespace MODELEVALUATOR {
         STR::ModelEvaluator::Map model_map,
         std::vector<INPAR::STR::ModelType>& sorted_modeltypes
         ) const;
-  protected:
+  private:
     bool isinit_;
 
     bool issetup_;

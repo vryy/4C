@@ -111,7 +111,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  if (IsPredictorState() or IsEquilibriateInitialState())
+  if (IsPredictorState())
     return;
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];

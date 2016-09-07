@@ -18,6 +18,7 @@
 #include "str_timint_base.H"
 #include "str_utils.H"
 #include "str_integrator.H"
+#include "str_dbc.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -30,8 +31,8 @@
 
 #include "../drt_io/io.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Structure::Structure()
     : fintnp_ptr_(Teuchos::null),
       fextnp_ptr_(Teuchos::null),
@@ -48,8 +49,8 @@ STR::MODELEVALUATOR::Structure::Structure()
   // empty
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Setup()
 {
   if (not IsInit())
@@ -89,30 +90,31 @@ void STR::MODELEVALUATOR::Structure::Setup()
   issetup_ = true;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  // update the state variables of the current time integrator
-  Int().SetState(x);
-
-  // reset external forces
+  /* --- reset external forces
+   * Please note, that PutScalar is safer (but maybe slower) than
+   * Scale(0.0), because of possible NaN and inf values! */
   fextnp_ptr_->PutScalar(0.0);
 
-  // reset internal forces
+  /* --- reset internal forces
+   * Please note, that PutScalar is safer (but maybe slower) than
+   * Scale(0.0), because of possible NaN and inf values! */
   fintnp_ptr_->PutScalar(0.0);
 
-  // zero stiffness matrix
+  // reset stiffness matrix
   stiff_ptr_->Zero();
 
   // set evaluation time back to zero
   *dt_ele_ptr_ = 0.0;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::EvaluateForce()
 {
   CheckInitSetup();
@@ -131,8 +133,8 @@ bool STR::MODELEVALUATOR::Structure::EvaluateForce()
   return ok;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::EvaluateStiff()
 {
   CheckInitSetup();
@@ -162,14 +164,11 @@ bool STR::MODELEVALUATOR::Structure::EvaluateStiff()
       GState().GetTimer()->WallTime() - dtcpu;
   // *********** time measurement ***********
 
-  if (not stiff_ptr_->Filled())
-    stiff_ptr_->Complete();
-
   return ok;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
 {
   CheckInitSetup();
@@ -194,15 +193,12 @@ bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
       GState().GetTimer()->WallTime() - dtcpu;
   // *********** time measurement ***********
 
-  if (not stiff_ptr_->Filled())
-    stiff_ptr_->Complete();
-
   // that's it
   return ok;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
@@ -218,8 +214,8 @@ bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f,
   return true;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
     LINALG::SparseOperator& jac,
     const double & timefac_np) const
@@ -229,8 +225,46 @@ bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
   return (err==0);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Structure::InitializeInertiaAndDamping()
+{
+  CheckInitSetup();
+
+  // currently a fixed number of matrix and vector pointers are supported
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  // create vector with zero entries
+  Teuchos::RCP<const Epetra_Vector> zeros = Int().GetDbc().GetZerosPtr();
+
+  // set vector values needed by elements
+  // --> initially zero !!!
+  Discret().ClearState();
+  Discret().SetState(0,"residual displacement", zeros);
+  Discret().SetState(0,"displacement", zeros);
+
+  // set action type and evaluation matrix and vector pointers
+  StaticContributions(&eval_mat[0],&eval_vec[0]);
+  MaterialDampingContributions(&eval_mat[0]);
+  InertialContributions(&eval_mat[0],&eval_vec[0]);
+
+  // evaluate
+  EvaluateInternal(&eval_mat[0],&eval_vec[0]);
+
+  // complete stiffness and mass matrix
+  FillComplete();
+
+  // assemble the rayleigh damping matrix
+  RayleighDampingMatrix();
+
+  return EvalErrorCheck();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
 {
   CheckInitSetup();
@@ -241,166 +275,28 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
       {Teuchos::null,Teuchos::null};
 
-  // set default matrices and vectors
-  eval_vec[0] = fintnp_ptr_;
-
   // set vector values needed by elements
   Discret().ClearState();
   Discret().SetState(0,"residual displacement", dis_incr_ptr_);
   Discret().SetState(0,"displacement", disnp_ptr_);
 
-  switch (EvalData().GetDampingType())
-  {
-    case INPAR::STR::damp_material:
-    {
-      // -----------------------------------------------------------------
-      /* evaluate the current (static) state and material damping effects
-       * (Note: material damping and non-linear mass effects cannot be
-       * considered at the same time at the moment) */
-      // -----------------------------------------------------------------
-      // action for elements
-      EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
-      // set the discretization state
-      Discret().SetState(0,"velocity", GState().GetVelNp());
-      // reset stiffness matrix
-      stiff_ptr_->Zero();
-      // reset damping matrix
-      damp_ptr_->Zero();
-      // set stiffness matrix
-      eval_mat[0] = stiff_ptr_;
-      // set damping matrix
-      eval_mat[1] = damp_ptr_;
-      // evaluate ...
-      EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-      break;
-    }
-    case INPAR::STR::damp_rayleigh:
-    {
-      // do nothing! the damping matrix is constant over the whole simululation
-      // and calculated in STR::Integrator::EquilibriateInitialState()
+  // set action type and evaluation matrix and vector pointers
+  StaticContributions(&eval_vec[0]);
+  MaterialDampingContributions(&eval_mat[0]);
+  if (masslin_type_!=INPAR::STR::ml_none)
+    InertialContributions(&eval_vec[0]);
 
-      // reset stiffness matrix
-      stiff_ptr_->Zero();
-      // set stiffness matrix
-      eval_mat[0] = stiff_ptr_;
+  // evaluate ...
+  EvaluateInternal(&eval_mat[0],&eval_vec[0]);
 
-      switch (masslin_type_)
-      {
-        case INPAR::STR::ml_none:
-        {
-          // -------------------------------------------------------------
-          // evaluate the current (static) state
-          // -------------------------------------------------------------
-          // action for elements
-          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
-          // evaluate ...
-          EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-
-          break;
-        }
-        case INPAR::STR::ml_standard:
-        case INPAR::STR::ml_rotations:
-        {
-          dserror("ERROR: Nonlinear mass is not considered in combination "
-              "with Rayleigh damping!");
-
-          // -------------------------------------------------------------
-          /* evaluate the current (static) state and non-linear inertia
-           * effects */
-          // -------------------------------------------------------------
-          // action for elements
-          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
-          // reset the inertial stuff...
-          mass_ptr_->Zero();
-          finertialnp_ptr_->PutScalar(0.0);
-          // set the discretization state
-          Discret().SetState(0,"velocity", GState().GetVelNp());
-          Discret().SetState(0,"acceleration", GState().GetAccNp());
-          // set mass matrix
-          eval_mat[1] = mass_ptr_;
-          // set inertial force
-          eval_vec[1] = finertialnp_ptr_;
-          // evaluate ...
-          EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-          // complete the mass matrix
-          mass_ptr_->Complete();
-
-          break;
-        }
-        default:
-          dserror("Unknown mass linearization type!");
-          break;
-      }
-      break;
-    }
-    case INPAR::STR::damp_none:
-    {
-      switch (masslin_type_)
-      {
-        case INPAR::STR::ml_none:
-        {
-          // -------------------------------------------------------------
-          // evaluate the current (static) state
-          // -------------------------------------------------------------
-          // action for elements
-          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalforce);
-          // evaluate ...
-          EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-
-          break;
-        }
-        case INPAR::STR::ml_standard:
-        case INPAR::STR::ml_rotations:
-        {
-          // -------------------------------------------------------------
-          /* evaluate the current (static) state and non-linear inertia
-           * effects */
-          // -------------------------------------------------------------
-          // action for elements
-          EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);
-          // reset the inertial stuff...
-          finertialnp_ptr_->PutScalar(0.0);
-          // set the discretization state
-          Discret().SetState(0,"velocity", GState().GetVelNp());
-          Discret().SetState(0,"acceleration", GState().GetAccNp());
-          // set inertial force
-          eval_vec[1] = finertialnp_ptr_;
-          // evaluate ...
-          EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-
-          break;
-        }
-        default:
-          dserror("Unknown mass linearization type!");
-          break;
-      }
-
-      break;
-    }
-    default:
-      dserror("Unsupported damping type!");
-      break;
-  }
-
-  if (masslin_type_==INPAR::STR::ml_none)
-  {
-    // calculate the inertial force at t_{n+1}
-    mass_ptr_->Multiply(false,
-        *GState().GetAccNp(),*finertialnp_ptr_);
-  }
-
-  // calculate the viscous/damping force at t_{n+1}
-  if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
-  {
-    damp_ptr_->Multiply(false,
-        *GState().GetVelNp(),*fvisconp_ptr_);
-  }
+  // evaluate inertia and visco forces
+  InertialAndViscousForces();
 
   return EvalErrorCheck();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::ApplyForceExternal()
 {
   CheckInitSetup();
@@ -419,8 +315,8 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceExternal()
   return EvalErrorCheck();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::ApplyForceStiffExternal()
 {
   CheckInitSetup();
@@ -446,155 +342,139 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffExternal()
   return EvalErrorCheck();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
 {
   CheckInitSetup();
-
   // currently a fixed number of matrix and vector pointers are supported
   Teuchos::RCP<Epetra_Vector> eval_vec [3] =
       {Teuchos::null,Teuchos::null,Teuchos::null};
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
-      {Teuchos::null,Teuchos::null};
+       {Teuchos::null,Teuchos::null};
 
-  // set default matrices and vectors
+  // set vector values needed by elements
+  Discret().ClearState();
+  Discret().SetState(0,"residual displacement", dis_incr_ptr_);
+  Discret().SetState(0,"displacement", disnp_ptr_);
+
+  // set action types and evaluate matrices/vectors
+  StaticContributions(&eval_mat[0],&eval_vec[0]);
+  MaterialDampingContributions(&eval_mat[0]);
+  if (masslin_type_!=INPAR::STR::ml_none)
+    InertialContributions(&eval_mat[0],&eval_vec[0]);
+
+  // evaluate
+  EvaluateInternal(&eval_mat[0],&eval_vec[0]);
+
+  // complete stiffness and mass matrix
+  FillComplete();
+
+  // evaluate inertial and viscous forces
+  InertialAndViscousForces();
+
+  return EvalErrorCheck();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::StaticContributions(
+    Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
+    Teuchos::RCP<Epetra_Vector>* eval_vec)
+{
+  // action for elements
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
+  // set default matrix
   eval_mat[0] = stiff_ptr_;
+  // set default force vector
   eval_vec[0] = fintnp_ptr_;
+}
 
-  // -------------------------------------------------------------
-  // evaluate initial dynamic state
-  // -------------------------------------------------------------
-  if (Int().IsEquilibriateInitialState())
-  {
-    // create vector with zero entries
-    Teuchos::RCP<Epetra_Vector>  zeros =
-        Teuchos::rcp(new Epetra_Vector(disnp_ptr_->Map(),true));
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::StaticContributions(
+    Teuchos::RCP<Epetra_Vector>* eval_vec)
+{
+  // action for elements
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalforce);
+  // set default force vector
+  eval_vec[0] = fintnp_ptr_;
+}
 
-    // set vector values needed by elements
-    // --> initially zero !!!
-    Discret().ClearState();
-    Discret().SetState(0,"residual displacement", zeros);
-    Discret().SetState(0,"displacement", zeros);
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::MaterialDampingContributions(
+    Teuchos::RCP<LINALG::SparseOperator>* eval_mat)
+{
+  if (EvalData().GetDampingType()!=INPAR::STR::damp_material)
+    return;
 
-    // overwrite the standard element action, if lumping is desired
-    if (TimInt().GetDataSDyn().IsMassLumping())
-      EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstifflmass);
-    else
-      EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
+  // action for elements
+  // (reset the action type to be independent of the calling order)
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
+  // set the discretization state
+  Discret().SetState(0,"velocity", GState().GetVelNp());
+  // reset damping matrix
+  damp_ptr_->Zero();
+  // add the stiffness matrix as well (also for the ApplyForce case!)
+  eval_mat[0] = stiff_ptr_;
+  // set damping matrix
+  eval_mat[1] = damp_ptr_;
 
-    // reset the mass matrix
-    mass_ptr_->Zero();
-    // set the discretization state
-    Discret().SetState(0,"velocity", GState().GetVelNp());
-    Discret().SetState(0,"acceleration", GState().GetAccNp());
-    // set mass matrix
-    eval_mat[1] = mass_ptr_;
-    // evaluate ...
-    EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-    mass_ptr_->Complete();
+  return;
+}
 
-    /* We have to do it here, since we assemble directly into the
-     * stiffness block during the call of the remaining model
-     * evaluators. */
-    if (EvalData().GetDampingType()==INPAR::STR::damp_rayleigh)
-    {
-      stiff_ptr_->Complete();
-      const double& dampk =
-          TimInt().GetDataSDyn().GetDampingStiffnessFactor();
-      const double& dampm =
-          TimInt().GetDataSDyn().GetDampingMassFactor();
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::InertialContributions(
+    Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
+    Teuchos::RCP<Epetra_Vector>* eval_vec)
+{
+  CheckInitSetup();
 
-      // damping matrix with initial stiffness
-      damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
-      damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
-      damp_ptr_->Complete();
-    }
-  }
+  // overwrite element action
+  if (TimInt().GetDataSDyn().IsMassLumping())
+    EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstifflmass);
   else
-  {
-    // set vector values needed by elements
-    Discret().ClearState();
-    Discret().SetState(0,"residual displacement", dis_incr_ptr_);
-    Discret().SetState(0,"displacement", disnp_ptr_);
+    EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
 
-    switch (EvalData().GetDampingType())
-    {
-      case INPAR::STR::damp_material:
-      {
-        // -----------------------------------------------------------------
-        /* evaluate the current (static) state and material damping effects
-         * (Note: material damping and non-linear mass effects cannot be
-         * considered at the same time at the moment) */
-        // -----------------------------------------------------------------
-        // action for elements
-        EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
-        // reset the damping matrix
-        damp_ptr_->Zero();
-        // set the discretization state
-        Discret().SetState(0,"velocity", GState().GetVelNp());
-        // set damping matrix
-        eval_mat[1] = damp_ptr_;
-        // evaluate ...
-        EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-        // complete the damping matrix
-        damp_ptr_->Complete();
-        break;
-      }
-      case INPAR::STR::damp_none:
-      case INPAR::STR::damp_rayleigh:
-      {
-        switch (masslin_type_)
-        {
-          case INPAR::STR::ml_none:
-          {
-            // -------------------------------------------------------------
-            // evaluate the current (static) state
-            // -------------------------------------------------------------
-            // action for elements
-            EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
-            // evaluate ...
-            EvaluateInternal(&eval_mat[0],&eval_vec[0]);
+  // set the discretization state
+  Discret().SetState(0,"velocity", GState().GetVelNp());
+  Discret().SetState(0,"acceleration", GState().GetAccNp());
+  // reset the mass matrix
+  mass_ptr_->Zero();
+  // set mass matrix
+  eval_mat[1] = mass_ptr_;
+  // set inertial vector if necessary
+  eval_vec[1] = GetInertialForce();
 
-            break;
-          }
-          case INPAR::STR::ml_standard:
-          case INPAR::STR::ml_rotations:
-          {
-            // -------------------------------------------------------------
-            /* evaluate the current (static) state and non-linear inertia
-             * effects */
-            // -------------------------------------------------------------
-            // action for elements
-            EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
-            // reset the inertial stuff...
-            mass_ptr_->Zero();
-            finertialnp_ptr_->PutScalar(0.0);
-            // set the discretization state
-            Discret().SetState(0,"velocity", GState().GetVelNp());
-            Discret().SetState(0,"acceleration", GState().GetAccNp());
-            // set mass matrix
-            eval_mat[1] = mass_ptr_;
-            // set inertial force
-            eval_vec[1] = finertialnp_ptr_;
-            // evaluate ...
-            EvaluateInternal(&eval_mat[0],&eval_vec[0]);
-            // complete the mass matrix
-            mass_ptr_->Complete();
+  return;
+}
 
-            break;
-          }
-          default:
-            dserror("Unknown mass linearization type!");
-            break;
-        }
-        break;
-      }
-      default:
-        dserror("Unsupported damping type!");
-        break;
-    }
-  }
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::InertialContributions(
+    Teuchos::RCP<Epetra_Vector>* eval_vec)
+{
+  CheckInitSetup();
+
+  // overwrite element action
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);
+  // set the discretization state
+  Discret().SetState(0,"velocity", GState().GetVelNp());
+  Discret().SetState(0,"acceleration", GState().GetAccNp());
+
+  // set inertial vector if necessary
+  eval_vec[1] = GetInertialForce();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::InertialAndViscousForces()
+{
+  CheckInitSetup();
 
   if (masslin_type_==INPAR::STR::ml_none)
   {
@@ -606,15 +486,68 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
   // calculate the viscous/damping force at t_{n+1}
   if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
   {
+    if (not damp_ptr_->Filled())
+      damp_ptr_->Complete();
     damp_ptr_->Multiply(false,
         *GState().GetVelNp(),*fvisconp_ptr_);
   }
-
-  return EvalErrorCheck();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::FillComplete()
+{
+  if (not stiff_ptr_->Filled())
+    stiff_ptr_->Complete();
+
+  if (not mass_ptr_->Filled())
+    mass_ptr_->Complete();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RayleighDampingMatrix()
+{
+  if (EvalData().GetDampingType()!=INPAR::STR::damp_rayleigh)
+    return;
+
+  const double& dampk =
+      TimInt().GetDataSDyn().GetDampingStiffnessFactor();
+  const double& dampm =
+      TimInt().GetDataSDyn().GetDampingMassFactor();
+
+  // damping matrix with initial stiffness
+  damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
+  damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
+{
+  switch (masslin_type_)
+  {
+    case INPAR::STR::ml_rotations:
+    case INPAR::STR::ml_standard:
+    {
+      finertialnp_ptr_->PutScalar(0.0);
+      // set inertial force
+      return finertialnp_ptr_;
+      break;
+    }
+    case INPAR::STR::ml_none:
+      // do nothing
+      break;
+    default:
+      dserror("Unknown mass linearization type!");
+      exit(EXIT_FAILURE);
+  }
+
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternal(
     Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
     Teuchos::RCP<Epetra_Vector>* eval_vec)
@@ -625,8 +558,8 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
   EvaluateInternal(p,eval_mat,eval_vec);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternal(
     Teuchos::ParameterList& p,
     Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
@@ -635,13 +568,16 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
   if (p.numParams()>1)
     dserror("Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
+  if (not p.INVALID_TEMPLATE_QUALIFIER
+        isType< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> > ("interface"))
+    dserror("The given parameter has the wrong type!");
   Discret().Evaluate(p, eval_mat[0], eval_mat[1],
       eval_vec[0], eval_vec[1], eval_vec[2]);
   Discret().ClearState();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateNeumann(
     Teuchos::RCP<Epetra_Vector> eval_vec,
     Teuchos::RCP<LINALG::SparseOperator> eval_mat)
@@ -652,8 +588,8 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(
   EvaluateNeumann(p,eval_vec,eval_mat);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateNeumann(
     Teuchos::ParameterList& p,
     Teuchos::RCP<Epetra_Vector> eval_vec,
@@ -662,12 +598,15 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(
   if (p.numParams()>1)
     dserror("Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
+  if (not p.INVALID_TEMPLATE_QUALIFIER
+        isType< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> > ("interface"))
+    dserror("The given parameter has the wrong type!");
   Discret().EvaluateNeumann(p,eval_vec,eval_mat);
   Discret().ClearState();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::WriteRestart(
     IO::DiscretizationWriter& iowriter,
     const bool& forced_writerestart) const
@@ -681,8 +620,8 @@ void STR::MODELEVALUATOR::Structure::WriteRestart(
   iowriter.WriteVector("displacement",GState().GetDisN());
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::ReadRestart(
     IO::DiscretizationReader& ioreader)
 {
@@ -695,8 +634,8 @@ void STR::MODELEVALUATOR::Structure::ReadRestart(
   GState().GetMutableMultiDis()->UpdateSteps(*disnp);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::RecoverState(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
@@ -722,8 +661,8 @@ void STR::MODELEVALUATOR::Structure::RecoverState(
   EvaluateInternal(eval_mat,eval_vec);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepState(
     const double& timefac_n)
 {
@@ -752,8 +691,8 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(
   dis_incr_ptr_->Scale(0.0);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 {
   CheckInitSetup();
@@ -774,8 +713,8 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   EvaluateInternal(eval_mat,eval_vec);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
 {
   CheckInitSetup();
@@ -808,16 +747,16 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
   EvaluateInternal(eval_mat,eval_vec);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::DetermineEnergy()
 {
   CheckInitSetup();
   dserror("Not yet implemented!");
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
@@ -852,8 +791,8 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::ResetStepState()
 {
   CheckInitSetup();
@@ -881,8 +820,8 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::
     GetBlockDofRowMapPtr() const
 {
@@ -890,8 +829,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::
   return GState().DofRowMap();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::
     GetCurrentSolutionPtr() const
 {
@@ -899,8 +838,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::
   return GState().GetDisNp();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::
     GetLastTimeStepSolutionPtr() const
 {

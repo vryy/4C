@@ -16,9 +16,10 @@
 
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_factory.H"
-#include "str_model_evaluator_generic.H"
+#include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
+#include "str_integrator.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_sparseoperator.H"
@@ -114,9 +115,67 @@ void STR::ModelEvaluator::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::Reset(const Epetra_Vector& x)
+bool STR::ModelEvaluator::InitializeInertiaAndDamping(const Epetra_Vector& x,
+    LINALG::SparseOperator& jac)
+{
+  CheckInitSetup();
+
+  // initialize stiffness matrix to zero
+  jac.Zero();
+  // get structural model evaluator
+  STR::MODELEVALUATOR::Structure& str_model = dynamic_cast<
+      STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+
+  str_model.Reset(x);
+  bool ok = str_model.InitializeInertiaAndDamping();
+
+  // if the model evaluator failed, skip the assembly and return false
+  ok = (ok ? str_model.AssembleJacobian(jac,1.0) : false);
+
+  return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x,
+    Epetra_Vector& f)
+{
+  CheckInitSetup();
+
+  Vector::iterator me_iter;
+  bool ok = true;
+  // initialize right hand side to zero
+  f.PutScalar(0.0);
+  // ---------------------------------------------------------------------------
+  // evaluate all terms
+  // ---------------------------------------------------------------------------
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+  {
+    // if one model evaluator failed, skip the remaining ones and return false
+    if (not ok) break;
+
+    (*me_iter)->Reset(x);
+    ok = (*me_iter)->EvaluateForce();
+  }
+
+  // ---------------------------------------------------------------------------
+  // put everything together
+  // ---------------------------------------------------------------------------
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    // if one model evaluator failed, skip the remaining ones and return false
+    ok = (ok ? (*me_iter)->AssembleForce(f,1.0) : false);
+
+  return ok;
+
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x)
 {
   Vector::iterator me_iter;
+  int_ptr_->SetState(x);
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     (*me_iter)->Reset(x);
   return;
@@ -133,6 +192,8 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f,
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
+  // update the state variables of the current time integrator
+  int_ptr_->SetState(x);
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
@@ -165,6 +226,8 @@ bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
   bool ok = true;
   // initialize stiffness matrix to zero
   jac.Zero();
+  // update the state variables of the current time integrator
+  int_ptr_->SetState(x);
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
@@ -200,6 +263,8 @@ bool STR::ModelEvaluator::ApplyStiff(
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> model_ptr = me_map_ptr_->at(mt);
   // initialize stiffness matrix to zero
   jac.Zero();
+  // update the state variables of the current time integrator
+  int_ptr_->SetState(x);
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
@@ -227,6 +292,8 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
   // initialize stiffness matrix and right hand side to zero
   f.PutScalar(0.0);
   jac.Zero();
+  // update the state variables of the current time integrator
+  int_ptr_->SetState(x);
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
