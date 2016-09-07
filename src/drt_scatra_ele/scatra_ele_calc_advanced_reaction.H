@@ -40,7 +40,7 @@ class ScaTraEleReaManagerAdvReac;
 \brief Implementation of advanced deterministic reaction rate equations
 
 
-<h3>Homogenous Scatra Coupling</h3>
+<h3>Homogeneous Scatra Coupling</h3>
 
 Note for the implementation of the homogenous scatra coupling:
 assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
@@ -107,27 +107,6 @@ The corresponding equation is:
 Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend linearly on c_i
 hence we have to calculate and set K(c)=(0) and f(c)=(5*2) and zero derivatives.
 
-
-<h3>REACSTART Feature</h3>
-
-Note for the implementation of the reacstart feature:
-Assume concentration A is reproducing with reaction coefficient 1.0 and if the concentration
-exceeds some threshold 2.0 if starts to react A->3*B with reacion coefficient 4.0.
-
-The corresponding equations are:
-            \partial_t A = -(-1.0)*A - 4.0*(A - 2.0)_{+} (first termn postive, since equivalent as reactant with negative reaction coefficient)
-            \partial_t B = 3.0*4.0 (A - 2.0)_{+}   (positive since product)
-
-This equation is achieved in BACI via the boundary condition:
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 2 REACIDS 3 4 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACOEFF -1.0 COUPLING simple_multiplicative
-MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH -1 3 REACOEFF 4.0 COUPLING simple_multiplicative REACSTART 2.0
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
-hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
-
-
 <h3>Power Law Kinetics</h3>
 
 Note for the implementation of the power law feature:
@@ -150,6 +129,56 @@ MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING power_m
 
 Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
 hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
+
+<h3>Kinetics Defined by Function</h3>
+
+Note for the implementation of the reaction-by-function feature:
+assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
+
+The reaction is defined by a function from the input file
+(this corresponds to couplingtype "by_function").
+
+It can reproduce all other implemented reaction types (and more). Also, linearizations are computed automatically
+However, keep in mind, that it might be little slower ...
+
+For instance if you want to model mechaelis-menten type kinematics of the form
+
+           \partial_t A =  2*2.1*A*C/(C+1.2)*D/(D+3.0)
+           \partial_t B = -1*2.1*A*C/(C+1.2)*D/(D+3.0)
+           \partial_t C =  0
+           \partial_t D =  0
+
+This equation is in BACI achieved by the MAT_scatra_reaction material combined with the reaction by function feature as:
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
+MAT 2 MAT_scatra DIFFUSIVITY 0.0
+MAT 4 MAT_scatra DIFFUSIVITY 0.0
+MAT 5 MAT_scatra DIFFUSIVITY 0.0
+MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING by_function ROLE 1 1 0 0
+-------------------------------------------------------------FUNCT1
+FUNCT 1 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1*phi3/(phi3+1.2)*phi4/(phi4+3.0)
+
+Note: You have to use the VAREXPR function in order to be able to read the 'phix' variables.
+      The function is defined within the role list
+
+<h3>REACSTART Feature</h3>
+
+Note for the implementation of the reacstart feature:
+Assume concentration A is reproducing with reaction coefficient 1.0 and if the concentration
+exceeds some threshold 2.0 if starts to react A->3*B with reacion coefficient 4.0.
+
+The corresponding equations are:
+            \partial_t A = -(-1.0)*A - 4.0*(A - 2.0)_{+} (first termn postive, since equivalent as reactant with negative reaction coefficient)
+            \partial_t B = 3.0*4.0 (A - 2.0)_{+}   (positive since product)
+
+This equation is achieved in BACI via the boundary condition:
+MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 2 REACIDS 3 4 END //collect Concentrations
+MAT 2 MAT_scatra DIFFUSIVITY 0.0
+MAT 3 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACOEFF -1.0 COUPLING simple_multiplicative
+MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH -1 3 REACOEFF 4.0 COUPLING simple_multiplicative REACSTART 2.0
+
+Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
+hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
 
 
 \author thon (thon@mhpc.mw.tum.de)

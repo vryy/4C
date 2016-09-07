@@ -32,7 +32,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
   coupling_(SetCouplingType(matdata)),
   couprole_(matdata->Get<std::vector<double> >("ROLE")),
   reacstart_(matdata->Get<std::vector<double> >("REACSTART")),
-  isreacstart_(false)
+  isreacstart_(false),
+  isinit_(false)
 {
   //Some checks for more safety
   if (coupling_ == reac_coup_none)
@@ -134,6 +135,24 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
       break;
     }
 
+    case MAT::PAR::reac_coup_byfunction: //reaction by function
+    {
+      int functID = -1;
+      for (int ii=0; ii < numscal_; ii++)
+        {
+          if (stoich_->at(ii) != 0)
+          {
+            if (couprole_->at(ii) == 0)
+              dserror("reac_coup_byfunction: no function defined in the ROLE list for scalar with non-zero entry in the STOICH list");
+            if(functID==-1)
+              functID=couprole_->at(ii);
+          }
+        }
+      if(functID==-1)
+        dserror("reac_coup_byfunction must contain at least one non-zero entry in the STOICH list");
+      break;
+    }
+
     case MAT::PAR::reac_coup_none:
       dserror("reac_coup_none is not a valid coupling");
       break;
@@ -146,16 +165,82 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::PAR::ScatraReactionMat::Initialize()
+{
+  if(not isinit_)
+  {
+    switch (coupling_)
+    {
+      case MAT::PAR::reac_coup_byfunction: //reaction by function
+      {
+        for(int ii=0;ii<numscal_;ii++)
+        {
+          // we take the value in couprole list as function ID
+          const int functID = couprole_->at(ii);
+          if (functID!=0)
+          {
+            if(Function(functID-1).NumberComponents()!=1)
+              dserror("expected only one component for the reaction evaluation");
 
+            for(int k=0;k<numscal_;k++)
+            {
+              // construct the strings for scalar
+              std::ostringstream temp;
+              temp << k+1;
+              std::string name = "phi"+temp.str();
+
+              // add the variable name to the parser
+              if(not Function(functID-1).IsVariable(0,name))
+                Function(functID-1).AddVariable(0,name,0.0);
+            }
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  isinit_=true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline DRT::UTILS::VariableExprFunction& MAT::PAR::ScatraReactionMat::Function(int functnum) const
+{
+  // try to cast to variable expression function for phi evaluation
+  // try-catch because of cast of references
+  try
+  {
+    DRT::UTILS::VariableExprFunction& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+
+    return funct;
+  }
+  catch(std::bad_cast & exp)
+  {
+    dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
+        "Check your input file!");
+    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraReactionMat::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraReactionMat(this));
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata )
 {
   if ( *(matdata->Get<std::string >("COUPLING")) == "simple_multiplicative" )
@@ -174,6 +259,10 @@ MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teucho
   {
     return reac_coup_michaelis_menten;
   }
+  else if ( *(matdata->Get<std::string >("COUPLING")) == "by_function")
+  {
+    return reac_coup_byfunction;
+  }
   else if ( *(matdata->Get<std::string >("COUPLING")) == "no_coupling")
   {
     return reac_coup_none;
@@ -184,6 +273,8 @@ MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teucho
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ParObject* MAT::ScatraReactionMatType::Create( const std::vector<char> & data )
 {
   MAT::ScatraReactionMat* scatra_reaction_mat = new MAT::ScatraReactionMat();
@@ -309,7 +400,11 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
 {
   double bodyforcetermK = 0.0;
 
-  if ( Stoich()->at(k)!=0 and Couprole()->at(k)==0.0 and fabs(ReacCoeff())>1.0e-14)
+  // those ifs are a little nasty ...
+  // TODO: clean up! split the reaction types into classes?
+  if ( Stoich()->at(k)!=0 and
+      (Couprole()->at(k)==0.0 or Coupling()==MAT::PAR::reac_coup_byfunction) and
+      fabs(ReacCoeff())>1.0e-14)
   {
     const double bftfac = CalcReaBodyForceTermFac(k,phinp,scale);// scalar at integration point np
 
@@ -331,7 +426,11 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
 {
   double reabodyforcederivmatrixKJ=0.0;
 
-  if ( Stoich()->at(k)!=0 and Couprole()->at(k)==0.0 and fabs(ReacCoeff())>1.0e-14)
+  // those ifs are a little nasty ...
+  // TODO: clean up! split the reaction types into classes?
+  if ( Stoich()->at(k)!=0 and
+      (Couprole()->at(k)==0.0 or Coupling()==MAT::PAR::reac_coup_byfunction) and
+      fabs(ReacCoeff())>1.0e-14)
   {
     const double bfdmfac = CalcReaBodyForceDerivFac(k,toderive,phinp,scale);
 
@@ -446,6 +545,13 @@ double MAT::ScatraReactionMat::CalcReaCoeffFac(
       }
       break;
     }
+
+     case MAT::PAR::reac_coup_byfunction: //reaction by function
+     {
+       // in case of reaction by function everything is treated as body force!
+       rcfac =0.0;
+       break;
+     }
 
     case MAT::PAR::reac_coup_none:
       dserror("reac_coup_none is not a valid coupling");
@@ -610,6 +716,13 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
       break;
     }
 
+    case MAT::PAR::reac_coup_byfunction: //reaction by function
+    {
+      // in case of reaction by function everything is treated as body force!
+      rcdmfac =0.0;
+      break;
+    }
+
     case MAT::PAR::reac_coup_none:
       dserror("reac_coup_none is not a valid coupling");
       break;
@@ -698,6 +811,21 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
         else if (couprole[ii]<0.0) //and (ii!=k))
           bftfac *= phinp[ii];
       }
+      break;
+    }
+
+    case MAT::PAR::reac_coup_byfunction: //reaction by function
+    {
+      // only if the scalar is involved in the reaction
+      if (couprole[k]!=0)
+      {
+        // copy phi vector in different format to be read by the function
+        std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
+        // evaluate reaction term
+        bftfac= Function(couprole[k]-1).Evaluate(0,variables);
+      }
+      else
+        bftfac = 0.0;
       break;
     }
 
@@ -797,6 +925,25 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
       break;
     }
 
+    case MAT::PAR::reac_coup_byfunction: //reaction by function
+    {
+      // only for scalars involved in the coupling
+      if (couprole[k]!=0)
+      {
+        // copy phi vector in different format to be read by the function
+        std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
+        // evaluate the derivatives of the reaction term
+        std::vector<std::vector<double> > deriv = Function(couprole[k]-1).FctDer(0,variables);
+
+        // the derivative needed is the derivative of the first function (index 0) w.r.t. to
+        // the index of the scalar to derive (index toderive)
+        bfdmfac = deriv[0][toderive];
+      }
+      else
+        bfdmfac = 0.0;
+      break;
+    }
+
     case MAT::PAR::reac_coup_none:
       dserror("reac_coup_none is not a valid coupling");
       break;
@@ -840,4 +987,46 @@ double MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
     ) const
 {
   return (Stoich()->at(k)*CalcReaBodyForceDerivFac(k,toderive,phinp,scale));
+}
+
+/*---------------------------------------------------------------------------------/
+ | helper for evaluation by function                                     Vuong 08/16 |
+/--------------------------------------------------------------------------------- */
+std::vector<std::pair<std::string,double> >  MAT::ScatraReactionMat::BuildPhiVectorForFunction(
+    const std::vector<double>& phinp    //!< scalar values at t_(n+1)
+    ) const
+{
+  std::vector<std::pair<std::string,double> > variables;
+  for (int ii=0; ii < NumScal(); ii++)
+  {
+    // construct the strings for scalar
+    std::ostringstream temp;
+    temp << ii+1;
+    std::string name = "phi"+temp.str();
+
+    // save the phi values with correct name
+    variables.push_back(std::pair<std::string,double>(name,phinp[ii]));
+  }
+  return variables;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline DRT::UTILS::VariableExprFunction& MAT::ScatraReactionMat::Function(int functnum) const
+{
+  // try to cast to variable expression function for phi evaluation
+  // try-catch because of cast of references
+  try
+  {
+    DRT::UTILS::VariableExprFunction& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+
+    return funct;
+  }
+  catch(std::bad_cast & exp)
+  {
+    dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
+        "Check your input file!");
+    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+  }
 }

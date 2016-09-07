@@ -96,6 +96,28 @@ MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
 }
 
 /*----------------------------------------------------------------------*
+ | setup of material map                                     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::MatListReactions::Initialize()
+{
+
+  if(paramsreac_!=NULL)
+  {
+    std::vector<int>::const_iterator m;
+    for (m=paramsreac_->ReacIds()->begin(); m!=paramsreac_->ReacIds()->end(); ++m)
+    {
+      const int reacid = *m;
+      Teuchos::RCP<MAT::Material> mat = MaterialById(reacid);
+      if (mat == Teuchos::null) dserror("Failed to allocate this material");
+      Teuchos::RCP<MAT::ScatraReactionMat> reacmat =
+          Teuchos::rcp_dynamic_cast<MAT::ScatraReactionMat>(mat,true);
+      reacmat->Initialize();
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | setup of material map                                     thon 11/14 |
  *----------------------------------------------------------------------*/
 void MAT::MatListReactions::SetupMatMap()

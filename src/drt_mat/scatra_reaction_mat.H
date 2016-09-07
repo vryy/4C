@@ -22,6 +22,14 @@
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
+namespace DRT
+{
+namespace UTILS
+{
+  class VariableExprFunction;
+}
+}
+
 namespace MAT
 {
   //forward declaration
@@ -37,7 +45,26 @@ namespace MAT
     reac_coup_power_multiplicative, ///< coupling of type A*B
     reac_coup_constant, //< no coupling, constant increase/decrease
     reac_coup_michaelis_menten, //coupling of type (B/(const+B))*A
+    reac_coup_byfunction, //coupling defined by function from input file
   };
+
+  /*!
+  \brief This file contains the base material for reactive scalars
+
+  This class encapsulates the reaction kinematics, defined by the reaction_coupling variable.
+  The key methods are the CalcReaCoeff...() and CalcReaBodyForce...() methods. There, all
+  reaction terms and derivatives are evaluated.
+  Note: For the CalcReaCoeff...() methods, it is implied that the current scalar is multiplied with
+        the value returned by this methods. Thus, those reaction terms are of type K(c) \cdot c_i.
+        This is needed for some stabilizations of the reactive term.
+        The CalcReaBodyForce...() terms are of arbitrary form, but keep in mind that if you are unlucky,
+        you might get stability issues.
+
+  For detailed description of the corresponding equations and examples, see the file
+  \/src\/drt_scatra_ele\/scatra_ele_calc_advanced_reaction.H
+
+  \author vuong 08/16
+  */
 
   /*----------------------------------------------------------------------*/
   /// parameters for scalar transport material
@@ -59,6 +86,9 @@ namespace MAT
     /// returns the enum of the current coupling type
     MAT::PAR::reaction_coupling SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata );
 
+    /// Initialize
+    void Initialize();
+
     /// number of scalars in this reaction
     const int numscal_;
 
@@ -79,6 +109,12 @@ namespace MAT
 
     /// flag if there is a reacstart value
     bool isreacstart_;
+
+    /// flag if initialization has been done
+    bool isinit_;
+
+  private:
+    inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
 
   };  // class Scatra
 
@@ -150,6 +186,9 @@ namespace MAT
     virtual void Unpack(const std::vector<char>& data);
 
     //@}
+
+    /// initialize
+    virtual void Initialize(){ params_->Initialize(); }
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_reaction; }
@@ -266,7 +305,14 @@ namespace MAT
         const double scale                   //!< scaling factor for reference concentrations ) const;
         ) const;
 
+    /// helper for evaluation by function
+    std::vector<std::pair<std::string,double> > BuildPhiVectorForFunction(
+        const std::vector<double>& phinp_org //!< scalar values at t_(n+1)
+        ) const;
+
   private:
+
+    inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
 
     /// my material parameters
     MAT::PAR::ScatraReactionMat* params_;

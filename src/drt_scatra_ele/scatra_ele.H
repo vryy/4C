@@ -70,6 +70,9 @@ public:
                           Teuchos::RCP<Epetra_Vector>          systemvector2,
                           Teuchos::RCP<Epetra_Vector>          systemvector3);
 
+  /// initialize the element type
+  virtual int Initialize(DRT::Discretization& dis);
+
 private:
 
   static TransportType instance_;
@@ -82,7 +85,8 @@ class Transport : public DRT::Element
 {
 public:
 
-  //@}
+  friend class TransportType;
+
   //! @name Constructors and destructors and related methods
 
   /*!
@@ -416,6 +420,9 @@ public:
   //@}
 
 protected:
+
+  //! initialize the element
+  int Initialize();
 
   //! the element discretization type (shape)
   DRT::Element::DiscretizationType distype_;

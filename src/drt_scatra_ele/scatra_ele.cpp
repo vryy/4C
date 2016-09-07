@@ -243,6 +243,21 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
 
 }
 
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::TransportType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(dis.lColElement(i));
+    if (!actele) dserror("cast to Transport element failed");
+    actele->Initialize();
+  }
+  return 0;
+}
+
 
 DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::instance_;
 
@@ -770,6 +785,23 @@ void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType implty
   impltype_ = impltype;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element                                        vuong08/16 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Transport::Initialize()
+{
+  Teuchos::RCP<MAT::Material> mat = Material();
+  // for now, we only need to do something in case of reactions (for the initialization of functions in case
+  // of reactions by function)
+  if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  {
+    //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+    Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(mat);
+    actmat->Initialize();
+  }
+  return 0;
 }
 
 

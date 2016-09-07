@@ -130,6 +130,9 @@ private:
 
     //@}
 
+    /// initialize
+    virtual void Initialize();
+
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_reactions; }
 
