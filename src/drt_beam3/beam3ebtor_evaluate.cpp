@@ -121,7 +121,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
       }
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
-      eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+        eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
@@ -1036,6 +1036,18 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
           (*stiffmatrix)(i,7*j+6) += R_alphad_torsion(i-1,j);
         }
       }
+
+      //Scaling of tangential stiffness for better conditioning
+      double Factor = ScaleFactorLinetor;
+      Factor = Factor * ScaleFactorColumntor;
+
+      for (int row=0; row <14; row++)
+      {
+        for (int col=0; col<14; col++)
+        {
+          (*stiffmatrix)(row,col)=(*stiffmatrix)(row,col)*Factor;
+        }
+      }
 //      cout << "stiffmatrix" << endl;
 //      for (int i=0;i<12;i++)
 //      {
@@ -1115,6 +1127,12 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
           (*force)(6+7*i) +=Res_torsion(6+7*i);
       }
+
+      //Scaling of residual for better conditioning
+      for (int row=0; row <14; row++)
+      {
+        (*force)(row)=(*force)(row)*ScaleFactorLinetor;
+      }
     }  //if (force != NULL)
 
     //assemble massmatrix if requested
@@ -1124,18 +1142,6 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     }//if (massmatrix != NULL)
 
   }  //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
-  //Scaling of Residuum and Tangent for better conditioning
-  double Factor = ScaleFactorLinetor;
-  Factor = Factor * ScaleFactorColumntor;
-  for (int zeile=0; zeile <14; zeile++)
-  {
-    for (int spalte=0; spalte<14; spalte++)
-    {
-      (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
-    }
-    (*force)(zeile)=(*force)(zeile)*ScaleFactorLinetor;
-  }
 
 
   //Uncomment the next line if the implementation of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
