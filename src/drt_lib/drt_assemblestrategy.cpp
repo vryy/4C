@@ -2,7 +2,8 @@
 /*!
 \file drt_assemblestrategy.cpp
 
-\brief Setup of the list of valid conditions for input
+\brief Routines for the handing a collection of element matrices and vectors to
+       the actual assembly calls into one global sparse matrix and global load vector
 
 <pre>
 \level 0
@@ -143,7 +144,7 @@ void DRT::AssembleStrategy::Complete()
   }
   if ( Assemblemat2() )
   {
-    systemmatrix1_->Complete();
+    systemmatrix2_->Complete();
   }
 }
 
