@@ -83,7 +83,7 @@ namespace SCATRA
   struct DisTypeToMatGaussRule {};
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex8>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -108,7 +108,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex20>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -133,7 +133,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex27>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -158,7 +158,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tet4>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -183,7 +183,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tet10>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -208,7 +208,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::wedge6>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for WEDGE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -216,7 +216,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::pyramid5>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for PYRAMID elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -224,7 +224,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs8>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -232,7 +232,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs27>
   {
-    static const DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -240,7 +240,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad4>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -265,7 +265,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad8>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -290,7 +290,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad9>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -315,7 +315,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tri3>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       switch(gp)
       {
@@ -340,14 +340,14 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tri6>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       return DRT::UTILS::intrule_tri_16point;
     };
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs4>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
@@ -355,7 +355,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs9>
   {
-    static const DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
@@ -363,7 +363,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::line2>
   {
-    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
@@ -371,7 +371,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::line3>
   {
-    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
@@ -379,7 +379,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs2>
   {
-    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
@@ -387,7 +387,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs3>
   {
-    static const DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
       dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
