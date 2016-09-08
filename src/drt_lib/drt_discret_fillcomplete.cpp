@@ -66,6 +66,16 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
                                       bool initelements,
                                       bool doboundaryconditions)
 {
+  // my processor id
+  int myrank = Comm().MyPID();
+
+  // print information to screen
+  if(myrank==0)
+  {
+    std::cout<<"+--------------------------------------------------+"<<std::endl;
+    std::cout<<"| FillComplete() on discretization "<< std::setw(16) << std::left << Name()<<"|" << std::endl;
+  }
+
   // set all maps to Teuchos::null
   Reset(assigndegreesoffreedom,doboundaryconditions);
 
@@ -93,16 +103,40 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
+  if (assigndegreesoffreedom)
+  {
+    if(myrank==0)
+    {
+      std::cout<<"| AssignDegreesOfFreedom() ...                     |"<<std::endl;
+    }
+    AssignDegreesOfFreedom(0);
+  }
 
+  // call element routines to initialize
   if (initelements)
   {
-    // call element routines to initialize
+    if(myrank==0)
+    {
+      std::cout<<"| InitializeElements() ...                         |"<<std::endl;
+    }
     InitializeElements();
   }
 
   // (Re)build the geometry of the boundary conditions
-  if (doboundaryconditions) BoundaryConditionsGeometry();
+  if (doboundaryconditions)
+  {
+    if(myrank==0)
+    {
+      std::cout<<"| BoundaryConditionsGeometry() ...                 |"<<std::endl;
+    }
+
+    BoundaryConditionsGeometry();
+  }
+
+  if(myrank==0)
+  {
+    std::cout<<"+--------------------------------------------------+"<<std::endl;
+  }
 
   return 0;
 }
