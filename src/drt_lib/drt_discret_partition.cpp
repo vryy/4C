@@ -3,14 +3,9 @@
 
 \brief Partition part of the setup of a discretization
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #include <Epetra_FECrsGraph.h>
@@ -746,14 +741,11 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
   bool have_pbc = false;
   Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::null;
   // map of master nodes and corresponding slave nodes
-  std::map<int,std::vector<int> > pbcmap;
-  pbcmap.clear();
+  std::map<int,std::set<int> > pbcmap;
   // create the inverse map --- slavenode -> masternode
-  std::map<int,std::vector<int> > inversenodecoupling;
-  inversenodecoupling.clear();
+  std::map<int,int> inversenodecoupling;
   // map to be filled with new (extended) master nodes and corresponding slave nodes (in col layout)
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapnew = Teuchos::rcp(new std::map<int,std::vector<int> >);
-  (*pbcmapnew).clear();
+  std::map<int,std::set<int> > pbcmapnew;
 
   // check for pbcs
   for (int nds = 0; nds<NumDofSets(); nds++)
@@ -763,7 +755,11 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
     if (pbcdofset!=Teuchos::null)
     {
       have_pbc = true;
-      pbcmap = *(pbcdofset->GetCoupledNodes());
+      // fill content of pbcmap int std::map<int, std::set<int> > in preparation for GatherAll
+      Teuchos::RCP<std::map<int,std::vector<int> > > tmp = pbcdofset->GetCoupledNodes();
+      for(std::map<int,std::vector<int> >::const_iterator it=tmp->begin(); it != tmp->end(); ++it)
+        pbcmap[it->first].insert(it->second.begin(), it->second.end());
+
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same layout
       break;
     }
@@ -777,12 +773,12 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
     LINALG::GatherAll(pbcmap,*comm_);
 
     // and build slave master pairs
-    for(std::map<int,std::vector<int> >::iterator curr = pbcmap.begin();
+    for(std::map<int,std::set<int> >::iterator curr = pbcmap.begin();
         curr != pbcmap.end();
         ++curr )
     {
-      for(unsigned rr=0;rr<curr->second.size();++rr)
-        inversenodecoupling[curr->second[rr]].push_back(curr->first);
+      for(std::set<int>::const_iterator it=curr->second.begin(); it != curr->second.end(); ++it)
+        inversenodecoupling[*it] = curr->first;
     }
   }
 
@@ -800,44 +796,45 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
       if (have_pbc)
       {
         // is present node a master node?
-        std::map<int,std::vector<int> >::iterator foundmaster = pbcmap.find(nodeids[inode]);
+        std::map<int,std::set<int> >::iterator foundmaster = pbcmap.find(nodeids[inode]);
 
         if (foundmaster!=pbcmap.end())
         {
           // also store all corresponding slave nodes in set of col nodes
-          for (std::size_t rr=0; rr<foundmaster->second.size(); rr++)
-            nodes.insert(foundmaster->second[rr]);
+          nodes.insert(foundmaster->second.begin(), foundmaster->second.end());
 
           // add master and corresponding slaves to new col list of master and slave pairs
-          std::pair<int,std::vector<int> > mpair(foundmaster->first,foundmaster->second);
-          (*pbcmapnew).insert(mpair);
+          pbcmapnew[foundmaster->first] = foundmaster->second;
         }
         else
         {
           // is present node a slave node?
-          std::map<int,std::vector<int> >::iterator foundslave = inversenodecoupling.find(nodeids[inode]);
+          std::map<int,int>::iterator foundslave = inversenodecoupling.find(nodeids[inode]);
 
           if (foundslave!=inversenodecoupling.end())
           {
             // add corresponding master to set of col nodes
-            nodes.insert(foundslave->second[0]);
+            nodes.insert(foundslave->second);
 
             // store also all further slave nodes of this master (if multiple pbcs are used)
-            for (std::size_t rr=0; rr<pbcmap[foundslave->second[0]].size(); rr++)
-              nodes.insert((pbcmap[foundslave->second[0]])[rr]);
+            nodes.insert(pbcmap[foundslave->second].begin(),pbcmap[foundslave->second].end());
 
             // add master and corresponding slaves to new col list of master and slave pairs
-            std::pair<int,std::vector<int> > mpair(foundslave->second[0],pbcmap[foundslave->second[0]]);
-            (*pbcmapnew).insert(mpair);
+            pbcmapnew[foundslave->second] = pbcmap[foundslave->second];
           }
         }
       }
     }
   }
 
+  // copy data from std::set<int> to std::vector<int>
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapvec = Teuchos::rcp(new std::map<int,std::vector<int> >);
+  for(std::map<int,std::set<int> >::const_iterator it=pbcmapnew.begin(); it != pbcmapnew.end(); ++it)
+    std::copy (it->second.begin(), it->second.end(), std::back_inserter((*pbcmapvec)[it->first]));
+
   // transfer master and slave information to pbc dofset
   if (have_pbc)
-    pbcdofset->SetCoupledNodes(pbcmapnew);
+    pbcdofset->SetCoupledNodes(pbcmapvec);
 
   std::vector<int> colnodes(nodes.begin(),nodes.end());
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));

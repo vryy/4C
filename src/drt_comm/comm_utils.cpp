@@ -4,13 +4,10 @@
 
 \brief Helper class for everything that deals with communication
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\level 0
+
+\maintainer Georg Hammerl
+*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 01/12 |
@@ -1267,6 +1264,9 @@ void COMM_UTILS::CompareVectors(
     MPI_Send(&fullvec->Values()[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
   }
 
+  // force all procs to stay here until proc 0 has checked the vectors
+  gcomm->Barrier();
+
   return;
 }
 
@@ -1470,6 +1470,9 @@ void COMM_UTILS::CompareSparseMatrices(
     tag = 2676;
     MPI_Send(&data_values[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
   }
+
+  // force all procs to stay here until proc 0 has checked the matrices
+  gcomm->Barrier();
 
   return;
 }
