@@ -108,7 +108,7 @@ namespace PARTICLE
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > & GetBins2HeatSources() {return bins2heatSources_; }
 
     /// contact type: meshfree, particle-thermo, etc.
-    const INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
+    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
 
     /// list of heat sources
     const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }

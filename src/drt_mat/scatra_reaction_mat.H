@@ -230,7 +230,7 @@ namespace MAT
     const std::vector<double>* ReacStart() const { return params_->reacstart_; }
 
     /// return flag if there is a reacstart value
-    const bool IsReacStart() const { return params_->isreacstart_; }
+    bool IsReacStart() const { return params_->isreacstart_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

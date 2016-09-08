@@ -127,12 +127,12 @@ namespace ELEMENTS
 
 
     //!  Get Gauss Rule 2D
-    const DRT::UTILS::GaussRule2D GetGaussRule2D(
+    DRT::UTILS::GaussRule2D GetGaussRule2D(
         const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
         );
 
     //!  Get Gauss Rule 2D
-    const DRT::UTILS::GaussRule3D GetGaussRule3D(
+    DRT::UTILS::GaussRule3D GetGaussRule3D(
         const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
         );
   };

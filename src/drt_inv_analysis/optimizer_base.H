@@ -127,10 +127,10 @@ public:
   const Epetra_MultiVector& GetGradientOldView() {return *objgrad_o_;}
 
   //! get "reference" to objective function value
-  const double GetObjFunctValView() {return objval_;}
+  double GetObjFunctValView() {return objval_;}
 
   //! get "reference" to old objective function value
-  const double GetObjFunctValOldView() {return objval_o_;}
+  double GetObjFunctValOldView() {return objval_o_;}
 
   //! return the unique map of the vector layout
   const Epetra_Map& SolLayoutMap(){return *solrowmap_;}
