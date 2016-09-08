@@ -310,7 +310,7 @@ namespace CAVITATION
       );
 
     /// compute integration points for analytic integration
-    virtual void EvaluateSurface(
+    virtual int EvaluateSurface(
       std::vector<LINALG::Matrix<3,1> >& surfacenodes,
       const LINALG::Matrix<3,1>&       n,
       const LINALG::Matrix<3,1>&       centerele ,

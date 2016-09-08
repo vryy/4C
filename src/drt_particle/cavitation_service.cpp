@@ -198,18 +198,18 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
         // variable to store not yet normalized volume for each fluid element
         std::map<int, double> volumefraction;
         double vol_influence = 0.0;
-        bool surfaceoverlap = false;
+        bool tightcut = false;
 
         // do while volume is not negative which is important for overlapping surfaces/points of bubble and fluid
         do
         {
           // reset variables if necessary
-          if(surfaceoverlap == true)
+          if(tightcut == true)
           {
             insideeles.clear();
             volumefraction.clear();
             vol_influence = 0.0;
-            surfaceoverlap = false;
+            tightcut = false;
           }
 
           // loop over surrounding fluid elements
@@ -234,15 +234,15 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
               case INPAR::CAVITATION::analytical_quadraticpoly:
               case INPAR::CAVITATION::analytical_quarticpoly:
               {
-                DoAnalyticalIntegrationFluidFrac(ele, currparticle->Id(), particleposition, influence, vol_ele, surfaceoverlap, pbcdetected_ele, pbceleoffset_ele);
+                DoAnalyticalIntegrationFluidFrac(ele, currparticle->Id(), particleposition, influence, vol_ele, tightcut, pbcdetected_ele, pbceleoffset_ele);
 
                 // suppress close to -0.0 void values in case of tight cut situations
                 if(vol_ele < 0.0)
                 {
-                  if(vol_ele < -elevolume*1.0e-8 )
+                  if(vol_ele < -elevolume*1.0e-8 and tightcut == false)
                   {
-                    dserror("volume of influence is negative: %f (ele id: %d, bubble id: %d)"
-                      "-> check cut procedure", vol_ele, ele->Id(), currparticle->Id());
+                    dserror("volume of influence is negative: %e (ele id: %d, ele volume: %e, bubble id: %d)"
+                      "-> check cut procedure", vol_ele, elevolume, ele->Id(), currparticle->Id());
                   }
                   vol_ele = 0.0;
                 }
@@ -259,7 +259,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
               }
 
               // in case of tight cuts, rerun neighboring ele loop with slightly smaller influence
-              if(surfaceoverlap == true)
+              if(tightcut == true)
               {
                 influence *= 0.999;
                 break;
@@ -275,7 +275,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
             } // end if xaabboverlap
           } // end loop neighboring eles
 
-        } while(surfaceoverlap == true);
+        } while(tightcut == true);
 
         // distribute volumes stored in volumefraction
         if(vol_influence != 0.0)
@@ -295,6 +295,9 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
         }
         else
         {
+          if(void_frac_strategy_ != INPAR::CAVITATION::gaussian_integration)
+            dserror("analytical integration used but integrated volume is zero");
+
           AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction, pbcdetected, pbceleoffset);
         }
       }
@@ -403,7 +406,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
   const LINALG::Matrix<3,1>& particleposition,
   const double influence,
   double& vol_ele,
-  bool& surfaceoverlap,
+  bool& tightcut,
   const bool pbcdetected,
   const LINALG::Matrix<3,1>& pbceleoffset
   )
@@ -444,6 +447,8 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
   std::vector<LINALG::Matrix<3,1> > bubbleX, bubble_X;
   bubbleX.reserve(numsurfacenodes+2);
   bubble_X.reserve(numsurfacenodes+2);
+
+  int numsurfevaluated = 0;
 
   // loop over surfaces of current fluid element and integrate over surfaces
   for (int isurface=0; isurface<ele->NumSurface(); ++isurface)
@@ -491,12 +496,12 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
       // is there divergence in x-direction?
       if (std::abs(n(0)) > 1.0e-5)
       {
-        EvaluateSurface(surfacenodes, n, centerele , modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), isurface);
+        numsurfevaluated += EvaluateSurface(surfacenodes, n, centerele , modifiedparticlepos, influence, vol_ele, tightcut, ele->Id(), isurface);
       }
     }
 
     //store penetration points of +x and -x surfaces of the bubble
-    GetPenetrationPointsOfXSurfaces(n, surfacenodes, influence, modifiedparticlepos, bubbleX, bubble_X, surfaceoverlap, ele->Id());
+    GetPenetrationPointsOfXSurfaces(n, surfacenodes, influence, modifiedparticlepos, bubbleX, bubble_X, tightcut, ele->Id());
   }
 
   // integration over x-oriented bubble surface
@@ -512,7 +517,7 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
       BuildConvexHull(bubbleX);
     }
 
-    EvaluateSurface(bubbleX, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface());
+    numsurfevaluated += EvaluateSurface(bubbleX, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, tightcut, ele->Id(), ele->NumSurface());
   }
 
   // integration over -x-oriented bubble surface
@@ -527,8 +532,12 @@ void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
     {
       BuildConvexHull(bubble_X);
     }
-    EvaluateSurface(bubble_X, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, surfaceoverlap, ele->Id(), ele->NumSurface()+1);
+    numsurfevaluated += EvaluateSurface(bubble_X, n, modifiedparticlepos, modifiedparticlepos, influence, vol_ele, tightcut, ele->Id(), ele->NumSurface()+1);
   }
+
+  // the evaluation of a single surface indicates a tight cut situation
+  if(numsurfevaluated == 1)
+    tightcut = true;
 
 #ifdef GMSHOUT
   // finish file here
@@ -542,14 +551,14 @@ return;
 /*----------------------------------------------------------------------*
  | compute integration points for analytic integration     ghamm 08/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::EvaluateSurface(
+int CAVITATION::Algorithm::EvaluateSurface(
   std::vector<LINALG::Matrix<3,1> >& surfacenodes,
   const LINALG::Matrix<3,1>& n,
   const LINALG::Matrix<3,1>& centerele,
   const LINALG::Matrix<3,1>& particleposition,
   const double influence,
   double& vol_ele,
-  bool& surfaceoverlap,
+  bool& tightcut,
   const int eleid,
   const int isurface
   )
@@ -688,13 +697,13 @@ void CAVITATION::Algorithm::EvaluateSurface(
       if(integrationpoints.size() == 2)
       {
         // nothing to add because only two points left which will end up in a zero contribution
-        return;
+        return 0;
       }
       else if(integrationpoints.size() == 1)
       {
         // surface overlap detected
-        surfaceoverlap = true;
-        return;
+        tightcut = true;
+        return 0;
       }
     }
 
@@ -739,14 +748,16 @@ void CAVITATION::Algorithm::EvaluateSurface(
   else if(integrationpoints.size() == 2)
   {
     // nothing to add because only two points left which will end up in a zero contribution
+    return 0;
   }
   else if(integrationpoints.size() > 0)
   {
     // surface overlap detected
-    surfaceoverlap = true;
+    tightcut = true;
+    return 0;
   }
 
-  return;
+  return 1;
 }
 
 
@@ -760,7 +771,7 @@ void CAVITATION::Algorithm::GetPenetrationPointsOfXSurfaces(
   const LINALG::Matrix<3,1>& particleposition,
   std::vector<LINALG::Matrix<3,1> >& bubbleX,
   std::vector<LINALG::Matrix<3,1> >& bubble_X,
-  bool& surfaceoverlap,
+  bool& tightcut,
   const int eleid)
 {
   // method counts penetration points of one element and stores them
@@ -786,7 +797,7 @@ void CAVITATION::Algorithm::GetPenetrationPointsOfXSurfaces(
         if((-tol*10.0 < t and t < tol*10.0) or (1.0-tol*10.0 < t and t < 1.0+tol*10.0))
         {
           // due to surface overlap, do integration again with smaller influence radius
-          surfaceoverlap = true;
+          tightcut = true;
           return;
         }
       }
