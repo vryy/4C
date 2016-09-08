@@ -454,7 +454,7 @@ namespace UTILS {
     std::vector<double> z_; //! origin(s) of spatial function, z-component
 
     std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_; //! expression syntax tree(s)
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > > exprd_;
+    std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > > exprd_;
   };
 
   /// spatial function based on parsed expression

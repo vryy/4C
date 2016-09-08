@@ -1007,8 +1007,8 @@ DRT::UTILS::ExprFunction::ExprFunction(char* buf,
   parser->ParseFunction();
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double> >(buf));
   // add standard variables: Cartesian coordinates and time
   parserd->AddVariable("x",0);
   parserd->AddVariable("y",0);
@@ -1056,8 +1056,8 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
   parser->ParseFunction();
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double> >(buf));
   // add standard variables: Cartesian coordinates and time
   parserd->AddVariable("x",0);
   parserd->AddVariable("y",0);
@@ -1139,6 +1139,7 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
   if(expr_.size()==1)
     index=0;
 
+  // only first derivatives
   const unsigned deg =1;
   // resulting vector holding
   std::vector<std::vector<double> > res(deg);
@@ -1149,19 +1150,13 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
 
   // Fad object for evaluation
   // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+  typedef Sacado::Fad::DFad<double>   FAD;
 
   // for 1st order derivatives
   FAD xfad(4, 0, x[0]);
   FAD yfad(4, 1, x[1]);
   FAD zfad(4, 2, x[2]);
   FAD tfad(4, 3, t);
-
-  // for 2nd order derivatives
-  xfad.val() = Sacado::Fad::DFad<double>(4, 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(4, 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(4, 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(4, 3, t);
 
   // derivatives of function
   FAD fdfad;
@@ -1206,12 +1201,12 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
   default: dserror("Problem dimension has to be 1, 2, or 3."); break;
   }
 
-  res[0][0]=fdfad.dx(0).val();
-  res[0][1]=fdfad.dx(1).val();
-  res[0][2]=fdfad.dx(2).val();
-  res[0][3]=fdfad.dx(3).val();
+  res[0][0]=fdfad.dx(0);
+  res[0][1]=fdfad.dx(1);
+  res[0][2]=fdfad.dx(2);
+  res[0][3]=fdfad.dx(3);
 
-  // return function (and its derivatives)
+  // return derivatives
   return res;
 }
 
@@ -1242,8 +1237,8 @@ void DRT::UTILS::VariableExprFunction::AddExpr(std::string buf,
   Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
+  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double> >(buf));
 
   // save the parsers
   expr_.push_back(parser);
@@ -1294,7 +1289,7 @@ void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
   // define iterators
   std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > >::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > >::iterator itd;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > >::iterator itd;
 
   // loop over expressions and parse them
   for( it=expr_.begin() ; it!=expr_.end() ; it++)
@@ -1334,7 +1329,7 @@ std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
 
   // Fad object for evaluation
   // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+  typedef Sacado::Fad::DFad<double>  FAD;
 
   // number of variables
   int numvariables = variables.size();
@@ -1357,7 +1352,7 @@ std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
   // evaluate the expression
   FAD fdfad = exprd_[index]->Evaluate();
 
-  // initialize result vector
+  // initialize result vector (only first derivatives)
   const unsigned deg =1;
   // resulting vector holding
   std::vector<std::vector<double> > res(deg);
@@ -1366,7 +1361,7 @@ std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
 
   // fill the result vector
   for(int i=0;i<numvariables;i++)
-    res[0][i]=fdfad.dx(i).val();
+    res[0][i]=fdfad.dx(i);
 
   return res;
 }
