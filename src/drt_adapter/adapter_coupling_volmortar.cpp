@@ -81,9 +81,6 @@ void ADAPTER::MortarVolCoupl::Init(Teuchos::RCP<DRT::Discretization> dis1,  // m
   dofsets21_    = dofsets21;
   materialstrategy_ = materialstrategy;
 
-  const Teuchos::ParameterList& params =
-      DRT::Problem::Instance()->VolmortarParams();
-
   if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1) and createauxdofs)
   {
     if(coupleddof12==NULL or coupleddof21==NULL)
@@ -165,10 +162,6 @@ void ADAPTER::MortarVolCoupl::Setup()
  *----------------------------------------------------------------------*/
 void ADAPTER::MortarVolCoupl::Redistribute()
 {
-  // get volmortar params
-  const Teuchos::ParameterList& params =
-      DRT::Problem::Instance()->VolmortarParams();
-
   // create vector of discr.
   std::vector<Teuchos::RCP<DRT::Discretization> > dis;
   dis.push_back(masterdis_);
