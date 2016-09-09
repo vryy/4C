@@ -4,12 +4,9 @@
 
 \brief A substitute for STL cout for parallel and complex output schemes.
 
-<pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 0
+
+\maintainer Karl-Robert Wichmann
 */
 
 /*----------------------------------------------------------------------*/
@@ -32,6 +29,20 @@ Maintainer: Karl-Robert Wichmann
 /* namespace */
 namespace IO
 {
+  // forward declaration
+  class Level;
+
+  /// enum for verbosity level
+  enum verbositylevel
+  {
+    undef = -1, ///< do not use!
+    minimal,    ///< one line per time step should be enough
+    standard,   ///< a few lines per time step is okay
+    verbose,    ///< detailed information, e.g. nonlinear convergence output, execution steps
+    debug       ///< to be used for permanent debugging information (not for temporary hacks)
+  };
+
+
   /*====================================================================*/
   /*!
    * \brief This object allows to write to std::cout in a very fancy way
@@ -51,6 +62,9 @@ namespace IO
     /// This empty constructor is called when the global object is instantiated.
     Pstream();
 
+    /// Destructor
+    virtual ~Pstream();
+
     /// configure the output. Must be called before IO::cout can be used. Is
     /// currently called in the global problem using the params specified in the
     /// IO section of the .dat-file.
@@ -58,6 +72,7 @@ namespace IO
       const bool writetoscreen,       ///< bool whether output is written to screen
       const bool writetofile,         ///< bool whether output is written to file
       const bool prefixgroupID,       ///< bool whether group ID is prefixed in each line
+      const IO::verbositylevel level, ///< verbosity level
       Teuchos::RCP<Epetra_Comm> comm, ///< MPI communicator
       const int targetpid,            ///< target processor ID from which to print
       const int groupID,              ///< the ID
@@ -136,6 +151,15 @@ namespace IO
       return fmt_tmp_;
     }
 
+    /// Set verbosity level
+    Level& operator()(const verbositylevel level);
+
+    /// Return verbosity level
+    inline verbositylevel OutputLevel() const
+    {
+      return outputlevel_;
+    }
+
   private :
     /// Return whether this is a target processor for output
     bool OnPid();
@@ -173,6 +197,11 @@ namespace IO
     /// format containing temporary buffer
     std::stringstream fmt_tmp_;
 
+    verbositylevel outputlevel_;
+
+    // internal variable of Pstream
+    Level* level_;
+
   };  // class Pstream
 
   /// Imitate the std::endl behavior w/out the flush
@@ -184,6 +213,60 @@ namespace IO
   /// this is the IO::cout that everyone can refer to
   extern Pstream cout;
 
+
+  /*====================================================================*/
+  /*!
+   * \brief This object handles output if a level was specified
+   *        then, everythind is streamed to Pstream
+   *
+   * \author wichmann & hammerl \date 09/16
+   */
+  class Level
+  {
+  public:
+
+    Level(Pstream* pstream):
+      pstream_(pstream),
+      level_(undef)
+    {}
+
+    /// set verbosity level for data to be written
+    Level& SetLevel(const verbositylevel level)
+    {
+      level_ = level;
+      return *this;
+    }
+
+    /// Handle streaming to Level objects
+    template <typename CharT>
+    Level& stream(CharT s)  ///< text to be added
+    {
+      if(level_ <= pstream_->OutputLevel())
+        (*pstream_) << s;
+      return *this;
+    }
+
+    /// writes the buffer to screen
+    void flush();
+
+  private:
+
+    /// Shelter copy constructor
+    Level(const Level& old);
+
+    /// wrapped pstream object
+    Pstream* pstream_;
+
+    /// current verbosity level of data to be printed
+    verbositylevel level_;
+  };
+
+  /// Imitate the std::endl behavior w/out the flush
+  Level& endl(Level& out);
+
+  /// Imitate the std::flush behavior
+  Level& flush(Level& out);
+
 }  // namspace IO
 
 /// Handle streaming to Pstream objects
@@ -193,8 +276,18 @@ IO::Pstream& operator<<(IO::Pstream& out, charT s)
   return out.stream(s);
 }
 
+/// Handle streaming to Level objects
+template<typename charT>
+IO::Level& operator<<(IO::Level& out, charT s)
+{
+  return out.stream(s);
+}
+
 /// Handle special manipulators (currently only IO::endl) that are streamed to Pstream
 IO::Pstream& operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&));
+
+/// Handle special manipulators (currently only IO::endl) that are streamed to Level
+IO::Level& operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&));
 
 /*----------------------------------------------------------------------*/
 #endif // IO_PSTREAM_H

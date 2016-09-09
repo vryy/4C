@@ -4,12 +4,9 @@
 
 \brief A substitute for STL cout for parallel and complex output schemes.
 
-<pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 0
+
+\maintainer Karl-Robert Wichmann
 */
 
 /*----------------------------------------------------------------------*/
@@ -35,9 +32,21 @@ IO::Pstream::Pstream()
   outfile_(NULL),
   prefixgroupID_(false),
   groupID_(-2),
-  buffer_(std::string())
+  buffer_(std::string()),
+  outputlevel_(undef),
+  level_(new Level(this))
 {}
 
+
+/*----------------------------------------------------------------------*
+ * destructor                                                 wic 09/16 *
+ *----------------------------------------------------------------------*/
+IO::Pstream::~Pstream()
+{
+  if(level_)
+    delete level_;
+  level_ = NULL;
+}
 
 /*----------------------------------------------------------------------*
  * configure the output                                       wic 11/12 *
@@ -46,6 +55,7 @@ void IO::Pstream::setup(
   const bool writetoscreen,
   const bool writetofile,
   const bool prefixgroupID,
+  const IO::verbositylevel level,
   Teuchos::RCP<Epetra_Comm> comm,
   const int targetpid,
   const int groupID,
@@ -56,6 +66,7 @@ void IO::Pstream::setup(
   if (is_initialized_) dserror("Thou shalt not call setup on the output twice!");
   is_initialized_ = true;
 
+  outputlevel_   = level;
   comm_          = comm;
   targetpid_     = targetpid;
   writetoscreen_ = writetoscreen;
@@ -148,6 +159,15 @@ bool IO::Pstream::OnPid()
 
 
 /*----------------------------------------------------------------------*
+ * set output level                                           wic 09/16 *
+ *----------------------------------------------------------------------*/
+IO::Level& IO::Pstream::operator()(const verbositylevel level)
+{
+  return level_->SetLevel(level);
+}
+
+
+/*----------------------------------------------------------------------*
  * Imitate the std::endl behavior w/out the flush             wic 11/12 *
  *----------------------------------------------------------------------*/
 IO::Pstream& IO::endl(IO::Pstream& out)
@@ -156,6 +176,14 @@ IO::Pstream& IO::endl(IO::Pstream& out)
   return out;
 }
 
+/*----------------------------------------------------------------------*
+ * Imitate the std::endl behavior w/out the flush             wic 09/16 *
+ *----------------------------------------------------------------------*/
+IO::Level& IO::endl(IO::Level& out)
+{
+  out << "\n";
+  return out;
+}
 
 /*----------------------------------------------------------------------*
  * Imitate the std::flush behavior                            wic 11/12 *
@@ -168,9 +196,39 @@ IO::Pstream& IO::flush(IO::Pstream& out)
 
 
 /*----------------------------------------------------------------------*
+ * Imitate the std::flush behavior                            wic 11/12 *
+ *----------------------------------------------------------------------*/
+IO::Level& IO::flush(IO::Level& out)
+{
+  out.flush();
+  return out;
+}
+
+
+/*----------------------------------------------------------------------*
+ * writes the buffer to screen                                wic 09/16 *
+ *----------------------------------------------------------------------*/
+void IO::Level::flush()
+{
+  if(level_ <= pstream_->OutputLevel())
+    pstream_->flush();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  * Handle special manipulators                                wic 11/12 *
  *----------------------------------------------------------------------*/
 IO::Pstream& operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&))
+{
+  return pf(out);
+}
+
+/*----------------------------------------------------------------------*
+ * Handle special manipulators                                wic 09/16 *
+ *----------------------------------------------------------------------*/
+IO::Level& operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&))
 {
   return pf(out);
 }

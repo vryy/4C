@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file global_inp_control.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief global control routine of baci
 
+\level 0
+
+\maintainer Michael Gee
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -146,8 +143,9 @@ void SetupParallelOutput(
   bool file     = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_FILE");
   bool preGrpID = DRT::INPUT::IntegralValue<int>(io,"PREFIX_GROUP_ID");
   int  oproc    = io.get<int>("LIMIT_OUTP_TO_PROC");
+  IO::verbositylevel level = DRT::INPUT::IntegralValue<IO::verbositylevel>(io,"VERBOSITY");
 
-  IO::cout.setup(screen, file, preGrpID, lcomm, oproc, group, outputfile_kenner);
+  IO::cout.setup(screen, file, preGrpID, level, lcomm, oproc, group, outputfile_kenner);
 
   return;
 }

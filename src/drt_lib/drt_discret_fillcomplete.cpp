@@ -18,6 +18,7 @@
 #include "drt_dserror.H"
 #include "drt_parobjectfactory.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io_pstream.H"
 
 
 
@@ -72,8 +73,8 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // print information to screen
   if(myrank==0)
   {
-    std::cout<<"+--------------------------------------------------+"<<std::endl;
-    std::cout<<"| FillComplete() on discretization "<< std::setw(16) << std::left << Name()<<"|" << std::endl;
+    IO::cout(IO::verbose)<<"+--------------------------------------------------+"<<IO::endl;
+    IO::cout(IO::verbose)<<"| FillComplete() on discretization "<< std::setw(16) << std::left << Name()<<"|" << IO::endl;
   }
 
   // set all maps to Teuchos::null
@@ -107,7 +108,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   {
     if(myrank==0)
     {
-      std::cout<<"| AssignDegreesOfFreedom() ...                     |"<<std::endl;
+      IO::cout(IO::verbose)<<"| AssignDegreesOfFreedom() ...                     |"<<IO::endl;
     }
     AssignDegreesOfFreedom(0);
   }
@@ -117,7 +118,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   {
     if(myrank==0)
     {
-      std::cout<<"| InitializeElements() ...                         |"<<std::endl;
+      IO::cout(IO::verbose)<<"| InitializeElements() ...                         |"<<IO::endl;
     }
     InitializeElements();
   }
@@ -127,7 +128,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   {
     if(myrank==0)
     {
-      std::cout<<"| BoundaryConditionsGeometry() ...                 |"<<std::endl;
+      IO::cout(IO::verbose)<<"| BoundaryConditionsGeometry() ...                 |"<<IO::endl;
     }
 
     BoundaryConditionsGeometry();
@@ -135,7 +136,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
 
   if(myrank==0)
   {
-    std::cout<<"+--------------------------------------------------+"<<std::endl;
+    IO::cout(IO::verbose)<<"+--------------------------------------------------+"<<IO::endl;
   }
 
   return 0;

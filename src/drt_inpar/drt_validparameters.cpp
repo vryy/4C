@@ -586,6 +586,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("WRITE_TO_FILE",    "No", "Write the output into a file",              &io);
   BoolParameter("PREFIX_GROUP_ID",  "No", "Put a <GroupID>: in front of every line",   &io);
   IntParameter("LIMIT_OUTP_TO_PROC", -1,  "Only the specified procs will write output",&io);
+  setStringToIntegralParameter<int>("VERBOSITY","verbose","",
+                               tuple<std::string>(
+                                 "minimal",
+                                 "Minimal",
+                                 "standard",
+                                 "Standard",
+                                 "verbose",
+                                 "Verbose",
+                                 "debug",
+                                 "Debug"),
+                               tuple<int>(
+                                 IO::minimal,
+                                 IO::minimal,
+                                 IO::standard,
+                                 IO::standard,
+                                 IO::verbose,
+                                 IO::verbose,
+                                 IO::debug,
+                                 IO::debug),
+                               &io);
 
   DoubleParameter("RESTARTWALLTIMEINTERVAL",-1.0,"Enforce restart after this walltime interval (in seconds), smaller zero to disable",&io);
   IntParameter("RESTARTEVRY", -1,  "write restart every RESTARTEVRY steps",&io);

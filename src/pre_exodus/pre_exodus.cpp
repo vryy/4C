@@ -4,12 +4,9 @@
 
 \brief preprocessor for exodusII format
 
-<pre>
-Maintainer: Moritz & Georg
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\level 1
+
+\maintainer Martin Kronbichler
 
 Pre_exodus contains classes to open and preprocess exodusII files into the
 drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing
@@ -153,12 +150,12 @@ int main(
   if (datfile!="")
   {
     const std::string basename = datfile.substr(0,datfile.find_last_of(".")) + "_pre";
-    IO::cout.setup(true,false,false,comm,0,0,basename);    // necessary setup of IO::cout
+    IO::cout.setup(true,false,false,IO::standard,comm,0,0,basename);    // necessary setup of IO::cout
     problem->OpenErrorFile(*comm,basename,true);
   }
   else
   {
-    IO::cout.setup(true,false,false,comm,0,0,"xxx_pre");   // necessary setup of IO::cout
+    IO::cout.setup(true,false,false,IO::standard,comm,0,0,"xxx_pre");   // necessary setup of IO::cout
     problem->OpenErrorFile(*comm,"xxx_pre",true);
   }
 
