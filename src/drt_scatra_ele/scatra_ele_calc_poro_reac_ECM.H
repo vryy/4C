@@ -83,21 +83,6 @@ public:
       const int gp);
 };
 
-/// Scatra reaction manager for Advanced_Reaction
-/*!
-  This class keeps all Advanced_Reaction-specific reaction parameter needed for the evaluation of an element. The
-  ScaTraEleReaManagerAdvReac is derived from the standard ScaTraEleReaManager.
-*/
-class ScaTraEleReaManagerPoroReacECM : public ScaTraEleReaManagerAdvReac
-{
-public:
-
-  ScaTraEleReaManagerPoroReacECM(int numscal): ScaTraEleReaManagerAdvReac(numscal)
-    {return;}
-
-  virtual ~ScaTraEleReaManagerPoroReacECM(){};
-};
-
 }
 }
 

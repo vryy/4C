@@ -180,11 +180,6 @@ protected:
                      const int                                 k,
                      const double                              scale);
 
-  //! set reaction coefficient for poro scatra problem (i.e. scale by porosity)
-  virtual void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
-                        const int                                 k,
-                        const double                              scale);
-
   //! set densisties for poro scatra problem (i.e. scale by porosity)
   virtual void SetDensities(double  porosity,
                    double& densn,    //!< density at t_(n)

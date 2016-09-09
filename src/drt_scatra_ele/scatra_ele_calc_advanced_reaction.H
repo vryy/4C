@@ -313,7 +313,7 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! @name set routines
 
     //! Clear everything and resize to length numscal
-    virtual void Clear(int numscal)
+    void Clear(int numscal)
     {
       //clear base class
       ScaTraEleReaManager::Clear(numscal);
@@ -326,25 +326,8 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
       return;
     }
 
-    //! Set the reaction coefficient
-    virtual void SetReaCoeff(const double reacoeff, const int k)
-    {
-      reacoeff_[k] = reacoeff;
-      if( reacoeff!=0.0 )
-        include_me_=true;
-
-      return;
-    }
-
-    //! Add to the derivative of reaction coefficient
-    virtual void AddToReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
-    {
-      (reacoeffderivmatrix_[k])[j] += reacoeffderivmatrix;
-      return;
-    }
-
     //! Add to the body force due to reaction
-    virtual void AddToReaBodyForce(const double reabodyforce, const int k)
+    void AddToReaBodyForce(const double reabodyforce, const int k)
     {
       reabodyforce_[k] += reabodyforce;
       if( reabodyforce!=0.0 )
@@ -354,7 +337,7 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     }
 
     //! Add to the derivative of the body force due to reaction
-    virtual void AddToReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
+    void AddToReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
     {
       (reabodyforcederiv_[k])[j] += reabodyforcederiv;
       return;
@@ -365,15 +348,14 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! @name access routines
 
     //! Return the reaction coefficient
-    virtual double GetReaBodyForce(const int k){return reabodyforce_[k];}
+    double GetReaBodyForce(const int k){return reabodyforce_[k];}
 
     //! Return the reaction coefficient
-    virtual double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
+    double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
 
     //@}
 
-  protected:
-
+  private:
     //! @name protected variables
 
     //! scalar reaction coefficient

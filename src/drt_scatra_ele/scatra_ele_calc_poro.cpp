@@ -426,21 +426,6 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
-    const Teuchos::RCP<const MAT::ScatraMat>& material,
-    const int                                k,
-    const double                             scale)
-{
-  //set reaction coefficient (no scaling with porosity)
-  my::reamanager_->SetReaCoeff(material->ReaCoeff()*scale,k);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |                                                           vuong 07/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
     double  porosity,
     double& densn,

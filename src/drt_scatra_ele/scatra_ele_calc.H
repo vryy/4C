@@ -1261,9 +1261,9 @@ namespace ELEMENTS
     public:
 
       ScaTraEleReaManager(int numscal):
-        reacoeff_(numscal,0.0),
-        reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )), // size of matrix + initialized to zero
-        include_me_(false)
+        include_me_(false), // is reaction manager active?
+        reacoeff_(numscal,0.0), // size of vector + initialized to zero
+        reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )) // size of matrix + initialized to zero
         {return;}
 
       virtual ~ScaTraEleReaManager(){};
@@ -1284,10 +1284,8 @@ namespace ELEMENTS
       }
 
       //! Set the reaction coefficient
-      virtual void SetReaCoeff(const double reacoeff, const int k)
+      void SetReaCoeff(const double reacoeff, const int k)
       {
-        if (reacoeff < 0.0) dserror("Reaction coefficient is not positive: %f",0,reacoeff);
-
         reacoeff_[k] = reacoeff;
         if( reacoeff!=0.0 )
           include_me_=true;
@@ -1295,7 +1293,7 @@ namespace ELEMENTS
         return;
       }
 
-      virtual void SetReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
+      void SetReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
       {
         (reacoeffderivmatrix_[k])[j] = reacoeffderivmatrix;
         return;
@@ -1304,24 +1302,24 @@ namespace ELEMENTS
       //! @name access routines
 
       //! Return the reaction coefficient
-      virtual double GetReaCoeff(const int k){return reacoeff_[k];}
+      double GetReaCoeff(const int k){return reacoeff_[k];}
 
       //! Return the reaction coefficient
-      virtual double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
+      double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
 
       //! return flag: reaction activated
-      virtual bool Active(){return include_me_;}
+      bool Active(){return include_me_;}
 
     protected:
+      //! flag for reaction
+      bool include_me_;
 
+    private:
       //! scalar reaction coefficient
       std::vector<double> reacoeff_;
 
       //! reaction derivative for coupled problems
       std::vector<std::vector<double> > reacoeffderivmatrix_;
-
-      //! flag for reaction
-      bool include_me_;
     };
 
   /// ScaTraEleInternalVariableManager implementation

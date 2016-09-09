@@ -37,8 +37,6 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(const
   DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(numdofpernode,numscal,disname),
   DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(numdofpernode,numscal,disname)
 {
-  my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerPoroReacECM(my::numscal_));
-
   return;
 }
 
