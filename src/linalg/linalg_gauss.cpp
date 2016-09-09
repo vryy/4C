@@ -26,9 +26,9 @@ namespace LINALG
 */
 template<bool do_piv, unsigned dim>
 double gaussElimination(
-  typename LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
+  LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
   )
 {
   if (dim > 1)
@@ -201,9 +201,9 @@ double gaussElimination<false, 4>(
 */
 template<unsigned dim>
 double scaledGaussElimination(
-  typename LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
+  LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
   )
 {
   // infnorm scaling
