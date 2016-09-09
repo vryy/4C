@@ -308,11 +308,8 @@ void CellMigrationControlAlgorithm()
 
   // assign degrees of freedom, initialize elements and do boundary conditions on cell
   // in case of parallel simulation FillComplete is called in CreateBinning
-  if(comm.MyPID()==0)
-  {
-    problem->GetDis("cell")->FillComplete(true,true,true);
-    problem->GetDis("cellscatra")->FillComplete(true,true,true);
-  }
+  problem->GetDis("cell")->FillComplete(true,true,true);
+  problem->GetDis("cellscatra")->FillComplete(true,true,true);
 
   // check if cell is supposed to have intracellular biochchemical signaling capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
