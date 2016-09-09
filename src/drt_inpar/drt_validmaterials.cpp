@@ -241,12 +241,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "scalar transport material",
                                             INPAR::MAT::m_scatra_reaction_poroECM));
 
-    AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
-    AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+    AddNamedInt(m,"NUMSCAL","number of scalars for these elements");
+    AddNamedIntVector(m,"STOICH","reaction stoichometrie list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
     AddNamedReal(m,"REACSCALE","scaling for reaction coefficient");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
-    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
+    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL");
     AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
@@ -259,11 +259,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "advanced reaction material",
                                             INPAR::MAT::m_scatra_reaction));
 
-    AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
-    AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+    AddNamedInt(m,"NUMSCAL","number of scalars for these elements");
+    AddNamedIntVector(m,"STOICH","reaction stoichometrie list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
-    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
+    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL");
     AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
