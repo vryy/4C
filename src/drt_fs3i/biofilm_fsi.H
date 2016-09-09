@@ -53,6 +53,10 @@ namespace FS3I
 
     ~BiofilmFSI(){};
 
+    virtual void Init();
+
+    virtual void Setup();
+
     virtual void Timeloop();
 
     void InnerTimeloop();

@@ -33,8 +33,8 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(
      natconv_(DRT::INPUT::IntegralValue<int>(scatradyn,"NATURAL_CONVECTION")),
      natconvitmax_(scatradyn.get<int>("NATCONVITEMAX")),
      natconvittol_(scatradyn.get<double>("NATCONVCONVTOL")),
-     velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField()->ExtractVelocityPart(FluidField()->Velnp()))))),
-     phiincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
+     velincnp_ (Teuchos::null),
+     phiincnp_ (Teuchos::null),
      samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
      samstop_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
@@ -51,11 +51,46 @@ SCATRA::ScaTraAlgorithm::~ScaTraAlgorithm()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScaTraAlgorithm::Setup()
+{
+  // call setup in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+
+  // create vectors
+  velincnp_ = Teuchos::rcp(new Epetra_Vector(*(FluidField()->ExtractVelocityPart(FluidField()->Velnp()))));
+  phiincnp_ = Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())));
+
+  if(velincnp_==Teuchos::null)
+    dserror("velincnp_ == Teuchos::null");
+  if(phiincnp_==Teuchos::null)
+      dserror("phiincnp_ == Teuchos::null");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScaTraAlgorithm::Init()
+{
+  // call init in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | Provide required time loop                                fang 07/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoop()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // provide information about initial field
   PrepareTimeLoop();
 
@@ -73,6 +108,10 @@ void SCATRA::ScaTraAlgorithm::TimeLoop()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // write velocities since they may be needed in PrepareFirstTimeStep() of the scatra field
   SetVelocityField();
   // write initial output to file
@@ -110,6 +149,10 @@ void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
  *--------------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   PrepareTimeLoopTwoWay();
 
   // time loop
@@ -139,6 +182,10 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // safety check
   switch((FluidField()->TimIntScheme()))
   {
@@ -168,6 +215,10 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   IncrementTimeAndStep();
 
   FluidField()->PrepareTimeStep();
@@ -193,6 +244,10 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // OST/BDF2 time integration schemes are implemented
   // pass density to fluid discretization at time steps n+1 and n
   // density time derivative is not used for OST and BDF2 (pass zero vector)
@@ -289,6 +344,10 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::SetVelocityField()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // transfer velocities to scalar transport field solver
   // NOTE: so far, the convective velocity is chosen to equal the fluid velocity
   //       since it is not yet clear how the grid velocity should be interpolated
@@ -339,6 +398,10 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   int  natconvitnum = 0;
   bool stopnonliniter = false;
 

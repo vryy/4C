@@ -2,9 +2,10 @@
 \file elch_dyn.cpp
 \brief Control routine for Electrochemistry module.
 
+\level 2
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15252
@@ -98,7 +99,18 @@ void elch_dyn(int restart)
       dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (empty fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
+        Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+    // now we can call Init() on the scatra time integrator
+    scatraonly->ScaTraField()->Init();
+
+    // now me may redistribute or ghost the scatra discretization
+
+    // only now we must call Setup() on the scatra time integrator.
+    // all objects relying on the parallel distribution are
+    // created and pointers are set.
+    scatraonly->ScaTraField()->Setup();
 
     // read the restart information, set vectors and variables
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
@@ -194,6 +206,16 @@ void elch_dyn(int restart)
       Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
         = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol,scatradyn,problem->SolverParams(linsolvernumber)));
 
+      // now we must call Init()
+      elch->Init();
+
+      // NOTE : At this point we may redistribute and/or
+      //        ghost our discretizations at will.
+
+      // now we can call Setup() on the scatra time integrator
+      elch->Setup();
+
+
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
 
@@ -221,6 +243,8 @@ void elch_dyn(int restart)
 
       // create an ELCH::Algorithm instance
       Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol,scatradyn,fdyn,problem->SolverParams(linsolvernumber)));
+      elch->Init();
+      elch->Setup();
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);

@@ -4,8 +4,10 @@
 
 \brief base class for all elastohydrodynamic lubrication (lubrication structure interaction) algorithms
 
+\level 3
+
 <pre>
-Maintainer: Andy Wirtz
+\maintainer Andy Wirtz
             wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15270

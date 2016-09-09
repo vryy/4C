@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file strtimint_statmech.cpp
+
 \brief time integration for structural problems with statistical mechanics
+
+\level 3
 
 \maintainer Kei Müller
             mueller@lnm.mw.tum.de
@@ -65,8 +68,27 @@ TimIntOneStepTheta(sdynparams,params,sdynparams, xparams, actdis,solver,contacts
 isconverged_(false),
 iterges_(0)
 {
-  // create StatMechManager object
-  //statmechmanager_ = Teuchos::rcp(new STATMECH::StatMechManager(params_,*actdis));
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+} // STR::TimIntStatMech::TimIntStatMech()
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntStatMech::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntOneStepTheta::Init(timeparams,sdynparams,xparams,actdis,solver);
 
   //getting number of dimensions for diffusion coefficient calculation
   ndim_= DRT::Problem::Instance()->NDim();
@@ -108,7 +130,18 @@ iterges_(0)
     dserror("Due to current reorganizing of the time loop: Set your PROBLEMTYP to StatMech");
 
   return;
-} // STR::TimIntStatMech::TimIntStatMech()
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntStatMech::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntOneStepTheta::Setup();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  print Boundary condition type to screen      (public) mueller 03/12 |

@@ -4,12 +4,13 @@
 
 \brief Basis of all LOMA algorithms
 
-<pre>
-Maintainer: Volker Gravemeier
+\level 2
+
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915245
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -35,8 +36,45 @@ LOMA::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams),
+   monolithic_(false),
+   lomadbcmap_(Teuchos::null),
+   lomaincrement_(Teuchos::null),
+   lomarhs_(Teuchos::null),
+   zeros_(Teuchos::null),
+   lomasystemmatrix_(Teuchos::null),
+   lomasolver_(Teuchos::null),
+   dt_(0.0),
+   maxtime_(0.0),
+   stepmax_(0),
+   itmax_(0),
+   itmaxpre_(0),
+   itmaxbs_(0),
+   ittol_(1.0),
+   samstart_(-1),
+   turbinflow_(false),
+   numinflowsteps_(-1),
+   probdyn_(prbdyn)
 {
+  // constructor is supposed to stay empty!
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LOMA::Algorithm::Init(
+    const Epetra_Comm& comm,
+    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& solverparams
+    )
+{
+  // call Init() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+
+  // set problem dynamic parameters
+  probdyn_=prbdyn;
+
   // flag for monolithic solver
   monolithic_ = (DRT::INPUT::IntegralValue<int>(prbdyn,"MONOLITHIC"));
 
@@ -88,6 +126,20 @@ LOMA::Algorithm::Algorithm(
      dserror("Constant thermodynamic pressure in main problem domain!");
   }
 
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LOMA::Algorithm::Setup()
+{
+  // call Setup() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+
+  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+
   // preparatives for monolithic solver
   if (monolithic_)
   {
@@ -128,7 +180,7 @@ LOMA::Algorithm::Algorithm(
     lomablockdofrowmap_.Setup(*fullmap,dofrowmaps);
 
     // get solver number used for LOMA solver
-    const int linsolvernumber = prbdyn.get<int>("LINEAR_SOLVER");
+    const int linsolvernumber = probdyn_.get<int>("LINEAR_SOLVER");
     // check if LOMA solvers has a valid number
     if (linsolvernumber == (-1))
       dserror("no linear solver defined for LOMA. Please set LINEAR_SOLVER in LOMA CONTROL to a valid number! This solver has to be an Aztec solver with BGS2x2 block preconditioner.");
@@ -200,6 +252,9 @@ LOMA::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::TimeLoop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // do initial calculations
   // if and only if it is the first time step
   // do not do initial calculations after restarts
@@ -277,6 +332,9 @@ void LOMA::Algorithm::InitialCalculations()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::PrepareTimeStep()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // prepare scalar transport time step
   // (+ computation of initial scalar time derivative in first time step)
   ScaTraField()->PrepareTimeStep();
@@ -296,6 +354,9 @@ void LOMA::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::OuterLoop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   int  itnum = 0;
   bool stopnonliniter = false;
 
@@ -676,6 +737,9 @@ void LOMA::Algorithm::SetupMonoLomaRHS()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::MonoLomaSystemSolve()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // set incremental solution vector to zero
   lomaincrement_->PutScalar(0.0);
 

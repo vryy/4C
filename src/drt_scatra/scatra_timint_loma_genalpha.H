@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_loma_genalpha.H
-\brief
+
+\brief Generalized-alpha time-integration scheme with extensions for
+       loma problems
+
+\level 2
 
 <pre>
 \maintainer Volker Gravemeier
@@ -42,6 +46,9 @@ public:
 
   /// initialize time integration scheme
   virtual void Init();
+
+  /// setup time integration scheme
+  virtual void Setup();
 
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   void PredictThermPressure();

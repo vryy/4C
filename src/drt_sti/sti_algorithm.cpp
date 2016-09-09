@@ -4,6 +4,8 @@
 
 \brief monolithic algorithm for scatra-thermo interaction
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -96,12 +98,16 @@ STI::Algorithm::Algorithm(
 
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams))->ScaTraField();
+  scatra_->Init();
+  scatra_->Setup();
 
   // modify field parameters for thermo field
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams,"thermo"))->ScaTraField();
+  thermo_->Init();
+  thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
   if(scatra_->Discretization()->DofRowMap()->NumGlobalElements() == 0)

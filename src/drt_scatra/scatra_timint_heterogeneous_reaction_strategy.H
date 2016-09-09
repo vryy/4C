@@ -58,6 +58,9 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     //! compute residual terms and their linearizations
     void EvaluateMeshtying();
 
+    //! setup meshtying objects
+    void SetupMeshtying();
+
     //! initialize meshtying objects
     void InitMeshtying();
 
@@ -71,6 +74,13 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
           discretization. Since, this discretization has the dofs of both,
           the volume-bound scalars and the surface bound scalars, every
           term involving one or both kinds of scalars can easily be evaluated.
+
+          This discretization has all scatra (surface+volume) in one dofset.
+          This is required by the advanced reaction framework. This is also
+          the reason for the fact, that in your input file first the
+          surface species have to be listed and then the volume species, since
+          here we fix the order of dofs to be first surface, and then volume
+          dofs.
 
     \return void
     \date 08/16
@@ -95,6 +105,41 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
 
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);
+
+  private:
+
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+  protected:
+
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup()
+    {return issetup_;};
+
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit()
+    {return isinit_;};
+
+    //! check if \ref Setup() was called
+    void CheckIsSetup()
+    {if(not IsSetup()) dserror("Setup() was not called.");};
+
+    //! check if \ref Init() was called
+    void CheckIsInit()
+    {if(not IsInit()) dserror("Init(...) was not called.");};
+
+  public:
+
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+
 }; // class MeshtyingStrategyStd
 } // namespace SCATRA
 

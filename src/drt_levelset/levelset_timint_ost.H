@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file levelset_timint_ost.H
-\brief
 
-<pre>
+\brief one-step theta time integration scheme for level-set problems
+
+\level 2
+
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -39,6 +40,9 @@ public:
 
   /// initialize time-integration scheme
   virtual void Init();
+
+  /// setup time-integration scheme
+  virtual void Setup();
 
   /// read restart data
   virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);

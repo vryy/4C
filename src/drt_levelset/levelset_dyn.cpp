@@ -2,7 +2,7 @@
 /*!
 \file levelset_dyn.cpp
 \brief entry point for level-set transport problems
-
+\level 2
 <pre>
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
@@ -77,6 +77,14 @@ void levelset_dyn(int restart)
 
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
+
+  // now we can call Init() on the scatra time integrator
+  levelsetalgo->Init();
+
+  // only now we must call Setup() on the scatra time integrator.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  levelsetalgo->Setup();
 
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->ReadRestart(restart);

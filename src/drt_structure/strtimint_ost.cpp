@@ -2,15 +2,8 @@
 /*!
 \file strtimint_ost.cpp
 \brief Structural time integration with one-step-theta
-
-<pre>
 \level 1
-
 \maintainer Alexander Popp
-popp@lnm.mw.tum.de
-http://www.lnm.mw.tum.de
-089 - 289-15238
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -74,6 +67,29 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   finertn_(Teuchos::null),
   fvisct_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntOneStepTheta::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+
+  // general variable verifications:
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
@@ -82,6 +98,18 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
              << "   theta = " << theta_ << IO::endl
              << IO::endl;
   }
+
+  // have a nice day
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntOneStepTheta::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntImpl::Setup();
 
   if (!HaveNonlinearMass())
   {
@@ -149,11 +177,9 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
     // Check, if initial residuum really vanishes for acc_ = 0
     ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0),&sdynparams);
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0),&sdynparams_);
   }
 
-
-  // have a nice day
   return;
 }
 

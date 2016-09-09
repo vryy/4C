@@ -33,7 +33,7 @@ namespace SCATRA{
   public:
 
     /// constructor
-    explicit ScaTraAlgorithm(
+    ScaTraAlgorithm(
         const Epetra_Comm& comm,                     ///< communicator
         const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
         const Teuchos::ParameterList& fdyn,          ///< fluid parameter list
@@ -43,6 +43,12 @@ namespace SCATRA{
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraAlgorithm();
+
+    /// setup
+    virtual void Setup();
+
+    /// init
+    virtual void Init();
 
     /// outer level time loop
     void TimeLoop();

@@ -2,15 +2,8 @@
 /*!
 \file strtimint_gemm.cpp
 \brief Structural time integration with generalised energy-momentum method
-
-<pre>
 \level 1
-
 \maintainer Alexander Popp
-popp@lnm.mw.tum.de
-http://www.lnm.mw.tum.de
-089 - 289-15238
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -63,6 +56,28 @@ STR::TimIntGEMM::TimIntGEMM
   finertm_(Teuchos::null),
   fviscm_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntGEMM::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
@@ -74,6 +89,18 @@ STR::TimIntGEMM::TimIntGEMM
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
   }
+
+  // have a nice day
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntGEMM::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntImpl::Setup();
 
   // determine mass, damping and initial accelerations
   DetermineMassDampConsistAccel();
@@ -111,7 +138,7 @@ STR::TimIntGEMM::TimIntGEMM
     dserror("Gemm time integrator cannot handle nonlinear inertia forces "
         "(flag: MASSLIN)");
 
-  // have a nice day
+
   return;
 }
 

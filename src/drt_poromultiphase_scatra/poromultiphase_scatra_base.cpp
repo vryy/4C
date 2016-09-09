@@ -93,7 +93,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
       scatra_disname,
       true));
 
+  // now we can call Init() on the scatra time integrator
+  scatra_->ScaTraField()->Init();
 
+  // only now we must call Setup() on the scatra time integrator.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  scatra_->ScaTraField()->Setup();
 
   //done.
   return;

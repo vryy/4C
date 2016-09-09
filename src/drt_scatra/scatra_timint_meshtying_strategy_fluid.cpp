@@ -3,6 +3,8 @@
 
 \brief Fluid-fluid meshtying strategy for standard scalar transport problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -64,6 +66,15 @@ void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
 
 /*----------------------------------------------------------------------*
  | perform setup of fluid-fluid meshtying                    fang 12/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
+{
+  return;
+} // SCATRA::MeshtyingStrategyFluid::SetupMeshtying
+
+
+/*----------------------------------------------------------------------*
+ | perform init of fluid-fluid meshtying                    rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 {

@@ -36,28 +36,50 @@
  *----------------------------------------------------------------------*/
 ADAPTER::MortarVolCoupl::MortarVolCoupl() :
   issetup_(false),
+  isinit_(false),
   P12_(Teuchos::null),
-  P21_(Teuchos::null)
+  P21_(Teuchos::null),
+  masterdis_(Teuchos::null),
+  slavedis_(Teuchos::null),
+  coupleddof12_(NULL),
+  coupleddof21_(NULL),
+  dofsets12_(NULL),
+  dofsets21_(NULL),
+  materialstrategy_(Teuchos::null)
 {
   //empty...
 }
 
 
 /*----------------------------------------------------------------------*
- |  setup                                                    farah 10/13|
+ |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
-void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // masterdis - on Omega_1
+void ADAPTER::MortarVolCoupl::Init(Teuchos::RCP<DRT::Discretization> dis1,  // masterdis - on Omega_1
                                     Teuchos::RCP<DRT::Discretization> dis2, // slavedis  - on Omega_2
                                     std::vector<int>* coupleddof12,
                                     std::vector<int>* coupleddof21,
                                     std::pair<int,int>* dofsets12,
                                     std::pair<int,int>* dofsets21,
                                     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy,
-                                    bool redistribute,
                                     bool createauxdofs)
 {
-  // get problem dimension (2D or 3D)
-  const int dim = DRT::Problem::Instance()->NDim();
+  // Note : We need to make sure that the parallel distribution of discretizations
+  //        is the same externally! The best thing is if you do this in your *_dyn.cpp,
+  //        i.e., your global control algorithm.
+
+  // reset the setup flag
+  issetup_=false;
+
+  // set pointers to discretizations
+  masterdis_=dis1;
+  slavedis_=dis2;
+
+  // set various pointers
+  coupleddof12_ = coupleddof12;
+  coupleddof21_ = coupleddof21;
+  dofsets12_    = dofsets12;
+  dofsets21_    = dofsets21;
+  materialstrategy_ = materialstrategy;
 
   const Teuchos::ParameterList& params =
       DRT::Problem::Instance()->VolmortarParams();
@@ -70,39 +92,42 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // m
     CreateAuxDofsets(dis1, dis2, coupleddof12, coupleddof21);
   }
 
-  // create vector of discr.
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-  dis.push_back(dis1);
-  dis.push_back(dis2);
+  // set flag
+  isinit_=true;
 
-  //binning strategy for parallel redistribution
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+  // bye
+  return;
+}
 
-  std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-  std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
-  // redistribute discr. with help of binning strategy
-  if(dis1->Comm().NumProc()>1 and redistribute)
-  {
-    /// binning strategy is created and parallel redistribution is performed
-    binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-  }
+/*----------------------------------------------------------------------*
+ |  setup                                                    rauch 08/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::MortarVolCoupl::Setup()
+{
+
+  // get problem dimension (2D or 3D)
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  // get volmortar params
+  const Teuchos::ParameterList& params =
+      DRT::Problem::Instance()->VolmortarParams();
 
   // create material strategy
-  if(materialstrategy==Teuchos::null)
-    materialstrategy= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
+  if(materialstrategy_==Teuchos::null)
+    materialstrategy_= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
 
   // create coupling instance
   Teuchos::RCP<VOLMORTAR::VolMortarCoupl> coupdis =
       Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(
           dim,
-          dis1,
-          dis2,
-          coupleddof12,
-          coupleddof21,
-          dofsets12,
-          dofsets21,
-          materialstrategy));
+          masterdis_,
+          slavedis_,
+          coupleddof12_,
+          coupleddof21_,
+          dofsets12_,
+          dofsets21_,
+          materialstrategy_));
 
   //-----------------------
   // Evaluate volmortar coupling:
@@ -122,23 +147,53 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // m
   P12_ = coupdis->GetPMatrix12();
   P21_ = coupdis->GetPMatrix21();
 
-  if(dis1->Comm().NumProc()>1 and redistribute)
-  {
-    /// revert extended ghosting
-    if (not DRT::INPUT::IntegralValue<int>(params, "KEEP_EXTENDEDGHOSTING"))
-      binningstrategy->RevertExtendedGhosting(dis,stdelecolmap,stdnodecolmap);
-  }
-
   /***********************************************************
    * Assign materials                                        *
    ***********************************************************/
   //assign materials from one discretization to the other
   coupdis->AssignMaterials();
 
-  // set flag
+  // validate flag issetup_
   issetup_=true;
 
-  // bye
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  redistribute                                             rauch 08/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::MortarVolCoupl::Redistribute()
+{
+  // get volmortar params
+  const Teuchos::ParameterList& params =
+      DRT::Problem::Instance()->VolmortarParams();
+
+  // create vector of discr.
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+  dis.push_back(masterdis_);
+  dis.push_back(slavedis_);
+
+  //binning strategy for parallel redistribution
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+
+  std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+  std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+  // redistribute discr. with help of binning strategy
+  if(masterdis_->Comm().NumProc()>1)
+  {
+    /// binning strategy is created and parallel redistribution is performed
+    binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+  }
+
+//  if(masterdis_->Comm().NumProc()>1)
+//  {
+//    /// revert extended ghosting
+//    if (not DRT::INPUT::IntegralValue<int>(params, "KEEP_EXTENDEDGHOSTING"))
+//      binningstrategy->RevertExtendedGhosting(dis,stdelecolmap,stdnodecolmap);
+//  }
+
   return;
 }
 
@@ -206,6 +261,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping12(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P12_->RowMap(),true);
   int err = P12_->Multiply(false,*vec,*mapvec);
@@ -223,6 +279,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping21(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P21_->RowMap(),true);
   int err = P21_->Multiply(false,*vec,*mapvec);
@@ -240,6 +297,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping12
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   return LINALG::MLMultiply(*mat,false,*P12_,false,false,false,true);
 }
@@ -252,6 +310,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping21
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   return LINALG::MLMultiply(*mat,false,*P21_,false,false,false,true);
 }
@@ -263,6 +322,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::MasterToSlave(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   //create vector
   Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(P21_->RowMap(),true);
@@ -289,6 +349,7 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(
 
   // safety check
   CheckSetup();
+  CheckInit();
 
   //slave vector with auxiliary dofmap
   Epetra_MultiVector sv_aux(P21_->RowMap(),sv->NumVectors());
@@ -314,6 +375,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::MasterToSlave(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   //create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
@@ -331,6 +393,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::SlaveToMaster(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   //create vector
   Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(P12_->RowMap(),true);
@@ -348,6 +411,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::SlaveToMaster(
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   //create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
@@ -376,6 +440,7 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(
 
   // safety check
   CheckSetup();
+  CheckInit();
 
   //master vector with auxiliary dofmap
   Epetra_MultiVector mv_aux(P12_->RowMap(),mv->NumVectors());
@@ -399,6 +464,7 @@ Teuchos::RCP<const Epetra_Map>  ADAPTER::MortarVolCoupl::MasterDofMap() const
 {
   // safety check
   CheckSetup();
+  CheckInit();
 
   return Teuchos::rcpFromRef(P12_->RowMap());
 }

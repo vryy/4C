@@ -55,10 +55,10 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::Init()
+void SCATRA::TimIntGenAlpha::Setup()
 {
   // initialize base class
-  ScaTraTimIntImpl::Init();
+  ScaTraTimIntImpl::Setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -287,8 +287,15 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(phiaf_,0.0,dirichtoggle,*extraparams_,nds_vel_);
+    if(DynSmag_!=Teuchos::null)
+    {
+      const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+      DynSmag_->ApplyFilterForDynamicComputationOfPrt(phiaf_,0.0,dirichtoggle,*extraparams_,nds_vel_);
+    }
+    else
+    {
+      dserror("Teuchos::RCP<FLD::DynSmagFilter> DynSmag_ = Teuchos::null");
+    }
   }
 
   return;

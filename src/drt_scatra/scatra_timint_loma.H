@@ -1,14 +1,8 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_loma.H
-
-  \brief scatra time integration for loma
-
-<pre>
-Maintainer: Ursula Rasthofer / Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/45
-</pre>
+\brief scatra time integration for loma
+\level 2
+\maintainer Volker Gravemeier
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_LOMA_H
@@ -46,6 +40,9 @@ namespace SCATRA
 
     /// initialize algorithm
     virtual void Init();
+
+    /// initialize algorithm
+    virtual void Setup();
 
     //! set initial thermodynamic pressure
     void SetInitialThermPressure();

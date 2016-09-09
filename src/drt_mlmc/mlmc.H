@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------
 \file  mlmc.H
 \brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
-
-
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\level 2
+\maintainer Jonas Biehler
  *!----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifndef MLMC_H

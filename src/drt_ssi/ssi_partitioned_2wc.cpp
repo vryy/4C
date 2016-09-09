@@ -41,17 +41,20 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
- | Setup this class                                         rauch 08/16 |
+ | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar=
+      SSI::SSI_Part::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
 
   // call the SSI parameter lists
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
@@ -81,19 +84,45 @@ void SSI::SSI_Part2WC::Setup(const Epetra_Comm& comm,
   itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
   ittol_ = ssicontrolpart.get<double>("CONVTOL"); // default: =1e-6
 
-  // construct increment vectors
-  scaincnp_ = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true);
-  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
-
-  return;
+  return returnvar;
 
 }
 
+/*----------------------------------------------------------------------*
+ | Init this class                                          rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::Setup()
+{
+  // call init in base class
+  SSI::SSI_Part::Setup();
+
+  // construct increment vectors
+  scaincnp_ = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true);
+  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Setup the discretizations                                rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::InitDiscretizations(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
+{
+  // call setup in base class
+  SSI::SSI_Base::InitDiscretizations(comm,struct_disname,scatra_disname);
+  return;
+}
 /*----------------------------------------------------------------------*
  | Timeloop for 2WC SSI problems                             Thon 12/14 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::Timeloop()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   //initial output
   structure_-> PrepareOutput();
   structure_-> Output();
@@ -364,22 +393,25 @@ SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(const Epet
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_SolidToScatra_Relax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar=
+  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   //Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*
@@ -481,19 +513,22 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar=
+  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   dispincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*
@@ -567,15 +602,18 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epet
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar=
+  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
@@ -589,7 +627,7 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::Setup(const Epetra_Comm& comm,
     std::cout<<"\n#########################################################################\n  "<<std::endl;
   }
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*
@@ -682,19 +720,22 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar=
+  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   scaincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*

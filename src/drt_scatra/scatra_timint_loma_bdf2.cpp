@@ -1,15 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_timint_loma_bdf2.cpp
-\brief bdf2 time-integration scheme with extensions for
-       loma problems
 
-<pre>
+\brief bdf2 time-integration scheme with extensions for loma problems
+
+\level 2
+
 \maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -50,7 +51,7 @@ SCATRA::TimIntLomaBDF2::TimIntLomaBDF2(
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 12/13 |
+ |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaBDF2::Init()
 {
@@ -58,6 +59,19 @@ void SCATRA::TimIntLomaBDF2::Init()
   // note: this order is important
   TimIntBDF2::Init();
   ScaTraTimIntLoma::Init();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  initialize time integration                             rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntLomaBDF2::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntBDF2::Setup();
+  ScaTraTimIntLoma::Setup();
 
   return;
 }

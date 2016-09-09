@@ -1,8 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_timint_elch_scheme.cpp
-\brief time-integration scheme with extensions for
-       elch problems
+\brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
+        elch-specific implementation (class ScaTraTimIntElch)
+\level 2
 
 <pre>
 \maintainer Rui Fang
@@ -45,6 +46,20 @@ void SCATRA::ScaTraTimIntElchOST::Init()
   // note: this order is important
   TimIntOneStepTheta::Init();
   ScaTraTimIntElch::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize time integration                              ehrl 01/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchOST::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Setup();
+  ScaTraTimIntElch::Setup();
 
   return;
 }
@@ -386,6 +401,19 @@ void SCATRA::ScaTraTimIntElchBDF2::Init()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  initialize time integration                             rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchBDF2::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntBDF2::Setup();
+  ScaTraTimIntElch::Setup();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   ehrl 01/14 |
@@ -676,6 +704,20 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Init()
 
 
 /*----------------------------------------------------------------------*
+ |  initialize time integration                             rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntGenAlpha::Setup();
+  ScaTraTimIntElch::Setup();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   ehrl 01/14 |
 *-----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchGenAlpha::~ScaTraTimIntElchGenAlpha()
@@ -949,6 +991,21 @@ void SCATRA::ScaTraTimIntElchStationary::Init()
   // note: this order is important
   TimIntStationary::Init();
   ScaTraTimIntElch::Init();
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  initialize time integration                             rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchStationary::Setup()
+{
+  // call Setup()-functions of base classes
+  // note: this order is important
+  TimIntStationary::Setup();
+  ScaTraTimIntElch::Setup();
 
   return;
 }

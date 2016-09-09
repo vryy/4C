@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file two_phase_dyn.cpp
 \brief Control routine for fluid/xfluid and ScaTra coupled routines.
-
+\level 2
 
 <pre>
-Maintainer: Magnus Winter
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
@@ -147,6 +147,8 @@ void two_phase_dyn(int restart)
 
     // create a TWOPHASEFLOW::Algorithm instance
     Teuchos::RCP<TWOPHASEFLOW::Algorithm> twophase = Teuchos::rcp(new TWOPHASEFLOW::Algorithm(comm,twophaseflowcontrol,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    twophase->Init();
+    twophase->Setup();
 
     // read restart information
     // in case an inflow generation in the inflow section has been performed, there are not any
@@ -355,7 +357,8 @@ void fluid_xfem_ls_drt(int restart)
 
    // Test replacing fdyn in Algorithm with prbdyn
    Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,twophasedyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
-
+   xfluid_levelset->Init();
+   xfluid_levelset->Setup();
 
    // read restart information
    // in case an inflow generation in the inflow section has been performed, there are not any

@@ -4,8 +4,10 @@
 
 \brief Indicator based on general STR::TimInt object
 
+\level 1
+
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -112,6 +114,8 @@ namespace STR
                                 sti->Solver(),
                                 Teuchos::null, // no contact solver
                                 sti->DiscWriter()));
+      sta_->Init(timeparams,sdyn,xparams,sti->Discretization(),sti->Solver());
+
       // check explicitness
       if (sta_->MethodImplicit())
       {
@@ -138,6 +142,9 @@ namespace STR
 
       // merge
       sta_->Merge(*sti);
+
+      // we have to call Setup() after the merge
+      sta_->Setup();
 
       // resize multi-step quantities
       sta_->ResizeMStep();

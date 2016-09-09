@@ -2,14 +2,15 @@
 /*!
 \file wear_algorithm.cpp
 
-\brief  ...
+\brief Basis of all WEAR algorithms that perform a coupling between the
+       structural field equation and ALE field equations
 
-<pre>
-Maintainer: Philipp Farah
+\level 2
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 */
 
 /*----------------------------------------------------------------------*
@@ -58,6 +59,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
       const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()),
       DRT::Problem::Instance()->GetDis("structure")));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
+  structure_->Setup();
 
   if(structure_ == Teuchos::null)
     dserror("ERROR: cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");

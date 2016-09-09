@@ -44,13 +44,22 @@ void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying()
 
 
 /*----------------------------------------------------------------------*
- | initialize meshtying objects                              fang 02/16 |
+ | setup meshtying objects                                   fang 02/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyStd::SetupMeshtying()
+{
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | init meshtying objects                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStd::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
   InitConvCheckStrategy();
-
   return;
 }
 

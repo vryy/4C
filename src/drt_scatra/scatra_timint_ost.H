@@ -43,6 +43,9 @@ public:
   /// initialize time integration scheme
   virtual void Init();
 
+  /// setup time integration scheme
+  virtual void Setup();
+
   //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
   virtual void PreSolve(){return;};
 

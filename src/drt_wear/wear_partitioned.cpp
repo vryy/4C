@@ -107,8 +107,8 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
     std::pair<int,int> dofset12(0,0);
     std::pair<int,int> dofset21(0,0);
 
-    //setup projection matrices
-    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Setup(
+    //init coupling
+    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Init(
         DRT::Problem::Instance()->GetDis("ale"),
         DRT::Problem::Instance()->GetDis("structure"),
         &coupleddof12,
@@ -116,8 +116,10 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
         &dofset12,
         &dofset21,
         Teuchos::null,
-        false,
         false);
+
+    //setup projection matrices
+    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
   }
 
   //create interface coupling

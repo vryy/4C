@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file levelset_dyn.H
-\brief
-
+\brief entry point for level-set transport problems
+\level 2
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236

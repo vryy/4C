@@ -30,7 +30,6 @@
 #include "../drt_scatra/scatra_resulttest.H"
 
 // general time integration schemes
-#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
@@ -58,6 +57,7 @@
 // cell migration specific files
 #include "../drt_immersed_problem/scatra_timint_ost_endoexocytosis.H"
 
+// poro multiphase files
 #include "../drt_scatra/scatra_timint_poromulti.H"
 
 /*----------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled() or !actdis->HaveDofs()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -473,9 +473,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       } // switch(timintscheme)
     }
   }
-
-  // initialize algorithm for specific time-integration scheme
-  scatra_->Init();
 
   return;
 }

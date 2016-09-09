@@ -18,11 +18,8 @@
 #ifndef ADAPTER_STRUCTURE_H
 #define ADAPTER_STRUCTURE_H
 
-//#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
 
-//#include <Epetra_Vector.h>
-//#include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
@@ -129,7 +126,33 @@ namespace ADAPTER {
     /// virtual to get polymorph destruction
     virtual ~Structure();
 
+    //! @name Construction
+    //@{
+
+    /*! \brief Setup all class internal objects and members
+
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup() = 0;
+
+    //@}
+
     //! @name Vector access
+    //@{
 
     /// initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
@@ -516,7 +539,7 @@ namespace ADAPTER {
   public:
 
     /// constructor
-    explicit StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm();
@@ -524,13 +547,16 @@ namespace ADAPTER {
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return structure_; }
 
+    /// structural field solver
+    //Teuchos::RCP<STR::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
+
   private:
 
-    /// setup structure algorithm
-    void SetupStructure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    /// Create structure algorithm
+    void CreateStructure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
-    void SetupTimInt(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    void CreateTimInt(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// create linear solver for contact/meshtying problems
     /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding structural elements
@@ -564,6 +590,7 @@ namespace ADAPTER {
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
+
   };
 
 }

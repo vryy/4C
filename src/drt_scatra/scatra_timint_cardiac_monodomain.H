@@ -50,8 +50,8 @@ class TimIntCardiacMonodomain : public virtual ScaTraTimIntImpl
   //! virtual destructor
   virtual ~TimIntCardiacMonodomain(){return;};
 
-  //! initialize algorithm
-  virtual void Init();
+  //! setup algorithm
+  virtual void Setup();
 
   //! time update of time-dependent materials
   void ElementMaterialTimeUpdate();

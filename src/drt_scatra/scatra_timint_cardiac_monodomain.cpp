@@ -55,7 +55,7 @@ SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(
 }
 
 
-void SCATRA::TimIntCardiacMonodomain::Init()
+void SCATRA::TimIntCardiacMonodomain::Setup()
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

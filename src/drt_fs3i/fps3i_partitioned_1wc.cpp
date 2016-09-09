@@ -49,6 +49,31 @@
 FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
   :PartFPS3I(comm)
 {
+  // keep constructor empty
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Init                                                    rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::PartFPS3I_1WC::Init()
+{
+  FS3I::PartFPS3I::Init();
+
+
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Setup                                                   rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::PartFPS3I_1WC::Setup()
+{
+  FS3I::PartFPS3I::Setup();
+
   // add proxy of fluid degrees of freedom to scatra discretization
   if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fpsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
@@ -66,6 +91,8 @@ FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
   // structscatra dofset 0: structscatra dofset
   // structscatra dofset 1: structure dofset
   // structscatra dofset 2: porofluid dofset
+
+  return;
 }
 
 
@@ -74,6 +101,9 @@ FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // write FPSI solution into scatra field
   SetFPSISolution();
 
@@ -143,6 +173,9 @@ void FS3I::PartFPS3I_1WC::DoScatraStep()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::PrepareTimeStep()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {

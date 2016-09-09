@@ -2,9 +2,10 @@
 /*!
 \file strtimint_centrdiff.cpp
 \brief Structural time integration with central difference scheme 2nd order (explicit)
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -35,8 +36,7 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output,
-  bool initmassdampconsistaccel
+  Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimIntExpl
   (
@@ -55,6 +55,28 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   fcmtn_(Teuchos::null),
   frimpn_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntCentrDiff::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntExpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+
   // info to user
   if (myrank_ == 0)
   {
@@ -62,9 +84,20 @@ STR::TimIntCentrDiff::TimIntCentrDiff
               << std::endl;
   }
 
+  // let it rain
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntCentrDiff::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntExpl::Setup();
+
   // determine mass, damping and initial accelerations
-  if(initmassdampconsistaccel == true)
-    DetermineMassDampConsistAccel();
+  DetermineMassDampConsistAccel();
 
   // resize of multi-step quantities
   ResizeMStep();
@@ -76,7 +109,7 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
   frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // let it rain
+
   return;
 }
 

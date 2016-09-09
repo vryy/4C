@@ -29,13 +29,37 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-UTILS::ConstrManager::ConstrManager
-(
-  Teuchos::RCP<DRT::Discretization> discr,
-  Teuchos::RCP<const Epetra_Vector> disp,
-  Teuchos::ParameterList params):
-actdisc_(discr)
+UTILS::ConstrManager::ConstrManager() :
+offsetID_(-1),
+numConstrID_(-1),
+numMonitorID_(-1),
+minMonitorID_(-1),
+haveconstraint_(false),
+havelagrconstr_(false),
+havepenaconstr_(false),
+havemonitor_(false),
+uzawaparam_(0.0),
+issetup_(false),
+isinit_(false)
+
 {
+  // Keep constructor empty !
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize this class                                   rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void UTILS::ConstrManager::Init(
+    Teuchos::RCP<DRT::Discretization> discr,
+    Teuchos::ParameterList params)
+{
+  SetIsSetup(false);
+
+  // set pointer to discretization
+  actdisc_ = discr;
+
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Constraint Conditions!
 
@@ -70,6 +94,24 @@ actdisc_(discr)
     or (mpcnormcomp3d_->HaveConstraint())
     or (mpconline2d_->HaveConstraint());
   haveconstraint_ = havepenaconstr_ or havelagrconstr_;
+
+
+  SetIsInit(true);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  setup this class                                        rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void UTILS::ConstrManager::Setup(
+    Teuchos::RCP<const Epetra_Vector> disp,
+    Teuchos::ParameterList params)
+{
+  CheckIsInit();
+
+  int maxConstrID=0;
+
   if (haveconstraint_)
   {
     numConstrID_ = std::max(maxConstrID-offsetID_+1,0);
@@ -165,8 +207,10 @@ actdisc_(discr)
     BuildMoniType();
   }
 
+  SetIsSetup(true);
   return;
 }
+
 
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 11/07|
@@ -181,6 +225,9 @@ void UTILS::ConstrManager::EvaluateForceStiff(
         Teuchos::RCP<LINALG::SparseOperator> stiff,
         Teuchos::ParameterList scalelist)
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   double scStiff = scalelist.get("scaleStiffEntries",1.0);
   double scConMat = scalelist.get("scaleConstrMat",1.0);
 
@@ -258,6 +305,9 @@ void UTILS::ConstrManager::EvaluateForceStiff(
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector> disp)
 {
+  CheckIsInit();
+  CheckIsSetup();
+
     std::vector<DRT::Condition*> constrcond(0);
     Teuchos::ParameterList p;
     p.set("total time",time);

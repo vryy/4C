@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file  mlmc.cpp
 \brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
+\level 2
+\maintainer Jonas Biehler
 
-
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
  *!----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 
@@ -240,6 +235,7 @@ void UQ::MLMC::Integrate()
         // create an adapterbase and adapter
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
         Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
+        structadaptor->Setup();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
@@ -418,6 +414,7 @@ void UQ::MLMC::IntegrateNoReset()
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
         Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
+        structadaptor->Setup();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
@@ -584,6 +581,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
         Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
+        structadaptor->Setup();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();

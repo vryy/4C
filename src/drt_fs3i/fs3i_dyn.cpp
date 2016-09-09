@@ -79,6 +79,9 @@ void fs3i_dyn()
     break;
   }
 
+  fs3i->Init();
+  fs3i->Setup();
+
   // read the restart information, set vectors and variables ---
   // be careful, dofmaps might be changed here in a Redistribute call
   fs3i->ReadRestart();

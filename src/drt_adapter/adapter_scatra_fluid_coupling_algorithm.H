@@ -47,7 +47,7 @@ namespace ADAPTER
   public:
 
     /// constructor using a Epetra_Comm
-    explicit ScaTraFluidCouplingAlgorithm(
+    ScaTraFluidCouplingAlgorithm(
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
         bool isale,  ///< do we need an ALE formulation of the fields?
@@ -57,6 +57,12 @@ namespace ADAPTER
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraFluidCouplingAlgorithm(){};
+
+    /// setup this class
+    virtual void Setup();
+
+    /// init this class
+    virtual void Init();
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
@@ -92,6 +98,43 @@ namespace ADAPTER
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
+
+    /// name of scatra discretization
+    const std::string scatra_disname_;
+
+  private:
+
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+  protected:
+
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup()
+    {return issetup_;};
+
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit()
+    {return isinit_;};
+
+    //! check if \ref Setup() was called
+    void CheckIsSetup()
+    {if(not IsSetup()) dserror("Setup() was not called.");};
+
+    //! check if \ref Init() was called
+    void CheckIsInit()
+    {if(not IsInit()) dserror("Init(...) was not called.");};
+
+  public:
+
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
   };
 
 } // namespace ADAPTER

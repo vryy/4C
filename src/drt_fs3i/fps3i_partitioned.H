@@ -70,6 +70,12 @@ namespace FS3I
     //! destructor of base class for partitioned FPS3I
     virtual ~PartFPS3I(){};
 
+    //! initialize this class
+    virtual void Init();
+
+    //! setup this class
+    virtual void Setup();
+
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)
     virtual void Timeloop() = 0;

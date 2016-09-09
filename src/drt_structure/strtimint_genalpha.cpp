@@ -1,16 +1,16 @@
  /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_genalpha.cpp
+
 \brief Structural time integration with generalised-alpha
 
-<pre>
 \level 1
 
 \maintainer Alexander Popp
-popp@lnm.mw.tum.de
-http://www.lnm.mw.tum.de
-089 - 289-15238
-</pre>
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -131,6 +131,28 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   fviscm_(Teuchos::null),
   fint_str_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+
   // calculate time integration parameters
   CalcCoeff();
 
@@ -144,6 +166,18 @@ STR::TimIntGenAlpha::TimIntGenAlpha
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
   }
+
+  // have a nice day
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntImpl::Setup();
 
   if (!HaveNonlinearMass())
   {
@@ -229,9 +263,9 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     // Check, if initial residuum really vanishes for acc_ = 0
     ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams);
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
 
-    if(HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
+    if(HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(discret_))
     {
       dserror("Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so far!");
     }
@@ -241,7 +275,6 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   if (fintn_str_!=Teuchos::null)
     fint_str_->Update(1.,*fintn_str_,0.);
 
-  // have a nice day
   return;
 }
 

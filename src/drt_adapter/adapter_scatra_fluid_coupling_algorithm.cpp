@@ -45,8 +45,24 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
    ScaTraBaseAlgorithm(prbdyn,DRT::Problem::Instance()->ScalarTransportDynamicParams(),solverparams,scatra_disname,isale), // false -> no ALE in scatra algorithm
    fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(DRT::Problem::Instance()->ScalarTransportDynamicParams(),"FIELDCOUPLING")),
    volcoupl_fluidscatra_(Teuchos::null),
-   params_(prbdyn)
+   params_(prbdyn),
+   scatra_disname_(scatra_disname),
+   issetup_(false),
+   isinit_(false)
 {
+  // keep constructor empty
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraFluidCouplingAlgorithm::Init()
+{
+  SetIsSetup(false);
+
+  // setup scatra time integration scheme
+  ScaTraField()->Init();
+
   // check whether fluid and scatra discret still have the same maps
   // they may change due a modified ghosting required, i.e., for particle level-set methods
   if(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField()) != Teuchos::null)
@@ -54,7 +70,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
     if (not scatraelecolmap->PointSameAs(*FluidField()->Discretization()->ElementColMap()))
     {
-      if (comm.MyPID()==0)
+      if (Comm().MyPID()==0)
         std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
 
       // adapt fluid ghosting to scatra ghosting
@@ -75,7 +91,20 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
 
   // do potential volmortar business
-  SetupFieldCoupling("fluid", scatra_disname);
+  SetupFieldCoupling("fluid", scatra_disname_);
+
+  SetIsInit(true);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
+{
+  CheckIsInit();
+
+  // initialize scatra time integration scheme
+  ScaTraField()->Setup();
 
   // initialize fluid time integration scheme
   FluidField()->Init();
@@ -106,21 +135,21 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   case INPAR::SCATRA::timeint_stationary:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
-      if (comm.MyPID()==0)
+      if (Comm().MyPID()==0)
         dserror("Fluid and scatra time integration schemes do not match!");
     break;
   }
   case INPAR::SCATRA::timeint_one_step_theta:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
-      if (comm.MyPID()==0)
+      if (Comm().MyPID()==0)
         std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_bdf2:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_bdf2)
-      if (comm.MyPID()==0)
+      if (Comm().MyPID()==0)
         std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
@@ -128,7 +157,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_npgenalpha and
         FluidField()->TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
-      if (comm.MyPID()==0)
+      if (Comm().MyPID()==0)
         std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
@@ -158,8 +187,8 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   if (volcoupl_fluidscatra_==Teuchos::null and fieldcoupling_==INPAR::SCATRA::coupling_volmortar )
     dserror("Something went terrible wrong. Sorry about this!");
 
+  SetIsSetup(true);
   return;
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -176,7 +205,8 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(const std::string
     volcoupl_fluidscatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
     //setup projection matrices (use default material strategy)
-    volcoupl_fluidscatra_->Setup( fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, false, true);
+    volcoupl_fluidscatra_->Init( fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, true);
+    volcoupl_fluidscatra_->Setup();
   }
 }
 

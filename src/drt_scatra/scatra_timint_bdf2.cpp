@@ -50,10 +50,10 @@ SCATRA::TimIntBDF2::TimIntBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::Init()
+void SCATRA::TimIntBDF2::Setup()
 {
   // initialize base class
-  ScaTraTimIntImpl::Init();
+  ScaTraTimIntImpl::Setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

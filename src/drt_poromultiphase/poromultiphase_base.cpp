@@ -66,8 +66,9 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
           structparams,
           structdis));
 
-  // build structural time integrator
+  // build structural time integrator (Init() called inside)
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
+  structure_->Setup();
 
   // initialize zero vector for convenience
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);

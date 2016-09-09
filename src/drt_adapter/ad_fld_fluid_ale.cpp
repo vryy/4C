@@ -80,16 +80,20 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
     std::pair<int,int> dofsets12(0,0);
     std::pair<int,int> dofsets21(0,0);
 
-    //setup coupling adapter
-    coupfa_volmortar->Setup( FluidField()->Discretization(),
+    // initialize coupling adapter
+    coupfa_volmortar->Init( FluidField()->Discretization(),
                              AleField()->WriteAccessDiscretization(),
                              &coupleddof12,
                              &coupleddof21,
                              &dofsets12,
                              &dofsets21,
                              Teuchos::null,
-                             false,
                              false);
+
+    // setup coupling adapter
+    coupfa_volmortar->Setup();
+
+    // set pointer to coupling adapter
     coupfa_ = coupfa_volmortar;
   }
 

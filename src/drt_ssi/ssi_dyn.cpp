@@ -24,6 +24,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_ssi/ssi_utils.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -80,9 +82,30 @@ void ssi_drt()
     break;
   }
 
-  //3.1.1 setup the chosen ssi algorithm
-  ssi -> SetupDiscretizationsAndFieldCoupling(comm,"structure","scatra");
-  ssi -> Setup(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
+  problem->GetDis("structure")->FillComplete(true,true,true);
+  problem->GetDis("scatra")->FillComplete(true,true,true);
+
+  //3.1.1 init the chosen ssi algorithm
+  bool redistribute = false;
+  redistribute = ssi -> Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
+
+  if (redistribute)
+  {
+    // redistribute elements (ssi coupling object for matching volume and boundary relies on this)
+    std::vector<Teuchos::RCP<DRT::Discretization> > discretizationstobebinned;
+    discretizationstobebinned.push_back(problem->GetDis("structure"));
+    discretizationstobebinned.push_back(problem->GetDis("scatra"));
+
+    SSI::Utils::RedistributeDiscretizationsByBinning(discretizationstobebinned);
+  }
+
+  // now we can finally fill our discretizations
+  problem->GetDis("structure")->FillComplete();
+  problem->GetDis("scatra")->FillComplete();
+
+  // now as we redistributed our discretizations we can construct all
+  // objects relying on the parallel distribution
+  ssi -> Setup();
 
   //3.2- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();

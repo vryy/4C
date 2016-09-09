@@ -519,7 +519,7 @@ void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
     dis[i]->ExportColumnNodes(*nodecolmap);
 
     // fillcomplete discret with extended ghosting
-    dis[i]->FillComplete();
+    dis[i]->FillComplete(true,true,true);
     if(myrank_ == 0)
       std::cout << "parallel distribution with extended ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*dis[i]);

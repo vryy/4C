@@ -120,6 +120,7 @@ STR::TimInt::TimInt
   divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
   divconrefinementlevel_(0),
   divconnumfinestep_(0),
+  sdynparams_(sdynparams),
   output_(output),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
   printlogo_(bool (printscreen_)),  // no std out no logo
@@ -189,8 +190,32 @@ STR::TimInt::TimInt
   dtele_(0.0),
   dtcmt_(0.0),
   pslist_(Teuchos::null),
-  strgrdisp_(Teuchos::null)
+  strgrdisp_(Teuchos::null),
+  issetup_(false),
+  isinit_(false)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimInt::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // invalidate setup
+  SetIsSetup(false);
+
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
   {
@@ -214,24 +239,41 @@ STR::TimInt::TimInt
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
     AttachEnergyFile();
 
+  // initialize constraint manager
+  conman_ = Teuchos::rcp(new UTILS::ConstrManager());
+  conman_->Init(discret_,
+      sdynparams_);
+
+  // stay with us
+
+  // we have successfully initialized this class
+  SetIsInit(true);
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimInt::Setup()
+{
+  // we have to call Init() before
+  CheckIsInit();
+
   createAllEpetraVectors();
 
   // create stiffness, mass matrix and other fields
-  createFields( solver );
+  createFields( solver_ );
 
   // set initial fields
   SetInitialFields();
 
-  // initialize constraint manager
-  conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_,
-                                                  (*dis_)(0),
-                                                  sdynparams));
-
+  // setup constraint manager
+  conman_->Setup((*dis_)(0),sdynparams_);
 
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_,
                                                         (*dis_)(0),
-                                                        sdynparams,
+                                                        sdynparams_,
                                                         DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
                                                         *solver_));
 
@@ -245,7 +287,7 @@ STR::TimInt::TimInt
     consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
                                                         *solver_,
                                                         dbcmaps_,
-                                                        sdynparams));
+                                                        sdynparams_));
   }
 
   // check for beam contact
@@ -253,14 +295,14 @@ STR::TimInt::TimInt
     // If beam contact (no statistical mechanics) is chosen in the input file, then a
     // corresponding manager object stored via #beamcman_ is created and all relevant
     // stuff is initialized. Else, #beamcman_ remains a Teuchos::null pointer.
-    PrepareBeamContact(sdynparams);
+    PrepareBeamContact(sdynparams_);
   }
   // check for mortar contact or meshtying
   {
     // If mortar contact or meshtying is chosen in the input file, then a
     // corresponding manager object stored via #cmtman_ is created and all relevant
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
-    PrepareContactMeshtying(sdynparams);
+    PrepareContactMeshtying(sdynparams_);
   }
   // check for elements using a semi-smooth Newton method for plasticity
   {
@@ -282,7 +324,7 @@ STR::TimInt::TimInt
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
   surfstressman_ = Teuchos::rcp(new UTILS::SurfStressManager(discret_,
-                                                             sdynparams,
+                                                             sdynparams_,
                                                              DRT::Problem::Instance()->OutputControlFile()->FileName()));
 
   // Check for potential conditions
@@ -365,7 +407,9 @@ STR::TimInt::TimInt
   // Check for porosity dofs within the structure and build a map extractor if necessary
   porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
 
-  // stay with us
+
+  // we have successfully set up this class
+  SetIsSetup(true);
   return;
 }
 
@@ -407,8 +451,8 @@ void STR::TimInt::createAllEpetraVectors()
 
 /*-------------------------------------------------------------------------------------------*
  * Either while creating timint for the first time, or when the discretization is
- * modified as in crack propagation simulations,  this function creates fields whose    sudhakar 12/13
- * values at previous time step are not important
+ * modified as in crack propagation simulations,  this function creates fields whose
+ * values at previous time step are not important                             sudhakar 12/13
  *-------------------------------------------------------------------------------------------*/
 void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
 {
@@ -3785,6 +3829,10 @@ void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 /* Resize MStep Object due to time adaptivity in FSI                    */
 void STR::TimInt::ResizeMStepTimAda()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // resize time and stepsize fields
   time_->Resize(-1, 0, (*time_)[0]);
   dt_->Resize(-1, 0, (*dt_)[0]);

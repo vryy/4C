@@ -46,22 +46,27 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
 /*----------------------------------------------------------------------*
  | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar = false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+  returnvar =
+      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+
+  return returnvar;
 }
 
 
 /*----------------------------------------------------------------------*
  | Setup this specific object                               rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
@@ -69,12 +74,25 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup(const Epetra_Comm& comm,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar = false;
+
   // call standard setup
-  Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+  returnvar =
+      Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
 
   // get pointer poroelast-scatra interaction subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
+  return returnvar;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | Initialize this class                                    rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup()
+{
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
@@ -127,6 +145,9 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::UpdateAndOutput()
  *----------------------------------------------------------------------*/
 bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::ConvergenceCheck(int itnum)
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
 
   // convergence check based on the scalar increment
   bool stopnonliniter = false;

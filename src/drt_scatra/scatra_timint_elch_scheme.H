@@ -3,6 +3,7 @@
 
 \brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
         elch-specific implementation (class ScaTraTimIntElch)
+\level 2
 
 <pre>
 \maintainer Rui Fang
@@ -43,7 +44,10 @@ public:
   virtual ~ScaTraTimIntElchOST();
 
   //! initialize time integration scheme
-  void Init();
+  virtual void Init();
+
+  //! setup time integration scheme
+  virtual void Setup();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
@@ -94,6 +98,9 @@ public:
   //! initialize time integration scheme
   void Init();
 
+  //! setup time integration scheme
+  virtual void Setup();
+
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
@@ -140,6 +147,9 @@ public:
   //! initialize time integration scheme
   void Init();
 
+  //! setup time integration scheme
+  virtual void Setup();
+
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
@@ -182,6 +192,9 @@ public:
 
   //! initialize time integration scheme
   void Init();
+
+  //! setup time integration scheme
+  virtual void Setup();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.

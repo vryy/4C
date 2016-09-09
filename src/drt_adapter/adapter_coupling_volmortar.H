@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file adapter_coupling_volmortar.H
 
+\brief adapter for the volmortar framework
+
+\level 2
+
 <pre>
 \maintainer Philipp Farah
             farah@lnm.mw.tum.de
@@ -61,16 +65,35 @@ namespace ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Setup(Teuchos::RCP<DRT::Discretization> dis1,
+    void Init(Teuchos::RCP<DRT::Discretization> dis1,
                Teuchos::RCP<DRT::Discretization> dis2,
                std::vector<int>* coupleddof12 = NULL,
                std::vector<int>* coupleddof21 = NULL,
                std::pair<int,int>* dofsets12 = NULL,
                std::pair<int,int>* dofsets21 = NULL,
                Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
-               bool redistribute=true,
                bool createauxdofs = true
                );
+
+    /*!
+    \brief Setup this class
+
+    */
+    void Setup();
+
+    /*!
+    \brief Redistribute discretizations to meet needs of volmortar coupling
+
+    \note Call this method in your global control algorithm inbetween \ref Init()
+          and \ref Setup(), in case you need parallel redistribution
+
+
+    \date   09/16
+    \author rauch
+
+    */
+    void Redistribute();
+
 
     /*!
     \brief Get coupling matrices for field 1 and 2
@@ -167,21 +190,42 @@ namespace ADAPTER
     /// check setup call
     const bool& IsSetup() const { return issetup_; };
 
+    /// check setup call
+    const bool& IsInit() const { return isinit_; };
+
     /// check init and setup call
     void CheckSetup() const
     {
-      if ( !IsSetup())
+      if ( not IsSetup())
+        dserror("ERROR: Call Setup() first!");
+    }
+
+    /// check init and setup call
+    void CheckInit() const
+    {
+      if ( not IsInit())
         dserror("ERROR: Call Setup() first!");
     }
 
   private:
-    bool                               issetup_;  ///< check for setup
+
+    bool issetup_;  ///< check for setup
+    bool isinit_;   ///< check for init
 
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1
     Teuchos::RCP<LINALG::SparseMatrix> P12_;     ///< global Mortar projection matrix P Omega_2 -> Omega_1
     Teuchos::RCP<LINALG::SparseMatrix> P21_;     ///< global Mortar projection matrix P Omega_1 -> Omega_2
+
+    Teuchos::RCP<DRT::Discretization> masterdis_;
+    Teuchos::RCP<DRT::Discretization> slavedis_;
+
+    std::vector<int>* coupleddof12_;
+    std::vector<int>* coupleddof21_;
+    std::pair<int,int>* dofsets12_;
+    std::pair<int,int>* dofsets21_;
+    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
   };
 }

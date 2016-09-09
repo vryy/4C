@@ -64,6 +64,12 @@ namespace FS3I
     /// destructor of base class
     virtual ~FS3I_Base(){};
 
+    /// initialize this class
+    virtual void Init();
+
+    /// setup this class
+    virtual void Setup();
+
     /// setup
     virtual void SetupSystem() = 0;
 
@@ -214,6 +220,38 @@ namespace FS3I
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> sibtransform_;
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fbitransform_;
     ///@}
+
+  private:
+
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+  protected:
+
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup()
+    {return issetup_;};
+
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit()
+    {return isinit_;};
+
+    //! check if \ref Setup() was called
+    void CheckIsSetup();
+
+    //! check if \ref Init() was called
+    void CheckIsInit();
+
+  public:
+
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
 
   };
 }

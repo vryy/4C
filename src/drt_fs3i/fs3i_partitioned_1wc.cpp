@@ -37,8 +37,27 @@ FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FS3I::PartFS3I_1WC::Init()
+{
+  FS3I::PartFS3I::Init();
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I_1WC::Setup()
+{
+  FS3I::PartFS3I::Setup();
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_1WC::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // prepare time loop
   fsi_->PrepareTimeloop();
   SetMeshDisp();
@@ -107,6 +126,9 @@ void FS3I::PartFS3I_1WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_1WC::PrepareTimeStep()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // set mesh displacement field for present time step
   SetMeshDisp();
 

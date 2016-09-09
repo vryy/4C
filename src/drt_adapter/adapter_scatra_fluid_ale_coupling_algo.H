@@ -4,9 +4,9 @@
 
 \brief Basis of all algorithms that perform a coupling between Navier-Stokes
        and (active or passive) scalar transport equations
-
+\level 2
 <pre>
-Maintainer: Georg Bauer
+\maintainer Georg Bauer
             bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -59,6 +59,12 @@ namespace ADAPTER
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraFluidAleCouplingAlgorithm();
 
+    /// setup
+    virtual void Setup();
+
+    /// init
+    virtual void Init();
+
     /// read restart data (pure virtual)
     virtual void ReadRestart(
         int step ///< step number where the calculation is continued
@@ -103,6 +109,9 @@ namespace ADAPTER
 
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP<Coupling>               fscoupfa_;
+
+    /// condition name
+    const std::string condname_;
 
   };
 

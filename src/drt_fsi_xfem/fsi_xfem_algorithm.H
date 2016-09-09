@@ -58,7 +58,7 @@ namespace FSI
   public:
 
     //! create using a Epetra_Comm
-    explicit AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
         const ADAPTER::FieldWrapper::Fieldtype type);
 
     //! virtual destructor to support polymorph destruction

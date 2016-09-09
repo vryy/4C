@@ -4,12 +4,12 @@
 \brief stationary time integration scheme for level-set problems (for coupled problems only)
        just a dummy
 
-<pre>
-Maintainer: Ursula Rasthofer
+\level 2
+
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -56,7 +56,7 @@ SCATRA::LevelSetTimIntStationary::~LevelSetTimIntStationary()
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 09/13 |
+ |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntStationary::Init()
 {
@@ -64,6 +64,27 @@ void SCATRA::LevelSetTimIntStationary::Init()
   // note: this order is important
   TimIntStationary::Init();
   LevelSetAlgorithm::Init();
+
+  if (myrank_==0)
+  {
+    std::cout << "\n*------------------------------------------------------------------------*" << std::endl;
+    std::cout << "|            stationary level set for coupled problems only              |" << std::endl;
+    std::cout << "*------------------------------------------------------------------------*\n" << std::endl;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  setup time integration                                  rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetTimIntStationary::Setup()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntStationary::Setup();
+  LevelSetAlgorithm::Setup();
 
   if (myrank_==0)
   {

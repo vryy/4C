@@ -75,7 +75,7 @@ ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
-  SetupStructure(prbdyn, sdyn, actdis);
+  CreateStructure(prbdyn, sdyn, actdis);
 }
 
 
@@ -87,7 +87,7 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupStructure(
+void ADAPTER::StructureBaseAlgorithm::CreateStructure(
   const Teuchos::ParameterList& prbdyn,
   const Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
@@ -106,7 +106,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
   case INPAR::STR::dyna_statmech :
-    SetupTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
+    CreateTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -117,7 +117,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
+void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
   const Teuchos::ParameterList& prbdyn,
   const Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
@@ -345,6 +345,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(prbdyn,*ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
+  // initialize the time integrator
+  tmpstr->Init(prbdyn,sdyn,*xparams,actdis,solver);
 
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
@@ -407,7 +409,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // create auxiliary time integrator, can be seen as a wrapper for tmpstr
   Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, prbdyn, sdyn, *xparams, *tap, tmpstr);
 
-  if (sta!=Teuchos::null)
+  if (sta!=Teuchos::null and tmpstr!= Teuchos::null)
   {
     switch (probtype)
     {
@@ -425,7 +427,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
         Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
             Teuchos::rcp(new StructureFSITimIntAda(sta, Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+        //strTeuchos::rcp_dynamic_cast<StructureFSITimIntAda>(fsiwrapperwithadaptivity)->GetStrTimIntPtr();
         structure_ = fsiwrapperwithadaptivity;
+        //structure_->GetStrTimIntPtr()-(prbdyn,sdyn,*xparams,actdis,solver);
         break;
       }
       default:
@@ -435,7 +439,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       }
     }
   }
-  else if (tmpstr != Teuchos::null)
+  else if (sta == Teuchos::null and tmpstr != Teuchos::null)
   {
     switch(probtype)
     {

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file acou_dyn.cpp
 \brief Main control routine for acoustic simulations
-
+\level 3
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -280,7 +280,21 @@ void acoustics_drt()
             dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
           // create instance of scalar transport basis algorithm (empty fluid discretization)
-          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
+              Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+                  scatradyn,
+                  scatradyn,
+                  DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+          // now we can call Setup() on the scatra time integrator
+          scatraonly->ScaTraField()->Init();
+
+          // now me may redistribute or ghost the scatra discretization
+
+          // only now we must call Init() on the scatra time integrator.
+          // all objects relying on the parallel distribution are
+          // created and pointers are set.
+          scatraonly->ScaTraField()->Setup();
 
           // set velocity field
           //(this is done only once. Time-dependent velocity fields are not supported)

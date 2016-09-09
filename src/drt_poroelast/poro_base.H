@@ -4,8 +4,10 @@
 
  \brief  Basis of all porous media algorithms
 
+ \level 2
+
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251

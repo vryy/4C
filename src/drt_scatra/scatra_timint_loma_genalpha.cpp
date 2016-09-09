@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_timint_loma_genalpha.cpp
+
 \brief Generalized-alpha time-integration scheme with extensions for
        loma problems
 
@@ -55,7 +56,7 @@ SCATRA::TimIntLomaGenAlpha::TimIntLomaGenAlpha(
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 12/13 |
+ |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaGenAlpha::Init()
 {
@@ -63,6 +64,19 @@ void SCATRA::TimIntLomaGenAlpha::Init()
   // note: this order is important
   TimIntGenAlpha::Init();
   ScaTraTimIntLoma::Init();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  setup time integration                                  rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntLomaGenAlpha::Setup()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntGenAlpha::Setup();
+  ScaTraTimIntLoma::Setup();
 
   return;
 }

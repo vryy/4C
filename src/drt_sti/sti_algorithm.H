@@ -4,8 +4,10 @@
 
 \brief monolithic algorithm for scatra-thermo interaction
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251

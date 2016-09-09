@@ -4,12 +4,13 @@
 
 \brief Base algorithm of Xfluid utilizing level set for cut
 
-<pre>
-Maintainer: Magnus Winter
+\level 3
+
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -49,6 +50,49 @@ namespace XFLUIDLEVELSET
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
+
+    /*! \brief Initialize this object
+
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
+
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Init();
+
+    /*! \brief Setup all class internal objects and members
+
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup();
 
     /// Two phase flow time loop
     void TimeLoop();
@@ -132,6 +176,9 @@ namespace XFLUIDLEVELSET
     std::vector<double> fsvelincnorm_;
     std::vector<double> fspressincnorm_;
     std::vector<double> fsphiincnorm_;
+
+    /// problem dynamic parameters
+    Teuchos::ParameterList prbdyn_;
 
   };
 

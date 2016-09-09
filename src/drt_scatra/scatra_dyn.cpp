@@ -111,7 +111,20 @@ void scatra_dyn(int restart)
         dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
+          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+              scatradyn,
+              scatradyn,
+              DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+      // now we can call Setup() on the scatra time integrator
+      scatraonly->ScaTraField()->Init();
+
+      // NOTE : At this point we may redistribute and/or
+      //        ghost our discretizations at will.
+
+      // now we must call Init()
+      scatraonly->ScaTraField()->Setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
@@ -234,7 +247,20 @@ void scatra_dyn(int restart)
         dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create a scalar transport algorithm instance
-      Teuchos::RCP<SCATRA::ScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::ScaTraAlgorithm(comm,scatradyn,fdyn,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<SCATRA::ScaTraAlgorithm> algo =
+          Teuchos::rcp(new SCATRA::ScaTraAlgorithm(
+              comm,
+              scatradyn,
+              fdyn,
+              "scatra",
+              DRT::Problem::Instance()->SolverParams(linsolvernumber))
+      );
+
+      // init algo (init fluid time integrator and scatra time integrator inside)
+      algo->Init();
+
+      // setup algo (setup fluid time integrator and scatra time integrator inside)
+      algo->Setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

@@ -1,6 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file pat_imagereconstruction.H
+\file pat_imagereconstruction.H
+
+\brief image reconstruction
+
+\level 3
 
 <pre>
 \maintainer Svenja Schoeder

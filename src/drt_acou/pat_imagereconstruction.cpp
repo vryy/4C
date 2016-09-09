@@ -1,6 +1,11 @@
 /*!----------------------------------------------------------------------
 \file pat_imagereconstruction.cpp
 
+
+\brief image reconstruction
+
+\level 3
+
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -3661,6 +3666,7 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
       scatraalgo_ = Teuchos::rcp(new SCATRA::TimIntStationary(scatra_discret_, scatrasolver_, scatraparams_, scatraextraparams_, scatraoutput_));
 
       scatraalgo_->Init();
+      scatraalgo_->Setup();
       scatraalgo_->SetVelocityField(1);
 
       scatraalgo_->TimeLoop();

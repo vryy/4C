@@ -78,9 +78,11 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize constraint manager
-  constrman_ = Teuchos::rcp(new UTILS::ConstrManager(dis,
-      disnp_ptr_,
-      DRT::Problem::Instance()->StructuralDynamicParams()));
+  constrman_ = Teuchos::rcp(new UTILS::ConstrManager());
+  constrman_->Init(dis,
+                   DRT::Problem::Instance()->StructuralDynamicParams());
+  constrman_->Setup(disnp_ptr_,
+                    DRT::Problem::Instance()->StructuralDynamicParams());
 
   // set flag
   issetup_ = true;

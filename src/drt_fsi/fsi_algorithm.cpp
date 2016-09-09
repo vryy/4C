@@ -95,6 +95,7 @@ void FSI::Algorithm::Setup()
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis));
      structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(structure->StructureField());
+     structure_->Setup();
 
      if(structure_ == Teuchos::null)
        dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");

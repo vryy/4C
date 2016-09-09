@@ -100,6 +100,7 @@ colequilibration_(
     ),
 slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters,"SLAVEONLY"))
 {
+  // empty constructor
   return;
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
 
@@ -1389,10 +1390,9 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 /*----------------------------------------------------------------------*
  | perform setup of scatra-scatra interface coupling         fang 10/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
+void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 {
-  // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+
 
   // extract scatra-scatra coupling conditions from discretization
   std::vector<DRT::Condition*> conditions(0,NULL);
@@ -1406,29 +1406,29 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
     switch(condition->GetInt("interface side"))
     {
-      case INPAR::S2I::side_slave:
-      {
-        if(slaveconditions_.find(condid) == slaveconditions_.end())
-          slaveconditions_.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
-        else
-          dserror("Cannot have multiple slave-side scatra-scatra interface coupling conditions with the same ID!");
-        break;
-      }
+    case INPAR::S2I::side_slave:
+    {
+      if(slaveconditions_.find(condid) == slaveconditions_.end())
+        slaveconditions_.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
+      else
+        dserror("Cannot have multiple slave-side scatra-scatra interface coupling conditions with the same ID!");
+      break;
+    }
 
-      case INPAR::S2I::side_master:
-      {
-        if(masterconditions.find(condid) == masterconditions.end())
-          masterconditions.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
-        else
-          dserror("Cannot have multiple master-side scatra-scatra interface coupling conditions with the same ID!");
-        break;
-      }
+    case INPAR::S2I::side_master:
+    {
+      if(masterconditions.find(condid) == masterconditions.end())
+        masterconditions.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
+      else
+        dserror("Cannot have multiple master-side scatra-scatra interface coupling conditions with the same ID!");
+      break;
+    }
 
-      default:
-      {
-        dserror("Invalid scatra-scatra interface coupling condition!");
-        break;
-      }
+    default:
+    {
+      dserror("Invalid scatra-scatra interface coupling condition!");
+      break;
+    }
     }
   }
 
@@ -1580,7 +1580,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           masterelements,
           slaveelements,
           scatratimint_->Discretization()->Comm()
-          );
+      );
 
       if(couplingtype_ != INPAR::S2I::coupling_nts_standard)
       {
@@ -1605,23 +1605,23 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
         // match slave-side and master-side elements at mortar interface
         switch(interface.SearchAlg())
         {
-          case INPAR::MORTAR::search_bfele:
-          {
-            interface.EvaluateSearchBruteForce(interface.SearchParam());
-            break;
-          }
+        case INPAR::MORTAR::search_bfele:
+        {
+          interface.EvaluateSearchBruteForce(interface.SearchParam());
+          break;
+        }
 
-          case INPAR::MORTAR::search_binarytree:
-          {
-            interface.EvaluateSearchBinarytree();
-            break;
-          }
+        case INPAR::MORTAR::search_binarytree:
+        {
+          interface.EvaluateSearchBinarytree();
+          break;
+        }
 
-          default:
-          {
-            dserror("Invalid search algorithm!");
-            break;
-          }
+        default:
+        {
+          dserror("Invalid search algorithm!");
+          break;
+        }
         }
 
         // evaluate normal vectors associated with slave-side nodes
@@ -1736,7 +1736,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
             INPAR::S2I::side_slave,
             Teuchos::null,
             INPAR::S2I::side_undefined
-            );
+        );
 
         // transform map of result vector
         Teuchos::RCP<Epetra_Vector>& islavenodeslumpedareas = islavenodeslumpedareas_[islavecondition->first];
@@ -1781,166 +1781,156 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
     switch(couplingtype_)
     {
-      case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
-      case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
+    case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
+    case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
+    case INPAR::S2I::coupling_mortar_condensed_petrov:
+    case INPAR::S2I::coupling_mortar_condensed_bubnov:
+    {
+      if(lmside_ == INPAR::S2I::side_slave)
+      {
+        D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+        M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+        if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
+          E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+      }
+      else
+      {
+        D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+        M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+        if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
+          E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+      }
+
+      // loop over all scatra-scatra coupling interfaces
+      for(std::map<const int,DRT::Condition* const>::iterator islavecondition=slaveconditions_.begin(); islavecondition!=slaveconditions_.end(); ++islavecondition)
+      {
+        // create parameter list for mortar integration cells
+        Teuchos::ParameterList params;
+
+        // set action
+        params.set<int>("action",INPAR::S2I::evaluate_mortar_matrices);
+
+        // evaluate mortar integration cells at current interface
+        EvaluateMortarCells(
+            imortarcells_[islavecondition->first],
+            icoupmortar_[islavecondition->first]->Interface()->Discret(),
+            params,
+            D_,
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+                lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+                    M_,
+                    lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+                        lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_master : INPAR::S2I::side_slave,
+                            E_,
+                            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+                                lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+                                    Teuchos::null,
+                                    INPAR::S2I::side_undefined,
+                                    INPAR::S2I::side_undefined,
+                                    Teuchos::null,
+                                    INPAR::S2I::side_undefined,
+                                    Teuchos::null,
+                                    INPAR::S2I::side_undefined
+        );
+      }
+
+      // finalize mortar matrices D, M, and E
+      D_->Complete();
+      if(lmside_ == INPAR::S2I::side_slave)
+        M_->Complete(*interfacemaps_->Map(2),*interfacemaps_->Map(1));
+      else
+        M_->Complete(*interfacemaps_->Map(1),*interfacemaps_->Map(2));
+      if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
+        E_->Complete();
+
+      switch(couplingtype_)
+      {
       case INPAR::S2I::coupling_mortar_condensed_petrov:
       case INPAR::S2I::coupling_mortar_condensed_bubnov:
       {
+        // set up mortar projector P
+        Teuchos::RCP<Epetra_Vector> D_diag(Teuchos::null);
         if(lmside_ == INPAR::S2I::side_slave)
+          D_diag = LINALG::CreateVector(*interfacemaps_->Map(1));
+        else
+          D_diag = LINALG::CreateVector(*interfacemaps_->Map(2));
+        if(D_->ExtractDiagonalCopy(*D_diag))
+          dserror("Couldn't extract main diagonal from mortar matrix D!");
+        if(D_diag->Reciprocal(*D_diag))
+          dserror("Couldn't invert main diagonal entries of mortar matrix D!");;
+        P_ = Teuchos::rcp(new LINALG::SparseMatrix(*M_));
+        if(P_->LeftScale(*D_diag))
+          dserror("Setup of mortar projector P failed!");
+
+        // free memory
+        D_ = Teuchos::null;
+        M_ = Teuchos::null;
+
+        if(couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
         {
-          D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
-          M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
-          if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
-            E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+          // set up mortar projector Q
+          Q_ = Teuchos::rcp(new LINALG::SparseMatrix(*E_));
+          if(Q_->LeftScale(*D_diag))
+            dserror("Setup of mortar projector Q failed!");
+
+          // free memory
+          E_ = Teuchos::null;
+        }
+
+        break;
+      }
+
+      case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
+      case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
+      {
+        // determine number of Lagrange multiplier dofs owned by each processor
+        const Epetra_Comm& comm(scatratimint_->Discretization()->Comm());
+        const int numproc(comm.NumProc());
+        const int mypid(comm.MyPID());
+        std::vector<int> localnumlmdof(numproc,0);
+        std::vector<int> globalnumlmdof(numproc,0);
+        if(lmside_ == INPAR::S2I::side_slave)
+          localnumlmdof[mypid] = interfacemaps_->Map(1)->NumMyElements();
+        else
+          localnumlmdof[mypid] = interfacemaps_->Map(2)->NumMyElements();
+        comm.SumAll(&localnumlmdof[0],&globalnumlmdof[0],numproc);
+
+        // for each processor, determine offset of minimum Lagrange multiplier dof GID w.r.t. maximum standard dof GID
+        int offset(0);
+        for(int ipreviousproc=0; ipreviousproc<mypid; ++ipreviousproc)
+          offset += globalnumlmdof[ipreviousproc];
+
+        // for each processor, determine Lagrange multiplier dof GIDs
+        std::vector<int> lmdofgids(globalnumlmdof[mypid],0);
+        for(int lmdoflid=0; lmdoflid<globalnumlmdof[mypid]; ++lmdoflid)
+          lmdofgids[lmdoflid] = scatratimint_->DofRowMap()->MaxAllGID()+1+offset+lmdoflid;
+
+        // build Lagrange multiplier dofrowmap
+        const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::rcp(new Epetra_Map(-1,(int) lmdofgids.size(),&lmdofgids[0],0,comm));
+
+        // initialize vectors associated with Lagrange multiplier dofs
+        lm_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+        lmresidual_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+        lmincrement_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+
+        // initialize extended map extractor
+        Teuchos::RCP<Epetra_Map> extendedmap = LINALG::MergeMap(*(scatratimint_->Discretization()->DofRowMap()),*lmdofrowmap,false);
+        extendedmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*extendedmap,lmdofrowmap,scatratimint_->Discretization()->DofRowMap()));
+        extendedmaps_->CheckForValidMapExtractor();
+
+        // transform range map of mortar matrices D and M from slave-side dofrowmap to Lagrange multiplier dofrowmap
+        D_ = MORTAR::MatrixRowTransformGIDs(D_,lmdofrowmap);
+        M_ = MORTAR::MatrixRowTransformGIDs(M_,lmdofrowmap);
+
+        if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov)
+        {
+          // transform domain map of mortar matrix D from slave-side dofrowmap to Lagrange multiplier dofrowmap and store transformed matrix as mortar matrix E
+          E_ = MORTAR::MatrixColTransformGIDs(D_,lmdofrowmap);
         }
         else
         {
-          D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-          M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-          if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
-            E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-        }
-
-        // loop over all scatra-scatra coupling interfaces
-        for(std::map<const int,DRT::Condition* const>::iterator islavecondition=slaveconditions_.begin(); islavecondition!=slaveconditions_.end(); ++islavecondition)
-        {
-          // create parameter list for mortar integration cells
-          Teuchos::ParameterList params;
-
-          // set action
-          params.set<int>("action",INPAR::S2I::evaluate_mortar_matrices);
-
-          // evaluate mortar integration cells at current interface
-          EvaluateMortarCells(
-              imortarcells_[islavecondition->first],
-              icoupmortar_[islavecondition->first]->Interface()->Discret(),
-              params,
-              D_,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-              M_,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_master : INPAR::S2I::side_slave,
-              E_,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-              lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-              Teuchos::null,
-              INPAR::S2I::side_undefined,
-              INPAR::S2I::side_undefined,
-              Teuchos::null,
-              INPAR::S2I::side_undefined,
-              Teuchos::null,
-              INPAR::S2I::side_undefined
-              );
-        }
-
-        // finalize mortar matrices D, M, and E
-        D_->Complete();
-        if(lmside_ == INPAR::S2I::side_slave)
-          M_->Complete(*interfacemaps_->Map(2),*interfacemaps_->Map(1));
-        else
-          M_->Complete(*interfacemaps_->Map(1),*interfacemaps_->Map(2));
-        if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov or couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
-          E_->Complete();
-
-        switch(couplingtype_)
-        {
-          case INPAR::S2I::coupling_mortar_condensed_petrov:
-          case INPAR::S2I::coupling_mortar_condensed_bubnov:
-          {
-            // set up mortar projector P
-            Teuchos::RCP<Epetra_Vector> D_diag(Teuchos::null);
-            if(lmside_ == INPAR::S2I::side_slave)
-              D_diag = LINALG::CreateVector(*interfacemaps_->Map(1));
-            else
-              D_diag = LINALG::CreateVector(*interfacemaps_->Map(2));
-            if(D_->ExtractDiagonalCopy(*D_diag))
-              dserror("Couldn't extract main diagonal from mortar matrix D!");
-            if(D_diag->Reciprocal(*D_diag))
-              dserror("Couldn't invert main diagonal entries of mortar matrix D!");;
-            P_ = Teuchos::rcp(new LINALG::SparseMatrix(*M_));
-            if(P_->LeftScale(*D_diag))
-              dserror("Setup of mortar projector P failed!");
-
-            // free memory
-            D_ = Teuchos::null;
-            M_ = Teuchos::null;
-
-            if(couplingtype_ == INPAR::S2I::coupling_mortar_condensed_bubnov)
-            {
-              // set up mortar projector Q
-              Q_ = Teuchos::rcp(new LINALG::SparseMatrix(*E_));
-              if(Q_->LeftScale(*D_diag))
-                dserror("Setup of mortar projector Q failed!");
-
-              // free memory
-              E_ = Teuchos::null;
-            }
-
-            break;
-          }
-
-          case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
-          case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
-          {
-            // determine number of Lagrange multiplier dofs owned by each processor
-            const Epetra_Comm& comm(scatratimint_->Discretization()->Comm());
-            const int numproc(comm.NumProc());
-            const int mypid(comm.MyPID());
-            std::vector<int> localnumlmdof(numproc,0);
-            std::vector<int> globalnumlmdof(numproc,0);
-            if(lmside_ == INPAR::S2I::side_slave)
-              localnumlmdof[mypid] = interfacemaps_->Map(1)->NumMyElements();
-            else
-              localnumlmdof[mypid] = interfacemaps_->Map(2)->NumMyElements();
-            comm.SumAll(&localnumlmdof[0],&globalnumlmdof[0],numproc);
-
-            // for each processor, determine offset of minimum Lagrange multiplier dof GID w.r.t. maximum standard dof GID
-            int offset(0);
-            for(int ipreviousproc=0; ipreviousproc<mypid; ++ipreviousproc)
-              offset += globalnumlmdof[ipreviousproc];
-
-            // for each processor, determine Lagrange multiplier dof GIDs
-            std::vector<int> lmdofgids(globalnumlmdof[mypid],0);
-            for(int lmdoflid=0; lmdoflid<globalnumlmdof[mypid]; ++lmdoflid)
-              lmdofgids[lmdoflid] = scatratimint_->DofRowMap()->MaxAllGID()+1+offset+lmdoflid;
-
-            // build Lagrange multiplier dofrowmap
-            const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::rcp(new Epetra_Map(-1,(int) lmdofgids.size(),&lmdofgids[0],0,comm));
-
-            // initialize vectors associated with Lagrange multiplier dofs
-            lm_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
-            lmresidual_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
-            lmincrement_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
-
-            // initialize extended map extractor
-            Teuchos::RCP<Epetra_Map> extendedmap = LINALG::MergeMap(*(scatratimint_->Discretization()->DofRowMap()),*lmdofrowmap,false);
-            extendedmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*extendedmap,lmdofrowmap,scatratimint_->Discretization()->DofRowMap()));
-            extendedmaps_->CheckForValidMapExtractor();
-
-            // transform range map of mortar matrices D and M from slave-side dofrowmap to Lagrange multiplier dofrowmap
-            D_ = MORTAR::MatrixRowTransformGIDs(D_,lmdofrowmap);
-            M_ = MORTAR::MatrixRowTransformGIDs(M_,lmdofrowmap);
-
-            if(couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov)
-            {
-              // transform domain map of mortar matrix D from slave-side dofrowmap to Lagrange multiplier dofrowmap and store transformed matrix as mortar matrix E
-              E_ = MORTAR::MatrixColTransformGIDs(D_,lmdofrowmap);
-            }
-            else
-            {
-              // transform domain and range maps of mortar matrix E from slave-side dofrowmap to Lagrange multiplier dofrowmap
-              E_ = MORTAR::MatrixRowColTransformGIDs(E_,lmdofrowmap,lmdofrowmap);
-            }
-
-            break;
-          }
-
-          default:
-          {
-            dserror("Invalid type of mortar meshtying!");
-            break;
-          }
+          // transform domain and range maps of mortar matrix E from slave-side dofrowmap to Lagrange multiplier dofrowmap
+          E_ = MORTAR::MatrixRowColTransformGIDs(E_,lmdofrowmap,lmdofrowmap);
         }
 
         break;
@@ -1948,9 +1938,19 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
       default:
       {
-        // do nothing
+        dserror("Invalid type of mortar meshtying!");
         break;
       }
+      }
+
+      break;
+    }
+
+    default:
+    {
+      // do nothing
+      break;
+    }
     }
 
     break;
@@ -1995,7 +1995,19 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     invcolsums_ = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->DofRowMap(),false));
 
   return;
-} // SCATRA::MeshtyingStrategyS2I::InitMeshtying
+} // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
+
+
+/*----------------------------------------------------------------------*
+ | perform setup of scatra-scatra interface coupling         fang 10/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
+{
+  // instantiate strategy for Newton-Raphson convergence check
+  InitConvCheckStrategy();
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------------------*

@@ -115,7 +115,7 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual void Setup(const Epetra_Comm& comm,
+  virtual bool Init(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
@@ -123,12 +123,26 @@ public:
       const std::string scatra_disname);
 
   /*!
-  \brief Setup discretizations and dofsets
+  \brief Init vectors and pointers
 
-   Fill discretizations and setup coupling object \ref ssicoupling_
+   Initializes members.
 
   \note Must only be called after parallel (re-)distribution of discretizations is finished !
         Otherwise, vectors may have wrong maps.
+
+  \warning none
+  \return void
+  \date 08/16
+  \author rauch
+  */
+  virtual void Setup();
+
+  /*!
+  \brief Setup discretizations and dofsets
+
+     Init coupling object \ref ssicoupling_ and
+     other possible coupling objects in derived
+     classes.
 
   \warning Parallel redistribution inside !
 
@@ -136,7 +150,24 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual void SetupDiscretizationsAndFieldCoupling(
+  virtual bool InitFieldCoupling(
+      const Epetra_Comm& comm,
+      const std::string& struct_disname,
+      const std::string& scatra_disname);
+
+  /*!
+  \brief Setup discretizations
+
+   Clone ale discretization.
+
+  \note Must be called before parallel redistribution. Otherwise, the ale discretization
+        has no elements.
+
+  \return void
+  \date 08/16
+  \author rauch
+  */
+  virtual void InitDiscretizations(
       const Epetra_Comm& comm,
       const std::string& struct_disname,
       const std::string& scatra_disname);
@@ -228,9 +259,6 @@ protected:
 
 
 private:
-
-  //! number of dofset associated with displacement dofs
-  int nds_disp_;
 
   //! relaxation parameter
   double omega_;

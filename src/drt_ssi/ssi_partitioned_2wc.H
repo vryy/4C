@@ -32,25 +32,62 @@ namespace SSI
     //!virtual destructor
     virtual ~SSI_Part2WC(){};
 
-    /*!
-    \brief Setup this object
+    /*! \brief Initialize this object
 
-     Initializes members and performs problem specific setup.
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
 
-    \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, vectors may have wrong maps.
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
 
     \warning none
-    \return void
+    \return bool
     \date 08/16
-    \author rauch
-    */
-    virtual void Setup(const Epetra_Comm& comm,
+    \author rauch  */
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
+
+    /*! \brief Setup all class internal objects and members
+
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup();
+
+    /*! \brief Initialize discretizations
+
+    \date 08/16
+    \author rauch  */
+    virtual void InitDiscretizations(
+        const Epetra_Comm& comm,
+        const std::string& struct_disname,
+        const std::string& scatra_disname);
 
     //!full time loop
     virtual void Timeloop();
@@ -127,7 +164,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -170,7 +207,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -212,7 +249,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -255,7 +292,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,

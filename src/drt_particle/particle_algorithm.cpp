@@ -220,6 +220,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
           Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(particledyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
       structure_ = structure->StructureField();
+      structure_->Setup();
 
       // add particle walls
       SetupParticleWalls(structdis);

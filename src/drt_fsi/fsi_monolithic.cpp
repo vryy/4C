@@ -119,6 +119,7 @@ void FSI::MonolithicBase::CreateStructureTimeIntegrator(
           const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(
       structure->StructureField());
+  structure_->Setup();
 
   if (structure_ == Teuchos::null)
     dserror("Cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper "

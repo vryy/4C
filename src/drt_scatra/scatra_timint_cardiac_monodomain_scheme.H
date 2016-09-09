@@ -45,8 +45,8 @@ public:
   //! Destructor
   virtual ~TimIntCardiacMonodomainOST();
 
-  //! initialize time integration scheme
-  virtual void Init();
+  //! setup time integration scheme
+  virtual void Setup();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
@@ -86,8 +86,8 @@ public:
   //! Destructor
   virtual ~TimIntCardiacMonodomainBDF2();
 
-  //! initialize time integration scheme
-  virtual void Init();
+  //! setup time integration scheme
+  virtual void Setup();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
@@ -124,8 +124,8 @@ public:
   //! Destructor
   virtual ~TimIntCardiacMonodomainGenAlpha();
 
-  //! initialize time integration scheme
-  virtual void Init();
+  //! Setup time integration scheme
+  virtual void Setup();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.

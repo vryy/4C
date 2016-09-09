@@ -62,7 +62,19 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   : FS3I_Base(),
     comm_(comm)
 {
-  if(comm.MyPID()==0)
+  // keep empty
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Init                                                    rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::PartFPS3I::Init()
+{
+  FS3I::FS3I_Base::Init();
+
+  if(comm_.MyPID()==0)
   {
     //##################       0.- Warning          //#########################
     std::cout<<std::endl;
@@ -98,7 +110,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   //##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called inside)     //##################
   Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
 
-  fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams,poroelastdynparams);
+  fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams,poroelastdynparams);
 
   //only monolithic coupling of fpsi problem is supported!
   int coupling = DRT::INPUT::IntegralValue<int>(fpsidynparams,"COUPALGO");
@@ -217,8 +229,25 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver1number),"scatra1",true));
+
+  // now we can call Init() on the scatra time integrator
+  fluidscatra->ScaTraField()->Init();
+
+  // only now we must call Setup() on the scatra time integrator.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  fluidscatra->ScaTraField()->Setup();
+
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver2number),"scatra2",true));
+
+
+
+  // only now we must call Init() on the scatra time integrator.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  structscatra->ScaTraField()->Init();
+
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -268,6 +297,18 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   if (scatravec_[0]->ScaTraField()->IsIncremental() == false)
     dserror("Incremental formulation required for partitioned FS3I computations!");
 
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Setup                                                   rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::PartFPS3I::Setup()
+{
+  FS3I::FS3I_Base::Setup();
+
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
   // discretizations and definition of the permeability coefficient
@@ -287,8 +328,8 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   }
   fpsi_->SetConductivity(myconduct);
 
+  return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Restart                                               hemmler 07/14 |

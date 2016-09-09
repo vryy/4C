@@ -4,6 +4,8 @@
 
 \brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar transport problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -180,6 +182,7 @@ void MAT::ScatraMatMultiScaleGP::Init()
     // instantiate and initialize micro-scale time integrator
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(microdis,solver,sdyn_micro,extraparams,Teuchos::null,microdisnum_));
     microdisnum_microtimint_map_[microdisnum_]->Init();
+    microdisnum_microtimint_map_[microdisnum_]->Setup();
 
     // set initial velocity field
     microdisnum_microtimint_map_[microdisnum_]->SetVelocityField(1);

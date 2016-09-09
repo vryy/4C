@@ -2,9 +2,10 @@
 /*!
 \file strtimint_ab2.cpp
 \brief Structural time integration with Adams-Bashforth 2nd order (explicit)
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -55,12 +56,47 @@ STR::TimIntAB2::TimIntAB2
   fcmtn_(Teuchos::null),
   frimpn_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntAB2::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntExpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+
+
   // info to user
   if (myrank_ == 0)
   {
     std::cout << "with Adams-Bashforth 2nd order"
               << std::endl;
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntAB2::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntExpl::Setup();
+
 
   // determine mass, damping and initial accelerations
   DetermineMassDampConsistAccel();
@@ -77,6 +113,7 @@ STR::TimIntAB2::TimIntAB2
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
@@ -99,6 +136,10 @@ void STR::TimIntAB2::ResizeMStep()
 /* Integrate step */
 int STR::TimIntAB2::IntegrateStep()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // things to be done before integrating
   PreSolve();
 

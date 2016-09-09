@@ -198,11 +198,23 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // Initialization of Biofilm specific stuff
   scfldgrdisp_(Teuchos::null),
   scstrgrdisp_(Teuchos::null),
-  outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC"))
+  outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC")),
+  issetup_(false),
+  isinit_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ |  initialize time integration                               rauch 09/16 |
+ *------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Init()
+{
+  SetIsSetup(false);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -220,15 +232,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
   }
 
-  return;
-}
-
-
-/*------------------------------------------------------------------------*
- |  initialize time integration                           rasthofer 09/13 |
- *------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Init()
-{
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
   // -------------------------------------------------------------------
@@ -254,7 +257,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // determine number of degrees of freedom and transported scalars per node
   // -----------------------------------------------------------------------
   CreateScalarHandler();
-  scalarhandler_->Init(this);
 
   // -------------------------------------------------------------------
   // check compatibility of boundary conditions
@@ -278,16 +280,40 @@ void SCATRA::ScaTraTimIntImpl::Init()
     dserror("Scatra-scatra interface coupling only working for incremental solve so far!\n"
         "Set the parameter SOLVERTYPE in SCALAR TRANSPORT DYNAMIC section to 'nonlinear' or 'linear_incremental'!");
 
+  // create strategy
   CreateMeshtyingStrategy();
 
   // initialize strategy
   strategy_->InitMeshtying();
+
+  // we have successfully initialized this class
+  SetIsInit(true);
+  return;
+}// ScaTraTimIntImpl::Init()
+
+
+/*------------------------------------------------------------------------*
+ |  initialize time integration                           rasthofer 09/13 |
+ *------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Setup()
+{
+  // we have to call Init() first
+  CheckIsInit();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // initialize the scalar handler
+  if(scalarhandler_ == Teuchos::null)
+    dserror("Make sure you construct the scalarhandler_ in initialization.");
+  else
+    scalarhandler_->Init(this);
+
+  // setup strategy
+  strategy_->SetupMeshtying();
 
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
@@ -307,7 +333,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
 
   // phi at nodes for meshfree non-interpolatory basis functions
   Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
-    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
+  = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
   if (meshfreediscret!=Teuchos::null)
     phiatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -333,7 +359,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
+        Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -376,8 +402,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
     std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
     while (mystream >> word1)
 
-    // get desired scalar id's for flux output
-    writefluxids_->push_back(word1);
+      // get desired scalar id's for flux output
+      writefluxids_->push_back(word1);
 
     // default value (-1): flux is written for all dof's
     // scalar transport: numdofpernode_ = numscal_
@@ -395,11 +421,11 @@ void SCATRA::ScaTraTimIntImpl::Init()
     // screen output
     if(myrank_ == 0)
     {
-      IO::cout << "Flux output is performed for scalars: ";
+      IO::cout << "Flux output is performed for "<<writefluxids_->size()<<" scalars: ";
       for (unsigned int i=0; i < writefluxids_->size();i++)
       {
         const int id = (*writefluxids_)[i];
-        IO::cout << (*writefluxids_)[i] << " ";
+        IO::cout << id << " ";
         if ((id<1) or (id > NumDofPerNode())) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
@@ -503,8 +529,10 @@ void SCATRA::ScaTraTimIntImpl::Init()
   if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS") and nsd_ > 1)
     dserror("Spherical coordinates only available for 1D problems!");
 
+  // we have successfully set up this class
+  SetIsSetup(true);
   return;
-} // ScaTraTimIntImpl::Init()
+} // ScaTraTimIntImpl::Setup()
 
 
 /*----------------------------------------------------------------------*
@@ -1302,6 +1330,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
@@ -1352,6 +1384,10 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Solve()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // -----------------------------------------------------------------
   // intermediate solution step for homogeneous isotropic turbulence
   // -----------------------------------------------------------------
@@ -2250,7 +2286,7 @@ void SCATRA::ScaTraTimIntImpl::CreateScalarHandler()
   scalarhandler_ = Teuchos::rcp(new ScalarHandler());
 
   return;
-} // ScaTraTimIntImpl::CreateMeshtyingStrategy
+} // ScaTraTimIntImpl::CreateScalarHandler
 
 
 /*----------------------------------------------------------------------*
@@ -2477,6 +2513,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateStructSolutionDependingConditions(Teuchos
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 {
+  // safety check
+  CheckIsInit();
+  CheckIsSetup();
+
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
 
@@ -2614,6 +2654,10 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::LinearSolve()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // -------------------------------------------------------------------
   //                        output to screen
   // -------------------------------------------------------------------
@@ -2691,6 +2735,10 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
 
@@ -3073,3 +3121,16 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling
+
+
+/*-----------------------------------------------------------------------------*
+ |  check if class is initialized                                  rauch 09/16 |
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CheckIsInit()
+{ if(not IsInit()) dserror("ScaTraTimIntImpl is not initialized. Call Init() first.");}
+
+/*-----------------------------------------------------------------------------*
+ |  check if class is set up                                       rauch 09/16 |
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CheckIsSetup()
+{ if(not IsSetup()) dserror("ScaTraTimIntImpl is not set up. Call Setup() first.");}

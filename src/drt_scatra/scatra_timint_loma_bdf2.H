@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_loma_bdf2.H
-\brief
 
-<pre>
+\brief bdf2 time-integration scheme with extensions for loma problems
+
+\level 2
+
 \maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -42,6 +43,9 @@ public:
 
   /// initialize time integration scheme
   virtual void Init();
+
+  /// setup time integration scheme
+  virtual void Setup();
 
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   void PredictThermPressure();

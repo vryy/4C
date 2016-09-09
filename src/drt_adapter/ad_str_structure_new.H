@@ -45,6 +45,12 @@ namespace ADAPTER {
     /// virtual to get polymorph destruction
     virtual ~StructureNew() {};
 
+    /// @name Temporary
+    ///@{
+    /// ToDo Remove as soon as old structure is deleted
+    virtual void Setup(){};
+    ///@}
+
     /// @name Vector access
     ///@{
     /// initial guess of Newton's method

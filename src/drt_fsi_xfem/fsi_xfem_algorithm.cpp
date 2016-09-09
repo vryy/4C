@@ -59,8 +59,10 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     // ask base algorithm for the structural time integrator
     // access the structural discretization
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(structure->StructureField(), ADAPTER::StructurePoroWrapper::type_StructureField,true));
+    structureporo_ -> StructureField() ->Setup();
   }
   else if (type == ADAPTER::StructurePoroWrapper::type_PoroField)
   {
@@ -68,6 +70,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams(); // access the problem-specific parameter list
     structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(Teuchos::rcp(new POROELAST::Monolithic(comm,poroelastdyn)), ADAPTER::StructurePoroWrapper::type_PoroField, true));
     structureporo_->PoroField()->SetupNewton(); //just to avoid modifications in poro (this sets iterinc_ there)
+    structureporo_ -> StructureField() ->Setup();
   }
   else
     dserror("AlgorithmXFEM cannot handle this Fieldtype for structure!");

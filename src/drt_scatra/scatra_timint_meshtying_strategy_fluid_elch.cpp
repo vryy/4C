@@ -3,12 +3,14 @@
 
 \brief Fluid-fluid meshtying strategy for electrochemistry problems
 
-<pre>
-Maintainer: Rui Fang
+\brief Fluid-fluid meshtying strategy for electrochemistry problems
+
+\level 2
+
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_fluid_elch.H"
@@ -37,10 +39,11 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
   if (DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),"MESHTYING") == INPAR::FLUID::condensed_bmat_merged and ElchTimInt()->EquPot() == INPAR::ELCH::equpot_enc)
     dserror("In the context of meshtying, the ion-transport system including the electroneutrality condition cannot be solved in a block matrix!");
 
+  // call setup in base class
   SCATRA::MeshtyingStrategyFluid::InitMeshtying();
 
   return;
-} // SCATRA::MeshtyingStrategyFluidElch::InitMeshtying
+} // SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying
 
 
 /*------------------------------------------------------------------------------------*

@@ -92,7 +92,10 @@ class MeshtyingStrategyBase
     //! include Dirichlet conditions into condensation
     virtual void IncludeDirichletInCondensation() const {return;};
 
-    //! initialize meshtying objects
+    //! setup meshtying objects
+    virtual void SetupMeshtying() = 0;
+
+    //! init meshtying objects
     virtual void InitMeshtying() = 0;
 
     //! initialize system matrix

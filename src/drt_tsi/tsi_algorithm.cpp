@@ -4,9 +4,9 @@
 
 \brief  Basis of all TSI algorithms that perform a coupling between the linear
         momentum equation and the heat conduction equation
-
+\level 2
 <pre>
-   Maintainer: Alexander Seitz
+  \maintainer  Alexander Seitz
                seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15271
@@ -65,8 +65,12 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy= Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy() );
-    //setup projection matrices
-    volcoupl_->Setup(structdis,thermodis,NULL,NULL,NULL,NULL,materialstrategy);
+    // init coupling adapter projection matrices
+    volcoupl_->Init(structdis,thermodis,NULL,NULL,NULL,NULL,materialstrategy);
+    // redistribute discretizations to meet needs of volmortar coupling
+    volcoupl_->Redistribute();
+    // setup projection matrices
+    volcoupl_->Setup();
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -74,6 +78,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure
     = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = structure->StructureField();
+  structure_->Setup();
 
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
     = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),thermodis));

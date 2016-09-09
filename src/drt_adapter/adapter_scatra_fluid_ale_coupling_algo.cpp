@@ -4,9 +4,9 @@
 
 \brief Basis of all algorithms that perform a coupling between Navier-Stokes
        and scalar transport equations including deforming meshes
-
+\level 2
 <pre>
-Maintainer: Georg Bauer
+\maintainer Georg Bauer
             bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -30,11 +30,37 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
     const Teuchos::ParameterList& solverparams
 )
 :  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true, "scatra", solverparams), // yes, we need the ALE formulation
-   AleBaseAlgorithm(prbdyn, DRT::Problem::Instance()->GetDis("ale")) // construct ale base algorithm as well
+   AleBaseAlgorithm(prbdyn, DRT::Problem::Instance()->GetDis("ale")), // construct ale base algorithm as well
+   condname_(condname)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  // keep constructor empty
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| Setup                                                     rauch 08/16 |
+*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init()
+{
+  // call Init() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
   ale_ = Teuchos::rcp_dynamic_cast<AleFluidWrapper>(AleBaseAlgorithm::AleField(), true);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| Init                                                      rauch 08/16 |
+*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
+{
+  // call Setup() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+
+  const int ndim = DRT::Problem::Instance()->NDim();
 
    // set up couplings
   icoupfa_ = Teuchos::rcp(new Coupling());
@@ -42,7 +68,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
                                    FluidField()->Interface()->FSICondMap(),
                                    *AleField()->Discretization(),
                                    AleField()->Interface()->FSICondMap(),
-                                   condname,
+                                   condname_,
                                    ndim);
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
@@ -69,7 +95,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
   // the ale matrix might be build just once!
   AleField()->CreateSystemMatrix(AleField()->Interface());
 
-   return;
+  return;
 }
 
 

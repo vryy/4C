@@ -44,6 +44,10 @@
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_scatra/scatra_dyn.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_heterogeneous_reaction_strategy.H"
+#include "../drt_ssi/ssi_utils.H"
+#include "../drt_lib/drt_dofset_merged_proxy.H"
 
 void immersed_problem_drt()
 {
@@ -296,14 +300,19 @@ void CellMigrationControlAlgorithm()
     }
   }
 
-  // assign degrees of freedom, initialize elements and do boundary conditions on cell
-  problem->GetDis("cell")->FillComplete(true,true,true);
-
   // pointer to field cell structure
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure = Teuchos::null;
 
   // pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
+
+  // assign degrees of freedom, initialize elements and do boundary conditions on cell
+  // in case of parallel simulation FillComplete is called in CreateBinning
+  if(comm.MyPID()==0)
+  {
+    problem->GetDis("cell")->FillComplete(true,true,true);
+    problem->GetDis("cellscatra")->FillComplete(true,true,true);
+  }
 
   // check if cell is supposed to have intracellular biochchemical signaling capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
@@ -326,22 +335,43 @@ void CellMigrationControlAlgorithm()
       break;
     }
 
-    // parallel redistribution may happen inside
-    cellscatra_subproblem->SetupDiscretizationsAndFieldCoupling(comm,"cell","cellscatra");
-    // ghost cellscatra on each proc (for search algorithm)
-    if(comm.NumProc() > 1)
-    {
-      // fill complete inside
-      CreateGhosting(problem->GetDis("cellscatra"));
-    }
-    // parallel redistriution is finished. It is time to call setup.
-    cellscatra_subproblem->Setup(comm,
+    // It is time to call setup.
+    // "ale" dis is cloned and filled inside.
+    // SSI coupling object is built inside.
+    bool redistribute = false;
+    cellscatra_subproblem->Init(comm,
         problem->CellMigrationParams(),
         problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
         problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
         "cell",
         "cellscatra");
 
+    if(redistribute)
+    {
+      // redistribute elements (ssi coupling object for matching volume and boundary relies on this)
+      std::vector<Teuchos::RCP<DRT::Discretization> > discretizationstobebinned;
+      discretizationstobebinned.push_back(problem->GetDis("cell"));
+      discretizationstobebinned.push_back(problem->GetDis("cellscatra"));
+      discretizationstobebinned.push_back(problem->GetDis("ale"));
+
+      SSI::Utils::RedistributeDiscretizationsByBinning(discretizationstobebinned);
+    }
+
+    // ghost cell discretizations on each proc (for search algorithm)
+    if(comm.NumProc() > 1)
+    {
+      // fill complete inside
+      CreateGhosting(problem->GetDis("cell"));
+      CreateGhosting(problem->GetDis("cellscatra"));
+      CreateGhosting(problem->GetDis("ale"));
+    }
+
+    // parallel redistriution is finished. Let us call Setup()
+    // here all state vectors are constructed.
+    // now we are sure, that all maps fit the actual distribution.
+    cellscatra_subproblem->Setup();
+
+    // set pointer to adapter
     cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField(),true);
 
     if(comm.MyPID()==0)
@@ -350,25 +380,27 @@ void CellMigrationControlAlgorithm()
   }
   else // cell has no intracellular biochemistry -> just create usual structure
   {
+    // construct base algorithm ( time integrator is initiaized inside)
     cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
                                                                      problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
                                                                      problem->GetDis("cell")))
                                                               ->StructureField(),true);
 
+    cellstructure->Setup();
+
     if(comm.MyPID()==0)
       std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
+
+    if(comm.NumProc() > 1)
+    {
+      // fill complete inside
+      CreateGhosting(problem->GetDis("cell"));
+    }
   }
 
   // set pointer to structure inside SSI subproblem
   if(cellstructure==Teuchos::null)
     dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
-
-  // ghost cellscatra on each proc (for search algorithm)
-  if(comm.NumProc() > 1)
-  {
-    // fill complete inside
-    CreateGhosting(problem->GetDis("cellscatra"));
-  }
 
   // create instance of poroelast subproblem
   Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem = POROELAST::UTILS::CreatePoroScatraAlgorithm(problem->CellMigrationParams(),comm);
@@ -387,18 +419,6 @@ void CellMigrationControlAlgorithm()
 
   // construct 3D search tree for cell domain
   Teuchos::RCP<GEO::SearchTree> cell_SearchTree = Teuchos::rcp(new GEO::SearchTree(5));
-
-  // ghost structure on each proc (for search algorithm)
-  if(comm.NumProc() > 1 and simtype!=INPAR::CELL::sim_type_pureContraction)
-  {
-    // fill complete inside
-    CreateGhosting(problem->GetDis("cell"));
-  }
-  else
-  {
-    // fill complete to incorporate changes due to ghosting and build geometries
-    problem->GetDis("cell")->FillComplete();
-  }
 
   // find positions of the immersed discretization on proc
   std::map<int,LINALG::Matrix<3,1> > my_currpositions_cell;
@@ -428,7 +448,6 @@ void CellMigrationControlAlgorithm()
 
   if(comm.MyPID()==0)
     std::cout<<"\n Build Cell SearchTree ... "<<std::endl;
-
 
 
   //////////////////////////////////////////////
@@ -612,13 +631,15 @@ void CellMigrationControlAlgorithm()
     Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> algo =
         Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm,problem->CellMigrationParams()));
 
-    algo -> Setup(comm,
+    algo -> Init(comm,
         params,
         problem->CellMigrationParams(),
         problem->ScalarTransportDynamicParams(),
         problem->StructuralDynamicParams(),
         "cell",
         "cellscatra");
+
+    algo -> Setup();
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -736,5 +757,7 @@ void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
   }
 #endif
 
-}
+  return;
+} // end CreateGhosting
+
 

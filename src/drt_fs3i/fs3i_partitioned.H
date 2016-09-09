@@ -72,6 +72,12 @@ namespace FS3I
     //! destructor of base class for partitioned FS3I
     virtual ~PartFS3I(){};
 
+    //! initialize this class
+    virtual void Init();
+
+    //! setup this class
+    virtual void Setup();
+
     //! @name overall FS3I system
     //@{
 
@@ -169,6 +175,10 @@ namespace FS3I
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
+
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
+
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
 
   };
 }

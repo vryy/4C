@@ -85,8 +85,8 @@ public:
 
 protected:
 
-  //! initialize time integration
-  virtual void Init();
+  //! Setup time integration
+  virtual void Setup();
 
   //! Pre Solve Operator
   virtual void PreSolve();
@@ -115,6 +115,9 @@ private:
   //@{
   Teuchos::RCP<Epetra_Vector> source_; //!< Source at externalization surface
   //@}
+
+  //! flag indicating if this class was initialized
+  bool isinit_;
 
 };//class TimIntOneStepThetaEndoExocytosis
 

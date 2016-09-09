@@ -36,23 +36,64 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
 :  ScaTraFluidAleCouplingAlgorithm(comm,scatradyn,"FSICoupling",solverparams),
    pseudotransient_(false),
    molarvolume_(elchcontrol.get<double>("MOLARVOLUME")),
-   idispn_(FluidField()->ExtractInterfaceVeln()),
-   idispnp_(FluidField()->ExtractInterfaceVeln()),
-   iveln_(FluidField()->ExtractInterfaceVeln()),
+   idispn_(Teuchos::null),
+   idispnp_(Teuchos::null),
+   iveln_(Teuchos::null),
    itmax_(elchcontrol.get<int>("MOVBOUNDARYITEMAX")),
    ittol_(elchcontrol.get<double>("MOVBOUNDARYCONVTOL")),
-   theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA"))
+   theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA")),
+   elch_params_(elchcontrol)
 {
+
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm()
+{
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+| Setup                                                     rauch 08/16 |
+*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::Init()
+{
+  // call setup in base class
+  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init();
+
   // safety check
   if(!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
     dserror("Scalar transport discretization must have boundary condition for flux calculation at FSI interface!");
 
-  pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY")
+  pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elch_params_,"MOVINGBOUNDARY")
           ==INPAR::ELCH::elch_mov_bndry_pseudo_transient);
 
-  idispn_->PutScalar(0.0);
-  idispnp_->PutScalar(0.0);
-  iveln_->PutScalar(0.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| Setup                                                     rauch 08/16 |
+*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::Setup()
+{
+  // call init in base class
+  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup();
+
+  // set pointers
+  idispn_ = FluidField()->ExtractInterfaceVeln();
+  idispnp_= FluidField()->ExtractInterfaceVeln();
+  iveln_  = FluidField()->ExtractInterfaceVeln();
+
+  idispn_ -> PutScalar(0.0);
+  idispnp_-> PutScalar(0.0);
+  iveln_  -> PutScalar(0.0);
 
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
   if (pseudotransient_ or (theta_<0.999))
@@ -75,16 +116,12 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm()
-{
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {

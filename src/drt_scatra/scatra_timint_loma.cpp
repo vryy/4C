@@ -1,16 +1,8 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_loma.cpp
-
 \brief scatra time integration for loma
-
 \level 2
-
-<pre>
-\maintainer Ursula Rasthofer / Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/45
-</pre>
+\maintainer Volker Gravemeier
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H" // for splitter
 
@@ -55,9 +47,22 @@ SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(
 
 
 /*----------------------------------------------------------------------*
- | initialize algorithm                                 rasthofer 12/13 |
+ | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntLoma::Init()
+{
+  // safety check
+  if (DRT::INPUT::IntegralValue<int>(*lomaparams_,"SGS_MATERIAL_UPDATE"))
+    dserror("Material update using subgrid-scale temperature currently not supported for loMa problems. Read remark in file 'scatra_ele_calc_loma.H'!");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup algorithm                                          rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntLoma::Setup()
 {
   // set up a species-temperature splitter (if more than one scalar)
   if (NumScal() > 1)
@@ -65,10 +70,6 @@ void SCATRA::ScaTraTimIntLoma::Init()
     splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,NumScal()-1,*splitter_);
   }
-
-  // safety check
-  if (DRT::INPUT::IntegralValue<int>(*lomaparams_,"SGS_MATERIAL_UPDATE"))
-    dserror("Material update using subgrid-scale temperature currently not supported for loMa problems. Read remark in file 'scatra_ele_calc_loma.H'!");
 
   return;
 }

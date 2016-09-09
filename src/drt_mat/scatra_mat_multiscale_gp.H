@@ -4,6 +4,8 @@
 
 \brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar transport problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de

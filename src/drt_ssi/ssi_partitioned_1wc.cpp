@@ -38,16 +38,20 @@ SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part1WC::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
-  return;
+  returnvar =
+      SSI::SSI_Part::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/
@@ -168,15 +172,17 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_SolidToScatra::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar = false;
+
   // call setup of base class
-  SSI::SSI_Part1WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar = SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   //do some checks
   {
@@ -187,14 +193,16 @@ void SSI::SSI_Part1WC_SolidToScatra::Setup(const Epetra_Comm& comm,
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
   }
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 {
-  //InitialCalculations();
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
 
   if (structure_->Dt() > scatra_->ScaTraField()->Dt())
     dserror("Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra interaction");
@@ -229,20 +237,23 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_ScatraToSolid::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar = false;
+
   // call setup of base class
-  SSI::SSI_Part1WC::Setup(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar =
+      SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
 
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
 
-  return;
+  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/

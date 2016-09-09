@@ -3,6 +3,8 @@
 
 \brief Fluid-fluid meshtying strategy for standard scalar transport problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -59,6 +61,9 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
 
     //! include Dirichlet conditions into condensation
     void IncludeDirichletInCondensation() const;
+
+    //! setup meshtying objects
+    virtual void SetupMeshtying();
 
     //! initialize meshtying objects
     virtual void InitMeshtying();

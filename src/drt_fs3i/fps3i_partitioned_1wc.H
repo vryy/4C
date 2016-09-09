@@ -35,6 +35,12 @@ namespace FS3I
     //! Destructor of one-way coupled FPS3I
     virtual ~PartFPS3I_1WC(){};
 
+    //! initialize this class
+    virtual void Init();
+
+    //! setup this class
+    virtual void Setup();
+
     /// timeloop of coupled problem
     virtual void Timeloop();
 

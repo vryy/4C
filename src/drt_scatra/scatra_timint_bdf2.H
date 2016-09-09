@@ -33,8 +33,8 @@ public:
   /// Destructor
   virtual ~TimIntBDF2();
 
-  /// initialize time integration scheme
-  virtual void Init();
+  /// Setup time integration scheme
+  virtual void Setup();
 
   /// compute values at intermediate time steps (required for generalized-alpha)
   void ComputeIntermediateValues(){return;};

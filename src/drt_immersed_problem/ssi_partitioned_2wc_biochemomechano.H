@@ -61,7 +61,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -69,13 +69,16 @@ namespace SSI
         const std::string scatra_disname);
 
     //! special setup entry method for this class
-    void Setup(const Epetra_Comm& comm,
+    bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& params,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname);
+
+    //! initializ this class
+    virtual void Setup();
 
 
   protected:

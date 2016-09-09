@@ -2,9 +2,10 @@
 /*!
 \file strtimint_prestress.H
 \brief Static Prestress  analysis
+\level 2
 
 <pre>
-Maintainer: Sebastian Kehl
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
@@ -56,6 +57,54 @@ namespace STR
       Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
+
+    /*! \brief Initialize this object
+
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
+
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
+
+    \warning none
+    \return bool
+    \date 08/16
+    \author rauch  */
+    virtual void Init(
+        const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<LINALG::Solver> solver );
+
+    /*! \brief Setup all class internal objects and members
+
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup();
 
     //! Update element
     void UpdateStepElement();

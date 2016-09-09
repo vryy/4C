@@ -22,8 +22,6 @@
 
 #include "../drt_lib/drt_dofset_merged_proxy.H"
 
-#include "../drt_particle/binning_strategy.H"
-
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
@@ -41,7 +39,9 @@
 SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
     SCATRA::ScaTraTimIntImpl* scatratimint
     ):
-    MeshtyingStrategyStd(scatratimint)
+    MeshtyingStrategyStd(scatratimint),
+    issetup_(false),
+    isinit_(false)
 {
   return;
 } // SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy
@@ -52,6 +52,8 @@ SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
  *------------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 {
+  CheckIsInit();
+  CheckIsSetup();
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -94,12 +96,11 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 
 
 /*----------------------------------------------------------------------*
- | initialize meshtying objects                              vuong 06/16 |
+ | initialize meshtying objects                              rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
+void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 {
-  // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+  CheckIsInit();
 
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( scatratimint_->Discretization()->Comm().Clone());
 
@@ -130,22 +131,6 @@ void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
     }
   }
 
-  // redistribute discr. with help of binning strategy
-  if(scatradis->Comm().NumProc()>1)
-  {
-    // create vector of discr.
-    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-    dis.push_back(scatradis);
-    dis.push_back(discret_);
-
-    std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-    /// binning strategy is created and parallel redistribution is performed
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-  }
-
   {
     // build a dofset that merges the DOFs from both sides
     Teuchos::RCP<DRT::DofSet> newdofset =
@@ -166,6 +151,22 @@ void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
     discret_->FillComplete(true,true,true);
   }
 
+  SetIsSetup(true);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup meshtying objects                                  vuong 06/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
+{
+  SetIsSetup(false);
+
+  // call Init() of base class
+  SCATRA::MeshtyingStrategyStd::InitMeshtying();
+
+  SetIsInit(true);
   return;
 }
 
@@ -185,6 +186,9 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateCondition
       const int condid
     )
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // Call EvaluateCondition on auxiliary discretization.
   // This condition has all dofs, both from the volume-
   // bound scalars and from the surface-bound scalars.

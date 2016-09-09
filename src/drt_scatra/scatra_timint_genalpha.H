@@ -38,7 +38,7 @@ public:
   virtual ~TimIntGenAlpha();
 
   /// initialize time integration scheme
-  virtual void Init();
+  virtual void Setup();
 
   /// Print information about current time step to screen (reimplementation for Gen. Alpha)
   virtual void PrintTimeStepInfo()

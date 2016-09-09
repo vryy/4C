@@ -2,14 +2,15 @@
 /*!
  \file poro_scatra_base.cpp
 
- \brief
+ \brief  base class for all poroelasticity scalar transport interaction algorithms
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+ \level 2
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15251
+
  *----------------------------------------------------------------------*/
 
 #include "poro_scatra_base.H"
@@ -85,6 +86,14 @@ POROELAST::PoroScatraBase::PoroScatraBase(const Epetra_Comm& comm,
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   //2. scatra problem
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,scatradyn,problem->SolverParams(linsolvernumber),"scatra",true));
+
+  // now we can call Init() on the scatra time integrator
+  scatra_->ScaTraField()->Init();
+
+  // only now we must call Setup() on the scatra time integrator.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  scatra_->ScaTraField()->Setup();
 
 }
 
@@ -291,21 +300,22 @@ void POROELAST::PoroScatraBase::SetupCoupling(
     std::pair<int,int> dofsets21_fluidscatra = std::pair<int,int>(2,0);
 
     //setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Setup( structdis,
+    volcoupl_structurescatra_->Init( structdis,
                                       scatradis,
                                       NULL,
                                       NULL,
                                       &dofsets12_structurescatra,
                                       &dofsets21_structurescatra,
-                                      Teuchos::null,
-                                      false);
-    volcoupl_fluidscatra_->Setup( fluiddis,
+                                      Teuchos::null);
+    volcoupl_fluidscatra_->Init( fluiddis,
                                   scatradis,
                                   NULL,
                                   NULL,
                                   &dofsets12_fluidscatra,
                                   &dofsets21_fluidscatra,
-                                  Teuchos::null,
-                                  false);
+                                  Teuchos::null);
+
+    volcoupl_structurescatra_->Setup();
+    volcoupl_fluidscatra_->Setup();
   }
 }

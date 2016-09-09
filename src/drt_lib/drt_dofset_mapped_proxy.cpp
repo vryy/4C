@@ -70,13 +70,13 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     // find corresponding condition on source discretization
     iter_target = nodes.find(*it);
     if(iter_target == nodes.end())
-      dserror("Condition ID %i not found in Coupling condition on source discretization!",*it);
+      dserror("Condition ID %i not found in Coupling condition on source discretization s!",*it,sourcedis_->Name().c_str());
 
 
     // find corresponding condition on source discretization
     iter_source = nodes_source.find(*it);
     if(iter_source == nodes_source.end())
-      dserror("Condition ID %i not found in Coupling condition on source discretization!",*it);
+      dserror("Condition ID %i not found in Coupling condition on source discretization %s!",*it,sourcedis_->Name().c_str());
 
 
     // get the nodes

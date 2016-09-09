@@ -3,8 +3,10 @@
 
 \brief control of dynamic combustion analysis
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -109,6 +111,8 @@ void combust_dyn()
 
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+  combust->Init();
+  combust->Setup();
 
   //------------------------------------------------------------------------------------------------
   // restart

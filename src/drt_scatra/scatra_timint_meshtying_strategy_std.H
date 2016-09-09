@@ -50,7 +50,10 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying();
 
-    //! initialize meshtying objects
+    //! setup meshtying objects
+    void SetupMeshtying();
+
+    //! init meshtying objects
     void InitMeshtying();
 
     //! initialize system matrix

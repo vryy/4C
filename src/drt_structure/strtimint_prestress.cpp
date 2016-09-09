@@ -3,8 +3,10 @@
 
 \brief Static Prestress analysis
 
+\level 2
+
 <pre>
-Maintainer: Sebastian Kehl
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
@@ -45,6 +47,40 @@ STR::TimIntPrestress::TimIntPrestress
     output
   )
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntPrestress::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntStatics::Init(timeparams,sdynparams,xparams,actdis,solver);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntPrestress::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntStatics::Setup();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

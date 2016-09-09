@@ -3,12 +3,13 @@
 
 \brief one-step theta time integration scheme for level-set problems
 
-<pre>
+\level 2
+
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
+
 
 *----------------------------------------------------------------------*/
 
@@ -58,7 +59,7 @@ SCATRA::LevelSetTimIntOneStepTheta::~LevelSetTimIntOneStepTheta()
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 09/13 |
+ |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::Init()
 {
@@ -66,6 +67,19 @@ void SCATRA::LevelSetTimIntOneStepTheta::Init()
   // note: this order is important
   TimIntOneStepTheta::Init();
   LevelSetAlgorithm::Init();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  setup time integration                                  rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetTimIntOneStepTheta::Setup()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Setup();
+  LevelSetAlgorithm::Setup();
 
   return;
 }

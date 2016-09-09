@@ -33,7 +33,8 @@ SCATRA::TimIntOneStepThetaEndoExocytosis::TimIntOneStepThetaEndoExocytosis(
    Delta_phi_(0.0),
    mean_scalars_(0,0.0),
    internalization_vec_(0),
-   source_(Teuchos::null)
+   source_(Teuchos::null),
+   isinit_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -46,10 +47,10 @@ SCATRA::TimIntOneStepThetaEndoExocytosis::TimIntOneStepThetaEndoExocytosis(
 /*------------------------------------------------------------------------*
  |  initialize time integration                               rauch 08/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepThetaEndoExocytosis::Init()
+void SCATRA::TimIntOneStepThetaEndoExocytosis::Setup()
 {
   // initialize base class
-  TimIntOneStepTheta::Init();
+  TimIntOneStepTheta::Setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -76,6 +77,10 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::Init()
   // initialize vector in which the deltas (n -> n+1) are stored
   // entry 0 contains the difference at t-T
   Delta_phi_.resize(internalization_steps_,0.0);
+
+
+  isinit_=true;
+  return;
 }
 
 
@@ -84,6 +89,9 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::Init()
  *------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepThetaEndoExocytosis::PreSolve()
 {
+  if(not isinit_)
+    dserror("TimIntOneStepThetaEndoExocytosis was not initialized");
+
   // temp variables
   const int dof_id_internalized_scalar = discret_->GetCondition("ScaTraCellExt")->GetInt("ScalarID");
 

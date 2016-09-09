@@ -33,6 +33,12 @@ namespace FS3I
 
     virtual ~PartFS3I_2WC(){};
 
+    //! initialize this class
+    virtual void Init();
+
+    //! setup this class
+    virtual void Setup();
+
     virtual void Timeloop();
 
     void InitialCalculations();

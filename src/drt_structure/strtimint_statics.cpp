@@ -47,6 +47,27 @@ STR::TimIntStatics::TimIntStatics
   fext_(Teuchos::null),
   fextn_(Teuchos::null)
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntStatics::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
 
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
   INPAR::STR::DynamicType dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
@@ -65,6 +86,18 @@ STR::TimIntStatics::TimIntStatics
     else IO::cout << "with statics" << IO::endl;
   }
 
+  // have a nice day
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntStatics::Setup()
+{
+  // call Setup() in base class
+  STR::TimIntImpl::Setup();
+
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
@@ -79,7 +112,6 @@ STR::TimIntStatics::TimIntStatics
   // external force vector F_{n} at new time
   fext_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // have a nice day
   return;
 }
 

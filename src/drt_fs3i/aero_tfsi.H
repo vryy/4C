@@ -73,6 +73,10 @@ namespace FS3I
 
     virtual ~AeroTFSI(){};
 
+    virtual void Init();
+
+    virtual void Setup();
+
     /// write output of TSI system and additional restart info
     template<class A>
     void Output(Teuchos::RCP<A> solver);

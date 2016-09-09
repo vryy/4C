@@ -4,11 +4,12 @@
 
 \brief Structure field adapter for time step size adaptivity within monolithic FSI
 
-<pre>
-Maintainer: Matthias Mayr
+\level 2
+
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -60,7 +61,7 @@ namespace ADAPTER {
   public:
 
     //! Constructor
-    explicit StructureFSITimIntAda(
+    StructureFSITimIntAda(
       Teuchos::RCP<STR::TimAda> sta,
       Teuchos::RCP<Structure> sti
     );
@@ -99,6 +100,9 @@ namespace ADAPTER {
     //! Reset certain quantities to prepare repetition of current time step
     virtual void ResetStep();
 
+    //! return pointer to structure time integration
+    Teuchos::RCP<Structure> GetStrTimIntPtr(){return str_time_integrator_;};
+
   private:
 
     //! Indicate local discretization error
@@ -116,6 +120,8 @@ namespace ADAPTER {
     int numdbcdofs_;      ///< number of DOFs with Dirichlet boundary condition
     int numdbcfsidofs_;   ///< number of interface DOFs with Dirichlet boundary condition
     int numdbcinnerdofs_; ///< number of inner DOFs with Dirichlet boundary condition
+
+    Teuchos::RCP<Structure> str_time_integrator_; ///< pointer to the structural time integrator
 
   };  // class StructureFSITimIntAda
 

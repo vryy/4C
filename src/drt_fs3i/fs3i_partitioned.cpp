@@ -67,6 +67,17 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   : FS3I_Base(),
     comm_(comm)
 {
+  // Keep constructor empty!
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I::Init()
+{
+  // call setup in base class
+  FS3I::FS3I_Base::Init();
+
   volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_FIELDCOUPLING"));
   volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_FIELDCOUPLING"));
 
@@ -240,12 +251,12 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   {
     case fsi_iter_monolithicfluidsplit:
     {
-      fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fsitimeparams));
+      fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm_,fsitimeparams));
       break;
     }
     case fsi_iter_monolithicstructuresplit:
     {
-      fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fsitimeparams));
+      fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm_,fsitimeparams));
       break;
     }
     default:
@@ -270,13 +281,32 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   if (linsolver2number == (-1))
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
 
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
+  fluidscatra_ =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver1number),"scatra1",true));
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver2number),"scatra2",true));
+  fluidscatra_->ScaTraField()->Init();
 
-  scatravec_.push_back(fluidscatra);
-  scatravec_.push_back(structscatra);
+  structscatra_ =
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver2number),"scatra2",true));
+  structscatra_->ScaTraField()->Init();
+
+  scatravec_.push_back(fluidscatra_);
+  scatravec_.push_back(structscatra_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I::Setup()
+{
+  // call setup in base class
+  FS3I::FS3I_Base::Setup();
+
+  // setup structure scatra
+  structscatra_->ScaTraField()->Setup();
+
+  // setup fluid scatra
+  fluidscatra_->ScaTraField()->Setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -284,6 +314,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   CheckFS3IInputs();
 
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -330,7 +361,9 @@ Teuchos::RCP< ::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
   Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volume_coupling_object = Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
   //setup projection matrices (use default material strategy)
-  volume_coupling_object->Setup(masterdis,slavedis);
+  volume_coupling_object->Init(masterdis,slavedis);
+  volume_coupling_object->Redistribute();
+  volume_coupling_object->Setup();
 
   return volume_coupling_object;
 }

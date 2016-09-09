@@ -4,11 +4,12 @@
 
 \brief Structure field adapter for time step size adaptivity within monolithic FSI
 
-<pre>
-Maintainer: Matthias Mayr
+\level 2
+
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -36,7 +37,8 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
   Teuchos::RCP<Structure> sti
 )
 : FSIStructureWrapper(sti),
-  StructureTimIntAda(sta, sti)
+  StructureTimIntAda(sta, sti),
+  str_time_integrator_(sti)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");

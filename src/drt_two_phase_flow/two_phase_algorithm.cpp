@@ -4,12 +4,13 @@
 
 \brief Basis of Two Phase algorithms utilizing standard fluid and levelset
 
-<pre>
-Maintainer: Magnus Winter
+\level 3
+
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -31,39 +32,59 @@ TWOPHASEFLOW::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams),
+   dt_(0.0),
+   maxtime_(0.0),
+   stepmax_(0),
+   itmax_(0),
+   ittol_(1.0),
+   write_center_of_mass_(false),
+   turbinflow_(false),
+   numinflowsteps_(0),
+   velnpi_(Teuchos::null),
+   phinpi_(Teuchos::null),
+   prbdyn_(prbdyn)
 {
+
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+TWOPHASEFLOW::Algorithm::~Algorithm()
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void TWOPHASEFLOW::Algorithm::Init()
+{
+  // call Init() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+
   // time-step length, maximum time and maximum number of steps
-  dt_      = prbdyn.get<double>("TIMESTEP");
-  maxtime_ = prbdyn.get<double>("MAXTIME");
-  stepmax_ = prbdyn.get<int>("NUMSTEP");
+  dt_      = prbdyn_.get<double>("TIMESTEP");
+  maxtime_ = prbdyn_.get<double>("MAXTIME");
+  stepmax_ = prbdyn_.get<int>("NUMSTEP");
 
   //Output specific criterions
-  write_center_of_mass_ = DRT::INPUT::IntegralValue<bool>(prbdyn,"WRITE_CENTER_OF_MASS");
+  write_center_of_mass_ = DRT::INPUT::IntegralValue<bool>(prbdyn_,"WRITE_CENTER_OF_MASS");
 
   // (preliminary) maximum number of iterations and tolerance for outer iteration
-  ittol_ = prbdyn.get<double>("CONVTOL");
-  itmax_ = prbdyn.get<int>("ITEMAX");
+  ittol_ = prbdyn_.get<double>("CONVTOL");
+  itmax_ = prbdyn_.get<int>("ITEMAX");
 
   // flag for special flow and start of sampling period from fluid parameter list
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
-  //const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-
-  //Values of velocity field are transferred to ScaTra field. This function overwrites the previous initialization in the constructor
-  //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.
-  SetFluidValuesInScaTra(true);
 
   // flag for turbulent inflow
   turbinflow_ = DRT::INPUT::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW");
   // number of inflow steps
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
-
-
-  // Fluid-Scatra Iteration vectors are initialized
-  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->Velnp()->Map()),true);//*fluiddis->DofRowMap()),true);
-  velnpi_->Update(1.0,*FluidField()->Velnp(),0.0);
-  phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
-  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
 
   //Instantiate vectors contatining outer loop increment data
   fsvelincnorm_.reserve(itmax_);
@@ -76,10 +97,26 @@ TWOPHASEFLOW::Algorithm::Algorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-TWOPHASEFLOW::Algorithm::~Algorithm()
+void TWOPHASEFLOW::Algorithm::Setup()
 {
+  // call Setup() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+
+  // Fluid-Scatra Iteration vectors are initialized
+  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->Velnp()->Map()),true);
+  velnpi_->Update(1.0,*FluidField()->Velnp(),0.0);
+  phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
+  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
+
+  // Values of velocity field are transferred to ScaTra field.
+  // This function overwrites the previous initialization in the
+  // constructor of ScaTraFluidCouplingAlgorithm().
+  // This is necessary to correctly initialize a particle algorithm.
+  SetFluidValuesInScaTra(true);
+
   return;
 }
+
 
 
 /*----------------------------------------------------------------------*/

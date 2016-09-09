@@ -51,12 +51,12 @@ SCATRA::TimIntCardiacMonodomainHDG::~TimIntCardiacMonodomainHDG()
 /*----------------------------------------------------------------------*
  |  initialize time integration                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::Init()
+void SCATRA::TimIntCardiacMonodomainHDG::Setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
-  TimIntHDG::Init();
-  TimIntCardiacMonodomain::Init();
+  TimIntHDG::Setup();
+  TimIntCardiacMonodomain::Setup();
 
   // Activation time at time n+1
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));

@@ -177,6 +177,7 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
       ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), Discret());
       Teuchos::RCP<ADAPTER::StructureInvana> structadaptor =
           Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
+      structadaptor->Setup();
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       // and only if we are not in parameter continuation mode

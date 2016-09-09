@@ -49,6 +49,18 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 :PartFS3I_1WC(comm),
  comm_(comm)
 {
+  // has to sty empty
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::Init()
+{
+  // call Init() in base class
+  FS3I::PartFS3I_1WC::Init();
+
   //---------------------------------------------------------------------
   // set up struct ale
   //---------------------------------------------------------------------
@@ -62,7 +74,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
 
   // access the communicator for time measurement
-  Epetra_Time time(comm);
+  Epetra_Time time(comm_);
 
   if (structaledis->NumGlobalNodes()==0)
   {
@@ -70,7 +82,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>() );
     alecreator->CreateMatchingDiscretization(structdis,structaledis,11);
   }
-  if (comm.MyPID()==0)
+  if (comm_.MyPID()==0)
   {
     std::cout << "Created discretization " << (structaledis->Name())
              << " as a clone of discretization " << (structdis->Name())
@@ -89,6 +101,60 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
   ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
+
+
+
+  //---------------------------------------------------------------------
+  // getting and initializing problem-specific parameters
+  //---------------------------------------------------------------------
+
+  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+
+  // make sure that initial time derivative of concentration is not calculated
+  // automatically (i.e. field-wise)
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
+    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
+
+  //fsi parameters
+  dt_fsi = fsidyn.get<double>("TIMESTEP");
+  nstep_fsi = fsidyn.get<int>("NUMSTEP");
+  maxtime_fsi = fsidyn.get<double>("MAXTIME");
+  step_fsi = 0;
+  time_fsi = 0.;
+
+  //growth parameters
+  dt_bio= biofilmcontrol.get<double>("BIOTIMESTEP");
+  nstep_bio= biofilmcontrol.get<int>("BIONUMSTEP");
+  fluxcoef_ = biofilmcontrol.get<double>("FLUXCOEF");
+  normforceposcoef_ = biofilmcontrol.get<double>("NORMFORCEPOSCOEF");
+  normforcenegcoef_ = biofilmcontrol.get<double>("NORMFORCENEGCOEF");
+  tangoneforcecoef_ = biofilmcontrol.get<double>("TANGONEFORCECOEF");
+  tangtwoforcecoef_ = biofilmcontrol.get<double>("TANGTWOFORCECOEF");
+  step_bio=0;
+  time_bio = 0.;
+
+  //total time
+  time_ = 0.;
+
+  // safety checks
+  if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
+    dserror("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
+  if(!problem->GetDis("scatra1")->GetCondition("ScaTraFluxCalc") or !problem->GetDis("scatra2")->GetCondition("ScaTraFluxCalc"))
+    dserror("Fluid-scatra and solid-scatra discretizations must have boundary conditions for flux calculation at FSI interface!");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::Setup()
+{
+  // call Setup() in base class
+  FS3I::PartFS3I_1WC::Init();
+
+  Teuchos::RCP<DRT::Discretization> structaledis = DRT::Problem::Instance()->GetDis("structale");
 
   //---------------------------------------------------------------------
   // set up couplings
@@ -136,39 +202,6 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   /// do we need this? What's for???
   fsi_->FluidField()->SetMeshMap(coupfa_->MasterDofMap());
 
-  //---------------------------------------------------------------------
-  // getting and initializing problem-specific parameters
-  //---------------------------------------------------------------------
-
-  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
-
-  // make sure that initial time derivative of concentration is not calculated
-  // automatically (i.e. field-wise)
-  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
-    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
-
-  //fsi parameters
-  dt_fsi = fsidyn.get<double>("TIMESTEP");
-  nstep_fsi = fsidyn.get<int>("NUMSTEP");
-  maxtime_fsi = fsidyn.get<double>("MAXTIME");
-  step_fsi = 0;
-  time_fsi = 0.;
-
-  //growth parameters
-  dt_bio= biofilmcontrol.get<double>("BIOTIMESTEP");
-  nstep_bio= biofilmcontrol.get<int>("BIONUMSTEP");
-  fluxcoef_ = biofilmcontrol.get<double>("FLUXCOEF");
-  normforceposcoef_ = biofilmcontrol.get<double>("NORMFORCEPOSCOEF");
-  normforcenegcoef_ = biofilmcontrol.get<double>("NORMFORCENEGCOEF");
-  tangoneforcecoef_ = biofilmcontrol.get<double>("TANGONEFORCECOEF");
-  tangtwoforcecoef_ = biofilmcontrol.get<double>("TANGTWOFORCECOEF");
-  step_bio=0;
-  time_bio = 0.;
-
-  //total time
-  time_ = 0.;
-
   idispn_= fsi_->FluidField()->ExtractInterfaceVeln();
   idispnp_= fsi_->FluidField()->ExtractInterfaceVeln();
   iveln_= fsi_->FluidField()->ExtractInterfaceVeln();
@@ -206,12 +239,6 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
 
-  // safety checks
-  if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
-    dserror("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
-  if(!problem->GetDis("scatra1")->GetCondition("ScaTraFluxCalc") or !problem->GetDis("scatra2")->GetCondition("ScaTraFluxCalc"))
-    dserror("Fluid-scatra and solid-scatra discretizations must have boundary conditions for flux calculation at FSI interface!");
-
   return;
 }
 
@@ -220,6 +247,10 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
+
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
   const int biofilmgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"BIOFILMGROWTH");
   const int outputgmsh_ = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"OUTPUT_GMSH");

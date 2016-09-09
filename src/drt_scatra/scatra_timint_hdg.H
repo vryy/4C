@@ -38,8 +38,8 @@ public:
   //! destructor
   virtual ~TimIntHDG() {}
 
-  //! initialization
-  virtual void Init();
+  //! setup
+  virtual void Setup();
 
   //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
   virtual void SetTheta();

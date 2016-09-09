@@ -46,6 +46,18 @@ FS3I::AeroTFSI::AeroTFSI(
   time_(0.0),
   diskoutput_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN"))
 {
+  // kepp constructor empty
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | initialize this class                                    rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::AeroTFSI::Init()
+{
+  FS3I::FS3I_Base::Init();
+
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // coupling strategy for INCA and BACI
@@ -61,7 +73,7 @@ FS3I::AeroTFSI::AeroTFSI(
     int worldrank = -1;
     MPI_Comm_rank(MPI_COMM_WORLD, &worldrank);
 
-    if(worldrank == lcomm.MyPID())
+    if(worldrank == lcomm_.MyPID())
       dserror("ERROR: INCA must!! be always started first in a coupled simulation");
 
     // intercommunicator is created; tag is important here because the same tag is used in INCA
@@ -78,12 +90,12 @@ FS3I::AeroTFSI::AeroTFSI(
   case INPAR::TSI::TFSI:
   {
     // setup of the discretizations, including clone strategy
-    TSI::UTILS::SetupTSI(lcomm);
+    TSI::UTILS::SetupTSI(lcomm_);
 
     probdyn_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->TSIDynamicParams()));
     // create a TSI::Monolithic instance
     const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-    tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
+    tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm_,sdynparams));
 
     // setup of the helper class
     aerocoupling_ = Teuchos::rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField()->Discretization(),
@@ -102,6 +114,7 @@ FS3I::AeroTFSI::AeroTFSI(
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(*probdyn_, *probdyn_, structdis));
     structure_ = structure->StructureField();
+    structure_->Setup();
 
     // setup of the helper class
     aerocoupling_ = Teuchos::rcp(new FS3I::UTILS::AeroCouplingUtils(structure_->Discretization(), true));
@@ -129,6 +142,19 @@ FS3I::AeroTFSI::AeroTFSI(
   }
 
   PrintCouplingStrategy();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup this class                                         rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::AeroTFSI::Setup()
+{
+  FS3I::FS3I_Base::Setup();
+
+  return;
 }
 
 
@@ -137,6 +163,9 @@ FS3I::AeroTFSI::AeroTFSI(
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   switch(tfsi_coupling_)
   {
   case INPAR::TSI::TFSI:

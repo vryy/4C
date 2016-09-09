@@ -144,8 +144,29 @@ STR::TimIntImpl::TimIntImpl
   ptcdt_(sdynparams.get<double>("PTCDT")),
   dti_(1.0/ptcdt_)
 {
-
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
   // general variable verifications:
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntImpl::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimInt::Init(timeparams,sdynparams,xparams,actdis,solver);
+
   if (itermax_ < 0)
     dserror("MAXITER has to be greater than or equal to zero. Fix your input file.");
 
@@ -194,6 +215,23 @@ STR::TimIntImpl::TimIntImpl
   if (ptcdt_ <= 0)
     dserror("PTCDT has to be greater than zero. Fix your input file.");
 
+  // setup NOX parameter lists
+  if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
+    NoxSetup();
+  else if (itertype_ == INPAR::STR::soltech_noxgeneral)
+    NoxSetup(xparams.sublist("NOX"));
+
+  // done so far
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntImpl::Setup()
+{
+  // call Setup() in base class
+  STR::TimInt::Setup();
 
   // verify: if system has constraints implemented with Lagrange multipliers,
   // then Uzawa-type solver is used
@@ -226,28 +264,6 @@ STR::TimIntImpl::TimIntImpl
     if (simype==INPAR::STATMECH::simulation_type_lipid_bilayer)
       InitializeEdgeElements();
   }
-
-  // create empty residual force vector
-  fres_ = LINALG::CreateVector(*DofRowMapView(), false);
-
-  // create empty reaction force vector of full length
-  freact_ = LINALG::CreateVector(*DofRowMapView(), false);
-
-  // iterative displacement increments IncD_{n+1}
-  // also known as residual displacements
-  disi_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  //prepare matrix for scaled thickness business of thin shell structures
-  stcmat_=
-    Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-
-  stccompl_ =false;
-
-  // setup NOX parameter lists
-  if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
-    NoxSetup();
-  else if (itertype_ == INPAR::STR::soltech_noxgeneral)
-    NoxSetup(xparams.sublist("NOX"));
 
   // setup tolerances and binary operators for convergence check of contact/meshtying problems
   // in saddlepoint formulation
@@ -326,7 +342,21 @@ STR::TimIntImpl::TimIntImpl
   if (itertype_==INPAR::STR::soltech_newtonls)
     PrepareLineSearch();
 
-  // done so far
+  // create empty residual force vector
+  fres_ = LINALG::CreateVector(*DofRowMapView(), false);
+
+  // create empty reaction force vector of full length
+  freact_ = LINALG::CreateVector(*DofRowMapView(), false);
+
+  // iterative displacement increments IncD_{n+1}
+  // also known as residual displacements
+  disi_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  //prepare matrix for scaled thickness business of thin shell structures
+  stcmat_=
+    Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stccompl_ =false;
+
   return;
 }
 
@@ -355,6 +385,10 @@ void STR::TimIntImpl::InitializeEdgeElements()
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // things that need to be done before Predict
   PrePredict();
 
@@ -415,13 +449,6 @@ void STR::TimIntImpl::Predict()
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
-
-  // possibly initialise Lagrange multipliers to zero
-  //  if ( (conman_->HaveConstraint())
-  //       and (itertype_ == soltech_uzawalinnewton) )
-  //  {
-  //    conman_->ScaleLagrMult(0.0);
-  //  }
 
   // create parameter list to hand in boolean flag indicating that this a predictor
   Teuchos::ParameterList params;
@@ -1693,6 +1720,10 @@ bool STR::TimIntImpl::Converged()
 /* solve equilibrium */
 INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
+  // safety check
+  CheckIsInit();
+  CheckIsSetup();
+
   // things to be done before solving
   PreSolve();
 

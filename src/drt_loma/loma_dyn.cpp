@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file loma_dyn.cpp
+
 \brief Control routine for low-Mach-number flow module.
 
+\level 2
 
-<pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915245
-</pre>
+
 
 *----------------------------------------------------------------------*/
 
@@ -93,7 +94,16 @@ void loma_dyn(int restart)
       dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (no fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
+        Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+    // now we can call Init() on the scatra time integrator
+    scatraonly->ScaTraField()->Init();
+
+    // only now we must call Setup() on the scatra time integrator.
+    // all objects relying on the parallel distribution are
+    // created and pointers are set.
+    scatraonly->ScaTraField()->Setup();
 
     // read restart information
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
@@ -153,6 +163,8 @@ void loma_dyn(int restart)
 
     // create a LOMA::Algorithm instance
     Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    loma->Init(comm,lomacontrol,DRT::Problem::Instance()->SolverParams(linsolvernumber));
+    loma->Setup();
 
     // read restart information
     // in case a inflow generation in the inflow section has been performed, there are not any
@@ -165,7 +177,6 @@ void loma_dyn(int restart)
       else
         loma->ReadRestart(restart);
     }
-
 
     // enter LOMA algorithm
     loma->TimeLoop();

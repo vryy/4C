@@ -41,19 +41,32 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   fsphinp_(Teuchos::null)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
-  // this is important since we have problems which require an extended ghosting
-  // this has to be done before all state vectors are initialized
+  // this is important since we have problems which require an extended ghosting and
+  // other kinds of parallel redistribution.
+  // This has to be done before all state vectors are initialized.
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 09/13 |
+ |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Init()
 {
   // initialize base class
   ScaTraTimIntImpl::Init();
+
+return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  setup time integration                                  rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::Setup()
+{
+  // setup base class
+  ScaTraTimIntImpl::Setup();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

@@ -2,13 +2,15 @@
 /*!
 \file elch_moving_boundary_algorithm.H
 
-\brief Basis of all ELCH algorithms
+\brief Basis of all ELCH algorithms with moving boundaries
+
+\level 2
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -49,6 +51,12 @@ namespace ELCH
 
     /// virtual destructor to support polymorph destruction
     virtual ~MovingBoundaryAlgorithm();
+
+    /// setup
+    virtual void Setup();
+
+    /// init
+    virtual void Init();
 
     /// outer level ELCH time loop
     void TimeLoop();
@@ -108,6 +116,8 @@ namespace ELCH
 
     /// parameter for velocity <-> displacement conversion in a OST sense
     const double theta_;
+
+    const Teuchos::ParameterList& elch_params_;
 
   };
 

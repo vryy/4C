@@ -38,6 +38,21 @@ namespace FS3I
 {
   class MeanManager;
 
+  /*!
+   * What does the problem type Atherosclerosis_Fluid_Structure_Interaction?
+   * Short answer: cool stuff!
+   * And here is the long answer:
+   * Its doing a multiscale (in time) approach with an full FS3I simulation at the small time scale (seconds) and
+   * a scalar transport simulation at the larger time scale (days). The solving strategy is as follows:
+   *   We start with the full small time scale FS3i simulation (including fluid Windkessel and WSS permeability).
+   * After each FSI cycle we check if the FSI problem is periodic, by looking if the Windkessel does produce
+   * peridodic results. Afterwards we continue the small time scale but do not solve the fsi subproblem anymore. Instead
+   * we peridically repeat it by calling suitable restarts. When the fluid scatra subproblem gets periodic
+   * at the FS3I interface we stop the small time scale and switch to the large time scale
+   *   Now we higher dt_ and only solve the structure scatra problem. We thereby use the WSS and interface
+   * concentrations of the small time scale. Each time when there as been 'created' enough growth inducing mass we
+   * do a growth update. If we have finally grew to much, we go back to the small time scale. And so on, and so on,...
+   */
   class ACFSI : public PartFS3I
   {
   public:
@@ -47,6 +62,12 @@ namespace FS3I
 
     ///destructor
     virtual ~ACFSI(){};
+
+    /// initialize this class
+    virtual void Init();
+
+    /// setup this class
+    virtual void Setup();
 
     ///Read restart
     void ReadRestart();
@@ -208,20 +229,20 @@ namespace FS3I
   private:
 
     /// structure increment vector
-    const Teuchos::RCP<Epetra_Vector> structureincrement_;
+    Teuchos::RCP<Epetra_Vector> structureincrement_;
     /// fluid increment vector
-    const Teuchos::RCP<Epetra_Vector> fluidincrement_;
+    Teuchos::RCP<Epetra_Vector> fluidincrement_;
     /// ale increment vector
-    const Teuchos::RCP<Epetra_Vector> aleincrement_;
+    Teuchos::RCP<Epetra_Vector> aleincrement_;
     /// mean fluid phinp vector of the last period
-    const Teuchos::RCP<Epetra_Vector> fluidphinp_lp_;
+    Teuchos::RCP<Epetra_Vector> fluidphinp_lp_;
     /// structurephinp vector at the beginning of the large time scale loop
-    const Teuchos::RCP<Epetra_Vector> structurephinp_blts_;
+    Teuchos::RCP<Epetra_Vector> structurephinp_blts_;
     /// growth update counter
     int growth_updates_counter_;
 
     ///mean WSS vector of the last period
-    const Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
+    Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
 
     ///time of one fsi period, e.g. time of a heart cycle
     const double fsiperiod_;
@@ -239,10 +260,10 @@ namespace FS3I
     bool fsineedsupdate_;
 
     ///Extract the j-th out of numscal_ dof
-    const std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthstructscalar_;
+    std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthstructscalar_;
 
     ///pointer to mean manager object
-    const Teuchos::RCP<FS3I::MeanManager> meanmanager_;
+    Teuchos::RCP<FS3I::MeanManager> meanmanager_;
   };
 
   class MeanManager

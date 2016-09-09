@@ -56,6 +56,40 @@ STR::TimIntExpl::TimIntExpl
     output
   )
 {
+  // Keep this constructor empty!
+  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
+  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
+  // This way, this class may also override a method that is called during Setup() in a base class.
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Initialize this class                                                            rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntExpl::Init
+(
+    const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver
+)
+{
+  // call Init() in base class
+  STR::TimInt::Init(timeparams,sdynparams,xparams,actdis,solver);
+
+  // get away
+  return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Setup this class                                                                 rauch 09/16 |
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimIntExpl::Setup()
+{
+  // call Setup() in base class
+  STR::TimInt::Setup();
+
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
     dserror("Explicit TIS cannot handle constraints");
@@ -77,7 +111,6 @@ STR::TimIntExpl::TimIntExpl
   if (HaveNonlinearMass())
     dserror("Explicit TIS cannot handle nonlinear inertia forces (flag: MASSLIN)");
 
-  // get away
   return;
 }
 

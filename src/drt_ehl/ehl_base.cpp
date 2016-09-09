@@ -4,8 +4,10 @@
 
 \brief base class for all elastohydrodynamic lubrication (lubrication structure interaction) algorithms
 
+\level 3
+
 <pre>
-Maintainer: Andy Wirtz
+\maintainer Andy Wirtz
             wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15270
@@ -73,6 +75,7 @@ EHL::Base::Base(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(*structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
+  structure_->Setup();
   lubrication_ =  Teuchos::rcp(new ADAPTER::LubricationBaseAlgorithm());
   lubrication_->Setup(*lubricationtimeparams,lubricationparams,problem->SolverParams(linsolvernumber),lubrication_disname,isale);
 

@@ -42,7 +42,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -90,7 +90,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -128,7 +128,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual void Setup(const Epetra_Comm& comm,
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,

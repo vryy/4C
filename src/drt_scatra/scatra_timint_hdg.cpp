@@ -63,7 +63,7 @@ SCATRA::TimIntHDG::TimIntHDG(
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::Init()
+void SCATRA::TimIntHDG::Setup()
 {
   hdgdis_ = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
   if (hdgdis_ == NULL)
@@ -122,7 +122,7 @@ void SCATRA::TimIntHDG::Init()
 
   // call Init()-functions of base classes
   // note: this order is important
-  SCATRA::TimIntGenAlpha::Init();
+  SCATRA::TimIntGenAlpha::Setup();
 
   // create vector for concentration at nodes for output
   interpolatedPhinp_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);

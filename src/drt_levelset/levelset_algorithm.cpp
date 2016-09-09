@@ -5,12 +5,13 @@
 
     detailed description in header file levelset_algorithm.H
 
-<pre>
+\level 2
+
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
+
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -60,9 +61,6 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
   lsdim_(INPAR::SCATRA::ls_3D),
   projection_(true),
-  //TODO:
-//  lambda_ele_denominator_(Teuchos::null),
-//  node_deriv_smoothfunct_(Teuchos::null),
   reinit_tol_(-1.0),
   reinitvolcorrection_(false),
   interface_eleq_(Teuchos::null),
@@ -73,19 +71,6 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-
-  // -------------------------------------------------------------------
-  //               set-up of particle algorithm
-  // -------------------------------------------------------------------
-
-  // check whether hybrid method including particles is selected
-  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"),"INCLUDE_PARTICLE"))
-  {
-    // get particle object
-    particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),levelsetparams_));
-  }
-  // note: here, an extended ghosting is set up
-
   return;
 }
 
@@ -99,10 +84,41 @@ SCATRA::LevelSetAlgorithm::~LevelSetAlgorithm()
 
 
 /*----------------------------------------------------------------------*
- | initialize algorithm                                 rasthofer 09/13 |
+ | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::Init()
 {
+  // todo #initsetupissue
+  // DO NOT CALL Init() IN ScaTraTimIntImpl
+  // issue with writeflux and probably scalarhandler_
+  // this should not be
+
+  // -------------------------------------------------------------------
+  //               set-up of particle algorithm
+  // -------------------------------------------------------------------
+
+  // check whether hybrid method including particles is selected
+  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"),"INCLUDE_PARTICLE"))
+  {
+    // get particle object
+    particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),levelsetparams_));
+  }
+  // note: here, an extended ghosting is set
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup algorithm                                          rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::Setup()
+{
+  // todo #initsetupissue
+  // DO NOT CALL Setup() IN ScaTraTimIntImpl
+  // issue with writeflux and probably scalarhandler_
+  // this should not be
+
   // -------------------------------------------------------------------
   //                         setup domains
   // -------------------------------------------------------------------
@@ -257,6 +273,10 @@ void SCATRA::LevelSetAlgorithm::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::TimeLoop()
 {
+  // safety check
+  CheckIsInit();
+  CheckIsSetup();
+
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {

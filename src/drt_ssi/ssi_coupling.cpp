@@ -34,18 +34,15 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_particle/binning_strategy.H"
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::Setup(
+void SSI::SSICouplingMatchingVolume::Init(
     const int                         ndim,          /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,     /// underlying structure discretization
     Teuchos::RCP<DRT::Discretization> scatradis      /// underlying scatra discretization
     )
 {
-  structdis->FillComplete();
-  scatradis->FillComplete();
+  SetIsSetup(false);
 
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
@@ -61,9 +58,19 @@ void SSI::SSICouplingMatchingVolume::Setup(
 
   AssignMaterialPointers(structdis,scatradis);
 
+  SetIsInit(true);
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolume::Setup()
+{
+  CheckIsInit();
+
+  SetIsSetup(true);
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -127,16 +134,25 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::Setup(
+void SSI::SSICouplingNonMatchingBoundary::Init(
     const int                             ndim,      /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,     /// underlying structure discretization
     Teuchos::RCP<DRT::Discretization> scatradis      /// underlying scatra discretization
     )
 {
+  SetIsSetup(false);
+
+  // set pointers
+  structdis_=structdis;
+  scatradis_=scatradis;
+
+  // set problem dimension
+  problem_dimension_ = ndim;
+
   //first call FillComplete for single discretizations.
   //This way the physical dofs are numbered successively
-  structdis->FillComplete();
-  scatradis->FillComplete();
+  structdis_->FillComplete();
+  scatradis_->FillComplete();
 
   //build auxiliary dofsets, i.e. pseudo dofs on each discretization
   const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
@@ -154,21 +170,31 @@ void SSI::SSICouplingNonMatchingBoundary::Setup(
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  structdis->FillComplete(true, false,false);
-  scatradis->FillComplete(true, false,false);
+  structdis_->FillComplete(true, false,false);
+  scatradis_->FillComplete(true, false,false);
 
   // setup mortar adapter for surface volume coupling
   adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  std::vector<int> coupleddof(ndim, 1);
+  SetIsInit(true);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingBoundary::Setup()
+{
+  CheckIsInit();
+
+  std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
-      structdis,
-      scatradis,
+      structdis_,
+      scatradis_,
       Teuchos::null,
       coupleddof,
       "SSICoupling",
-      structdis->Comm(),
+      structdis_->Comm(),
       false,
       false,
       0,
@@ -177,10 +203,11 @@ void SSI::SSICouplingNonMatchingBoundary::Setup(
 
   //extractor for coupled surface of structure discretization with surface scatra
   extractor_= Teuchos::rcp(new LINALG::MapExtractor(
-      *structdis->DofRowMap(0),
+      *structdis_->DofRowMap(0),
       adaptermeshtying_->MasterDofMap(),
       true));
 
+  SetIsSetup(true);
   return;
 }
 
@@ -238,12 +265,14 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::Setup(
+void SSI::SSICouplingNonMatchingVolume::Init(
     const int                         ndim,          /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,     /// underlying structure discretization
     Teuchos::RCP<DRT::Discretization> scatradis      /// underlying scatra discretization
     )
 {
+  SetIsSetup(false);
+
   //first call FillComplete for single discretizations.
   //This way the physical dofs are numbered successively
   structdis->FillComplete();
@@ -271,11 +300,28 @@ void SSI::SSICouplingNonMatchingVolume::Setup(
   // Scheme: non matching meshes --> volumetric mortar coupling...
   volcoupl_structurescatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
-  //setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup(
+  // init projection matrices (use default material strategy)
+  volcoupl_structurescatra_->Init(
       structdis,
       scatradis);
 
+  // parallel redistribution of discretizations inside
+  volcoupl_structurescatra_->Redistribute();
+
+  SetIsInit(true);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingVolume::Setup()
+{
+  CheckIsInit();
+
+  //setup projection matrices (use default material strategy)
+  volcoupl_structurescatra_->Setup();
+
+  SetIsSetup(true);
   return;
 }
 
@@ -332,29 +378,17 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::Setup(
+void SSI::SSICouplingMatchingVolumeAndBoundary::Init(
     const int                         ndim,          /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,     /// underlying structure discretization
     Teuchos::RCP<DRT::Discretization> scatradis      /// underlying scatra discretization
     )
 {
-  // redistribute discr. with help of binning strategy
-  if(scatradis->Comm().NumProc()>1)
-  {
-    scatradis->FillComplete();
-    structdis->FillComplete();
-    // create vector of discr.
-    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-    dis.push_back(structdis);
-    dis.push_back(scatradis);
+  SetIsSetup(false);
 
-    std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-    /// binning strategy is created and parallel redistribution is performed
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-  }
+  // Note : We need to make sure that the parallel distribution of Volume and Boundary
+  //        is the same externally! The best thing is if you do this in your *_dyn.cpp,
+  //        i.e., your global control algorithm.
 
   {
     //get condition which defines the coupling on target discretization
@@ -413,9 +447,17 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Setup(
   // exchange material pointers for coupled material formulations
   AssignMaterialPointers(structdis,scatradis);
 
-  structdis->FillComplete();
-  scatradis->FillComplete();
+  SetIsInit(true);
+  return;
+}
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
+{
+  CheckIsInit();
+
+  SetIsSetup(true);
   return;
 }
 

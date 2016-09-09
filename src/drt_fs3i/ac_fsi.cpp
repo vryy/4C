@@ -41,42 +41,35 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 
-/*!
- * What does the problem type Atherosclerosis_Fluid_Structure_Interaction?
- * Short answer: cool stuff!
- * And here is the long answer:
- * Its doing a multiscale (in time) approach with an full FS3I simulation at the small time scale (seconds) and
- * a scalar transport simulation at the larger time scale (days). The solving strategy is as follows:
- *   We start with the full small time scale FS3i simulation (including fluid Windkessel and WSS permeability).
- * After each FSI cycle we check if the FSI problem is periodic, by looking if the Windkessel does produce
- * peridodic results. Afterwards we continue the small time scale but do not solve the fsi subproblem anymore. Instead
- * we peridically repeat it by calling suitable restarts. When the fluid scatra subproblem gets periodic
- * at the FS3I interface we stop the small time scale and switch to the large time scale
- *   Now we higher dt_ and only solve the structure scatra problem. We thereby use the WSS and interface
- * concentrations of the small time scale. Each time when there as been 'created' enough growth inducing mass we
- * do a growth update. If we have finally grew to much, we go back to the small time scale. And so on, and so on,...
- */
-
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   :PartFS3I(comm),
-   structureincrement_(LINALG::CreateVector(*fsi_->StructureField()->DofRowMap(0),true)),
-   fluidincrement_(LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true)),
-   aleincrement_(LINALG::CreateVector(*fsi_->AleField()->DofRowMap(),true)),
-   fluidphinp_lp_(LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap(),true)),
-   structurephinp_blts_(LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(),true)),
+   structureincrement_(Teuchos::null),
+   fluidincrement_(Teuchos::null),
+   aleincrement_(Teuchos::null),
+   fluidphinp_lp_(Teuchos::null),
+   structurephinp_blts_(Teuchos::null),
    growth_updates_counter_(0),
-   WallShearStress_lp_(LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true)),
+   WallShearStress_lp_(Teuchos::null),
    fsiperiod_(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("PERIODICITY") ),
    dt_large_(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("LARGE_TIMESCALE_TIMESTEP")),
    fsiisperiodic_(false),
    scatraisperiodic_(false),
    fsineedsupdate_(false),
-   extractjthstructscalar_(BuildMapExtractor()),
-   meanmanager_(Teuchos::rcp( new FS3I::MeanManager(*fsi_->FluidField()->DofRowMap(0),*scatravec_[0]->ScaTraField()->DofRowMap(),*fsi_->FluidField()->PressureRowMap() )))
+   meanmanager_(Teuchos::null)
 {
+
+}
+
+/*----------------------------------------------------------------------*
+ | Init                                                     rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::Init()
+{
+  FS3I::PartFS3I::Init();
+
   //Some AC FSI specific testings:
 
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
@@ -138,6 +131,32 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
 
   if ( not (INPAR::FLUID::wss_standard == DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE")) )
     dserror("WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Setup                                                    rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::Setup()
+{
+  FS3I::PartFS3I::Setup();
+
+  meanmanager_ =
+      Teuchos::rcp( new FS3I::MeanManager(*fsi_->FluidField()->DofRowMap(0),
+          *scatravec_[0]->ScaTraField()->DofRowMap(),
+          *fsi_->FluidField()->PressureRowMap() ));
+
+  structureincrement_ =LINALG::CreateVector(*fsi_->StructureField()->DofRowMap(0),true);
+  fluidincrement_=LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true);
+  aleincrement_=LINALG::CreateVector(*fsi_->AleField()->DofRowMap(),true);
+  fluidphinp_lp_=LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap(),true);
+  structurephinp_blts_=LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(),true);
+  WallShearStress_lp_=LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true);
+
+  extractjthstructscalar_ = BuildMapExtractor();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -190,11 +209,15 @@ void FS3I::ACFSI::ReadRestart()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | Timeloop                                                  Thon 12/14 |
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // prepare time loop
   fsi_->PrepareTimeloop();
   SetMeshDisp();

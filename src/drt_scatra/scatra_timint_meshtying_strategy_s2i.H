@@ -111,7 +111,10 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! compute meshtying residual terms and their linearizations
     virtual void EvaluateMeshtying();
 
-    //! initialize meshtying objects
+    //! setup meshtying objects
+    void SetupMeshtying();
+
+    //! init meshtying objects
     void InitMeshtying();
 
     //! initialize system matrix

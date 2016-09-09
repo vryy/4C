@@ -1,14 +1,12 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file combust_algorithm.H
 
-  \brief combustion algorithm
+\brief combustion algorithm
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\level 2
+
+\maintainer Magnus Winter
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef COMBUST_ALGORITHM_H
@@ -53,6 +51,12 @@ namespace COMBUST
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
+
+    ///  Initialize this class
+    virtual void Init();
+
+    /// Setup this class
+    virtual void Setup();
 
     /// time loop of algorithm for dynamic combustion problem
     void TimeLoop();

@@ -47,41 +47,73 @@ namespace SSI
     /// virtual destructor
     virtual ~SSI_Base(){};
 
-    /*!
-    \brief Setup this object
+    /*! \brief Initialize this object
 
-     Initializes members and performs problem specific setup.
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
 
-    \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, vectors may have wrong maps.
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
 
     \warning none
-    \return void
+    \return bool
     \date 08/16
-    \author rauch
-    */
-    virtual void Setup(const Epetra_Comm& comm,
+    \author rauch  */
+    virtual bool Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
         const std::string scatra_disname) = 0;
 
-    /*!
-    \brief Setup discretizations and dofsets
+    /*! \brief Setup all class internal objects and members
 
-     Fill discretizations and setup coupling object \ref ssicoupling_
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, vectors may have wrong maps.
+          Otherwise, e.g. vectors may have wrong maps.
 
-    \warning Parallel redistribution inside !
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup();
+
+    /*! \brief Setup discretizations and dofsets
+
+     Init coupling object \ref ssicoupling_ and
+     other possible coupling objects in derived
+     classes
 
     \return void
     \date 08/16
-    \author vuong, rauch
-    */
-    virtual void SetupDiscretizationsAndFieldCoupling(
+    \author vuong, rauch  */
+    virtual bool InitFieldCoupling(
+        const Epetra_Comm& comm,
+        const std::string& struct_disname,
+        const std::string& scatra_disname);
+
+    /*! \brief Setup discretizations
+
+    \date 08/16
+    \author rauch  */
+    virtual void InitDiscretizations(
         const Epetra_Comm& comm,
         const std::string& struct_disname,
         const std::string& scatra_disname);
@@ -130,9 +162,6 @@ namespace SSI
 
   private:
 
-    /// setup adapters for transport on boundary if necessary
-    void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
-
     ///Set material pointers for matching structure and scatra grids
     void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
 
@@ -152,6 +181,40 @@ namespace SSI
 
     /// helper class for applying SSI couplings
     Teuchos::RCP< SSICouplingBase> ssicoupling_;
+
+  private:
+
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+  protected:
+
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup()
+    {return issetup_;};
+
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit()
+    {return isinit_;};
+
+    //! check if \ref Setup() was called
+    void CheckIsSetup()
+    {if(not IsSetup()) dserror("Setup() was not called.");};
+
+    //! check if \ref Init() was called
+    void CheckIsInit()
+    {if(not IsInit()) dserror("Init(...) was not called.");};
+
+  public:
+
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
 
 
   }; //SSI_Base

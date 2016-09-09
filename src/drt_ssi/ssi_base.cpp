@@ -46,7 +46,9 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
     scatra_(Teuchos::null),
     zeros_(Teuchos::null),
     fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(DRT::Problem::Instance()->SSIControlParams(),"FIELDCOUPLING")),
-    ssicoupling_(Teuchos::null)
+    ssicoupling_(Teuchos::null),
+    issetup_(false),
+    isinit_(false)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
@@ -56,15 +58,18 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
 
 
 /*----------------------------------------------------------------------*
- | Setup this class                                         rauch 08/16 |
+ | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Base::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  // reset the setup flag
+  SetIsSetup(false);
+
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get the solver number used for ScalarTransport solver
@@ -93,16 +98,175 @@ void SSI::SSI_Base::Setup(const Epetra_Comm& comm,
     scatratimeparams = &scatraparams;
   }
 
+  // structure initialized inside
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(*structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
 
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField(),true);
+
+  // call scatra base algo and setup the scatra time integrator
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
+  // call Init() on all objects used
+  scatra_->ScaTraField()->Init();
+
+  // do discretization specific setup
+  InitDiscretizations(comm,struct_disname,scatra_disname);
+
+  bool redistribute = InitFieldCoupling(comm,struct_disname,scatra_disname);
+
+  // set isinit_ flag true
+  SetIsInit(true);
+
+  return redistribute;
+}
+
+/*----------------------------------------------------------------------*
+ | Setup this class                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Base::Setup()
+{
+  // make sure Init(...) was called first
+  CheckIsInit();
+
+  // call Setup() on structure field
+  structure_->Setup();
+
+  // call Setup() on scatra field
+  scatra_->ScaTraField()->Setup();
+
+  // setup coupling objects including dof sets
+  ssicoupling_->Setup();
+
+  // construct zeros_ vector
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+
+  // set flag issetup true
+  SetIsSetup(true);
 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Setup the discretizations                                rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Base::InitDiscretizations(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
+{
+  // Scheme   : the structure discretization is received from the input. Then, an ale-scatra disc. is cloned.
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  //1.-Initialization.
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+  if(!structdis->Filled())
+    structdis->FillComplete();
+  if(!scatradis->Filled())
+    scatradis->FillComplete();
+
+  if (scatradis->NumGlobalNodes()==0)
+  {
+    // fill scatra discretization by cloning structure discretization
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
+
+    // set implementation type
+    for(int i=0; i<scatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->SSIControlParams(),"SCATRATYPE"));
+    }
+  }
+  else
+  {
+    if(fieldcoupling_==INPAR::SSI::coupling_volume_match)
+      dserror("Reading a TRANSPORT discretization from the .dat file for the input parameter 'FIELDCOUPLING volume_matching' in the"
+          "SSI CONTROL section is not supported! As this coupling relies on matching node (and sometimes element) IDs,"
+          "the ScaTra discretization is cloned from the structure discretization. Delete the ScaTra discretization"
+          "from your input file.");
+
+    // copy conditions
+    // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
+    // as standard DIRICHLET/NEUMANN CONDITIONS
+    std::map<std::string,std::string> conditions_to_copy;
+    SCATRA::ScatraFluidCloneStrategy clonestrategy;
+    conditions_to_copy = clonestrategy.ConditionsToCopy();
+    DRT::UTILS::DiscretizationCreatorBase creator;
+    creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Setup ssi coupling object                                rauch 08/16 |
+ *----------------------------------------------------------------------*/
+bool SSI::SSI_Base::InitFieldCoupling(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
+{
+  // initialize return variable
+  bool redistribution_required = false;
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+
+  //safety check
+  {
+    //check for ssi coupling condition
+    std::vector<DRT::Condition*> ssicoupling;
+    scatradis->GetCondition("SSICoupling",ssicoupling);
+    const bool havessicoupling = (ssicoupling.size()>0);
+
+    if(havessicoupling and
+        (fieldcoupling_!= INPAR::SSI::coupling_boundary_nonmatch and fieldcoupling_!= INPAR::SSI::coupling_volumeboundary_match) )
+      dserror("SSICoupling condition only valid in combination with FIELDCOUPLING set to 'boundary_nonmatching' "
+          "or 'volumeboundary_matching' in SSI DYNAMIC section. ");
+
+    if(fieldcoupling_==INPAR::SSI::coupling_volume_nonmatch)
+    {
+      const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
+      if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(volmortarparams,"COUPLINGTYPE")!=
+          INPAR::VOLMORTAR::couplingtype_coninter)
+        dserror("Volmortar coupling only tested for consistent interpolation, "
+            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own risk.");
+    }
+  }
+
+  //build SSI coupling class
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_volume_match:
+    ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolume());
+    break;
+  case INPAR::SSI::coupling_volume_nonmatch:
+    ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
+    // redistribution is still performed inside
+    redistribution_required = false;
+    break;
+  case INPAR::SSI::coupling_boundary_nonmatch:
+    ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
+    break;
+  case INPAR::SSI::coupling_volumeboundary_match:
+    ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
+    redistribution_required = true;
+    break;
+  default:
+    dserror("unknown type of field coupling for SSI!");
+    break;
+  }
+
+  // initialize coupling objects including dof sets
+  ssicoupling_->Init(problem->NDim(),structdis,scatradis);
+
+  return redistribution_required;
+}
 
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 01/12  |
@@ -186,115 +350,13 @@ void SSI::SSI_Base::TestResults(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& scatra_disname)
-{
-  // Scheme   : the structure discretization is received from the input. Then, an ale-scatra disc. is cloned.
-
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  //1.-Initialization.
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
-  if(!structdis->Filled())
-    structdis->FillComplete();
-  if(!scatradis->Filled())
-    scatradis->FillComplete();
-
-  if (scatradis->NumGlobalNodes()==0)
-  {
-    // fill scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
-
-    // set implementation type
-    for(int i=0; i<scatradis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-      else
-        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->SSIControlParams(),"SCATRATYPE"));
-    }
-  }
-  else
-  {
-    if(fieldcoupling_==INPAR::SSI::coupling_volume_match)
-      dserror("Reading a TRANSPORT discretization from the .dat file for the input parameter 'FIELDCOUPLING volume_matching' in the"
-          "SSI CONTROL section is not supported! As this coupling relies on matching node (and sometimes element) IDs,"
-          "the ScaTra discretization is cloned from the structure discretization. Delete the ScaTra discretization"
-          "from your input file.");
-
-    // copy conditions
-    // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
-    // as standard DIRICHLET/NEUMANN CONDITIONS
-    std::map<std::string,std::string> conditions_to_copy;
-    SCATRA::ScatraFluidCloneStrategy clonestrategy;
-    conditions_to_copy = clonestrategy.ConditionsToCopy();
-    DRT::UTILS::DiscretizationCreatorBase creator;
-    creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
-
-  }
-
-  // setup the coupling adapters
-  {
-    DRT::Problem* problem = DRT::Problem::Instance();
-    Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-    Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
-
-    //safety check
-    {
-      //check for ssi coupling condition
-      std::vector<DRT::Condition*> ssicoupling;
-      scatradis->GetCondition("SSICoupling",ssicoupling);
-      const bool havessicoupling = (ssicoupling.size()>0);
-
-      if(havessicoupling and
-         (fieldcoupling_!= INPAR::SSI::coupling_boundary_nonmatch and fieldcoupling_!= INPAR::SSI::coupling_volumeboundary_match) )
-        dserror("SSICoupling condition only valid in combination with FIELDCOUPLING set to 'boundary_nonmatching' "
-            "or 'volumeboundary_matching' in SSI DYNAMIC section. ");
-
-      if(fieldcoupling_==INPAR::SSI::coupling_volume_nonmatch)
-      {
-        const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
-        if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(volmortarparams,"COUPLINGTYPE")!=
-             INPAR::VOLMORTAR::couplingtype_coninter)
-          dserror("Volmortar coupling only tested for consistent interpolation, "
-              "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own risk.");
-      }
-    }
-
-    //build SSI coupling class
-    switch(fieldcoupling_)
-    {
-    case INPAR::SSI::coupling_volume_match:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolume());
-      break;
-    case INPAR::SSI::coupling_volume_nonmatch:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
-      break;
-    case INPAR::SSI::coupling_boundary_nonmatch:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
-      break;
-    case INPAR::SSI::coupling_volumeboundary_match:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
-      break;
-    default:
-      dserror("unknown type of field coupling for SSI!");
-      break;
-    }
-
-    // setup coupling objects including dof sets
-    ssicoupling_->Setup(problem->NDim(),structdis,scatradis);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
                                        Teuchos::RCP<const Epetra_Vector> vel )
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   SetMeshDisp(disp);
   SetVelocityFields(vel);
 }
@@ -303,6 +365,10 @@ void SSI::SSI_Base::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   ssicoupling_->SetScalarField(structure_,phi);
 }
 
@@ -310,6 +376,10 @@ void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   ssicoupling_->SetVelocityFields(scatra_,zeros_,vel);
 }
 
@@ -317,6 +387,10 @@ void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   ssicoupling_->SetMeshDisp(scatra_,disp);
 }
 

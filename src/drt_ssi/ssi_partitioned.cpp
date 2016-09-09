@@ -42,15 +42,30 @@ void SSI::SSI_Part::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::Setup(const Epetra_Comm& comm,
+bool SSI::SSI_Part::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Base::Setup(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname);
+  returnvar =
+      SSI::SSI_Base::Init(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname);
+
+  return returnvar;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part::Setup()
+{
+  // call setup of base class
+  SSI::SSI_Base::Setup();
 
   return;
 }
+

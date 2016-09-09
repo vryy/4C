@@ -48,7 +48,6 @@
 SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams)
 : SSI_Part2WC(comm, globaltimeparams),
-  nds_disp_(-1),
   omega_(-1.0),
   exchange_manager_(NULL),
   myrank_(comm.MyPID()),
@@ -64,7 +63,7 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
 /*----------------------------------------------------------------------*
  | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
+bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
@@ -72,12 +71,27 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
     const std::string struct_disname,
     const std::string scatra_disname)
 {
+  bool returnvar=false;
+
   // call setup of base class
-  SSI::SSI_Part2WC::Setup(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+  returnvar =
+      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
 
   // check if scatra in cell is set up with ale description
   if(not ScaTraField()->ScaTraField()->IsALE())
     dserror("We need an ALE description for the cell-scatra field!");
+
+  return returnvar;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Init this object                                         rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
+{
+  // call init in base class
+  SSI::SSI_Part2WC::Setup();
 
   // initialize pointer to structure
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
@@ -165,6 +179,65 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup(
   // build map
   BuildConditionDofRowMap((StructureField()->Discretization())->GetCondition("FSICoupling"),StructureField()->Discretization(),conditiondofrowmap_);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                          rauch 08/16 |
+ *----------------------------------------------------------------------*/
+bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::InitFieldCoupling(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
+{
+  bool returnvar = false;
+
+  // call SetupDiscretizations in base class
+  returnvar =
+      SSI::SSI_Base::InitFieldCoupling(comm,struct_disname,scatra_disname);
+
+  return returnvar;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                          rauch 08/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::InitDiscretizations(
+    const Epetra_Comm& comm,
+    const std::string& struct_disname,
+    const std::string& scatra_disname)
+{
+  // call setup in base class
+  SSI::SSI_Part2WC::InitDiscretizations(comm,struct_disname,scatra_disname);
+
+  // new ale part
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+
+  // clone ale from structure for ssi-actin assembly
+  // access the ale discretization
+  Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
+  aledis = DRT::Problem::Instance()->GetDis("ale");
+  if (!aledis->Filled()) aledis->FillComplete();
+
+  // we use the structure discretization as layout for the ale discretization
+  if (structdis->NumGlobalNodes()==0)
+    dserror("ERROR: Structure discretization is empty!");
+
+  // clone ale mesh from structure discretization
+  if (aledis->NumGlobalNodes()==0)
+  {
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
+  }
+  else
+    dserror("ERROR: Reading an ALE mesh from the input file is not supported for this problem type.\n"
+            "NumGlobalNodes=%d",aledis->NumGlobalNodes());
 
   return;
 }
@@ -626,46 +699,6 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::AleToStructure
     Teuchos::RCP<const Epetra_Vector> vec)
 {
   return AleStruCoupling()->MasterToSlave(vec);
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                          rauch 08/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& scatra_disname)
-{
-  // call SetupDiscretizations in base class
-  SSI::SSI_Base::SetupDiscretizationsAndFieldCoupling(comm,struct_disname,scatra_disname);
-
-  // new ale part
-  DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-
-  // clone ale from structure for ssi-actin assembly
-  // access the ale discretization
-  Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
-  aledis = DRT::Problem::Instance()->GetDis("ale");
-  if (!aledis->Filled()) aledis->FillComplete();
-
-  // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes()==0)
-    dserror("ERROR: Structure discretization is empty!");
-
-  // clone ale mesh from structure discretization
-  if (aledis->NumGlobalNodes()==0)
-  {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
-    // setup material in every ALE element
-    Teuchos::ParameterList params;
-    params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
-  }
-  else
-    dserror("ERROR: Reading an ALE mesh from the input file is not supported for this problem type.");
-
 }
 
 

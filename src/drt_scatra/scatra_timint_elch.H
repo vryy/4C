@@ -58,6 +58,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! initialize algorithm
   virtual void Init();
 
+  //! initialize algorithm
+  virtual void Setup();
+
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/

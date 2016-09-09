@@ -56,16 +56,40 @@ FS3I::FS3I_Base::FS3I_Base()
     numstep_(DRT::Problem::Instance()->FS3IDynamicParams().get<int>("NUMSTEP")),
     dt_(DRT::Problem::Instance()->FS3IDynamicParams().get<double>("TIMESTEP")),
     time_(0.0),
-    step_(0)
+    step_(0),
+    issetup_(false),
+    isinit_(false)
 {
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_Base::Init()
+{
+  SetIsSetup(false);
+
   scatracoup_ = Teuchos::rcp(new ADAPTER::Coupling());
   scatraglobalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
   sbbtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform());
   sbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
   sibtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform());
   fbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
+
+  SetIsInit(true);
+  return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_Base::Setup()
+{
+  CheckIsInit();
+
+  SetIsSetup(true);
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -708,4 +732,14 @@ void FS3I::FS3I_Base::ExtractScatraFieldVectors(
     vec2 = scatraglobalex_->ExtractVector(globalvec,1);
   }
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_Base::CheckIsSetup()
+{if(not IsSetup()) dserror("Setup() was not called.");};
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_Base::CheckIsInit()
+{if(not IsInit()) dserror("Init(...) was not called.");};
 

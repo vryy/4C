@@ -30,8 +30,21 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
-  :PartFS3I(comm)
+  : PartFS3I(comm),
+    itmax_(-1),
+    ittol_(-1.0)
 {
+  // constructor is supposed to stay empty
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I_2WC::Init()
+{
+  // call Init() in base class
+  FS3I::PartFS3I::Init();
+
   //---------------------------------------------------------------------
   // get input parameters for two-way-coupled problems, which is
   // thermo-fluid-structure interaction, for the time being
@@ -65,12 +78,27 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
 
   if (volume_fieldcouplings_[0]==INPAR::FS3I::coupling_nonmatch or volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch )
     dserror("Mortar volume coupling is not tested for thermo-fs3i.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I_2WC::Setup()
+{
+  // call Setup() in base class
+  FS3I::PartFS3I::Setup();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::Timeloop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   InitialCalculations();
 
   while (NotFinished())
@@ -132,6 +160,9 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::PrepareTimeStep()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   // set mesh displacement and velocity fields for present time step
   SetFSISolution();
 
@@ -156,6 +187,9 @@ void FS3I::PartFS3I_2WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::OuterLoop()
 {
+  CheckIsInit();
+  CheckIsSetup();
+
 #ifdef PARALLEL
   const Epetra_Comm& comm = scatravec_[0]->ScaTraField()->Discretization()->Comm();
 #else

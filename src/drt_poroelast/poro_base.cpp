@@ -4,8 +4,10 @@
 
  \brief  Basis of all porous media algorithms
 
+ \level 2
+
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -87,16 +89,19 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy = Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     //setup projection matrices
-    volcoupl_->Setup(structdis,fluiddis,NULL,NULL,NULL,NULL,materialstrategy);
+    volcoupl_->Init(structdis,fluiddis,NULL,NULL,NULL,NULL,materialstrategy);
+    volcoupl_->Redistribute();
+    volcoupl_->Setup();
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  // ask base algorithm for the structural time integrator
+  // create the structural time integrator (Init() called inside)
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(structure->StructureField());
+  structure_->Setup();
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");

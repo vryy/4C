@@ -33,6 +33,10 @@ namespace FS3I
 
     virtual ~PartFS3I_1WC(){};
 
+    virtual void Init();
+
+    virtual void Setup();
+
     virtual void Timeloop();
 
     void DoFSIStep();

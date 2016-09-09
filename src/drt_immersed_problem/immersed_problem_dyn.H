@@ -27,6 +27,7 @@ class Discretization;
   //! global cell migration algorithm
   void CellMigrationControlAlgorithm();
 
+
   /*!
     \brief Ghost the discretization handed in to this method on all procs
 
@@ -36,6 +37,18 @@ class Discretization;
 
    */
   void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
+
+
+  /*!
+    \brief Redistribute discretizations by binning
+
+    \param vector_of_discretizations (in) : vector of RCPs to the discretisations which are supposed to be
+                                            redistributed by binning.
+
+    \return void
+
+   */
+  void CreateBinning(const std::vector<Teuchos::RCP<DRT::Discretization> > vector_of_discretizations);
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef IMMERSED_PROBLEM_DYN_H*/

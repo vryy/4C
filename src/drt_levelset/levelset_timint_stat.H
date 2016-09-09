@@ -1,13 +1,16 @@
 /*!----------------------------------------------------------------------
 \file levelset_timint_stat.H
-\brief
 
-<pre>
+\brief stationary time integration scheme for level-set problems (for coupled problems only)
+       just a dummy
+
+\level 2
+
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
+
 
 *----------------------------------------------------------------------*/
 
@@ -38,6 +41,9 @@ public:
 
   /// initialize time-integration scheme
   virtual void Init();
+
+  /// setup time-integration scheme
+  virtual void Setup();
 
   /// read restart data
   virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null){dserror("You should not need this function!"); return;};

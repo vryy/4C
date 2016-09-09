@@ -74,10 +74,26 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Init()
 {
+  // call init in base class
+  SCATRA::ScaTraTimIntImpl::Init();
+
   // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
   // Let's check for valid options
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
     ValidParameterDiffCond();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup algorithm                                          rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::Setup()
+{
+  // todo #initsetupissue
+  // DO NOT CALL Setup() IN ScaTraTimIntImpl
+  // issue with writeflux and probably scalarhandler_
+  // this should not be
 
   // set up the concentration-el.potential splitter
   splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
@@ -201,6 +217,10 @@ void SCATRA::ScaTraTimIntElch::NonlinearSolve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // check for zero or negative concentration values
   CheckConcentrationValues(phinp_);
 
@@ -216,6 +236,10 @@ void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // call base class routine
   ScaTraTimIntImpl::PrepareTimeLoop();
 
@@ -235,6 +259,10 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
  *------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 {
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
   // calculate initial electric potential field
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
     CalcInitialPotentialField();

@@ -5,12 +5,10 @@
 
     detailed description in header file combust_algorithm.H
 
-<pre>
-\maintainer Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\level 2
+
+\maintainer Magnus Winter
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "combust_algorithm.H"
@@ -30,26 +28,11 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_levelset/levelset_algorithm.H"
 #include "../drt_scatra/scatra_timint_ost.H"
-//#include "../drt_lib/standardtypes_cpp.H" // required to use mathematical constants such as PI
 
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-  /* Der constructor sollte den gesamten Algorithmus initialisieren.
-   * Hier müssen alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden.
-   *
-   * das heisst:
-   * o G-Funktionsvektor (t und ig+1) auf initial value setzen
-   * o Geschwindigkeitsvektor (t und iu+1) auf initial value setzen
-   * o alle Zähler auf 0 setzen (step_(0), f_giter_(0), g_iter_(0), f_iter_(0))
-   * o alle Normen und Grenzwerte auf 0 setzen
-   *
-   * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife
-   * passieren soll, hier passieren muss, weil die combust dyn gleich die Zeitschleife ruft.
-   *
-   * scalar transport velocity field has been initialized in ScaTraFluidCouplingAlgorithm()
-  */
 COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn, const Teuchos::ParameterList& solverparams)
 : ScaTraFluidCouplingAlgorithm(comm, combustdyn,false,"scatra",solverparams),
 // initialize member variables
@@ -64,6 +47,25 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   restart_(false),
   gen_flow_(DRT::INPUT::IntegralValue<int>(combustdyn,"GENERATE_FLOW_FIELD"))
 {
+  // Keep constructor empty
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | destructor                                                                         henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
+COMBUST::Algorithm::~Algorithm()
+{
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | init                                                                               rauch 09/16 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::Init()
+{
+  // call Init() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+
   if (Comm().MyPID()==0)
   {
     switch(combusttype_)
@@ -85,6 +87,17 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
       break;
     }
   }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | setup                                                                              rauch 09/16 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::Setup()
+{
+  // call Setup() in base class
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
   // get pointers to the discretizations from the time integration scheme of each field
   // remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
@@ -153,17 +166,14 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 }
 
 /*------------------------------------------------------------------------------------------------*
- | destructor                                                                         henke 06/08 |
- *------------------------------------------------------------------------------------------------*/
-COMBUST::Algorithm::~Algorithm()
-{
-}
-
-/*------------------------------------------------------------------------------------------------*
  | public: algorithm for a dynamic combustion problem                                 henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
+  // safety check
+  CheckIsInit();
+  CheckIsSetup();
+
   // output of initial fields
   OutputInitialField();
 
