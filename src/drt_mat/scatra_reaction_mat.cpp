@@ -142,14 +142,16 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         {
           if (stoich_->at(ii) != 0)
           {
-            if (couprole_->at(ii) == 0)
-              dserror("reac_coup_byfunction: no function defined in the ROLE list for scalar with non-zero entry in the STOICH list");
+            if (round(couprole_->at(ii)) < 1)
+              dserror("reac_coup_byfunction: no function defined in the ROLE list for scalar with positive entry in the STOICH list");
             if(functID==-1)
-              functID=couprole_->at(ii);
+              functID=round(couprole_->at(ii));
+            else if(functID!=round(couprole_->at(ii)))
+              dserror("The FUNC IDs defined in the ROLE list should all match");
           }
         }
       if(functID==-1)
-        dserror("reac_coup_byfunction must contain at least one non-zero entry in the STOICH list");
+        dserror("reac_coup_byfunction must contain at least one positive entry in the STOICH list");
       break;
     }
 
@@ -178,7 +180,7 @@ void MAT::PAR::ScatraReactionMat::Initialize()
         for(int ii=0;ii<numscal_;ii++)
         {
           // we take the value in couprole list as function ID
-          const int functID = couprole_->at(ii);
+          const int functID = round(couprole_->at(ii));
           if (functID!=0)
           {
             if(Function(functID-1).NumberComponents()!=1)
@@ -222,7 +224,7 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::ScatraReactionMat::Function(i
   }
   catch(std::bad_cast & exp)
   {
-    dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
+    dserror("Cast to VarExp Function failed! For reaction law definition only 'VAREXPR' functions are allowed!\n"
         "Check your input file!");
     return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
   }
@@ -655,7 +657,7 @@ double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
             else if (ii == toderive)
               rcdmfac *= 1.0;
           }
-          else if ( (k!= toderive) and (couprole[toderive]>00.) )
+          else if ( (k!= toderive) and (couprole[toderive]>0.0) )
           {
             if (ii==k)
               rcdmfac *= 1;
@@ -816,16 +818,11 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
 
     case MAT::PAR::reac_coup_byfunction: //reaction by function
     {
-      // only if the scalar is involved in the reaction
-      if (couprole[k]!=0)
-      {
-        // copy phi vector in different format to be read by the function
-        std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
-        // evaluate reaction term
-        bftfac= Function(couprole[k]-1).Evaluate(0,variables);
-      }
-      else
-        bftfac = 0.0;
+      // copy phi vector in different format to be read by the function
+      std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
+      // evaluate reaction term
+      bftfac= Function(round(couprole[k])-1).Evaluate(0,variables);
+
       break;
     }
 
@@ -927,20 +924,15 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
 
     case MAT::PAR::reac_coup_byfunction: //reaction by function
     {
-      // only for scalars involved in the coupling
-      if (couprole[k]!=0)
-      {
-        // copy phi vector in different format to be read by the function
-        std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
-        // evaluate the derivatives of the reaction term
-        std::vector<std::vector<double> > deriv = Function(couprole[k]-1).FctDer(0,variables);
+      // copy phi vector in different format to be read by the function
+      std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
+      // evaluate the derivatives of the reaction term
+      std::vector<std::vector<double> > deriv = Function(round(couprole[k])-1).FctDer(0,variables);
 
-        // the derivative needed is the derivative of the first function (index 0) w.r.t. to
-        // the index of the scalar to derive (index toderive)
-        bfdmfac = deriv[0][toderive];
-      }
-      else
-        bfdmfac = 0.0;
+      // the derivative needed is the derivative of the first function (index 0) w.r.t. to
+      // the index of the scalar to derive (index toderive)
+      bfdmfac = deriv[0][toderive];
+
       break;
     }
 
