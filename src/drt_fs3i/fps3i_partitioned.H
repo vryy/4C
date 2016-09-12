@@ -141,6 +141,12 @@ namespace FS3I
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
+    /// scatra field on fluid
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
+
+    /// scatra field on structure
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
+
   };
 }
 

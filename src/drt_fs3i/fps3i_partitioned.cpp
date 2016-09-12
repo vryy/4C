@@ -227,30 +227,22 @@ void FS3I::PartFPS3I::Init()
     dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
+  fluidscatra_ =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver1number),"scatra1",true));
 
   // now we can call Init() on the scatra time integrator
-  fluidscatra->ScaTraField()->Init();
+  fluidscatra_->ScaTraField()->Init();
 
-  // only now we must call Setup() on the scatra time integrator.
-  // all objects relying on the parallel distribution are
-  // created and pointers are set.
-  fluidscatra->ScaTraField()->Setup();
-
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
+  structscatra_ =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver2number),"scatra2",true));
-
-
 
   // only now we must call Init() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  structscatra->ScaTraField()->Init();
+  structscatra_->ScaTraField()->Init();
 
-
-  scatravec_.push_back(fluidscatra);
-  scatravec_.push_back(structscatra);
+  scatravec_.push_back(fluidscatra_);
+  scatravec_.push_back(structscatra_);
 
   //---------------------------------------------------------------------
   // check various input parameters
@@ -308,6 +300,12 @@ void FS3I::PartFPS3I::Init()
 void FS3I::PartFPS3I::Setup()
 {
   FS3I::FS3I_Base::Setup();
+
+  // only now we must call Setup() on the scatra time integrators.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  fluidscatra_->ScaTraField()->Setup();
+  structscatra_->ScaTraField()->Setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
