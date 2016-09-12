@@ -12,12 +12,14 @@
                 089 - 289-15251
  *----------------------------------------------------------------------*/
 
+#include "porofluid_phasemanager.H"
+
+#include "porofluidmultiphase_ele_calc_utils.H"
+
 #include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/fluidporo_singlephase.H"
 
 #include <Epetra_SerialDenseSolver.h>
-
-#include "porofluid_phasemanager.H"
 
 
 /*----------------------------------------------------------------------*
@@ -55,8 +57,9 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::Setup(
     const MAT::Material& material)
 {
   // check the material
-  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase)
-    dserror("only poro multiphase material valid");
+  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    dserror("only poro multiphase and poro multiphase reactions material valid");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -76,7 +79,7 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::Setup(
   {
     // get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
-        GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
 
     // consistency checks
     if( singlephasemat.PoroDofType() == INPAR::MAT::m_fluidporo_phasedof_pressuresum
@@ -115,9 +118,6 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateGPState(
   if(numphases_ != (int)phinp.size())
     dserror("Length of phinp vector is not equal to the number of phases");
 
-  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase)
-    dserror("only poro multiphase material valid");
-
   // cast the material to multiphase material
   const MAT::FluidPoroMultiPhase& multiphasemat =
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateGPState(
   {
     //get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
-        GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
 
     // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
     genpressure_[iphase] = singlephasemat.EvaluateGenPressure(iphase,phinp);
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateGPState(
   {
     // get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
-        GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
 
     saturation_[iphase] = singlephasemat.EvaluateSaturation(iphase,phinp,pressure_);
     // the saturation of the last phase is 1.0- (sum of all saturations)
@@ -264,7 +264,7 @@ double DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateDerivOfSaturationWrtPressur
 {
   //get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
-      GetSinglePhaseMatFromMaterial(material,phasenum);
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
   return singlephasemat.EvaluateDerivOfSaturationWrtPressure(phasenum,doftoderive,state);
 }
@@ -280,7 +280,7 @@ double DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateDerivOfDofWrtPressure(
 {
   //get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
-      GetSinglePhaseMatFromMaterial(material,phasenum);
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
   return singlephasemat.EvaluateDerivOfDofWrtPressure(phasenum,doftoderive,state);
 }
@@ -381,7 +381,7 @@ double DRT::ELEMENTS::PoroFluidPhaseManager::Bulkmodulus(
 
   //get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
-      GetSinglePhaseMatFromMaterial(material,phasenum);
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
   return singlephasemat.Bulkmodulus();
 }
@@ -398,45 +398,7 @@ double DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateRelDiffusivity(
 
   //get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
-      GetSinglePhaseMatFromMaterial(material,phasenum);
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
   return singlephasemat.Permeability()/singlephasemat.Viscosity();
-}
-
-/*----------------------------------------------------------------------------------*
- * get the single phase material from the element multiphase material    vuong 08/16 |
-*-----------------------------------------------------------------------------------*/
-const MAT::FluidPoroSinglePhase&
-DRT::ELEMENTS::PoroFluidPhaseManager::GetSinglePhaseMatFromMultiMaterial(
-    const MAT::FluidPoroMultiPhase& multiphasemat,
-    int phasenum) const
-{
-  // get the single phase material by its ID
-  const int matid = multiphasemat.MatID(phasenum);
-  Teuchos::RCP< MAT::Material> singlemat = multiphasemat.MaterialById(matid);
-
-  // safety check and cast
-  if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-    dserror("only poro singlephase material valid");
-
-  return static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
-}
-
-/*------------------------------------------------------------------------*
- *  get the single phase material from the element material   vuong 08/16 |
-*-------------------------------------------------------------------------*/
-const MAT::FluidPoroSinglePhase&
-DRT::ELEMENTS::PoroFluidPhaseManager::GetSinglePhaseMatFromMaterial(
-    const MAT::Material& material,
-    int phasenum) const
-{
-  //safety check
-  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase)
-    dserror("only poro multiphase material valid");
-
-  //cast
-  const MAT::FluidPoroMultiPhase& multiphasemat =
-      static_cast<const MAT::FluidPoroMultiPhase&>(material);
-
-  return GetSinglePhaseMatFromMultiMaterial(multiphasemat,phasenum);
 }

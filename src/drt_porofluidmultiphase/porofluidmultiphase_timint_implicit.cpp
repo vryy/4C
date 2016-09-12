@@ -90,6 +90,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   nds_disp_(-1),
   nds_vel_(-1),
   nds_solidpressure_(-1),
+  nds_scatra_(-1),
   discret_(actdis),
   output_ (output),
   sysmat_(Teuchos::null),
@@ -114,13 +115,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int nds_scalar)
 {
   //set flags
   isale_             = isale;
   nds_disp_          = nds_disp;
   nds_vel_           = nds_vel;
   nds_solidpressure_ = nds_solidpressure;
+  nds_scatra_        = nds_scalar;
 
   // make sure the values make sense
   // -1 is the default value, meaning that there is no coupling
@@ -262,6 +265,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetElementGeneralParameters() const
   eleparams.set<int>("nds_disp",nds_disp_);
   eleparams.set<int>("nds_vel",nds_vel_);
   eleparams.set<int>("nds_solidpressure",nds_solidpressure_);
+  eleparams.set<int>("nds_scalar",nds_scatra_);
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);

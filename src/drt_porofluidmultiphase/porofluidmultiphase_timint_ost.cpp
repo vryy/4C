@@ -44,10 +44,11 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int ndsporofluid_scatra)
 {
   // initialize base class
-  TimIntImpl::Init(isale,nds_disp,nds_vel,nds_solidpressure);
+  TimIntImpl::Init(isale,nds_disp,nds_vel,nds_solidpressure,ndsporofluid_scatra);
 
   return;
 }

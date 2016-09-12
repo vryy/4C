@@ -2192,6 +2192,42 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // multiphase flow in a poroelastic material with reactions
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroMultiPhaseReactions",
+                                            "multi phase flow in deformable porous media and list of reactions",
+                                            INPAR::MAT::m_fluidporo_multiphase_reactions));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedReal(m,"PERMEABILITY","permeability of medium");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
+    AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one reaction for multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSingleReaction",
+                                            "advanced reaction material",
+                                            INPAR::MAT::m_fluidporo_singlereaction));
+
+    AddNamedInt(m,"NUMSCAL","number of scalars coupled with this problem");
+    AddNamedInt(m,"NUMPHASES","number of phases");
+    AddNamedIntVector(m,"SCALE","advanced reaction list","NUMPHASES");
+    AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
+    AddNamedInt(m,"FUNCTID","function ID defining the reaction");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // one phase for multiphase flow in a poroelastic material
   {
     Teuchos::RCP<MaterialDefinition> m

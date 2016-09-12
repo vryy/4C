@@ -59,7 +59,8 @@ namespace POROMULTIPHASE
         bool isale,
         int nds_disp,
         int nds_vel,
-        int nds_solidpressure) =0;
+        int nds_solidpressure,
+        int ndsporofluid_scatra) =0;
 
     /// read restart
     void ReadRestart( int restart );
@@ -89,8 +90,11 @@ namespace POROMULTIPHASE
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
                             Teuchos::RCP<const Epetra_Vector> vel ) ;
 
-    /// set fluid solution on structure field
+    /// set solid pressure on structure field
     void SetSolidPressure( Teuchos::RCP<const Epetra_Vector> phi ) ;
+
+    /// set scatra solution on fluid field
+    void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars ) ;
 
     /// unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> StructDispnp() const;

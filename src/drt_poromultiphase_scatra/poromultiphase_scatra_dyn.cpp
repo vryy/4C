@@ -51,9 +51,10 @@ void poromultiphasescatra_dyn(int restart)
   }
 
   // initialize variables for dof set numbers
-  int nds_disp(-1);
-  int nds_vel(-1);
-  int nds_solidpressure(-1);
+  int ndsporo_disp(-1);
+  int ndsporo_vel(-1);
+  int ndsporo_solidpressure(-1);
+  int ndsporofluid_scatra(-1);
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
   POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
@@ -61,9 +62,10 @@ void poromultiphasescatra_dyn(int restart)
       struct_disname,
       fluid_disname,
       scatra_disname,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure);
+      ndsporo_disp,
+      ndsporo_vel,
+      ndsporo_solidpressure,
+      ndsporofluid_scatra);
 
   //Parameter reading
   // access poro multiphase scatra params list
@@ -98,9 +100,10 @@ void poromultiphasescatra_dyn(int restart)
       fluid_disname,
       scatra_disname,
       true,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure);
+      ndsporo_disp,
+      ndsporo_vel,
+      ndsporo_solidpressure,
+      ndsporofluid_scatra);
 
   // read the restart information, set vectors and variables
   if (restart)

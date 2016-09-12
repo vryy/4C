@@ -53,7 +53,8 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::CheckMaterialType(
 // Here we check first, whether this material is of admissible type
 INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
 if (
-    (mtype != INPAR::MAT::m_fluidporo_multiphase)
+    (mtype != INPAR::MAT::m_fluidporo_multiphase) and
+    (mtype != INPAR::MAT::m_fluidporo_multiphase_reactions)
    )
   dserror("Material with ID %d is not admissible for porofluid multiphase elements",matid);
 }

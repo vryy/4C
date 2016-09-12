@@ -35,6 +35,7 @@ namespace ELEMENTS
 // forward declarations
 class PoroFluidMultiPhaseEleParameter;
 class PoroFluidPhaseManager;
+class PoroFluidReactionEvaluator;
 
   template<DRT::Element::DiscretizationType distype>
   class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
@@ -77,7 +78,7 @@ class PoroFluidPhaseManager;
     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
     //! element-type specific flag if second derivatives are needed
-    static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::Use2ndDerivs<distype>::use;
+    static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
 
     /// In this class we do not define a static ScaTraEle...* Instance
     /// since only derived child classes are free to be allocated!!
@@ -156,7 +157,9 @@ class PoroFluidPhaseManager;
     void GetStructMaterial(DRT::Element*                 ele);
 
     /// Setup element evaluation
-    virtual void PrepareGaussPointLoop();
+    virtual void PrepareGaussPointLoop(
+        DRT::Element*                         ele        ///< the element whose matrix is calculated
+        );
 
     virtual void GaussPointLoop(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
@@ -223,6 +226,18 @@ class PoroFluidPhaseManager;
       const MAT::Material&              material,     //!< material of the element
       const double                      timefacfac,   //!< domain-integration factor times time-integration factor
       const LINALG::Matrix<nsd_,nsd_>&  difftensor    //!< diffusion tensor
+    );
+
+    //! calculation of reactive element matrix
+    virtual void CalcMatReac(
+      Epetra_SerialDenseMatrix&          emat,               //!< element matrix to be filled
+      const int                          curphase,           //!< index of current phase
+      const int                          phasetoadd,         //!< index of current phase
+      const PoroFluidPhaseManager&       phasemanager,       //!< phase manager
+      const PoroFluidReactionEvaluator&  reactionevaluator,  //!< reaction evaluator
+      const MAT::Material&               material,           //!< material of the element
+      const double                       timefacfac,         //!< domain-integration factor times time-integration factor
+      bool                               scalewithsaturation //!< flag wether to scale with saturation
     );
 
     //! calculation of mass element matrix
@@ -318,7 +333,7 @@ class PoroFluidPhaseManager;
     //! standard Galerkin transient, old part of rhs and source term
     void CalcRHSHistAndSource(
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
-      const int                     k,           //!< index of current scalar
+      const int                     curphase,    //!< index of current phase
       const double                  fac,         //!< domain-integration factor
       const double                  rhsint       //!< rhs at Gauss point
     );
@@ -326,7 +341,7 @@ class PoroFluidPhaseManager;
     //! standard Galerkin convective term on right hand side
     void CalcRHSConv(
       Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
-      const int                     k,            //!< index of current scalar
+      const int                     curphase,     //!< index of current phase
       const PoroFluidPhaseManager&  phasemanager, //!< phase manager
       const double                  porosity,     //!< porosity at gauss point
       const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
@@ -336,11 +351,11 @@ class PoroFluidPhaseManager;
     //! standard Galerkin convective term (conservative contribution) on right hand side
     void CalcRHSConvCons(
       Epetra_SerialDenseVector&     erhs,                 //!< element vector to be filled
-      const int                     k,                    //!< index of current scalar
+      const int                     curphase,             //!< index of current phase
       const PoroFluidPhaseManager&  phasemanager,         //!< phase manager
       const double                  rhsfac,               //!< time-integration factor for rhs times domain-integration factor
       const double                  vdiv,                 //!< convective term
-      bool                          scalewithsaturation
+      bool                          scalewithsaturation   //!< flag wether to scale with saturation
     );
 
     //! standard Galerkin diffusive term on right hand side
@@ -352,6 +367,18 @@ class PoroFluidPhaseManager;
       const double                                rhsfac,       //!< time-integration factor for rhs times domain-integration factor
       const std::vector<LINALG::Matrix<nsd_,1> >& gradphi,      //!< gradient of scalar
       const LINALG::Matrix<nsd_,nsd_>&            difftensor    //!< pre factor of diffusive term
+    );
+
+    //! reaction terms on right hand side
+    virtual void CalcRHSReac(
+      Epetra_SerialDenseVector&             erhs,               //!< element vector to be filled
+      const int                             curphase,           //!< index of current phase
+      const int                             phasetoadd,         //!< index of current phase
+      const PoroFluidPhaseManager&          phasemanager,       //!< phase manager
+      const PoroFluidReactionEvaluator&     reactionevaluator,  //!< reaction evaluator
+      const MAT::Material&                  material,           //!< material of the element
+      const double                          rhsfac,             //!< time-integration factor for rhs times domain-integration factor
+      bool                                  scalewithsaturation //!< flag wether to scale with saturation
     );
 
     //! adaption of rhs with respect to time integration
@@ -428,6 +455,11 @@ class PoroFluidPhaseManager;
 
   private:
     /*========================================================================*/
+    //! @name helper methods
+    /*========================================================================*/
+    inline bool IsReaction() {return reactionevaluator_!=Teuchos::null;};
+
+    /*========================================================================*/
     //! @name can be very useful
     /*========================================================================*/
 
@@ -493,20 +525,25 @@ class PoroFluidPhaseManager;
     std::vector<LINALG::Matrix<nen_,1> > bodyforce_;
 
     /*========================================================================*/
-    //! @name velocity, pressure, and related
+    //! @name velocity, pressure, and related to coupled problem
     /*========================================================================*/
 
     //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,nen_> evelnp_;
     //! nodal displacement values for ALE
     LINALG::Matrix<nsd_,nen_> edispnp_;
+    //! nodal scalar values for scatra coupling
+    std::vector<LINALG::Matrix<nen_,1> > escalarnp_;
 
 
     //! corresponding poro structure material
     Teuchos::RCP< MAT::StructPoro > structmat_;
 
-    //! corresponding poro structure material
+    //! manager class for handling phases and corresponding DOFs
     Teuchos::RCP< PoroFluidPhaseManager > phasemanager_;
+
+    //! helper class for evaluation of reaction terms
+    Teuchos::RCP< PoroFluidReactionEvaluator > reactionevaluator_;
 
   };
 

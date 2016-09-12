@@ -68,9 +68,10 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     const std::string& struct_disname,
     const std::string& fluid_disname,
     const std::string& scatra_disname,
-    int& nds_disp,
-    int& nds_vel,
-    int& nds_solidpressure)
+    int& ndsporo_disp,
+    int& ndsporo_vel,
+    int& ndsporo_solidpressure,
+    int& ndsporofluid_scatra)
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
@@ -80,9 +81,9 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
       comm,
       struct_disname,
       fluid_disname,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure);
+      ndsporo_disp,
+      ndsporo_vel,
+      ndsporo_solidpressure);
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -120,11 +121,13 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     dserror("unexpected dof sets in scatra field");
   if (scatradis->AddDofSet(fluiddofset) != 2)
     dserror("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure)) != 3)
+  if (scatradis->AddDofSet(fluiddis->GetDofSetProxy(ndsporo_solidpressure)) != 3)
     dserror("unexpected dof sets in scatra field");
   if (structdis->AddDofSet(scatradofset)!=3)
     dserror("unexpected dof sets in structure field");
-  if (fluiddis->AddDofSet(scatradofset)!=3)
+
+  ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
+  if (ndsporofluid_scatra!=3)
     dserror("unexpected dof sets in fluid field");
 
   return;

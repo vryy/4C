@@ -63,6 +63,8 @@ namespace DRT
         int NdsDisp() const {return nds_disp_;};
         int NdsVel() const {return nds_vel_;};
         int NdsSolidPressure() const {return nds_solidpressure_;};
+        int NdsScalar() const {return nds_scalar_;};
+        bool HasScalar() const {return nds_scalar_>-1;};
         //@}
 
       private:
@@ -103,6 +105,8 @@ namespace DRT
         int nds_vel_;
         //! number of dof set related to solid pressure
         int nds_solidpressure_;
+        //! number of dof set related to scalar field
+        int nds_scalar_;
         //! setup flag
         bool isset_generalparams_;
         //@}

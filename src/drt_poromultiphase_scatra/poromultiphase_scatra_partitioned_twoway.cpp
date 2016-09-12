@@ -56,7 +56,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int ndsporofluid_scatra)
 {
   //call base class
   POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitioned::Init(
@@ -72,7 +73,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
       isale,
       nds_disp,
       nds_vel,
-      nds_solidpressure);
+      nds_solidpressure,
+      ndsporofluid_scatra);
 
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.get<double>("TOLINC_GLOBAL");
@@ -131,6 +133,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrepareTimeSte
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrepareTimeLoop()
 {
+  // set structure-based scalar transport values
+  SetScatraSolution();
   poromulti_->PrepareTimeLoop();
   // initial output for scatra field
   SetPoroSolution();

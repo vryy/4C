@@ -119,7 +119,8 @@ void porofluidmultiphase_dyn(int restart)
       false, // eulerian formulation
       -1,    //  no displacements
       -1,    // no velocities
-      nds_solidpressure // dof set for post processing solid pressure
+      nds_solidpressure, // dof set for post processing solid pressure
+      -1   // no scalar field
       );
 
   // read the restart information, set vectors and variables

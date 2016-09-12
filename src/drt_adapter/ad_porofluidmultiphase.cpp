@@ -48,7 +48,8 @@ void ADAPTER::PoroFluidMultiphase::Init(
     const bool                      isale ,                ///< ALE flag
     const int nds_disp,
     const int nds_vel,
-    const int nds_solidpressure
+    const int nds_solidpressure,
+    const int ndsporofluid_scatra
     )
 {
   // -------------------------------------------------------------------
@@ -100,7 +101,9 @@ void ADAPTER::PoroFluidMultiphase::Init(
       isale,
       nds_disp,
       nds_vel,
-      nds_solidpressure);
+      nds_solidpressure,
+      ndsporofluid_scatra
+      );
 
   return;
 }
@@ -138,11 +141,22 @@ void ADAPTER::PoroFluidMultiphase::ApplyMeshMovement(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphase::SetVelocityField(
-    Teuchos::RCP<const Epetra_Vector>   vel                       //!< velocity vector
+    Teuchos::RCP<const Epetra_Vector>   vel
    )
 {
   porofluid_->SetVelocityField(vel);
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphase::SetScatraSolution(
+    unsigned nds,
+    Teuchos::RCP<const Epetra_Vector> scalars
+   )
+{
+  porofluid_->SetState(nds,"scalars",scalars);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

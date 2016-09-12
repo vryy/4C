@@ -15,6 +15,7 @@
 #include "porofluidmultiphase_ele_calc.H"
 #include "porofluid_phasemanager.H"
 #include "porofluidmultiphase_ele_parameter.H"
+#include "porofluid_reactionevaluator.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
@@ -56,8 +57,10 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
     ehist_(numdofpernode_,LINALG::Matrix<nen_,1>(true)),   // size of vector
     evelnp_(true),      // initialized to zero
     edispnp_(true),     // initialized to zero
+    escalarnp_(0),
     structmat_(Teuchos::null),
-    phasemanager_(Teuchos::null)
+    phasemanager_(Teuchos::null),
+    reactionevaluator_(Teuchos::null)
 {
   return;
 }
@@ -141,6 +144,16 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
 
   // setup the manager
   phasemanager_->Setup(*ele->Material(0));
+
+  // cast
+  Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat =
+      Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(ele->Material(0),true);
+  if(multiphasemat->IsReactive())
+  {
+    reactionevaluator_ = Teuchos::rcp(new PoroFluidReactionEvaluator());
+  }
+  else
+    reactionevaluator_ = Teuchos::null;
 
   return 0;
 }
@@ -287,6 +300,27 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeVa
     evelnp_.Clear();
   }
 
+  // get additional state vector for ALE case: grid displacement
+  if (para_->HasScalar())
+  {
+    // get number of dofset associated with scalar related dofs
+    const int ndsscalar = para_->NdsScalar();
+
+    Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(ndsscalar, "scalars");
+    if (scalarnp==Teuchos::null)
+      dserror("Cannot get state vector 'scalars'");
+
+    // determine number of scalars related dofs per node
+    const int numscalardofpernode = la[ndsscalar].lm_.size()/nen_;
+
+    // rebuild scalar vector
+    escalarnp_.clear();
+    escalarnp_.resize(numscalardofpernode,LINALG::Matrix<nen_,1>(true));
+    // extract local values of displacement field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*scalarnp,escalarnp_,la[ndsscalar].lm_);
+
+  }
+
   return;
 }
 
@@ -302,10 +336,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Sysmat(
 {
 
   // prepare gauss point evaluation
-  PrepareGaussPointLoop();
+  PrepareGaussPointLoop(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
   GaussPointLoop(intpoints,ele,emat,erhs);
@@ -317,8 +351,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Sysmat(
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop()
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop(DRT::Element* ele)
 {
+
   return;
 }
 
@@ -384,6 +419,14 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
       phidtnp[k] = funct_.Dot(ephidtnp_[k]);
     }
 
+    //! scalar values
+    std::vector<double> escalarnp(escalarnp_.size(),0.0);
+    if (para_->HasScalar())
+    {
+      for (int k = 0; k < (int)escalarnp_.size(); ++k)
+        escalarnp[k] = funct_.Dot(escalarnp_[k]);
+    }
+
     //diffusion tensor
     static LINALG::Matrix<nsd_,nsd_> difftensor;
     difftensor.Clear();
@@ -394,6 +437,13 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
     // get porosity form structure material
     // TODO linearizations of porosity w.r.t. pressure
     const double porosity = ComputePorosity(structmat_,*phasemanager_,dispint);
+
+    if(IsReaction())
+      reactionevaluator_->EvaluateGPState(
+          *phasemanager_,
+          *ele->Material(0),
+          porosity,
+          escalarnp);
 
     // loop over phases
     for (int k=0;k<numdofpernode_;++k) // deal with a system of transported scalars
@@ -438,6 +488,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
           *ele->Material(0),
           phinp,
           difftensor);
+
       // calculation of diffusive element matrix
       CalcMatDiff(
           emat,
@@ -448,6 +499,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
           timefacfac,
           difftensor);
 
+      // add the terms also into the last equation
       if(k!=numdofpernode_-1)
         CalcMatDiff(
             emat,
@@ -457,6 +509,33 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
             *ele->Material(0),
             timefacfac,
             difftensor);
+
+      // calculation of reactive element matrix
+      if( IsReaction() and reactionevaluator_->IsReactive(k) )
+      {
+        CalcMatReac(
+            emat,
+            k,
+            k,
+            *phasemanager_,
+            *reactionevaluator_,
+            *ele->Material(0),
+            timefacfac,
+            true // do scaling with saturation
+            );
+        // add the terms also into the last equation
+        if(k!=numdofpernode_-1)
+          CalcMatReac(
+              emat,
+              k,
+              numdofpernode_-1,
+              *phasemanager_,
+              *reactionevaluator_,
+              *ele->Material(0),
+              timefacfac,
+              false // do NOT scaling with saturation
+              );
+      }
 
       //----------------------------------------------------------------
       // 2) element matrix: instationary terms
@@ -631,9 +710,39 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
             gradphi,
             difftensor);
 
+      // calculation of reactive element matrix
+      if( IsReaction() and reactionevaluator_->IsReactive(k) )
+      {
+        // diffusive term
+        CalcRHSReac(
+            erhs,
+            k,
+            k,
+            *phasemanager_,
+            *reactionevaluator_,
+            *ele->Material(0),
+            rhsfac,
+            true //scale with saturation
+            );
+        if(k!=numdofpernode_-1)
+          CalcRHSReac(
+              erhs,
+              k,
+              numdofpernode_-1,
+              *phasemanager_,
+              *reactionevaluator_,
+              *ele->Material(0),
+              rhsfac,
+              false //scale with saturation
+              );
+      }
+
     }// end loop all scalars
 
+    // clear current gauss point data for safety
     phasemanager_->ClearGPState();
+    if(reactionevaluator_!=Teuchos::null)
+      reactionevaluator_->ClearGPState();
   }
 
   return;
@@ -868,6 +977,78 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcMatDiff(
   return;
 }
 
+/*------------------------------------------------------------------- *
+ |  calculation of reactive element matrix                vuong 08/16 |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcMatReac(
+  Epetra_SerialDenseMatrix&          emat,
+  const int                          curphase,
+  const int                          phasetoadd,
+  const PoroFluidPhaseManager&       phasemanager,
+  const PoroFluidReactionEvaluator&  reactionevaluator,
+  const MAT::Material&               material,
+  const double                       timefacfac,
+  bool                               scalewithsaturation
+  )
+{
+  double scaledtimefacfac =timefacfac;
+
+  if(scalewithsaturation)
+  {
+    // saturation
+    scaledtimefacfac *= phasemanager.Saturation(curphase);
+  }
+
+  //----------------------------------------------------------------
+  // reaction terms
+  //----------------------------------------------------------------
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const double v = scaledtimefacfac*funct_(vi);
+    const int fvi = vi*numdofpernode_+phasetoadd;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const double vfunct = v*funct_(ui);
+      for (int idof=0; idof<numdofpernode_; ++idof)
+      {
+        const int fui = ui*numdofpernode_+idof;
+
+        emat(fvi,fui) += vfunct*reactionevaluator.GetReacDeriv(curphase,idof);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------
+  // linearization of saturation w.r.t. dof
+  //----------------------------------------------------------------
+  if(scalewithsaturation)
+  {
+    double facfacreac = timefacfac*reactionevaluator.GetReacTerm(curphase);
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = facfacreac*funct_(vi);
+      const int fvi = vi*numdofpernode_+phasetoadd;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double vfunct = v*funct_(ui);
+        for (int idof=0; idof<numdofpernode_; ++idof)
+        {
+          const int fui = ui*numdofpernode_+idof;
+
+          emat(fvi,fui) +=
+              vfunct*phasemanager.SaturationDeriv(curphase,idof);
+        }
+      }
+    }
+  }
+
+  return;
+}
+
 
 /*------------------------------------------------------------------- *
  |  calculation of mass element matrix                    vuong 08/16  |
@@ -877,15 +1058,15 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcMatMassPressure(
   Epetra_SerialDenseMatrix&     emat,
   const int                     curphase,           //!< index of current phase
   const int                     phasetoadd,           //!< index of current phase
-  const PoroFluidPhaseManager& phasemanager,
-  const MAT::Material& material,
+  const PoroFluidPhaseManager&  phasemanager,
+  const MAT::Material&          material,
   const double                  fac,
   const double                  timefacfac,
   const double                  porosity,
   const double                  hist,
-  const std::vector<double>&                  phinp,
-  const std::vector<double>&                  phin,
-  const std::vector<double>&                  phidtnp
+  const std::vector<double>&    phinp,
+  const std::vector<double>&    phin,
+  const std::vector<double>&    phidtnp
   )
 {
   // saturation
@@ -1283,7 +1464,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSMassSaturation(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSHistAndSource(
   Epetra_SerialDenseVector&     erhs,
-  const int                     k,
+  const int                     curphase,
   const double                  fac,
   const double                  rhsint
   )
@@ -1291,7 +1472,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSHistAndSource(
   double vrhs = fac*rhsint;
   for (int vi=0; vi<nen_; ++vi)
   {
-    const int fvi = vi*numdofpernode_+k;
+    const int fvi = vi*numdofpernode_+curphase;
 
     erhs[fvi] += vrhs*funct_(vi);
   }
@@ -1306,7 +1487,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSHistAndSource(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSConv(
   Epetra_SerialDenseVector&     erhs,
-  const int                     k,
+  const int                     curphase,
   const PoroFluidPhaseManager&  phasemanager,
   const double                  porosity,
   const double                  rhsfac,
@@ -1315,10 +1496,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSConv(
 {
   double conv_sat = 0.0;
   for (int idof=0; idof<numdofpernode_; ++idof)
-    conv_sat += rhsfac*porosity*phasemanager.SaturationDeriv(k,idof)*conv_phi[idof];
+    conv_sat += rhsfac*porosity*phasemanager.SaturationDeriv(curphase,idof)*conv_phi[idof];
   for (int vi=0; vi<nen_; ++vi)
   {
-    const int fvi = vi*numdofpernode_+k;
+    const int fvi = vi*numdofpernode_+curphase;
 
     erhs[fvi] -= conv_sat*funct_(vi);
   }
@@ -1333,7 +1514,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSConv(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSConvCons(
   Epetra_SerialDenseVector&     erhs,
-  const int                     k,
+  const int                     curphase,
   const PoroFluidPhaseManager&  phasemanager,
   const double                  rhsfac,
   const double                  vdiv,
@@ -1342,13 +1523,13 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSConvCons(
 {
   double vrhs=0.0;
   if(scalewithsaturation)
-    vrhs = rhsfac*phasemanager.Saturation(k)*vdiv;
+    vrhs = rhsfac*phasemanager.Saturation(curphase)*vdiv;
   else
     vrhs = rhsfac*vdiv;
 
   for (int vi=0; vi<nen_; ++vi)
   {
-    const int fvi = vi*numdofpernode_+k;
+    const int fvi = vi*numdofpernode_+curphase;
 
     erhs[fvi] -= vrhs*funct_(vi);
   }
@@ -1392,6 +1573,40 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSDiff(
     for (int j = 0; j<nsd_; j++)
       laplawf += derxy_(j,vi)*diffflux(j);
     erhs[fvi] -= rhsfac*laplawf;
+  }
+
+  return;
+}
+
+/*-------------------------------------------------------------------- *
+ |  standard Galerkin reaction term on right hand side     vuong 08/16 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSReac(
+  Epetra_SerialDenseVector&            erhs,
+  const int                            curphase,
+  const int                            phasetoadd,
+  const PoroFluidPhaseManager&         phasemanager,
+  const PoroFluidReactionEvaluator&    reactionevaluator,
+  const MAT::Material&                 material,
+  const double                         rhsfac,
+  bool                                 scalewithsaturation
+  )
+{
+  double scale =1.0;
+
+  if(scalewithsaturation)
+  {
+    // saturation
+    scale = phasemanager.Saturation(curphase);
+  }
+
+  double vrhs = scale*rhsfac*reactionevaluator.GetReacTerm(curphase);
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+phasetoadd;
+    erhs[fvi] -= vrhs*funct_(vi);
   }
 
   return;
@@ -1497,7 +1712,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeDiffTensor(
     LINALG::Matrix<nsd_,nsd_>&    difftensor) const
 {
 
-  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase)
+  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
     dserror("only poro multiphase material valid");
 
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -1725,7 +1941,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ReconFlux(
     )
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
    // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)

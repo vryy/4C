@@ -2,7 +2,7 @@
 /*!
  \file porofluidmultiphase_ele_calc_utils.H
 
- \brief helpful template definitions for the porofluidmultiphase element
+ \brief helpful methods and template definitions for the porofluidmultiphase element
 
    \level 3
 
@@ -18,8 +18,35 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+namespace MAT
+{
+class Material;
+class FluidPoroSinglePhase;
+class FluidPoroMultiPhase;
+class FluidPoroMultiPhaseReactions;
+class FluidPoroSingleReaction;
+}
+
 namespace POROFLUIDMULTIPHASE
 {
+
+namespace ELEUTILS
+{
+
+//! get the single phase material from the element material
+const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMaterial(
+    const MAT::Material& material,
+    int phasenum);
+
+//! get the single phase material from the element multiphase material
+const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMultiMaterial(
+    const MAT::FluidPoroMultiPhase& multiphasemat,
+    int phasenum);
+
+//! get the single phase material from the element multiphase reactions material
+MAT::FluidPoroSingleReaction& GetSingleReactionMatFromMultiReactionsMaterial(
+    const MAT::FluidPoroMultiPhaseReactions& multiphasereacmat,
+    int phasenum);
 
   /*!
   \brief Decide, whether second derivatives are needed  (template version)
@@ -100,6 +127,7 @@ namespace POROFLUIDMULTIPHASE
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
 
+} // namespace ELEUTILS
 
 } // namespace POROFLUIDMULTIPHASE
 

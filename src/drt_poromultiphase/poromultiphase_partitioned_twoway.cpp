@@ -49,7 +49,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int ndsporofluid_scatra)
 {
   //call base class
   POROMULTIPHASE::PoroMultiPhasePartitioned::Init(
@@ -62,7 +63,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
       isale,
       nds_disp,
       nds_vel,
-      nds_solidpressure);
+      nds_solidpressure,
+      ndsporofluid_scatra);
 
   // initialize increment vectors
   phiincnp_ = LINALG::CreateVector(*fluid_->DofRowMap(0),true);

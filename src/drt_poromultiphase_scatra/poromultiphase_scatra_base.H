@@ -66,7 +66,8 @@ namespace POROMULTIPHASESCATRA
         bool isale,
         int nds_disp,
         int nds_vel,
-        int nds_solidpressure) =0;
+        int nds_solidpressure,
+        int ndsporofluid_scatra) =0;
 
     /// read restart
     void ReadRestart( int restart );
@@ -111,6 +112,10 @@ namespace POROMULTIPHASESCATRA
     void SetMeshDisp();
     //! apply solution fields (except displacements) to scatra
     void SetSolutionFields();
+
+    //! dofset of scatra field on fluid dis
+    // TODO: find a better way to do this. Perhaps this should be moved to the adapter?
+    int ndsporofluid_scatra_;
 
   }; //PoroMultiPhaseScaTraBase
 

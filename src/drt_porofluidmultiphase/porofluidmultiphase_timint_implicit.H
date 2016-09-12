@@ -91,7 +91,8 @@ public:
       bool isale,
       int nds_disp,
       int nds_vel,
-      int nds_solidpressure
+      int nds_solidpressure,
+      int nds_scalar
       )=0;
 
   /*========================================================================*/
@@ -522,6 +523,9 @@ protected:
 
   //! number of dofset associated with solid pressure dofs
   int nds_solidpressure_;
+
+  //! number of dofset associated with scatra dofs
+  int nds_scatra_;
 
   /*========================================================================*/
   //! @name Galerkin discretization, boundary conditions, and related

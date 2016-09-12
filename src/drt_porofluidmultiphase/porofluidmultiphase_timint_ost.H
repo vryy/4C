@@ -43,7 +43,8 @@ public:
       bool isale,
       int nds_disp,
       int nds_vel,
-      int nds_solidpressure);
+      int nds_solidpressure,
+      int ndsporofluid_scatra);
 
   /// Print information about current time step to screen (reimplementation for OST)
   virtual void PrintTimeStepInfo();

@@ -55,6 +55,9 @@ class PoroFluidPhaseManager
 
     //! @name Access methods
 
+    //! get the number of phases
+    int NumPhases() const {return numphases_;};
+
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     double SaturationDeriv(
             int phasenum,
@@ -90,6 +93,12 @@ class PoroFluidPhaseManager
     //! get pressure of phase 'phasenum'
     double Pressure(int phasenum) const;
 
+    //! get saturation of all phases
+    const std::vector<double>& Saturation() const {return saturation_;};
+
+    //! get pressure of all phases
+    const std::vector<double>& Pressure() const {return pressure_;};
+
     //! get bulk modulus of phase 'phasenum'
     double Bulkmodulus(
         const MAT::Material& material,
@@ -116,16 +125,6 @@ class PoroFluidPhaseManager
         int phasenum,
         int doftoderive,
         const std::vector<double>& state) const;
-
-    //! get the single phase material from the element material
-    const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMaterial(
-        const MAT::Material& material,
-        int phasenum) const;
-
-    //! get the single phase material from the element multiphase material
-    const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMultiMaterial(
-        const MAT::FluidPoroMultiPhase& multiphasemat,
-        int phasenum) const;
 
     //! transformation of degrees of freedom to true pressures
     Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;

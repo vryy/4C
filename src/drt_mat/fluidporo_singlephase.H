@@ -85,6 +85,9 @@ namespace MAT
 
   } // namespace PAR
 
+  /*----------------------------------------------------------------------*
+   | instance access method                                   vuong 08/16 |
+   *----------------------------------------------------------------------*/
   class FluidPoroSinglePhaseType: public DRT::ParObjectType
   {
     public:
@@ -107,10 +110,24 @@ namespace MAT
   };
 
   /*----------------------------------------------------------------------*/
+  /// Base class for a single porous fluid phase within multiphase porous flow
+  ///
+  /// This object exists (several times) at every element
+  class FluidPoroSinglePhaseBase: public Material
+  {
+  public:
+    /// construct empty material object
+    FluidPoroSinglePhaseBase(){};
+
+    /// initialize
+    virtual void Initialize()=0;
+  };
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for a single porous fluid phase within multiphase porous flow
   ///
   /// This object exists (several times) at every element
-  class FluidPoroSinglePhase: public Material
+  class FluidPoroSinglePhase: public FluidPoroSinglePhaseBase
   {
     public:
 

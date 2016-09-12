@@ -93,7 +93,9 @@ void poromultiphase_dyn(int restart)
       true,
       nds_disp,
       nds_vel,
-      nds_solidpressure);
+      nds_solidpressure,
+      -1 // no scalar field
+      );
 
   // read the restart information, set vectors and variables
   if (restart)

@@ -100,8 +100,8 @@ void MAT::FluidPoroMultiPhase::Initialize()
     std::map<int,Teuchos::RCP<MAT::Material> >::iterator it;
     for(it=materials->begin();it!=materials->end();it++)
     {
-      Teuchos::RCP<MAT::FluidPoroSinglePhase> actphase =
-          Teuchos::rcp_dynamic_cast<FluidPoroSinglePhase>(it->second,true);
+      Teuchos::RCP<MAT::FluidPoroSinglePhaseBase> actphase =
+          Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second,true);
       actphase->Initialize();
     }
   }

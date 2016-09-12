@@ -81,6 +81,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
         nds_disp_(-1),
         nds_vel_(-1),
         nds_solidpressure_(-1),
+        nds_scalar_(-1),
         isset_generalparams_(false)
 {
   return;
@@ -172,6 +173,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetGeneralParameters(
   nds_vel_ = parameters.get<int>("nds_vel",false);
   //set number of dof set related to solid pressure
   nds_solidpressure_ = parameters.get<int>("nds_solidpressure",false);
+  //set number of dof set related to solid pressure
+  nds_scalar_ = parameters.get<int>("nds_scalar",false);
 
   //done
   isset_generalparams_ = true;

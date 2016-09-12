@@ -51,7 +51,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int ndsporofluid_scatra)
 {
   // access the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -87,7 +88,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
       isale,
       nds_disp,
       nds_vel,
-      nds_solidpressure);
+      nds_solidpressure,
+      ndsporofluid_scatra);
 
   //done.
   return;
@@ -144,6 +146,16 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetVelocityFields(
 {
   fluid_->SetVelocityField(vel);
 }
+
+/*------------------------------------------------------------------------*
+ | communicate the scatra solution to the fluid             vuong 08/16  |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::SetScatraSolution(
+    unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars)
+{
+  fluid_->SetScatraSolution(nds,scalars);
+}
+
 
 /*------------------------------------------------------------------------*
  | communicate the structure displacement to the fluid        vuong 08/16  |

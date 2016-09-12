@@ -34,9 +34,10 @@ void SetupDiscretizationsAndFieldCoupling(
     const std::string& struct_disname,
     const std::string& fluid_disname,
     const std::string& scatra_disname,
-    int& nds_disp,
-    int& nds_vel,
-    int& nds_solidpressure);
+    int& ndsporo_disp,
+    int& ndsporo_vel,
+    int& ndsporo_solidpressure,
+    int& ndsporofluid_scatra);
 
 //! exchange material pointers of discretizations
 void AssignMaterialPointers(

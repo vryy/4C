@@ -87,6 +87,8 @@
 #include "fluidporo.H"
 #include "fluidporo_singlephase.H"
 #include "fluidporo_multiphase.H"
+#include "fluidporo_multiphase_reactions.H"
+#include "fluidporo_multiphase_singlereaction.H"
 #include "fluidporo_singlephaseDof.H"
 #include "fluidporo_singlephaselaw.H"
 #include "structporo.H"
@@ -408,6 +410,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::FluidPoroMultiPhase(curmat));
     MAT::PAR::FluidPoroMultiPhase* params = static_cast<MAT::PAR::FluidPoroMultiPhase*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_multiphase_reactions:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroMultiPhaseReactions(curmat));
+    MAT::PAR::FluidPoroMultiPhaseReactions* params = static_cast<MAT::PAR::FluidPoroMultiPhaseReactions*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_singlereaction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroSingleReaction(curmat));
+    MAT::PAR::FluidPoroSingleReaction* params = static_cast<MAT::PAR::FluidPoroSingleReaction*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_fluidporo_singlephase:

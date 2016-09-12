@@ -45,7 +45,8 @@ namespace POROMULTIPHASE
         bool isale,
         int nds_disp,
         int nds_vel,
-        int nds_solidpressure);
+        int nds_solidpressure,
+        int ndsporofluid_scatra);
 
     /// setup
     virtual void SetupSystem();

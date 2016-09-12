@@ -32,7 +32,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
     const Teuchos::ParameterList& globaltimeparams):
     AlgorithmBase(comm, globaltimeparams),
     poromulti_(Teuchos::null),
-    scatra_(Teuchos::null)
+    scatra_(Teuchos::null),
+    ndsporofluid_scatra_(-1)
 {
 
 }
@@ -54,8 +55,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     bool isale,
     int nds_disp,
     int nds_vel,
-    int nds_solidpressure)
+    int nds_solidpressure,
+    int ndsporofluid_scatra)
 {
+  //save the dofset number of the scatra on the fluid dis
+  ndsporofluid_scatra_ =ndsporofluid_scatra;
+
   // access the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -81,7 +86,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
                 isale,
                 nds_disp,
                 nds_vel,
-                nds_solidpressure);
+                nds_solidpressure,
+                ndsporofluid_scatra);
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
@@ -186,6 +192,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetMeshDisp()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
-  //Todo: for now its only passive transport
+  poromulti_->SetScatraSolution(ndsporofluid_scatra_,scatra_->ScaTraField()->Phinp());
   return;
 }

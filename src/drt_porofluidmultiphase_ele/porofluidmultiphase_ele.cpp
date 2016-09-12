@@ -458,7 +458,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
   Teuchos::RCP<MAT::Material> mat = Material();
-  if(mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase)
+  if(mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase or
+     mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase_reactions)
   {
     const MAT::FluidPoroMultiPhase* actmat = dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
     if(actmat==NULL)
@@ -466,7 +467,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
     numdofpernode_=actmat->NumMat();
   }
   else
-    dserror("Transport element got unsupported material type %d", mat->MaterialType());
+    dserror("PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
 
   return;
 }

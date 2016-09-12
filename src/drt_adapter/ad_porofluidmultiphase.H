@@ -58,7 +58,8 @@ namespace ADAPTER {
             const bool                      isale,                 ///< ALE flag
             const int nds_disp,
             const int nds_vel,
-            const int nds_solidpressure
+            const int nds_solidpressure,
+            const int ndsporofluid_scatra
             );
 
     /// create result test for multiphase porous fluid field
@@ -79,6 +80,12 @@ namespace ADAPTER {
     //! well as fine-scale velocity field, if required)
     virtual void SetVelocityField(
       Teuchos::RCP<const Epetra_Vector>   vel                       //!< velocity vector
+     );
+
+    //! set solution of scatra problem
+    void SetScatraSolution(
+      unsigned nds,
+      Teuchos::RCP<const Epetra_Vector>   scalars
      );
 
     //! return primary field at time n+1

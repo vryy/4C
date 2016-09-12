@@ -521,6 +521,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_singlephaseDof.cpp
   src/drt_mat/fluidporo_singlephaselaw.cpp
   src/drt_mat/fluidporo_multiphase.cpp
+  src/drt_mat/fluidporo_multiphase_reactions.cpp
+  src/drt_mat/fluidporo_multiphase_singlereaction.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth_ip.cpp
@@ -1255,10 +1257,12 @@ set(OBJS_DRT_LUBRICATION_LIB
 set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.cpp
+  src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc_utils.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_factory.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_evaluate.cpp
   src/drt_porofluidmultiphase_ele/porofluid_phasemanager.cpp
+  src/drt_porofluidmultiphase_ele/porofluid_reactionevaluator.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_evaluate.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_factory.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_calc.cpp
