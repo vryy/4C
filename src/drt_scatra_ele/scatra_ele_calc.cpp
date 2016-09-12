@@ -471,7 +471,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),convelint);
 
       // calculation of stabilization parameter at element center
-      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],convelint,vol);
+      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],convelint,vol);
     }
   }
 
@@ -574,7 +574,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         if (scatrapara_->ASSGD())
         {
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
-          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(),vol);
+          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(),vol);
 
           // compute artificial diffusion
           CalcArtificialDiff(vol,k,densnp[k],scatravarmanager_->ConVel(k),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         }
 
         // (re)compute stabilization parameter at integration point, since diffusion may have changed
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp[k],scatravarmanager_->ConVel(k),vol); //TODO:(Thon) do we really have to do this??
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(k),vol); //TODO:(Thon) do we really have to do this??
       }
 
       LINALG::Matrix<nen_,1> diff(true);

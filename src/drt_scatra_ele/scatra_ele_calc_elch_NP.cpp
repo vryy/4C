@@ -1015,10 +1015,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     {
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
-        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp[k],VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(),vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp[k],VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(),vol);
     }
   }
 
@@ -1048,7 +1048,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
       veleff.Update(myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->MigVelInt(),1.);
 
       // calculate stabilization parameter tau
-      my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp[k],veleff,vol);
+      my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],veleff,vol);
 
       switch(my::scatrapara_->TauDef())
       {

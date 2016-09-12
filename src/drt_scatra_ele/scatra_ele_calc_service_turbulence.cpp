@@ -1657,7 +1657,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
     // calculation of stabilization parameter at element center
-    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp[0],scatravarmanager_->ConVel(),vol);
+    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetStabilizationCoeff(0,scatravarmanager_->Phinp(0)),densnp[0],scatravarmanager_->ConVel(),vol);
   }
 
 
@@ -1788,7 +1788,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       }
 
       // calculation of stabilization parameter at integration point
-      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp[0],convelint,vol);
+      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetStabilizationCoeff(0,scatravarmanager_->Phinp(0)),densnp[0],convelint,vol);
     }
 
     // prepare multifractal subgrid-scale modeling

@@ -164,9 +164,6 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
     advreamanager->AddToReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt(),iquad),k,k);
   }
 
-  advreamanager->SetReaCoeff(0.0, k);
-  advreamanager->SetReaCoeffDerivMatrix(0.0,k,k);
-
   return;
 } // ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard
 

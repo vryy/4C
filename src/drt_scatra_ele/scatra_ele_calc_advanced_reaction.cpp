@@ -240,9 +240,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::MatGrowthScd(
 
     const double reaccoeff = actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe);
     // set reaction coefficient
-    remanager->AddToReaBodyForce(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe)*csnp,k);
+    remanager->AddToReaBodyForce(-actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe)*csnp,k);
     // set derivative of reaction coefficient
-    remanager->AddToReaBodyForceDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0)*csnp+reaccoeff,k,k);
+    remanager->AddToReaBodyForceDerivMatrix(-actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0)*csnp-reaccoeff,k,k);
 
     // set density at various time steps and density gradient factor to 1.0/0.0
     densn      = 1.0;

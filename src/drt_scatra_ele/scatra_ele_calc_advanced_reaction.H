@@ -341,6 +341,17 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! Return the reaction coefficient
     double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
 
+    //! Return the stabilization coefficient
+    virtual double GetStabilizationCoeff(const int k, const double phinp_k)
+    {
+      double stabboeff = ScaTraEleReaManager::GetStabilizationCoeff(k,phinp_k);
+
+      if (phinp_k>1.0e-08)
+        stabboeff += reabodyforce_[k]/phinp_k;
+
+      return stabboeff;
+    }
+
     //@}
 
   private:

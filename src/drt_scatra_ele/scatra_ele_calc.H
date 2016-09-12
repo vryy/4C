@@ -1307,6 +1307,9 @@ namespace ELEMENTS
       //! Return the reaction coefficient
       double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
 
+      //! Return the stabilization coefficient
+      virtual double GetStabilizationCoeff(const int k, const double phinp_k){return reacoeff_[k];}
+
       //! return flag: reaction activated
       bool Active(){return include_me_;}
 
