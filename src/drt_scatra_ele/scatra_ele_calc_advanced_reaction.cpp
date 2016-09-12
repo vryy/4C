@@ -25,12 +25,13 @@
 #include "../drt_lib/drt_element.H"
 
 //MATERIALS
+#include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/scatra_reaction_mat.H"
 #include "../drt_mat/scatra_growth_scd.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/matlist_reactions.H"
 #include "../drt_mat/growth_scd.H"
 #include "../drt_mat/growth_law.H"
-#include "../drt_mat/matlist_reactions.H"
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -276,7 +277,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetRhsInt(
   const int    k        //!< index of current scalar
   )
 {
-                                       //... + reaction terms not depending on phi(k) -> source term
+                                       //... + all advanced reaction terms
   rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp*ReaManager()->GetReaBodyForce(k);
 
   return;
@@ -297,14 +298,15 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
-  // -----------------first care for Term K(c)*(\partial_c c)=Id*K(c)--------------------------------------
+  // -----------------first care for 'easy' reaction terms K*(\partial_c c)=Id*K--------------------------------------
+  // NOTE: K_i must not depend on any concentrations!! Otherwise we loose the corresponding linearisations.
 
   my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
-  const double&                       phinp = my::scatravarmanager_->Phinp(k);
   const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv();
 
-  // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
+  // -----------------second care for advanced reaction terms ( - (\partial_c f(c) )------------
+  // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new implementations
 
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
@@ -314,8 +316,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    const double fac_reac        = timefacfac*densnp*( remanager->GetReaCoeffDerivMatrix(k,j)*phinp - remanager->GetReaBodyForceDerivMatrix(k,j) );
-    const double timetaufac_reac = timetaufac*densnp*( remanager->GetReaCoeffDerivMatrix(k,j)*phinp - remanager->GetReaBodyForceDerivMatrix(k,j) );
+    const double fac_reac        = timefacfac*densnp*( - remanager->GetReaBodyForceDerivMatrix(k,j) );
+    const double timetaufac_reac = timetaufac*densnp*( - remanager->GetReaBodyForceDerivMatrix(k,j) );
 
     //----------------------------------------------------------------
     // standard Galerkin reactive term
@@ -433,7 +435,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
 
 
 /*-------------------------------------------------------------------------------*
- |  set reac. body force, reaction coefficient and derivatives        thon 09/14 |
+ |  Set advanced reaction terms and derivatives                       thon 09/14 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTerms(
@@ -445,13 +447,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTe
 
   remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp()) ,k );
 
-  remanager->SetReaCoeff( matreaclist->CalcReaCoeff(k,my::scatravarmanager_->Phinp()) ,k);
-
   for (int j=0; j<my::numscal_ ;j++)
   {
     remanager->AddToReaBodyForceDerivMatrix( matreaclist->CalcReaBodyForceDerivMatrix(k,j,my::scatravarmanager_->Phinp()) ,k,j );
-
-    remanager->SetReaCoeffDerivMatrix( matreaclist->CalcReaCoeffDerivMatrix(k,j,my::scatravarmanager_->Phinp()) ,k,j );
   }
 
 }

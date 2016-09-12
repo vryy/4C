@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file scatra_reaction_mat.cpp
 
- \brief This file contains the base material for reactive scalars.
+ \brief This file contains the base material for reactive scalars. This includes all
+       calculations of the reactions terms and all its derivatives.
 
 \level 2
 <pre>
@@ -348,51 +349,7 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------/
- | Calculate K(c)                                           Thon 08/16 |
-/----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaCoeff(
-    const int k,                         //!< current scalar id
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double scale                   //!< scaling factor for reference concentrations
-    ) const
-{
-  double reactermK=0.0;
-
-  if ( Stoich()->at(k)!=0 and Couprole()->at(k)!=0.0 and fabs(ReacCoeff())>1.0e-14)
-  {
-    const double rcfac= CalcReaCoeffFac(k,phinp,scale);
-
-    reactermK -= ReacCoeff()*Stoich()->at(k)*rcfac; // scalar at integration point np
-  }
-
-  return reactermK;
-}
-
-/*----------------------------------------------------------------------/
- | calculate \frac{partial}{\partial c} K(c)                 Thon 08/16 |
-/----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaCoeffDerivMatrix(
-    const int k,                         //!< current scalar id
-    const int toderive,                  //!< current id to derive to
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double scale                   //!< scaling factor for reference concentrations
-    ) const
-{
-  double reacoeffderivmatrixKJ=0.0;
-
-  if ( Stoich()->at(k)!=0 and Couprole()->at(k)!=0.0 and fabs(ReacCoeff())>1.0e-14)
-  {
-    const double rcdmfac = CalcReaCoeffDerivFac(k,toderive,phinp,scale);
-
-    reacoeffderivmatrixKJ -= ReacCoeff()*Stoich()->at(k)*rcdmfac;
-  }
-
-  return reacoeffderivmatrixKJ;
-}
-
-
-/*----------------------------------------------------------------------/
- | calculate f(c)                                           Thon 08/16 |
+ | calculate advanced reaction terms                        Thon 08/16 |
 /----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
     const int k,                         //!< current scalar id
@@ -402,11 +359,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
 {
   double bodyforcetermK = 0.0;
 
-  // those ifs are a little nasty ...
-  // TODO: clean up! split the reaction types into classes?
-  if ( Stoich()->at(k)!=0 and
-      (Couprole()->at(k)==0.0 or Coupling()==MAT::PAR::reac_coup_byfunction) and
-      fabs(ReacCoeff())>1.0e-14)
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
   {
     const double bftfac = CalcReaBodyForceTermFac(k,phinp,scale);// scalar at integration point np
 
@@ -417,7 +370,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
 }
 
 /*----------------------------------------------------------------------/
- | calculate \frac{partial}{\partial c} f(c)                 Thon 08/16 |
+ | calculate advanced reaction term derivatives             Thon 08/16 |
 /----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
     const int k,                         //!< current scalar id
@@ -428,11 +381,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
 {
   double reabodyforcederivmatrixKJ=0.0;
 
-  // those ifs are a little nasty ...
-  // TODO: clean up! split the reaction types into classes?
-  if ( Stoich()->at(k)!=0 and
-      (Couprole()->at(k)==0.0 or Coupling()==MAT::PAR::reac_coup_byfunction) and
-      fabs(ReacCoeff())>1.0e-14)
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
   {
     const double bfdmfac = CalcReaBodyForceDerivFac(k,toderive,phinp,scale);
 
@@ -442,9 +391,9 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
   return reabodyforcederivmatrixKJ;
 }
 
-/*----------------------------------------------------------------------*
- |  Modify concentrations according to reacstart vector      thon 08/16 |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------*
+ |  Modify concentrations according to reacstart vector and do scaling   thon 08/16 |
+ *----------------------------------------------------------------------------------*/
 void MAT::ScatraReactionMat::ApplyReacStartAndScaling(
         std::vector<double>& phinp,
         const std::vector<double>* reacstart,
@@ -465,298 +414,7 @@ void MAT::ScatraReactionMat::ApplyReacStartAndScaling(
 }
 
 /*----------------------------------------------------------------------*
- |  helper for calculating K(c)                              thon 08/16 |
- *----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaCoeffFac(
-    const int k,                         //!< current scalar id
-    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-    const double scale,                  //!< scaling factor for reference concentrations
-    const bool skipreacstart
-    ) const
-{
-  const std::vector<double> couprole = *Couprole();
-
-  std::vector<double> phinp(phinp_org);
-  if ( (IsReacStart() or scale != 1.0) and not skipreacstart )
-    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
-
-  double rcfac=1.0;
-
-  switch ( Coupling() )
-  {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[ii]!=0.0)
-        {
-          if (ii!=k)
-            rcfac *=phinp.at(ii);
-        }
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[ii]!=0.0)
-        {
-          if (ii!=k)
-            rcfac *= std::pow(phinp.at(ii),couprole[ii]);
-          else
-            rcfac *= std::pow(phinp.at(ii),couprole[ii]-1.0);
-        }
-      }
-
-      if ( IsReacStart() )
-        dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
-      break;
-    }
-
-    case MAT::PAR::reac_coup_constant: //constant source term:
-    {
-      rcfac = 0.0;
-
-      if ( IsReacStart() )
-        dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
-      break;
-    }
-
-     case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[k]<0.0)
-        {
-          if ((couprole[ii] < 0.0) and (ii != k))
-            rcfac *= phinp.at(ii);
-          else if ((couprole[ii] > 0.0) and (ii!=k))
-            rcfac *= (phinp.at(ii)/(phinp.at(ii) + couprole[ii]));
-        }
-        else if (couprole[k]>0.0)
-        {
-          if (ii == k)
-            rcfac *= (1/(phinp.at(ii)+couprole[ii]));
-          else if (couprole[ii] < 0.0)
-            rcfac *= phinp.at(ii);
-          else if (couprole[ii] > 0.0)
-            rcfac *= (phinp.at(ii)/(phinp.at(ii) + couprole[ii]));
-        }
-      }
-      break;
-    }
-
-     case MAT::PAR::reac_coup_byfunction: //reaction by function
-     {
-       // in case of reaction by function everything is treated as body force!
-       rcfac =0.0;
-       break;
-     }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The couplingtype %i is not a valid coupling type.", Coupling());
-      break;
-  }
-
-  //reaction start feature
-  if ( ReacStart()->at(k) > 0.0 and not skipreacstart )
-  {
-    if ( phinp.at(k) > 0.0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
-      rcfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
-    else
-      rcfac = 0.0;
-  }
-
-    return rcfac;
-}
-
-/*----------------------------------------------------------------------*
- |  helper for calculating \frac{partial}{\partial c} K(c)   thon 08/16 |
- *----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaCoeffDerivFac(
-    const int k,                         //!< current scalar id
-    const int toderive,                  //!< current id to derive to
-    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-    const double scale                   //!< scaling factor for reference concentrations
-    ) const
-{
-  const std::vector<double> couprole = *Couprole();
-
-  std::vector<double> phinp(phinp_org);
-  if ( IsReacStart() or scale != 1.0 )
-    ApplyReacStartAndScaling( phinp,ReacStart(),scale );
-
-  double rcdmfac=1.0;
-
-  switch (Coupling())
-  {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
-    {
-      if (couprole[toderive]!=0 and toderive!=k)
-      {
-        for (int ii=0; ii < NumScal(); ii++)
-        {
-          if (couprole[ii]!=0 and ii!=k and ii!= toderive)
-            rcdmfac *= phinp.at(ii);
-        }
-      }
-      else
-        rcdmfac=0.0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
-    {
-      if (couprole[toderive]!=0 and toderive!=k)
-      {
-        for (int ii=0; ii < NumScal(); ii++)
-        {
-          if (couprole[ii]!=0 and ii!=k and ii!= toderive)
-            rcdmfac *= std::pow(phinp.at(ii),couprole[ii]);
-          else if(couprole[ii]!=0 and ii!=k and ii== toderive)
-            rcdmfac *= couprole[ii]*std::pow(phinp.at(ii),couprole[ii]-1.0);
-          else if(couprole[ii]!=0 and ii==k and ii== toderive and couprole[ii]!=1.0)
-            rcdmfac *= (couprole[ii]-1.0)*std::pow(phinp.at(ii),couprole[ii]-2.0);
-        }
-      }
-      else
-        rcdmfac=0.0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_constant: //constant source term:
-    {
-      rcdmfac = 0.0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[k] < 0.0)
-        {
-          if ((couprole[toderive]==0.0) or (k==toderive))
-            rcdmfac = 0.0;
-          else if ( (k!= toderive) and (couprole[toderive]<0.0) )
-          {
-            if (ii==k)
-              rcdmfac *= 1.0;
-            else if (ii!=toderive and couprole[ii]<0.0)
-              rcdmfac *= phinp.at(ii);
-            else if (ii!=toderive and couprole[ii]>0.0)
-              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
-            else if (ii!=toderive and couprole[ii] == 0.0)
-              rcdmfac *= 1.0;
-            else if (ii == toderive)
-              rcdmfac *= 1.0;
-          }
-          else if ( (k!= toderive) and (couprole[toderive]>0.0) )
-          {
-            if (ii==k)
-              rcdmfac *= 1;
-            else if (ii!=toderive and couprole[ii]<0.0)
-              rcdmfac *= phinp.at(ii);
-            else if (ii!=toderive and couprole[ii]>0.0)
-              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
-            else if (ii!=toderive and couprole[ii]==0.0)
-              rcdmfac *= 1.0;
-            else if (ii == toderive)
-              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)),2);
-          }
-        }
-        else if (couprole[k] > 0.0 )
-        {
-          if (couprole[toderive]==0)
-            rcdmfac = 0.0;
-          else if ( (k!=toderive) and couprole[toderive]<0.0)
-          {
-            if (ii==k)
-              rcdmfac *= 1/(couprole[ii]+phinp.at(ii));
-            else if ((ii !=toderive) and (couprole[ii]<0.0))
-              rcdmfac *= phinp.at(ii);
-            else if ((ii!=toderive) and (couprole[ii]>0.0))
-              rcdmfac *= phinp.at(ii)/(couprole[ii]+phinp.at(ii));
-            else if ((ii!=toderive) and (couprole[ii]==0.0))
-              rcdmfac *= 1.0;
-            else if (ii==toderive)
-              rcdmfac *= 1.0;
-          }
-          else if ( (k!=toderive) and couprole[toderive]>0.0)
-          {
-            if (ii==k)
-              rcdmfac *= 1/(couprole[ii]+phinp.at(ii));
-            else if ((ii!=toderive) and couprole[ii]<0.0)
-              rcdmfac *= phinp.at(ii);
-            else if ((ii!=toderive) and couprole[ii]>0.0)
-              rcdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
-            else if ((ii!=toderive) and (couprole[ii]==0.0))
-              rcdmfac *= 1.0;
-            else if (ii==toderive)
-              rcdmfac *= couprole[ii]/std::pow((couprole[ii]+phinp.at(ii)),2);
-          }
-          else if (k==toderive)
-          {
-            if (ii==k)
-              rcdmfac *= -1/std::pow((couprole[ii]+phinp.at(ii)),2);
-            else if ((ii!=toderive) and (couprole[ii]<0.0))
-              rcdmfac *= phinp.at(ii);
-            else if ((ii!=toderive) and (couprole[ii]>0.0))
-              rcdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
-            else if ((ii!=toderive) and (couprole[ii]==0.0))
-              rcdmfac *= 1.0;
-          }
-        }
-      }
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_byfunction: //reaction by function
-    {
-      // in case of reaction by function everything is treated as body force!
-      rcdmfac =0.0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The couplingtype %i is not a valid coupling type.", Coupling());
-      break;
-  }
-
-  //reaction start feature
-  if ( ReacStart()->at(k) > 0.0 )
-  {
-    if ( phinp.at(k) > 0.0 ) //! Calculate (K(c)-reacstart(c)./c)_{+}
-    {
-      rcdmfac *= (1-ReacStart()->at(k)/(phinp_org.at(k)*scale) );
-
-      if ( k==toderive )
-      {
-        const double rcfac= CalcReaCoeffFac(k,phinp,1.0,true);
-
-        rcdmfac += rcfac*ReacStart()->at(k)/std::pow(phinp_org.at(k)*scale,2);
-      }
-    }
-    else
-      rcdmfac = 0.0;
-  }
-
-  return rcdmfac;
-}
-
-/*----------------------------------------------------------------------*
- |  helper for calculating f(c)                              thon 08/16 |
+ |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
     const int k,                         //!< current scalar id
@@ -772,6 +430,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
 
   double bftfac=1.0;
 
+  // TODO: Split the reaction types into classes
   switch ( Coupling() )
   {
     case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
@@ -839,7 +498,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTermFac(
 }
 
 /*--------------------------------------------------------------------------------*
- |  helper for calculating calculate \frac{partial}{\partial c} f(c)   thon 08/16 |
+ |  helper for calculating advanced reaction term derivatives          thon 08/16 |
  *--------------------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
     const int k,                         //!< current scalar id
@@ -856,6 +515,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
 
   double bfdmfac=1.0;
 
+  // TODO: Split the reaction types into classes
   switch (Coupling())
   {
     case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:

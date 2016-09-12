@@ -20,7 +20,6 @@
 #define SCATRA_ELE_CALC_ADVANCED_REACTION_H_
 
 #include "scatra_ele_calc.H"
-#include "../drt_mat/scatra_reaction_mat.H"
 
 // forward declarations
 namespace MAT
@@ -35,154 +34,12 @@ namespace ELEMENTS
 // forward declaration
 class ScaTraEleReaManagerAdvReac;
 
-
-/*!
-\brief Implementation of advanced deterministic reaction rate equations
-
-
-<h3>Homogeneous Scatra Coupling</h3>
-
-Note for the implementation of the homogenous scatra coupling:
-assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
-
-If we assume the reaction is depending on the product of all
-reactants (this corresponds to couplingtype "simple_multiplicative"),
-the corresponding equations are: \partial_t A = -(4*1*B)*A  (negative since reactant)
-                                 \partial_t B = -(4*2*A)*B  (negative since reactant)
-                                 \partial_t C = + 4*3*A*B   (positive since product)
-
-This equation is achieved in BACI via the MAT_scatra_reaction material:
-----------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 4 MAT_scatra DIFFUSIVITY 0.0
-MAT 5 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING simple_multiplicative
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
-hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
-
-
-<h3>Special Reaction Kinetics</h3>
-
-Note that for the implementation of the michaelis-menten scatra coupling feature:
-reactant A promotes C and reactant B influences only until certain limit
-
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 4 MAT_scatra DIFFUSIVITY 0.0
-MAT 5 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -1 1 REACOEFF 5.0 COUPLING michaelis_menten ROLE -1 3 0
-
-The corresponding equations are
-            \partial_t A = -5*A*(B/(3+B))
-            \partial_t B = -5*A*(B/(3+B))
-            \partial_t C =  5*A*(B/(3+B))
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
-hence we have to calculate and set K(c)=(5*(B/(3+B));5*A*(1/(3+B));0) and f(c)=(0;0;5*A*(B/(3+B))) and corresponding derivatives.
-
-Thereby ROLE does describe of how to build the reaction term (negative value -1.3: simply multiply by A,
-positive value 3.2: multiply by B/(B+3.2) ) and STOICH does describe on which scalar the reaction term should be applied.
-Here another example:
-
-MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING michaelis_menten ROLE -1 0 1.2 3.0
-
-The corresponding equations are
-           \partial_t A =  2*2.1*A*C/(C+1.2)*D/(D+3.0)
-           \partial_t B = -1*2.1*A*C/(C+1.2)*D/(D+3.0)
-           \partial_t C =  0
-           \partial_t D =  0
-
-Note for the implementation of the constant scatra coupling feature:
-Product A is constantly produced
-
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 1 REACIDS 3 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 1 STOICH 2 REACOEFF 5.0 COUPLING constant
-
-The corresponding equation is:
-            \partial_t A = 5*2
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend linearly on c_i
-hence we have to calculate and set K(c)=(0) and f(c)=(5*2) and zero derivatives.
-
-<h3>Power Law Kinetics</h3>
-
-Note for the implementation of the power law feature:
-assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
-
-If we assume the reaction is depending on the product of all reactants via a power law
-(this corresponds to couplingtype "power_multiplicative"),
-
-The corresponding equations are: \partial_t A = -(4*1*B^2)*A^3  (negative since reactant)
-                                 \partial_t B = -(4*2*A^3)*B^2  (negative since reactant)
-                                 \partial_t C = + 4*3*A^3*B^2   (positive since product)
-
-This equation is in BACI achieved by the MAT_scatra_reaction material:
-----------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 4 MAT_scatra DIFFUSIVITY 0.0
-MAT 5 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING power_multiplicative ROLE 3 2 0
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
-hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
-
-<h3>Kinetics Defined by Function</h3>
-
-Note for the implementation of the reaction-by-function feature:
-assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
-
-The reaction is defined by a function from the input file
-(this corresponds to couplingtype "by_function").
-
-It can reproduce all other implemented reaction types (and more). Also, linearizations are computed automatically
-However, keep in mind, that it might be little slower ...
-
-For instance if you want to model mechaelis-menten type kinematics of the form
-
-           \partial_t A =  2*2.1*A*C/(C+1.2)*D/(D+3.0)
-           \partial_t B = -1*2.1*A*C/(C+1.2)*D/(D+3.0)
-           \partial_t C =  0
-           \partial_t D =  0
-
-This equation is in BACI achieved by the MAT_scatra_reaction material combined with the reaction by function feature as:
-----------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 4 MAT_scatra DIFFUSIVITY 0.0
-MAT 5 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING by_function ROLE 1 1 0 0
--------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1*phi3/(phi3+1.2)*phi4/(phi4+3.0)
-
-Note: You have to use the VAREXPR function in order to be able to read the 'phix' variables.
-      The function is defined within the role list
-
-<h3>REACSTART Feature</h3>
-
-Note for the implementation of the reacstart feature:
-Assume concentration A is reproducing with reaction coefficient 1.0 and if the concentration
-exceeds some threshold 2.0 if starts to react A->3*B with reacion coefficient 4.0.
-
-The corresponding equations are:
-            \partial_t A = -(-1.0)*A - 4.0*(A - 2.0)_{+} (first termn postive, since equivalent as reactant with negative reaction coefficient)
-            \partial_t B = 3.0*4.0 (A - 2.0)_{+}   (positive since product)
-
-This equation is achieved in BACI via the boundary condition:
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 2 REACIDS 3 4 END //collect Concentrations
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACOEFF -1.0 COUPLING simple_multiplicative
-MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH -1 3 REACOEFF 4.0 COUPLING simple_multiplicative REACSTART 2.0
-
-Implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
-hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
-
-
-\author thon (thon@mhpc.mw.tum.de)
-*/
+/*
+ This class calls all 'advanced reaction terms' calculations and applies them correctly. Therby, no assumption on
+ the shape of the (potentially nonlinear) reaction term f(c_1,...,c_n) have to be made. The actuall calculations
+ of the reaction term f(c_1,...,c_n) as well as all its linearisations \partial_c f(c) are done within the material
+ MAT_matlist_reactions and MAT_scatra_reaction
+ */
 template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
 class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype,probdim>
 {
@@ -266,7 +123,7 @@ protected:
   );
 
 
-  //! Set reac. body force, reaction coefficient and derivatives
+  //! Set advanced reaction terms and derivatives
   virtual void SetAdvancedReactionTerms(
       const int                                 k,          //!< index of current scalar
       const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
@@ -284,7 +141,7 @@ protected:
 
 /// Scatra reaction manager for Advanced_Reaction
 /*!
-  This class keeps all Advanced_Reaction-specific reaction parameter needed for the evaluation of an element. The
+  This class keeps all advanced reaction terms specific sutffs needed for the evaluation of an element. The
   ScaTraEleReaManagerAdvReac is derived from the standard ScaTraEleReaManager.
 */
 class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager

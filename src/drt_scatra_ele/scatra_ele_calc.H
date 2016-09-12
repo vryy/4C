@@ -1252,9 +1252,8 @@ namespace ELEMENTS
 
   /// Scatra reaction manager
   /*!
-      This is a basic class to handle reaction. For even more advanced reaction laws,
-      a derived class has to be constructed in the
-      problem-dependent subclass for element evaluation.
+      This is a basic class to handle constant reaction terms. For even more advanced reaction laws,
+      a derived class has to be constructed in the problem-dependent subclass for element evaluation.
   */
   class ScaTraEleReaManager
     {
@@ -1262,8 +1261,7 @@ namespace ELEMENTS
 
       ScaTraEleReaManager(int numscal):
         include_me_(false), // is reaction manager active?
-        reacoeff_(numscal,0.0), // size of vector + initialized to zero
-        reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )) // size of matrix + initialized to zero
+        reacoeff_(numscal,0.0) // size of vector + initialized to zero
         {return;}
 
       virtual ~ScaTraEleReaManager(){};
@@ -1275,10 +1273,8 @@ namespace ELEMENTS
       {
         //clear
         reacoeff_.resize(0);
-        reacoeffderivmatrix_.resize(0);
         //resize
         reacoeff_.resize(numscal,0.0);
-        reacoeffderivmatrix_.resize(numscal,std::vector<double>(numscal,0.0 ));
         include_me_=false;
         return;
       }
@@ -1286,6 +1282,8 @@ namespace ELEMENTS
       //! Set the reaction coefficient
       void SetReaCoeff(const double reacoeff, const int k)
       {
+        // NOTE: it is important that this reaction coefficient set here does not depend on ANY concentration.
+        // If so, use the advanced reaction framework to get a proper linearisation.
         reacoeff_[k] = reacoeff;
         if( reacoeff!=0.0 )
           include_me_=true;
@@ -1293,19 +1291,10 @@ namespace ELEMENTS
         return;
       }
 
-      void SetReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
-      {
-        (reacoeffderivmatrix_[k])[j] = reacoeffderivmatrix;
-        return;
-      }
-
       //! @name access routines
 
       //! Return the reaction coefficient
       double GetReaCoeff(const int k){return reacoeff_[k];}
-
-      //! Return the reaction coefficient
-      double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
 
       //! Return the stabilization coefficient
       virtual double GetStabilizationCoeff(const int k, const double phinp_k){return reacoeff_[k];}
@@ -1318,11 +1307,10 @@ namespace ELEMENTS
       bool include_me_;
 
     private:
+
+      //NOTE: it is important that this reaction coefficient set here does not depend on ANY concentration.
       //! scalar reaction coefficient
       std::vector<double> reacoeff_;
-
-      //! reaction derivative for coupled problems
-      std::vector<std::vector<double> > reacoeffderivmatrix_;
     };
 
   /// ScaTraEleInternalVariableManager implementation

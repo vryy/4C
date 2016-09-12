@@ -148,30 +148,15 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
 
-    ///calculate body force term
+    ///advanced reaction terms
     double CalcReaBodyForceTerm(
         const int k,
         const std::vector<double>& phinp,
         const double scale = 1.0
     ) const;
 
-    ///calculate reaction coefficient
-    double CalcReaCoeff(
-        const int k,
-        const std::vector<double>& phinp,
-        const double scale = 1.0
-    ) const;
-
-    /// calculate body force term derivative
+    /// calculate advanced reaction term derivatives
     double CalcReaBodyForceDerivMatrix(
-            const int k,
-            const int j,
-            const std::vector<double>& phinp,
-            const double scale = 1.0
-        ) const;
-
-    /// calculate reaction coefficient derivative
-    double CalcReaCoeffDerivMatrix(
             const int k,
             const int j,
             const std::vector<double>& phinp,

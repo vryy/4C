@@ -1682,6 +1682,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
 {
   const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv(k);
 
+  //NOTE: it is important that the reaction coefficient reamanager_->GetReaCoeff(k) does not depend on ANY concentrations.
   const double fac_reac        = timefacfac*densnp*reamanager_->GetReaCoeff(k);
   const double timetaufac_reac = timetaufac*densnp*reamanager_->GetReaCoeff(k);
 
