@@ -263,7 +263,6 @@ void immersed_problem_drt()
 /*----------------------------------------------------------------------*/
 void CellMigrationControlAlgorithm()
 {
-
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -308,8 +307,8 @@ void CellMigrationControlAlgorithm()
 
   // assign degrees of freedom, initialize elements and do boundary conditions on cell
   // in case of parallel simulation FillComplete is called in CreateBinning
-  problem->GetDis("cell")->FillComplete(true,true,true);
-  problem->GetDis("cellscatra")->FillComplete(true,true,true);
+  problem->GetDis("cell")->FillComplete(false,false,false);
+  problem->GetDis("cellscatra")->FillComplete(false,false,false);
 
   // check if cell is supposed to have intracellular biochchemical signaling capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
@@ -332,7 +331,7 @@ void CellMigrationControlAlgorithm()
       break;
     }
 
-    // It is time to call setup.
+    // It is time to call init.
     // "ale" dis is cloned and filled inside.
     // SSI coupling object is built inside.
     bool redistribute = false;
@@ -362,6 +361,11 @@ void CellMigrationControlAlgorithm()
       CreateGhosting(problem->GetDis("cellscatra"));
       CreateGhosting(problem->GetDis("ale"));
     }
+
+    // now we call the final fill complete on our discretizations.
+    // FillComplete for ale dis is called deeper in the code.
+    problem->GetDis("cell")->FillComplete(true,false,false);
+    problem->GetDis("cellscatra")->FillComplete(true,false,false);
 
     // parallel redistriution is finished. Let us call Setup()
     // here all state vectors are constructed.
