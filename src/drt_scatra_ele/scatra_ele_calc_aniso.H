@@ -4,7 +4,7 @@
 
 \brief scatra_ele_calc_aniso.H
 
-\level 2
+\level 3
 
 <pre>
   \maintainer Lasse Jagschies

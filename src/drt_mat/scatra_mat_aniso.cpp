@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
 \file scatra_mat_aniso.cpp
 
+\brief scatra_mat_aniso.cpp
+
+\level 3
+
 <pre>
-Maintainer: Lasse Jagschies
-            Lasse.Jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10365
+  \maintainer Lasse Jagschies
+              jagschies@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10365
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -32,7 +36,6 @@ MAT::PAR::ScatraMatAniso::ScatraMatAniso(
   matparams_.at(diff1)->PutScalar(matdata->GetDouble("DIFF1"));
   matparams_.at(diff2)->PutScalar(matdata->GetDouble("DIFF2"));
   matparams_.at(diff3)->PutScalar(matdata->GetDouble("DIFF3"));
-  matparams_.at(reac)->PutScalar(matdata->GetDouble("REACOEFF"));
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()
@@ -45,7 +48,6 @@ MAT::ScatraMatAnisoType MAT::ScatraMatAnisoType::instance_;
 
 void MAT::PAR::ScatraMatAniso::OptParams(std::map<std::string,int>* pnames)
 {
-  pnames->insert(std::pair<std::string,int>("REAC", reac));
 }
 
 DRT::ParObject* MAT::ScatraMatAnisoType::Create( const std::vector<char> & data )

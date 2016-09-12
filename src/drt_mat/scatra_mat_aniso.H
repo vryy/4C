@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
 \file scatra_mat_aniso.H
 
+\brief scatra_mat_aniso.H
+
+\level 3
+
 <pre>
-Maintainer: Lasse Jagschies
-            Lasse.Jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10365
+  \maintainer Lasse Jagschies
+              jagschies@mhpc.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-10365
 </pre>
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_ANISO_H
@@ -42,7 +46,7 @@ namespace MAT
 
       void OptParams(std::map<std::string, int>* pnames);
 
-      enum matparamnames_{diff1, diff2, diff3, reac, first=diff1, last=reac};
+      enum matparamnames_{diff1, diff2, diff3, first=diff1, last=diff3};
 
     };  // class Scatra
 
@@ -129,9 +133,6 @@ private:
 
       return diff;
     }
-
-    /// reaction coefficient
-    double ReaCoeff(int eleid=-1) const { return params_->GetParameter(params_->reac,eleid); }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

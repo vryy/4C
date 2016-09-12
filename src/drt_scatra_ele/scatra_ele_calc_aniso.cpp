@@ -4,7 +4,7 @@
 
 \brief scatra_ele_calc_aniso.cpp
 
-\level 2
+\level 3
 
 <pre>
   \maintainer Lasse Jagschies
@@ -146,9 +146,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::MatScaTraAniso(
     difftensor(i,i) = diff(i);
 
   DiffManager()->SetAnisotropicDiff(difftensor,k);
-
-  // get reaction coefficient
-  my::reamanager_->SetReaCoeff(actmat->ReaCoeff(leleid),k);
 
   return;
 } // ScaTraEleCalcAniso<distype>::MatScaTra
