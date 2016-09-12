@@ -244,6 +244,9 @@ void STR::TimInt::Init
   conman_->Init(discret_,
       sdynparams_);
 
+  // create stiffness, mass matrix and other fields
+  createFields( solver_ );
+
   // stay with us
 
   // we have successfully initialized this class
