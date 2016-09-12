@@ -356,6 +356,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
     Teuchos::RCP<Epetra_Vector> monitortypes_;  ///< vector containing type of monitors
     int offsetID_;  ///< smallest constraint boundary condition ID
+    int maxConstrID_; ///< max number of constraints
     int numConstrID_;  ///< number of constraint boundary conditions
     int numMonitorID_;  ///< smallest monitor boundary condition ID
     int minMonitorID_;  ///< number monitor boundary condition ID

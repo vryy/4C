@@ -31,6 +31,7 @@
  *----------------------------------------------------------------------*/
 UTILS::ConstrManager::ConstrManager() :
 offsetID_(-1),
+maxConstrID_(0),
 numConstrID_(-1),
 numMonitorID_(-1),
 minMonitorID_(-1),
@@ -67,14 +68,13 @@ void UTILS::ConstrManager::Init(
   // ConditionID read so far.
   numConstrID_=0;
   offsetID_=10000;
-  int maxConstrID=0;
   //Check, what kind of constraining boundary conditions there are
-  volconstr3d_=Teuchos::rcp(new Constraint(actdisc_,"VolumeConstraint_3D",offsetID_,maxConstrID));
-  areaconstr3d_=Teuchos::rcp(new Constraint(actdisc_,"AreaConstraint_3D",offsetID_,maxConstrID));
-  areaconstr2d_=Teuchos::rcp(new Constraint(actdisc_,"AreaConstraint_2D",offsetID_,maxConstrID));
-  mpconline2d_=Teuchos::rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
-  mpconplane3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
-  mpcnormcomp3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
+  volconstr3d_=Teuchos::rcp(new Constraint(actdisc_,"VolumeConstraint_3D",offsetID_,maxConstrID_));
+  areaconstr3d_=Teuchos::rcp(new Constraint(actdisc_,"AreaConstraint_3D",offsetID_,maxConstrID_));
+  areaconstr2d_=Teuchos::rcp(new Constraint(actdisc_,"AreaConstraint_2D",offsetID_,maxConstrID_));
+  mpconline2d_=Teuchos::rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID_));
+  mpconplane3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID_));
+  mpcnormcomp3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID_));
 
   volconstr3dpen_=Teuchos::rcp(new ConstraintPenalty(actdisc_,"VolumeConstraint_3D_Pen"));
   areaconstr3dpen_=Teuchos::rcp(new ConstraintPenalty(actdisc_,"AreaConstraint_3D_Pen"));
@@ -110,11 +110,9 @@ void UTILS::ConstrManager::Setup(
 {
   CheckIsInit();
 
-  int maxConstrID=0;
-
   if (haveconstraint_)
   {
-    numConstrID_ = std::max(maxConstrID-offsetID_+1,0);
+    numConstrID_ = std::max(maxConstrID_-offsetID_+1,0);
     constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
     constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
     offsetID_ -= constrdofset_->FirstGID();
