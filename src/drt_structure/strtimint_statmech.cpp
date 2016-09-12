@@ -111,12 +111,6 @@ void STR::TimIntStatMech::Init
     }
   }
 
-  // retrieve number of random numbers per element and store them in randomnumbersperelement_
-  RandomNumbersPerElement();
-
-  // retrieve number of random numbers per node and store them in randomnumberspernode_
-  RandomNumbersPerNode();
-
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
   if(HaveStatMech())
     SuppressOutput();
@@ -139,6 +133,12 @@ void STR::TimIntStatMech::Setup()
 {
   // call Setup() in base class
   STR::TimIntOneStepTheta::Setup();
+
+  // retrieve number of random numbers per element and store them in randomnumbersperelement_
+  RandomNumbersPerElement();
+
+  // retrieve number of random numbers per node and store them in randomnumberspernode_
+  RandomNumbersPerNode();
 
   return;
 }
