@@ -503,7 +503,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
-  src/drt_mat/biofilm.cpp
   src/drt_mat/carreauyasuda.cpp
   src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp

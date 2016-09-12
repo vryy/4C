@@ -58,10 +58,13 @@ EVALUATION_TAU                  integration_point
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_biofilm DIFFUSIVITY 0.0006666666666 REARATE 2.00 SATCOEFF 0.300
-MAT 2 MAT_biofilm DIFFUSIVITY 0.0000333333333 REARATE 0.20 SATCOEFF 0.030
-MAT 3 MAT_biofilm DIFFUSIVITY 0.0033333333333 REARATE 0.02 SATCOEFF 0.003
-MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 1 2 3 END
+MAT 1 MAT_scatra DIFFUSIVITY 0.0006666666666
+MAT 2 MAT_scatra DIFFUSIVITY 0.0000333333333
+MAT 3 MAT_scatra DIFFUSIVITY 0.0033333333333
+MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 1 2 3 NUMREAC 3 REACIDS 5 6 7 END
+MAT 5 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACCOEFF 2.0 COUPLING michaelis_menten ROLE 0.300 0.0 0.0
+MAT 6 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 0 REACCOEFF 0.2 COUPLING michaelis_menten ROLE 0.0 0.030 0.0
+MAT 7 MAT_scatra_reaction NUMSCAL 3 STOICH 0 0 -1 REACCOEFF 0.02 COUPLING michaelis_menten ROLE 0.0 0.0 0.003
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

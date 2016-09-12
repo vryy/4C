@@ -49,7 +49,6 @@ namespace INPAR
       m_arrhenius_spec,                        ///< material with Arrhenius-type chemical kinetics (species)
       m_arrhenius_temp,                        ///< material with Arrhenius-type chemical kinetics (temperature)
       m_biochemomechano,                       ///< biochemo-mechano coupled model for stress fiber activity
-      m_biofilm,                               ///< biofilm modeling (convection-diffusion-reaction)
       m_carreauyasuda,                         ///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_cavitation,                            ///< fluid with varying density
       m_cnst_art,                              ///< 1D_Artery constant material properties

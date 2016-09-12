@@ -3,8 +3,10 @@
 
 \brief scatra cell for meshfree discretisations
 
+\level 3
+
 <pre>
-Maintainer: Keijo Nissen
+\maintainer Keijo Nissen
             nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15253
@@ -220,7 +222,6 @@ void DRT::ELEMENTS::MeshfreeTransport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
      mat->MaterialType() == INPAR::MAT::m_ferech_pv or
      mat->MaterialType() == INPAR::MAT::m_ion or
-     mat->MaterialType() == INPAR::MAT::m_biofilm or
      mat->MaterialType() == INPAR::MAT::m_th_fourier_iso or
      mat->MaterialType() == INPAR::MAT::m_yoghurt
      )

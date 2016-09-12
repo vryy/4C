@@ -86,7 +86,6 @@ if (
     (mtype != INPAR::MAT::m_arrhenius_pv) &&
     (mtype != INPAR::MAT::m_ferech_pv) &&
     (mtype != INPAR::MAT::m_ion) &&
-    (mtype != INPAR::MAT::m_biofilm) &&
     (mtype != INPAR::MAT::m_th_fourier_iso) &&
     (mtype != INPAR::MAT::m_thermostvenant) &&
     (mtype != INPAR::MAT::m_yoghurt) &&

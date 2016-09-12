@@ -25,7 +25,6 @@
 #include "../drt_lib/drt_element.H"
 
 //MATERIALS
-#include "../drt_mat/biofilm.H"
 #include "../drt_mat/scatra_growth_scd.H"
 #include "../drt_mat/growth_scd.H"
 #include "../drt_mat/growth_law.H"
@@ -176,9 +175,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Materials(
   case INPAR::MAT::m_scatra:
     my::MatScaTra(material,k,densn,densnp,densam,visc,iquad);
     break;
-  case INPAR::MAT::m_biofilm:
-    MatBioFilm(material,k,densn,densnp,densam,visc,iquad);
-    break;
   case INPAR::MAT::m_scatra_growth_scd:
     MatGrowthScd(material,k,densn,densnp,densam,visc,iquad);
     break;
@@ -189,44 +185,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Materials(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Material BioFilm                                         thon 02/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::MatBioFilm(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    double&                                 visc,         //!< fluid viscosity
-    const int                               iquad         //!< id of current gauss point
-  )
-{
-  const Teuchos::RCP<const MAT::Biofilm>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(material);
-
-  // get constant diffusivity
-  my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(),k);
-
-  // get substrate concentration at n+1 or n+alpha_F at integration point
-  const double csnp = my::scatravarmanager_->Phinp(k);
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
-
-  // set reaction coefficient
-  remanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
-
-  // set derivative of reaction coefficient
-  remanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp),k,k);
-
-  // set density at various time steps and density gradient factor to 1.0/0.0
-  densn      = 1.0;
-  densnp     = 1.0;
-  densam     = 1.0;
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Material GrowthScd                                       vuong 01/14 |
@@ -280,10 +238,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::MatGrowthScd(
     const double csnp = my::scatravarmanager_->Phinp(k);
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
+    const double reaccoeff = actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe);
     // set reaction coefficient
-    remanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
+    remanager->AddToReaBodyForce(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe)*csnp,k);
     // set derivative of reaction coefficient
-    remanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
+    remanager->AddToReaBodyForceDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0)*csnp+reaccoeff,k,k);
 
     // set density at various time steps and density gradient factor to 1.0/0.0
     densn      = 1.0;
