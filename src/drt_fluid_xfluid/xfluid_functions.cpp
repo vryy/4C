@@ -5,12 +5,13 @@
 
   detailed description in header file combust_interface.H
 
-<pre>
-Maintainer: Magnus Winter
+\level 3
+
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "xfluid_functions.H"
@@ -291,7 +292,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, doub
   return 1.0;
 }
 
-std::vector<std::vector<double> > DRT::UTILS::TaylorCouetteFlow::FctDer(int index, const double* xp, const double t, DRT::Discretization* dis)
+std::vector<double> DRT::UTILS::TaylorCouetteFlow::FctDer(int index, const double* xp, const double t, DRT::Discretization* dis)
 {
   //u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   //d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -306,14 +307,9 @@ std::vector<std::vector<double> > DRT::UTILS::TaylorCouetteFlow::FctDer(int inde
   //u_z = 0.0
   //d u_z / dx = d u_z / dy = d u_z / dz = 0.0
 
-  const unsigned deg =1;
   // resulting vector holding
-  std::vector<std::vector<double> > res(deg);
-  for(unsigned i=0;i<deg;i++)
-    res[i]= std::vector<double> (3,0.0);
-
-  std::vector< double > tmp_vec;
-  tmp_vec.reserve(3);
+  std::vector<double> res(3,0.0);
+  res.reserve(3);
 
   double r_sqaured  = (xp[0]*xp[0]+xp[1]*xp[1]);   //(x^2+y^2)
   double r_sqaured2 = (xp[0]*xp[0]+xp[1]*xp[1])*(xp[0]*xp[0]+xp[1]*xp[1]); //(x^2+y^2)^2
@@ -322,37 +318,33 @@ std::vector<std::vector<double> > DRT::UTILS::TaylorCouetteFlow::FctDer(int inde
   {
   case 0:
   {
-    tmp_vec[0] = c2_ * 2.0*xp[0]*xp[1]/(r_sqaured2);
-    tmp_vec[1] =-c1_-c2_ *( 1/r_sqaured
+    res[0] = c2_ * 2.0*xp[0]*xp[1]/(r_sqaured2);
+    res[1] =-c1_-c2_ *( 1/r_sqaured
                            -2.0*xp[1]*xp[1]/(r_sqaured2)
                           );
-    tmp_vec[2] = 0.0;
+    res[2] = 0.0;
     break;
   }
   case 1:
   {
-    tmp_vec[0] = c1_+c2_ *(1/(r_sqaured)
+    res[0] = c1_+c2_ *(1/(r_sqaured)
                            -2.0*xp[0]*xp[0]/(r_sqaured2)
                           );
-    tmp_vec[1] = - c2_ * 2.0*xp[1]*xp[0]/(r_sqaured2);
-    tmp_vec[2] = 0.0;
+    res[1] = - c2_ * 2.0*xp[1]*xp[0]/(r_sqaured2);
+    res[2] = 0.0;
     break;
   }
   case 2:
   {
-    tmp_vec[0] = 0.0;
-    tmp_vec[1] = 0.0;
-    tmp_vec[2] = 0.0;
+    res[0] = 0.0;
+    res[1] = 0.0;
+    res[2] = 0.0;
     break;
   }
   default:
     dserror("wrong index %d", index);
     break;
   }
-
-  res[0][0]=tmp_vec[0];
-  res[0][1]=tmp_vec[1];
-  res[0][2]=tmp_vec[2];
 
   return res;
 }

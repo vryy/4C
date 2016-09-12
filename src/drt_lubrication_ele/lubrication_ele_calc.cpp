@@ -4,12 +4,13 @@
 
 \brief main file containing routines for calculation of lubrication element
 
-<pre>
-Maintainer: Andy Wirtz
+\level 3
+
+\maintainer Andy Wirtz
             wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15270
-</pre>
+
 */
 /*--------------------------------------------------------------------------*/
 
@@ -841,7 +842,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
       pre_exact = DRT::Problem::Instance()->Funct(errorfunctno - 1).Evaluate(0,
           position, t, NULL);
 
-      std::vector<std::vector<double> > gradpre_exact_vec =
+      std::vector<double> gradpre_exact_vec =
           DRT::Problem::Instance()->Funct(errorfunctno - 1).FctDer(0, position,
               t, NULL);
 
@@ -849,7 +850,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
       {
         if (nsd_ == nsd_ele_)
           for (int dim = 0; dim < nsd_; ++dim)
-            gradpre_exact(dim) = gradpre_exact_vec[0][dim];
+            gradpre_exact(dim) = gradpre_exact_vec[dim];
         else
         {
           // Todo: calc gradpre correctly

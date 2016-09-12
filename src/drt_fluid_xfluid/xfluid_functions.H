@@ -3,12 +3,13 @@
 
 \brief Managing and evaluating of spatial functions for xfluid cases
 
-<pre>
-Maintainer: Magnus Winter
+\level 3
+
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
+
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
@@ -94,7 +95,7 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
 
-      std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+      std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
 
     private:
 

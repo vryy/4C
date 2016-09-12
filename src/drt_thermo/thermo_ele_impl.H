@@ -4,12 +4,13 @@
 
 \brief Internal implementation of thermo elements
 
-<pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\level 2
+
+   \maintainer  Alexander Seitz
+                seitz@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+                089 - 289-15271
+
 */
 
 /*----------------------------------------------------------------------*

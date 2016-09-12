@@ -270,9 +270,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
   std::vector<std::pair<std::string,double> > variables(1);
   variables[0]=std::pair<std::string,double>("dp",presval);
 
-  std::vector<std::vector<double> > deriv = Function(functionID_saturation_-1).FctDer(0,variables);
+  std::vector<double> deriv = Function(functionID_saturation_-1).FctDer(0,variables);
 
-  return deriv[0][0]*(*presids_)[doftoderive];
+  return deriv[0]*(*presids_)[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -288,9 +288,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
   std::vector<std::pair<std::string,double> > variables(1);
   variables[0]=std::pair<std::string,double>("S",saturation);
 
-  std::vector<std::vector<double> > deriv = Function(functionID_pressure_-1).FctDer(0,variables);
+  std::vector<double> deriv = Function(functionID_pressure_-1).FctDer(0,variables);
 
-  return deriv[0][0]*(*presids_)[doftoderive];
+  return deriv[0]*(*presids_)[doftoderive];
 }
 
 /*----------------------------------------------------------------------*

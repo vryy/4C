@@ -1133,18 +1133,14 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
 {
   // single expression for all components. Reset index to 0!
   if(expr_.size()==1)
     index=0;
 
-  // only first derivatives
-  const unsigned deg =1;
-  // resulting vector holding
-  std::vector<std::vector<double> > res(deg);
-  for(unsigned i=0;i<deg;i++)
-    res[i]= std::vector<double> (4,0.0);
+  // result vector
+  std::vector<double> res(4,0.0);
 
   // derivatives
 
@@ -1201,10 +1197,10 @@ std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, co
   default: dserror("Problem dimension has to be 1, 2, or 3."); break;
   }
 
-  res[0][0]=fdfad.dx(0);
-  res[0][1]=fdfad.dx(1);
-  res[0][2]=fdfad.dx(2);
-  res[0][3]=fdfad.dx(3);
+  res[0]=fdfad.dx(0);
+  res[1]=fdfad.dx(1);
+  res[2]=fdfad.dx(2);
+  res[3]=fdfad.dx(3);
 
   // return derivatives
   return res;
@@ -1320,7 +1316,28 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
+double DRT::UTILS::VariableExprFunction::Evaluate(
+    int index,
+    const std::vector<std::pair<std::string,double> >& variables,
+    const std::vector<std::pair<std::string,double> >& constants)
+{
+  if(not isparsed_)
+    ParseExpressions();
+  // set the values of the variables
+  std::vector<std::pair<std::string,double> >::const_iterator it;
+  for( it=variables.begin() ; it!=variables.end() ; it++)
+    expr_[index]->SetValue(it->first,it->second);
+  // set the values of the constants
+  for( it=constants.begin() ; it!=constants.end() ; it++)
+    expr_[index]->SetValue(it->first,it->second);
+
+  // evaluate the function and return the result
+  return expr_[index]->Evaluate();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
     int index,
     const std::vector<std::pair<std::string,double> >& variables)
 {
@@ -1352,16 +1369,64 @@ std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
   // evaluate the expression
   FAD fdfad = exprd_[index]->Evaluate();
 
-  // initialize result vector (only first derivatives)
-  const unsigned deg =1;
-  // resulting vector holding
-  std::vector<std::vector<double> > res(deg);
-  for(unsigned i=0;i<deg;i++)
-    res[i]= std::vector<double> (numvariables,0.0);
+  // resulting vector
+  std::vector<double> res(numvariables);
 
   // fill the result vector
   for(int i=0;i<numvariables;i++)
-    res[0][i]=fdfad.dx(i);
+    res[i]=fdfad.dx(i);
+
+  return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
+    int index,
+    const std::vector<std::pair<std::string,double> >& variables,
+    const std::vector<std::pair<std::string,double> >& constants)
+{
+  if(not isparsed_)
+    ParseExpressions();
+
+  // Fad object for evaluation
+  // sacado data type replaces "double"
+  typedef Sacado::Fad::DFad<double>  FAD;
+
+  // number of variables
+  int numvariables = variables.size();
+
+  // counter for variable numbering
+  int counter = 0;
+
+  // set the values of the variables
+  std::vector<std::pair<std::string,double> >::const_iterator it;
+  for( it=variables.begin() ; it!=variables.end() ; it++)
+  {
+    // for 1st order derivatives
+    FAD varfad(numvariables, counter, it->second);
+    // set the value in expression
+    exprd_[index]->SetValue(it->first,varfad);
+    //update counter
+    counter++;
+  }
+
+  // set the values of the constants
+  for( it=constants.begin() ; it!=constants.end() ; it++)
+  {
+    // set the value in expression
+    exprd_[index]->SetValue(it->first,it->second);
+  }
+
+  // evaluate the expression
+  FAD fdfad = exprd_[index]->Evaluate();
+
+  // resulting vector
+  std::vector<double> res(numvariables);
+
+  // fill the result vector
+  for(int i=0;i<numvariables;i++)
+    res[i]=fdfad.dx(i);
 
   return res;
 }
@@ -1371,6 +1436,7 @@ std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
 double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x, double t, DRT::Discretization* dis)
 {
   std::vector<std::pair<std::string,double> > variables;
+  variables.reserve(dim_);
 
   switch(dim_)
   {
@@ -1398,7 +1464,7 @@ double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x, do
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<std::vector<double> > DRT::UTILS::VariableExprFunction::FctDer(
+std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
     int                  index,
     const double*        x,
     const double         t,

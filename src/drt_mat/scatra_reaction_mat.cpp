@@ -587,11 +587,11 @@ double MAT::ScatraReactionMat::CalcReaBodyForceDerivFac(
       // copy phi vector in different format to be read by the function
       std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
       // evaluate the derivatives of the reaction term
-      std::vector<std::vector<double> > deriv = Function(round(couprole[k])-1).FctDer(0,variables);
+      std::vector<double> deriv = Function(round(couprole[k])-1).FctDer(0,variables);
 
       // the derivative needed is the derivative of the first function (index 0) w.r.t. to
       // the index of the scalar to derive (index toderive)
-      bfdmfac = deriv[0][toderive];
+      bfdmfac = deriv[toderive];
 
       break;
     }

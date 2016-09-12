@@ -2187,13 +2187,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
 
         phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t,NULL);
 
-        std::vector<std::vector<double> > gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+        std::vector<double> gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
 
         if(gradphi_exact_vec.size())
         {
           if(nsd_==nsd_ele_)
             for (int dim=0; dim<nsd_; ++dim)
-              gradphi_exact(dim)=gradphi_exact_vec[0][dim];
+              gradphi_exact(dim)=gradphi_exact_vec[dim];
           else
           {
             //std::cout<<"Warning: Gradient of analytical solution cannot be evaluated correctly for transport on curved surfaces!"<<std::endl;

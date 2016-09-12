@@ -104,9 +104,9 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    virtual std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+    virtual std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
       {
-        return std::vector<std::vector<double> >(0);
+        return std::vector<double>(0);
       };
 
     /*!
@@ -385,7 +385,7 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    virtual std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+    virtual std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
 
     /*!
 
@@ -518,6 +518,21 @@ namespace UTILS {
 
     /*!
 
+    \brief evaluate function for a given set of variables
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    double Evaluate(
+        int                                                index,
+        const std::vector<std::pair<std::string,double> >& variables,
+        const std::vector<std::pair<std::string,double> >& constants);
+
+    /*!
+
     \brief evaluate derivatives function at given position in space
 
     \param index (i) For vector-valued functions, index defines the
@@ -530,7 +545,7 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+    std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
 
     /*!
 
@@ -541,7 +556,22 @@ namespace UTILS {
     \param variables (i) A vector containing a pair (variablename, value) for each variable
 
     */
-    std::vector<std::vector<double> > FctDer(int index, const std::vector<std::pair<std::string,double> >& variables);
+    std::vector<double> FctDer(int index, const std::vector<std::pair<std::string,double> >& variables);
+
+    /*!
+
+    \brief  at given position in space for a given set of variables and constants
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    std::vector<double> FctDer(
+        int                                                index,
+        const std::vector<std::pair<std::string,double> >& variables,
+        const std::vector<std::pair<std::string,double> >& constants);
 
     /*!
     \brief  check if a given name is a variable

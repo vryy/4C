@@ -4,12 +4,12 @@
 
 \brief Internal implementation of thermo elements
 
-<pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\level 2
+
+   \maintainer  Alexander Seitz
+                seitz@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+                089 - 289-15271
 */
 
 /*----------------------------------------------------------------------*
@@ -3938,12 +3938,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
       T_analytical(0,0) = T_exact;
 
-      std::vector<std::vector<double> > Tder_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<double> Tder_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
 
       if(Tder_exact.size())
       {
         for (int dim=0; dim<nsd_; ++dim)
-          derT(dim)=Tder_exact[0][dim];
+          derT(dim)=Tder_exact[dim];
 
       }
 
