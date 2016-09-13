@@ -282,12 +282,22 @@ void FS3I::PartFS3I::Init()
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
 
   fluidscatra_ =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver1number),"scatra1",true));
-  fluidscatra_->ScaTraField()->Init();
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  fluidscatra_->Init(
+      fs3idyn,
+      problem->ScalarTransportDynamicParams(),
+      problem->SolverParams(linsolver1number),
+      "scatra1",
+      true);
 
   structscatra_ =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver2number),"scatra2",true));
-  structscatra_->ScaTraField()->Init();
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  structscatra_->Init(
+     fs3idyn,
+     problem->ScalarTransportDynamicParams(),
+     problem->SolverParams(linsolver2number),
+     "scatra2",
+     true);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -303,10 +313,10 @@ void FS3I::PartFS3I::Setup()
   FS3I::FS3I_Base::Setup();
 
   // setup structure scatra
-  structscatra_->ScaTraField()->Setup();
+  structscatra_->Setup();
 
   // setup fluid scatra
-  fluidscatra_->ScaTraField()->Setup();
+  fluidscatra_->Setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both

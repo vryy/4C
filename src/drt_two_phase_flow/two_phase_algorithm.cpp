@@ -61,10 +61,22 @@ TWOPHASEFLOW::Algorithm::~Algorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void TWOPHASEFLOW::Algorithm::Init()
+void TWOPHASEFLOW::Algorithm::Init(
+    const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
+    const Teuchos::ParameterList&   scatradyn,      ///< parameter list for scalar transport subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for scalar transport solver
+    const std::string&              disname,        ///< name of scalar transport discretization
+    const bool                      isale           ///< ALE flag
+)
 {
   // call Init() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
+      prbdyn,
+      scatradyn,
+      solverparams,
+      disname,
+      isale
+      );
 
   // time-step length, maximum time and maximum number of steps
   dt_      = prbdyn_.get<double>("TIMESTEP");

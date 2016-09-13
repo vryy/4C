@@ -147,7 +147,10 @@ void two_phase_dyn(int restart)
 
     // create a TWOPHASEFLOW::Algorithm instance
     Teuchos::RCP<TWOPHASEFLOW::Algorithm> twophase = Teuchos::rcp(new TWOPHASEFLOW::Algorithm(comm,twophaseflowcontrol,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
-    twophase->Init();
+    twophase->Init(
+        twophaseflowcontrol,
+        DRT::Problem::Instance()->ScalarTransportDynamicParams(),
+        DRT::Problem::Instance()->SolverParams(linsolvernumber) );
     twophase->Setup();
 
     // read restart information
@@ -357,7 +360,10 @@ void fluid_xfem_ls_drt(int restart)
 
    // Test replacing fdyn in Algorithm with prbdyn
    Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,twophasedyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
-   xfluid_levelset->Init();
+   xfluid_levelset->Init(
+       twophasedyn,
+       problem->ScalarTransportDynamicParams(),
+       DRT::Problem::Instance()->SolverParams(linsolvernumber));
    xfluid_levelset->Setup();
 
    // read restart information

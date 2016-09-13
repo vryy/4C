@@ -53,7 +53,13 @@ namespace COMBUST
     virtual ~Algorithm();
 
     ///  Initialize this class
-    virtual void Init();
+    virtual void Init(
+        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
+        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
+        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
+        const bool                      isale = false        ///< ALE flag
+    );
 
     /// Setup this class
     virtual void Setup();

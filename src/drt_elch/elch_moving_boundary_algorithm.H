@@ -42,7 +42,7 @@ namespace ELCH
   public:
 
     /// constructor
-    explicit MovingBoundaryAlgorithm(
+    MovingBoundaryAlgorithm(
         const Epetra_Comm& comm,                     ///< communicator
         const Teuchos::ParameterList& elchcontrol,   ///< elch parameter list
         const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
@@ -56,7 +56,13 @@ namespace ELCH
     virtual void Setup();
 
     /// init
-    virtual void Init();
+    virtual void Init(
+        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
+        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
+        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
+        const bool                      isale = false        ///< ALE flag
+    );
 
     /// outer level ELCH time loop
     void TimeLoop();

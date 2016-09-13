@@ -42,7 +42,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     )
 :  AlgorithmBase(comm,prbdyn),
    FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale,false), // false -> no immediate initialization of fluid time integration
-   ScaTraBaseAlgorithm(prbdyn,DRT::Problem::Instance()->ScalarTransportDynamicParams(),solverparams,scatra_disname,isale), // false -> no ALE in scatra algorithm
+   ScaTraBaseAlgorithm(),
    fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(DRT::Problem::Instance()->ScalarTransportDynamicParams(),"FIELDCOUPLING")),
    volcoupl_fluidscatra_(Teuchos::null),
    params_(prbdyn),
@@ -56,12 +56,22 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidCouplingAlgorithm::Init()
+void ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
+    const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
+    const Teuchos::ParameterList&   scatradyn,      ///< parameter list for scalar transport subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for scalar transport solver
+    const std::string&              disname,        ///< name of scalar transport discretization
+    const bool                      isale           ///< ALE flag
+    )
 {
   SetIsSetup(false);
 
-  // setup scatra time integration scheme
-  ScaTraField()->Init();
+  ADAPTER::ScaTraBaseAlgorithm::Init(
+      prbdyn,
+      scatradyn,
+      solverparams,
+      disname,
+      isale);
 
   // check whether fluid and scatra discret still have the same maps
   // they may change due a modified ghosting required, i.e., for particle level-set methods
@@ -104,7 +114,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
   CheckIsInit();
 
   // initialize scatra time integration scheme
-  ScaTraField()->Setup();
+  ADAPTER::ScaTraBaseAlgorithm::Setup();
 
   // initialize fluid time integration scheme
   FluidField()->Init();

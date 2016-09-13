@@ -62,10 +62,21 @@ ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm()
 /*----------------------------------------------------------------------*
 | Setup                                                     rauch 08/16 |
 *----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::Init()
+void ELCH::MovingBoundaryAlgorithm::Init(
+    const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
+    const Teuchos::ParameterList&   scatradyn,      ///< parameter list for scalar transport subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for scalar transport solver
+    const std::string&              disname,        ///< name of scalar transport discretization
+    const bool                      isale           ///< ALE flag
+)
 {
   // call setup in base class
-  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init();
+  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init(
+      prbdyn,
+      scatradyn,
+      solverparams,
+      disname,
+      isale);
 
   // safety check
   if(!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))

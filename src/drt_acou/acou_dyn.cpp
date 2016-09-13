@@ -281,20 +281,22 @@ void acoustics_drt()
 
           // create instance of scalar transport basis algorithm (empty fluid discretization)
           Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-              Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-                  scatradyn,
-                  scatradyn,
-                  DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+              Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
-          // now we can call Setup() on the scatra time integrator
-          scatraonly->ScaTraField()->Init();
+          // now we can call Init() on the base algorithm
+          // time integrator is constructed and initialized inside
+          scatraonly->Init(
+              scatradyn,
+              scatradyn,
+              DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
           // now me may redistribute or ghost the scatra discretization
 
-          // only now we must call Init() on the scatra time integrator.
+          // only now we must call Setup() on th base algorithm
           // all objects relying on the parallel distribution are
           // created and pointers are set.
-          scatraonly->ScaTraField()->Setup();
+          // calls Setup() on time integrator inside.
+          scatraonly->Setup();
 
           // set velocity field
           //(this is done only once. Time-dependent velocity fields are not supported)

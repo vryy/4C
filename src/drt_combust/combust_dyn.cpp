@@ -111,7 +111,10 @@ void combust_dyn()
 
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
-  combust->Init();
+  combust->Init(
+      combustdyn,
+      DRT::Problem::Instance()->ScalarTransportDynamicParams(),
+      DRT::Problem::Instance()->SolverParams(linsolvernumber) );
   combust->Setup();
 
   //------------------------------------------------------------------------------------------------

@@ -228,18 +228,18 @@ void FS3I::PartFPS3I::Init()
   if (linsolver2number == (-1))
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   fluidscatra_ =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver1number),"scatra1",true));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
   // now we can call Init() on the scatra time integrator
-  fluidscatra_->ScaTraField()->Init();
+  fluidscatra_->Init(fs3idyn,scatradyn,problem->SolverParams(linsolver1number),"scatra1",true);
 
   structscatra_ =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver2number),"scatra2",true));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
   // only now we must call Init() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  structscatra_->ScaTraField()->Init();
+  structscatra_->Init(fs3idyn,scatradyn,problem->SolverParams(linsolver2number),"scatra2",true);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -301,11 +301,12 @@ void FS3I::PartFPS3I::Setup()
 {
   FS3I::FS3I_Base::Setup();
 
-  // only now we must call Setup() on the scatra time integrators.
+  // only now we must call Setup() on the scatra base algo.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  fluidscatra_->ScaTraField()->Setup();
-  structscatra_->ScaTraField()->Setup();
+  // calls Setup() on time integrator inside.
+  fluidscatra_ ->Setup();
+  structscatra_->Setup();
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both

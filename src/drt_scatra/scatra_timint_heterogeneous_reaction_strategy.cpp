@@ -100,7 +100,8 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 {
-  CheckIsInit();
+  // call Init() of base class
+  SCATRA::MeshtyingStrategyStd::SetupMeshtying();
 
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( scatratimint_->Discretization()->Comm().Clone());
 

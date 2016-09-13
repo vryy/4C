@@ -100,17 +100,22 @@ void elch_dyn(int restart)
 
     // create instance of scalar transport basis algorithm (empty fluid discretization)
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-        Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+        Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
-    // now we can call Init() on the scatra time integrator
-    scatraonly->ScaTraField()->Init();
+    // now we can call Init() on the base algorithm
+    // scatra time integrator is constructed and initialized inside
+    scatraonly->Init(
+        scatradyn,
+        scatradyn,
+        DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
     // now me may redistribute or ghost the scatra discretization
 
-    // only now we must call Setup() on the scatra time integrator.
+    // only now we must call Setup() on the base algorithm.
     // all objects relying on the parallel distribution are
     // created and pointers are set.
-    scatraonly->ScaTraField()->Setup();
+    // calls Setup() on time integrator inside.
+    scatraonly->Setup();
 
     // read the restart information, set vectors and variables
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
@@ -207,7 +212,11 @@ void elch_dyn(int restart)
         = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol,scatradyn,problem->SolverParams(linsolvernumber)));
 
       // now we must call Init()
-      elch->Init();
+      // NOTE : elch reads time parameters from scatra dynamic section !
+      elch->Init(
+          scatradyn,
+          scatradyn,
+          problem->SolverParams(linsolvernumber) );
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
@@ -243,7 +252,13 @@ void elch_dyn(int restart)
 
       // create an ELCH::Algorithm instance
       Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol,scatradyn,fdyn,problem->SolverParams(linsolvernumber)));
-      elch->Init();
+
+      // now we must call Init()
+      // NOTE : elch reads time parameters from scatra dynamic section !
+      elch->Init(
+          scatradyn,
+          scatradyn,
+          problem->SolverParams(linsolvernumber));
       elch->Setup();
 
       // read the restart information, set vectors and variables

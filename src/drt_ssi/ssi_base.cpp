@@ -105,9 +105,15 @@ bool SSI::SSI_Base::Init(const Epetra_Comm& comm,
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField(),true);
 
   // call scatra base algo and setup the scatra time integrator
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
-  // call Init() on all objects used
-  scatra_->ScaTraField()->Init();
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  // call Init() on all objects.
+  // scatra time integrator constructed and initialized inside.
+  scatra_->Init(
+      *scatratimeparams,
+      scatraparams,
+      problem->SolverParams(linsolvernumber),
+      scatra_disname,
+      isale );
 
   // do discretization specific setup
   InitDiscretizations(comm,struct_disname,scatra_disname);

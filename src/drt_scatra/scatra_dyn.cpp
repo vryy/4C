@@ -112,19 +112,20 @@ void scatra_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-              scatradyn,
-              scatradyn,
-              DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
-      // now we can call Setup() on the scatra time integrator
-      scatraonly->ScaTraField()->Init();
+      // now we can call Init() on the base algo.
+      // time integrator is constructed and initialized inside
+      scatraonly->Init(
+          scatradyn,
+          scatradyn,
+          DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
 
-      // now we must call Init()
-      scatraonly->ScaTraField()->Setup();
+      // now we must call Setup()
+      scatraonly->Setup();
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
@@ -257,7 +258,10 @@ void scatra_dyn(int restart)
       );
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init();
+      algo->Init(
+          scatradyn,
+          scatradyn,
+          DRT::Problem::Instance()->SolverParams(linsolvernumber) );
 
       // setup algo (setup fluid time integrator and scatra time integrator inside)
       algo->Setup();

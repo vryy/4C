@@ -62,7 +62,13 @@ namespace ADAPTER
     virtual void Setup();
 
     /// init this class
-    virtual void Init();
+    virtual void Init(
+        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
+        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
+        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
+        const bool                      isale = false        ///< ALE flag
+    );
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;

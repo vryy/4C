@@ -41,10 +41,21 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
 /*----------------------------------------------------------------------*
 | Setup                                                     rauch 08/16 |
 *----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init()
+void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init(
+    const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
+    const Teuchos::ParameterList&   scatradyn,      ///< parameter list for scalar transport subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for scalar transport solver
+    const std::string&              disname,        ///< name of scalar transport discretization
+    const bool                      isale           ///< ALE flag
+)
 {
   // call Init() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
+      prbdyn,
+      scatradyn,
+      solverparams,
+      disname,
+      isale);
 
   ale_ = Teuchos::rcp_dynamic_cast<AleFluidWrapper>(AleBaseAlgorithm::AleField(), true);
 

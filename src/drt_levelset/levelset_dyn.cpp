@@ -70,21 +70,28 @@ void levelset_dyn(int restart)
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+    dserror("no linear solver defined for SCALAR_TRANSPORT problem. "
+            "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,scatradyn,problem->SolverParams(linsolvernumber)));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase =
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+
+  // first we initialize the base algorithm
+  // time integrator is constructed and initialized inside.
+  scatrabase->Init(
+      levelsetcontrol,
+      scatradyn,
+      problem->SolverParams(linsolvernumber));
+
+  // only now we must call Setup() on the base algo.
+  // all objects relying on the parallel distribution are
+  // created and pointers are set.
+  // calls Setup() in time integrator inside.
+  scatrabase->Setup();
 
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
-
-  // now we can call Init() on the scatra time integrator
-  levelsetalgo->Init();
-
-  // only now we must call Setup() on the scatra time integrator.
-  // all objects relying on the parallel distribution are
-  // created and pointers are set.
-  levelsetalgo->Setup();
 
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->ReadRestart(restart);

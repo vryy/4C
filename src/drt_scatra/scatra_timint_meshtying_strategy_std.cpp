@@ -48,7 +48,6 @@ void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStd::SetupMeshtying()
 {
-
   return;
 }
 

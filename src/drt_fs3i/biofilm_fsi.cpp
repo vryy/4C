@@ -96,13 +96,6 @@ void FS3I::BiofilmFSI::Init()
   if(ale_ == Teuchos::null)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
-  // create fluid-ALE Dirichlet Map Extractor for FSI step
-  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std);
-
-  // create fluid-ALE Dirichlet Map Extractor for growth step
-  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
-
-
 
   //---------------------------------------------------------------------
   // getting and initializing problem-specific parameters
@@ -152,7 +145,7 @@ void FS3I::BiofilmFSI::Init()
 void FS3I::BiofilmFSI::Setup()
 {
   // call Setup() in base class
-  FS3I::PartFS3I_1WC::Init();
+  FS3I::PartFS3I_1WC::Setup();
 
   Teuchos::RCP<DRT::Discretization> structaledis = DRT::Problem::Instance()->GetDis("structale");
 

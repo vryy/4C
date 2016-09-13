@@ -91,20 +91,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
+
   // scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+
+  // initialize the base algo.
+  // scatra time integrator is constructed and initialized inside.
+  scatra_->Init(
       globaltimeparams,
       scatraparams,
       problem->SolverParams(linsolvernumber),
       scatra_disname,
-      true));
-
-  // now we can call Init() on the scatra time integrator
-  scatra_->ScaTraField()->Init();
+      true);
 
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
+  // calls Setup() on the scatra time integrator inside.
   scatra_->ScaTraField()->Setup();
 
   //done.

@@ -97,17 +97,25 @@ STI::Algorithm::Algorithm(
     dserror("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams))->ScaTraField();
-  scatra_->Init();
-  scatra_->Setup();
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm > basealgo =
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  basealgo->Init(*fieldparameters_,*fieldparameters_,solverparams);
+  basealgo->Setup();
+
+  // get pointer to time integrator
+  scatra_ = basealgo->ScaTraField();
 
   // modify field parameters for thermo field
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams,"thermo"))->ScaTraField();
-  thermo_->Init();
-  thermo_->Setup();
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm > thermo_basealgo =
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  thermo_basealgo->Init(*fieldparameters_,*fieldparameters_,solverparams,"thermo");
+  thermo_basealgo->Setup();
+
+  // get pointer to time integrator
+  thermo_ = thermo_basealgo->ScaTraField();
 
   // check maps from scatra and thermo discretizations
   if(scatra_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
