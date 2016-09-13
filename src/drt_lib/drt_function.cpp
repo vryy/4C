@@ -1167,7 +1167,7 @@ std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index, const double* x,
     // set temporal variable as requested
     exprd_[index]->SetValue("t",tfad);
     // evaluate the function
-    fdfad = expr_[index]->Evaluate();
+    fdfad = exprd_[index]->Evaluate();
     break;
   }
   case 2:
@@ -1179,7 +1179,7 @@ std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index, const double* x,
     // set temporal variable as requested
     exprd_[index]->SetValue("t",tfad);
     // evaluate the function
-    fdfad = expr_[index]->Evaluate();
+    fdfad = exprd_[index]->Evaluate();
     break;
   }
   case 1:
@@ -1191,7 +1191,7 @@ std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index, const double* x,
     // set temporal variable as requested
     exprd_[index]->SetValue("t",tfad);
     // evaluate the function
-    fdfad = expr_[index]->Evaluate();
+    fdfad = exprd_[index]->Evaluate();
     break;
   }
   default: dserror("Problem dimension has to be 1, 2, or 3."); break;
@@ -1442,18 +1442,18 @@ double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x, do
   {
   case 3:
   {
-    variables.push_back(std::pair<std::string,double>("x",x[0]));
-    variables.push_back(std::pair<std::string,double>("y",x[1]));
-    variables.push_back(std::pair<std::string,double>("z",x[2]));
+    variables.push_back(std::pair<std::string,double>("x",x[0]-x_[index]));
+    variables.push_back(std::pair<std::string,double>("y",x[1]-y_[index]));
+    variables.push_back(std::pair<std::string,double>("z",x[2]-z_[index]));
   }
   case 2:
   {
-    variables.push_back(std::pair<std::string,double>("x",x[0]));
-    variables.push_back(std::pair<std::string,double>("y",x[1]));
+    variables.push_back(std::pair<std::string,double>("x",x[0]-x_[index]));
+    variables.push_back(std::pair<std::string,double>("y",x[1]-y_[index]));
   }
   case 1:
   {
-    variables.push_back(std::pair<std::string,double>("x",x[0]));
+    variables.push_back(std::pair<std::string,double>("x",x[0]-x_[index]));
   }
   }
 
