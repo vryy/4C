@@ -358,8 +358,10 @@ void CellMigrationControlAlgorithm()
     {
       // fill complete inside
       CreateGhosting(problem->GetDis("cell"));
-      CreateGhosting(problem->GetDis("cellscatra"));
-      CreateGhosting(problem->GetDis("ale"));
+      if(ssi_cell)
+        CreateGhosting(problem->GetDis("cellscatra"));
+      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+        CreateGhosting(problem->GetDis("ale"));
     }
 
     // now we call the final fill complete on our discretizations.
