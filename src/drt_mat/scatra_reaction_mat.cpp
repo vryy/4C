@@ -16,6 +16,7 @@
 
 #include <vector>
 #include "scatra_reaction_mat.H"
+#include "scatra_reaction_coupling.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
@@ -77,7 +78,9 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
       if (roleallzero)
         dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the ROLE list");
       if (stoichallzero)
-        dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
+        dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the STOICH list");
+
+      reaction_ = new MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative();
 
       break;
     }
@@ -98,6 +101,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
       if (stoichallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
 
+      reaction_ = new MAT::PAR::REACTIONCOUPLING::PowerMultiplicative();
+
       break;
     }
 
@@ -115,6 +120,9 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         }
       if (not issomepositiv)
         dserror("reac_coup_constant must contain at least one positive entry in the STOICH list");
+
+      reaction_ = new MAT::PAR::REACTIONCOUPLING::Constant();
+
       break;
     }
 
@@ -133,6 +141,9 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the ROLE list");
       if (stoichallzero)
         dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
+
+      reaction_ = new MAT::PAR::REACTIONCOUPLING::MichaelisMenten();
+
       break;
     }
 
@@ -153,6 +164,9 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
         }
       if(functID==-1)
         dserror("reac_coup_byfunction must contain at least one positive entry in the STOICH list");
+
+      reaction_ = new MAT::PAR::REACTIONCOUPLING::ByFunction();
+
       break;
     }
 
@@ -172,63 +186,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
  *----------------------------------------------------------------------*/
 void MAT::PAR::ScatraReactionMat::Initialize()
 {
-  if(not isinit_)
-  {
-    switch (coupling_)
-    {
-      case MAT::PAR::reac_coup_byfunction: //reaction by function
-      {
-        for(int ii=0;ii<numscal_;ii++)
-        {
-          // we take the value in couprole list as function ID
-          const int functID = round(couprole_->at(ii));
-          if (functID!=0)
-          {
-            if(Function(functID-1).NumberComponents()!=1)
-              dserror("expected only one component for the reaction evaluation");
-
-            for(int k=0;k<numscal_;k++)
-            {
-              // construct the strings for scalar
-              std::ostringstream temp;
-              temp << k+1;
-              std::string name = "phi"+temp.str();
-
-              // add the variable name to the parser
-              if(not Function(functID-1).IsVariable(0,name))
-                Function(functID-1).AddVariable(0,name,0.0);
-            }
-          }
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
-  isinit_=true;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-inline DRT::UTILS::VariableExprFunction& MAT::PAR::ScatraReactionMat::Function(int functnum) const
-{
-  // try to cast to variable expression function for phi evaluation
-  // try-catch because of cast of references
-  try
-  {
-    DRT::UTILS::VariableExprFunction& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
-
-    return funct;
-  }
-  catch(std::bad_cast & exp)
-  {
-    dserror("Cast to VarExp Function failed! For reaction law definition only 'VAREXPR' functions are allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
-  }
+  reaction_->Initialize(numscal_,*couprole_);
 }
 
 /*----------------------------------------------------------------------*
@@ -409,222 +367,35 @@ void MAT::ScatraReactionMat::ApplyReacStartAndScaling(
  |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
-    const int k,                         //!< current scalar id
+    int k,                               //!< current scalar id
     const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-    const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
-  const std::vector<double> couprole = *Couprole();
-
   std::vector<double> phinp(phinp_org);
   if ( IsReacStart() or scale_phi != 1.0 )
     ApplyReacStartAndScaling( phinp,ReacStart(),scale_phi );
 
-  double bftfac=1.0;
-
-  // TODO: Split the reaction types into classes
-  switch ( Coupling() )
-  {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[ii]!=0)
-        {
-          bftfac *=phinp[ii];
-        }
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
-    {
-      for (int ii=0; ii < NumScal(); ii++)
-      {
-        if (couprole[ii]!=0)
-        {
-          bftfac *= std::pow(phinp[ii],couprole[ii]);
-        }
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_constant: //constant source term:
-    {
-      bftfac = 1.0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
-    {
-      for (int ii=0; ii < NumScal() ; ii++)
-      {
-        if (couprole[ii]>0.0) //and (ii!=k))
-          bftfac *= phinp[ii]/(couprole[ii]+phinp[ii]);
-        else if (couprole[ii]<0.0) //and (ii!=k))
-          bftfac *= phinp[ii];
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_byfunction: //reaction by function
-    {
-      // copy phi vector in different format to be read by the function
-      std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
-      // evaluate reaction term
-      bftfac= Function(round(couprole[k])-1).Evaluate(0,variables);
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The couplingtype %i is not a valid coupling type.", Coupling() );
-      break;
-  }
-
-  return scale_reac*bftfac;
+  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,*Couprole(),scale_reac);
 }
 
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          thon 08/16 |
  *--------------------------------------------------------------------------------*/
 void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
-    const int k,                         //!< current scalar id
+    int k,                               //!< current scalar id
     std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-    const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                    //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
-  const std::vector<double> couprole = *Couprole();
-
   std::vector<double> phinp(phinp_org);
   if ( IsReacStart() or scale_phi != 1.0 )
     ApplyReacStartAndScaling( phinp,ReacStart(),scale_phi );
 
-  // TODO: Split the reaction types into classes
-  switch (Coupling())
-  {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
-    {
-      for (int toderive=0; toderive<NumScal() ;toderive++)
-      {
-        double bfdmfac=1.0;
-        if (couprole[toderive]!=0)
-        {
-          for (int ii=0; ii < NumScal(); ii++)
-          {
-            if (couprole[ii]!=0 and ii!=toderive)
-              bfdmfac *= phinp.at(ii);
-          }
-        }
-        else
-          bfdmfac=0.0;
-
-        if ( ReacStart()->at(toderive) > 0 and phinp.at(toderive)==0.0 )
-          bfdmfac=0.0;
-        derivs[toderive]+=scale_reac*bfdmfac;
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
-    {
-      for (int toderive=0; toderive<NumScal() ;toderive++)
-      {
-        double bfdmfac=1.0;
-        if (couprole[toderive]!=0)
-          {
-            for (int ii=0; ii < NumScal(); ii++)
-            {
-              if (couprole[ii]!=0 and ii!=toderive)
-                bfdmfac *= std::pow(phinp.at(ii),couprole[ii]);
-              else if(couprole[ii]!=0 and ii==toderive)
-                bfdmfac *= std::pow(phinp.at(ii),couprole[ii]-1.0);
-            }
-          }
-        else
-          bfdmfac=0.0;
-
-        if ( ReacStart()->at(toderive) > 0 and phinp.at(toderive)==0.0 )
-          bfdmfac=0.0;
-        derivs[toderive]+=scale_reac*bfdmfac;
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_constant: //constant source term:
-    {
-      break;
-    }
-
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
-    {
-      for (int toderive=0; toderive<NumScal() ;toderive++)
-      {
-        double bfdmfac=1.0;
-        for (int ii=0; ii < NumScal(); ii++)
-        {
-          if (ii != toderive)
-          {
-            if (couprole[ii] > 0.0)
-              bfdmfac *= phinp.at(ii)/(couprole[ii] + phinp.at(ii));
-            else if (couprole[ii] < 0.0)
-              bfdmfac *= phinp.at(ii);
-            else
-              bfdmfac *= 1;
-          }
-          else
-          {
-            if (couprole[ii] > 0.0)
-              bfdmfac *= couprole[ii]/(std::pow((phinp.at(ii)+couprole[ii]), 2));
-            else if (couprole[ii] < 0.0)
-              bfdmfac *= 1;
-            else
-              bfdmfac = 0;
-          }
-        }
-        if ( ReacStart()->at(toderive) > 0 and phinp.at(toderive)==0.0 )
-          bfdmfac=0.0;
-        derivs[toderive]+=scale_reac*bfdmfac;
-      }
-      break;
-    }
-
-    case MAT::PAR::reac_coup_byfunction: //reaction by function
-    {
-      // copy phi vector in different format to be read by the function
-      std::vector<std::pair<std::string,double> > variables = BuildPhiVectorForFunction(phinp);
-      // evaluate the derivatives of the reaction term
-      std::vector<double> myderiv = Function(round(couprole[k])-1).FctDer(0,variables);
-
-      for (int toderive=0; toderive<NumScal() ;toderive++)
-      {
-        // the derivative needed is the derivative of the first function (index 0) w.r.t. to
-        // the index of the scalar to derive (index toderive)
-        double bfdmfac = myderiv[toderive];
-        if ( ReacStart()->at(toderive) > 0 and phinp.at(toderive)==0.0 )
-          bfdmfac=0.0;
-
-        derivs[toderive] += scale_reac*bfdmfac;
-      }
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The couplingtype %i is not a valid coupling type.", Coupling());
-      break;
-  }
+  params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,*Couprole(),*ReacStart(),scale_reac);
 
   return;
 }
@@ -657,46 +428,4 @@ void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(
     ) const
 {
   CalcReaBodyForceDeriv(k,derivs,phinp,Stoich()->at(k),scale);
-}
-
-/*---------------------------------------------------------------------------------/
- | helper for evaluation by function                                     Vuong 08/16 |
-/--------------------------------------------------------------------------------- */
-std::vector<std::pair<std::string,double> >  MAT::ScatraReactionMat::BuildPhiVectorForFunction(
-    const std::vector<double>& phinp    //!< scalar values at t_(n+1)
-    ) const
-{
-  std::vector<std::pair<std::string,double> > variables;
-  for (int ii=0; ii < NumScal(); ii++)
-  {
-    // construct the strings for scalar
-    std::ostringstream temp;
-    temp << ii+1;
-    std::string name = "phi"+temp.str();
-
-    // save the phi values with correct name
-    variables.push_back(std::pair<std::string,double>(name,phinp[ii]));
-  }
-  return variables;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-inline DRT::UTILS::VariableExprFunction& MAT::ScatraReactionMat::Function(int functnum) const
-{
-  // try to cast to variable expression function for phi evaluation
-  // try-catch because of cast of references
-  try
-  {
-    DRT::UTILS::VariableExprFunction& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
-
-    return funct;
-  }
-  catch(std::bad_cast & exp)
-  {
-    dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
-  }
 }

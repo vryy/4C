@@ -567,6 +567,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_mat_multiporo.cpp
   src/drt_mat/scatra_reaction_mat.cpp
+  src/drt_mat/scatra_reaction_coupling.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
   src/drt_mat/matlist_reactions.cpp
   src/drt_mat/matlist_chemotaxis.cpp

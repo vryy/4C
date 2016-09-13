@@ -23,14 +23,6 @@
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-namespace DRT
-{
-namespace UTILS
-{
-  class VariableExprFunction;
-}
-}
-
 namespace MAT
 {
   //forward declaration
@@ -38,6 +30,10 @@ namespace MAT
 
   namespace PAR
   {
+  namespace REACTIONCOUPLING
+  {
+    class ReactionBase;
+  }
 
   enum reaction_coupling
   {
@@ -53,13 +49,10 @@ namespace MAT
   \brief This file contains the base material for reactive scalars
 
   This class encapsulates the reaction kinematics, defined by the reaction_coupling variable.
-  The key methods are the CalcReaCoeff...() and CalcReaBodyForce...() methods. There, all
+  The key methods are the CalcReaBodyForce...() methods. There, all
   reaction terms and derivatives are evaluated.
-  Note: For the CalcReaCoeff...() methods, it is implied that the current scalar is multiplied with
-        the value returned by this methods. Thus, those reaction terms are of type K(c) \cdot c_i.
-        This is needed for some stabilizations of the reactive term.
-        The CalcReaBodyForce...() terms are of arbitrary form, but keep in mind that if you are unlucky,
-        you might get stability issues.
+  Note: The CalcReaBodyForce...() terms are of arbitrary form, but keep in mind that if you are unlucky,
+        (if the term is not of the form K(c) \cdot c_i ) you might get stability issues.
 
   Detailed description of the corresponding equations and examples:
 
@@ -251,8 +244,8 @@ namespace MAT
     /// flag if initialization has been done
     bool isinit_;
 
-  private:
-    inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+    /// implementation of reaction coupling
+    REACTIONCOUPLING::ReactionBase* reaction_;
 
   };  // class Scatra
 
@@ -399,29 +392,22 @@ namespace MAT
 
     ///helper for calculating advanced reaction terms
     double CalcReaBodyForceTerm(
-        const int k,                         //!< current scalar id
+        int k,                               //!< current scalar id
         const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-        const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+        double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
     ///helper for calculating advanced reaction term derivatives
     void CalcReaBodyForceDeriv(
-        const int k,                         //!< current scalar id
+        int k,                               //!< current scalar id
         std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-        const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
-        ) const;
-
-    /// helper for evaluation by function
-    std::vector<std::pair<std::string,double> > BuildPhiVectorForFunction(
-        const std::vector<double>& phinp_org //!< scalar values at t_(n+1)
+        double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
   private:
-
-    inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
 
     /// my material parameters
     MAT::PAR::ScatraReactionMat* params_;
