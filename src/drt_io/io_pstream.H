@@ -242,7 +242,7 @@ namespace IO
     Level& stream(CharT s)  ///< text to be added
     {
       if(level_ <= pstream_->OutputLevel())
-        (*pstream_) << s;
+        pstream_->stream(s);
       return *this;
     }
 
