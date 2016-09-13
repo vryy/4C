@@ -1481,8 +1481,8 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // step number and time (only after that data output is possible)
     output_->NewStep(step_,time_);
 
-    // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_==upres_) output_->WriteElementData(true);
+    // write domain decomposition for visualization (only once at the first time step!)
+    if (step_==0) output_->WriteElementData(true);
 
     // write state vectors
     OutputState();
