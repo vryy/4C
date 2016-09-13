@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
  \file fpsi_utils.H
-
  \brief  Utility Methods For Fluid Porous Structure Interaction Problems
-
- <pre>
-   Maintainer: Rauch Andreas
-               rauch@lnm.mw.tum.de
- </pre>
+ \level 3
+ \maintainer Andreas Rauch
  *-----------------------------------------------------------------------*/
 #ifndef FPSI_UTILS_H_
 #define FPSI_UTILS_H_

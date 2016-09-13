@@ -2329,9 +2329,7 @@ set(OBJS_DRT_FPSI
   src/drt_fpsi/fpsi_dyn.cpp
   src/drt_fpsi/fpsi_monolithic.cpp
   src/drt_fpsi/fpsi_monolithic_plain.cpp
-  src/drt_fpsi/fpsi_partitioned.cpp
   src/drt_fpsi/fpsi.cpp
-  src/drt_fpsi/fpsi_robinneumann.cpp
   src/drt_fpsi/fpsi_coupling.cpp
 )
 

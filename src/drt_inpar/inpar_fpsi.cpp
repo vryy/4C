@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_fpsi.cpp
-
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief fpsi parameters
+\level 1
+\maintainer Andreas Rauch
 */
-
 /*----------------------------------------------------------------------*/
 
 
@@ -61,12 +57,10 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                "Coupling strategies for partitioned FPSI solvers.",
                                tuple<std::string>(
                                  "RobinNeumann",
-                                 "DirichletNeumann",
                                  "monolithic",
                                  "nocoupling"),
                                  tuple<int>(
                                  RobinNeumann,
-                                 DirichletNeumann,
                                  monolithic,
                                  nocoupling),
                                  &fpsidyn);

@@ -1,13 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
- \file fpsi_dyn.H
-
- \brief control routine of fluid-porous-structure-interaction problems
-
- <pre>
-   Maintainer: Rauch Andreas
-               rauch@lnm.mw.tum.de
- </pre>
- *------------------------------------------------------------------------------------------------*/
+\file fpsi_dyn.H
+\brief control routine of fluid-porous-structure-interaction problems
+\level 2
+\maintainer Andreas Rauch
+----------------------------------------------------------------------------------------*/
 
 
 #ifndef FPSI_H

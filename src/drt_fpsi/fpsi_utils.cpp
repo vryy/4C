@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
  \file fpsi_utils.cpp
-
  \brief  Utility Methods For Fluid Porous Structure Interaction Problems
- <pre>
- Maintainer: Rauch Andreas
- rauch@lnm.mw.tum.de
- </pre>
+ \level 3
+ \maintainer Andreas Rauch
  *-----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -19,7 +16,6 @@
 //
 //FPSI includes
 #include "fpsi_utils.H"
-#include "fpsi_robinneumann.H"
 #include "fpsi_monolithic_plain.H"
 
 //POROELAST includes
@@ -175,7 +171,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(
         fpsidynparams, "PARTITIONED");
     if (method == INPAR::FPSI::RobinNeumann)
     {
-      fpsi_algo = Teuchos::rcp(new FPSI::RobinNeumann(comm, fpsidynparams));
+      // do nothing
     }
     else
     {

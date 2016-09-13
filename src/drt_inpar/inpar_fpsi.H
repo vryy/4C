@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_fpsi.H
-
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief fpsi parameters
+\level 1
+\maintainer Andreas Rauch
 */
-
 /*----------------------------------------------------------------------*/
 
 #ifndef INPAR_FPSI_H_
@@ -37,7 +33,6 @@ namespace FPSI
   // type of partitioned coupling for FPSI problems
   enum PartitionedCouplingMethod
   {
-   DirichletNeumann,
    RobinNeumann,
    monolithic,
    nocoupling
