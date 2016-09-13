@@ -156,9 +156,9 @@ private:
     ) const;
 
     /// calculate advanced reaction term derivatives
-    double CalcReaBodyForceDerivMatrix(
+    void CalcReaBodyForceDerivMatrix(
             const int k,
-            const int j,
+            std::vector<double>& derivs,
             const std::vector<double>& phinp,
             const double scale = 1.0
         ) const;

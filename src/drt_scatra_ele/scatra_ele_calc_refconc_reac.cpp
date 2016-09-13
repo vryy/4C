@@ -88,10 +88,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
 
   remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),1.0/J_)*J_ ,k );
 
-  for (int j=0; j<my::numscal_ ;j++)
-  {
-    remanager->AddToReaBodyForceDerivMatrix( matreaclist->CalcReaBodyForceDerivMatrix(k,j,my::scatravarmanager_->Phinp(),1.0/J_) ,k,j );
-  }
+  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),my::scatravarmanager_->Phinp());
 
 }
 

@@ -1294,13 +1294,13 @@ namespace ELEMENTS
       //! @name access routines
 
       //! Return the reaction coefficient
-      double GetReaCoeff(const int k){return reacoeff_[k];}
+      double GetReaCoeff(const int k) const {return reacoeff_[k];}
 
       //! Return the stabilization coefficient
-      virtual double GetStabilizationCoeff(const int k, const double phinp_k){return reacoeff_[k];}
+      virtual double GetStabilizationCoeff(const int k, const double phinp_k) const {return reacoeff_[k];}
 
       //! return flag: reaction activated
-      bool Active(){return include_me_;}
+      bool Active() const {return include_me_;}
 
     protected:
       //! flag for reaction

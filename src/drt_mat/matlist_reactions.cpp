@@ -249,22 +249,21 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  | calculate advanced reaction term derivatives              thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
+void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
         const int k,
-        const int j,
+        std::vector<double>& derivs,
         const std::vector<double>& phinp,
         const double scale
     ) const
 {
-  double reabodyforcederivmatrixKJ=0.0;
 
   for (int condnum = 0;condnum < NumReac();condnum++)
   {
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reabodyforcederivmatrixKJ += reacmat->CalcReaBodyForceDerivMatrix(k, j, phinp, scale);
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, scale);
   }
 
-  return reabodyforcederivmatrixKJ;
+  return;
 }

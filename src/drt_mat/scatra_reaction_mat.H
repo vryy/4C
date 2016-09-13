@@ -343,9 +343,9 @@ namespace MAT
         const double scale                   //!< scaling factor for reference concentrations
         ) const;
 
-    double CalcPermInfluenceDeriv(
+    void CalcPermInfluenceDeriv(
         const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
+        std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
         const double scale                   //!< scaling factor for reference concentrations
         ) const;
@@ -377,15 +377,15 @@ namespace MAT
     double CalcReaBodyForceTerm(
         const int k,                         //!< current scalar id
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const double scale                   //!< scaling factor for reference concentrations
+        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
     /// calculate advanced reaction term derivatives
-    double CalcReaBodyForceDerivMatrix(
+    void CalcReaBodyForceDerivMatrix(
         const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
+        std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const double scale                   //!< scaling factor for reference concentrations
+        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
   private:
@@ -398,18 +398,20 @@ namespace MAT
         ) const;
 
     ///helper for calculating advanced reaction terms
-    double CalcReaBodyForceTermFac(
+    double CalcReaBodyForceTerm(
         const int k,                         //!< current scalar id
         const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-        const double scale                   //!< scaling factor for reference concentrations ) const;
+        const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
     ///helper for calculating advanced reaction term derivatives
-    double CalcReaBodyForceDerivFac(
+    void CalcReaBodyForceDeriv(
         const int k,                         //!< current scalar id
-        const int toderive,                  //!< current id to derive to
+        std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
-        const double scale                   //!< scaling factor for reference concentrations ) const;
+        const double scale_reac,             //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
     /// helper for evaluation by function

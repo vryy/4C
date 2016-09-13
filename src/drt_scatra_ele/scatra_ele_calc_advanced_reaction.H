@@ -181,6 +181,9 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
       return;
     }
 
+    //! Return one line of the jacobian of the reaction vector
+    std::vector<double>& GetReaBodyForceDerivVector(const int k){return reabodyforcederiv_[k];}
+
     //! Add to the derivative of the body force due to reaction
     void AddToReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
     {
@@ -193,13 +196,13 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! @name access routines
 
     //! Return the reaction coefficient
-    double GetReaBodyForce(const int k){return reabodyforce_[k];}
+    double GetReaBodyForce(const int k) const {return reabodyforce_[k];}
 
     //! Return the reaction coefficient
-    double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
+    double GetReaBodyForceDerivMatrix(const int k, const int j) const {return (reabodyforcederiv_[k])[j];}
 
     //! Return the stabilization coefficient
-    virtual double GetStabilizationCoeff(const int k, const double phinp_k)
+    virtual double GetStabilizationCoeff(const int k, const double phinp_k) const
     {
       double stabboeff = ScaTraEleReaManager::GetStabilizationCoeff(k,phinp_k);
 
