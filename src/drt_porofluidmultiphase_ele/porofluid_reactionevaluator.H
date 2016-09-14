@@ -28,15 +28,21 @@ namespace ELEMENTS
 {
 class PoroFluidPhaseManager;
 
-
-class PoroFluidReactionEvaluator
+namespace POROFLUIDEVALUATOR
+{
+class ReactionEvaluator
   {
   public:
     //! constructor
-    PoroFluidReactionEvaluator();
+    ReactionEvaluator();
 
     //! destructor
-    virtual ~PoroFluidReactionEvaluator(){};
+    virtual ~ReactionEvaluator(){};
+
+    //! setup
+    void Setup(
+        const PoroFluidPhaseManager&       phasemanager,
+        const MAT::Material& material);
 
     //! evaluate reaction terms at GP
     void EvaluateGPState(
@@ -61,8 +67,14 @@ class PoroFluidReactionEvaluator
   private:
     //! reaction terms
     std::vector<double> reacterms_;
-    //! derivatives of reaction terms
+    //! derivatives of reaction terms w.r.t. dofs
     std::vector<std::vector<double> > reactermsderivs_;
+    //! derivatives of reaction terms w.r.t. (true) pressures
+    std::vector<std::vector<double> > reactermsderivspressure_;
+    //! derivatives of reaction terms w.r.t. saturations
+    std::vector<std::vector<double> > reactermsderivssaturation_;
+    //! derivatives of reaction terms w.r.t. porosity
+    std::vector<double> reactermsderivsporosity_;
 
     //! flags indicating whether the phase is involved in a reaction
     std::vector<bool> isreactive_;
@@ -70,6 +82,7 @@ class PoroFluidReactionEvaluator
     //! flag indicating gauss point was evaluated
     bool isevaluated_;
   };
+}
 }
 }
 

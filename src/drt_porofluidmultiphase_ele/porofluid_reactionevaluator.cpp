@@ -27,9 +27,43 @@
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidReactionEvaluator::PoroFluidReactionEvaluator()
+DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::ReactionEvaluator()
 : isevaluated_(false)
 {
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                              vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::Setup(
+    const PoroFluidPhaseManager&       phasemanager,
+    const MAT::Material& material)
+{
+  // get number of phases
+  const int numphases = phasemanager.NumPhases();
+
+  isreactive_.resize(numphases,false);
+
+  // cast the material to multiphase material
+  const MAT::FluidPoroMultiPhaseReactions& multiphasemat =
+      dynamic_cast<const MAT::FluidPoroMultiPhaseReactions&>(material);
+
+  // get number of reactions
+  const int numreactions = multiphasemat.NumReac();
+
+  for(int ireac=0; ireac<numreactions; ireac++)
+  {
+    // get the single phase material
+    MAT::FluidPoroSingleReaction& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSingleReactionMatFromMultiReactionsMaterial(multiphasemat,ireac);
+
+    for(int iphase=0; iphase<numphases; iphase++)
+    {
+      isreactive_[iphase] = isreactive_[iphase] or singlephasemat.IsReactive(iphase);
+    }
+  }
+
   return;
 }
 
@@ -37,7 +71,7 @@ DRT::ELEMENTS::PoroFluidReactionEvaluator::PoroFluidReactionEvaluator()
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidReactionEvaluator::EvaluateGPState(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::EvaluateGPState(
     const PoroFluidPhaseManager&       phasemanager,
     const MAT::Material&               material,
     const double&                      porosity,
@@ -56,12 +90,12 @@ void DRT::ELEMENTS::PoroFluidReactionEvaluator::EvaluateGPState(
   // get number of phases
   const int numphases = phasemanager.NumPhases();
 
-  reacterms_.clear();
-  reactermsderivs_.clear();
+  ClearGPState();
   reacterms_.resize(numphases,0.0);
   reactermsderivs_.resize(numphases,std::vector<double>(numphases,0.0));
-  isreactive_.clear();
-  isreactive_.resize(numphases,false);
+  reactermsderivspressure_.resize(numphases,std::vector<double>(numphases,0.0));
+  reactermsderivssaturation_.resize(numphases,std::vector<double>(numphases,0.0));
+  reactermsderivsporosity_.resize(numphases,0.0);
 
   for(int ireac=0; ireac<numreactions; ireac++)
   {
@@ -72,16 +106,27 @@ void DRT::ELEMENTS::PoroFluidReactionEvaluator::EvaluateGPState(
     // evaluate the reaction
     singlephasemat.EvaluateReaction(
         reacterms_,
-        reactermsderivs_,
+        reactermsderivspressure_,
+        reactermsderivssaturation_,
+        reactermsderivsporosity_,
         phasemanager.Pressure(),
         phasemanager.Saturation(),
         porosity,
         scalar
         );
+  }
 
-    for(int iphase=0; iphase<numphases; iphase++)
+  for(int iphase=0; iphase<numphases; iphase++)
+  {
+    std::vector<double>& myphasederiv = reactermsderivs_[iphase];
+    const std::vector<double>& myderivspressure = reactermsderivspressure_[iphase];
+    const std::vector<double>& myderivssaturation = reactermsderivssaturation_[iphase];
+
+    for(int doftoderive=0; doftoderive<numphases; doftoderive++)
     {
-      isreactive_[iphase] = isreactive_[iphase] or singlephasemat.IsReactive(iphase);
+      for(int idof=0; idof<numphases; idof++)
+        myphasederiv[doftoderive] +=   myderivspressure[idof]*phasemanager.PressureDeriv(idof,doftoderive)
+                                     + myderivssaturation[idof]*phasemanager.SaturationDeriv(idof,doftoderive);
     }
   }
 
@@ -93,14 +138,16 @@ void DRT::ELEMENTS::PoroFluidReactionEvaluator::EvaluateGPState(
 /*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidReactionEvaluator::ClearGPState()
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::ClearGPState()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
 
   reacterms_.clear();
   reactermsderivs_.clear();
-  isreactive_.clear();
+  reactermsderivspressure_.clear();
+  reactermsderivssaturation_.clear();
+  reactermsderivsporosity_.clear();
 
   isevaluated_=false;
   return;
@@ -109,7 +156,7 @@ void DRT::ELEMENTS::PoroFluidReactionEvaluator::ClearGPState()
 /*----------------------------------------------------------------------*
  | get the reaction term                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::PoroFluidReactionEvaluator::GetReacTerm(int phasenum) const
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::GetReacTerm(int phasenum) const
 {
   if(not isevaluated_)
     dserror("EvaluateGPState was not called!");
@@ -120,7 +167,7 @@ double DRT::ELEMENTS::PoroFluidReactionEvaluator::GetReacTerm(int phasenum) cons
 /*----------------------------------------------------------------------*
  | get the derivative of the reaction term                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::PoroFluidReactionEvaluator::GetReacDeriv(int phasenum, int doftoderive) const
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator::GetReacDeriv(int phasenum, int doftoderive) const
 {
   if(not isevaluated_)
     dserror("EvaluateGPState was not called!");

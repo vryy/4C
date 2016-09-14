@@ -67,7 +67,9 @@ class FluidPoroSingleReaction: public Parameter
     /// evaluate reaction
     void EvaluateFunction(
         std::vector<double> &                    reacval,
-        std::vector<std::vector<double> >&       reacderivs,
+        std::vector<std::vector<double> >&       reacderivspressure,
+        std::vector<std::vector<double> >&       reacderivssaturation,
+        std::vector<double>&                     reacderivsporosity,
         const std::vector<double>&               pressure,
         const std::vector<double>&               saturation,
         const double&                            porosity,
@@ -219,7 +221,9 @@ public:
   /// evaluate reaction
   void EvaluateReaction(
       std::vector<double> &                    reacval,
-      std::vector<std::vector<double> >&       reacderivs,
+      std::vector<std::vector<double> >&       reacderivspressure,
+      std::vector<std::vector<double> >&       reacderivssaturation,
+      std::vector<double>&                     reacderivsporosity,
       const std::vector<double>&               pressure,
       const std::vector<double>&               saturation,
       const double&                            porosity,

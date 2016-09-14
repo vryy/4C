@@ -35,7 +35,6 @@ namespace ELEMENTS
 // forward declarations
 class PoroFluidMultiPhaseEleParameter;
 class PoroFluidPhaseManager;
-class PoroFluidReactionEvaluator;
 
   template<DRT::Element::DiscretizationType distype>
   class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
@@ -234,7 +233,6 @@ class PoroFluidReactionEvaluator;
       const int                          curphase,           //!< index of current phase
       const int                          phasetoadd,         //!< index of current phase
       const PoroFluidPhaseManager&       phasemanager,       //!< phase manager
-      const PoroFluidReactionEvaluator&  reactionevaluator,  //!< reaction evaluator
       const MAT::Material&               material,           //!< material of the element
       const double                       timefacfac,         //!< domain-integration factor times time-integration factor
       bool                               scalewithsaturation //!< flag wether to scale with saturation
@@ -375,7 +373,6 @@ class PoroFluidReactionEvaluator;
       const int                             curphase,           //!< index of current phase
       const int                             phasetoadd,         //!< index of current phase
       const PoroFluidPhaseManager&          phasemanager,       //!< phase manager
-      const PoroFluidReactionEvaluator&     reactionevaluator,  //!< reaction evaluator
       const MAT::Material&                  material,           //!< material of the element
       const double                          rhsfac,             //!< time-integration factor for rhs times domain-integration factor
       bool                                  scalewithsaturation //!< flag wether to scale with saturation
@@ -454,10 +451,6 @@ class PoroFluidReactionEvaluator;
 //    );
 
   private:
-    /*========================================================================*/
-    //! @name helper methods
-    /*========================================================================*/
-    inline bool IsReaction() {return reactionevaluator_!=Teuchos::null;};
 
     /*========================================================================*/
     //! @name can be very useful
@@ -541,9 +534,6 @@ class PoroFluidReactionEvaluator;
 
     //! manager class for handling phases and corresponding DOFs
     Teuchos::RCP< PoroFluidPhaseManager > phasemanager_;
-
-    //! helper class for evaluation of reaction terms
-    Teuchos::RCP< PoroFluidReactionEvaluator > reactionevaluator_;
 
   };
 

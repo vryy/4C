@@ -14,6 +14,7 @@
 
 #include "porofluid_phasemanager.H"
 
+#include "porofluid_reactionevaluator.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
 
 #include "../drt_mat/fluidporo_multiphase.H"
@@ -36,7 +37,8 @@ DRT::ELEMENTS::PoroFluidPhaseManager::PoroFluidPhaseManager(int numphases):
     saturationderiv_(Teuchos::null),
     solidpressurederiv_(Teuchos::null),
     solidpressurederivderiv_(Teuchos::null),
-    statesset_(false)
+    statesset_(false),
+    reactionevaluator_(Teuchos::null)
 {
   // initialize matrixes and vectors
   pressurederiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
@@ -101,6 +103,12 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::Setup(
     int err = inverse.Invert();
     if (err != 0)
       dserror("Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs linear independent?",err);
+  }
+
+  if(material.MaterialType() == INPAR::MAT::m_fluidporo_multiphase_reactions)
+  {
+    reactionevaluator_ = Teuchos::rcp(new DRT::ELEMENTS::POROFLUIDEVALUATOR::ReactionEvaluator());
+    reactionevaluator_->Setup(*this,material);
   }
 
   return;
@@ -214,6 +222,27 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateGPState(
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate pressures, saturations and derivatives at GP     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::PoroFluidPhaseManager::EvaluateGPReactions(
+    const MAT::Material& material,
+    double porosity,
+    const std::vector<double>& scalars)
+{
+  if(not statesset_)
+    dserror("Gauss point states have not been set!");
+
+  if(reactionevaluator_ != Teuchos::null)
+    reactionevaluator_->EvaluateGPState(
+        *this,
+        material,
+         porosity,
+        scalars);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PoroFluidPhaseManager::ClearGPState()
@@ -232,10 +261,24 @@ void DRT::ELEMENTS::PoroFluidPhaseManager::ClearGPState()
   solidpressurederiv_->Scale(0.0);
   solidpressurederivderiv_->Scale(0.0);
 
+  if(reactionevaluator_ != Teuchos::null)
+    reactionevaluator_->ClearGPState();
+
   // states are reseted
   statesset_ = false;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | reaction query                                            vuong 08/16 |
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::PoroFluidPhaseManager::IsReactive(int phasenum)
+{
+  if(reactionevaluator_==Teuchos::null)
+    return false;
+  else
+    return reactionevaluator_->IsReactive(phasenum);
 }
 
 /*----------------------------------------------------------------------*
@@ -385,6 +428,47 @@ double DRT::ELEMENTS::PoroFluidPhaseManager::Bulkmodulus(
 
   return singlephasemat.Bulkmodulus();
 }
+
+/*----------------------------------------------------------------------*
+ *   get density of phase 'phasenum'                    vuong 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::PoroFluidPhaseManager::Density(
+    const MAT::Material& material,
+    int phasenum) const
+{
+
+  //get the single phase material
+  const MAT::FluidPoroSinglePhase& singlephasemat =
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
+
+  return singlephasemat.Density();
+}
+
+/*----------------------------------------------------------------------*
+ *   get reaction term of phase 'phasenum'                   vuong 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::PoroFluidPhaseManager::ReacTerm(
+    int phasenum) const
+{
+  if(reactionevaluator_ == Teuchos::null)
+    dserror("Reaction evaluator is null pointer!");
+
+  return reactionevaluator_->GetReacTerm(phasenum);
+}
+
+/*----------------------------------------------------------------------*
+ *   get reaction term of phase 'phasenum'                   vuong 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::PoroFluidPhaseManager::ReacDeriv(
+    int phasenum,
+    int doftoderive) const
+{
+  if(reactionevaluator_ == Teuchos::null)
+    dserror("Reaction evaluator is null pointer!");
+
+  return reactionevaluator_->GetReacDeriv(phasenum,doftoderive);
+}
+
 
 /*----------------------------------------------------------------------*
  * evaluate relative diffusivity of phase 'phasenum'         vuong 08/16 |

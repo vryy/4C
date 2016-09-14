@@ -33,6 +33,12 @@ namespace DRT
 namespace ELEMENTS
 {
 
+namespace POROFLUIDEVALUATOR
+{
+class ReactionEvaluator;
+}
+
+
 class PoroFluidPhaseManager
   {
   public:
@@ -50,8 +56,17 @@ class PoroFluidPhaseManager
         const MAT::Material& material,
         const std::vector<double>& phinp);
 
+    //! evaluate reactionss at GP
+    void EvaluateGPReactions(
+        const MAT::Material& material,
+        double porosity,
+        const std::vector<double>& scalars);
+
     //! clear the states
     void ClearGPState();
+
+    //! check for reactions
+    bool IsReactive(int phasenum);
 
     //! @name Access methods
 
@@ -104,6 +119,17 @@ class PoroFluidPhaseManager
         const MAT::Material& material,
         int phasenum) const;
 
+    //! get density of phase 'phasenum'
+    double Density(
+        const MAT::Material& material,
+        int phasenum) const;
+
+    //! get the reaction term
+    double ReacTerm(int phasenum) const;
+
+    //! get the derivative of the reaction term
+    double ReacDeriv(int phasenum, int doftoderive) const;
+
     //@}
 
   private:
@@ -154,6 +180,9 @@ class PoroFluidPhaseManager
 
     //! flag indicating of gauss point state has been set and evaluated
     bool statesset_;
+
+    //! helper class for evaluation of reaction terms
+    Teuchos::RCP< POROFLUIDEVALUATOR::ReactionEvaluator > reactionevaluator_;
   };
 
 }

@@ -101,7 +101,9 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
 *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
     std::vector<double> &                    reacval,
-    std::vector<std::vector<double> >&       reacderivs,
+    std::vector<std::vector<double> >&       reacderivspressure,
+    std::vector<std::vector<double> >&       reacderivssaturation,
+    std::vector<double>&                     reacderivsporosity,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
@@ -117,6 +119,23 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
     dserror("Invalid number of saturation values for this the fluid poro reaction material!");
   if(numscal_!=(int)scalar.size())
     dserror("Invalid number of scalar values for this the fluid poro reaction material!");
+
+  if(numphases_!=(int)reacderivsporosity.size())
+    dserror("Invalid length of vector for porosity derivatives for this the fluid poro reaction material!");
+  if(numphases_!=(int)reacderivspressure.size())
+    dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+  for (int k=0;k<numphases_;k++)
+  {
+    if(numphases_!=(int)reacderivspressure[k].size())
+      dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+  }
+  if(numphases_!=(int)reacderivssaturation.size())
+    dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+  for (int k=0;k<numphases_;k++)
+  {
+    if(numphases_!=(int)reacderivssaturation[k].size())
+      dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+  }
 
   std::vector<std::pair<std::string,double> > variables;
   variables.reserve(numphases_+numphases_+1);
@@ -143,17 +162,27 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
   double curval = Function(functID_-1).Evaluate(0,variables,constants);
   // evaluate derivatives
   std::vector<double> curderivs(Function(functID_-1).FctDer(0,variables,constants));
-  // sum them up
-  for (int k=0;k<numphases_;k++)
+
+  // fill the output vector
+  for(int k=0;k<numphases_;k++)
   {
-    if((*scale_)[k]!=0)
+    const int scale = (*scale_)[k];
+    if(scale!=0)
     {
-      reacval[k] += (*scale_)[k]*curval;
-      for (int j=0;j<numphases_;j++)
-        reacderivs[k][j] += (*scale_)[k]*curderivs[j];
+      // add the values from the reaction terms
+      reacval[k] += scale*curval;
+
+      // derivatives
+      std::vector<double>& presk = reacderivspressure[k];
+      std::vector<double>& satk  = reacderivssaturation[k];
+      for(int j=0;j<numphases_;j++)
+      {
+        presk[j] += scale*curderivs[j];
+        satk[j]  += scale*curderivs[numphases_+j];
+      }
+      reacderivsporosity[k] += scale*curderivs[2*numphases_];
     }
   }
-
 
   return;
 }
@@ -300,13 +329,23 @@ void MAT::FluidPoroSingleReaction::Initialize()
 *----------------------------------------------------------------------*/
 void MAT::FluidPoroSingleReaction::EvaluateReaction(
     std::vector<double> &                    reacval,
-    std::vector<std::vector<double> >&       reacderivs,
+    std::vector<std::vector<double> >&       reacderivspressure,
+    std::vector<std::vector<double> >&       reacderivssaturation,
+    std::vector<double>&                     reacderivsporosity,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
     const std::vector<double>&               scalar)
 {
-  params_->EvaluateFunction(reacval,reacderivs,pressure,saturation,porosity,scalar);
+  params_->EvaluateFunction(
+      reacval,
+      reacderivspressure,
+      reacderivssaturation,
+      reacderivsporosity,
+      pressure,
+      saturation,
+      porosity,
+      scalar);
 
   return;
 }
