@@ -62,122 +62,118 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
     }
   }
 
-  switch (coupling_)
+  // do some more input checks depending on coupling type
   {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
+    switch (coupling_)
     {
-      bool stoichallzero = true;
-      bool roleallzero = true;
-      for (int ii=0; ii < numscal_; ii++)
-        {
-          if (stoich_->at(ii) != 0)
-            stoichallzero = false;
-          if (couprole_->at(ii) != 0.0)
-            roleallzero = false;
-        }
-      if (roleallzero)
-        dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the ROLE list");
-      if (stoichallzero)
-        dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the STOICH list");
-
-      reaction_ = new MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative();
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
-    {
-      bool stoichallzero = true;
-      bool roleallzero = true;
-      for (int ii=0; ii < numscal_; ii++)
-        {
-          if (stoich_->at(ii) != 0)
-            stoichallzero = false;
-          if (couprole_->at(ii) != 0.0)
-            roleallzero = false;
-        }
-      if (roleallzero)
-        dserror("reac_coup_power_multiplicative must contain at least one positive entry in the ROLE list");
-      if (stoichallzero)
-        dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
-
-      reaction_ = new MAT::PAR::REACTIONCOUPLING::PowerMultiplicative();
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_constant: //constant source term:
-    {
-      bool issomepositiv = false;
-      for (int ii=0; ii < numscal_; ii++)
-        {
-          if (stoich_->at(ii)<0)
-            dserror("reac_coup_constant must only contain positive entries in the STOICH list");
-          if (couprole_->at(ii) != 0.0)
-            dserror("reac_coup_constant must only contain zero entries in the ROLE list");
-          if (stoich_->at(ii)>0)
-            issomepositiv=true;
-        }
-      if (not issomepositiv)
-        dserror("reac_coup_constant must contain at least one positive entry in the STOICH list");
-
-      reaction_ = new MAT::PAR::REACTIONCOUPLING::Constant();
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
-    {
-      bool stoichallzero = true;
-      bool roleallzero = true;
-      for (int ii=0; ii < numscal_; ii++)
-        {
-          if (stoich_->at(ii) != 0)
-            stoichallzero = false;
-          if (couprole_->at(ii) != 0)
-            roleallzero = false;
-        }
-      if (roleallzero)
-        dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the ROLE list");
-      if (stoichallzero)
-        dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
-
-      reaction_ = new MAT::PAR::REACTIONCOUPLING::MichaelisMenten();
-
-      break;
-    }
-
-    case MAT::PAR::reac_coup_byfunction: //reaction by function
-    {
-      int functID = -1;
-      for (int ii=0; ii < numscal_; ii++)
-        {
-          if (stoich_->at(ii) != 0)
+      case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
+      {
+        bool stoichallzero = true;
+        bool roleallzero = true;
+        for (int ii=0; ii < numscal_; ii++)
           {
-            if (round(couprole_->at(ii)) < 1)
-              dserror("reac_coup_byfunction: no function defined in the ROLE list for scalar with positive entry in the STOICH list");
-            if(functID==-1)
-              functID=round(couprole_->at(ii));
-            else if(functID!=round(couprole_->at(ii)))
-              dserror("The FUNC IDs defined in the ROLE list should all match");
+            if (stoich_->at(ii) != 0)
+              stoichallzero = false;
+            if (couprole_->at(ii) != 0.0)
+              roleallzero = false;
           }
-        }
-      if(functID==-1)
-        dserror("reac_coup_byfunction must contain at least one positive entry in the STOICH list");
+        if (roleallzero)
+          dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the ROLE list");
+        if (stoichallzero)
+          dserror("reac_coup_simple_multiplicative must contain at least one non-zero entry in the STOICH list");
 
-      reaction_ = new MAT::PAR::REACTIONCOUPLING::ByFunction();
+        break;
+      }
 
-      break;
+      case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A^2*B^-1.5*C:
+      {
+        bool stoichallzero = true;
+        bool roleallzero = true;
+        for (int ii=0; ii < numscal_; ii++)
+          {
+            if (stoich_->at(ii) != 0)
+              stoichallzero = false;
+            if (couprole_->at(ii) != 0.0)
+              roleallzero = false;
+          }
+        if (roleallzero)
+          dserror("reac_coup_power_multiplicative must contain at least one positive entry in the ROLE list");
+        if (stoichallzero)
+          dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
+
+        break;
+      }
+
+      case MAT::PAR::reac_coup_constant: //constant source term:
+      {
+        bool issomepositiv = false;
+        for (int ii=0; ii < numscal_; ii++)
+          {
+            if (stoich_->at(ii)<0)
+              dserror("reac_coup_constant must only contain positive entries in the STOICH list");
+            if (couprole_->at(ii) != 0.0)
+              dserror("reac_coup_constant must only contain zero entries in the ROLE list");
+            if (stoich_->at(ii)>0)
+              issomepositiv=true;
+          }
+        if (not issomepositiv)
+          dserror("reac_coup_constant must contain at least one positive entry in the STOICH list");
+
+        break;
+      }
+
+      case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+      {
+        bool stoichallzero = true;
+        bool roleallzero = true;
+        for (int ii=0; ii < numscal_; ii++)
+          {
+            if (stoich_->at(ii) != 0)
+              stoichallzero = false;
+            if (couprole_->at(ii) != 0)
+              roleallzero = false;
+          }
+        if (roleallzero)
+          dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the ROLE list");
+        if (stoichallzero)
+          dserror("reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH list");
+
+        break;
+      }
+
+      case MAT::PAR::reac_coup_byfunction: //reaction by function
+      {
+        int functID = -1;
+        for (int ii=0; ii < numscal_; ii++)
+          {
+            if (stoich_->at(ii) != 0)
+            {
+              if (round(couprole_->at(ii)) < 1)
+                dserror("reac_coup_byfunction: no function defined in the ROLE list for scalar with positive entry in the STOICH list");
+              if(functID==-1)
+                functID=round(couprole_->at(ii));
+              else if(functID!=round(couprole_->at(ii)))
+                dserror("The FUNC IDs defined in the ROLE list should all match");
+            }
+          }
+        if(functID==-1)
+          dserror("reac_coup_byfunction must contain at least one positive entry in the STOICH list");
+
+        break;
+      }
+
+      case MAT::PAR::reac_coup_none:
+        dserror("reac_coup_none is not a valid coupling");
+        break;
+
+      default:
+        dserror("The couplingtype %i is not a valid coupling type.", coupling_);
+        break;
     }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The couplingtype %i is not a valid coupling type.", coupling_);
-      break;
   }
+
+  // if all checks are passed, we can build the reaction class
+  reaction_ = MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(coupling_,isreacstart_,*reacstart_);
 
   return;
 }
@@ -341,43 +337,17 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
   return;
 }
 
-/*----------------------------------------------------------------------------------*
- |  Modify concentrations according to reacstart vector and do scaling   thon 08/16 |
- *----------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::ApplyReacStartAndScaling(
-        std::vector<double>& phinp,
-        const std::vector<double>* reacstart,
-        const double scale
-        ) const
-{
-
-  for (unsigned int ii=0; ii < phinp.size(); ii++)
-  {
-    phinp.at(ii) -= reacstart->at(ii);
-    if (phinp.at(ii) < 0.0)
-      phinp.at(ii)=0.0;
-
-    phinp.at(ii)*=scale;
-  }
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
     int k,                               //!< current scalar id
-    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
+    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
-  std::vector<double> phinp(phinp_org);
-  if ( IsReacStart() or scale_phi != 1.0 )
-    ApplyReacStartAndScaling( phinp,ReacStart(),scale_phi );
-
-  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,*Couprole(),scale_reac);
+  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,*Couprole(),scale_reac,scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
@@ -386,16 +356,12 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
 void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
     int k,                               //!< current scalar id
     std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp_org,//!< scalar values at t_(n+1)
+    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                    //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
-  std::vector<double> phinp(phinp_org);
-  if ( IsReacStart() or scale_phi != 1.0 )
-    ApplyReacStartAndScaling( phinp,ReacStart(),scale_phi );
-
-  params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,*Couprole(),*ReacStart(),scale_reac);
+  params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,*Couprole(),scale_reac,scale_phi);
 
   return;
 }
