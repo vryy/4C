@@ -2460,6 +2460,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Robin);
 
+  // provide displacement field in case of ALE
+  if (isale_)
+    condparams.set<int>("ndsdisp",nds_disp_);
+
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
