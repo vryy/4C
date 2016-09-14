@@ -796,6 +796,11 @@ void CAVITATION::Algorithm::InitCavitation()
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   particles_->Init();
 
+  // in case random noise is added to the particle position, particle transfer is necessary
+  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+  if(amplitude)
+    TransferParticles(true, true);
+
   // fill pressure into vector for convergence check
   pressnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->ExtractPressurePart(fluid_->Veln())));
 

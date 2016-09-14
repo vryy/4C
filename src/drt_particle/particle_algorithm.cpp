@@ -243,6 +243,11 @@ void PARTICLE::Algorithm::Init(bool restarted)
     particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
     particles_->Init();
 
+    // in case random noise is added to the particle position, particle transfer is necessary
+    double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+    if(amplitude)
+      TransferParticles(true, true);
+
     // determine consistent initial acceleration for the particles
     CalculateAndApplyForcesToParticles();
     particles_->DetermineMassDampConsistAccel();
