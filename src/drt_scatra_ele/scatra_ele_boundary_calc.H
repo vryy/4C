@@ -324,10 +324,7 @@ public:
       const int                      iquad,             ///< current boundary integration point
       const DRT::FaceElement*        bele,              ///< current boundary element
       Teuchos::ParameterList&        params,            ///< parameter list
-      DRT::Discretization&           discretization,    ///< discretization
-      DRT::Element::LocationArray&   la,                ///< location array
-      Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
-      Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+      DRT::Discretization&           discretization     ///< discretization
   ){return 1.0;};
 
   //! compute integral of convective mass/heat flux over boundary surface
@@ -407,7 +404,7 @@ public:
       DRT::FaceElement*                 ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      std::vector<int>&                 lm,
+      DRT::Element::LocationArray&      la,               ///< location array
       Epetra_SerialDenseMatrix&         elemat1_epetra,
       Epetra_SerialDenseVector&         elevec1_epetra,
       const double                      scalar

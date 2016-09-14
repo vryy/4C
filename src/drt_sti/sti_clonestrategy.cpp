@@ -4,6 +4,8 @@
 
 \brief strategy for cloning thermo discretization from scatra discretization
 
+\level 3
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -67,7 +69,7 @@ std::map<std::string,std::string> STI::ScatraThermoCloneStrategy::ConditionsToCo
   conditions.insert(std::pair<std::string,std::string>("ThermoSurfaceNeumann","SurfaceNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoVolumeNeumann","VolumeNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoInitfield","Initfield"));
-  conditions.insert(std::pair<std::string,std::string>("ThermoRobin","ScatraRobin"));
+  conditions.insert(std::pair<std::string,std::string>("ThermoRobin","TransportRobin"));
 
   // return map
   return conditions;

@@ -2,12 +2,13 @@
 /*!
 \file scatra_ele_boundary_calc_refconc_reac.H
 
- \brief main file containing routines for calculation of scatra element formulated in reference concentrations
+\brief main file containing routines for calculation of scatra element formulated in reference concentrations
   and with advanced reaction terms
 
+\level 3
 
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -52,10 +53,7 @@ protected:
       const int                      iquad,             ///< current boundary integration point
       const DRT::FaceElement*        bele,              ///< current boundary element
       Teuchos::ParameterList&        params,            ///< parameter list
-      DRT::Discretization&           discretization,    ///< discretization
-      DRT::Element::LocationArray&   la,                ///< location array
-      Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
-      Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+      DRT::Discretization&           discretization     ///< discretization
   );
 
 private:
@@ -68,10 +66,7 @@ private:
       const DRT::FaceElement*        bele,              ///< current boundary element
       const DRT::Element*            pele,              ///< current parent element
       Teuchos::ParameterList&        params,            ///< parameter list
-      DRT::Discretization&           discretization,    ///< discretization
-      DRT::Element::LocationArray&   la,                ///< location array
-      Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
-      Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+      DRT::Discretization&           discretization     ///< discretization
       );
 
 }; // class ScaTraEleBoundaryCalcRefConcReac

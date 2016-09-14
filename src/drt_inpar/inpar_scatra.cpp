@@ -683,26 +683,47 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
   // Robin boundary condition for scalar transport problems
   // line
   Teuchos::RCP<ConditionDefinition> scatrarobinline =
-    Teuchos::rcp(new ConditionDefinition("SCATRA ROBIN LINE CONDITIONS",
-                                         "ScatraRobin",
+    Teuchos::rcp(new ConditionDefinition("DESIGN TRANSPORT ROBIN LINE CONDITIONS",
+                                         "TransportRobin",
                                          "Scalar Transport Robin Boundary Condition",
                                          DRT::Condition::TransportRobin,
                                          true,
                                          DRT::Condition::Line));
   // surface
   Teuchos::RCP<ConditionDefinition> scatrarobinsurf =
-    Teuchos::rcp(new ConditionDefinition("SCATRA ROBIN SURF CONDITIONS",
-                                         "ScatraRobin",
+    Teuchos::rcp(new ConditionDefinition("DESIGN TRANSPORT ROBIN SURF CONDITIONS",
+                                         "TransportRobin",
                                          "Scalar Transport Robin Boundary Condition",
                                          DRT::Condition::TransportRobin,
                                          true,
                                          DRT::Condition::Surface));
 
   std::vector<Teuchos::RCP<ConditionComponent> > scatrarobincomponents;
-  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Refvalue")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Refvalue")));
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > Robinintsepveccompstoich;
+  Robinintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  // definition int vectors
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > Robinintveccompstoich;
+  Robinintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",2)));
+  // definition separator for real vectors: length of the real vector is zero -> nothing is read
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > Robinrealsepveccompstoich;
+  // definition real vectors: length of the real vector is zero -> nothing is read
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > Robinrealveccompstoich;
+
+
+  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")) );
+  scatrarobincomponents.push_back(Teuchos::rcp(new IntRealBundle(
+                                 "intreal bundle numscal",
+                                Teuchos::rcp(new IntConditionComponent("numscal")),
+                                Robinintsepveccompstoich,
+                                Robinintveccompstoich,
+                                Robinrealsepveccompstoich,
+                                Robinrealveccompstoich)) );
+
+  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
 
   for(unsigned i=0; i<scatrarobincomponents.size(); ++i)
   {

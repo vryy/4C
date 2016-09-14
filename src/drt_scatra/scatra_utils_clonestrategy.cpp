@@ -52,7 +52,7 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   conditions_to_copy.insert(std::pair<std::string,std::string>("ElchBoundaryKinetics","ElchBoundaryKinetics"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraRobin","ScatraRobin"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportRobin","TransportRobin"));
 
   // for moving boundary problems
   conditions_to_copy.insert(std::pair<std::string,std::string>("FSICoupling","FSICoupling"));

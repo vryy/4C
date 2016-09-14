@@ -542,7 +542,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        lm,
+        la,
         elemat1_epetra,
         elevec1_epetra,
         1.
@@ -1441,7 +1441,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
     DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
+    DRT::Element::LocationArray&      la,               ///< location array
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra,
     const double                      scalar
@@ -1450,11 +1450,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   if(cond == Teuchos::null)
-    dserror("Cannot access condition 'ScatraRobin'");
+    dserror("Cannot access condition 'TransportRobin'");
+
+  std::vector<int>& lm = la[0].lm_;
+
+  // get on/off flags
+  const std::vector<int>* onoff = cond->Get<std::vector<int> > ("onoff");
 
   // extract prefactor and reference value from condition
-  const double prefac = cond->GetDouble("Prefactor");
-  const double refval = cond->GetDouble("Refvalue");
+  const double prefac = cond->GetDouble("prefactor");
+  const double refval = cond->GetDouble("refvalue");
 
   // extract global state vector from discretization
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -1471,29 +1476,38 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   // loop over all scalars
   for(int k=0; k<numscal_; ++k)
   {
-    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    //flag for dofs to be considered by robin conditions
+    if((*onoff)[k]==1)
     {
-      // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
-
-      // evaluate overall integration factors
-      const double prefactimefacfac = prefac*scatraparamstimint_->TimeFac()*fac;
-      const double prefactimefacrhsfac = prefac*scatraparamstimint_->TimeFacRhs()*fac;
-
-      // evaluate current scalar at current integration point
-      const double phinp = funct_.Dot(ephinp[k]);
-
-      // evaluate element matrix and element right-hand side vector
-      for (int vi=0; vi<nen_; ++vi)
+      for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
       {
-        const int fvi = vi*numscal_+k;
+        // evaluate values of shape functions and domain integration factor at current integration point
+        const double intfac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
 
-        for (int ui=0; ui<nen_; ++ui)
-          elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)*prefactimefacfac;
+        // evaluate reference concentration factor
+        const double refconcfac = FacForRefConc(gpid, ele, params, discretization);
 
-        elevec1_epetra[fvi] -= funct_(vi)*(phinp-refval)*prefactimefacrhsfac;
-      }
-    } // loop over integration points
+        // evaluate overall integration factors
+        const double prefactimefacfac = prefac *scatraparamstimint_->TimeFac() *intfac *refconcfac;
+        const double prefactimefacrhsfac = prefac *scatraparamstimint_->TimeFacRhs() *intfac *refconcfac;
+
+        // evaluate current scalar at current integration point
+        const double phinp = funct_.Dot(ephinp[k]);
+
+        // evaluate element matrix and element right-hand side vector
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numscal_+k;
+
+          for (int ui=0; ui<nen_; ++ui)
+            elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)*prefactimefacfac;
+
+           elevec1_epetra[fvi] -= funct_(vi)*(phinp-refval)*prefactimefacrhsfac;
+        }
+      } // loop over integration points
+    }// if((*onoff)[k]==1)
+    // else //in the case of "OFF", a no flux condition is automatically applied
+
   } // loop over scalars
 
   return;
@@ -1607,7 +1621,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
         const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
-        const double refconcfac = FacForRefConc(iquad, ele, params, discretization, la, elemat1, elevec1);
+        const double refconcfac = FacForRefConc(iquad, ele, params, discretization);
         // integration factor for right-hand side
         double facfac = 0.0;
         if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())

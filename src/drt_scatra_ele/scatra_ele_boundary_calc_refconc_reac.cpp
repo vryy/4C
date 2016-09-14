@@ -2,12 +2,13 @@
 /*!
 \file scatra_ele_boundary_calc_refconc_reac.cpp
 
- \brief main file containing routines for calculation of scatra element formulated in reference concentrations
+\brief main file containing routines for calculation of scatra element formulated in reference concentrations
   and with advanced reaction terms
 
+\level 3
 
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -86,10 +87,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::FacForRefConc(
     const int                      iquad,             ///< current boundary integration point
     const DRT::FaceElement*        bele,              ///< current boundary element
     Teuchos::ParameterList&        params,            ///< parameter list
-    DRT::Discretization&           discretization,    ///< discretization
-    DRT::Element::LocationArray&   la,                ///< location array
-    Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
-    Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+    DRT::Discretization&           discretization     ///< discretization
     )
 {
   const DRT::Element* pele = bele->ParentElement();
@@ -99,9 +97,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::FacForRefConc(
   if (bele->Shape()==DRT::Element::tri3)
   {
     if (pele->Shape()==DRT::Element::tet4)
-      J = CalcJatIntPoint<DRT::Element::tri3,DRT::Element::tet4>(iquad,bele,pele,params,discretization,la,elemat1,elevec1);
+      J = CalcJatIntPoint<DRT::Element::tri3,DRT::Element::tet4>(iquad,bele,pele,params,discretization);
     else if (pele->Shape()==DRT::Element::pyramid5)
-      J = CalcJatIntPoint<DRT::Element::tri3,DRT::Element::pyramid5>(iquad,bele,pele,params,discretization,la,elemat1,elevec1);
+      J = CalcJatIntPoint<DRT::Element::tri3,DRT::Element::pyramid5>(iquad,bele,pele,params,discretization);
     else
       dserror("Parent element not supported here!");
 
@@ -109,9 +107,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::FacForRefConc(
   else if (bele->Shape()==DRT::Element::quad4)
   {
     if (pele->Shape()==DRT::Element::hex8)
-      J = CalcJatIntPoint<DRT::Element::quad4,DRT::Element::hex8>(iquad,bele,pele,params,discretization,la,elemat1,elevec1);
+      J = CalcJatIntPoint<DRT::Element::quad4,DRT::Element::hex8>(iquad,bele,pele,params,discretization);
     else if (pele->Shape()==DRT::Element::pyramid5)
-      J = CalcJatIntPoint<DRT::Element::quad4,DRT::Element::pyramid5>(iquad,bele,pele,params,discretization,la,elemat1,elevec1);
+      J = CalcJatIntPoint<DRT::Element::quad4,DRT::Element::pyramid5>(iquad,bele,pele,params,discretization);
     else
       dserror("Parent element not supported here!");
   }
@@ -132,10 +130,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
     const DRT::FaceElement*        bele,              ///< current boundary element
     const DRT::Element*            pele,              ///< current parent element
     Teuchos::ParameterList&        params,            ///< parameter list
-    DRT::Discretization&           discretization,    ///< discretization
-    DRT::Element::LocationArray&   la,                ///< location array
-    Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
-    Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+    DRT::Discretization&           discretization     ///< discretization
     )
 {
   // NOTE: we want to evaluate J=det(F) on the current gauß point of the current boundary element.

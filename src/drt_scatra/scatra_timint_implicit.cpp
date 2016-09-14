@@ -2464,7 +2464,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   AddTimeIntegrationSpecificVectors();
 
   // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScatraRobin");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"TransportRobin");
   discret_->ClearState();
 
   return;
