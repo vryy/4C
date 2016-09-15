@@ -68,7 +68,7 @@ ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-05
+CONVTOL                         1e-07
 GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
@@ -144,8 +144,8 @@ SECONDORDER                     yes                           // Second order co
 TIMESTEP                        10
 RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-BASETOL                         1.0e-06
-CONVTOL                         1.0e-06
+BASETOL                         1.0e-07
+CONVTOL                         1.0e-07
 INFNORMSCALING                  yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -220,10 +220,10 @@ VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               diffusive
 LINEAR_SOLVER                   6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ABSTOLRES                       1e-06
+ABSTOLRES                       1e-07
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONVTOL                         1e-06
+CONVTOL                         1e-07
 EXPLPREDICT                     no
 ITEMAX                          10
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -398,9 +398,9 @@ PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     100
 TIMESTEP                        10.0
-TOLCONSTR                       1e-05
-TOLDISP                         1e-05
-TOLRES                          1e-05
+TOLCONSTR                       1e-07
+TOLDISP                         1e-07
+TOLRES                          1e-07
 LINEAR_SOLVER                   5
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
@@ -426,12 +426,12 @@ MAT 11 MAT_Struct_StVenantKirchhoff YOUNG 0.004 NUE 0.4 DENS 0.001
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24023196390741508e-01 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24002934475227544e-01 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03791658326586755e-02 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_disply VALUE -1.85440113269617996e-05 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00435537376744199e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10578316476621116e-03 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24024845153686458e-01 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24004503868230764e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03783592865415319e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_disply VALUE -1.88983488396876635e-05 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00428192031614977e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10584704640784479e-03 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

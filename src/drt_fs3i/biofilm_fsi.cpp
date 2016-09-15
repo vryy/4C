@@ -49,7 +49,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 :PartFS3I_1WC(comm),
  comm_(comm)
 {
-  // has to sty empty
+  // has to stay empty
   return;
 }
 
@@ -58,6 +58,13 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::Init()
 {
+  if(comm_.MyPID()==0)
+    std::cout<<"\n WARNING ! The implementation of BiofilmFSI is not well tested,\n"
+                " buggy, and introduction of just Init(...) and Setup() in commit\n"
+                " to revision 22366 led to differing results slightly above the\n"
+                " convergence tolerance. Rework on this problem type is necessary!\n\n"
+    <<std::endl;
+
   // call Init() in base class
   FS3I::PartFS3I_1WC::Init();
 
@@ -149,6 +156,18 @@ void FS3I::BiofilmFSI::Setup()
 
   Teuchos::RCP<DRT::Discretization> structaledis = DRT::Problem::Instance()->GetDis("structale");
 
+  // create fluid-ALE Dirichlet Map Extractor for FSI step
+  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std);
+
+  // create fluid-ALE Dirichlet Map Extractor for growth step
+  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
+
+  // create fluid-ALE Dirichlet Map Extractor for growth step
+  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
+
+  // create fluid-ALE Dirichlet Map Extractor for FSI step
+  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
+
   //---------------------------------------------------------------------
   // set up couplings
   //---------------------------------------------------------------------
@@ -225,12 +244,6 @@ void FS3I::BiofilmFSI::Setup()
   normtraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   tangtractionone_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   tangtractiontwo_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
-
-  // create fluid-ALE Dirichlet Map Extractor for growth step
-  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
-
-  // create fluid-ALE Dirichlet Map Extractor for FSI step
-  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
 
   return;
 }
