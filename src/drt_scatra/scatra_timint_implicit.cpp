@@ -263,12 +263,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   if (neumanninflow_ and convheatrans_)
     dserror("Neumann inflow and convective heat transfer boundary conditions must not appear simultaneously for the same problem!");
 
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
-
-  // ensure that degrees of freedom in the discretization have been set
-  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-    discret_->FillComplete();
-
   // -----------------------------------------------------------------------------
   // initialize meshtying strategy (including standard strategy without meshtying)
   // -----------------------------------------------------------------------------
@@ -298,6 +292,9 @@ void SCATRA::ScaTraTimIntImpl::Setup()
 {
   // we have to call Init() first
   CheckIsInit();
+
+  // compute Null Space
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

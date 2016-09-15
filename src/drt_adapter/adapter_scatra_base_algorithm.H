@@ -20,6 +20,7 @@
 namespace DRT
 {
   class ResultTest;
+  class Discretization;
 }
 
 namespace SCATRA
@@ -32,7 +33,12 @@ namespace Teuchos
   class ParameterList;
 }
 
-// Algorithm adapter classes for use in multi-field problems
+namespace LINALG
+{
+  class Solver;
+}
+
+/// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
   /// general scalar transport field interface for multiphysics problems
@@ -73,6 +79,12 @@ namespace ADAPTER {
 
     /// scalar transport field solver
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+
+    /// RCP to discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
+
+    /// RCP to solver
+    Teuchos::RCP<LINALG::Solver> solver_;
 
   private:
 
