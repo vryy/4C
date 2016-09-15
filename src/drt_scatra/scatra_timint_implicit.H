@@ -752,6 +752,20 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
+  //! returns true if \ref Setup() was called and is still valid
+  bool IsSetup() const
+  {return issetup_;};
+
+  //! returns true if \ ref Init() was called and is still valid
+  bool IsInit() const
+  {return isinit_;};
+
+  //! check if \ref Setup() was called
+  void CheckIsSetup() const;
+
+  //! check if \ref Init() was called
+  void CheckIsInit() const;
+
   //! helper function to get algorithm title
   std::string MapTimIntEnumToString
   (
@@ -1216,6 +1230,10 @@ protected:
 
 private:
 
+  /*========================================================================*/
+  //! @name flags and enums
+  /*========================================================================*/
+
   //! flag for potentially skipping computation of initial time derivative
   bool skipinitder_;
 
@@ -1225,23 +1243,9 @@ private:
   //! flag indicating if class is initialized
   bool isinit_;
 
-protected:
-
-  //! returns true if \ref Setup() was called and is still valid
-  bool IsSetup()
-  {return issetup_;};
-
-  //! returns true if \ ref Init() was called and is still valid
-  bool IsInit()
-  {return isinit_;};
-
-  //! check if \ref Setup() was called
-  void CheckIsSetup();
-
-  //! check if \ref Init() was called
-  void CheckIsInit();
-
-public:
+  /*========================================================================*/
+  //! @name general framework
+  /*========================================================================*/
 
   //! set flag true after setup or false if setup became invalid
   void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
@@ -1271,7 +1275,7 @@ public:
   //! Destructor
   virtual ~ScalarHandler(){};
 
-  //! initialize time integration
+  //! initialize scalar handler
   virtual void Init(const ScaTraTimIntImpl* const scatratimint);
 
   /*========================================================================*/

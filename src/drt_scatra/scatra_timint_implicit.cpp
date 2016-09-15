@@ -3123,11 +3123,16 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 /*-----------------------------------------------------------------------------*
  |  check if class is initialized                                  rauch 09/16 |
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckIsInit()
-{ if(not IsInit()) dserror("ScaTraTimIntImpl is not initialized. Call Init() first.");}
+void SCATRA::ScaTraTimIntImpl::CheckIsInit() const
+{
+  if (not IsInit())
+    dserror("ScaTraTimIntImpl is not initialized. Call Init() first.");
+}
 
 /*-----------------------------------------------------------------------------*
  |  check if class is set up                                       rauch 09/16 |
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckIsSetup()
-{ if(not IsSetup()) dserror("ScaTraTimIntImpl is not set up. Call Setup() first.");}
+void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
+{
+  if(not IsSetup()) dserror("ScaTraTimIntImpl is not set up. Call Setup() first.");
+}
