@@ -80,12 +80,6 @@ namespace ADAPTER {
     /// scalar transport field solver
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
-    /// RCP to discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
-
-    /// RCP to solver
-    Teuchos::RCP<LINALG::Solver> solver_;
-
   private:
 
     //! flag indicating if class is setup
@@ -97,20 +91,20 @@ namespace ADAPTER {
   protected:
 
     //! returns true if Setup() was called and is still valid
-    bool IsSetup()
+    bool IsSetup() const
     {return issetup_;};
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit()
+    bool IsInit() const
     {return isinit_;};
 
     //! check if \ref Setup() was called
-    void CheckIsSetup();
+    void CheckIsSetup() const;
 
     //! check if \ref Init() was called
-    void CheckIsInit();
+    void CheckIsInit() const;
 
-  public:
+  private:
 
     //! set flag true after setup or false if setup became invalid
     void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};

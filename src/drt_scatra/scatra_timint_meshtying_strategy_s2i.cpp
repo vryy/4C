@@ -1403,6 +1403,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   {
     DRT::Condition* const condition = conditions[icondition];
     const int condid = condition->GetInt("ConditionID");
+    if(condid < 0)
+      dserror("Invalid condition ID %i for S2ICoupling Condition!",condid);
 
     switch(condition->GetInt("interface side"))
     {
@@ -1411,7 +1413,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       if(slaveconditions_.find(condid) == slaveconditions_.end())
         slaveconditions_.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
       else
-        dserror("Cannot have multiple slave-side scatra-scatra interface coupling conditions with the same ID!");
+        dserror("Cannot have multiple slave-side scatra-scatra interface coupling conditions with the same ID %i!",condid);
       break;
     }
 
@@ -1420,7 +1422,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       if(masterconditions.find(condid) == masterconditions.end())
         masterconditions.insert(std::pair<const int,DRT::Condition* const>(condid,condition));
       else
-        dserror("Cannot have multiple master-side scatra-scatra interface coupling conditions with the same ID!");
+        dserror("Cannot have multiple master-side scatra-scatra interface coupling conditions with the same ID %i!",condid);
       break;
     }
 

@@ -2343,10 +2343,10 @@ SCATRA::ScalarHandlerElch::ScalarHandlerElch():
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScalarHandlerElch::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint)
 {
   //call base class
-  ScalarHandler::Init(scatratimint);
+  ScalarHandler::Setup(scatratimint);
 
   // for now only equal dof numbers are supported
   if(not equalnumdof_)
@@ -2389,6 +2389,7 @@ int SCATRA::ScalarHandlerElch::NumScalInCondition(
     const Teuchos::RCP<const DRT::Discretization>& discret
     ) const
 {
+  CheckIsSetup();
   // for now only equal dof numbers are supported
   if(not equalnumdof_)
     dserror("Different number of DOFs per node within ScaTra discretization! This is not supported for Elch!");

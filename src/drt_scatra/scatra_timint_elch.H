@@ -318,14 +318,14 @@ public:
   virtual ~ScalarHandlerElch(){};
 
   //! initialize time integration
-  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+  virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
 
   /*========================================================================*/
   //! @name Access and Query methods
   /*========================================================================*/
 
   //! return maximum number of transported scalars per node (not including potential and current density)
-  virtual int NumScal() const { return *(numscal_.rbegin()); }
+  virtual int NumScal() const { CheckIsSetup(); return *(numscal_.rbegin()); }
 
   //! return maximum number of transported scalars per node (not including potential and current density)
   virtual int NumScalInCondition(

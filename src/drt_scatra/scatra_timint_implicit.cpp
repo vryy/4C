@@ -193,6 +193,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
+  phinp_macro_(0.0),
+  q_(0.0),
+  dq_dphi_(0.0),
   // Initialization of Biofilm specific stuff
   scfldgrdisp_(Teuchos::null),
   scstrgrdisp_(Teuchos::null),
@@ -214,6 +217,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 void SCATRA::ScaTraTimIntImpl::Init()
 {
   SetIsSetup(false);
+
+  // -------------------------------------------------------------------
+  // safety check for spherical coordinates
+  // -------------------------------------------------------------------
+  if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS") and nsd_ > 1)
+    dserror("Spherical coordinates only available for 1D problems!");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -306,7 +315,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   if(scalarhandler_ == Teuchos::null)
     dserror("Make sure you construct the scalarhandler_ in initialization.");
   else
-    scalarhandler_->Init(this);
+    scalarhandler_->Setup(this);
 
   // setup strategy
   strategy_->SetupMeshtying();
@@ -392,20 +401,23 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     if(not scalarhandler_->EqualNumDof())
       dserror("Flux output only implement for equal number of DOFs per node within ScaTra discretization!");
 
-    // write one by one of scalars (as flux output in the input file defined)
-    // to the temporary variable word1
-    int word1 = 0;
-    std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
-    while (mystream >> word1)
-
-      // get desired scalar id's for flux output
-      writefluxids_->push_back(word1);
+    // if the writefluxids vector has not been set yet
+    if(writefluxids_->empty())
+    {
+      // write one by one of scalars (as flux output in the input file defined)
+      // to the temporary variable word1
+      int word1 = 0;
+      std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
+      while (mystream >> word1)
+        // get desired scalar id's for flux output
+        writefluxids_->push_back(word1);
+    }
 
     // default value (-1): flux is written for all dof's
     // scalar transport: numdofpernode_ = numscal_
     // elch:             numdofpernode_ = numscal_+1
     // -> current flux for potential only if div i is used to close the system otherwise zero
-    if ((*writefluxids_)[0]==(-1)) //default is to perform flux output for ALL scalars
+    if (writefluxids_->size() and (*writefluxids_)[0]==(-1)) //default is to perform flux output for ALL scalars
     {
       writefluxids_->resize(NumDofPerNode());
       for(int k=0;k<NumDofPerNode();++k)
@@ -417,15 +429,15 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     // screen output
     if(myrank_ == 0)
     {
-      IO::cout << "Flux output is performed for "<<writefluxids_->size()<<" scalars: ";
+      std::cout << "Flux output is performed for "<<writefluxids_->size()<<" scalars: ";
       for (unsigned int i=0; i < writefluxids_->size();i++)
       {
         const int id = (*writefluxids_)[i];
-        IO::cout << id << " ";
+        std::cout << id << " ";
         if ((id<1) or (id > NumDofPerNode())) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
-      IO::cout << IO::endl;
+      std::cout << std::endl;
     }
 
     // initialize map extractor associated with boundary segments for flux calculation
@@ -518,12 +530,6 @@ void SCATRA::ScaTraTimIntImpl::Setup()
           "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of mean and total scalars\n"
           "or remove the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
   }
-
-  // -------------------------------------------------------------------
-  // safety check for spherical coordinates
-  // -------------------------------------------------------------------
-  if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS") and nsd_ > 1)
-    dserror("Spherical coordinates only available for 1D problems!");
 
   // we have successfully set up this class
   SetIsSetup(true);
@@ -2991,6 +2997,8 @@ void SCATRA::ScaTraTimIntImpl::AddContributionToRHS(const Teuchos::RCP<const Epe
  *----------------------------------------------------------------------*/
 int SCATRA::ScaTraTimIntImpl::NumScal() const
 {
+  if(scalarhandler_ == Teuchos::null)
+    dserror("scalar handler was not initialized!");
   return scalarhandler_->NumScal();
 }
 
@@ -2999,6 +3007,8 @@ int SCATRA::ScaTraTimIntImpl::NumScal() const
  *----------------------------------------------------------------------*/
 int SCATRA::ScaTraTimIntImpl::NumDofPerNode() const
 {
+  if(scalarhandler_ == Teuchos::null)
+    dserror("scalar handler was not initialized!");
   return scalarhandler_->NumDofPerNode();
 }
 
@@ -3007,6 +3017,8 @@ int SCATRA::ScaTraTimIntImpl::NumDofPerNode() const
 *----------------------------------------------------------------------*/
 int SCATRA::ScaTraTimIntImpl::NumDofPerNodeInCondition(const DRT::Condition& condition) const
 {
+  if(scalarhandler_ == Teuchos::null)
+    dserror("scalar handler was not initialized!");
   return scalarhandler_->NumDofPerNodeInCondition(condition,discret_);
 }
 

@@ -2649,9 +2649,9 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegralsAndPrintR
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Initialize handler class                                vuong   04/16|
+ |  set up handler class                                   vuong   04/16|
  *----------------------------------------------------------------------*/
-void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // save reference to discretization for convenience
   const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->Discretization();
@@ -2688,6 +2688,9 @@ void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
   // check for equal number of Dofs on all nodes in whole discretization
   equalnumdof_ = (numdofpernode_.size()==1);
 
+  //done
+  issetup_ = true;
+
   return;
 }
 
@@ -2699,6 +2702,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
     const Teuchos::RCP<const DRT::Discretization>& discret
     ) const
 {
+  CheckIsSetup();
 
   // get all nodes in condition
   const std::vector<int>* nodegids = condition.Nodes();
@@ -2760,8 +2764,18 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
  *-------------------------------------------------------------------------*/
 int SCATRA::ScalarHandler::NumDofPerNode() const
 {
+  CheckIsSetup();
+
   if(not equalnumdof_)
     dserror("Number of DOFs per node is not equal for all nodes within the ScaTra discretization!\n"
         "Calling this method is not valid in this case!");
   return *(numdofpernode_.rbegin());
+}
+
+/*-----------------------------------------------------------------------------*
+ |  check if class is set up                                       rauch 09/16 |
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScalarHandler::CheckIsSetup() const
+{
+  if(not issetup_) dserror("ScalarHanlder is not set up. Call Setup() first.");
 }

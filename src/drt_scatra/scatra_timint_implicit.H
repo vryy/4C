@@ -821,7 +821,7 @@ protected:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
-  //! initialize meshtying strategy (including standard case without meshtying)
+  //! create scalar handler
   virtual void CreateScalarHandler();
 
   /*--- calculate and update -----------------------------------------------*/
@@ -1270,13 +1270,14 @@ public:
   //! Standard Constructor
   ScalarHandler():
     numdofpernode_(),
-    equalnumdof_(true){};
+    equalnumdof_(true),
+    issetup_(false){};
 
   //! Destructor
   virtual ~ScalarHandler(){};
 
-  //! initialize scalar handler
-  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+  //! set up scalar handler
+  virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
 
   /*========================================================================*/
   //! @name Access and Query methods
@@ -1307,6 +1308,12 @@ public:
 protected:
 
   /*========================================================================*/
+  //! @name general framework
+  /*========================================================================*/
+  //! check if \ref Setup() was called
+  void CheckIsSetup() const;
+
+  /*========================================================================*/
   //! @name Internal variables
   /*========================================================================*/
   //! number of transported scalars
@@ -1314,6 +1321,14 @@ protected:
 
   //! flag indicating equal number of DOFs per node in whole discretization
   bool equalnumdof_;
+
+private:
+
+  /*========================================================================*/
+  //! @name Internal variables
+  /*========================================================================*/
+  //! flag indicating \ref Setup() call
+  bool issetup_;
 };
 
 /*========================================================================*/
