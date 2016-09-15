@@ -206,8 +206,8 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     {
       double stabboeff = ScaTraEleReaManager::GetStabilizationCoeff(k,phinp_k);
 
-      if (phinp_k>1.0e-08)
-        stabboeff += reabodyforce_[k]/phinp_k;
+      if (phinp_k>1.0e-10)
+        stabboeff += fabs(reabodyforce_[k]/phinp_k);
 
       return stabboeff;
     }
