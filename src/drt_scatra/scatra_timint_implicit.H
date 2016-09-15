@@ -909,9 +909,6 @@ protected:
   //! incremental or linear full solving? rename -> is_incremental_
   bool incremental_;
 
-  //! flag indicating if initial velocity field has been set
-  bool initialvelset_;
-
   //! flag for fine-scale subgrid-viscosity
   INPAR::SCATRA::FSSUGRDIFF fssgd_;
 
@@ -1192,9 +1189,6 @@ protected:
   //! flag for potential boundary condition due to convective heat transfer
   bool convheatrans_;
 
-  //! flag for potentially skipping computation of initial time derivative
-  bool skipinitder_;
-
   //! macro-scale state variable for macro-micro coupling in multi-scale simulations
   double phinp_macro_;
 
@@ -1221,6 +1215,9 @@ protected:
   const bool outintegrreac_;
 
 private:
+
+  //! flag for potentially skipping computation of initial time derivative
+  bool skipinitder_;
 
   //! flag indicating if class is setup
   bool issetup_;

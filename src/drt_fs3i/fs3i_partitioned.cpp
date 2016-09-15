@@ -423,24 +423,6 @@ void FS3I::PartFS3I::ReadRestart()
     {
       fsi_->ReadRestart(restart);
 
-      // We may want to calculate the initial time deriv, since the scatra field is new.
-      // This has to be done before setting the step in the scatra fields, because step_ it needs to be zero.
-      const Teuchos::ParameterList& scatradynparams = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-      const bool skiptimederiv = DRT::INPUT::IntegralValue<int>(scatradynparams,"SKIPINITDER");
-
-      if (not skiptimederiv)
-      {
-        SetMeshDisp();
-        SetVelocityFields();
-        //SetWallShearStresses(); //Note: We can not do this since we don't have trueresidual_ in the fluid discretisation
-
-        for (unsigned i=0; i<scatravec_.size(); ++i)
-        {
-          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-          currscatra->ScaTraField()->PrepareFirstTimeStep();
-        }
-      }
-
       //we need to set time and step in scatra to have it matching with the fsi ones
       for (unsigned i=0; i<scatravec_.size(); ++i)
       {

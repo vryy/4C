@@ -133,9 +133,6 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFields(
     discret_->SetState(nds_flux,statename.str(),phaseflux);
   }
 
-  // initial velocity field has now been set
-  if (step_ == 0) initialvelset_ = true;
-
   return;
 
 } // ScaTraTimIntImpl::SetSolutionFields

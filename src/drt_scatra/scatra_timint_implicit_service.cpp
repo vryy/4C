@@ -873,8 +873,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   discret_->SetState("MembraneConcentration",membrane_conc_);
 
   // test if all necessary ingredients had been set
-  Teuchos::RCP<const Epetra_Vector> wss = discret_->GetState(nds_wss_,"WallShearStress");
-  if ( wss == Teuchos::null )
+  if ( not discret_->HasState(nds_wss_,"WallShearStress") )
     dserror("WSS must already been set into one of the secondary dofset before calling this function!");
 
   //Evaluate condition
@@ -918,12 +917,10 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   AddTimeIntegrationSpecificVectors();
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
-  Teuchos::RCP<const Epetra_Vector> wss = discret_->GetState(nds_wss_,"WallShearStress");
-  if ( wss == Teuchos::null )
+  if ( not discret_->HasState(nds_wss_,"WallShearStress") )
     dserror("WSS must already been set into one of the secondary dofset before calling this function!");
 
-  Teuchos::RCP<const Epetra_Vector> pressure = discret_->GetState(nds_pres_,"Pressure");
-  if ( pressure == Teuchos::null )
+  if ( not discret_->HasState(nds_pres_,"Pressure") )
     dserror("Pressure must already been set into one of the secondary dofset before calling this function!");
 
   if ( membrane_conc_==Teuchos::null )

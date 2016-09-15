@@ -220,8 +220,14 @@ void FS3I::ACFSI::Timeloop()
 
   // prepare time loop
   fsi_->PrepareTimeloop();
-  SetMeshDisp();
-  SetVelocityFields(); //doing this we can use the flag SKIPINITDER
+  SetFSISolution();
+
+  //calculate inital time derivative, when restart was done from a part. FSI simulation
+  if ( DRT::Problem::Instance()->Restart() and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->FS3IDynamicParams(),"RESTART_FROM_PART_FSI") )
+  {
+    scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
+    scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();
+  }
 
   // output of initial state
 //  if (step_ == 0)

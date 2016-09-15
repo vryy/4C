@@ -106,7 +106,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   isale_(extraparams->get<bool>("isale")),
   solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   incremental_(true),
-  initialvelset_(false),
   fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
   s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
@@ -194,11 +193,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
-  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
   // Initialization of Biofilm specific stuff
   scfldgrdisp_(Teuchos::null),
   scstrgrdisp_(Teuchos::null),
   outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC")),
+  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
   issetup_(false),
   isinit_(false)
 {
@@ -1019,7 +1018,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
 {
   if(not skipinitder_)
   {
-    if(initialvelset_)
+    if( nds_vel_ != -1 ) //if some velocity field has been set
     {
       // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
       ApplyDirichletBC(time_,phin_,Teuchos::null);
@@ -1030,6 +1029,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
     // calculated wrongly for some time integration schemes
     else
       dserror("Initial velocity field has not been set!");
+
+    //for safety; so we don't do this calculation twice
+    //skipinitder_ = true;
   }
 
   return;
@@ -1127,9 +1129,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 
   // provide scatra discretization with velocity
   discret_->SetState(nds_vel_,"velocity field",vel);
-
-  // initial velocity field has now been set
-  if (step_ == 0) initialvelset_ = true;
 
   return;
 
@@ -1295,9 +1294,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(
   if (turbmodel_ == INPAR::FLUID::no_model and fssgd_ == INPAR::SCATRA::fssugrdiff_no)
     fsvelswitch = false;
 
-  // confirm that initial velocity field has now been set
-  if (step_ == 0) initialvelset_ = true;
-
   // store number of dofset associated with velocity related dofs
   nds_vel_ = nds;
 
@@ -1318,7 +1314,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 
   // provide scatra discretization with fine-scale convective velocity if required
   if(fsvelswitch)
-    discret_->SetState(nds_vel_,"fine-scale velocity field",fsvel);
+     discret_->SetState(nds_vel_,"fine-scale velocity field",fsvel);
 
   return;
 
