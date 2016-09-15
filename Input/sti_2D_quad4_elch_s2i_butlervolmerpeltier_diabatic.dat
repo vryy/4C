@@ -155,11 +155,11 @@ E 4 -
 E 5 -
 E 6 -
 E 7 -
---------------------------------------THERMO ROBIN LINE CONDITIONS
+--------------------------------------DESIGN THERMO ROBIN LINE CONDITIONS
 DLINE  3
-E 1 - Prefactor 0.1 Refvalue 300.
-E 2 - Prefactor 0.1 Refvalue 300.
-E 3 - Prefactor 0.1 Refvalue 300.
+E 1 - NUMSCAL 1 ONOFF 1 PREFACTOR 0.1 REFVALUE 300.
+E 2 - NUMSCAL 1 ONOFF 1 PREFACTOR 0.1 REFVALUE 300.
+E 3 - NUMSCAL 1 ONOFF 1 PREFACTOR 0.1 REFVALUE 300.
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    41 DLINE 1
 NODE    42 DLINE 1

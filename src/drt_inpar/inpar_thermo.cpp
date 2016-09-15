@@ -4,8 +4,10 @@
 
 \brief Input parameters for thermo problems
 
+\level 3
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -317,8 +319,9 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
 
   /*--------------------------------------------------------------------*/
   // Robin boundary conditions for heat transfer
+  //NOTE: this condition must be
   Teuchos::RCP<ConditionDefinition> thermorobinline = Teuchos::rcp(new ConditionDefinition(
-      "THERMO ROBIN LINE CONDITIONS",
+      "DESIGN THERMO ROBIN LINE CONDITIONS",
       "ThermoRobin",
       "Thermo Robin boundary condition",
       DRT::Condition::ThermoRobin,
@@ -327,7 +330,7 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
       )
   );
   Teuchos::RCP<ConditionDefinition> thermorobinsurf = Teuchos::rcp(new ConditionDefinition(
-      "THERMO ROBIN SURF CONDITIONS",
+      "DESIGN THERMO ROBIN SURF CONDITIONS",
       "ThermoRobin",
       "Thermo Robin boundary condition",
       DRT::Condition::ThermoRobin,
@@ -337,10 +340,30 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
   );
 
   std::vector<Teuchos::RCP<ConditionComponent> > thermorobincomponents;
-  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor")));
-  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
-  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Refvalue")));
-  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Refvalue")));
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > Robinintsepveccompstoich;
+  Robinintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  // definition int vectors
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > Robinintveccompstoich;
+  Robinintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",2)));
+  // definition separator for real vectors: length of the real vector is zero -> nothing is read
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > Robinrealsepveccompstoich;
+  // definition real vectors: length of the real vector is zero -> nothing is read
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > Robinrealveccompstoich;
+
+  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")) );
+  thermorobincomponents.push_back(Teuchos::rcp(new IntRealBundle(
+                                 "intreal bundle numscal",
+                                Teuchos::rcp(new IntConditionComponent("numscal")),
+                                Robinintsepveccompstoich,
+                                Robinintveccompstoich,
+                                Robinrealsepveccompstoich,
+                                Robinrealveccompstoich)) );
+
+  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
+  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
+  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
+  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
 
   for(unsigned i=0; i<thermorobincomponents.size(); ++i)
   {
