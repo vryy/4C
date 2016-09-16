@@ -5,6 +5,8 @@
 \brief Active stress material
 
 \maintainer Marc Hirschvogel
+
+\level 2
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
@@ -163,7 +165,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
     const int eleGID
 )
 {
-  double dt = params.get("delta time",1.0);
+  double dt = params.get("delta time",-1.0);
+  if(dt<0.0) dserror("Parameter 'delta time' could not be read!");
 
   double activationFunction = 0.0;
   Teuchos::RCP<MAT::Material> scatramat;
@@ -191,10 +194,11 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
   }
   else
   {
-    double time_ = params.get<double>("total time",0.0);
+    double totaltime = params.get<double>("total time",-1.0);
+    if(totaltime<0.0) dserror("Parameter 'total time' could not be read!");
     Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
     const double* coordgpref_ = &(*pos_)[0];
-    activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
+    activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,totaltime,NULL);
   }
   activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
   double abs_u_ = abs(activationFunction);
