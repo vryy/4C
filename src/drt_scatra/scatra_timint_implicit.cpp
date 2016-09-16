@@ -229,7 +229,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
   Teuchos::RCP<PeriodicBoundaryConditions> pbc = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
-  if (pbc->HasPBC())
+  if (pbc->HasPBC() and not isinit_)
   {
     pbc->UpdateDofsForPeriodicBoundaryConditions();
 
@@ -318,7 +318,16 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     scalarhandler_->Setup(this);
 
   // setup strategy
-  strategy_->SetupMeshtying();
+  // note: this check is needed, because the the Setup() method is called
+  //       twice, for instance in ELCH problems due to the multiple inheritance
+  //       of the integrators. However setting up MeshtyingStrategyS2I will
+  //       cause an error, becuase the conditions on the discretizations are
+  //       manipulated!
+  // TODO: Fix this! Calling Setup() twice should not be neccessary, but
+  //       should give the same results nevertheless. Perhaps we should
+  //       try not to use multiple inheritance ...
+  if(not issetup_)
+    strategy_->SetupMeshtying();
 
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
@@ -429,15 +438,15 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     // screen output
     if(myrank_ == 0)
     {
-      std::cout << "Flux output is performed for "<<writefluxids_->size()<<" scalars: ";
+      IO::cout << "Flux output is performed for "<<writefluxids_->size()<<" scalars: ";
       for (unsigned int i=0; i < writefluxids_->size();i++)
       {
         const int id = (*writefluxids_)[i];
-        std::cout << id << " ";
+        IO::cout << id << " ";
         if ((id<1) or (id > NumDofPerNode())) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
-      std::cout << std::endl;
+      IO::cout << IO::endl;
     }
 
     // initialize map extractor associated with boundary segments for flux calculation

@@ -1442,6 +1442,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   {
     // overwrite IDs of master-side scatra-scatra interface coupling conditions with the value -1
     // to prevent them from being evaluated when calling EvaluateCondition on the discretization
+    // TODO: this is somewhat unclean, because changing the conditions, makes calling SetupMeshtying() twice
+    //       invalid (which should not be necessary, but conceptually possible)
     for(std::map<const int,DRT::Condition* const>::iterator imastercondition=masterconditions.begin(); imastercondition!=masterconditions.end(); ++imastercondition)
       imastercondition->second->Add("ConditionID",-1);
 

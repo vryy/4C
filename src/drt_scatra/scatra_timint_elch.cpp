@@ -90,10 +90,8 @@ void SCATRA::ScaTraTimIntElch::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Setup()
 {
-  // todo #initsetupissue
-  // DO NOT CALL Setup() IN ScaTraTimIntImpl
-  // issue with writeflux and probably scalarhandler_
-  // this should not be
+  // call base class set up
+  ScaTraTimIntImpl::Setup();
 
   // set up the concentration-el.potential splitter
   splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
