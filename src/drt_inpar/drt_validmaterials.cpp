@@ -737,6 +737,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // Finite strain superelasticity of shape memory alloys
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_SuperElastSMA",
+                                            "finite strain superelastic shape memory alloy",
+                                            INPAR::MAT::m_superelast));
+
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"EPSILON_L","parameter representing the maximum deformation obtainable only by detwinning of the multiple-variant martensite");
+    AddNamedReal(m,"T_AS_s","Temperature at which the phase transformation from austenite to martensite starts");
+    AddNamedReal(m,"T_AS_f","Temperature at which the phase transformation from austenite to martensite finishes");
+    AddNamedReal(m,"T_SA_s","Temperature at which the phase transformation from martensite to autenite starts");
+    AddNamedReal(m,"T_SA_f","Temperature at which the phase transformation from martensite to autenite finishes");
+    AddNamedReal(m,"C_AS","Coefficient of the linear temperature dependence of T_AS");
+    AddNamedReal(m,"C_SA","Coefficient of the linear temperature dependence of T_SA");
+    AddNamedReal(m,"SIGMA_AS_s","stress at which the phase transformation from austenite to martensite begins");
+    AddNamedReal(m,"SIGMA_AS_f","stress at which the phase transformation from austenite to martensite finishes");
+    AddNamedReal(m,"SIGMA_SA_s","stress at which the phase transformation from martensite to austenite begins");
+    AddNamedReal(m,"SIGMA_SA_f","stress at which the phase transformation from martensite to austenite finishes");
+    AddNamedReal(m,"ALPHA","pressure dependency in the drucker-prager-type loading");
+    AddNamedInt(m,"MODEL","Model used for the evolution of martensitic fraction (1=exponential; 2=linear)");
+    AddNamedReal(m,"BETA_AS","parameter, measuring the speed of the transformation from austenite to martensite", 0., true);
+    AddNamedReal(m,"BETA_SA","parameter, measuring the speed of the transformation from martensite to austenite", 0., true);
+
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Thermo-hyperelasticity / finite strain von-Mises plasticity
   {
     Teuchos::RCP<MaterialDefinition> m

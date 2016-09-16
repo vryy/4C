@@ -557,6 +557,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plastic_VarConstUpdate.cpp
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/plasticnlnlogneohooke.cpp
+  src/drt_mat/superelastic_sma.cpp
   src/drt_mat/poro_law.cpp
   src/drt_mat/robinson.cpp
   src/drt_mat/scalardepinterp.cpp
