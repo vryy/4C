@@ -1,17 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoneohooke_ActiveStress.cpp
+\file elast_anisoactivestress_evolution.cpp
 
 \brief Active stress material
 
-\maintainer Marc Hirschvogel
+\maintainer Marc Hirschvogel, originally by C. Bertoglio
 
 \level 2
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "elast_coupanisoneohooke_ActiveStress.H"
+#include "elast_anisoactivestress_evolution.H"
+
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/material.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -21,7 +22,7 @@
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStress(
+MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -41,41 +42,43 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStres
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStress(MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params)
-  : params_(params)
+MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params)
+  : params_(params),
+    tauc_np_(0.0),
+    tauc_n_(0.0)
 {
 }
 
 /*----------------------------------------------------------------------*
  *            Constructor Material Class                               *
  *----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data,a_);
   AddtoPack(data,A_);
-  AddtoPack(data,tauc_last_);
+  AddtoPack(data,tauc_n_);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::UnpackSummand(
+void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
   const std::vector<char>& data,
   std::vector<char>::size_type& position
   )
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
-  ExtractfromPack(position,data,tauc_last_);
+  ExtractfromPack(position,data,tauc_n_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   // Setup of active stress model
-  tauc_last_ = params_->tauc0_;
-  tauc_ = params_->tauc0_;
+  tauc_n_ = params_->tauc0_;
+  tauc_np_ = params_->tauc0_;
 
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
@@ -157,7 +160,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
+void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
@@ -203,8 +206,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
   activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
   double abs_u_ = abs(activationFunction);
   double absplus_u_ = abs_u_*(activationFunction>0.0);
-  tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
-  stress.Update(tauc_, A_, 1.0);
+  tauc_np_ =  (tauc_n_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
+  stress.Update(tauc_np_, A_, 1.0);
 
    // no contribution to cmat
   // double delta = 0.0;
@@ -213,7 +216,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::GetFiberVecs(
+void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
     std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
 )
 {
@@ -223,15 +226,15 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::GetFiberVecs(
 /*----------------------------------------------------------------------*
  |  Update internal stress variables              (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Update()
+void MAT::ELASTIC::AnisoActiveStress_Evolution::Update()
 {
-  tauc_last_ = tauc_;
+  tauc_n_ = tauc_np_;
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::SetFiberVecs(
+void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(
     const double newgamma,
     const LINALG::Matrix<3,3> locsys,
     const LINALG::Matrix<3,3> defgrd

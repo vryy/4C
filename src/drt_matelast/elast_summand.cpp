@@ -43,7 +43,6 @@
 #include "elast_coupanisoexpo.H"
 #include "elast_coupanisoexpotwocoup.H"
 #include "elast_coupanisoneohooke.H"
-#include "elast_coupanisoneohooke_ActiveStress.H"
 #include "elast_coupanisoneohooke_VarProp.H"
 #include "elast_coupanisopow.H"
 #include "elast_isoanisoexpo.H"
@@ -57,6 +56,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "elast_anisoactivestress_evolution.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -262,6 +262,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::VolPow* params = static_cast<MAT::ELASTIC::PAR::VolPow*>(curmat->Parameter());
     return Teuchos::rcp(new VolPow(params));
   }
+  case INPAR::MAT::mes_anisoactivestress_evolution:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::AnisoActiveStress_Evolution(curmat));
+    MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params = static_cast<MAT::ELASTIC::PAR::AnisoActiveStress_Evolution*>(curmat->Parameter());
+    return Teuchos::rcp(new AnisoActiveStress_Evolution(params));
+  }
   case INPAR::MAT::mes_coupanisoexpoactive:
   {
     if (curmat->Parameter() == NULL)
@@ -296,13 +303,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke(curmat));
     MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHooke(params));
-  }
-  case INPAR::MAT::mes_coupanisoneohooke_activestress:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress(curmat));
-    MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress*>(curmat->Parameter());
-    return Teuchos::rcp(new CoupAnisoNeoHooke_ActiveStress(params));
   }
   case INPAR::MAT::mes_coupanisoneohooke_varprop:
   {

@@ -1,17 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoneohooke_ActiveStress.H
+\file elast_anisoactivestress_evolution.H
 
 \brief Active stress material
 
-\maintainer Marc Hirschvogel
+\maintainer Marc Hirschvogel, originally by C. Bertoglio
 
 \level 2
 *----------------------------------------------------------------------*/
 
 
-#ifndef ELAST_COUPANISONEOHOOKE_ACTIVESTRESS_H_
-#define ELAST_COUPANISONEOHOOKE_ACTIVESTRESS_H_
+#ifndef ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
+#define ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -28,18 +28,18 @@ namespace ELASTIC
     ///
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
-    class CoupAnisoNeoHooke_ActiveStress : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_AnisoActiveStress_Evolution SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
+    class AnisoActiveStress_Evolution : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      CoupAnisoNeoHooke_ActiveStress(
+      AnisoActiveStress_Evolution(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~CoupAnisoNeoHooke_ActiveStress() { ; }
+      virtual ~AnisoActiveStress_Evolution() { ; }
 
       /// @name material parameters
       //@{
@@ -82,7 +82,7 @@ namespace ELASTIC
       void SetC(const double sigma) { sigma_ = sigma; }
       //@}
 
-    };  // class CoupAnisoNeoHooke_ActiveStress
+    };  // class AnisoActiveStress_Evolution
 
   }  // namespace PAR
 
@@ -91,9 +91,9 @@ namespace ELASTIC
   /// dependency is dropped for the sake of simplicity, resulting in the following first order ODE
   /// for the active stress tau, compare [2]:
   ///\f[
-  ///   \frac{d}{dt} \tau = \tau_0 |u|_+ - \tau |u|, \quad \tau(0) = 0
+  ///   \frac{d}{dt} \tau = \sigma_0 |u|_+ - \tau |u|, \quad \tau(0) = 0
   ///\f]
-  /// where \f$\tau_0\f$ is the maximal contractility and u is a control variable either provided by
+  /// where \f$\sigma_0\f$ is the contractility (asymptotic value of \tau) and u is a control variable either provided by
   /// a electrophysiology simulation or by a user-specified function
   ///
   /// Due to the active stress approach, see [3], the active stress will be added along a given
@@ -116,13 +116,13 @@ namespace ELASTIC
   /// Progress in Biophysics and Molecular Biology
   /// </ul>
   ///
-  class CoupAnisoNeoHooke_ActiveStress : public Summand
+  class AnisoActiveStress_Evolution : public Summand
   {
 
   public:
 
     /// constructor with given material parameters
-    CoupAnisoNeoHooke_ActiveStress(MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params);
+    AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -137,7 +137,7 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoneohooke_activestress; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_anisoactivestress_evolution; }
 
     //@}
 
@@ -193,16 +193,16 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params_;
+    MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params_;
 
     /// fiber direction
     LINALG::Matrix<3,1>  a_;
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A_;
     /// Active stress at current time step
-    double tauc_;
+    double tauc_np_;
     /// Active stress at last time step
-    double tauc_last_;
+    double tauc_n_;
 
 
   };
@@ -210,4 +210,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // COUPANISONEOHOOKE_ACTIVESTRESS_H_
+#endif  // ANISOACTIVESTRESS_EVOLUTION_H_

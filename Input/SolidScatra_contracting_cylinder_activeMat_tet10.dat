@@ -6,7 +6,7 @@
 //
 -----------------------------------------------------------------------TITLE
 Contracting Cylinder
-  - Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_ActiveStress
+  - Test for SolidScatra Elements using the ELAST_AnisoActiveStress_Evolution
     Material with Tet10 Elements.
   - Test case uses a linear activation function for FUNCT1
   - Beware that there is no fixation involved. The system is still, since
@@ -132,7 +132,7 @@ THETA                           0.5
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 10 11 20 DENS 0.001
 MAT 10 ELAST_IsoMooneyRivlin C1 2.0E4 C2 40
 MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
-MAT 20 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0
+MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

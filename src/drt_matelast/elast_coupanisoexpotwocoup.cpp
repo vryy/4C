@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoexpotwocoup.cpp
-\brief
 
-the input line should read
-  MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
+\brief the input line should read MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
 
-<pre>
-Maintainer: Andreas Nagler
-            nagler@lnm.mw.tum.de
-            089/289 15264
-</pre>
+\maintainer Marc Hirschvogel, originally by A. Nagler
+
+\level 2
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -45,7 +42,8 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
  |  Constructor                                                         |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
-  : params_(params)
+  : a1a2_(0.0),
+    params_(params)
 {
 }
 

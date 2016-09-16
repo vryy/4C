@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoexpotwocoup.H
-\brief
-This file contains the routines required for the passive behaviour of cardiac muscle
-according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
 
-<pre>
-Maintainer: Andreas Nagler
-            nagler@lnm.mw.tum.de
-            089/289 15264
-</pre>
+\brief This file contains the routines required for the passive behaviour of cardiac muscle according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
+
+\maintainer Marc Hirschvogel, originally by A. Nagler
+
+\level 2
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOTWOCOUP_H_

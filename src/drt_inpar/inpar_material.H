@@ -136,13 +136,13 @@ namespace INPAR
       m_visconeohooke,                         ///< Viscous NeoHookean Material
       m_vp_robinson,                           ///< Robinson's visco-plastic material
       m_yoghurt,                               ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and extended by an Arrhenius-type term to account for temperature dependence
+      mes_anisoactivestress_evolution,         ///< anisotropic single fiber summand with active stress computed through a simplified Bestel-Clement-Sorine model
       mes_coup1pow,                            ///< general power hyperelastic potential summand for invariant I
       mes_coup2pow,                            ///< general power hyperelastic potential summand for invariant II
-      mes_coupanisoexpoactive,                ///< anisotropic active fiber contribution
+      mes_coupanisoexpoactive,                 ///< anisotropic active fiber contribution
       mes_coupanisoexpo,                       ///< anisotropic exponential single fiber summand
       mes_coupanisoexpotwocoup,                ///< anisotropic two fiber summand with coupling between the fibers
       mes_coupanisoneohooke,                   ///< anisotropic Neo-Hooke single fiber summand
-      mes_coupanisoneohooke_activestress,      ///< anisotropic Neo-Hooke single fiber summand with active stress computed through a simplified Bestel-Clement-Sorine model
       mes_coupanisoneohooke_varprop,           ///< anisotropic Neo-Hooke single fiber summand with space-time variable coefficient
       mes_coupanisopow,                        ///< anisotropic pow-like single fiber summand
       mes_coupblatzko,                         ///< Blatz and Ko  material as hyperelastic potential summand

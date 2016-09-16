@@ -674,12 +674,12 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_volpenalty:
   case INPAR::MAT::mes_vologden:
   case INPAR::MAT::mes_volpow:
+  case INPAR::MAT::mes_anisoactivestress_evolution:
   case INPAR::MAT::mes_coupanisoexpoactive:
   case INPAR::MAT::mes_coupanisoexpo:
   case INPAR::MAT::mes_coupanisopow:
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   case INPAR::MAT::mes_coupanisoneohooke:
-  case INPAR::MAT::mes_coupanisoneohooke_activestress:
   case INPAR::MAT::mes_coupanisoneohooke_varprop:
   case INPAR::MAT::mes_isoanisoexpo:
   case INPAR::MAT::mes_coupvarga:
