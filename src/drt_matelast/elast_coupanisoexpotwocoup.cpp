@@ -42,8 +42,8 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
  |  Constructor                                                         |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
-  : a1a2_(0.0),
-    params_(params)
+  : params_(params),
+    a1a2_(0.0)
 {
 }
 
