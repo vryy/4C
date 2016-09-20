@@ -2,11 +2,11 @@
 /*!
 \file gen_inv_analysis.cpp
 
-\brief ToDo Add meaningful comment.
+\brief gen inv analysis
 
 \level 2
 
-\maintainer Michael Gee
+\maintainer Sebastian Kehl
 */
 /*----------------------------------------------------------------------*/
 
@@ -727,6 +727,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   xparams.set<int>("REDUCED_OUTPUT",0);
   // create time integrator
   sti_ = TimIntCreate(sdyn, ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
+  sti_->Init(sdyn,sdyn,xparams,discret_,solver_);
+  sti_->Setup();
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
 
   int writestep=0;
@@ -811,6 +813,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
   // create time integrator
   sti_ = TimIntCreate(sdyn, ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
+  sti_->Init(sdyn,sdyn,xparams,discret_,solver_);
+  sti_->Setup();
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
   fflush(stdout);
   gcomm->Barrier();

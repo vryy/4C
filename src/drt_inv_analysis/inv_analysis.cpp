@@ -2,11 +2,11 @@
 /*!
  * \file inv_analysis.cpp
 
+\brief inv analysis
+\level 2
+
 <pre>
-Maintainer: Sophie Rausch
-            rausch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/rausch
-            089 - 289-15255
+\maintainer Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -313,6 +313,8 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
 
   // create time integrator
   sti_ = TimIntCreate(sdyn, ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
+  sti_->Init(sdyn,sdyn,xparams,discret_,solver_);
+  sti_->Setup();
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
 
   // initialize time loop

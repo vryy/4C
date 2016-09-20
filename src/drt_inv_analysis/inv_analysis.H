@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
  * \file inv_analysis.H
+ *
+ *\brief inv analysis
+\level 2
 
 <pre>
-Maintainer: Sophie Rausch
-            rausch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/rausch
-            089 - 289-15255
+\maintainer Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -86,11 +86,11 @@ private:
   ///  number of measurment points the
   double tstep_;                          // timestep
 
-  int problem_type_;		        // Neumann or Dirichlet Problem
+  int problem_type_;        // Neumann or Dirichlet Problem
   int np_;                                // number of fitted parameters
   int nmp_;                                // number of timesteps
 
-  Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
+  Epetra_SerialDenseVector mcurve_;// measured displacment of the experiments (target value)
 
   double mu_;
   double tol_mu_;
@@ -105,7 +105,7 @@ private:
 
   int numb_run_;
 
-  Epetra_SerialDenseVector p_;	      // parameter vector
+  Epetra_SerialDenseVector p_;      // parameter vector
 
   /// @name Storage
   //@{

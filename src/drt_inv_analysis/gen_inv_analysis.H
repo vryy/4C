@@ -2,12 +2,11 @@
 /*!
  * \file gen_inv_analysis.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/gee
-            089 - 289-15239
-</pre>
+\brief gen inv analysis
+
+\level 2
+
+\maintainer Sebastian Kehl
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H
