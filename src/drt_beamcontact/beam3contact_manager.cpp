@@ -3439,8 +3439,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
       int numgps=pairs_[i]->GetNumGps();
       int numeps=pairs_[i]->GetNumEps();
 
-      dsassert(pairgaps.size() == numcps+numgps+numeps, "size mismatch! total"
-          " number of gaps unequal sum of individual contact type gaps");
+      if (pairgaps.size() != (unsigned) (numcps+numgps+numeps))
+        dserror("size mismatch! total "
+            "number of gaps unequal sum of individual contact type gaps");
 
       for(int i=0;i<(int)pairgaps.size();i++)
       {
