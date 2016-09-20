@@ -1989,12 +1989,6 @@ set(OBJS_DRT_B3_LIB
   src/drt_beam3/beam3eb.cpp
   src/drt_beam3/beam3eb_evaluate.cpp
   src/drt_beam3/beam3eb_input.cpp
-  src/drt_beam3/beam3ebtor.cpp
-  src/drt_beam3/beam3ebtor_evaluate.cpp
-  src/drt_beam3/beam3ebtor_input.cpp
-  src/drt_beam3/beam3eb_anisotrop.cpp
-  src/drt_beam3/beam3eb_anisotrop_evaluate.cpp
-  src/drt_beam3/beam3eb_anisotrop_input.cpp
   src/drt_beam3/beam3k.cpp
   src/drt_beam3/beam3k_evaluate.cpp
   src/drt_beam3/beam3k_input.cpp

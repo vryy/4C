@@ -6,9 +6,6 @@
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
 *----------------------------------------------------------------------*/
 
@@ -16,7 +13,6 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam3ebtor.H"
 #include "../drt_beam3/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
@@ -198,11 +194,6 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
   {
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
     eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  else if(eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
-  {
-    const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(ele);
-    eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
   else if(eot == DRT::ELEMENTS::Beam3kType::Instance())
   {

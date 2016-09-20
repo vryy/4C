@@ -13,8 +13,7 @@
 /* 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
  * nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
  * tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
- * There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is
- * possible and implemented in beam3ebtor.
+ * There is no shear deformation and no torsion. Refer to 'beam3k' for a full Kirchhoff type beam element.
  * To be able to use this element correctly so far structural dynamic parameters need to be set to:
  *
  * LOADLIN     Yes

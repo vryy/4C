@@ -29,7 +29,6 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam3ebtor.H"
 #include "../drt_beam3/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
@@ -1026,13 +1025,6 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
         if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and  node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance() )
         {
           const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
-          currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
-          currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
-          currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
-        }
-        else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebtorType::Instance() )
-        {
-          const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(node->Elements()[0]);
           currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
           currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
           currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
@@ -2676,7 +2668,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
         // no output for solid elements here
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
-            eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and
             eot != DRT::ELEMENTS::Beam3Type::Instance() and
             eot != DRT::ELEMENTS::Beam3rType::Instance() and
             eot != DRT::ELEMENTS::Beam3kType::Instance()and
@@ -2963,62 +2954,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
         }
 
-        //************
-        // BEAM3EBTOR
-        //************
-        // initially straight Kirchhoff beams with torsion need a special treatment
-        else if (eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
-        {
-          // this cast is necessary in order to use the method ->Tref()
-          const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(element);
-          // prepare storage for nodal coordinates
-          int nnodes = element->NumNode();
-          LINALG::SerialDenseMatrix nodalcoords(3,nnodes);
-          LINALG::SerialDenseMatrix nodaltangents(3,nnodes);
-          LINALG::SerialDenseMatrix coord(3,n_axial);
-
-          // compute current nodal positions
-          for (int i=0;i<3;++i)
-          {
-            for (int j=0;j<element->NumNode();++j)
-            {
-              double referenceposition = ((element->Nodes())[j])->X()[i];
-              std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
-              double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
-              nodalcoords(i,j) =  referenceposition + displacement;
-              nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
-            }
-          }
-
-          if (nnodes ==2)
-          {
-            LINALG::Matrix<12,1> disp_totlag(true);
-            for (int i=0;i<3;i++)
-            {
-              disp_totlag(i)=nodalcoords(i,0);
-              disp_totlag(i+6)=nodalcoords(i,1);
-              disp_totlag(i+3)=nodaltangents(i,0);
-              disp_totlag(i+9)=nodaltangents(i,1);
-            }
-            //Calculate axial positions within the element by using the Hermite interpolation of Kirchhoff beams
-            for (int i=0;i<n_axial;i++)
-            {
-              double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
-              LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
-
-              for (int j=0;j<3;j++)
-                coord(j,i)=r(j);
-            }
-          }
-          else
-          {
-            dserror("Only 2-noded Kirchhoff elements possible so far!");
-          }
-          if(N_CIRCUMFERENTIAL!=0)
-            GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
-          else
-            GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
-        }
         else
         {
           dserror("Your chosen type of beam element is not allowed for beam contact!");
@@ -4858,11 +4793,6 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   {
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  else if ( eot == DRT::ELEMENTS::Beam3ebtorType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
   else if ( eot == DRT::ELEMENTS::Beam3kType::Instance() )
   {

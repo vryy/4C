@@ -20,7 +20,6 @@
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3k.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_beam3/beam3ebtor.H"
 
 
 /*----------------------------------------------------------------------*
@@ -78,11 +77,6 @@ contactflag_(false)
       else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
       {
         const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element1_);
-        tan = ele->Tref()[n];
-      }
-      else if (eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
-      {
-        const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(element1_);
         tan = ele->Tref()[n];
       }
       else
