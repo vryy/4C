@@ -34,7 +34,12 @@ namespace ELEMENTS
 {
 // forward declarations
 class PoroFluidMultiPhaseEleParameter;
-class PoroFluidPhaseManager;
+
+namespace POROFLUIDMANAGER
+{
+class PhaseManagerInterface;
+template<int,int> class VariableManagerInterface;
+}
 
   template<DRT::Element::DiscretizationType distype>
   class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
@@ -85,7 +90,8 @@ class PoroFluidPhaseManager;
     /// Setup element evaluation
     virtual int SetupCalc(
         DRT::Element*               ele,
-        DRT::Discretization&        discretization
+        DRT::Discretization&        discretization,
+        const POROFLUIDMULTIPHASE::Action& action
         );
 
     /// Evaluate the element
@@ -200,7 +206,7 @@ class PoroFluidPhaseManager;
     void CalcMatConv(
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
-      const PoroFluidPhaseManager&  phasemanager,//!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,//!< phase manager
       const double                  porosity,    //!< porosity at gauss point
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
       const LINALG::Matrix<nen_,1>& conv         //!< convective term
@@ -211,7 +217,7 @@ class PoroFluidPhaseManager;
     virtual void CalcMatConvCons(
       Epetra_SerialDenseMatrix&     emat,           //!< element matrix to be filled
       const int                     k,              //!< index of current scalar
-      const PoroFluidPhaseManager&  phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,   //!< phase manager
       const double                  timefacfac,     //!< domain-integration factor times time-integration factor
       const double                  vdiv            //!< velocity divergence
     );
@@ -221,7 +227,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseMatrix&         emat,         //!< element matrix to be filled
       const int                         curphase,     //!< index of current phase
       const int                         phasetoadd,   //!< index of current phase
-      const PoroFluidPhaseManager&      phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&      phasemanager, //!< phase manager
       const MAT::Material&              material,     //!< material of the element
       const double                      timefacfac,   //!< domain-integration factor times time-integration factor
       const LINALG::Matrix<nsd_,nsd_>&  difftensor    //!< diffusion tensor
@@ -232,7 +238,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseMatrix&          emat,               //!< element matrix to be filled
       const int                          curphase,           //!< index of current phase
       const int                          phasetoadd,         //!< index of current phase
-      const PoroFluidPhaseManager&       phasemanager,       //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&       phasemanager,       //!< phase manager
       const MAT::Material&               material,           //!< material of the element
       const double                       timefacfac,         //!< domain-integration factor times time-integration factor
       bool                               scalewithsaturation //!< flag wether to scale with saturation
@@ -243,14 +249,13 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseMatrix&     emat,          //!< element matrix to be filled
       const int                     curphase,      //!< index of current phase
       const int                     phasetoadd,    //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager,  //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,  //!< phase manager
       const MAT::Material&          material,      //!< material of the element
       const double                  fac,           //!< domain-integration factor
       const double                  timefacfac,    //!< domain-integration factor times time-integration factor
       const double                  porosity,      //!< porosity at gauss point
       const double                  hist,          //!< history of time integartion
       const std::vector<double>&    phinp,         //!< state phi at t_{n+1}
-      const std::vector<double>&    phin,          //!< state phi at t_{n}
       const std::vector<double>&    phidtnp        //!< time derivative state phi at t_{n+1}
     );
 
@@ -258,14 +263,13 @@ class PoroFluidPhaseManager;
     void CalcMatMassSolidPressure(
       Epetra_SerialDenseMatrix&     emat,                //!< element matrix to be filled
       const int                     curphase,            //!< index of current scalar
-      const PoroFluidPhaseManager&  phasemanager,        //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,        //!< phase manager
       const MAT::Material&          material,            //!< material of the element
       const double                  fac,                 //!< domain-integration factor
       const double                  timefacfac,          //!< domain-integration factor times time-integration factor
       const double                  porosity,            //!< porosity at gauss point
       const double                  hist,                //!< history of time integartion
       const std::vector<double>&    phinp,               //!< state phi at t_{n+1}
-      const std::vector<double>&    phin,                //!< state phi at t_{n}
       const std::vector<double>&    phidtnp,             //!< time derivative state phi at t_{n+1}
       bool                          scalewithsaturation  //!< flag for saturation scaling
     );
@@ -274,12 +278,11 @@ class PoroFluidPhaseManager;
     void CalcMatMassSaturation(
       Epetra_SerialDenseMatrix&     emat,         //!< element matrix to be filled
       const int                     curphase,     //!< index of current scalar
-      const PoroFluidPhaseManager&  phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
       const MAT::Material&          material,     //!< material of the element
       const double                  fac,          //!< domain-integration factor
       const double                  porosity,     //!< porosity at gauss point
-      const std::vector<double>&    phinp,        //!< state phi at t_{n+1}
-      const std::vector<double>&    phin          //!< state phi at t_{n}
+      const std::vector<double>&    phinp         //!< state phi at t_{n+1}
     );
 
     //! calculation of linearized mass rhs vector
@@ -287,7 +290,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
       const int                     curphase,     //!< index of current phase
       const int                     phasetoadd,   //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
       const MAT::Material&          material,     //!< material of the element
       const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
       const double                  fac,          //!< domain-integration factor
@@ -302,7 +305,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseVector&     erhs,                 //!< element vector to be filled
       const int                     curphase,             //!< index of current phase
       const int                     phasetoadd,           //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager,         //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,         //!< phase manager
       const MAT::Material&          material,             //!< material of the element
       const double                  rhsfac,               //!< time-integration factor for rhs times domain-integration factor
       const double                  fac,                  //!< domain-integration factor
@@ -318,7 +321,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
       const int                     curphase,     //!< index of current phase
       const int                     phasetoadd,   //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
       const MAT::Material&          material,     //!< material of the element
       const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
       const double                  fac,          //!< domain-integration factor
@@ -340,7 +343,7 @@ class PoroFluidPhaseManager;
     void CalcRHSConv(
       Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
       const int                     curphase,     //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
       const double                  porosity,     //!< porosity at gauss point
       const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
       const std::vector<double>&    conv_phi      //!< convective term
@@ -350,7 +353,7 @@ class PoroFluidPhaseManager;
     void CalcRHSConvCons(
       Epetra_SerialDenseVector&     erhs,                 //!< element vector to be filled
       const int                     curphase,             //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager,         //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,         //!< phase manager
       const double                  rhsfac,               //!< time-integration factor for rhs times domain-integration factor
       const double                  vdiv,                 //!< convective term
       bool                          scalewithsaturation   //!< flag wether to scale with saturation
@@ -361,7 +364,7 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseVector&                   erhs,         //!< element vector to be filled
       const int                                   curphase,     //!< index of current phase
       const int                                   phasetoadd,   //!< index of current phase
-      const PoroFluidPhaseManager&                phasemanager, //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&                phasemanager, //!< phase manager
       const double                                rhsfac,       //!< time-integration factor for rhs times domain-integration factor
       const std::vector<LINALG::Matrix<nsd_,1> >& gradphi,      //!< gradient of scalar
       const LINALG::Matrix<nsd_,nsd_>&            difftensor    //!< pre factor of diffusive term
@@ -372,31 +375,14 @@ class PoroFluidPhaseManager;
       Epetra_SerialDenseVector&             erhs,               //!< element vector to be filled
       const int                             curphase,           //!< index of current phase
       const int                             phasetoadd,         //!< index of current phase
-      const PoroFluidPhaseManager&          phasemanager,       //!< phase manager
+      const POROFLUIDMANAGER::PhaseManagerInterface&          phasemanager,       //!< phase manager
       const MAT::Material&                  material,           //!< material of the element
       const double                          rhsfac,             //!< time-integration factor for rhs times domain-integration factor
       bool                                  scalewithsaturation //!< flag wether to scale with saturation
     );
 
-    //! adaption of rhs with respect to time integration
-    void ComputeRhsInt(
-      double&                       rhsint,       //!< rhs at Gauss point
-      const int                     curphase,     //!< index of current phase
-      const PoroFluidPhaseManager&  phasemanager, //!< phase manager
-      const MAT::Material&          material,     //!< material of the element
-      const double                  porosity,     //!< porosity at gauss point
-      const double                  hist          //!< history of time integartion
-    );
-
-    //! compute porosity
-    virtual double ComputePorosity(
-        const Teuchos::RCP< MAT::StructPoro >&  structmat,    //!< material of the structure
-        const PoroFluidPhaseManager&            phasemanager, //!< phase manager
-        const LINALG::Matrix<nsd_,1>&           dispint       //!< displacements at t_{n+1}
-      );
-
     void ComputeDiffTensor(
-        const PoroFluidPhaseManager&  phasemanager, //!< phase manager
+        const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
         const int                     phase,        //!< index of current phase
         const MAT::Material&          material,     //!< material of the element
         const std::vector<double>&    phinp,        //!< state phi at t_{n+1}
@@ -500,40 +486,20 @@ class PoroFluidPhaseManager;
     LINALG::Matrix<nsd_,nsd_> xij_;
     //! determinant of jacobian "dx/ds"
     double det_;
+    //! determinant of deformation gradient "dx/dX"
+    double J_;
 
     /*========================================================================*/
     //! @name scalar degrees of freedom and related
     /*========================================================================*/
-
-    //! state variables at t_(n)
-    std::vector<LINALG::Matrix<nen_,1> > ephin_;
-    //! state variables at t_(n+1) or t_(n+alpha_F)
-    std::vector<LINALG::Matrix<nen_,1> > ephinp_;
-    //! time derivatives of state variables at t_(n+1)
-    std::vector<LINALG::Matrix<nen_,1> > ephidtnp_;
-    //! history vector of transported scalars
-    std::vector<LINALG::Matrix<nen_,1> > ehist_;
-
-    //! bodyforce in element nodes
-    std::vector<LINALG::Matrix<nen_,1> > bodyforce_;
-
-    /*========================================================================*/
-    //! @name velocity, pressure, and related to coupled problem
-    /*========================================================================*/
-
-    //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
-    LINALG::Matrix<nsd_,nen_> evelnp_;
-    //! nodal displacement values for ALE
-    LINALG::Matrix<nsd_,nen_> edispnp_;
-    //! nodal scalar values for scatra coupling
-    std::vector<LINALG::Matrix<nen_,1> > escalarnp_;
-
+    //! manager class for variables
+    Teuchos::RCP< POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_> > variablemanager_;
 
     //! corresponding poro structure material
     Teuchos::RCP< MAT::StructPoro > structmat_;
 
     //! manager class for handling phases and corresponding DOFs
-    Teuchos::RCP< PoroFluidPhaseManager > phasemanager_;
+    Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager_;
 
   };
 

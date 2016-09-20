@@ -179,7 +179,7 @@ public:
   { return dbcmaps_; }
 
   //! right-hand side alias the dynamic force residual
-  Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
+  Teuchos::RCP<const Epetra_Vector> RHS() const { return residual_; }
 
   //! return discretization
   Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
@@ -211,11 +211,8 @@ public:
   //! return time step size
   double Dt() const { return dt_; }
 
-  //! return number of dof set associated with solid pressure
-  int GetDofSetNumberOfSolidPressure() {return nds_solidpressure_;};
-
   /*========================================================================*/
-  //! @name pressure degrees of freedom and related
+  //! @name degrees of freedom and related
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
@@ -254,6 +251,9 @@ public:
 
   //! return phase flux field at time n+1
   Teuchos::RCP<const Epetra_MultiVector> Flux() const { return flux_; }
+
+  //! return number of dof set associated with solid pressure
+  int GetDofSetNumberOfSolidPressure() const {return nds_solidpressure_;};
 
   //! output mean values of pressure(s)
   //virtual void OutputMeanPressures(const int num=0);
@@ -414,6 +414,9 @@ protected:
   //! error file handle
   FILE* errfile_;
 
+  //! number of space dimensions
+  int nsd_;
+
   /*========================================================================*/
   //! @name flags and enums
   /*========================================================================*/
@@ -478,12 +481,15 @@ protected:
   //! maximum number of newton iterations
   const int itemax_;
 
-  /*========================================================================*/
-  //! @name pressure degrees of freedom variables
-  /*========================================================================*/
+  //! write results every upres_ steps ? writesolutionevery_
+  const int upres_;
 
-  //! number of space dimensions
-  int nsd_;
+  //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
+  const int uprestart_;
+
+  /*========================================================================*/
+  //! @name degrees of freedom variables
+  /*========================================================================*/
 
   //! phi at time n
   Teuchos::RCP<Epetra_Vector> phin_;
@@ -560,16 +566,6 @@ protected:
 
   Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
                                       //!< \f$\Delta{p}^{<k>}_{n+1}\f$
-
-  /*========================================================================*/
-  //! @name not classified variables - to be kept clean!!!
-  /*========================================================================*/
-
-  //! write results every upres_ steps ? writesolutionevery_
-  int upres_;
-
-  //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
-  int uprestart_;
 
   /*========================================================================*/
 

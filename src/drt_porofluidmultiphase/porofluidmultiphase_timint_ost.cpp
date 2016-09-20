@@ -156,7 +156,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(
 {
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("phin", phin_);
   discret_->SetState("phidtnp", phidtnp_);
 
   return;

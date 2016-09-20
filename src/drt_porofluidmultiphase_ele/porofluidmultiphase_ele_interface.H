@@ -45,16 +45,10 @@ namespace ELEMENTS
     /// Empty constructor
     PoroFluidMultiPhaseEleInterface(){return;};
 
-    /// Setup element evaluation
-    virtual int SetupCalc(
-        DRT::Element*               ele,
-        DRT::Discretization&        discretization
-        ) = 0;
-
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function; it
-      must be defined in LubricationEleCalc.
+      must be defined in PoroFluidMultiPhaseEleCalc.
       The Evaluate() method is meant only for the assembling of the
       linearized matrix and the right hand side
      */

@@ -57,6 +57,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   poroparams_ (poroparams),
   myrank_ (actdis->Comm().MyPID()),
   errfile_  (errfile),
+  nsd_(DRT::Problem::Instance()->NDim()),
   isale_    (false),
 //  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outmean_  (false),
@@ -76,7 +77,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   dtsolve_(0.0),
   iternum_(0),
   itemax_(poroparams_.get<int>("ITEMAX")),
-  nsd_(DRT::Problem::Instance()->NDim()),
+  upres_    (params_.get<int>("RESULTSEVRY")),
+  uprestart_(params_.get<int>("RESTARTEVRY")),
   // Initialization of degrees of freedom variables
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
@@ -100,9 +102,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   residual_(Teuchos::null),
   trueresidual_(Teuchos::null),
   increment_(Teuchos::null),
-  prei_(Teuchos::null),
-  upres_    (params_.get<int>("RESULTSEVRY")),
-  uprestart_(params_.get<int>("RESTARTEVRY"))
+  prei_(Teuchos::null)
 {
   return;
 }
