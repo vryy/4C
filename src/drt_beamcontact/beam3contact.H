@@ -301,14 +301,6 @@ public:
   };
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-  */
-  double Getlmuzawa()
-  {
-    return 0.0;
-  };
-
-  /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
   bool GetContactFlag()
@@ -529,11 +521,6 @@ public:
                 bool fdcheck=false);
 
   /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  void Resetlmuzawa();
-
-  /*!
   \brief Change the sign of the normal vector: This has to be done at the end of a time step when the remainig penetration is
   larger that the sum of the beam radii (R1+R2). Otherwise, the beams could cross in the next time step when the new gap function
   definition (ngf_=true) for slender beams is applied!
@@ -545,11 +532,6 @@ public:
     \brief We don't need this method for beam3contact elements!
   */
   void UpdateClassVariablesStep(){};
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-    */
-  void Updatelmuzawa(const double& currentpp);
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!

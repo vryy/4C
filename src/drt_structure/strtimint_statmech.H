@@ -190,9 +190,6 @@ namespace STR
     //! \brief calculates ref norms of displacement and force
     void CalcRefNorms();
 
-    //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
-    void InitializeNewtonUzawa();
-
     //!\brief does what it says
     void UpdateAndOutput();
 
@@ -263,14 +260,8 @@ namespace STR
     //! \brief print updated statmech values to screen
     void StatMechPrintUpdate(const double& t_admin);
 
-    //! \brief check convergence status of Newton scheme for Augmented Lagrange method
-    bool BeamContactExitUzawaAt(int& maxuzawaiter);
-
     //! \brief beam contact penalty approach
     void BeamContactPenalty();
-
-    //! \brief beam contact augmented lagrange approach
-    void BeamContactAugLag();
 
     //! \brief Compute Statistical Forces and Damping Matrix for Brownian Dynamics Applications
     void PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc, double& sumptc);
@@ -316,7 +307,6 @@ namespace STR
     {
         contact_none,
         contact_penalty,
-        contact_auglag,
         contact_lagmult
     };
   };

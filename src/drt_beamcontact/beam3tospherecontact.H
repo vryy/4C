@@ -89,12 +89,6 @@ public:
   virtual double GetGap()=0;
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-
-  */
-  virtual double Getlmuzawa()=0;
-
-  /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
 
   */
@@ -124,16 +118,6 @@ public:
   \brief Evaluate this contact element pair
   */
   virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, double& pp) =0;
-
-  /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  virtual void Resetlmuzawa()=0;
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-  */
-  virtual void Updatelmuzawa(const double& currentpp)=0;
 
   /*
   \brief Update nodal coordinates of both elements
@@ -226,11 +210,6 @@ public:
   double GetGap() { return FADUTILS::CastToDouble(gap_);};
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-  */
-  double Getlmuzawa() { return lmuzawa_; };
-
-  /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
   bool GetContactFlag() { return (contactflag_ || nodalcontactflag_[0] || nodalcontactflag_[1]); };
@@ -270,16 +249,6 @@ public:
                 Epetra_Vector& fint,
                 double& pp);
 
-  /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  void Resetlmuzawa();
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-  */
-  void Updatelmuzawa(const double& currentpp);
-
   /*
   \brief Update nodal coordinates of both elements
   */
@@ -310,9 +279,6 @@ private:
   //! current node coordinates of the two elements
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
   LINALG::TMatrix<TYPE,3,1> ele2pos_;
-
-  //! Uzawa-based Lagrange multiplier
-  double lmuzawa_;
 
   //! gap function
   TYPE gap_;

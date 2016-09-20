@@ -143,9 +143,6 @@ step_(0)
       dserror("ERROR: The beam-to-sphere penalty parameter has to be positive. Check input file!");
   }
 
-  // initialize Uzawa iteration index
-  uzawaiter_ = 0;
-
   if(!pdiscret_.Comm().MyPID())
   {
     std::cout << "========================= Beam Contact =========================" << std::endl;
@@ -191,12 +188,6 @@ step_(0)
   {
     if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_penalty )
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_uzawa)
-    {
-      std::cout << "Strategy                 Augmented Lagrange" << std::endl;
-      if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW")!=INPAR::BEAMCONTACT::pl_lp)
-        dserror("Augmented Lagrange strategy only implemented for Linear penalty law (LinPen) so far!");
-    }
     else if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly )
          std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
@@ -2458,28 +2449,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
   #endif
 
-  // STEPS 2/3: OUTPUT OF UZAWA AND NEWTON STEP INDEX
+  // STEPS 2/3: OUTPUT OF NEWTON STEP INDEX
   // (for the end of time step output, omit this)
-  int uzawastep = 99;
   if (!endoftimestep)
   {
-    // check if Uzawa index is needed or not
-    INPAR::BEAMCONTACT::Strategy strategy =
-    DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(BeamContactParameters(),"BEAMS_STRATEGY");
-
-    if (strategy==INPAR::BEAMCONTACT::bstr_uzawa)
-    {
-      uzawastep = uzawaiter_;
-      if (uzawastep<10)
-        filename << "_u0";
-      else if (uzawastep<100)
-        filename << "_u";
-      else /*(uzawastep>=100)*/
-        dserror("ERROR: Gmsh output implemented for max 99 Uzawa steps");
-      filename << uzawastep;
-    }
-
-    // Newton index is always needed, of course
     if (newtonstep<10)
       filename << "_n00";
     else if (newtonstep<100)
@@ -2631,9 +2604,9 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Step T" << timestep;
 
-    // information about Uzawa and Newton step
+    // information about Newton step
     if (!endoftimestep)
-      gmshfilecontent << " U" << uzawastep << " N" << newtonstep;
+      gmshfilecontent << " N" << newtonstep;
 
     // finish step information
     gmshfilecontent << " \" {" << std::endl;
@@ -3392,164 +3365,6 @@ void CONTACT::Beam3cmanager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
 }
 
 /*----------------------------------------------------------------------*
- |  intialize second, third, ... Uzawa step                   popp 12/11|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
-                                             Epetra_Vector& fres,
-                                             const Epetra_Vector& disrow,
-                                             Teuchos::ParameterList timeintparams,
-                                             bool newsti)
-{
-  // since we will modify the graph of stiffmatrix by adding additional
-  // contact tiffness entries, we have to uncomplete it
-  stiffmatrix.UnComplete();
-
-  // determine contact stiffness matrix scaling factor (new STI)
-  // (this is due to the fact that in the new STI, we hand in the
-  // already appropriately scaled effective stiffness matrix. Thus,
-  // the additional contact stiffness terms must be equally scaled
-  // here, as well. In the old STI, the complete scaling operation
-  // is done after contact evaluation within the time integrator,
-  // therefore no special scaling needs to be applied here.)
-  double scalemat = 1.0;
-  if (newsti) scalemat = 1.0 - alphaf_;
-
-  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_,"MASSLIN") != INPAR::STR::ml_rotations)
-  {
-    // remove contact stiffness terms from stiffmatrix
-    stiffmatrix.Add(*stiffc_, false, -scalemat, 1.0);
-    // remove old contact force terms from fres
-    fres.Update(-(1.0-alphaf_),*fc_,1.0);
-    fres.Update(-alphaf_,*fcold_,1.0);
-  }
-  else
-  {
-
-    // remove contact stiffness terms from stiffmatrix
-    stiffmatrix.Add(*stiffc_, false, -1.0, 1.0);
-    // remove old contact force terms from fres
-    fres.Update(-1.0,*fc_,1.0);
-  }
-
-  // now redo Evaluate()
-  Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
-  Evaluate(stiffmatrix,fres,disrow,timeintparams,newsti);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Reset all Uzawa-based Lagrange multipliers                popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ResetAlllmuzawa()
-{
-  // loop over all potential contact pairs
-  for(int i=0;i<(int)pairs_.size();i++)
-    pairs_[i]->Resetlmuzawa();
-
-  for(int i=0;i<(int)btsolpairs_.size();i++)
-    btsolpairs_[i]->Resetlmuzawa();
-
-  for(int i=0;i<(int)btsphpairs_.size();i++)
-    btsphpairs_[i]->Resetlmuzawa();
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Update contact constraint norm during uzawa iteration    meier 10/14|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNormUzawa()
-{
-  //Next we want to find out the maximal and minimal gap
-  //We have to distinguish between maximal and minimal gap, since our penalty
-  //force law can already become active for positive gaps.
-  double maxgap = 0.0;
-  double maxallgap = 0.0;
-  double mingap = 0.0;
-  double minallgap = 0.0;
-  double maxrelgap = 0.0;
-  double maxallrelgap = 0.0;
-  double minrelgap = 0.0;
-  double minallrelgap = 0.0;
-
-  // loop over all pairs to find all gaps
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // only relevant if current pair is active
-    if (pairs_[i]->GetContactFlag() == true)
-    {
-      //get smaller radius of the two elements:
-      double smallerradius=0.0;
-      double radius1=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element1());
-      double radius2=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element2());
-      if(radius1<radius2)
-        smallerradius=radius1;
-      else
-        smallerradius=radius2;
-
-      std::vector<double> pairgaps = pairs_[i]->GetGap();
-      for(int i=0;i<(int)pairgaps.size();i++)
-      {
-        double gap = pairgaps[i];
-
-        double relgap = gap/smallerradius;
-
-        if (gap>maxgap)
-          maxgap = gap;
-
-        if (gap<mingap)
-          mingap = gap;
-
-        if (relgap>maxrelgap)
-          maxrelgap = relgap;
-
-        if (relgap<minrelgap)
-          minrelgap = relgap;
-      }
-    }
-  }
-
-  //So far, we only have the processor local extrema, but we want the extrema of the whole problem
-  //As long as the beam contact discretization is full overlapping, all pairs are stored in all procs and
-  //don't need this procedure. However, for future applications (i.e. when abstain from a fully overlapping
-  //discretization) it might be useful.
-  Comm().MaxAll(&maxgap,&maxallgap,1);
-  Comm().MinAll(&mingap,&minallgap,1);
-  Comm().MaxAll(&maxrelgap,&maxallrelgap,1);
-  Comm().MinAll(&minrelgap,&minallrelgap,1);
-
-  //Set class variable
-#ifdef RELCONSTRTOL
-  constrnorm_=fabs(minallrelgap);
-#else
-  constrnorm_=fabs(minallgap);
-#endif
-
-   // print results to screen
-  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-  if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
-  {
-    std::cout << std::endl << "     ************************BTB*************************"<<std::endl;
-    std::cout << "      Penalty parameter         = " << currentpp_ << std::endl;
-    std::cout << "      Minimal current Gap       = " << minallgap << std::endl;
-    std::cout << "      Minimal total unconv. Gap = " << mintotalsimunconvgap_ << std::endl;
-    std::cout << "      Minimal current rel. Gap  = " << minallrelgap << std::endl;
-    std::cout << "      Current Constraint Norm   = " << constrnorm_ << std::endl;
-    std::cout << "      Maximal current Gap       = " << maxallgap << std::endl;
-    std::cout << "      Maximal current rel. Gap  = " << maxallrelgap << std::endl;
-    if ((int)btsolpairs_.size())
-    {
-      std::cout << std::endl << "      ************************BTS*************************"<<std::endl;
-      std::cout << "      BTS-Penalty parameter     = " << btspp_ << std::endl;
-      std::cout << "      Current Constraint Norm   = " << btsolconstrnorm_ << std::endl;
-    }
-    std::cout<<"      ****************************************************"<<std::endl;
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Update contact constraint norm                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::UpdateConstrNorm()
@@ -3772,76 +3587,6 @@ void CONTACT::Beam3cmanager::UpdateAllPairs()
     // loop over all potential beam to solid contact pairs
     for (int i = 0; i < (int)btsolpairs_.size(); ++i)
       btsolpairs_[i]->UpdateClassVariablesStep();
-}
-
-/*----------------------------------------------------------------------*
- |  Update all Uzawa-based Lagrange multipliers               popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
-{
-  // loop over all potential contact pairs
-  for (int i=0;i<(int)pairs_.size();++i)
-    pairs_[i]->Updatelmuzawa(currentpp_);
-
-  for (int i=0;i<(int)btsolpairs_.size();++i)
-    btsolpairs_[i]->Updatelmuzawa(btspp_);
-
-  for (int i=0;i<(int)btsphpairs_.size();++i)
-    btsphpairs_[i]->Updatelmuzawa(currentpp_);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Reset penalty parameter                                   popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ResetCurrentpp()
-{
-  // get initial value from input file and reset
-  currentpp_ = BeamContactParameters().get<double>("BEAMS_BTBPENALTYPARAM");
-
-  // get initial value from input file and reset
-  btspp_ = BeamContactParameters().get<double>("BEAMS_BTSPENALTYPARAM");
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Reset Uzawa iteration index                               popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ResetUzawaIter()
-{
-  // reset index to zero
-  uzawaiter_ = 0;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Update Uzawa iteration index                              popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateUzawaIter()
-{
-  // increase index by one
-  uzawaiter_++;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Update penalty parameter                                  popp 04/10|
- *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::IncreaseCurrentpp(const double& globnorm)
-{
-  // check convergence rate of Uzawa iteration
-  // if too slow then empirically increase the penalty parameter
-  bool update = false;
-  if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter_ >= 2) )
-  {
-    currentpp_ = currentpp_ * 1.6;
-    update = true;
-  }
-  return update;
 }
 
 /*----------------------------------------------------------------------*
@@ -4133,7 +3878,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         int id1 = (btsphpairs_[i]->Element1())->Id();
         int id2 = (btsphpairs_[i]->Element2())->Id();
         double gap = btsphpairs_[i]->GetGap();
-        double lm = btsphpairs_[i]->Getlmuzawa() - currentpp_ * btsphpairs_[i]->GetGap();
+        double lm = - currentpp_ * btsphpairs_[i]->GetGap();
 
         // print some output (use printf-method for formatted output)
         if (firstisinrowmap)

@@ -51,7 +51,6 @@ bcparams_(beamcontactparams),
 sgn_(1.0),
 firstcallofstep_(true),
 firsttimestep_(true),
-lmuzawa_(0.0),
 gap_(0.0),
 gap_original_(0.0),
 contactflag_(false),
@@ -2397,7 +2396,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
     {
       case INPAR::BEAMCONTACT::pl_lp:               //linear penalty force law
       {
-        fp_=lmuzawa_ - pp_*gap_;
+        fp_=- pp_*gap_;
         dfp_=-pp_;
 
         break;
@@ -3110,7 +3109,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(LINALG::T
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Check if conact is active or inactive                    meier 02/14|
+ |  Check if contact is active or inactive                    meier 02/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(const double& pp)
@@ -3124,7 +3123,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(cons
   if(penaltylaw==INPAR::BEAMCONTACT::pl_lp)
   {
     //linear penalty force law
-    if (lmuzawa_ - pp * gap_ > 0)
+    if (gap_ < 0)
     {
       contactflag_ = true;
       currentlyincontact_ = true;
@@ -3221,20 +3220,6 @@ std::vector<int> CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetGlobalDo
 }
 /*----------------------------------------------------------------------*
  |  end: Get global dofs of a node
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  Reset Uzawa-based Lagrange mutliplier                  meier 02/2014|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Resetlmuzawa()
-{
-  lmuzawa_ = 0.0;
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: Reset Uzawa-based Lagrange mutliplier
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -3452,22 +3437,6 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNewGapStatus()
 }
 /*----------------------------------------------------------------------*
  |  end: Check if there is a difference of old and new gap               |
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  Update Uzawa-based Lagrange mutliplier                 meier 02/2014|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
-{
-  // only update for active pairs, else reset
-  if (contactflag_) lmuzawa_ -=  currentpp * GetGap()[0];
-  else              lmuzawa_ = 0.0;
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: Update Uzawa-based Lagrange mutliplier
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

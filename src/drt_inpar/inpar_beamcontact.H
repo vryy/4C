@@ -2,13 +2,12 @@
 /*!
 \file inpar_beamcontact.H
 
-\brief input parameter defintions for beam contact
+\brief input parameter definitions for beam contact
 
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_BEAMCONTACT_H
@@ -29,7 +28,6 @@ namespace INPAR
     {
       bstr_none,        ///< no beam contact
       bstr_penalty,     ///< penalty method
-      bstr_uzawa,       ///< uzawa method
       bstr_gmshonly     ///< misuse of beam contact module for GMSH output
     };
 

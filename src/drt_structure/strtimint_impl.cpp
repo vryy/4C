@@ -3571,63 +3571,6 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   //**********************************************************************
 
   //**********************************************************************
-  // solving strategy using regularization with augmented Lagrange method
-  // (nonlinear solution approach: nested UZAWA NEWTON)
-  //**********************************************************************
-  else if (strategy == INPAR::BEAMCONTACT::bstr_uzawa)
-  {
-    // get tolerance and maximum number of Uzawa steps from input file
-    double eps = beamcman_->BeamContactParameters().get<double>("BEAMS_BTBUZAWACONSTRTOL");
-    int maxuzawaiter = beamcman_->BeamContactParameters().get<int>("BEAMS_BTBUZAWAMAXSTEPS");
-
-    // outer Augmented Lagrangian iteration (Uzawa)
-    do
-    {
-      // increase iteration index by one
-      beamcman_->UpdateUzawaIter();
-      if (beamcman_->GetUzawaIter() > maxuzawaiter)
-        dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
-
-      if (!myrank_)
-        std::cout << std::endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << std::endl;
-
-      // for second, third,... Uzawa step: out-of-balance force
-      if (beamcman_->GetUzawaIter() > 1)
-      {
-        // beam contact modifications need -fres
-        fres_->Scale(-1.0);
-        // create empty parameter list
-        Teuchos::ParameterList beamcontactparams;
-        beamcontactparams.set("iter", iter_);
-        beamcontactparams.set("dt", (*dt_)[0]);
-        beamcontactparams.set("numstep", step_);
-
-        // make contact modifications to lhs and rhs
-        beamcman_->InitializeUzawa(*SystemMatrix(),*fres_,*disn_,beamcontactparams,true);
-
-        // scaling back
-        fres_->Scale(-1.0);
-      }
-
-      // inner nonlinear iteration (Newton)
-      int error = NewtonFull();
-      if(error) return error;
-      // update constraint norm and penalty parameter
-      beamcman_->UpdateConstrNormUzawa();
-
-      // update Uzawa Lagrange multipliers
-      beamcman_->UpdateAlllmuzawa();
-
-    } while (abs(beamcman_->GetConstrNorm()) >= eps);
-
-    // reset penalty parameter, Uzawa index and Uzawa lagrange multiplier
-    beamcman_->ResetCurrentpp();
-    beamcman_->ResetUzawaIter();
-    beamcman_->ResetAlllmuzawa();
-    beamcman_->UpdateConstrNorm();
-  }
-
-  //**********************************************************************
   // misuse of beam contact module for GMSH output
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************

@@ -56,7 +56,7 @@ Method                          = Backtrack
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM CONTACT
-BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, uzawa, none (default)
+BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, none (default)
 BEAMS_BTBPENALTYPARAM           100000.0 //Penalty parameter for large-angle beam-to-beam contact
 BEAMS_BTBLINEPENALTYPARAM       5000000.0 //Penalty parameter for small-angle beam-to-beam contact
 BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)

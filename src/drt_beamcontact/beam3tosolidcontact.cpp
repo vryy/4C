@@ -50,7 +50,6 @@ element1_(element1),
 element2_(element2),
 sgn_(1.0),
 firstcall_(true),
-lmuzawa_(0.0),
 gap_(0.0),
 gap_original_(0.0),
 contactflag_(false),
@@ -608,13 +607,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 {
 #ifdef LINPENALTY
   // Linear penalty force law
-  fp = lmuzawa_ - pp * gap;
+  fp = - pp * gap;
   dfp = -pp;
 #endif
 
 #ifdef QUADPENALTY
   // Quadratic penalty force law
-  fp = lmuzawa_ + pp * gap * gap;
+  fp = pp * gap * gap;
   dfp = 2 * pp * gap;
 #endif
 
@@ -2544,7 +2543,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
 
 
 /*----------------------------------------------------------------------*
- | Check if conact is active or inactive                                |
+ | Check if contact is active or inactive                                |
  *----------------------------------------------------------------------*/
 template<const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::CheckContactStatus(
@@ -2552,12 +2551,10 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::CheckC
     const TYPEBTS& gap,
     bool& contactflag)
 {
-  // Check contact condition valid for both pure penalty
-  // (lmuzawa = 0) and augmented lagrange (lmuzawa != 0)
 
 #ifdef LINPENALTY
   // Linear penalty force law
-  if (lmuzawa_ - pp * gap > 0)
+  if (gap < 0)
     contactflag = true;
   else
     contactflag = false;
@@ -2594,7 +2591,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::CheckC
   return;
 }
 /*----------------------------------------------------------------------*
- | End: Check if conact is active or inactive                           |
+ | End: Check if contact is active or inactive                           |
  *----------------------------------------------------------------------*/
 
 
@@ -2618,20 +2615,6 @@ std::vector<int> CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalval
 }
 /*----------------------------------------------------------------------*
  | End: Get global dofs of a node                                       |
- *----------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------*
- | Reset Uzawa-based Lagrange mutliplier                  meier 02/2014 |
- *----------------------------------------------------------------------*/
-template<const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Resetlmuzawa()
-{
-//  lmuzawa_ = 0.0;
-  return;
-}
-/*----------------------------------------------------------------------*
- | End: Reset Uzawa-based Lagrange mutliplier                           |
  *----------------------------------------------------------------------*/
 
 
@@ -2703,24 +2686,6 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetNew
 }
 /*----------------------------------------------------------------------*
  | End: Check if there is a difference of old and new gap               |
- *----------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------*
- | Update Uzawa-based Lagrange mutliplier                 meier 02/2014 |
- *----------------------------------------------------------------------*/
-template<const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
-{
-//  // only update for active pairs, else reset
-//  if (contactflag_)
-//    lmuzawa_ -=  currentpp * GetGap();
-//  else
-//    lmuzawa_ = 0.0;
-  return;
-}
-/*----------------------------------------------------------------------*
- | End: Update Uzawa-based Lagrange mutliplier                          |
  *----------------------------------------------------------------------*/
 
 

@@ -49,8 +49,6 @@ contactflag_(false)
   fc1_.Clear();
   fc2_.Clear();
 
-  // initialize augmented lagrange multiplier to zero
-  lmuzawa_ = 0.0;
   gap_=0.0;
 
   // initialize class variables for contact point coordinates
@@ -417,10 +415,8 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateLinOrthogo
 template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::CheckContactStatus(double& pp)
 {
-  // check contact condition valid for both pure penalty
-  // (lmuzawa = 0) and augmented lagrange (lmuzawa != 0)
-  if (lmuzawa_ - pp * gap_ > 0) contactflag_ = true;
-  else                          contactflag_ = false;
+  // check contact condition
+   contactflag_ = (gap_ < 0) ? true : false;
 
   return;
 }
@@ -503,7 +499,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateFcContact(
     {
       for (int j=0;j<3;++j)
       {
-        fc1_(3*i+j) = (lmuzawa_ - pp*gap) * normal(j) * N1_i(i);
+        fc1_(3*i+j) = (- pp*gap) * normal(j) * N1_i(i);
       }
     }
 
@@ -517,7 +513,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateFcContact(
     // compute force vector Fc2 and prepare assembly
     for (int j=0;j<3;++j)
     {
-      fc2_(j) = -(lmuzawa_ - pp*gap) * normal(j);
+      fc2_(j) = pp*gap * normal(j);
       lm2[j] = NodeDofGIDs[j];
       lmowner2[j] = node->Owner();
     }
@@ -725,7 +721,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcCont
       {
         for (int k=0;k<dim1+dim2;k++)
         {
-            stiffc1(3*j+i,k) += (lmuzawa_ - pp*gap) * N1_i(j) * delta_n(i,k);
+            stiffc1(3*j+i,k) -= pp*gap * N1_i(j) * delta_n(i,k);
         }
       }
     }
@@ -746,7 +742,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcCont
     {
       for (int j=0;j<dim1+dim2;j++)
       {
-        stiffc1(i,j) += (lmuzawa_ - pp*gap) * N1xiT_normal(i) * delta_xi(j);
+        stiffc1(i,j) -= pp*gap * N1xiT_normal(i) * delta_xi(j);
       }
     }
 
@@ -774,7 +770,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcCont
     {
       for (int k=0;k<dim1+dim2;k++)
       {
-        stiffc2(i,k) += -(lmuzawa_  - pp*gap) * delta_n(i,k);
+        stiffc2(i,k) -= pp*gap * delta_n(i,k);
       }
     }
     //********************************************************************
@@ -1231,29 +1227,6 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeLinNormal(L
 }
 
 /*----------------------------------------------------------------------*
- |  Reset Uzawa-based Lagrange mutliplier                   popp 04/2010|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Resetlmuzawa()
-{
-  lmuzawa_ = 0.0;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Update Uzawa-based Lagrange mutliplier                  popp 04/2010|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
-{
-  // only update for active pairs, else reset
-  if (contactflag_) lmuzawa_ -=  currentpp * GetGap();
-  else              lmuzawa_ = 0.0;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Update nodal coordinates (public)                           popp 04/10|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
@@ -1287,7 +1260,6 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Print() const
   std::cout << "\nx2_: " << x2_;
   std::cout << "\nele1pos_: " << ele1pos_;
   std::cout << "\nele2pos_: " << ele2pos_;
-  std::cout << "\nlmuzawa_: " << lmuzawa_;      // just to make sure, this is always zero (no augmented Lagrange implemented so far for Beam3tospherecontact)
 
   return;
 }

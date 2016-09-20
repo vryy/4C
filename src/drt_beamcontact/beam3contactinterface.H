@@ -129,11 +129,6 @@ public:
   virtual std::vector<std::pair<int,int> > GetSegmentIds()=0;
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-  */
-  virtual double Getlmuzawa()=0;
-
-  /*!
   \brief Get flag ndicating whether contact is active (true) or inactive (false)
   */
   virtual bool GetContactFlag()=0;
@@ -206,12 +201,6 @@ public:
                                      Teuchos::ParameterList& beamcontactparams);
 
   /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  virtual void Resetlmuzawa()=0;
-
-
-  /*!
   \brief Change the sign of the normal vector: This has to be done at the end of a time step when the remainig penetration is
   larger that the sum of the beam radii (R1+R2). Otherwise, the beams could cross in the next time step when the new gap function
   definition (ngf_=true) for slender beams is applied!
@@ -222,11 +211,6 @@ public:
     \brief Update of class variables at the end of a time step
   */
   virtual void UpdateClassVariablesStep()=0;
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-    */
-  virtual void Updatelmuzawa(const double& currentpp)=0;
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!

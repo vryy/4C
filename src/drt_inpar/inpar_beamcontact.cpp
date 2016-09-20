@@ -2,13 +2,12 @@
 /*!
 \file inpar_beamcontact.cpp
 
-\brief input parameter defintions for beam contact
+\brief input parameter definitions for beam contact
 
 \level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -33,12 +32,10 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   setStringToIntegralParameter<int>("BEAMS_STRATEGY","None","Type of employed solving strategy",
         tuple<std::string>("None","none",
                            "Penalty", "penalty",
-                           "Uzawa","uzawa",
                            "Gmshonly","gmshonly"),
         tuple<int>(
                 bstr_none, bstr_none,
                 bstr_penalty, bstr_penalty,
-                bstr_uzawa, bstr_uzawa,
                 bstr_gmshonly,bstr_gmshonly),
         &beamcontact);
 
@@ -86,9 +83,7 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   DoubleParameter("BEAMS_BTBLINEPENALTYPARAM",-1.0,"Penalty parameter per unit length for beam-to-beam line contact",&beamcontact);
   DoubleParameter("BEAMS_BTSMTPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid meshtying",&beamcontact);
   DoubleParameter("BEAMS_BTSPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid contact",&beamcontact);
-  DoubleParameter("BEAMS_BTSPH_PENALTYPARAM",0.0,"Penalty parameter for beam-to-rigidsphere penalty / Uzawa augmented solution strategy",&beamcontact);
-  IntParameter("BEAMS_BTBUZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&beamcontact);
-  DoubleParameter("BEAMS_BTBUZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for Uzawa solution strategy",&beamcontact);
+  DoubleParameter("BEAMS_BTSPH_PENALTYPARAM",0.0,"Penalty parameter for beam-to-rigidsphere penalty",&beamcontact);
   DoubleParameter("BEAMS_DAMPINGPARAM",-1000.0,"Damping parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM1",-1000.0,"First (at gap1, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM2",-1000.0,"Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);

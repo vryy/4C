@@ -131,11 +131,6 @@ public:
   */
   double GetConstrNorm() { return constrnorm_; }
 
-  /*!
-  \brief Get current Uzawa iteration index
-  */
-  int GetUzawaIter() { return uzawaiter_; }
-
   // \brief Get current penalty parameter
   double GetCurrentpp() { return currentpp_; }
 
@@ -170,42 +165,12 @@ public:
   void Update(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep);
 
   /*!
-  \brief Initialize second, third, ... Uzawa step
-
-  This method is called at the beginning of the second, third, ... Uzawa
-  iterarion in order to create an of an out-of-balance force again. First,
-  the contact force and stiffness terms are removed from stiff and fres.
-  Then the new contact forces and contact stiffness terms for the updated LM
-  (AugmentedLagrange) are created by calling Evaluate().
-
-  */
-  void InitializeUzawa(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                       const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti = false);
-
-  /*!
-  \brief Rest Lagrange Multipliers
-
-  Reset all Lagrange multipliers of each contact pair to zero at the beginning
-  of each new time step. This is only needed for an augmented Lagrange / Uzawa scheme.
-
-  */
-  void ResetAlllmuzawa();
-
-  /*!
   \brief Update constraint norm
 
   Calculate and print gap values and constraint norm.
 
   */
   void UpdateConstrNorm();
-
-  /*!
-  \brief Update constraint norm
-
-  Calculate and print gap values and constraint norm in case of an uzawa strategy.
-
-  */
-  void UpdateConstrNormUzawa();
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
@@ -215,37 +180,6 @@ public:
 
   */
   void UpdateAllPairs();
-
-  /*!
-  \brief Update Lagrange multipliers
-
-  Update all Lagrange multipliers of each contact pair at the beginning of each
-  new Uzawa time step. This is only needed for an augmented Lagrange / Uzawa scheme.
-
-   */
-  void UpdateAlllmuzawa();
-
-  /*!
-  \brief Reset penalty parameter
-
-  In an augmented Lagrange strategy the penalty parameter might be increased to
-  accelerate convergence of the Uzawa iteration. At the beginning of each time step,
-  it has to be reset to the initial value given in the input file.
-
-  */
-  void ResetCurrentpp();
-
-  /*!
-  \brief Reset Uzawa iteration index
-
-  */
-  void ResetUzawaIter();
-
-  /*!
-  \brief Update Uzawa iteration index
-
-  */
-  void UpdateUzawaIter();
 
   /*!
   \brief Create output files for GMSH visualization
@@ -468,9 +402,6 @@ private:
   //! beam-to-solid meshtying penalty parameter
   double btsmtpp_;
 
-  //! current Uzawa iteration index (for augmented Lagrange strategy)
-  int uzawaiter_;
-
   //! maximal converged absolute gap during the simulation
   double maxtotalsimgap_;
   //! maximal converged absolute gap during the simulation (for individual contact types)
@@ -632,20 +563,6 @@ private:
 
   */
   void ComputeSpin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle);
-
-  /*!
-  \brief Update penalty parameter
-
-  In an augmented Lagrangian scheme, the penalty paramter might be increased to accelerate
-  convergence of the Uzawa iteration. For doing this, the constraint norms of the previous
-  and the current Uzawa step are compared. If the improvemenet is too small, the penalty
-  paramter will be increased. Returns bool indicating update. Note that the rule when and
-  by how much the penalty paramter is increased is NOT analytically  derived. It's just
-  experience. It moght also be problem-dependent.
-
-  */
-  bool IncreaseCurrentpp(const double& GlobalConstrNorm);
-
 
   /*!
   \brief Shift map of displacement vector

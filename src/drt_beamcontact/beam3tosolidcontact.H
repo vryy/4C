@@ -95,11 +95,6 @@ public:
   virtual double GetGap()=0;
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-  */
-  virtual double Getlmuzawa()=0;
-
-  /*!
   \brief Get flag ndicating whether contact is active (true) or inactive (false)
   */
   virtual bool GetContactFlag()=0;
@@ -143,12 +138,6 @@ public:
                                                           Teuchos::ParameterList beamcontactparams);
 
   /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  virtual void Resetlmuzawa()=0;
-
-
-  /*!
   \brief Change the sign of the normal vector: This has to be done at the end of a time step when the remainig penetration is
   larger that the sum of the beam radii (R1+R2). Otherwise, the beams could cross in the next time step when the new gap function
   definition (ngf_=true) for slender beams is applied!
@@ -165,11 +154,6 @@ public:
     definition (ngf_=true) for slender beams is applied!
   */
   virtual void ShiftNormal()=0;
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-    */
-  virtual void Updatelmuzawa(const double& currentpp)=0;
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -276,11 +260,6 @@ public:
   double GetGap() { return FADUTILS::CastToDouble(gap_); };
 
   /*!
-  \brief Get current augmented lagrange multiplier 'lmuzawa_'
-  */
-  double Getlmuzawa() { return FADUTILS::CastToDouble(lmuzawa_); };
-
-  /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
   bool GetContactFlag() { return contactflag_; };
@@ -329,11 +308,6 @@ public:
                 const double& pp);
 
   /*!
-  \brief Reset Uzawa-based Lagrange multiplier
-  */
-  void Resetlmuzawa();
-
-  /*!
   \brief Change the sign of the normal vector: This has to be done at the end of a time step when the remainig penetration is
   larger that the sum of the beam radii (R1+R2). Otherwise, the beams could cross in the next time step when the new gap function
   definition (ngf_=true) for slender beams is applied!
@@ -350,11 +324,6 @@ public:
     definition (ngf_=true) for slender beams is applied!
   */
   void ShiftNormal();
-
-  /*!
-    \brief Update Uzawa-based Lagrange multiplier
-    */
-  void Updatelmuzawa(const double& currentpp);
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -408,9 +377,6 @@ private:
 
   //! variable to identify first call of a pair (for initializing)
   bool firstcall_;
-
-  //! Uzawa-based Lagrange multiplier
-  TYPEBTS lmuzawa_;
 
   //! gap function according to original (ngf_==false) or modified (ngf_==true) definition
   TYPEBTS gap_;

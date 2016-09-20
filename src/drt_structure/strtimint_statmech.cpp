@@ -1030,10 +1030,6 @@ void STR::TimIntStatMech::NewtonFull()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->ResetStartTime();
 
-  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if(HaveBeamContact())
-    InitializeNewtonUzawa();
-
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // increment total number of iterations
@@ -1190,106 +1186,6 @@ void STR::TimIntStatMech::NewtonFull()
   return;
 
 } // STR::TimIntStatMech::FullNewton()
-
-/*----------------------------------------------------------------------*
- |  initialize Newton for 2nd, 3rd, ... Uzawa iteration      cyron 12/10|
- *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::InitializeNewtonUzawa()
-{
-//  bool  loadlin    = params_.get<bool>("LOADLIN",false);
-
-  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if (beamcman_->GetUzawaIter() > 1)
-  {
-    //--------------------------- recompute external forces if nonlinear
-    // at state n, the external forces and linearization are interpolated at
-    // time 1-alphaf in a TR fashion
-//    if (loadlin)
-//    {
-//      Teuchos::ParameterList p;
-//      // action for elements
-//      p.set("action","calc_struct_eleload");
-//      // other parameters needed by the elements
-//      p.set("total time",timen_);
-//      p.set("delta time",(*dt_)[0]);
-//      p.set("alpha f",1-theta_);
-//      // set vector values needed by elements
-//      discret_->ClearState();
-//      discret_->SetState("displacement",disn_);
-//      discret_->SetState("velocity",veln_);
-////      discret_->SetState("displacement",dism_); // mid point
-////      discret_->SetState("velocity",velm_);
-//      fextn_->PutScalar(0.0); // TR
-////      fextm_->PutScalar(0.0);
-//      fextlin_->Zero();
-////      discret_->EvaluateNeumann(p,fextm_,fextlin_);
-//      discret_->EvaluateNeumann(p,fextn_,fextlin_);
-//      fextlin_->Complete();
-//      discret_->ClearState();
-//      fextm_->Update(1.0,*fextn_,0.0,*fext_,0.0);
-//    }
-
-    //---------------------------- compute internal forces and stiffness
-    {
-      // zero out stiffness
-      stiff_->Zero();
-      // create the parameters for the discretization
-      Teuchos::ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiff");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen_);
-      p.set("delta time",(*dt_)[0]);
-      p.set("alpha f",1-theta_);
-
-
-
-      if(HaveStatMech())
-        statmechman_->AddStatMechParamsTo(p, randomnumbers_);
-      else if(HaveStatMechBilayer())
-        statmechmanBilayer_->AddStatMechParamsTo(p, randomnumbers_);
-      else
-        dserror("No Statistical Mechanics module found!");
-
-      // set vector values needed by elements
-      discret_->ClearState();
-
-      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
-//      disi_->Scale(1.-alphaf);
-
-      discret_->SetState("residual displacement",disi_);
-      discret_->SetState("displacement",disn_);
-      discret_->SetState("velocity",veln_);
-
-      fint_->PutScalar(0.0);  // initialise internal force vector
-      discret_->Evaluate(p,stiff_,Teuchos::null,fint_,Teuchos::null,Teuchos::null);
-
-      discret_->ClearState();
-    }
-
-    //------------------------------------------ compute residual forces
-    fres_->Update(-1.0,*fint_,1.0,*fextn_,0.0); // fext_ oder fextn_ ???
-    //**********************************************************************
-    //**********************************************************************
-    // evaluate beam contact
-    if(HaveBeamContact())
-    {
-      Teuchos::ParameterList beamcontactparams;
-      beamcontactparams.set("iter", iter_);
-      beamcontactparams.set("dt", (*dt_)[0]);
-      beamcontactparams.set("numstep", step_);
-
-      beamcman_->Evaluate(*SystemMatrix(),*fres_,*disn_,beamcontactparams);
-    }
-    //**********************************************************************
-    //**********************************************************************
-
-    // blank residual DOFs that are on Dirichlet BC
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-  }
-
-  return;
-}//STR::TimIntStatMech::InitializeNewtonUzawa()
 
 /*----------------------------------------------------------------------*
  |  read restart (public)                                    cyron 12/08|
@@ -1536,9 +1432,6 @@ void STR::TimIntStatMech::PTC()
 
   const double tbegin = Teuchos::Time::wallTime();
 
-  //--------------------create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if(HaveBeamContact())
-    InitializeNewtonUzawa();
 
   //=================================================== equilibrium loop
   // initialise equilibrium loop
@@ -1645,7 +1538,7 @@ void STR::TimIntStatMech::PTC()
     std::ostringstream filename;
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT") && HaveBeamContact())
     {
-      filename << statmechman_->StatMechRootPath() <<"/GmshOutput/network"<< (*time_)[0] <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<iter_<<".pos";
+      filename << statmechman_->StatMechRootPath() <<"/GmshOutput/network"<< (*time_)[0] <<"_n"<<std::setw(2) << std::setfill('0')<<iter_<<".pos";
       statmechman_->GmshOutput(*disn_,filename,stepn_,timen_,beamcman_);
     }
     else
@@ -2356,14 +2249,8 @@ void STR::TimIntStatMech::BeamContactNonlinearSolve()
     case INPAR::BEAMCONTACT::bstr_penalty:
       BeamContactPenalty();
     break;
-    //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON (PTC))
-    case INPAR::BEAMCONTACT::bstr_uzawa:
-    {
-      BeamContactAugLag();
-    }
-    break;
     default:
-      dserror("Only penalty and Uzawa augmented Lagrange implemented in statmech_time.cpp for beam contact");
+      dserror("Only penalty implemented in statmech_time.cpp for beam contact");
       break;
   }
   return;
@@ -2384,74 +2271,6 @@ void STR::TimIntStatMech::BeamContactPenalty()
 
   beamcman_->UpdateConstrNorm();
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate beam contact using Augmented Lagrange                      |
- |                                            (private)    mueller 02/12|
- *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::BeamContactAugLag()
-{
-  // get tolerance and maximum number of Uzawa steps from input file
-  double eps = beamcman_->BeamContactParameters().get<double>("BEAMS_BTBUZAWACONSTRTOL");
-  int maxuzawaiter = beamcman_->BeamContactParameters().get<int>("BEAMS_BTBUZAWAMAXSTEPS");
-
-  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-
-  // LOOP2: augmented Lagrangian (Uzawa)
-  do
-  {
-    // increase iteration index
-    beamcman_->UpdateUzawaIter();
-
-    // if unconverged
-    if(BeamContactExitUzawaAt(maxuzawaiter))
-    {
-      dserror("Maximal number of uzawa iterations reached. Adapt your tolerance or allow for larger number of uzawa iterations!");
-    }
-
-    if (discret_->Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY",0))
-      std::cout << std::endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << std::endl;
-
-    if(itertype_==INPAR::STR::soltech_ptc)
-      PTC();
-    else if(itertype_==INPAR::STR::soltech_newtonfull)
-      NewtonFull();
-    else
-      dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
-
-    // in case uzawa step did not converge
-    if(!isconverged_)
-    {
-      if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-        std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcman_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
-      break;
-    }
-
-    // update constraint norm and penalty parameter
-    beamcman_->UpdateConstrNormUzawa();
-    // update Uzawa Lagrange multipliers
-    beamcman_->UpdateAlllmuzawa();
-  } while (abs(beamcman_->GetConstrNorm()) >= eps);
-
-  // Reset Penalty parameter, Lagrange Multipliers and Uzawa iteration counter for the Augmented Lagrangian loop
-  beamcman_->ResetCurrentpp();
-  beamcman_->ResetUzawaIter();
-  beamcman_->ResetAlllmuzawa();
-
-  beamcman_->UpdateConstrNorm();
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Check Uzawa convergence                      (private) mueller 02/12|
- *----------------------------------------------------------------------*/
-bool STR::TimIntStatMech::BeamContactExitUzawaAt(int& maxuzawaiter)
-{
-  if (beamcman_->GetUzawaIter() > maxuzawaiter)
-    return true;
-  else
-    return false;
 }
 
 /*----------------------------------------------------------------------*

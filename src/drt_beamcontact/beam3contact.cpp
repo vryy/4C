@@ -150,9 +150,6 @@ boundarynode2_(std::make_pair(0,0))
   gpvariables_.resize(0);
   epvariables_.resize(0);
 
-  if(DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontactparams,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_uzawa)
-    dserror("Uzawa is not implemented for beam3contact elements so far!");
-
   if (DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_DAMPING")!=INPAR::BEAMCONTACT::bd_no)
     dserror("Damping is not implemented for beam3contact elements so far!");
 
@@ -4970,21 +4967,6 @@ std::vector<int> CONTACT::Beam3contact<numnodes, numnodalvalues>::GetGlobalDofs(
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Reset Uzawa-based Lagrange mutliplier                  meier 02/2014|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3contact<numnodes, numnodalvalues>::Resetlmuzawa()
-{
-
-  dserror("Uzawa algorithm does not work for beam3contact elements!");
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: Reset Uzawa-based Lagrange mutliplier
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
  |  Set all class variables                                meier 08/2014|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
@@ -5012,20 +4994,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::SetClassVariables(Teuchos:
 }
 /*----------------------------------------------------------------------*
  |  end: Set all class variables
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  Update Uzawa-based Lagrange mutliplier                 meier 02/2014|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3contact<numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
-{
-  dserror("Uzawa algorithm does not work for beam3contact so far!");
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: Update Uzawa-based Lagrange mutliplier
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

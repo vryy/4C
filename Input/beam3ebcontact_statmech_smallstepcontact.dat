@@ -49,7 +49,7 @@ MAXITER                50
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA        1 //header_01 end
 ----------------------------------------------BEAM CONTACT
-BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, uzawa, none (default)
+BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, none (default)
 BEAMS_BTBPENALTYPARAM           1000.0 //Penalty parameter for large-angle beam-to-beam contact
 BEAMS_BTBLINEPENALTYPARAM       20000.0 //Penalty parameter for small-angle beam-to-beam contact -> chosen such, that at a contact angle of 5° and the applid force large-angle and small-angle contact deliver an identical penetration!
 BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)
