@@ -1003,6 +1003,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // distance between centre of mass of two particles
     const double norm_r_contact(r_contact.Norm2());
 
+    if(norm_r_contact == 0.0)
+      dserror("particle center and wall are lying at the same place -> bad initialization?");
+
     // normal vector
     static LINALG::Matrix<3,1> normal;
     normal.Update(1.0/norm_r_contact, r_contact);
@@ -1183,8 +1186,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   {
     if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
     {
-      const double lnewall = log(e_wall_);
-      d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+      if(e_wall_ != 0.0)
+      {
+        const double lnewall = log(e_wall_);
+        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_ * m_eff);
+      }
     }
     else
     {
@@ -1195,8 +1205,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   {
     if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
     {
-      const double lne = log(e_);
-      d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+      if(e_ != 0.0)
+      {
+        const double lne = log(e_);
+        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_ * m_eff);
+      }
     }
     else
     {
@@ -1340,8 +1357,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     // damping
     if(d_tang_wall_ < 0.0)
     {
-      const double lnewall = log(e_wall_);
-      d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+      if(e_wall_ != 0.0)
+      {
+        const double lnewall = log(e_wall_);
+        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_ * m_eff);
+      }
     }
     else
     {
@@ -1357,8 +1381,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     // damping
     if(d_tang_ < 0.0)
     {
-      const double lne = log(e_);
-      d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+      if(e_ != 0.0)
+      {
+        const double lne = log(e_);
+        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_ * m_eff);
+      }
     }
     else
     {
@@ -1823,11 +1854,12 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
       // get masses
       const double mass_1 = (*masscol_)[lid_1];
       const double mass_2 = (*masscol_)[lid_2];
-      const double mass = mass_1 + mass_2;
+      const double invmass = 1.0 / (mass_1 + mass_2);
+
 
       // compute new velocities in normal direction
-      const double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln / mass;
-      const double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln / mass;
+      const double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln * invmass;
+      const double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln * invmass;
 
       // compute new velocities
       vel_1_new.Update(1.,vel_1,veln1_new-veln1,unitcollnormal);
