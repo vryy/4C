@@ -1,13 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3tobeampotential.cpp
-\brief One beam potential pair (two beam elements)
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\brief One beam-to-beam potential-based interacting pair (two beam elements)
 
- *-----------------------------------------------------------------------------------------------------------*/
+\level 3
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------*/
 
 #include "beam3tobeampotential.H"
 #include "beam3contact_defines.H"
@@ -40,13 +41,10 @@ CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Beam3tobeampotential(
                                                                      const std::map<int,int>& dofoffsetmap,
                                                                      DRT::Element* element1,
                                                                      DRT::Element* element2,
-                                                                     Teuchos::ParameterList beampotparams,
-                                                                     std::vector<DRT::Condition*> linechargeconds):
+                                                                     Teuchos::ParameterList beampotparams):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
 dofoffsetmap_(dofoffsetmap),
-element1_(element1),
-element2_(element2),
 bpotparams_(beampotparams),
 k_(0.0),
 m_(0.0),
@@ -66,62 +64,40 @@ radius2_(0.0)
   stiffpot1_.Clear();
   stiffpot2_.Clear();
 
-  const DRT::ElementType & eot1 = element1_->ElementType();
+  element1_ = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1);
 
-  //Calculate initial length of beam elements (approximation for initially curved elements!)
-  LINALG::TMatrix<double,3,1> lvec1(true);
-  LINALG::TMatrix<double,3,1> lvec2(true);
-  for(int i=0;i<3;i++)
+  if (element1_ == NULL)
   {
-    lvec1(i)=(element1_->Nodes())[0]->X()[i]-(element1_->Nodes())[1]->X()[i];
-    lvec2(i)=(element2_->Nodes())[0]->X()[i]-(element2_->Nodes())[1]->X()[i];
-  }
-  ele1length_=lvec1.Norm2();
-  ele2length_=lvec2.Norm2();
-
-  if (element1->ElementType() != element2->ElementType())
-    dserror("The class beam3tobeampotential only works for pairs of the same beam element type!");
-
-  if (element1->Id() >= element2->Id())
-    dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
-
-  double Iyy1 = 0.0;
-  double Iyy2 = 0.0;
-  if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->Iyy();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->Iyy();
+    dserror("cast to Beam3Base failed! first element in Beam3tospherepotential pair"
+        "must be a beam element!");
   }
   else
-    dserror("Only Beam3, Beam3r and Beam3eb elements allowed in Beam3tobeampotential!");
+  {
+    radius1_ = MANIPULATERADIUS * std::pow(4 * element1_->Iyy() / M_PI,0.25);
+    ele1length_ = element1_->RefLength();
+  }
 
-  radius1_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
-  radius2_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy2 / M_PI));
+  element2_ = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element2);
+
+  if (element2_ == NULL)
+  {
+    dserror("cast to Beam3Base failed! first element in Beam3tospherepotential pair"
+        "must be a beam element!");
+  }
+  else
+  {
+    radius2_ = MANIPULATERADIUS * std::pow(4 * element2_->Iyy() / M_PI,0.25);
+    ele2length_ = element2_->RefLength();
+  }
+
+  if (element1_->ElementType() != element2_->ElementType())
+    dserror("The class beam3tobeampotential only works for pairs of the same beam element type!");
+
+  if (element1_->Id() >= element2_->Id())
+    dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
   // initialize line charge conditions applied to element1 and element2
   linechargeconds_.clear();
-  if (linechargeconds.size() == 2)
-  {
-    for (int i=0; i<2; ++i)
-    {
-      if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
-        linechargeconds_.push_back(linechargeconds[i]);
-      else
-        dserror("Provided line charge condition is not of correct type BeamPotential_LineChargeDensity!");
-    }
-  }
-  else
-    dserror("Expected TWO dline charge conditions!");
 
   return;
 }
@@ -143,11 +119,16 @@ dofoffsetmap_(old.dofoffsetmap_)
  |  Evaluate the element (public)                             grill 09/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
-bool CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMatrix& stiffmatrix,
-                                                                   Epetra_Vector& fint,
-                                                                   const double k,
-                                                                   const double m)
+bool CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Evaluate(
+    LINALG::SparseMatrix& stiffmatrix,
+    Epetra_Vector& fint,
+    const std::vector<DRT::Condition*> linechargeconds,
+    const double k,
+    const double m)
 {
+  // nothing to do in case of k==0.0
+  if (k==0.0)  return (true);
+
   // reset fpot and stiffpot class variables
   fpot1_.Clear();
   fpot2_.Clear();
@@ -155,6 +136,19 @@ bool CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Evaluate( LINALG::
   stiffpot2_.Clear();
 
   // set class variables
+  if (linechargeconds.size() == 2)
+  {
+    for (int i=0; i<2; ++i)
+    {
+      if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
+        linechargeconds_.push_back(linechargeconds[i]);
+      else
+        dserror("Provided line charge condition is not of correct type BeamPotential_LineChargeDensity!");
+    }
+  }
+  else
+    dserror("Expected TWO dline charge conditions!");
+
   k_=k;
   m_=m;
 
@@ -170,6 +164,7 @@ bool CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Evaluate( LINALG::
 
   // compute the values for fpot1, fpot2, stiffpot1, stiffpot2
   // TODO specify approximation type in input file: FullInt, LargeSepApprox, SmallSepApprox (Langbein)
+  // should be chosen depending on potential law
   EvaluateFpotandStiffpot_LargeSepApprox();
 
   // assemble fpot1 and fpot2 into fint
@@ -188,7 +183,8 @@ template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
   // Set gauss integration rule
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_5point;
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_10point;
+//  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_32point;
 
   // Get gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
@@ -217,14 +213,8 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::EvaluateFpotandSti
   double q2 = linechargeconds_[1]->GetDouble("val");
 
   // TODO evaluate given functions in line charge conditions! for now: dserror
-  if (linechargeconds_[0]->GetInt("funct") != 0 or linechargeconds_[1]->GetInt("funct") != 0)
-    dserror("DLINE beam potential charge condition: No functions allowed yet!");
-
-  // compute Jacobi factors
-  std::vector<double> jacobifac1(numgp,1.0);
-  std::vector<double> jacobifac2(numgp,1.0);
-
-  ComputeJacobiFacs(jacobifac1, jacobifac2,N1_i_xi,N2_i_xi,gausspoints);
+  if (linechargeconds_[0]->GetInt("funct") != -1 or linechargeconds_[1]->GetInt("funct") != -1)
+    dserror("DLINE beam potential charge condition: No functions allowed yet! Set 'funct' to '-1' -> off");
 
   // auxiliary variable
   LINALG::TMatrix<TYPE, 3, 1> fpot_tmp(true);
@@ -249,6 +239,8 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::EvaluateFpotandSti
   {
     ComputeCoords(r1,N1_i[gp1],ele1pos_);
 
+    double jacobifac1 = element1_->GetJacobiFacAtXi(gausspoints.qxg[gp1][0]);
+
     // loop over gauss points on ele2
     for (int gp2=0; gp2 < numgp; ++gp2)
     {
@@ -269,7 +261,8 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::EvaluateFpotandSti
       {
         dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case! Think about shifting nodes in unconverged state?!");
       }
-      double q1q2_JacFac_GaussWeights = q1 * q2 * jacobifac1[gp1] * jacobifac2[gp2] * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
+
+      double q1q2_JacFac_GaussWeights = q1 * q2 * jacobifac1 * element2_->GetJacobiFacAtXi(gausspoints.qxg[gp2][0]) * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
 
       // compute fpot_tmp here, same for both element forces
       for (int i=0; i<3; ++i) fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
@@ -648,23 +641,13 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::GetShapeFunctions(
   }
   else if (numnodalvalues==2)
   {
-
-    if ( element1_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
-
-    if ( element2_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
-
-    double length1 = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
-    double length2 = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->jacobi();
-
     for (int gp=0; gp<gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      DRT::UTILS::shape_function_hermite_1D(N1_i[gp], gausspoints.qxg[gp][0], length1, distype1);
-      DRT::UTILS::shape_function_hermite_1D(N2_i[gp], gausspoints.qxg[gp][0], length2, distype2);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], length1, distype1);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi[gp], gausspoints.qxg[gp][0], length2, distype2);
+      DRT::UTILS::shape_function_hermite_1D(N1_i[gp], gausspoints.qxg[gp][0], ele1length_, distype1);
+      DRT::UTILS::shape_function_hermite_1D(N2_i[gp], gausspoints.qxg[gp][0], ele2length_, distype2);
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], ele1length_, distype1);
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi[gp], gausspoints.qxg[gp][0], ele2length_, distype2);
     }
   }
   else
@@ -672,65 +655,6 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::GetShapeFunctions(
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  Compute Jacobi factors at Gauss points                    grill 11/13|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::ComputeJacobiFacs(std::vector<double>& jacobifac1,
-                                                          std::vector<double>& jacobifac2,
-                                                          std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
-                                                          std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N2_i_xi,
-                                                          DRT::UTILS::IntegrationPoints1D& gausspoints)
-{
-  // node ids of both elements
-  const int* node_ids1 = element1_->NodeIds();
-  const int* node_ids2 = element2_->NodeIds();
-
-  //derivative of curve in physical space with respect to curve parameter xi \in [-1;1] on element level
-  LINALG::Matrix<3,1> drdxi;
-
-  // loop over gps
-  for (int ngp=0; ngp<gausspoints.nquad; ++ngp)
-  {
-
-    drdxi.Clear();
-
-    // ele1
-    // calculate vector drdxi
-    for(int nnode=0; nnode<numnodes; nnode++)
-    {
-      // get pointer and dof ids
-      DRT::Node* node1 = cdiscret_.gNode(node_ids1[nnode]);
-
-      for(int dof=0; dof<3 ; dof++) drdxi(dof) += N1_i_xi[ngp](nnode) * node1->X()[dof];
-
-      //Store Jacobi determinant with respect to reference configuration
-      jacobifac1[ngp]= drdxi.Norm2();
-    }
-
-    drdxi.Clear();
-
-    // ele2
-    // calculate vector drdxi
-    for(int nnode=0; nnode<numnodes; nnode++)
-    {
-      // get pointer and dof ids
-      DRT::Node* node2 = cdiscret_.gNode(node_ids2[nnode]);
-
-      for(int dof=0; dof<3 ; dof++) drdxi(dof) += N2_i_xi[ngp](nnode) * node2->X()[dof];
-
-      //Store Jacobi determinant with respect to reference configuration
-      jacobifac2[ngp]= drdxi.Norm2();
-    }
-
-  } //end: loop over gps
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: Compute Jacobi factor
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | compute gauss point coordinates                           grill 09/14|
@@ -800,8 +724,7 @@ Teuchos::RCP<CONTACT::Beam3tobeampotentialinterface> CONTACT::Beam3tobeampotenti
                                                                       const std::map<int,int>& dofoffsetmap,
                                                                       DRT::Element* element1,
                                                                       DRT::Element* element2,
-                                                                      Teuchos::ParameterList beampotparams,
-                                                                      std::vector<DRT::Condition*> linechargeconds)
+                                                                      Teuchos::ParameterList beampotparams)
 {
 
   switch (numnodalvalues)
@@ -812,19 +735,19 @@ Teuchos::RCP<CONTACT::Beam3tobeampotentialinterface> CONTACT::Beam3tobeampotenti
       {
         case 2:
         {
-          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<2,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams,linechargeconds));
+          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<2,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams));
         }
         case 3:
         {
-          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<3,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams,linechargeconds));
+          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<3,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams));
         }
         case 4:
         {
-          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<4,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams,linechargeconds));
+          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<4,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams));
         }
         case 5:
         {
-          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<5,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams,linechargeconds));
+          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<5,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams));
         }
         default:
           dserror("No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for Reissner beams) available!");
@@ -838,7 +761,7 @@ Teuchos::RCP<CONTACT::Beam3tobeampotentialinterface> CONTACT::Beam3tobeampotenti
       {
         case 2:
         {
-          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams,linechargeconds));
+          return Teuchos::rcp (new CONTACT::Beam3tobeampotential<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beampotparams));
         }
         default:
           dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");

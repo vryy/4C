@@ -129,9 +129,9 @@ boundarynode2_(std::make_pair(0,0))
   // TODO maybe we can even cast the class variables element1_ and element2_ to Beam3Base here in Constructor?!
   // Calculate initial length of beam elements
   const DRT::ELEMENTS::Beam3Base* ele1ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
-  double l1 = ele1ptr->GetRefLength();
+  double l1 = ele1ptr->RefLength();
   const DRT::ELEMENTS::Beam3Base* ele2ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
-  double l2 = ele2ptr->GetRefLength();
+  double l2 = ele2ptr->RefLength();
 
   if (element1->ElementType() != element2->ElementType())
     dserror("The class beam3contact only works for contact pairs of the same beam element type!");
@@ -4196,8 +4196,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions( LINALG:
   else if (numnodalvalues==2)
   {
     // TODO maybe cast class variables to Beam3Base upon construction ?!
-    double length1 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1_))->GetRefLength();
-    double length2 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element2_))->GetRefLength();
+    double length1 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1_))->RefLength();
+    double length2 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element2_))->RefLength();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
@@ -4264,7 +4264,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions( LINALG:
   else if (numnodalvalues==2)
   {
 
-    double length = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele))->GetRefLength();
+    double length = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele))->RefLength();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */

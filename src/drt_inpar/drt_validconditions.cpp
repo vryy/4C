@@ -42,6 +42,7 @@
 #include "inpar_particle.H"
 #include "inpar_cavitation.H"
 #include "inpar_crack.H"
+#include "inpar_beampotential.H"
 
 
 
@@ -1672,6 +1673,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::LEVELSET::SetValidConditions(condlist);
 
   INPAR::ACOU::SetValidConditions(condlist);
+
+  INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

@@ -86,10 +86,17 @@ public:
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
 
   /** \brief get access to the element reference length
+   *        (i.e. arc-length in stress-free configuration)
    *
    *  \author grill
    *  \date 05/16 */
-  virtual double GetRefLength() const = 0;      // TODO maybe skip "Get" and rename to RefLength()
+  virtual double RefLength() const = 0;
+
+  /** \brief get access to the first principal area moment of inertia
+   *
+   *  \author grill
+   *  \date 08/16 */
+  virtual const double& Iyy() const = 0;
 
   /** \brief get number of nodes used for centerline interpolation
    *

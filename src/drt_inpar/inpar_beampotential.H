@@ -2,17 +2,25 @@
 /*!
 \file inpar_beampotential.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief input parameter definitions for beam potential-based interactions
+
+\level 3
+
+\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
+
 #ifndef INPAR_BEAMPOTENTIAL_H
 #define INPAR_BEAMPOTENTIAL_H
 
 #include "inpar_parameterlist_utils.H"
+
+// forward declaration
+namespace DRT {
+namespace INPUT {
+class ConditionDefinition;
+}
+}
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -29,8 +37,11 @@ namespace INPAR
       beampot_vol           ///< volume potential
     };
 
-    /// set the beam potentail parameters
+    /// set the beam potential parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set beam potential specific conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace BEAMPOTENTIAL
 

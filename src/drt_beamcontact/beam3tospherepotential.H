@@ -1,13 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3tospherepotential.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief One beam-to-sphere potential-based interacting pair
+
+\level 3
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef BEAM3TOSPHEREPOT_H
 #define BEAM3TOSPHEREPOT_H
 
@@ -17,18 +19,24 @@ Maintainer: Christoph Meier
 #include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
 #include "../drt_lib/standardtypes_cpp.H"
+
+// forward declarations
+namespace DRT {
+namespace ELEMENTS {
+  class Rigidsphere;
+  class Beam3Base;
+}
+}
 
 namespace CONTACT
 {
 
 /*!
- \brief element for potential-based interaction of a 3D beam element and a rigid sphere
-
+ \brief class for potential-based interaction of a 3D beam element and a rigid sphere
  */
-
 
 class Beam3tospherepotentialinterface
 {
@@ -81,6 +89,7 @@ public:
   */
   virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                         Epetra_Vector& fint,
+                        const std::vector<DRT::Condition*> chargeconds,
                         const double k,
                         const double m) =0;
 
@@ -92,8 +101,7 @@ public:
                                      const std::map<int,int>& dofoffsetmap,
                                      DRT::Element* element1,
                                      DRT::Element* element2,
-                                     Teuchos::ParameterList beampotparams,
-                                     std::vector<DRT::Condition*> linechargeconds);
+                                     Teuchos::ParameterList beampotparams);
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -130,8 +138,7 @@ public:
                     const std::map<int,int>& dofoffsetmap,
                     DRT::Element* element1,
                     DRT::Element* element2,
-                    Teuchos::ParameterList beampotparams,
-                    std::vector<DRT::Condition*> linechargeconds);
+                    Teuchos::ParameterList beampotparams);
 
   /*!
   \brief Copy Constructor
@@ -183,6 +190,7 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint,
+                const std::vector<DRT::Condition*> chargeconds,
                 const double k,
                 const double m);
 
@@ -207,16 +215,16 @@ private:
   const std::map<int,int>& dofoffsetmap_;
 
   //! first element of contact pair
-  DRT::Element* element1_;
+  DRT::ELEMENTS::Beam3Base* element1_;
 
   //! second element of contact pair
-  DRT::Element* element2_;
+  DRT::ELEMENTS::Rigidsphere* element2_;
 
   //! beam contact parameter list
   Teuchos::ParameterList bpotparams_;
 
-  //! line charge conditions
-  std::vector<DRT::Condition*> linechargeconds_;
+  //! line and point charge condition
+  std::vector<DRT::Condition*> chargeconds_;
 
   //! current node coordinates of the two elements
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
@@ -243,9 +251,6 @@ private:
 
   //! Cross-section radius of beam 2
   double radius2_;
-
-  //! Additive extrusion value of bounding box applied in contact search
-  double searchboxinc_;
 
   //! resulting forces on element 1 and 2
   LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1> fpot1_;
@@ -282,13 +287,6 @@ private:
                           DRT::UTILS::IntegrationPoints1D& gausspoints);
 
   /*!
-  \brief Compute Jacobi factors
-  */
-  void ComputeJacobiFacs(std::vector<double>& jacobifac1,
-                         std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
-                         DRT::UTILS::IntegrationPoints1D& gausspoints);
-
-  /*!
   \brief Compute coordinates of centreline points from the discretization
   */
   void ComputeCoords(LINALG::TMatrix<TYPE,3,1>& r,
@@ -296,14 +294,14 @@ private:
                      const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> elepos);
 
   /*!
-    \brief Get global dofs of a node
+  \brief Get global dofs of a node
 
-    Internally this method first extracts the dofs of the given node
-    in the beam contact discretization (which has its own dofs) and
-    then transfers these dofs to their actual GIDs in the underlying
-    problem discretization by applying the pre-computed dofoffset_.
-    */
-    std::vector<int> GetGlobalDofs(const DRT::Node* node);
+  Internally this method first extracts the dofs of the given node
+  in the beam contact discretization (which has its own dofs) and
+  then transfers these dofs to their actual GIDs in the underlying
+  problem discretization by applying the pre-computed dofoffset_.
+  */
+  std::vector<int> GetGlobalDofs(const DRT::Node* node);
 
   //@}
 

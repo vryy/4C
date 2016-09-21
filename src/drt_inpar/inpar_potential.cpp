@@ -4,13 +4,11 @@
 
 \brief Input parameters for potential
 
-<pre>
-Maintainer: Thomas Klöppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
-*/
+\level 3
 
+\maintainer Thomas Klöppel
+
+*/
 /*----------------------------------------------------------------------*/
 
 
@@ -263,26 +261,4 @@ void INPAR::POTENTIAL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::C
   condlist.push_back(electro_repulsion_potential_line);
 
 
-  /*-------------------------------------------------------------------*/
-  // beam potential interaction: atom/charge density per unit length on LINE
-  Teuchos::RCP<ConditionDefinition> beam_potential_line_charge =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS",
-                                       "BeamPotentialLineCharge",
-                                       "Beam_Potential_Line_Charge_Density",
-                                       DRT::Condition::BeamPotential_LineChargeDensity,
-                                       false,
-                                       DRT::Condition::Line));
-
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("POTLAW")));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new IntConditionComponent("potlaw",true,false)));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
-
-  condlist.push_back(beam_potential_line_charge);
-
 }
-
-
-

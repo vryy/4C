@@ -228,7 +228,7 @@ public:
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */
-  const double& Iyy() const { return Iyy_;}
+  inline virtual const double& Iyy() const { return Iyy_;}
 
   /*!
   \brief Get moment of inertia of area Izz_ of this element
@@ -320,7 +320,7 @@ public:
    *
    *  \author grill
    *  \date 05/16 */
-  virtual inline double GetRefLength() const { return reflength_; }
+  virtual inline double RefLength() const { return reflength_; }
 
   /*!
   \brief Get current nodal triads as quaternions

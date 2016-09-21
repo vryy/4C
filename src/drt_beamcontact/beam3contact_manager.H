@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3contact_manager.H
 
 \brief contact manager for contact in a beam3 discretization
@@ -6,7 +7,9 @@
 \level 2
 
 \maintainer Christoph Meier
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
@@ -342,6 +345,12 @@ private:
   //beam-to-solid pair map of last time step
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairmap_;
 
+  //beam-to-beam pot pair map
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tobeampotentialinterface> > btbpotpairmap_;
+
+  //beam-to-sphere pot pair map
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tospherepotentialinterface> > btsphpotpairmap_;
+
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
 
@@ -449,8 +458,8 @@ private:
   //! line charge conditions
   std::vector<DRT::Condition*> linechargeconds_;
 
-  //! map of (NodeID,DLINE) pairs
-  std::map<int,int> dlinenodemap_;
+  //! point charge conditions (rigid sphere)
+  std::vector<DRT::Condition*> pointchargeconds_;
 
   // bool indicating if we are in the first time step of a simulation
   bool firststep_;

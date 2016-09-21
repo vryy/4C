@@ -202,7 +202,7 @@ namespace DRT
         /*!
          \brief Get moment of inertia of area Iyy_ of this element
          */
-        const double& Iyy() const
+        virtual const double& Iyy() const
         {
           return Iyy_;
         }
@@ -227,7 +227,7 @@ namespace DRT
          *
          *  \author grill
          *  \date 05/16 */
-        virtual inline double GetRefLength() const { return 2.0*jacobi_[0]; }
+        virtual inline double RefLength() const { return 2.0*jacobi_[0]; }
 
         /*!
          \brief Get crosssection crosssec_ of this element

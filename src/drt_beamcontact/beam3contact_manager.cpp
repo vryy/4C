@@ -10,8 +10,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "beam3contact_manager.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
@@ -36,6 +34,7 @@
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -85,6 +84,8 @@ step_(0)
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
   btsphpairmap_.clear();
+  btbpotpairmap_.clear();
+  btsphpotpairmap_.clear();
 
   // read parameter lists from DRT::Problem
   sbeamcontact_   = DRT::Problem::Instance()->BeamContactParams();
@@ -267,9 +268,16 @@ step_(0)
   linechargeconds_.clear();
   ProblemDiscret().GetCondition("BeamPotentialLineCharge", linechargeconds_);
 
+  // read the DPOINT conditions specifying charge/particle density of rigid spheres
+  ProblemDiscret().GetCondition("RigidspherePotentialPointCharge", pointchargeconds_);
+
   // initialization stuff for potential-based interaction
   if(linechargeconds_.size()!=0)
   {
+    // safety check
+    if (pdiscret_.Comm().NumProc() != 1)
+      dserror("potential-based beam interactions not implemented in parallel yet!");
+
     // initialize parameters of applied potential law
     ki_ = Teuchos::rcp(new std::vector<double>);
     mi_ = Teuchos::rcp(new std::vector<double>);
@@ -326,17 +334,20 @@ step_(0)
       }
       std::cout << std::endl;
     }
+      // read cutoff radius for search of potential-based interaction pairs
+      searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS",-1.0);
 
     // initialize octtree for search of potential-based interaction pairs
     if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeampotential_,"BEAMPOT_OCTREE") != INPAR::BEAMCONTACT::boct_none)
     {
+      if (searchradiuspot_<=0)
+        dserror("no/invalid value for cutoff radius for Octree search for potential-based interaction pairs. Check your input file!");
+
       pottree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeampotential_,pdiscret_,*btsoldiscret_));
     }
     else
     {
-      // read cutoff radius for search of potential-based interaction pairs
-      searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS",-1.0);
-      if (searchradiuspot_<=0)
+      if (searchradiuspot_<=0 and searchradiuspot_!=-1.0)
         dserror("no/invalid value for cutoff radius of potential-based interaction pairs specified. Check your input file!");
 
       // Compute the search radius for searching possible contact pairs
@@ -354,24 +365,11 @@ step_(0)
       std::cout << "================================================================\n" << std::endl;
     }
 
-    //Parameters to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
+    // flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
     potbtsol_ = DRT::INPUT::IntegralValue<int>(sbeampotential_,"BEAMPOT_BTSOL");
     potbtsph_ = DRT::INPUT::IntegralValue<int>(sbeampotential_,"BEAMPOT_BTSPH");
 
-    // build a map telling us which nodes lie on which DLINE
-    dlinenodemap_.clear();
-    for (unsigned int i=0; i<linechargeconds_.size(); ++i)
-    {
-      if (linechargeconds_[i]->Type() != DRT::Condition::BeamPotential_LineChargeDensity)
-        dserror("The specified DLINE conditions are not of correct type BeamPotential_LineChargeDensity");
-
-      const std::vector<int>*    node_ids = linechargeconds_[i]->Nodes();
-      for (unsigned int j=0; j<node_ids->size(); ++j)
-      {
-        dlinenodemap_[(*node_ids)[j]] = i;
-      }
-    }
-  } //beam potential line charge condition applied
+  } // end: at least one beam potential line charge condition applied
 
   return;
 }
@@ -439,7 +437,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
      t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
      if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-       std::cout << "      OctTree Search (Contact): " << t_end << " seconds, found pairs: "<<elementpairs.size()<< std::endl;
+       IO::cout(IO::standard) << "      OctTree Search (Contact): " << t_end << " seconds" << IO::endl;
   }
   //**********************************************************************
   // Contact: brute-force search
@@ -452,7 +450,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
     if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-      std::cout << "      Brute Force Search (Contact): " << t_end << " seconds" << std::endl;
+      IO::cout(IO::standard) << "      Brute Force Search (Contact): " << t_end << " seconds" << IO::endl;
   }
 
   t_start = Teuchos::Time::wallTime();
@@ -473,7 +471,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
        double t_end = Teuchos::Time::wallTime() - t_start;
        Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
        if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-         std::cout << "           OctTree Search (Potential): " << t_end << " seconds, found pairs: "<<elementpairspot.size()<< std::endl;
+         IO::cout(IO::standard) << "      OctTree Search (Potential): " << t_end << " seconds" << IO::endl;
     }
     //**********************************************************************
     // Potential-based interaction: brute-force search
@@ -486,7 +484,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
       if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-        std::cout << "           Brute Force Search (Potential): " << t_end << " seconds" << std::endl;
+        IO::cout(IO::standard) << "      Brute Force Search (Potential): " << t_end << " seconds" << IO::endl;
     }
 
     FillPotentialPairsVectors(elementpairspot);
@@ -521,7 +519,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if(!pdiscret_.Comm().MyPID())
-    std::cout << "      Pair management: " << t_end << " seconds. "<< std::endl;
+    IO::cout(IO::debug) << "      Pair management: " << t_end << " seconds. "<< IO::endl;
   t_start = Teuchos::Time::wallTime();
 
   // evaluate all element pairs (BTB, BTSOL, BTSPH; Contact and Potential)
@@ -529,7 +527,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if(!pdiscret_.Comm().MyPID())
-    std::cout << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< std::endl;
+    IO::cout(IO::debug) << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< IO::endl;
   double sumproc_evaluationtime=0.0;
   Comm().SumAll(&t_end,&sumproc_evaluationtime,1);
   contactevaluationtime_+=sumproc_evaluationtime;
@@ -572,7 +570,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if(!pdiscret_.Comm().MyPID())
-    std::cout << "      Post-manage Pairs: " << t_end << " seconds. "<< std::endl;
+    IO::cout(IO::debug) << "      Post-manage Pairs: " << t_end << " seconds. "<< IO::endl;
 
   return;
 }
@@ -1491,13 +1489,47 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      for (unsigned int j=0; j<ki_->size(); ++j)
+      // since only the nodes know about their conditions, we need this workaround
+      // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+      const DRT::Element* ele1 = btbpotpairs_[i]->Element1();
+      const DRT::Element* ele2 = btbpotpairs_[i]->Element2();
+
+      const DRT::Node* const* nodes1;
+      const DRT::Node* const* nodes2;
+      nodes1 = ele1->Nodes();
+      nodes2 = ele2->Nodes();
+
+      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+
+      std::vector<DRT::Condition*> conds1;
+      std::vector<DRT::Condition*> conds2;
+      nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
+      nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
+
+      for (unsigned int k=0; k<conds1.size(); ++k)
       {
-        if (ki_->at(j)!=0.0)
-          btbpotpairs_[i]->Evaluate(*stiffc_,*fc_,ki_->at(j),mi_->at(j));
+        int npotlaw1 = conds1[k]->GetInt("potlaw");
+
+        for (unsigned int j=0; j<conds2.size(); ++j)
+        {
+          int npotlaw2 = conds2[j]->GetInt("potlaw");
+
+          if (npotlaw1 == npotlaw2 and npotlaw1 >0)
+          {
+            std::vector<DRT::Condition*> currconds;
+            currconds.clear();
+            currconds.push_back(conds1[k]);
+            currconds.push_back(conds2[j]);
+            // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
+            if(npotlaw1 > (int)ki_->size()) dserror("number of potential law specified in line charge condition exceeds number of defined potential laws!");
+            btbpotpairs_[i]->Evaluate(*stiffc_,*fc_,currconds,ki_->at(npotlaw1-1),mi_->at(npotlaw1-1));
+          }
+        }
       }
+
     }
-  }
+  }// end: Loop over all BTB potential pairs
 
   // Loop over all BTSPH potential pairs
   for (int i=0;i<(int)btsphpotpairs_.size();++i)
@@ -1511,13 +1543,47 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      for (unsigned int j=0; j<ki_->size(); ++j)
+      // since only the nodes know about their conditions, we need this workaround
+      // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+      const DRT::Element* ele1 = btsphpotpairs_[i]->Element1();
+      const DRT::Element* ele2 = btsphpotpairs_[i]->Element2();
+
+      const DRT::Node* const* nodes1;
+      const DRT::Node* const* nodes2;
+      nodes1 = ele1->Nodes();
+      nodes2 = ele2->Nodes();
+
+      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+
+      std::vector<DRT::Condition*> conds1;
+      std::vector<DRT::Condition*> conds2;
+      nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
+      nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
+
+      for (unsigned int k=0; k<conds1.size(); ++k)
       {
-        if (ki_->at(j)!=0.0)
-          btsphpotpairs_[i]->Evaluate(*stiffc_,*fc_,ki_->at(j),mi_->at(j));
+        int npotlaw1 = conds1[k]->GetInt("potlaw");
+
+        for (unsigned int j=0; j<conds2.size(); ++j)
+        {
+          int npotlaw2 = conds2[j]->GetInt("potlaw");
+
+          if (npotlaw1 == npotlaw2 and npotlaw1 >0)
+          {
+            std::vector<DRT::Condition*> currconds;
+            currconds.clear();
+            currconds.push_back(conds1[k]);
+            currconds.push_back(conds2[j]);
+            // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
+            if(npotlaw1 > (int)ki_->size()) dserror("number of potential law specified in line charge condition exceeds number of defined potential laws!");
+            btsphpotpairs_[i]->Evaluate(*stiffc_,*fc_,currconds,ki_->at(npotlaw1-1),mi_->at(npotlaw1-1));
+          }
+        }
       }
+
     }
-  }
+  }// end: Loop over all BTSPH potential pairs
 
   return;
 }
@@ -1743,12 +1809,47 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
         ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
   }
 
+
+  // screen output
+  int numpairs = 0;
+  int numpairsthisproc = pairs_.size();
+
+  pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
   if(pdiscret_.Comm().MyPID()==0)
+    IO::cout(IO::standard) << "\t Total number of BTB contact pairs:     " << numpairs << IO::endl;
+
+  if (btsph_)
   {
-    std::cout << "\t Total number of BTB contact pairs:     " << pairs_.size() << std::endl;
-    if (btsph_)   std::cout << "\t Total number of BTSPH contact pairs:    " << btsphpairs_.size() << std::endl;
-    if (btsol_)   std::cout << "\t Total number of BTSOL contact pairs:    " << btsolpairs_.size() << std::endl;
-    if (btsolmt_) std::cout << "\t Total number of BTSOL meshtying groups: " << btsolmtgroups_.size() << std::endl;
+    numpairs = 0;
+    numpairsthisproc = btsphpairs_.size();
+
+    pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
+    if(pdiscret_.Comm().MyPID()==0)
+      IO::cout(IO::standard) << "\t Total number of BTSPH contact pairs:    " << numpairs << IO::endl;
+  }
+
+  if (btsol_)
+  {
+    numpairs = 0;
+    numpairsthisproc = btsolpairs_.size();
+
+    pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
+    if(pdiscret_.Comm().MyPID()==0)
+      IO::cout(IO::standard) << "\t Total number of BTSOL contact pairs:    " << numpairs << IO::endl;
+  }
+
+  if (btsolmt_)
+  {
+    numpairs = 0;
+    numpairsthisproc = btsolmtgroups_.size();
+
+    pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
+    if(pdiscret_.Comm().MyPID()==0)
+      IO::cout(IO::standard) << "\t Total number of BTSOL meshtying groups: " << numpairs << IO::endl;
   }
 }
 
@@ -1761,11 +1862,11 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(const std::vector<std::ve
   std::vector<std::vector<DRT::Element* > > formattedelementpairs;
   formattedelementpairs.clear();
 
-  //Besides beam-to-beam potentials, we can also handle beam to sphere potentials
-  //In all cases element 1 has to be the beam element.
+  // Besides beam-to-beam potentials, we can also handle beam to sphere potentials
+  // In all cases element 1 has to be the beam element.
 
-  //All other element pairs (sphere-sphere, solid-solid, sphere-solid etc.) will be sorted out later.
-  for (int i=0;i<(int)elementpairs.size();i++)
+  // All other element pairs (sphere-sphere, solid-solid, sphere-solid etc.) will be sorted out later.
+  for (int i=0; i<(int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
     if(BEAMCONTACT::BeamElement(*(elementpairs[i])[0]))
@@ -1782,104 +1883,110 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(const std::vector<std::ve
       formattedelementpairs.push_back(elementpairaux);
     }
   }
-  //Determine type of applied beam elements and set the corresponding values for the member variables
-  //numnodes_ and numnodaldofs_. This has only to be done once in the beginning, since beam contact
-  //simulations are only possible when using beam elements of one type!
+
+  /* Determine type of applied beam elements and set the corresponding values for the member variables
+   * numnodes_ and numnodaldofs_. This has only to be done once in the beginning, since beam contact
+   * simulations are only possible when using beam elements of one type! */
   if (numnodalvalues_==0 and formattedelementpairs.size()>0)
     SetElementTypeAndDistype((formattedelementpairs[0])[0]);
 
   // Create Beam3tobeampotentialinterface instances in the btbpotpairs_ vector
-  for (int k=0;k<(int)formattedelementpairs.size();k++)
+  for (int k=0; k<(int)formattedelementpairs.size(); k++)
   {
     DRT::Element* ele1 = (formattedelementpairs[k])[0];
     DRT::Element* ele2 = (formattedelementpairs[k])[1];
+
+    // get the conditions applied to both elements of the pair and decide whether they need to be evaluated
+    std::vector<DRT::Condition*> conds1, conds2;
+
+    // since only the nodes know about their conditions, we need this workaround
+    // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+    DRT::Node** nodes1;
+    DRT::Node** nodes2;
+    nodes1 = ele1->Nodes();
+    nodes2 = ele2->Nodes();
+
+    dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
+    dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+
+    nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
+
+    // get correct condition for beam or rigid sphere element
+    if(BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
+      nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
+    else if(BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
+      nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
+
+    // validinteraction == true includes: both eles "loaded" by a charge condition of same potential law
+    bool validinteraction = false;
+
+    for (unsigned int i=0; i<conds1.size(); ++i)
+    {
+      int npotlaw1 = conds1[i]->GetInt("potlaw");
+
+      for (unsigned int j=0; j<conds2.size(); ++j)
+      {
+        int npotlaw2 = conds2[j]->GetInt("potlaw");
+
+        // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical beam
+        // TODO introduce flag for self-interaction in input file
+        if (conds1[i] != conds2[j] and npotlaw1 == npotlaw2)
+          validinteraction = true;
+      }
+    }
+
     int currid1 = ele1->Id();
     int currid2 = ele2->Id();
-
-    // check the line charge conditions which apply for the nodes of ele1 and ele2
-    // find and pass line charge conditions associated with the elements of this pair
-    std::vector<DRT::Condition*> currconds;
-    currconds.clear();
-
-    bool nocharge = false;
-    // for now, we exclude mutual interaction of elements on same beam (same DLINE)
-    // TODO read flag from Inputfile whether to do this or not
-    bool samedesignline = false;
-    // check arbitrary (here: first) node of element for the DLINE, it is part of
-    if (dlinenodemap_.find(ele1->NodeIds()[0]) != dlinenodemap_.end() and
-        dlinenodemap_.find(ele2->NodeIds()[0]) != dlinenodemap_.end())
-    {
-      if (dlinenodemap_[ele1->NodeIds()[0]] == dlinenodemap_[ele2->NodeIds()[0]])
-      {
-        samedesignline = true;
-      }
-      else
-      {
-        // find and store line charge condition of first node of element 1/2
-        currconds.push_back(linechargeconds_[dlinenodemap_[ele1->NodeIds()[0]]]);
-        currconds.push_back(linechargeconds_[dlinenodemap_[ele2->NodeIds()[0]]]);
-      }
-    }
-    else  // none of the elements is "loaded" by a charge -> do not create a btbpotpair
-    {
-      nocharge = true;
-    }
-
-    bool isalreadyinpotpairs = false;
-    if(BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
-    {
-      // TODO use a potpairmap_ for this query. see contactpairmap
-      for (unsigned int i=0; i<btbpotpairs_.size(); ++i)
-      {
-        int id1 = btbpotpairs_[i]->Element1()->Id();
-        int id2 = btbpotpairs_[i]->Element2()->Id();
-
-        if ((id1==currid1 and id2==currid2) or (id1==currid2 and id2==currid1))
-          isalreadyinpotpairs = true;
-      }
-    }
-    else if (BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]))
-    {
-      // TODO use a potpairmap_ for this query. see contactpairmap
-      for (unsigned int i=0; i<btsphpotpairs_.size(); ++i)
-      {
-        int id1 = btsphpotpairs_[i]->Element1()->Id();
-        int id2 = btsphpotpairs_[i]->Element2()->Id();
-
-        if ((id1==currid1 and id2==currid2) or (id1==currid2 and id2==currid1))
-          isalreadyinpotpairs = true;
-      }
-    }
-
-    if((!isalreadyinpotpairs) and (!samedesignline) and (!nocharge))
+    if(validinteraction)
     {
       //beam-to-beam pair
       if(BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
       {
         //Add new potential pair object: The auxiliary_instance of the abstract class Beam3tobeampotentialinterface is only needed here in order to call
         //the function Impl() which creates an instance of the templated class Beam3tobeampotential<numnodes, numnodalvalues> !
-        btbpotpairs_.push_back(CONTACT::Beam3tobeampotentialinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeampotential_,currconds));
+        if(btbpotpairmap_.find(std::make_pair(currid1,currid2))==btbpotpairmap_.end())
+        {
+          btbpotpairs_.push_back(CONTACT::Beam3tobeampotentialinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeampotential_));
+          btbpotpairmap_[std::make_pair(currid1,currid2)] = btbpotpairs_[btbpotpairs_.size()-1];
+        }
       }
       // beam-to-sphere pair
       else if (BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
       {
-        //Add new potential pair object: The auxiliary_instance of the abstract class Beam3tobeampotentialinterface is only needed here in order to call
-        //the function Impl() which creates an instance of the templated class Beam3tobeampotential<numnodes, numnodalvalues> !
-        btsphpotpairs_.push_back(CONTACT::Beam3tospherepotentialinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeampotential_,currconds));
+        // basically same procedure as for beam-to-beam pair (see above)
+        if(btsphpotpairmap_.find(std::make_pair(currid1,currid2))==btsphpotpairmap_.end())
+        {
+          btsphpotpairs_.push_back(CONTACT::Beam3tospherepotentialinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeampotential_));
+          btsphpotpairmap_[std::make_pair(currid1,currid2)] = btsphpotpairs_[btsphpotpairs_.size()-1];
+        }
       }
       // beam-to-solid pair, beam-to-??? pair
       else
       {
-         dserror("Only beam-to-beam potential interaction is implemented yet. No other types of elements allowed!");
+         dserror("Only beam-to-beam and beam-to-sphere potential-based interaction is implemented yet. No other types of elements allowed!");
       }
     }
   }
 
+  // screen output
+  int numpairs = 0;
+  int numpairsthisproc = btbpotpairs_.size();
+
+  pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
   if(pdiscret_.Comm().MyPID()==0)
+    IO::cout(IO::standard) << "\t Total number of BTB pot pairs:     " << numpairs << IO::endl;
+
+
+  if (potbtsph_)
   {
-    std::cout << "            Total number of BTB pot pairs: " << btbpotpairs_.size() << std::endl;
-    if (potbtsph_)
-      std::cout << "            Total number of BTSPH pot pairs: " << btsphpotpairs_.size() << std::endl;
+    numpairs = 0;
+    numpairsthisproc = btsphpotpairs_.size();
+
+    pdiscret_.Comm().SumAll(&numpairsthisproc,&numpairs,1);
+
+    if(pdiscret_.Comm().MyPID()==0)
+      IO::cout(IO::standard) << "\t Total number of BTSPH pot pairs:    " << numpairs << IO::endl;
   }
 }
 
@@ -1985,7 +2092,7 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::BruteForceSearc
         for (int k=0;k<3;k++) distance(k) = secondpos(k)-firstpos(k);
 
         // nodes are near if distance < search radius
-        if (distance.Norm2() < searchradius)
+        if (distance.Norm2() < searchradius or searchradius == -1.0)
           NearNodesGIDs.push_back(secondgid);
       }
     }
@@ -2378,6 +2485,9 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   contactpairmap_.clear();
   btsphpairmap_.clear();
   btsolpairmap_.clear();
+
+  btbpotpairmap_.clear();
+  btsphpotpairmap_.clear();
 
   pairs_.clear();
   pairs_.resize(0);
@@ -2934,6 +3044,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       }//loop over elements
 
       #ifdef CONTACTPAIRSPECIFICOUTPUT
+      if (btsph_) dserror("CONTACTSPECIFICOUTPUT not implemented for rigid sphere elements yet!");
       //loop over pairs vector in order to print normal vector
       for (int i=0;i<(int)pairs_.size();++i)
       {
@@ -3420,7 +3531,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
     bool firstisinrowmap = RowElements()->MyGID(firsteleid);
 
     // only relevant if current pair is active
-    if (pairs_[i]->GetContactFlag() == true and firstisinrowmap)
+    if (pairs_[i]->GetContactFlag() and firstisinrowmap)
     {
       //Update penalty energy
       proclocal_penaltyenergy += pairs_[i]->GetEnergy();
@@ -3546,31 +3657,21 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
   {
-    std::cout << std::endl << "      ***********************************BTB************************************"<<std::endl;
-    std::cout << "      Penalty parameter                = " << currentpp_ << std::endl;
-    std::cout << "      Minimal current Gap              = " << minallgap << std::endl;
-    std::cout << "      Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << std::endl;
-    std::cout << "      Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << std::endl;
-    std::cout << "      Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << std::endl;
-    std::cout << "      Minimal total Gap                = " << mintotalsimgap_ << std::endl;
-    std::cout << "      Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << std::endl;
-    std::cout << "      Minimal current rel. Gap         = " << minallrelgap << std::endl;
-    std::cout << "      Current Constraint Norm          = " << constrnorm_ << std::endl;
-    std::cout << "      Minimal total rel. Gap           = " << mintotalsimrelgap_ << std::endl;
-    std::cout << "      Maximal current Gap              = " << maxallgap << std::endl;
-    std::cout << "      Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << std::endl;
-    std::cout << "      Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << std::endl;
-    std::cout << "      Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << std::endl;
-    std::cout << "      Maximal total Gap                = " << maxtotalsimgap_ << std::endl;
-    std::cout << "      Maximal current rel. Gap         = " << maxallrelgap << std::endl;
-    std::cout << "      Maximal total rel. Gap           = " << maxtotalsimrelgap_ << std::endl;
+    IO::cout(IO::debug) << IO::endl << "      ***********************************BTB************************************"<<IO::endl;
+    IO::cout(IO::debug) << "      Penalty parameter                = " << currentpp_ << IO::endl;
+    IO::cout(IO::debug) << "      Minimal current Gap              = " << minallgap << IO::endl;
+    IO::cout(IO::debug) << "      Minimal current rel. Gap         = " << minallrelgap << IO::endl;
+    IO::cout(IO::debug) << "      Current Constraint Norm          = " << constrnorm_ << IO::endl;
+    IO::cout(IO::debug) << "      Maximal current Gap              = " << maxallgap << IO::endl;
+    IO::cout(IO::debug) << "      Maximal current rel. Gap         = " << maxallrelgap << IO::endl;
+
     if ((int)btsolpairs_.size())
     {
-      std::cout << std::endl << "      ***********************************BTS************************************"<<std::endl;
-      std::cout << "      BTS-Penalty parameter     = " << btspp_ << std::endl;
-      std::cout << "      Current Constraint Norm   = " << btsolconstrnorm_ << std::endl;
+      IO::cout(IO::debug) << IO::endl << "      ***********************************BTSOL**********************************"<<IO::endl;
+      IO::cout(IO::debug) << "      BTSOL-Penalty parameter     = " << btspp_ << IO::endl;
+      IO::cout(IO::debug) << "      Current Constraint Norm   = " << btsolconstrnorm_ << IO::endl;
     }
-    std::cout<<"      **************************************************************************"<<std::endl;
+    IO::cout(IO::debug)<<"      **************************************************************************"<<IO::endl;
   }
 
   return;
@@ -3601,8 +3702,8 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     // begin output
     if (Comm().MyPID()==0)
     {
-      std::cout << "\n      Active contact set------------------------------------------------------------\n";
-      printf("      ID1            ID2              T xi       eta      angle   gap         force \n");
+      IO::cout(IO::verbose) << "\n    Active contact set------------------------------------------------------------\n";
+      IO::cout(IO::verbose) << "    ID1            ID2              T xi       eta      angle    gap         force\n";
     }
     Comm().Barrier();
 
@@ -3618,7 +3719,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     int numparc=0;
     int numepc=0;
     int numperpc_transitions=0;
-    int numepc_boundarygausspoint=0;
 
     #ifdef PRINTGAPFILE
       double error=0.0;
@@ -3711,8 +3811,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
               if(gaps[j]>maxgpgap)
                 maxgpgap=gaps[j];
               numparc++;
-              if( ((id1+1)%10)==0 and fabs(closestpoints[j].first-0.99)<0.02)
-                numepc_boundarygausspoint++;
 
               #ifdef PRINTGAPSOVERLENGTHFILE
                 //if(id1>=10 and id1 <=19 and id2>=20 and id2<=29)
@@ -3730,12 +3828,50 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
               numepc++;
             }
 
-            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.8e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
-            fflush(stdout);
+            IO::cout(IO::verbose) << "    " << std::setw(5) << std::left << id1 <<
+                "(" << std::setw(3) << std::right << segmentids[j].first+1 << "/" << std::setw(3) << numsegments.first << ")" <<
+                " " << std::setw(5) << std::left << id2 <<
+                "(" << std::setw(3) << std::right << segmentids[j].second+1 << "/" << std::setw(3) << numsegments.second << ")" <<
+                "   " << types[j] << " " <<
+                std::setw(9) << std::left << std::setprecision(2) << closestpoints[j].first <<
+                std::setw(9) << std::left << std::setprecision(2) << closestpoints[j].second <<
+                std::setw(9) << std::left << std::setprecision(3) << angles[j]/M_PI*180.0 <<
+                std::setw(12) << std::left << std::scientific << gaps[j] <<
+                std::setw(12) << std::left << std::scientific << forces[j] <<
+                std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right << IO::endl << IO::flush;
           }
         }
       }
     }
+
+    // loop over all btsph pairs
+    for (int i=0;i<(int)btsphpairs_.size();++i)
+    {
+      // check if this pair is active
+      if (btsphpairs_[i]->GetContactFlag())
+      {
+        // make sure to print each pair only once
+        int firsteleid = (btsphpairs_[i]->Element1())->Id();
+        bool firstisinrowmap = RowElements()->MyGID(firsteleid);
+
+        // print some output (use printf-method for formatted output)
+        if (firstisinrowmap)
+        {
+          IO::cout(IO::verbose) << "    " << std::setw(14) << std::left << (btsphpairs_[i]->Element1())->Id() <<
+              " " << std::setw(5) << std::left << (btsphpairs_[i]->Element2())->Id() <<
+              "(SPH)    " <<
+              "   - " <<
+              std::setw(9) << std::left << std::setprecision(2) << btsphpairs_[i]->GetClosestPoint() <<
+              "--       " <<
+              "--       " <<
+              std::setw(12) << std::left << std::scientific << btsphpairs_[i]->GetGap() <<
+              "--          " <<
+              std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right << IO::endl << IO::flush;
+        }
+      }
+    }
+
+    Comm().Barrier();
 
 #ifdef PRINTGAPSOVERLENGTHFILE
   //write content into file and close it
@@ -3756,7 +3892,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     int sumpro_numparc=0;
     int sumpro_numepc=0;
     int sumpro_numperpc_transitions=0;
-    int sumpro_numepc_boundarygausspoint=0;
 
     Comm().MaxAll(&maxangle,&sumpro_maxangle,1);
     Comm().MinAll(&minangle,&sumpro_minangle,1);
@@ -3770,7 +3905,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     Comm().SumAll(&numparc,&sumpro_numparc,1);
     Comm().SumAll(&numepc,&sumpro_numepc,1);
     Comm().SumAll(&numperpc_transitions,&sumpro_numperpc_transitions,1);
-    Comm().SumAll(&numepc_boundarygausspoint,&sumpro_numepc_boundarygausspoint,1);
 
     #ifdef PRINTNUMCONTACTSFILE
     if(Comm().MyPID()==0)
@@ -3837,62 +3971,44 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       fclose(fp);
     #endif
 
-    if (Comm().MyPID()==0)
+    // print results to screen
+    Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+    if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
     {
-      std::cout << "Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << std::endl;
-      std::cout << "Number of Point Contacts in Transition Range: " << sumpro_numperpc_transitions << std::endl;
-      std::cout << "Number of Line-to-Line Contact Pairs: " << sumpro_numparc << std::endl;
-      std::cout << "Number of Boundary Gauss points at left end of bundle: " << sumpro_numepc_boundarygausspoint << std::endl;
-      std::cout << "Number of Endpoint Contact Pairs: " << sumpro_numepc << std::endl;
+      IO::cout(IO::standard) << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << IO::endl;
+      IO::cout(IO::verbose) << "    Number of Point Contacts in Transition Range: " << sumpro_numperpc_transitions << IO::endl;
+      IO::cout(IO::standard) << "    Number of Line-to-Line Contact Pairs: " << sumpro_numparc << IO::endl;
+      IO::cout(IO::standard) << "    Number of Endpoint Contact Pairs: " << sumpro_numepc << IO::endl;
 
-      std::cout << "Minimal contact angle: " << sumpro_minangle << std::endl;
-      std::cout << "Maximal contact angle: " << sumpro_maxangle << std::endl;
+      IO::cout(IO::verbose) << "    Minimal contact angle: " << sumpro_minangle << IO::endl;
+      IO::cout(IO::verbose) << "    Maximal contact angle: " << sumpro_maxangle << IO::endl;
 
-      std::cout << "Minimal Point-to-Point gap: " << sumpro_mincpgap << std::endl;
-      std::cout << "Minimal Line-to-Line gap: " << sumpro_mingpgap << std::endl;
-      std::cout << "Minimal Endpoint gap: " << sumpro_minepgap << std::endl;
+      IO::cout(IO::verbose) << "    Minimal current Point-to-Point gap: " << sumpro_mincpgap << IO::endl;
+      IO::cout(IO::verbose) << "    Minimal current Line-to-Line gap: " << sumpro_mingpgap << IO::endl;
+      IO::cout(IO::verbose) << "    Minimal current Endpoint gap: " << sumpro_minepgap << IO::endl;
 
-      std::cout << "Maximal Point-to-Point gap: " << sumpro_maxcpgap << std::endl;
-      std::cout << "Maximal Line-to-Line gap: " << sumpro_maxgpgap << std::endl;
-      std::cout << "Maximal Endpoint gap: " << sumpro_maxepgap << std::endl;
+      IO::cout(IO::standard) << "    Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << IO::endl;
+      IO::cout(IO::standard) << "    Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << IO::endl;
+      IO::cout(IO::standard) << "    Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << IO::endl;
+      IO::cout(IO::verbose) << "    Minimal total rel. Gap           = " << mintotalsimrelgap_ << IO::endl;
+      IO::cout(IO::verbose) << "    Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << IO::endl;
 
-      std::cout << " global_kappa_max_: " << global_kappa_max_ << std::endl;
-      std::cout << " contactevaluationtime_: " << contactevaluationtime_ << std::endl;
-    }
+      IO::cout(IO::debug) << "    Maximal current Point-to-Point gap: " << sumpro_maxcpgap << IO::endl;
+      IO::cout(IO::debug) << "    Maximal current Line-to-Line gap: " << sumpro_maxgpgap << IO::endl;
+      IO::cout(IO::debug) << "    Maximal current Endpoint gap: " << sumpro_maxepgap << IO::endl;
 
-        // loop over all btsph pairs
-    for (int i=0;i<(int)btsphpairs_.size();++i)
-    {
-      // check if this pair is active
-      if (btsphpairs_[i]->GetContactFlag())
-      {
-        // get coordinates of contact point of each element
-        Epetra_SerialDenseVector x1 = btsphpairs_[i]->GetX1();
-        Epetra_SerialDenseVector x2 = btsphpairs_[i]->GetX2();
+      IO::cout(IO::debug) << "    Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << IO::endl;
+      IO::cout(IO::debug) << "    Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << IO::endl;
+      IO::cout(IO::debug) << "    Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << IO::endl;
+      IO::cout(IO::debug) << "    Maximal total rel. Gap           = " << maxtotalsimrelgap_ << IO::endl;
 
-        // make sure to print each pair only once
-        // (TODO: this is not yet enough...)
-        int firsteleid = (btsphpairs_[i]->Element1())->Id();
-        bool firstisinrowmap = RowElements()->MyGID(firsteleid);
-
-        // abbreviations
-        int id1 = (btsphpairs_[i]->Element1())->Id();
-        int id2 = (btsphpairs_[i]->Element2())->Id();
-        double gap = btsphpairs_[i]->GetGap();
-        double lm = - currentpp_ * btsphpairs_[i]->GetGap();
-
-        // print some output (use printf-method for formatted output)
-        if (firstisinrowmap)
-        {
-          printf("ACTIVE BTSPH PAIR: %d & %d \t gap: %e \t lm: %e \n",id1,id2,gap,lm);
-          fflush(stdout);
-        }
-      }
+      IO::cout(IO::debug) << "    global_kappa_max_: " << global_kappa_max_ << IO::endl;
+      IO::cout(IO::debug) << "    contactevaluationtime_: " << contactevaluationtime_ << IO::endl;
     }
 
     // end output
     Comm().Barrier();
-    if (Comm().MyPID()==0) std::cout << std::endl;
+    if (Comm().MyPID()==0) IO::cout(IO::standard) << IO::endl;
   }
   return;
 }
@@ -5289,6 +5405,8 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
  *----------------------------------------------------------------------*/
 bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions, const double sphericalsearchradius)
 {
+  if(sphericalsearchradius==-1.0)
+    return true;
 
   LINALG::Matrix<3,1> midpos1(true);
   LINALG::Matrix<3,1> midpos2(true);

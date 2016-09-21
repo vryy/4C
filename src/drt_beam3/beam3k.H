@@ -204,9 +204,9 @@ public:
   }
 
   /*!
-  \brief get moment of inertia Iyy
+  \brief get area moment of inertia Iyy
   */
-  const double& Iyy() const
+  inline virtual const double& Iyy() const
   {
     return Iyy_;
   }
@@ -264,7 +264,7 @@ public:
    *
    *  \author grill
    *  \date 05/16 */
-  virtual inline double GetRefLength() const { return length_; }
+  virtual inline double RefLength() const { return length_; }
 
   /*!
   \brief Get jacobi factor of first Gauss point

@@ -271,7 +271,7 @@ public:
    *
    *  \author grill
    *  \date 05/16 */
-  virtual inline double GetRefLength() const { return 2.0*jacobi_; }
+  virtual inline double RefLength() const { return 2.0*jacobi_; }
 
   /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
    *
@@ -396,9 +396,9 @@ public:
   }
 
   /*!
-  \brief get moment of intertia of area Iyy_
+  \brief get moment of inertia of area Iyy_
   */
-  double Iyy();
+  virtual const double& Iyy() const;
 
 
   //! @name Construction

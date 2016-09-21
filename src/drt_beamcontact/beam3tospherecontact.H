@@ -89,6 +89,12 @@ public:
   virtual double GetGap()=0;
 
   /*!
+  \brief Get closest point of this contact pair
+
+  */
+  virtual double GetClosestPoint() const =0;
+
+  /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
 
   */
@@ -208,6 +214,11 @@ public:
   \brief Get gap of this contact pair
   */
   double GetGap() { return FADUTILS::CastToDouble(gap_);};
+
+  /*!
+  \brief Get closest point of this contact pair
+  */
+  double GetClosestPoint() const { return FADUTILS::CastToDouble(xicontact_);};
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)

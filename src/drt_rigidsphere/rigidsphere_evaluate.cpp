@@ -105,7 +105,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       }
       else if (sdyn.get<std::string>("DAMPING") == "Material")
       {
-        dserror("Rigidsphere: damping on element level (DAMPING==Material) only implemented for StatMech applications!");
+//        dserror("Rigidsphere: damping on element level (DAMPING==Material) only implemented for StatMech applications!");
       }
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass or act == ELEMENTS::struct_calc_nlnstifflmass or act == ELEMENTS::struct_calc_linstiffmass)

@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_beampotential.cpp
-\maintainer Christoph Meier
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief input parameter definitions for beam potential-based interactions
+
+\level 3
+
+\maintainer Maximilian Grill
 */
-
 /*----------------------------------------------------------------------*/
-
 
 #include "drt_validparameters.H"
 #include "inpar_beampotential.H"
@@ -19,6 +16,7 @@ Maintainer: Christoph Meier
 #include "inpar_structure.H"
 #include "inpar_tsi.H"
 #include "inpar_parameterlist_utils.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 
@@ -61,4 +59,43 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   IntParameter("BEAMPOT_TREEDEPTH",6,"max, tree depth of the octree",&beampotential);
   IntParameter("BEAMPOT_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beampotential);
+}
+
+void INPAR::BEAMPOTENTIAL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
+{
+  using namespace DRT::INPUT;
+
+  /*-------------------------------------------------------------------*/
+  // beam potential interaction: atom/charge density per unit length on LINE
+  Teuchos::RCP<ConditionDefinition> rigidsphere_potential_charge =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS",
+                                         "RigidspherePotentialPointCharge",
+                                         "Rigidsphere_Potential_Point_Charge",
+                                         DRT::Condition::RigidspherePotential_PointCharge,
+                                         false,
+                                         DRT::Condition::Point));
+
+  Teuchos::RCP<ConditionDefinition> beam_potential_line_charge =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS",
+                                         "BeamPotentialLineCharge",
+                                         "Beam_Potential_Line_Charge_Density",
+                                         DRT::Condition::BeamPotential_LineChargeDensity,
+                                         false,
+                                         DRT::Condition::Line));
+
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("POTLAW")));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new IntConditionComponent("potlaw",false,false)));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("POTLAW")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new IntConditionComponent("potlaw",false,false)));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, true)));
+
+  condlist.push_back(rigidsphere_potential_charge);
+  condlist.push_back(beam_potential_line_charge);
+
 }

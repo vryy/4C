@@ -244,7 +244,7 @@ public:
    *
    *  \author grill
    *  \date 05/16 */
-  virtual inline double GetRefLength() const{ return 2.0*jacobi_[0]; }
+  virtual inline double RefLength() const{ return 2.0*jacobi_[0]; }
 
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}

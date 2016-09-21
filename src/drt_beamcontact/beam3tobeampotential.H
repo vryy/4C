@@ -1,16 +1,18 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3tobeampotential.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief One beam-to-beam potential-based interacting pair (two beam elements)
+
+\level 3
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------*/
 #ifndef BEAM3TOBEAMPOT_H
 #define BEAM3TOBEAMPOT_H
 
+#include "beam3contact_utils.H"
 #include "beam3contact_tangentsmoothing.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -20,6 +22,13 @@ Maintainer: Christoph Meier
 #include "Sacado.hpp"
 
 #include "../drt_lib/standardtypes_cpp.H"
+
+// forward declarations
+namespace DRT {
+namespace ELEMENTS {
+  class Beam3Base;
+}
+}
 
 namespace CONTACT
 {
@@ -81,6 +90,7 @@ public:
   */
   virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                         Epetra_Vector& fint,
+                        const std::vector<DRT::Condition*> linechargeconds,
                         const double k,
                         const double m) =0;
 
@@ -92,8 +102,7 @@ public:
                                      const std::map<int,int>& dofoffsetmap,
                                      DRT::Element* element1,
                                      DRT::Element* element2,
-                                     Teuchos::ParameterList beampotparams,
-                                     std::vector<DRT::Condition*> linechargeconds);
+                                     Teuchos::ParameterList beampotparams);
 
   /*
   \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -130,8 +139,7 @@ public:
                     const std::map<int,int>& dofoffsetmap,
                     DRT::Element* element1,
                     DRT::Element* element2,
-                    Teuchos::ParameterList beampotparams,
-                    std::vector<DRT::Condition*> linechargeconds);
+                    Teuchos::ParameterList beampotparams);
 
   /*!
   \brief Copy Constructor
@@ -179,6 +187,7 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint,
+                const std::vector<DRT::Condition*> linechargeconds,
                 const double k,
                 const double m);
 
@@ -208,10 +217,10 @@ private:
   const std::map<int,int>& dofoffsetmap_;
 
   //! first element of contact pair
-  DRT::Element* element1_;
+  DRT::ELEMENTS::Beam3Base* element1_;
 
   //! second element of contact pair
-  DRT::Element* element2_;
+  DRT::ELEMENTS::Beam3Base* element2_;
 
   //! beam contact parameter list
   Teuchos::ParameterList bpotparams_;
@@ -245,9 +254,6 @@ private:
 
   //! Cross-section radius of beam 2
   double radius2_;
-
-  //! Additive extrusion value of bounding box applied in contact search
-  double searchboxinc_;
 
   //! resulting forces on element 1 and 2
   LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1> fpot1_;
@@ -285,15 +291,6 @@ private:
                           std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
                           std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N2_i_xi,
                           DRT::UTILS::IntegrationPoints1D& gausspoints);
-
-  /*!
-  \brief Compute Jacobi factors
-  */
-  void ComputeJacobiFacs(std::vector<double>& jacobifac1,
-                         std::vector<double>& jacobifac2,
-                         std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
-                         std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N2_i_xi,
-                         DRT::UTILS::IntegrationPoints1D& gausspoints);
 
   /*!
   \brief Compute coordinates of centreline points from the discretization

@@ -191,6 +191,7 @@ public:
     VanDerWaals_Potential_Line,
     ElectroRepulsion_Potential_Surface,
     ElectroRepulsion_Potential_Line,
+    RigidspherePotential_PointCharge,
     BeamPotential_LineChargeDensity,
     ElchBoundaryKinetics,
     ElchDomainKinetics,
