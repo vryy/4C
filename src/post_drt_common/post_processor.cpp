@@ -201,13 +201,17 @@ void runEnsightVtuFilter(PostProblem    &problem)
           break;
         }
 
-        case 2:
+        case 3:
         {
-          PostField* particlewallfield = problem.get_discretization(0);
-          StructureFilter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
+          PostField* structure = problem.get_discretization(0);
+          StructureFilter writer(structure, problem.outname(), problem.stresstype(), problem.straintype());
           writer.WriteFiles();
 
-          PostField* particlefield = problem.get_discretization(1);
+          PostField* particlewallfield = problem.get_discretization(1);
+          StructureFilter wallwriter(particlewallfield, problem.outname());
+          wallwriter.WriteFiles();
+
+          PostField* particlefield = problem.get_discretization(2);
           ParticleFilter  particlewriter(particlefield, problem.outname());
           particlewriter.WriteFiles();
 
@@ -236,7 +240,11 @@ void runEnsightVtuFilter(PostProblem    &problem)
       FluidFilter fluidwriter(fluidfield, problem.outname());
       fluidwriter.WriteFiles();
 
-      PostField* particlefield = problem.get_discretization(1);
+      PostField* particlewallfield = problem.get_discretization(1);
+      StructureFilter writer(particlewallfield, problem.outname());
+      writer.WriteFiles();
+
+      PostField* particlefield = problem.get_discretization(2);
       ParticleFilter  particlewriter(particlefield, problem.outname());
       particlewriter.WriteFiles();
       break;

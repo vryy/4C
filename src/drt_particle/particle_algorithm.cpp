@@ -52,6 +52,7 @@ PARTICLE::Algorithm::Algorithm(
   BinningStrategy(comm),
   particles_(Teuchos::null),
   bincolmap_(Teuchos::null),
+  writeresultsevery_(0),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
@@ -238,6 +239,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
     Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
         Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(particledyn, particledis_));
     particles_ = particles->ParticleField();
+
+    writeresultsevery_ = particledyn.get<int>("RESULTSEVRY");
 
     // set particle algorithm into time integration
     particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
@@ -570,6 +573,8 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
 
   // restart heat source map
   UpdateHeatSourcesConnectivity(true);
+
+  DRT::UTILS::PrintParallelDistribution(*particledis_);
 
   return;
 }
@@ -1353,6 +1358,13 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   if(moving_walls_)
     wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(structure_->Discretization()->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
 
+  // write initial wall discret for visualization
+  particlewalldis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particlewalldis_)));
+  Teuchos::RCP<IO::DiscretizationWriter> output = particlewalldis_->Writer();
+  output->WriteMesh(Step(), Time());
+  output->NewStep(Step(), Time());
+  output->WriteVector("displacement", LINALG::CreateVector(*particlewalldis_->DofRowMap(), true));
+
   return;
 }
 
@@ -1677,6 +1689,13 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
     // add missing restart information if necessary
     if(forced_writerestart)
       structure_->Output(forced_writerestart);
+
+    if(moving_walls_ and writeresultsevery_ and (Step()%writeresultsevery_ == 0))
+    {
+      Teuchos::RCP<Epetra_Vector> walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
+      particlewalldis_->Writer()->NewStep(Step(), Time());
+      particlewalldis_->Writer()->WriteVector("displacement", walldisnp);
+    }
   }
 
 //  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());

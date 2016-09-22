@@ -236,6 +236,8 @@ namespace PARTICLE
 
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
 
+    int writeresultsevery_;   ///< output interval
+
     Teuchos::RCP<ADAPTER::Structure> structure_;     ///< structural (wall) time integration
 
     Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization

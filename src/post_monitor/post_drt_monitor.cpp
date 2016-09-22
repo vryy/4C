@@ -4,12 +4,9 @@
 
 \brief monitoring filter for one data
 
-<pre>
-Maintainer: Christiane FÃ¶rster
-            foerster@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/foerster
-            089 - 289-15262
-</pre>
+\level 1
+
+\maintainer Martin Kronbichler
 
 */
 /*----------------------------------------------------------------------*/
@@ -2002,6 +1999,7 @@ int main(int argc, char** argv)
     case prb_fluid:
     case prb_fluid_redmodels:
     case prb_fps3i:
+    case prb_cavitation:
     {
       if(infieldtype == "scatra")
       {
