@@ -137,6 +137,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
     phasemanager_ =
         DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
             *para_,
+            nsd_,
             ele->Material()->MaterialType(),
             action,
             numdofpernode_);
@@ -149,6 +150,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
     phasemanager_ =
         DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
             *para_,
+            nsd_,
             ele->Material()->MaterialType(),
             action,
             core);
@@ -341,14 +343,6 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
               timefacfac,
               variablemanager_->DivConVelnp());
 
-      // compute prefactor
-      ComputeDiffTensor(
-          *phasemanager_,
-          k,
-          *ele->Material(0),
-          *variablemanager_->Phinp(),
-          difftensor);
-
       // calculation of diffusive element matrix
       CalcMatDiff(
           emat,
@@ -356,8 +350,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
           k,
           *phasemanager_,
           *ele->Material(0),
-          timefacfac,
-          difftensor);
+          timefacfac);
 
       // add the terms also into the last equation
       if(k!=numdofpernode_-1)
@@ -367,8 +360,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
             numdofpernode_-1,
             *phasemanager_,
             *ele->Material(0),
-            timefacfac,
-            difftensor);
+            timefacfac);
 
       // calculation of reactive element matrix
       if( phasemanager_->IsReactive(k) )
@@ -553,8 +545,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
           k,
           *phasemanager_,
           rhsfac,
-          *variablemanager_->GradPhinp(),
-          difftensor);
+          *variablemanager_->GradPhinp());
       if(k!=numdofpernode_-1)
         CalcRHSDiff(
             erhs,
@@ -562,8 +553,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
             numdofpernode_-1,
             *phasemanager_,
             rhsfac,
-            *variablemanager_->GradPhinp(),
-            difftensor);
+            *variablemanager_->GradPhinp());
 
       // calculation of reactive element matrix
       if( phasemanager_->IsReactive(k) )
@@ -813,10 +803,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcMatDiff(
   const int                         phasetoadd,
   const POROFLUIDMANAGER::PhaseManagerInterface&      phasemanager,
   const MAT::Material&              material,
-  const double                      timefacfac,
-  const LINALG::Matrix<nsd_,nsd_>&  difftensor
+  const double                      timefacfac
   )
 {
+  static LINALG::Matrix<nsd_,nsd_> difftensor(true);
+  phasemanager.DiffTensor(curphase,difftensor);
+
   static LINALG::Matrix<nsd_,nen_> diffflux(true);
   diffflux.Multiply(difftensor,derxy_);
   // diffusive term
@@ -1381,12 +1373,15 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSDiff(
   const int                     phasetoadd,           //!< index of current phase
   const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
   const double                  rhsfac,
-  const std::vector<LINALG::Matrix<nsd_,1> >& gradphi,
-  const LINALG::Matrix<nsd_,nsd_>&     difftensor       //!< pre factor of diffusive term
+  const std::vector<LINALG::Matrix<nsd_,1> >& gradphi
   )
 {
+  // diffusion tensor
+  static LINALG::Matrix<nsd_,nsd_> difftensor(true);
+  phasemanager.DiffTensor(curphase,difftensor);
+
   // current pressure gradient
-  LINALG::Matrix<nsd_,1> gradpres(true);
+  static LINALG::Matrix<nsd_,1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -1445,37 +1440,6 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::CalcRHSReac(
   return;
 }
 
-
-/*------------------------------------------------------------------- *
- *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeDiffTensor(
-    const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,
-    const int                     phase,
-    const MAT::Material&          material,
-    const std::vector<double>&    phinp,
-    LINALG::Matrix<nsd_,nsd_>&    difftensor) const
-{
-
-  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
-
-  const MAT::FluidPoroMultiPhase& multiphasemat =
-      static_cast<const MAT::FluidPoroMultiPhase&>(material);
-
-  // TODO only isotropic, constant permeability for now
-  difftensor.Clear();
-  const double permeability=multiphasemat.Permeability();
-  for (int i=0;i<nsd_;i++)
-    difftensor(i,i) = permeability;
-
-  // relative diffusivity (permeability)
-  const double reldiffusivity = phasemanager.EvaluateRelDiffusivity(material,phase);
-
-  difftensor.Scale(reldiffusivity);
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | evaluate service routine                                  vuong 08/16 |
@@ -1733,13 +1697,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ReconFlux(
     // Loop over degrees of freedom
     for (int k=0; k<numdofpernode_; k++)
     {
-      // compute prefactor
-      ComputeDiffTensor(
-          *phasemanager_,
-          k,
-          *ele->Material(0),
-          *variablemanager_->Phinp(),
-          difftensor);
+      // diffusion tensor
+      static LINALG::Matrix<nsd_,nsd_> difftensor(true);
+      phasemanager_->DiffTensor(k,difftensor);
 
       // current pressure gradient
       LINALG::Matrix<nsd_,1> gradpres(true);

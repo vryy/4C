@@ -25,12 +25,15 @@
 
 #include <Epetra_SerialDenseSolver.h>
 
+
+
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface >
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+    int nsd,
     INPAR::MAT::MaterialType mattype,
     const POROFLUIDMULTIPHASE::Action&     action,
     int numphases)
@@ -40,7 +43,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
   // build the standard phase manager
   phasemanager = Teuchos::rcp(new PhaseManagerCore(numphases));
 
-  return WrapPhaseManager(para,mattype,action,phasemanager);
+  return WrapPhaseManager(para,nsd,mattype,action,phasemanager);
 }
 
 /*----------------------------------------------------------------------*
@@ -49,6 +52,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
 Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface >
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+    int nsd,
     INPAR::MAT::MaterialType mattype,
     const POROFLUIDMULTIPHASE::Action&     action,
     Teuchos::RCP< PhaseManagerInterface > corephasemanager
@@ -73,6 +77,21 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   {
     // derivatives needed
     phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+    // enhance by diffusion tensor
+    switch(nsd)
+    {
+    case 1:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+      break;
+    case 2:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+      break;
+    case 3:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+      break;
+    default:
+      dserror("invalid dimension for creating phase manager!");
+    }
     break;
   }
   // standard evaluate call
@@ -80,6 +99,22 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   {
     // derivatives needed
     phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+
+    // enhance by diffusion tensor
+    switch(nsd)
+    {
+    case 1:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+      break;
+    case 2:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+      break;
+    case 3:
+      phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+      break;
+    default:
+      dserror("invalid dimension for creating phase manager!");
+    }
 
     if(mattype==INPAR::MAT::m_fluidporo_multiphase_reactions)
       // enhance by scalar handling capability
@@ -442,7 +477,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateRelDiffusivity
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
     Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager)
-:   phasemanager_(phasemanager),
+:   PhaseManagerDecorator(phasemanager),
     pressurederiv_(Teuchos::null),
     saturationderiv_(Teuchos::null),
     solidpressurederiv_(Teuchos::null),
@@ -643,7 +678,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SolidPressureDerivDer
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::PhaseManagerReaction(
     Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager
     )
-: phasemanager_(phasemanager)
+: PhaseManagerDecorator(phasemanager)
 {
   return;
 }
@@ -795,3 +830,101 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ReacDeriv(int phas
   phasemanager_->CheckIsEvaluated();
   return reactermsderivs_[phasenum][doftoderive];
 }
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | constructor                                              vuong 08/16 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusion(
+    Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager
+    )
+: PhaseManagerDecorator(phasemanager)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                              vuong 08/16 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPState(
+    const MAT::Material&   material,
+    MAT::StructPoro&       matstructporo,
+    double                 J,
+    const VariableManagerMinAccess& varmanager
+    )
+{
+   // evaluate wrapped manager
+   phasemanager_->EvaluateGPState(material,matstructporo,J,varmanager);
+
+   // get number of phases
+    const int numphases = phasemanager_->NumPhases();
+
+    // resize vector
+    difftensors_.resize(numphases);
+
+    // check material type
+    if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      dserror("only poro multiphase material valid");
+
+    // cast to multiphase material
+    const MAT::FluidPoroMultiPhase& multiphasemat =
+        static_cast<const MAT::FluidPoroMultiPhase&>(material);
+
+    for(int iphase=0;iphase<numphases;iphase++)
+    {
+      // TODO only isotropic, constant permeability for now
+      difftensors_[iphase].Clear();
+      const double permeability=multiphasemat.Permeability();
+      for (int i=0;i<nsd;i++)
+        (difftensors_[iphase])(i,i) = permeability;
+
+      // relative diffusivity (permeability)
+      const double reldiffusivity = phasemanager_->EvaluateRelDiffusivity(material,iphase);
+
+      difftensors_[iphase].Scale(reldiffusivity);
+    }
+
+   return;
+ }
+
+/*----------------------------------------------------------------------*
+ | zero all values at GP                                     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::ClearGPState()
+{
+  // this is just a safety call. All quantities should be recomputed
+  // in the next EvaluateGPState call anyway, but you never know ...
+  phasemanager_->ClearGPState();
+
+  difftensors_.clear();
+
+  return;
+}
+
+/*---------------------------------------------------------------------------*
+ * get diffusion tensor                                         vuong 08/16 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DiffTensor(
+    int phasenum, LINALG::Matrix<nsd,nsd>& difftensor) const
+{
+  phasemanager_->CheckIsEvaluated();
+  // make a hard copy for now
+  difftensor = difftensors_[phasenum];
+}
+
+///*----------------------------------------------------------------------*
+// *----------------------------------------------------------------------*/
+//// template classes
+
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<1>;
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<2>;
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<3>;
+

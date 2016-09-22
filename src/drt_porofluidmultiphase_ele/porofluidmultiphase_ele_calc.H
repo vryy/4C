@@ -229,8 +229,7 @@ template<int,int> class VariableManagerInterface;
       const int                         phasetoadd,   //!< index of current phase
       const POROFLUIDMANAGER::PhaseManagerInterface&      phasemanager, //!< phase manager
       const MAT::Material&              material,     //!< material of the element
-      const double                      timefacfac,   //!< domain-integration factor times time-integration factor
-      const LINALG::Matrix<nsd_,nsd_>&  difftensor    //!< diffusion tensor
+      const double                      timefacfac   //!< domain-integration factor times time-integration factor
     );
 
     //! calculation of reactive element matrix
@@ -366,8 +365,7 @@ template<int,int> class VariableManagerInterface;
       const int                                   phasetoadd,   //!< index of current phase
       const POROFLUIDMANAGER::PhaseManagerInterface&                phasemanager, //!< phase manager
       const double                                rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-      const std::vector<LINALG::Matrix<nsd_,1> >& gradphi,      //!< gradient of scalar
-      const LINALG::Matrix<nsd_,nsd_>&            difftensor    //!< pre factor of diffusive term
+      const std::vector<LINALG::Matrix<nsd_,1> >& gradphi       //!< gradient of scalar
     );
 
     //! reaction terms on right hand side
@@ -380,14 +378,6 @@ template<int,int> class VariableManagerInterface;
       const double                          rhsfac,             //!< time-integration factor for rhs times domain-integration factor
       bool                                  scalewithsaturation //!< flag wether to scale with saturation
     );
-
-    void ComputeDiffTensor(
-        const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
-        const int                     phase,        //!< index of current phase
-        const MAT::Material&          material,     //!< material of the element
-        const std::vector<double>&    phinp,        //!< state phi at t_{n+1}
-        LINALG::Matrix<nsd_,nsd_>&    difftensor    //!< diffusion tensor
-        ) const;
 
     /*========================================================================*/
     //! @name routines for additional element evaluations (called from EvaluateAction)
