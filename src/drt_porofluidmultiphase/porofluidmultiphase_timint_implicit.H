@@ -343,7 +343,7 @@ protected:
   void ReconstructPressuresAndSaturations();
 
   //! reconstruct solid pressures from current solution
-  void ReconstructSolildPressures();
+  void ReconstructSolidPressures();
 
   //! reconstruct fluxes from current solution
   void ReconstructFlux();

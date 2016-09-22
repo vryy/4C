@@ -47,35 +47,28 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only PoroFluidMultiPhase element)
     case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
-    {
-      return DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(Shape(),numdofpernode,discretization.Name())->Evaluate(
-              this,
-              params,
-              discretization,
-              la,
-              elemat1,
-              elemat2,
-              elevec1,
-              elevec2,
-              elevec3
-              );
-      break;
-    }
     case POROFLUIDMULTIPHASE::calc_error:
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     case POROFLUIDMULTIPHASE::calc_solidpressure:
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     {
-      return DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(Shape(),numdofpernode,discretization.Name())->EvaluateService(
-               this,
-               params,
-               discretization,
-               la,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3);
+      std::vector<Epetra_SerialDenseMatrix*> elemat(2);
+      elemat[0]=&elemat1;
+      elemat[1]=&elemat2;
+
+      std::vector<Epetra_SerialDenseVector*> elevec(3);
+      elevec[0]=&elevec1;
+      elevec[1]=&elevec2;
+      elevec[2]=&elevec3;
+
+      return DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(Shape(),numdofpernode,discretization.Name())->Evaluate(
+              this,
+              params,
+              discretization,
+              la,
+              elemat,
+              elevec
+              );
       break;
     }
     case POROFLUIDMULTIPHASE::set_timestep_parameter:

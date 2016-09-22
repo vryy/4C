@@ -1265,6 +1265,7 @@ set(OBJS_DRT_POROFLUIDMULTIPHASE_LIB
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_evaluate.cpp
   src/drt_porofluidmultiphase_ele/porofluid_phasemanager.cpp
   src/drt_porofluidmultiphase_ele/porofluid_variablemanager.cpp
+  src/drt_porofluidmultiphase_ele/porofluid_evaluator.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_evaluate.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_factory.cpp
   src/drt_porofluidmultiphase_ele/porofluidmultiphase_ele_boundary_calc.cpp

@@ -889,7 +889,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
   }
 
   // reconstruct also the solid pressures
-  ReconstructSolildPressures();
+  ReconstructSolidPressures();
 
   return;
 }
@@ -897,7 +897,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
 /*----------------------------------------------------------------------------*
  | reconstruct pressures from current solution     vuong 08/16 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolildPressures()
+void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolidPressures()
 {
   //reset
   solidpressure_->PutScalar(0.0);

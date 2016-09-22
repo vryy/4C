@@ -35,6 +35,11 @@ namespace ELEMENTS
 // forward declarations
 class PoroFluidMultiPhaseEleParameter;
 
+namespace POROFLUIDEVALUATOR
+{
+template<int, int> class EvaluatorInterface;
+}
+
 namespace POROFLUIDMANAGER
 {
 class PhaseManagerInterface;
@@ -102,24 +107,9 @@ template<int,int> class VariableManagerInterface;
                          Teuchos::ParameterList&       params,
                          DRT::Discretization&          discretization,
                          DRT::Element::LocationArray&  la,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra);
+                         std::vector<Epetra_SerialDenseMatrix*>& elemat,
+                         std::vector<Epetra_SerialDenseVector*>& elevec);
 
-    //! evaluate service routine
-    int EvaluateService(
-        DRT::Element*                 ele,
-        Teuchos::ParameterList&       params,
-        DRT::Discretization &         discretization,
-        DRT::Element::LocationArray&  la,
-        Epetra_SerialDenseMatrix&     elemat1_epetra,
-        Epetra_SerialDenseMatrix&     elemat2_epetra,
-        Epetra_SerialDenseVector&     elevec1_epetra,
-        Epetra_SerialDenseVector&     elevec2_epetra,
-        Epetra_SerialDenseVector&     elevec3_epetra
-        );
 
 //    //! element-type specific flag if second derivatives are needed
 //    static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::Use2ndDerivs<distype>::use;
@@ -142,11 +132,8 @@ template<int,int> class VariableManagerInterface;
         DRT::Discretization&                    discretization,
         const POROFLUIDMULTIPHASE::Action&      action,
         DRT::Element::LocationArray&            la,
-        Epetra_SerialDenseMatrix&               elemat1_epetra,
-        Epetra_SerialDenseMatrix&               elemat2_epetra,
-        Epetra_SerialDenseVector&               elevec1_epetra,
-        Epetra_SerialDenseVector&               elevec2_epetra,
-        Epetra_SerialDenseVector&               elevec3_epetra
+        std::vector<Epetra_SerialDenseMatrix*>& elemat,
+        std::vector<Epetra_SerialDenseVector*>& elevec
         );
 
     //! extract element based or nodal values
@@ -158,26 +145,27 @@ template<int,int> class VariableManagerInterface;
       DRT::Element::LocationArray&  la
     );
 
-    /// access structure material of corresponding (poro) element
-    void GetStructMaterial(DRT::Element*                 ele);
-
     /// Setup element evaluation
     virtual void PrepareGaussPointLoop(
         DRT::Element*                         ele        ///< the element whose matrix is calculated
         );
 
-    virtual void GaussPointLoop(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-        DRT::Element*                         ele,       //!< the element we are dealing with
-        Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-        Epetra_SerialDenseVector&             erhs       //!< element rhs to calculate
+    void GaussPointLoop(
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
         );
 
     //! calculate matrix and rhs. Here the whole thing is hidden.
-    virtual void Sysmat(
-      DRT::Element*                         ele,       //!< the element we are dealing with
-      Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-      Epetra_SerialDenseVector&             erhs       //!< element rhs to calculate
+    void GaussPointLoop(
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -189,227 +177,17 @@ template<int,int> class VariableManagerInterface;
     //! evaluate shape functions and their derivatives at current integration point
     double EvalShapeFuncAndDerivsInParameterSpace();
 
-    //! calculate divergence of vector field (e.g., velocity)
-    void GetDivergence(
-      double&                          vdiv,
-      const LINALG::Matrix<nsd_,nen_>& evel
-    );
-
-//    //! compute rhs containing bodyforce
-//    virtual void GetRhsInt(
-//      double&      rhsint,  //!< rhs containing bodyforce at integration point
-//      const double densnp,  //!< density at t_(n+1)
-//      const int    k        //!< index of current scalar
-//    );
-
-    //! calculation of convective element matrix in convective form
-    void CalcMatConv(
-      Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
-      const int                     k,           //!< index of current scalar
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,//!< phase manager
-      const double                  porosity,    //!< porosity at gauss point
-      const double                  timefacfac,  //!< domain-integration factor times time-integration factor
-      const LINALG::Matrix<nen_,1>& conv         //!< convective term
-    );
-
-
-    //! calculation of convective element matrix: add conservative contributions
-    virtual void CalcMatConvCons(
-      Epetra_SerialDenseMatrix&     emat,           //!< element matrix to be filled
-      const int                     k,              //!< index of current scalar
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,   //!< phase manager
-      const double                  timefacfac,     //!< domain-integration factor times time-integration factor
-      const double                  vdiv            //!< velocity divergence
-    );
-
-    //! calculation of diffusive element matrix
-    virtual void CalcMatDiff(
-      Epetra_SerialDenseMatrix&         emat,         //!< element matrix to be filled
-      const int                         curphase,     //!< index of current phase
-      const int                         phasetoadd,   //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&      phasemanager, //!< phase manager
-      const MAT::Material&              material,     //!< material of the element
-      const double                      timefacfac   //!< domain-integration factor times time-integration factor
-    );
-
-    //! calculation of reactive element matrix
-    virtual void CalcMatReac(
-      Epetra_SerialDenseMatrix&          emat,               //!< element matrix to be filled
-      const int                          curphase,           //!< index of current phase
-      const int                          phasetoadd,         //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&       phasemanager,       //!< phase manager
-      const MAT::Material&               material,           //!< material of the element
-      const double                       timefacfac,         //!< domain-integration factor times time-integration factor
-      bool                               scalewithsaturation //!< flag wether to scale with saturation
-    );
-
-    //! calculation of mass element matrix
-    void CalcMatMassPressure(
-      Epetra_SerialDenseMatrix&     emat,          //!< element matrix to be filled
-      const int                     curphase,      //!< index of current phase
-      const int                     phasetoadd,    //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,  //!< phase manager
-      const MAT::Material&          material,      //!< material of the element
-      const double                  fac,           //!< domain-integration factor
-      const double                  timefacfac,    //!< domain-integration factor times time-integration factor
-      const double                  porosity,      //!< porosity at gauss point
-      const double                  hist,          //!< history of time integartion
-      const std::vector<double>&    phinp,         //!< state phi at t_{n+1}
-      const std::vector<double>&    phidtnp        //!< time derivative state phi at t_{n+1}
-    );
-
-    //! calculation of mass element matrix
-    void CalcMatMassSolidPressure(
-      Epetra_SerialDenseMatrix&     emat,                //!< element matrix to be filled
-      const int                     curphase,            //!< index of current scalar
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,        //!< phase manager
-      const MAT::Material&          material,            //!< material of the element
-      const double                  fac,                 //!< domain-integration factor
-      const double                  timefacfac,          //!< domain-integration factor times time-integration factor
-      const double                  porosity,            //!< porosity at gauss point
-      const double                  hist,                //!< history of time integartion
-      const std::vector<double>&    phinp,               //!< state phi at t_{n+1}
-      const std::vector<double>&    phidtnp,             //!< time derivative state phi at t_{n+1}
-      bool                          scalewithsaturation  //!< flag for saturation scaling
-    );
-
-    //! calculation of mass element matrix
-    void CalcMatMassSaturation(
-      Epetra_SerialDenseMatrix&     emat,         //!< element matrix to be filled
-      const int                     curphase,     //!< index of current scalar
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
-      const MAT::Material&          material,     //!< material of the element
-      const double                  fac,          //!< domain-integration factor
-      const double                  porosity,     //!< porosity at gauss point
-      const std::vector<double>&    phinp         //!< state phi at t_{n+1}
-    );
-
-    //! calculation of linearized mass rhs vector
-    void CalcRHSMassPressure(
-      Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
-      const int                     curphase,     //!< index of current phase
-      const int                     phasetoadd,   //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
-      const MAT::Material&          material,     //!< material of the element
-      const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-      const double                  fac,          //!< domain-integration factor
-      const double                  hist,         //!< history of time integartion
-      const double                  porosity,     //!< porosity at gauss point
-      const std::vector<double>&    phinp,        //!< state phi at t_{n+1}
-      const std::vector<double>&    phidtnp       //!< time derivative state phi at t_{n+1}
-    );
-
-    //! calculation of linearized mass rhs vector
-    void CalcRHSMassSolidPressure(
-      Epetra_SerialDenseVector&     erhs,                 //!< element vector to be filled
-      const int                     curphase,             //!< index of current phase
-      const int                     phasetoadd,           //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,         //!< phase manager
-      const MAT::Material&          material,             //!< material of the element
-      const double                  rhsfac,               //!< time-integration factor for rhs times domain-integration factor
-      const double                  fac,                  //!< domain-integration factor
-      const double                  hist,                 //!< history of time integartion
-      const double                  porosity,             //!< porosity at gauss point
-      const std::vector<double>&    phinp,                //!< state phi at t_{n+1}
-      const std::vector<double>&    phidtnp,              //!< time derivative state phi at t_{n+1}
-      bool                          scalewithsaturation   //!< flag for saturation scaling
-    );
-
-    //! calculation of linearized mass rhs vector
-    void CalcRHSMassSaturation(
-      Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
-      const int                     curphase,     //!< index of current phase
-      const int                     phasetoadd,   //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
-      const MAT::Material&          material,     //!< material of the element
-      const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-      const double                  fac,          //!< domain-integration factor
-      const double                  hist,         //!< history of time integartion
-      const double                  porosity,     //!< porosity at gauss point
-      const std::vector<double>&    phinp,        //!< state phi at t_{n+1}
-      const std::vector<double>&    phidtnp       //!< time derivative state phi at t_{n+1}
-    );
-
-    //! standard Galerkin transient, old part of rhs and source term
-    void CalcRHSHistAndSource(
-      Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
-      const int                     curphase,    //!< index of current phase
-      const double                  fac,         //!< domain-integration factor
-      const double                  rhsint       //!< rhs at Gauss point
-    );
-
-    //! standard Galerkin convective term on right hand side
-    void CalcRHSConv(
-      Epetra_SerialDenseVector&     erhs,         //!< element vector to be filled
-      const int                     curphase,     //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager, //!< phase manager
-      const double                  porosity,     //!< porosity at gauss point
-      const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-      const std::vector<double>&    conv_phi      //!< convective term
-    );
-
-    //! standard Galerkin convective term (conservative contribution) on right hand side
-    void CalcRHSConvCons(
-      Epetra_SerialDenseVector&     erhs,                 //!< element vector to be filled
-      const int                     curphase,             //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&  phasemanager,         //!< phase manager
-      const double                  rhsfac,               //!< time-integration factor for rhs times domain-integration factor
-      const double                  vdiv,                 //!< convective term
-      bool                          scalewithsaturation   //!< flag wether to scale with saturation
-    );
-
-    //! standard Galerkin diffusive term on right hand side
-    virtual void CalcRHSDiff(
-      Epetra_SerialDenseVector&                   erhs,         //!< element vector to be filled
-      const int                                   curphase,     //!< index of current phase
-      const int                                   phasetoadd,   //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&                phasemanager, //!< phase manager
-      const double                                rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-      const std::vector<LINALG::Matrix<nsd_,1> >& gradphi       //!< gradient of scalar
-    );
-
-    //! reaction terms on right hand side
-    virtual void CalcRHSReac(
-      Epetra_SerialDenseVector&             erhs,               //!< element vector to be filled
-      const int                             curphase,           //!< index of current phase
-      const int                             phasetoadd,         //!< index of current phase
-      const POROFLUIDMANAGER::PhaseManagerInterface&          phasemanager,       //!< phase manager
-      const MAT::Material&                  material,           //!< material of the element
-      const double                          rhsfac,             //!< time-integration factor for rhs times domain-integration factor
-      bool                                  scalewithsaturation //!< flag wether to scale with saturation
-    );
-
     /*========================================================================*/
     //! @name routines for additional element evaluations (called from EvaluateAction)
     /*========================================================================*/
 
-    //! calculate mass matrix and rhs for determining initial time derivative
-    virtual void CalcPressureAndSaturation(
-      DRT::Element*                 ele,              //!< current element
-      Epetra_SerialDenseVector&     pressure,         //!< pressure vector
-      Epetra_SerialDenseVector&     saturation,       //!< saturation vector
-      Epetra_SerialDenseVector&     counter,          //!< counter
-      Teuchos::ParameterList&       params,           //!< parameter list
-      DRT::Discretization&          discretization,   //!< discretization
-      DRT::Element::LocationArray&  la                //!< location array
-    );
-
-    virtual void CalcSolidPressure(
-      DRT::Element*                 ele,              //!< current element
-      Epetra_SerialDenseVector&     solidpressure,    //!< pressure vector
-      Epetra_SerialDenseVector&     counter,          //!< counter
-      Teuchos::ParameterList&       params,           //!< parameter list
-      DRT::Discretization&          discretization,   //!< discretization
-      DRT::Element::LocationArray&  la                //!< location array
-    );
-
-    virtual void ReconFlux(
-      DRT::Element*                 ele,              //!< current element
-      Epetra_SerialDenseMatrix&     elemat1,          //!< linearizations
-      Epetra_SerialDenseMatrix&     elemat2,          //!< rhs
-      Teuchos::ParameterList&       params,           //!< parameter list
-      DRT::Discretization&          discretization,   //!< discretization
-      DRT::Element::LocationArray&  la                //!< location array
+    //! loop over nodes and evaluate element
+    void NodeLoop(
+      DRT::Element*                              ele,              //!< current element
+      std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+      std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+      DRT::Discretization&                       discretization,   //!< discretization
+      DRT::Element::LocationArray&               la                //!< location array
     );
 
     /*========================================================================*/
@@ -485,11 +263,11 @@ template<int,int> class VariableManagerInterface;
     //! manager class for variables
     Teuchos::RCP< POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_> > variablemanager_;
 
-    //! corresponding poro structure material
-    Teuchos::RCP< MAT::StructPoro > structmat_;
-
     //! manager class for handling phases and corresponding DOFs
     Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager_;
+
+    //! manager class for evaluation
+    Teuchos::RCP< POROFLUIDEVALUATOR::EvaluatorInterface<nsd_,nen_> > evaluator_;
 
   };
 

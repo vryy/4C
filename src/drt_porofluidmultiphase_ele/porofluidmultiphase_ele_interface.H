@@ -49,34 +49,14 @@ namespace ELEMENTS
     /*!
       This class does not provide a definition for this function; it
       must be defined in PoroFluidMultiPhaseEleCalc.
-      The Evaluate() method is meant only for the assembling of the
-      linearized matrix and the right hand side
      */
     virtual int Evaluate(DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization&          discretization,
                          DRT::Element::LocationArray&  la,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra) = 0;
-
-    /*!
-      This class does not provide a definition for this function; it
-      must be defined in PoroFluidMultiPhaseEleCalc.
-      The EvaluateService() method is meant for everything not related to
-      the assembling of the linearized matrix and the right hand side
-    */
-    virtual int EvaluateService(DRT::Element*                 ele,
-                                Teuchos::ParameterList&       params,
-                                DRT::Discretization&          discretization,
-                                DRT::Element::LocationArray&  la,
-                                Epetra_SerialDenseMatrix&     elemat1_epetra,
-                                Epetra_SerialDenseMatrix&     elemat2_epetra,
-                                Epetra_SerialDenseVector&     elevec1_epetra,
-                                Epetra_SerialDenseVector&     elevec2_epetra,
-                                Epetra_SerialDenseVector&     elevec3_epetra) = 0;
+                         std::vector<Epetra_SerialDenseMatrix*>& elemat,
+                         std::vector<Epetra_SerialDenseVector*>& elevec
+                         ) = 0;
 
   };
 } // namespace Elements

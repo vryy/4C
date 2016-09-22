@@ -78,12 +78,10 @@ class PhaseManagerInterface
         );
 
     //! setup
-    virtual void Setup(const MAT::Material& material)=0;
+    virtual void Setup(const DRT::Element* ele)=0;
 
     //! evaluate pressures, saturations and derivatives at GP
     virtual void EvaluateGPState(
-        const MAT::Material&   material,
-        MAT::StructPoro&       matstructporo,
         double                 J,
         const VariableManagerMinAccess& varmanager)=0;
 
@@ -136,10 +134,28 @@ class PhaseManagerInterface
         const MAT::Material& material,
         int phasenum) const=0;
 
+    //! get bulk modulus of phase 'phasenum'
+    virtual double Bulkmodulus(
+        int phasenum) const=0;
+
+    //! get inverse bulk modulus of solid phase
+    virtual double BulkmodulusInvSolid(
+        const MAT::StructPoro& material) const=0;
+
+    //! get inverse bulk modulus of solid phase
+    virtual double BulkmodulusInvSolid() const=0;
+
     //! get density of phase 'phasenum'
     virtual double Density(
         const MAT::Material& material,
         int phasenum) const=0;
+
+    //! get density of phase 'phasenum'
+    virtual double Density(
+        int phasenum) const=0;
+
+    //! get the current element the manager was set up with
+    virtual const DRT::Element* Element() const = 0;
 
     //@}
 
@@ -210,12 +226,10 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual ~PhaseManagerCore(){};
 
     //! setup
-    void Setup(const MAT::Material& material);
+    void Setup(const DRT::Element* ele);
 
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
-        const MAT::Material&   material,
-        MAT::StructPoro&       matstructporo,
         double                 J,
         const VariableManagerMinAccess& varmanager);
 
@@ -262,10 +276,28 @@ class PhaseManagerCore : public PhaseManagerInterface
         const MAT::Material& material,
         int phasenum) const;
 
+    //! get bulk modulus of phase 'phasenum'
+    double Bulkmodulus(
+        int phasenum) const;
+
+    //! get inverse bulk modulus of solid phase
+    double BulkmodulusInvSolid(
+        const MAT::StructPoro& material) const;
+
+    //! get inverse bulk modulus of solid phase
+    double BulkmodulusInvSolid() const;
+
     //! get density of phase 'phasenum'
     double Density(
         const MAT::Material& material,
         int phasenum) const;
+
+    //! get density of phase 'phasenum'
+    double Density(
+        int phasenum) const;
+
+    //! get the current element the manager was set up with
+    virtual const DRT::Element* Element() const {return ele_;};
 
     //@}
 
@@ -283,7 +315,7 @@ class PhaseManagerCore : public PhaseManagerInterface
         dserror("Setup() was not called!");
     }
 
-  protected:
+  private:
     //! transform generalized pressures to true pressures
     void TransformGenPresToTruePres(
         const std::vector<double>& phi,
@@ -313,6 +345,9 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! porosity
     double porosity_;
 
+    //! the current element
+    const DRT::Element* ele_;
+
     //! flag indicating of gauss point state has been set and evaluated
     bool isevaluated_;
 
@@ -338,8 +373,8 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual ~PhaseManagerDecorator(){};
 
     //! setup
-    virtual void Setup(const MAT::Material& material)
-    {phasemanager_->Setup(material);};
+    virtual void Setup(const DRT::Element* ele)
+    {phasemanager_->Setup(ele);};
 
     //! check if EvaluateGPState() was called
     virtual void CheckIsEvaluated() const
@@ -420,6 +455,20 @@ class PhaseManagerDecorator : public PhaseManagerInterface
         int phasenum) const
     {return phasemanager_->Bulkmodulus(material,phasenum);};
 
+    //! get bulk modulus of phase 'phasenum'
+    virtual double Bulkmodulus(
+        int phasenum) const
+    {return phasemanager_->Bulkmodulus(phasenum);};
+
+    //! get inverse bulk modulus of solid phase
+    double BulkmodulusInvSolid(
+        const MAT::StructPoro& material) const
+    {return phasemanager_->BulkmodulusInvSolid(material);};
+
+    //! get inverse bulk modulus of solid phase
+    double BulkmodulusInvSolid() const
+    {return phasemanager_->BulkmodulusInvSolid();};
+
     //! get porosity
     virtual double Porosity() const
     {return phasemanager_->Porosity();};
@@ -429,6 +478,15 @@ class PhaseManagerDecorator : public PhaseManagerInterface
         const MAT::Material& material,
         int phasenum) const
     {return phasemanager_->Density(material,phasenum);};
+
+    //! get density of phase 'phasenum'
+    virtual double Density(
+        int phasenum) const
+    {return phasemanager_->Density(phasenum);};
+
+    //! get the current element the manager was set up with
+    virtual const DRT::Element* Element() const
+    {return phasemanager_->Element();};
 
     //! get the diffusion tensor
     virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
@@ -465,8 +523,6 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
 
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
-        const MAT::Material&   material,
-        MAT::StructPoro&       matstructporo,
         double                 J,
         const VariableManagerMinAccess& varmanager);
 
@@ -542,12 +598,10 @@ class PhaseManagerReaction : public PhaseManagerDecorator
     virtual ~PhaseManagerReaction(){};
 
     //! setup
-    void Setup(const MAT::Material& material);
+    void Setup(const DRT::Element* ele);
 
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
-        const MAT::Material&   material,
-        MAT::StructPoro&       matstructporo,
         double                 J,
         const VariableManagerMinAccess& varmanager);
 
@@ -601,8 +655,6 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
 
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
-        const MAT::Material&   material,
-        MAT::StructPoro&       matstructporo,
         double                 J,
         const VariableManagerMinAccess& varmanager);
 
