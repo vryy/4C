@@ -2,6 +2,8 @@
 /*!
 \file fsi_overlapprec_hybrid.cpp
 
+\level 3
+
 \maintainer Matthias Mayr
 
 \brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
@@ -225,8 +227,9 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   A->OptimizeStorage();
 
   comm.Barrier();
-  if (comm.MyPID()==0)
-    printf("Copied matrix in %f seconds.\n",timer.ElapsedTime());
+  if (comm.MyPID() == 0)
+    std::cout << "Copied matrix in " << timer.ElapsedTime() << " seconds."
+        << std::endl;
   timer.ResetStartTime();
 
   /****************************************************************************/
@@ -242,8 +245,9 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   ifpackprec_->Setup(true, A.getRawPtr(), x.getRawPtr(), x.getRawPtr());
 
   comm.Barrier();
-  if (comm.MyPID()==0)
-    printf("ILU in %f seconds.\n",timer.ElapsedTime());
+  if (comm.MyPID() == 0)
+    std::cout << "Built ILU in " << timer.ElapsedTime() << " seconds"
+        << std::endl;
   timer.ResetStartTime();
 
   // setup 'multiplicative' part of hybrid preconditioner
@@ -337,9 +341,6 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 //  std::cout<<"\ncomperr: "<<err;
 //  if (err != 0)
 //    dserror("\nComputation of preconditioner failed, error code %d",err);
-
-  azlist.print();
-  ifpacklist.print();
 
   return;
 }
