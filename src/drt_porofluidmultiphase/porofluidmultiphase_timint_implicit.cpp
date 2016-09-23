@@ -101,8 +101,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   neumann_loads_(Teuchos::null),
   residual_(Teuchos::null),
   trueresidual_(Teuchos::null),
-  increment_(Teuchos::null),
-  prei_(Teuchos::null)
+  increment_(Teuchos::null)
 {
   return;
 }
@@ -219,10 +218,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
 
   // incremental solution vector
   increment_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // iterative pressure increments Incp_{n+1}
-  // also known as residual pressures
-  prei_ = LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set initial field

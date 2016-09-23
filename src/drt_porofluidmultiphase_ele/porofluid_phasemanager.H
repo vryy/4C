@@ -19,14 +19,15 @@
 
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_dserror.H"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "Teuchos_RCP.hpp"
 #include <vector>
 
-#include "../drt_mat/fluidporo_multiphase.H"
 
 //forward declarations
+class Epetra_SerialDenseMatrix;
+class Epetra_SerialDenseVector;
+
 namespace MAT
 {
   class Material;
@@ -37,6 +38,8 @@ namespace MAT
 
 namespace DRT
 {
+class Element;
+
 namespace ELEMENTS
 {
 class PoroFluidMultiPhaseEleParameter;

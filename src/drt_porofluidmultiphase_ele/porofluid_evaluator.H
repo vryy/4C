@@ -15,23 +15,30 @@
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H_
 #define SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H_
 
-#include "porofluid_variablemanager.H"
-#include "porofluid_phasemanager.H"
-
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/fluidporo_singlephase.H"
-
-#include "../drt_mat/structporo.H"
+#include "porofluidmultiphase_ele_action.H"
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../linalg/linalg_fixedsizematrix.H"
+
+#include "Teuchos_RCP.hpp"
+
 #include <vector>
+
+class Epetra_SerialDenseMatrix;
+class Epetra_SerialDenseVector;
 
 namespace DRT
 {
 namespace ELEMENTS
 {
 class PoroFluidMultiPhaseEleParameter;
+
+namespace POROFLUIDMANAGER
+{
+  class PhaseManagerInterface;
+  template <int,int> class VariableManagerInterface;
+}
 
 namespace POROFLUIDEVALUATOR
 {
@@ -391,18 +398,66 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of conservative convective term into the element matrix
+//! class for evaluation of divergence of the (mesh) velocity field
 template<int nsd, int nen>
-class EvaluatorConvCons : public EvaluatorBase<nsd,nen>
+class EvaluatorDivVel : public EvaluatorBase<nsd,nen>
 {
 public:
   //! constructor
-  EvaluatorConvCons(Teuchos::RCP<AssembleInterface> assembler,int curphase):
+  EvaluatorDivVel(Teuchos::RCP<AssembleInterface> assembler,int curphase):
     EvaluatorBase<nsd,nen>(assembler,curphase)
   {};
 
   //! destructor
-  virtual ~EvaluatorConvCons(){};
+  virtual ~EvaluatorDivVel(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac              //!< domain-integration factor
+      );
+
+};
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+//! class for evaluation of divergence of the (mesh) velocity field, scaled by saturation
+template<int nsd, int nen>
+class EvaluatorSatDivVel : public EvaluatorDivVel<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorSatDivVel(Teuchos::RCP<AssembleInterface> assembler,int curphase):
+    EvaluatorDivVel<nsd,nen>(assembler,curphase)
+  {};
+
+  //! destructor
+  virtual ~EvaluatorSatDivVel(){};
 
 protected:
 
@@ -594,6 +649,55 @@ public:
 
   //! destructor
   virtual ~EvaluatorMassSolidPressure(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac              //!< domain-integration factor
+      );
+
+};
+
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+//! class for evaluation of mass term (solid pressure) into the element matrix
+template<int nsd, int nen>
+class EvaluatorMassSolidPressureSat : public EvaluatorMassSolidPressure<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorMassSolidPressureSat(Teuchos::RCP<AssembleInterface> assembler,int curphase):
+    EvaluatorMassSolidPressure<nsd,nen>(assembler,curphase)
+  {};
+
+  //! destructor
+  virtual ~EvaluatorMassSolidPressureSat(){};
 
 protected:
 

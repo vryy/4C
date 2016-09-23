@@ -23,10 +23,6 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-namespace MAT
-{
-  class StructPoro;
-}
 
 namespace DRT
 {

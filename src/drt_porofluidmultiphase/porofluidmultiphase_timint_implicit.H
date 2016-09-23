@@ -564,9 +564,6 @@ protected:
   //! nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector> increment_;
 
-  Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
-                                      //!< \f$\Delta{p}^{<k>}_{n+1}\f$
-
   /*========================================================================*/
 
 }; // class TimIntImpl

@@ -25,10 +25,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_mat/structporo.H"
-
-#include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/fluidporo_singlephase.H"
+#include "../drt_mat/material.H"
 
 
 /*----------------------------------------------------------------------*
