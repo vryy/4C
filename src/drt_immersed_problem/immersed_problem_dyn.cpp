@@ -46,8 +46,9 @@
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_heterogeneous_reaction_strategy.H"
-#include "../drt_ssi/ssi_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_merged_proxy.H"
+
 
 void immersed_problem_drt()
 {
@@ -106,7 +107,7 @@ void immersed_problem_drt()
       }
 
       // ghost structure redundantly on all procs
-      algo->CreateGhosting(problem->GetDis("structure"));
+      DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
       // setup algo
       algo->Setup();
@@ -306,7 +307,6 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
 
   // assign degrees of freedom, initialize elements and do boundary conditions on cell
-  // in case of parallel simulation FillComplete is called in CreateBinning
   problem->GetDis("cell")->FillComplete(false,false,false);
   problem->GetDis("cellscatra")->FillComplete(false,false,false);
 
@@ -331,10 +331,10 @@ void CellMigrationControlAlgorithm()
       break;
     }
 
-    // It is time to call init.
+    // It is time to call Init().
     // "ale" dis is cloned and filled inside.
-    // SSI coupling object is built inside.
-    bool redistribute = false;
+    // SSI coupling object is constructed inside.
+    int redistribute =
     cellscatra_subproblem->Init(comm,
         problem->CellMigrationParams(),
         problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
@@ -344,30 +344,29 @@ void CellMigrationControlAlgorithm()
 
     if(redistribute)
     {
-      // redistribute elements (ssi coupling object for matching volume and boundary relies on this)
-      std::vector<Teuchos::RCP<DRT::Discretization> > discretizationstobebinned;
-      discretizationstobebinned.push_back(problem->GetDis("cell"));
-      discretizationstobebinned.push_back(problem->GetDis("cellscatra"));
-      discretizationstobebinned.push_back(problem->GetDis("ale"));
-
-      SSI::Utils::RedistributeDiscretizationsByBinning(discretizationstobebinned);
+      DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+          *problem->GetDis("cell"),
+          *problem->GetDis("cellscatra"));
+      DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+          *problem->GetDis("cell"),
+          *problem->GetDis("ale"));
     }
 
     // ghost cell discretizations on each proc (for search algorithm)
     if(comm.NumProc() > 1)
     {
       // fill complete inside
-      CreateGhosting(problem->GetDis("cell"));
+      DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cell"));
       if(ssi_cell)
-        CreateGhosting(problem->GetDis("cellscatra"));
+        DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cellscatra"));
       if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
-        CreateGhosting(problem->GetDis("ale"));
+        DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("ale"));
     }
 
     // now we call the final fill complete on our discretizations.
     // FillComplete for ale dis is called deeper in the code.
-    problem->GetDis("cell")->FillComplete(true,false,false);
-    problem->GetDis("cellscatra")->FillComplete(true,false,false);
+    problem->GetDis("cell")->FillComplete(true,false,true);
+    problem->GetDis("cellscatra")->FillComplete(true,false,true);
 
     // parallel redistriution is finished. Let us call Setup()
     // here all state vectors are constructed.
@@ -396,8 +395,8 @@ void CellMigrationControlAlgorithm()
 
     if(comm.NumProc() > 1)
     {
-      // fill complete inside
-      CreateGhosting(problem->GetDis("cell"));
+      DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cell"));
+      problem->GetDis("cell")->FillComplete(true,false,true);
     }
   }
 
@@ -412,7 +411,6 @@ void CellMigrationControlAlgorithm()
   poroscatra_subproblem->SetupSystem();
   if(comm.MyPID()==0)
     std::cout<<" Created Field PoroScatra ... \n"<<std::endl;
-
 
 
   //////////////////////////////////////////////
@@ -677,90 +675,4 @@ void CellMigrationControlAlgorithm()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
-{
-  if(distobeghosted->Comm().MyPID() == 0)
-  {
-    std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Ghost discretization "<<distobeghosted->Name()<<" redundantly on all procs ... "<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
-
-  std::vector<int> allproc(distobeghosted->Comm().NumProc());
-  for (int i=0; i<distobeghosted->Comm().NumProc(); ++i) allproc[i] = i;
-
-  // fill my own row node ids
-  const Epetra_Map* noderowmap = distobeghosted->NodeRowMap();
-  std::vector<int> sdata;
-  for (int i=0; i<noderowmap->NumMyElements(); ++i)
-  {
-    int gid = noderowmap->GID(i);
-    DRT::Node* node = distobeghosted->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    sdata.push_back(gid);
-  }
-
-  // gather all master row node gids redundantly
-  std::vector<int> rdata;
-  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
-
-  // build new node column map (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
-  sdata.clear();
-  rdata.clear();
-
-  // fill my own row element ids
-  const Epetra_Map* elerowmap  = distobeghosted->ElementRowMap();
-  sdata.resize(0);
-  for (int i=0; i<elerowmap->NumMyElements(); ++i)
-  {
-    int gid = elerowmap->GID(i);
-    DRT::Element* ele = distobeghosted->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
-    sdata.push_back(gid);
-  }
-
-  // gather all gids of elements redundantly
-  rdata.resize(0);
-  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
-
-  // build new element column map (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
-  sdata.clear();
-  rdata.clear();
-  allproc.clear();
-
-  // redistribute the discretization of the interface according to the
-  // new node / element column layout (i.e. master = full overlap)
-  distobeghosted->ExportColumnNodes(*newnodecolmap);
-  distobeghosted->ExportColumnElements(*newelecolmap);
-
-  // finalize the changes made to the discretisation
-  distobeghosted->FillComplete();
-
-#ifdef DEBUG
-  int nummycolnodes = newnodecolmap->NumMyElements();
-  int nummycolelements = newelecolmap->NumMyElements();
-  int sizelist[distobeghosted->Comm().NumProc()];
-  distobeghosted->Comm().GatherAll(&nummycolnodes,&sizelist[0],1);
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolnodes<<" colnodes"<<std::endl;
-  distobeghosted->Comm().Barrier();
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolelements<<" colelements"<<std::endl;
-  distobeghosted->Comm().Barrier();
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<distobeghosted->lColElement(0)->Nodes()[0]->Id()<<" first ID of first node of first colele"<<std::endl;
-  distobeghosted->Comm().Barrier(); // wait for procs
-  for(int k=1;k<distobeghosted->Comm().NumProc();++k)
-  {
-    if(sizelist[k-1]!=nummycolnodes)
-      dserror("Since whole dis is ghosted every processor should have the same number of colnodes. This is not the case! Fix this!");
-  }
-#endif
-
-  return;
-} // end CreateGhosting
-
 

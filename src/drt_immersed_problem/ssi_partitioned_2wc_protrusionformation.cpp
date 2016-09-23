@@ -63,7 +63,7 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
 /*----------------------------------------------------------------------*
  | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
+int SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
@@ -71,7 +71,7 @@ bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar =
@@ -186,12 +186,12 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
 /*----------------------------------------------------------------------*
  |                                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::InitFieldCoupling(
+int SSI::SSI_Part2WC_PROTRUSIONFORMATION::InitFieldCoupling(
     const Epetra_Comm& comm,
     const std::string& struct_disname,
     const std::string& scatra_disname)
 {
-  bool returnvar = false;
+  int returnvar=0;
 
   // call SetupDiscretizations in base class
   returnvar =

@@ -19,7 +19,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_particle/binning_strategy.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -147,50 +146,4 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
         << "\t Restart step structure:    "<< sdyn.get<int>("RESTARTEVRY") << "\n"
         << "========================================================================================\n \n";
   }
-}
-
-
-/*----------------------------------------------------------------------*
- |  Redistribute using BinningStrategy                      rauch 08/16 |
- *----------------------------------------------------------------------*/
-void SSI::Utils::RedistributeDiscretizationsByBinning(const std::vector<Teuchos::RCP<DRT::Discretization> > vector_of_discretizations)
-{
-  // safety check
-  if (vector_of_discretizations.size()==0)
-    dserror("No discretizations provided for binning !");
-
-  // get communicator
-  const Epetra_Comm& comm = vector_of_discretizations[0]->Comm();
-
-  // redistribute discr. with help of binning strategy
-  if(comm.NumProc()>1)
-  {
-    if(comm.MyPID() == 0)
-    {
-      std::cout<<"+---------------------------------------------------------------"<<std::endl;
-      std::cout<<"| Redistribute discretizations using Binning Strategy ...                                   "<<std::endl;
-      // fist we need to call FillComplete on all discretizations
-      for(int dis_num=0; dis_num < (int)(vector_of_discretizations.size()); dis_num++)
-      {
-        std::cout<<"| Redistribute discretization "<<vector_of_discretizations[dis_num]->Name()<<std::endl;
-      }
-      std::cout<<"+---------------------------------------------------------------"<<std::endl;
-    }
-
-    // fist we need to call FillComplete on all discretizations
-    for(int dis_num=0; dis_num < (int)(vector_of_discretizations.size()); dis_num++)
-    {
-      vector_of_discretizations[dis_num]->FillComplete(false,false,false);
-    }
-
-    // create vector of maps
-    std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-    // binning strategy is created and parallel redistribution is performed
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(vector_of_discretizations,stdelecolmap,stdnodecolmap));
-  }
-
-  return;
 }

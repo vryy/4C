@@ -3,9 +3,10 @@
 
 \brief Methods to apply periodic boundary conditions
 
+\level 2
 
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer  Benjamin Krank, Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235

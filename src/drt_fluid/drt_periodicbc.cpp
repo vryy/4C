@@ -9,9 +9,11 @@
           in pairs.
         o passes list of coupled nodes to the dofset
 
+\level 2
+
 
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
+\maintainer  Benjamin Krank, Martin Kronbichler
              {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-235
@@ -21,7 +23,6 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 
 
 #include "drt_periodicbc.H"
-#include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_dofset_pbc.H"
@@ -357,7 +358,10 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                       idtoadd!=(*masteridstoadd).end();
                       ++idtoadd)
                   {
-                    masterset.insert(*idtoadd);
+                    // we only add row nodes to the set
+                    if(discret_->HaveGlobalNode(*idtoadd))
+                      if(discret_->gNode(*idtoadd)->Owner() == discret_->Comm().MyPID())
+                        masterset.insert(*idtoadd);
                   }
 
                   // check for angle of rotation (has to be zero for master plane)
@@ -389,7 +393,10 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                       idtoadd!=(*slaveidstoadd).end();
                       ++idtoadd)
                   {
-                    slaveset.insert(*idtoadd);
+                    // we only add row nodes to the set
+                    if(discret_->HaveGlobalNode(*idtoadd))
+                      if(discret_->gNode(*idtoadd)->Owner() == discret_->Comm().MyPID())
+                        slaveset.insert(*idtoadd);
                   }
 
                   // check for angle of rotation of slave plane and store it

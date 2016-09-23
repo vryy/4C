@@ -23,6 +23,7 @@
 
 #include "../drt_inpar/inpar_ssi.H"
 
+
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
@@ -34,6 +35,13 @@ namespace SSI
 {
   // forward declaration
   class SSICouplingBase;
+
+  enum RedistributionType
+  {
+    none,     // unknown redistribution type
+    binning,  // redistribute by binning
+    match     // redistribute by node matching
+  };
 
   //! Base class of all solid-scatra algorithms
   class SSI_Base : public ADAPTER::AlgorithmBase
@@ -65,10 +73,10 @@ namespace SSI
           the constructed in \ref Setup().
 
     \warning none
-    \return bool
+    \return int
     \date 08/16
     \author rauch  */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -101,10 +109,10 @@ namespace SSI
      other possible coupling objects in derived
      classes
 
-    \return void
+    \return int
     \date 08/16
     \author vuong, rauch  */
-    virtual bool InitFieldCoupling(
+    virtual int InitFieldCoupling(
         const Epetra_Comm& comm,
         const std::string& struct_disname,
         const std::string& scatra_disname);

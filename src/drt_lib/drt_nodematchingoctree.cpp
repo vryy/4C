@@ -20,31 +20,8 @@
 #include "drt_globalproblem.H"
 #include "standardtypes_cpp.H"
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
-\brief Constructor (public)
-
-<pre>
-
- Set up processor local octree                               gammi 04/07
-
-<pre>
-
-\param    Teuchos::RCP<DRT::Discretization> (i) discretisation
-\param    const vector <int> &             (i) list of masternodeids
-\param    int                              (i) parameter for octree
-\param    double                           (i) tolerance for octree
-
-\return void
-
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   const DRT::Discretization&       actdis,
   const std::vector <int> &        masternodeids,
@@ -61,15 +38,12 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   for(int locn=0;locn<(int)masternodeids.size();locn++)
   {
     // if node is on this proc
-    if(discret_.HaveGlobalNode(masternodeids[locn]))
-    {
-      // if node is not ghosted
-      if (discret_.gNode(masternodeids[locn])->Owner() == discret_.Comm().MyPID())
-      {
-        // this masternode is on this proc and is not a ghosted one
-        masternodesonthisproc.push_back(masternodeids[locn]);
-      }
-    }
+    if(not discret_.HaveGlobalNode(masternodeids[locn]))
+      dserror("NodeMatchingOctree can only be constructed with nodes,\n"
+              "which are either owned, or ghosted by the proc.");
+
+    masternodesonthisproc.push_back(masternodeids[locn]);
+
   }
 
   // construct octree if proc has masternodes
@@ -113,28 +87,21 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     // all other layers are generated down here by recursive calls
     int initlayer = 0;
 
-    octreeroot_ = Teuchos::rcp(new OctreeElement(discret_,
-                                                       masternodesonthisproc,
-                                                       initialboundingbox,
-                                                       initlayer,
-                                                       maxnodeperleaf,
-                                                       tol_));
+    octreeroot_ = Teuchos::rcp(new OctreeElement(
+        discret_,
+        masternodesonthisproc,
+        initialboundingbox,
+        initlayer,
+        maxnodeperleaf,
+        tol_));
   }
 
   return;
 } // NodeMatchingOctree::NodeMatchingOctree
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Search for closest (slave) nodes on all processors to given (master) |
- | nodeset (only in bounding box of masternodes)                        |
- |                                                           gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   const std::vector<int>    &     slavenodeids,
   const std::vector<int>    &     dofsforpbcplane,
@@ -418,9 +385,10 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   return;
 } // CreateGlobalNodeMatching
 
-
-
-void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::NodeMatchingOctree::FindMatch(
+                                   const DRT::Discretization& slavedis,
                                    const std::vector<int>& slavenodeids,
                                    std::map<int,std::pair<int,double> >& coupling)
 {
@@ -625,17 +593,189 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
+    const DRT::Discretization& slavedis,
+    const std::vector<int>& slavenodeids,
+    std::map<int,std::vector<double> >& coupling)
+{
+  int numprocs = discret_.Comm().NumProc();
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Search closest node to given node in local octree         gammi 05/07|
- | returns false if node is not in bounding box of local octree         |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+  if (slavedis.Comm().NumProc()!=numprocs)
+    dserror("compared discretizations must live on same procs");
+
+  // 1) each proc generates a list of his slavenodes
+  //
+  // 2) the list is communicated in a round robin pattern to all the
+  //    other procs.
+  //
+  // 3) the proc checks the package from each proc and calcs the min
+  //    distance on each --- the result is kept if distance is smaller
+  //    than on the preceding processors
+
+  //--------------------------------------------------------------------
+  // -> 1) create a list of slave nodes on this proc. Pack it.
+  std::vector<char> sblockofnodes;
+  std::vector<char> rblockofnodes;
+
+  DRT::PackBuffer data;
+
+  for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
+  {
+    // get the slavenode
+    DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
+    // Add node to list of nodes which will be sent to the next proc
+    DRT::ParObject::AddtoPack(data,actnode);
+  }
+
+  data.StartPacking();
+
+  for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
+  {
+    // get the slavenode
+    DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
+    // Add node to list of nodes which will be sent to the next proc
+    DRT::ParObject::AddtoPack(data,actnode);
+  }
+
+  swap( sblockofnodes, data() );
+
+  //--------------------------------------------------------------------
+  // -> 2) round robin loop
+
+  // create an exporter for point to point comunication
+  // We do all communication with the communicator of the original
+  // discretization.
+  DRT::Exporter exporter(discret_.Comm());
+
+  for (int np=0; np<numprocs; np++)
+  {
+    //--------------------------------------------------
+    // Send block to next proc. Receive a block from the last proc
+    if (np > 0) // in the first step, we keep all nodes on this proc
+    {
+#ifdef PARALLEL
+      int myrank   = discret_.Comm().MyPID();
+      MPI_Request request;
+      int         tag    =myrank;
+
+      int         frompid=myrank;
+      int         topid  =(myrank+1)%numprocs;
+
+      int         length=sblockofnodes.size();
+
+      exporter.ISend(frompid,topid,
+                     &(sblockofnodes[0]),sblockofnodes.size(),
+                     tag,request);
+
+      // make sure that you do not think you received something if
+      // you didn't
+      if (not rblockofnodes.empty())
+      {
+        dserror("rblockofnodes not empty");
+      }
+
+      rblockofnodes.clear();
+
+      // receive from predecessor
+      frompid = (myrank+numprocs-1)%numprocs;
+      exporter.ReceiveAny(frompid,tag,rblockofnodes,length);
+
+      if (tag!=(myrank+numprocs-1)%numprocs)
+      {
+        dserror("received wrong message (ReceiveAny)");
+      }
+
+      exporter.Wait(request);
+#else
+      dserror("How did you get here? Go away!");
+#endif
+    }
+    else
+    {
+      // no need to communicate
+      swap(rblockofnodes,sblockofnodes);
+    }
+
+    //--------------------------------------------------
+    // Unpack block.
+    std::vector<char>::size_type index = 0;
+    while (index < rblockofnodes.size())
+    {
+      // extract node data from blockofnodes
+      std::vector<char> data;
+      DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
+
+      // allocate an "empty node". Fill it with info from
+      // extracted node data
+      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
+
+      // cast ParObject to Node
+      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
+      if (actnode==NULL)
+        dserror("unpack of invalid data");
+
+      //----------------------------------------------------------------
+      // there is nothing to do if there are no master nodes on this
+      // proc
+      if (not masterplanecoords_.empty())
+      {
+        // get its coordinates
+        std::vector<double> x(actnode->X(), actnode->X()+3);
+
+        //--------------------------------------------------------
+        // 3) now search for closest master point on this proc
+        int    gid;
+        double dist;
+
+        // If x is not in the bounding box on this proc, its probably not
+        // matching a point in the box. We do nothing.
+        if (SearchClosestNodeOnThisProc(x, gid, dist))
+        {
+          std::map<int,std::vector<double> >::iterator found
+              = coupling.find(actnode->Id());
+
+          // search for second point with same distance,
+          // if found gid is already in coupling
+          if (found != coupling.end())
+          {
+            if (SearchClosestNodeOnThisProc(x, gid, dist, true))
+            {
+              found = coupling.find(actnode->Id());
+            }
+          }
+
+          // we are interested in the closest match
+          if (found==coupling.end() or (coupling[actnode->Id()])[1] > dist)
+          {
+            if(dist <= tol_)
+            {
+              bool isrownode = (discret_.NodeRowMap()->LID(gid) != -1);
+              std::vector<double> myvec(3); // initialize vector
+              myvec[0]=(double)gid; // save gid in vector
+              myvec[1]=dist;        // save distance in vector
+              myvec[2]=(double)isrownode; // save row col info in vector
+              coupling[actnode->Id()] = myvec; // copy vector to map
+            }
+          }
+        }
+      }
+    }
+
+    //----------------------------------------------------------------
+    // prepare to send nodes to next proc (keep list).
+
+    // the received nodes will be sent to the next proc
+    swap(sblockofnodes,rblockofnodes);
+
+    // we need a new receive buffer
+    rblockofnodes.clear();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
   const std::vector<double>& x,
   int           & idofclosestpoint,
@@ -671,42 +811,24 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
     }
 
     // now get closest point in leaf
-    octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint,tol_,searchsecond);
+    octreeele->SearchClosestNodeInLeaf(
+        x,
+        idofclosestpoint,
+        distofclosestpoint,
+        tol_,
+        searchsecond);
   }
 
   return nodeisinbox;
 }// NodeMatchingOctree::SearchClosestNodeOnThisProc
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor (public)                                       gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::UTILS::NodeMatchingOctree::~NodeMatchingOctree()
 {
   return;
 }// NodeMatchingOctree::~NodeMatchingOctree
 
-
-
-//======================================================================
-
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Constructor (public)                                                 |
- | Create one element in octree                              gammi 05/07|
-  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 DRT::UTILS::OctreeElement::OctreeElement(
   const DRT::Discretization&       actdis,
@@ -778,8 +900,6 @@ DRT::UTILS::OctreeElement::OctreeElement(
         direction = dim;
       }
     }
-
-
 
     // Why choose the coordinate with the maximum distance from both edges
     // and not simply the longest edge?
@@ -906,17 +1026,8 @@ DRT::UTILS::OctreeElement::OctreeElement(
   return;
 } //OctreeElement()
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Check if a point is in the bounding box of an element (public)       |
- |                                                           gammi 05/07|
-  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
   const std::vector <double> &x
   )
@@ -936,17 +1047,6 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
 
   return nodeinboundingbox;
 } //OctreeElement::IsPointInBoundingBox
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Return a child containing the node                    (public)       |
- |                                                           gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
   const std::vector <double> &x
@@ -976,18 +1076,8 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildCo
   return nextelement;
 } //OctreeElement::ReturnChildContainingPoint
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Check if a point is in the bounding box of an element (public)       |
- |                                                           gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool DRT::UTILS::OctreeElement::IsLeaf()
 {
   bool isleaf=true;
@@ -1000,18 +1090,8 @@ bool DRT::UTILS::OctreeElement::IsLeaf()
   return isleaf;
 } //OctreeElement::IsLeaf
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Print some information on the octree element (public)                |
- |                                                           gammi 05/07|
-  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
 {
   // Print id and coordinates
@@ -1025,16 +1105,6 @@ void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
   return;
 } // OctreeElement::Print(ostream& os)
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Return closest point in leaf                 (public)                |
- |                                                           gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
   const std::vector <double> & x,
   int             & idofclosestpoint,
@@ -1086,15 +1156,8 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
   return;
 }// OctreeElement::SearchClosestNodeInLeaf
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                  gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::UTILS::OctreeElement::~OctreeElement()
 {
   return;

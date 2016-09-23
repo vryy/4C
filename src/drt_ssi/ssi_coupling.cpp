@@ -305,8 +305,9 @@ void SSI::SSICouplingNonMatchingVolume::Init(
       structdis,
       scatradis);
 
-  // parallel redistribution of discretizations inside
-  volcoupl_structurescatra_->Redistribute();
+  // parallel redistribution is performed in the global control
+  // algorithm. We redistribute between Init(...) and Setup().
+  //volcoupl_structurescatra_->Redistribute();
 
   SetIsInit(true);
   return;

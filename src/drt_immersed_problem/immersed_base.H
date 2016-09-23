@@ -55,18 +55,6 @@ public:
 
 
   /*!
-  \brief ghost the discretization redundandtly on all procs
-
-  \author rauch
-  \date 05/14
-
-  \param distobeghosted (in) : pointer to discretization that is to be ghosted
-
-  */
-  void CreateGhosting(const Teuchos::RCP<DRT::Discretization>& distobeghosted);
-
-
-  /*!
   \brief create a volume condition on the fly
 
   \author rauch

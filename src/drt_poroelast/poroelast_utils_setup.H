@@ -2,10 +2,12 @@
 /*!
  \file poroelast_utils_setup.H
 
- \brief
+ \brief utility methods for poro
+
+ \level 2
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -24,7 +26,7 @@
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 
 namespace POROELAST
@@ -214,16 +216,8 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
     dis.push_back(fluiddis);
     dis.push_back(scatradis);
 
-    std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+    DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
 
-    // redistribute discr. with help of binning strategy
-    if(structdis->Comm().NumProc()>1)
-    {
-      /// binning strategy is created and parallel redistribution is performed
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-          Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-    }
     //set material pointers
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
 

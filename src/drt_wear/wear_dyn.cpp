@@ -26,7 +26,7 @@
 
 #include "../drt_inpar/inpar_wear.H"
 
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>
@@ -86,20 +86,7 @@ void wear_dyn_drt(int restart)
       dis.push_back(structdis);
       dis.push_back(aledis);
 
-      //binning strategy for parallel redistribution
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
-
-      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-      // redistribute discr. with help of binning strategy
-      if(structdis->Comm().NumProc()>1)
-      {
-        std::cout << "BINNING!!!" << std::endl;
-
-        /// binning strategy is created and parallel redistribution is performed
-        binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-      }
+      DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
     }
   }
   // ***********************************************************

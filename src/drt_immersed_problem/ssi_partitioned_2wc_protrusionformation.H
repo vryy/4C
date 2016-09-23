@@ -115,7 +115,7 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual bool Init(const Epetra_Comm& comm,
+  virtual int Init(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
@@ -150,7 +150,7 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual bool InitFieldCoupling(
+  virtual int InitFieldCoupling(
       const Epetra_Comm& comm,
       const std::string& struct_disname,
       const std::string& scatra_disname);

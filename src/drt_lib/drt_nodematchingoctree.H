@@ -27,20 +27,16 @@ namespace UTILS {
 
 class OctreeElement;
 
-/// Parallel octree to establish neighborhood relations between two sets of nodes
+//! Parallel octree to establish neighborhood relations between two sets of nodes
 class NodeMatchingOctree
 {
 public:
 
-
-  /*!
-
-  \brief Standard Constructor (public)
+  /*! \brief Standard Constructor (public)
 
   <pre>
 
   Set up processor local octree                               gammi 04/07
-
 
   On input a list of so called "master"-nodes and a discretisation which
   contains these "master"-nodes. All nodeids from masternodes owned by
@@ -67,10 +63,7 @@ public:
   \param   maxnodeperleaf  (i) parameter for octree
   \param   tol             (i) tolerance for octree
 
-  \return void
-
-
-  */
+  \return void  */
   NodeMatchingOctree(
     const DRT::Discretization&       actdis,
     const std::vector <int> &        masternodeids,
@@ -78,19 +71,14 @@ public:
     double                           tol=1e-8
     );
 
-  /*!
-  \brief Destructor
-
-  */
+  //! Destructor
   virtual ~NodeMatchingOctree();
 
 
 
   //! @name Methods to create global node matching
 
-  /*!
-
-  \brief Search for closest (slave) nodes on all procs
+  /*! \brief Search for closest (slave) nodes on all procs
 
   <pre>
 
@@ -124,9 +112,7 @@ public:
   \param  rotangle         (i) angle (RAD) for rotation of slave plane
   \param  midtosid         (o) map from master to slavenodes
 
-  \return void
-
-  */
+  \return void  */
   void CreateGlobalNodeMatching(
     const std::vector<int>  & slavenodeids,
     const std::vector<int>  & dofsforpbcplane,
@@ -134,8 +120,8 @@ public:
     std::map<int,std::vector<int> > & midtosid
     );
 
-  /// find pairs of nearest nodes
-  /*!
+  /*! \brief find pairs of nearest nodes
+
     Find the pairs of master node and slave node with the smallest
     distance. The sets of nodes might come from different
     discretisations, however the communicators of both discretisations
@@ -149,12 +135,29 @@ public:
 
     \param slavedis     (i) discretization the slave nodes belong to
     \param slavenodeids (i) gids of nodes to match
-    \param coupling     (o) master node gid to (slave node gid, distance)
+    \param coupling     (o) master node gid to (slave node gid, distance) */
+  void FindMatch(
+      const DRT::Discretization& slavedis,
+      const std::vector<int>& slavenodeids,
+      std::map<int,std::pair<int,double> >& coupling);
 
-   */
-  void FindMatch(const DRT::Discretization& slavedis,
-                 const std::vector<int>& slavenodeids,
-                 std::map<int,std::pair<int,double> >& coupling);
+  /*! \brief find pairs of nearest nodes
+
+    Basically, the algorithm performed in this method is equal to the one
+    described in the documentation to \ref FindMatch .
+
+    \note On exit, the map 'coupling' maps the slave node gids (key) to
+          the matching master node gids, distance, and the information,
+          whether the current proc owns the matching master node or not.
+          This is different from the method \ref FindMatch.
+
+    \param slavedis     (i) discretization the slave nodes belong to
+    \param slavenodeids (i) gids of nodes to match
+    \param coupling     (o) master node gid to (slave node gid, distance) */
+  void FillSlaveToMasterGIDMapping(
+      const DRT::Discretization& slavedis,
+      const std::vector<int>& slavenodeids,
+      std::map<int,std::vector<double> >& coupling);
 
   //@}
 
@@ -163,9 +166,7 @@ protected:
 
    //! @name Methods to create processor local node matching
 
-  /*!
-
-  \brief Declaration
+  /*! \brief Declaration
 
   <pre>
 
@@ -182,9 +183,7 @@ protected:
   \param  distofclosestpoint (o) the distance to the closest point
 
   \return  bool        false if node is not in bounding box of
-                       local octree
-
-  */
+                       local octree  */
   bool SearchClosestNodeOnThisProc(
     const std::vector<double>& x,
     int                      & idofclosestpoint,
@@ -207,16 +206,14 @@ private:
 }; // class NodeMatchingOctree
 
 
-
-/// Leaf in parallel octree
+//! Leaf in parallel octree
 class OctreeElement
 {
 
 public:
 
 
-  /*!
-  \brief Standard Constructor
+  /*! \brief Standard Constructor
 
   <pre>
 
@@ -239,9 +236,7 @@ public:
                               one leaf contain?
   \param  tol             (i) Tolerance for octree
 
-  \return  void
-
-  */
+  \return  void  */
 
   OctreeElement(
     const DRT::Discretization&       actdis,
@@ -261,8 +256,7 @@ public:
 
   //! @name Octree element functions
 
-  /*!
-  \brief Question if coordinate is in bounding box
+  /*! \brief Question if coordinate is in bounding box
 
   <pre>
 
@@ -272,15 +266,12 @@ public:
 
   \param x         (i) coordinate of point
 
-  \return  bool true if point in bounding box
-
-  */
+  \return  bool true if point in bounding box  */
   bool IsPointInBoundingBox(
     const std::vector <double> &x
     );
 
-  /*!
-  \brief Question if octree element is leaf
+  /*! \brief Question if octree element is leaf
 
   <pre>
 
@@ -289,13 +280,10 @@ public:
 
   </pre>
 
-  \return  bool true if element is leaf
-
-  */
+  \return  bool true if element is leaf  */
   bool IsLeaf();
 
-  /*!
-  \brief Return child containing point
+  /*! \brief Return child containing point
 
   <pre>
 
@@ -308,15 +296,12 @@ public:
 
   \param   x   (i) coordinate
 
-  \return  Teuchos::RCP<OctreeElement> child
-
-  */
+  \return  Teuchos::RCP<OctreeElement> child  */
   Teuchos::RCP<OctreeElement> ReturnChildContainingPoint(
     const std::vector<double> &x
     );
 
-  /*!
-  \brief Find closest point in leaf
+  /*! \brief Find closest point in leaf
 
   <pre>
 
@@ -331,11 +316,9 @@ public:
   \param   idofclosestpoint   (o) global id of closest point
   \param   distofclosestpoint (o) distance of closest point
   \param   elesize            (i) tolerance for node matching
-  \param   x                  (i) flag for search of second match
+  \param   searchsecond       (i) flag for search of second match
 
-  \return void
-
-  */
+  \return void  */
 
   void SearchClosestNodeInLeaf(
     const std::vector<double> & x,
@@ -346,8 +329,7 @@ public:
   );
 
 
-  /*!
-    Print some information on the octree leaf
+  /*! \brief Print some information on the octree leaf
 
   <pre>
 
@@ -358,13 +340,10 @@ public:
 
   \param  os (i)
 
-  \return void
-
-  */
+  \return void  */
   void Print(std::ostream& os) const;
 
   //@}
-protected:
 
 private:
 

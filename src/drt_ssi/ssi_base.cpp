@@ -60,7 +60,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Base::Init(const Epetra_Comm& comm,
+int SSI::SSI_Base::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
@@ -118,7 +118,7 @@ bool SSI::SSI_Base::Init(const Epetra_Comm& comm,
   // do discretization specific setup
   InitDiscretizations(comm,struct_disname,scatra_disname);
 
-  bool redistribute = InitFieldCoupling(comm,struct_disname,scatra_disname);
+  int redistribute = InitFieldCoupling(comm,struct_disname,scatra_disname);
 
   // set isinit_ flag true
   SetIsInit(true);
@@ -167,10 +167,6 @@ void SSI::SSI_Base::InitDiscretizations(
   //1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
-  if(!structdis->Filled())
-    structdis->FillComplete();
-  if(!scatradis->Filled())
-    scatradis->FillComplete();
 
   if (scatradis->NumGlobalNodes()==0)
   {
@@ -211,13 +207,13 @@ void SSI::SSI_Base::InitDiscretizations(
 /*----------------------------------------------------------------------*
  | Setup ssi coupling object                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Base::InitFieldCoupling(
+int SSI::SSI_Base::InitFieldCoupling(
     const Epetra_Comm& comm,
     const std::string& struct_disname,
     const std::string& scatra_disname)
 {
   // initialize return variable
-  bool redistribution_required = false;
+  int redistribution_required = (int)SSI::none;
 
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
@@ -254,14 +250,14 @@ bool SSI::SSI_Base::InitFieldCoupling(
   case INPAR::SSI::coupling_volume_nonmatch:
     ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
     // redistribution is still performed inside
-    redistribution_required = false;
+    redistribution_required = (int)SSI::binning;
     break;
   case INPAR::SSI::coupling_boundary_nonmatch:
     ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
     break;
   case INPAR::SSI::coupling_volumeboundary_match:
     ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
-    redistribution_required = true;
+    redistribution_required = (int)SSI::match;
     break;
   default:
     dserror("unknown type of field coupling for SSI!");

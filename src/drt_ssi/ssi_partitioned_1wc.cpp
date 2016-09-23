@@ -38,14 +38,14 @@ SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part1WC::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part1WC::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar =
@@ -172,14 +172,14 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar = false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar = SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
@@ -237,14 +237,14 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar = false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar =

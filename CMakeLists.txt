@@ -1028,6 +1028,7 @@ set(OBJS_DRT_COMM
 )
 
 set(OBJS_DRT_UTILS
+  src/drt_particle/binning_strategy.cpp
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
@@ -1760,7 +1761,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
-  src/drt_particle/binning_strategy.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp

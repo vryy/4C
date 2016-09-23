@@ -43,14 +43,14 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar=
@@ -393,14 +393,14 @@ SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(const Epet
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_SolidToScatra_Relax::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_SolidToScatra_Relax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar=
@@ -513,14 +513,14 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar=
@@ -602,14 +602,14 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epet
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar=
@@ -720,14 +720,14 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar=false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar=

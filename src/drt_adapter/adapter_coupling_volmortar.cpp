@@ -20,13 +20,13 @@
 #include "adapter_coupling_volmortar.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_volmortar/volmortar_coupling.H"
 #include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-#include "../drt_particle/binning_strategy.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_io/io_gmsh.H"
 #include"../drt_inpar/inpar_volmortar.H"
@@ -167,25 +167,7 @@ void ADAPTER::MortarVolCoupl::Redistribute()
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  //binning strategy for parallel redistribution
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
-
-  std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-  std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-  // redistribute discr. with help of binning strategy
-  if(masterdis_->Comm().NumProc()>1)
-  {
-    /// binning strategy is created and parallel redistribution is performed
-    binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-  }
-
-//  if(masterdis_->Comm().NumProc()>1)
-//  {
-//    /// revert extended ghosting
-//    if (not DRT::INPUT::IntegralValue<int>(params, "KEEP_EXTENDEDGHOSTING"))
-//      binningstrategy->RevertExtendedGhosting(dis,stdelecolmap,stdnodecolmap);
-//  }
+  DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
 
   return;
 }

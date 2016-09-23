@@ -46,14 +46,14 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
 /*----------------------------------------------------------------------*
  | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar = false;
+  int returnvar=0;
 
   // call setup of base class
   returnvar =
@@ -74,7 +74,7 @@ bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
     const std::string struct_disname,
     const std::string scatra_disname)
 {
-  bool returnvar = false;
+  int returnvar=0;
 
   // call standard setup
   returnvar =

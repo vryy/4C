@@ -50,10 +50,10 @@ namespace SSI
           the constructed in \ref Setup().
 
     \warning none
-    \return bool
+    \return int
     \date 08/16
     \author rauch  */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -164,7 +164,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -207,7 +207,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -249,7 +249,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -292,7 +292,7 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual bool Init(const Epetra_Comm& comm,
+    virtual int Init(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,

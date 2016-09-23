@@ -24,7 +24,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_ssi/ssi_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -86,22 +86,30 @@ void ssi_drt()
   problem->GetDis("scatra")->FillComplete(true,true,true);
 
   //3.1.1 init the chosen ssi algorithm
-  bool redistribute = false;
+  int redistribute = (int)SSI::none;
   redistribute = ssi -> Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
 
-  if (redistribute)
+  if (redistribute == (int)SSI::match)
   {
-    // redistribute elements (ssi coupling object for matching volume and boundary relies on this)
-    std::vector<Teuchos::RCP<DRT::Discretization> > discretizationstobebinned;
-    discretizationstobebinned.push_back(problem->GetDis("structure"));
-    discretizationstobebinned.push_back(problem->GetDis("scatra"));
+    DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+        *problem->GetDis("structure"),
+        *problem->GetDis("scatra")
+        );
+//    DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("scatra"));
+  }
+  else if(redistribute == (int)SSI::binning)
+  {
+    // create vector of discr.
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+    dis.push_back(problem->GetDis("structure"));
+    dis.push_back(problem->GetDis("scatra"));
 
-    SSI::Utils::RedistributeDiscretizationsByBinning(discretizationstobebinned);
+    DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
   }
 
   // now we can finally fill our discretizations
-  problem->GetDis("structure")->FillComplete();
-  problem->GetDis("scatra")->FillComplete();
+  problem->GetDis("structure")->FillComplete(true,false,true);
+  problem->GetDis("scatra")->FillComplete(true,false,true);
 
   // now as we redistributed our discretizations we can construct all
   // objects relying on the parallel distribution

@@ -24,7 +24,7 @@ class SSI_Part : public SSI_Base
 public:
 
   /// setup SSI algorithm
-  explicit SSI_Part(const Epetra_Comm& comm,
+  SSI_Part(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams);
 
   /// virtual destructor
@@ -43,7 +43,7 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual bool Init(const Epetra_Comm& comm,
+  virtual int Init(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
