@@ -296,7 +296,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
 
   //access second material in structure element
   dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
-  dsassert(ele_->Material(1).MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
+  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
 
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
@@ -479,7 +479,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::BulkmodulusInvSolid() 
 {
   //access second material in structure element
   dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
-  dsassert(ele_->Material(1).MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
+  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
 
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
@@ -563,7 +563,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   phasemanager_->EvaluateGPState(J,varmanager);
 
   // get material
-  dsassert(ele_->Material()!=Teuchos::null,"Material of element is null pointer!");
+  dsassert(phasemanager_->Element()->Material()!=Teuchos::null,"Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material());
 
   // get number of phases
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
   phasemanager_->EvaluateGPState(J,varmanager);
 
   // get material
-  dsassert(ele_->Material()!=Teuchos::null,"Material of element is null pointer!");
+  dsassert(phasemanager_->Element()->Material()!=Teuchos::null,"Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material());
 
   if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
@@ -923,7 +923,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   phasemanager_->EvaluateGPState( J, varmanager);
 
   // get material
-  dsassert(ele_->Material()!=Teuchos::null,"Material of element is null pointer!");
+  dsassert(phasemanager_->Element()->Material()!=Teuchos::null,"Material of element is null pointer!");
   const MAT::Material& material = *( phasemanager_->Element()->Material());
 
   // get number of phases
