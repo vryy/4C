@@ -555,7 +555,7 @@ namespace STR
     void CmtLinearSolve();
 
     int CmtWindkConstrNonlinearSolve();
-    void CmtWindkConstrLinearSolve();
+    int CmtWindkConstrLinearSolve();
 
     //! Do nonlinear iteration for beam contact
     //!

@@ -3080,7 +3080,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // linear solver call (contact / meshtying case or default)
       if (HaveContactMeshtying())
-        CmtWindkConstrLinearSolve();
+        linsolve_error = CmtWindkConstrLinearSolve();
       else
       {
         // Call Cardiovascular0D solver to solve system
@@ -4887,12 +4887,14 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 
 /*----------------------------------------------------------------------*/
 /* linear solver call for contact / meshtying AND Cardiovascular0D bcs*/
-void STR::TimIntImpl::CmtWindkConstrLinearSolve()
+int STR::TimIntImpl::CmtWindkConstrLinearSolve()
 {
 
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
+
+  int linsolve_error = 0;
 
   // update information about active slave dofs
   //**********************************************************************
@@ -4984,10 +4986,10 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
   else
   {
     // solve with Cardiovascular0D solver
-    cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
+    linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
   }
 
-  return;
+  return linsolve_error;
 }
 
 /*-----------------------------------------------------------------------------*
