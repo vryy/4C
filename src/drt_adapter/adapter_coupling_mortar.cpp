@@ -74,26 +74,15 @@ void ADAPTER::CouplingMortar::Setup(
     std::vector<DRT::Condition*> conds;
     std::vector<DRT::Condition*> conds_master(0);
     std::vector<DRT::Condition*> conds_slave(0);
-
-    // first the master side
     masterdis->GetCondition(couplingcond, conds);
+
     for (unsigned i=0; i<conds.size(); i++)
     {
       const std::string* side = conds[i]->Get<std::string>("Side");
 
       if (*side == "Master")
         conds_master.push_back(conds[i]);
-    }
-
-    // now the slave side
-    // we reuse the vector 'conds'
-    conds.clear();
-    slavedis->GetCondition(couplingcond, conds);
-    for (unsigned i=0; i<conds.size(); i++)
-    {
-      const std::string* side = conds[i]->Get<std::string>("Side");
-
-      if(*side == "Slave")
+      else if(*side == "Slave")
         conds_slave.push_back(conds[i]);
     }
 
@@ -339,12 +328,12 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
-  if((masterdis->NumDof(nds_master,masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
-      (slavedis->NumDof(nds_slave,slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
+  if ((masterdis->NumMyRowNodes() > 0 and (masterdis->NumDof(nds_master, masterdis->lRowNode(0)) != dof and slavewithale == true and slidingale == false))
+      or (slavedis->NumMyRowNodes() > 0 and (slavedis->NumDof(nds_slave, slavedis->lRowNode(0)) != dof and slavewithale == false and slidingale == false)))
   {
     dserror("The size of the coupling vector coupleddof and dof defined in the discretization does not fit!! \n"
-            "dof defined in the discretization: %i \n"
-            "length of coupleddof: %i",masterdis->NumDof(nds_master,masterdis->lRowNode(0)), dof);
+        "dof defined in the discretization: %i \n"
+        "length of coupleddof: %i",masterdis->NumDof(nds_master,masterdis->lRowNode(0)), dof);
   }
 
   // special case: sliding ale
