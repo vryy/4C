@@ -2865,6 +2865,7 @@ void STR::TimIntImpl::UpdateIterIncrCardiovascular0D
 int STR::TimIntImpl::UzawaLinearNewtonFull()
 {
   int linsolve_error = 0;
+  int element_error = 0;
   if (conman_->HaveConstraint())
   {
     // allocate additional vectors and matrices
@@ -2888,7 +2889,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     timer_->ResetStartTime();
 
     // equilibrium iteration loop
-    while ( ( (not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    while ( ( (not Converged() and (not linsolve_error) and (not element_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
     {
       // make negative residual
       fres_->Scale(-1.0);
@@ -2957,9 +2958,23 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       // create parameter list
       Teuchos::ParameterList params;
 
+      // set flag for element error in form of a negative Jacobian determinant
+      // in parameter list in case of potential continuation
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      {
+        params.set<bool>("tolerate_errors",true);
+        params.set<bool>("eval_error",false);
+      }
+
       // compute residual forces #fres_ and stiffness #stiff_
       // which contain forces and stiffness of constraints
       EvaluateForceStiffResidual(params);
+
+      // check for element error in form of a negative Jacobian determinant
+      // in case of potential continuation
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+        element_error = ElementErrorCheck(params.get<bool>("eval_error"));
+
       // compute residual and stiffness of constraint equations
       conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
@@ -3039,7 +3054,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     timer_->ResetStartTime();
 
     // equilibrium iteration loop
-    while ( ( (not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    while ( ( (not Converged() and (not linsolve_error) and (not element_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
     {
       // make negative residual
       fres_->Scale(-1.0);
@@ -3094,9 +3109,22 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       // create parameter list
       Teuchos::ParameterList params;
 
+      // set flag for element error in form of a negative Jacobian determinant
+      // in parameter list in case of potential continuation
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      {
+        params.set<bool>("tolerate_errors",true);
+        params.set<bool>("eval_error",false);
+      }
+
       // compute residual forces #fres_ and stiffness #stiff_
       // which contain forces and stiffness of Cardiovascular0Ds
       EvaluateForceStiffResidual(params);
+
+      // check for element error in form of a negative Jacobian determinant
+      // in case of potential continuation
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+        element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // blank residual at (locally oriented) Dirichlet DOFs
       // rotate to local co-ordinate systems
@@ -3153,11 +3181,11 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
   }
 
   //do nonlinear solver error check
-  return UzawaLinearNewtonFullErrorCheck(linsolve_error);
+  return UzawaLinearNewtonFullErrorCheck(linsolve_error,element_error);
 }
 
 /*----------------------------------------------------------------------------*/
-int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
+int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
 {
   // if everything is fine print to screen and return
   if (Converged())
@@ -3178,6 +3206,14 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
 
     return 0;
   }
+
+  // now some error checks: do we have an element problem
+  // only check if we continue in this case; other wise, we ignore the error
+  if (eleerror and divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+  {
+    return eleerror;
+  }
+
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver

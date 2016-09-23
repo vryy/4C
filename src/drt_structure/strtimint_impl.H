@@ -528,7 +528,7 @@ namespace STR
     int UzawaLinearNewtonFull();
 
     //! check for success of nonlinear solve otherwise return error code
-    int UzawaLinearNewtonFullErrorCheck(int linerror);
+    int UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror);
 
     //! Do pseudo transient continuation non-linear iteration
     //!
