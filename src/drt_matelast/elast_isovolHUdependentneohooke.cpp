@@ -1,20 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isovolHUdependentneohooke.cpp
-\brief
+\brief  This file contains the routines required to calculate the isochoric and volumetric contribution
+        of the cc neo hooke material
+        MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 
-This file contains the routines required to calculate the isochoric and volumetric contribution
-of the cc neo hooke material
+\level 2
 
-MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
-
-<pre>
-maintainer: Andreas Maier
-</pre>
-
-*----------------------------------------------------------------------*/
-/* macros */
-
+\maintainer André Hemmler
+            hemmler@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10389
+*/
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"
 #include "../drt_mat/matpar_material.H"
@@ -93,6 +90,36 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* 
   else
     alpha_ = 0.5 * params_->alphamax_ * (sin(PI * (HU - params_->ctmin_)/(params_->ctmax_ - params_->ctmin_) -PI/2) + 1.0);
 }
+
+/*----------------------------------------------------------------------
+ *                                                    hemmler 09/2016  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
+    const int eleGID)
+{
+  // material Constants c and beta
+  const double nue = params_ -> nue_;
+  const double beta = params_ -> beta_;
+  const double kappa=2.0*(alpha_/(1-2.0*nue));
+
+
+  //isochoric part - NeoHookean
+  // strain energy: psi = alpha * (I1_mod - 3.0)
+  psi += alpha_ * (modinv(0) - 3.0);
+
+  //volumetric part - Odgen-Simo-Miehe
+  // strain energy: Psi = (kappa/beta^2)*(beta*ln(J)+J^(-beta)-1.0)
+  if (beta != 0)
+    psi += kappa/(beta*beta)*(beta*log(modinv(2))+pow(modinv(2),-beta)-1.);
+  else
+    psi += kappa/2.*pow(std::log(modinv(2)),2.);
+
+}
+
 
 /*----------------------------------------------------------------------
  *                                                      birzle 12/2014  */

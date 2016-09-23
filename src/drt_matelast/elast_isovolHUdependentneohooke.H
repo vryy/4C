@@ -1,14 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isovolHUdependentneohooke.H
-\brief
+\brief  This file contains the routines required to calculate the isochoric and volumetric contribution
+        of the HU dependent neo hooke material. E.g used for inclusion of
+        calcification in AAA simulations
 
-This file contains the routines required to calculate the isochoric and volumetric contribution
-of the HU dependent neo hooke material. E.g used for inclusion of
-calcification in AAA simulations
+\level 2
 
-<pre>
-</pre>
+\maintainer André Hemmler
+            hemmler@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10389
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
@@ -127,6 +129,15 @@ namespace ELASTIC
 
     /// Setup of summand
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+
+    // add strain energy
+    virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy function
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
+        const int eleGID                   ///< element GID
+        );
 
     // Add derivatives with respect to modified invariants.
     virtual void AddDerivativesModified(
