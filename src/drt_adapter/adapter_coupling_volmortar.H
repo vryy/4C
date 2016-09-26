@@ -204,7 +204,7 @@ namespace ADAPTER
     void CheckInit() const
     {
       if ( not IsInit())
-        dserror("ERROR: Call Setup() first!");
+        dserror("ERROR: Call Init() first!");
     }
 
   private:
