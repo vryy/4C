@@ -66,7 +66,7 @@ public:
   /// The original DofSet sends notifications if it changes.
 
   /// original DofSet has new dofs
-  void NotifyAssigned();
+  virtual void NotifyAssigned();
 
   /// original DofSet has been reset
   virtual void NotifyReset();

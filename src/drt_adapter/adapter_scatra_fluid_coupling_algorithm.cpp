@@ -119,6 +119,10 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
   // initialize fluid time integration scheme
   FluidField()->Init();
 
+  // setup coupling adapter
+  if(not volcoupl_fluidscatra_.is_null())
+    volcoupl_fluidscatra_->Setup();
+
   // set also initial field
   if (DRT::Problem::Instance()->ProblemType() != prb_combust)
   {
@@ -216,7 +220,6 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(const std::string
 
     //setup projection matrices (use default material strategy)
     volcoupl_fluidscatra_->Init( fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, true);
-    volcoupl_fluidscatra_->Setup();
   }
 }
 

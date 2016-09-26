@@ -102,6 +102,7 @@ void ADAPTER::MortarVolCoupl::Init(Teuchos::RCP<DRT::Discretization> dis1,  // m
  *----------------------------------------------------------------------*/
 void ADAPTER::MortarVolCoupl::Setup()
 {
+  CheckInit();
 
   // get problem dimension (2D or 3D)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -111,7 +112,7 @@ void ADAPTER::MortarVolCoupl::Setup()
       DRT::Problem::Instance()->VolmortarParams();
 
   // create material strategy
-  if(materialstrategy_==Teuchos::null)
+  if(materialstrategy_.is_null())
     materialstrategy_= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
 
   // create coupling instance
@@ -162,6 +163,8 @@ void ADAPTER::MortarVolCoupl::Setup()
  *----------------------------------------------------------------------*/
 void ADAPTER::MortarVolCoupl::Redistribute()
 {
+  CheckInit();
+
   // create vector of discr.
   std::vector<Teuchos::RCP<DRT::Discretization> > dis;
   dis.push_back(masterdis_);

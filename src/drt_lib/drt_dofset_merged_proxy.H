@@ -5,12 +5,12 @@
  \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not yet to elements).
 
-   \level 3
+ \level 2
 
-   \maintainer Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
-                089 - 289-15251
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15251
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DOFSET_MERGED_PROXY_H_
@@ -27,36 +27,34 @@ namespace DRT
   {
   public:
 
-    /*!
-    \brief Standard Constructor
 
-    */
-    explicit DofSetMergedProxy(Teuchos::RCP<DofSet>  dofset,
-                               const Teuchos::RCP<const DRT::Discretization> sourcedis,
-                               const std::string& couplingcond_master,
-                               const std::string& couplingcond_slave);
+    //! Standard Constructor
+    DofSetMergedProxy(Teuchos::RCP<DofSet>  dofset,
+        const Teuchos::RCP<const DRT::Discretization>& sourcedis,
+        const std::string& couplingcond_master,
+        const std::string& couplingcond_slave);
 
-    /*!
-    \brief Destructor
-
-    */
+     //! Destructor
      ~DofSetMergedProxy(){};
 
      /// Assign dof numbers using all elements and nodes of the discretization.
      virtual int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start);
 
+     /// original DofSet has new dofs
+     virtual void NotifyAssigned();
+
      //! @name Access methods
 
-     /*!
-     \brief Get the gid of all dofs of a node
+     /*! \brief Get the gid of all dofs of a node
+      *
       \note convention: First the slave dofs and then the master dofs are inserted into full dof vector!
                         Thus all definitions in the input file concerning dof numbering have to be set accordingly
                         (e.g. for reactions in MAT_scatra_reaction and MAT_scatra_reaction,
-                         see test case 'ssi_3D_tet4_tet4_tri3.dat')
-     */
+                         see test case 'ssi_3D_tet4_tet4_tri3.dat')  */
      virtual std::vector<int> Dof(const Node* node) const
        {
-         std::vector<int> slavedof = DofSetProxy::Dof(node);
+         const DRT::Node* slavenode = GetSlaveNode(node->LID());
+         std::vector<int> slavedof = DofSetProxy::Dof(slavenode);
          const DRT::Node* masternode = GetMasterNode(node->LID());
          std::vector<int> masterdof = DofSetProxy::Dof(masternode);
 
@@ -78,22 +76,24 @@ namespace DRT
      virtual int NumDof(const Node* node) const
        {
        const DRT::Node* masternode = GetMasterNode(node->LID());
+       const DRT::Node* slavenode = GetSlaveNode(node->LID());
 
-         return DofSetProxy::NumDof(node)+DofSetProxy::NumDof(masternode);
+         return DofSetProxy::NumDof(slavenode)+DofSetProxy::NumDof(masternode);
        }
 
      /// Get number of dofs for given element
      virtual int NumDof(const Element* element) const
        {
-         return DofSetProxy::NumDof(element);
+         return dofset_->NumDof(element);
        }
 
      /// Get the gid of a dof for given node
      virtual int Dof(const Node* node, int dof) const
        {
-         const int numslavedofs = DofSetProxy::NumDof(node);
+         const DRT::Node* slavenode = GetSlaveNode(node->LID());
+         const int numslavedofs = DofSetProxy::NumDof(slavenode);
          if(dof<numslavedofs)
-           return DofSetProxy::Dof(node,dof);
+           return DofSetProxy::Dof(slavenode,dof);
          else
          {
            const DRT::Node* masternode = GetMasterNode(node->LID());
@@ -110,8 +110,9 @@ namespace DRT
      /// Get the gid of all dofs of a node
      virtual void Dof(const Node* node, std::vector<int>& lm) const
        {
-         DofSetProxy::Dof(node,lm);
          const DRT::Node* masternode = GetMasterNode(node->LID());
+         const DRT::Node* slavenode = GetSlaveNode(node->LID());
+         DofSetProxy::Dof(slavenode,lm);
          DofSetProxy::Dof(masternode,lm);
 
          return;
@@ -124,8 +125,9 @@ namespace DRT
          std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
          ) const
      {
-       const int numslavedofs = DofSetProxy::NumDof(node);
-       DofSetProxy::Dof(node,startindex,lm);
+       const DRT::Node* slavenode = GetSlaveNode(node->LID());
+       const int numslavedofs = DofSetProxy::NumDof(slavenode);
+       DofSetProxy::Dof(slavenode,startindex,lm);
 
        const DRT::Node* masternode = GetMasterNode(node->LID());
        DofSetProxy::Dof(masternode,startindex+numslavedofs,lm);
@@ -144,7 +146,8 @@ namespace DRT
          std::vector<int>& lm        ///< already allocated vector to be filled with DOF positions
          ) const
      {
-       DofSetProxy::Dof(element,node,lm);
+       const DRT::Node* slavenode = GetSlaveNode(node->LID());
+       DofSetProxy::Dof(element,slavenode,lm);
 
        const DRT::Node* masternode = GetMasterNode(node->LID());
        DofSetProxy::Dof(element,masternode,lm);
@@ -154,16 +157,29 @@ namespace DRT
 
      const DRT::Node* GetMasterNode(int slaveLid) const
      {
-       if(slaveLid>slavetomasternodemapping_->MyLength())
+       if(slaveLid>master_nodegids_col_layout_->MyLength())
          dserror("Target Lid %i not found in discretization!",slaveLid);
-       int mastergid = (*slavetomasternodemapping_)[slaveLid];
+       int mastergid = (*master_nodegids_col_layout_)[slaveLid];
        if(not sourcedis_->HaveGlobalNode(mastergid))
          dserror("Master Gid %i not found in source discretization!",mastergid);
        return sourcedis_->gNode(mastergid);
      }
 
-    //! map containing the mapping of the slave node ID (key) to the corresponding master node (value)
-    Teuchos::RCP<Epetra_IntVector>  slavetomasternodemapping_;
+     const DRT::Node* GetSlaveNode(int slaveLid) const
+     {
+       if(slaveLid>slave_nodegids_col_layout_->MyLength())
+         dserror("Target Lid %i not found in discretization!",slaveLid);
+       int slavegid = (*slave_nodegids_col_layout_)[slaveLid];
+       if(not sourcedis_->HaveGlobalNode(slavegid))
+         dserror("Master Gid %i not found in source discretization!",slavegid);
+       return sourcedis_->gNode(slavegid);
+     }
+
+    //! master node gids in col layout matching conditioned slave nodes
+    Teuchos::RCP<Epetra_IntVector>  master_nodegids_col_layout_;
+
+    //! slave node gids in col layout matching conditioned master nodes
+    Teuchos::RCP<Epetra_IntVector>  slave_nodegids_col_layout_;
 
     //! underlying proxy of actual dofset
     Teuchos::RCP<DofSet> dofset_;

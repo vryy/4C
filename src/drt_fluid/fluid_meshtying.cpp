@@ -3,14 +3,9 @@
 
 \brief Methods to apply meshtying to fluid and scatra systems
 
-<pre>
-Maintainer: Andreas Ehrl
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
-</pre>
+\level 2
 
-
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 
@@ -42,8 +37,9 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   discret_(dis),
   solver_(solver),
   msht_(msht),
+  myrank_(dis->Comm().MyPID()),
   surfacesplitter_(surfacesplitter),
-  dofrowmap_(discret_->DofRowMap()),
+  dofrowmap_(NULL),
   problemrowmap_(Teuchos::null),
   gndofrowmap_(Teuchos::null),
   gsmdofrowmap_(Teuchos::null),
@@ -51,6 +47,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   gmdofrowmap_(Teuchos::null),
   mergedmap_(Teuchos::null),
   valuesdc_(Teuchos::null),
+  adaptermeshtying_(Teuchos::rcp(new ADAPTER::CouplingMortar())),
   pcoupled_ (true),
   dconmaster_(false),
   firstnonliniter_(false),
@@ -60,10 +57,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   multifield_splitmatrix_(false),
   is_multifield_(false)
 {
-  // get the processor ID from the communicator
-  myrank_  = discret_->Comm().MyPID();
-
-  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  return;
 }
 
 /*-------------------------------------------------------*/
@@ -72,6 +66,9 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
 
 Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
 {
+  // get pointer to dof row map
+  dofrowmap_=discret_->DofRowMap();
+
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
   if(coupleddof[nsd_]==0)

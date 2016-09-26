@@ -5,12 +5,12 @@
  \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not implemented for element DOFs).
 
-   \level 3
+ \level 2
 
-   \maintainer Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
-                089 - 289-15251
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15251
  *----------------------------------------------------------------------*/
 
 
@@ -27,16 +27,17 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::DofSetMergedProxy::DofSetMergedProxy( Teuchos::RCP<DofSet>  dofset,
-                                          const Teuchos::RCP<const DRT::Discretization> sourcedis,
+                                          const Teuchos::RCP<const DRT::Discretization>& sourcedis,
                                           const std::string& couplingcond_master,
                                           const std::string& couplingcond_slave)
   : DofSetProxy(&(*dofset)),
-    slavetomasternodemapping_(Teuchos::null),
+    master_nodegids_col_layout_(Teuchos::null),
     dofset_(dofset),
     sourcedis_(sourcedis),
     couplingcond_master_(couplingcond_master),
     couplingcond_slave_(couplingcond_slave)
 {
+  NotifyAssigned();
 }
 
 /*----------------------------------------------------------------------*
@@ -49,18 +50,19 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   // copy communicator
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( sourcedis_->Comm().Clone());
 
-  // get nodes to be couplid
+  // get nodes to be coupled
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(*sourcedis_,couplingcond_master_,masternodes);
   std::vector<int> slavenodes;
-  DRT::UTILS::FindConditionedNodes(*sourcedis_,couplingcond_slave_,slavenodes);
+  DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
 
   // initialize search tree
   DRT::UTILS::NodeMatchingOctree tree(*sourcedis_, masternodes);
 
   // match master and slave nodes using octtree
+  // master id -> slave id, distance
   std::map<int,std::pair<int,double> > coupling;
-  tree.FindMatch(*sourcedis_, slavenodes, coupling);
+  tree.FindMatch(dis, slavenodes, coupling);
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
@@ -68,16 +70,15 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
         "DofSetMergedProxy requires matching slave and master meshes!",
             masternodes.size(), coupling.size());
 
-    // extract permutation
+  // initialize final mapping
+  Teuchos::RCP<Epetra_IntVector>  my_master_nodegids_row_layout =
+    Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
 
-  std::vector<int> patchedmasternodes;
-  patchedmasternodes.reserve(coupling.size());
-  std::vector<int> permslavenodes;
-  permslavenodes.reserve(slavenodes.size());
-
+  // loop over all coupled nodes
   for (unsigned i=0; i<masternodes.size(); ++i)
   {
-    const int gid = masternodes[i];
+    // get master gid
+    int gid = masternodes[i];
 
     // We allow to hand in master nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
@@ -85,49 +86,90 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     if (coupling.find(gid) != coupling.end())
     {
       std::pair<int,double>& coupled = coupling[gid];
-      patchedmasternodes.push_back(gid);
-      permslavenodes.push_back(coupled.first);
+      int slavegid = coupled.first;
+      int slavelid=dis.NodeRowMap()->LID(slavegid);
+      if(slavelid==-1)
+        dserror("slave gid %d was not found on this proc",slavegid);
+
+      // save master gid at col lid of corresponding slave node
+      (*my_master_nodegids_row_layout)[slavelid] = gid;
+
     }
   }
 
-  // Epetra maps in original distribution
-
-  Teuchos::RCP<Epetra_Map> masternodemap =
-    Teuchos::rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, *com));
-
-  Teuchos::RCP<Epetra_Map> slavenodemap =
-    Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, *com));
-
-  Teuchos::RCP<Epetra_Map> permslavenodemap =
-    Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, *com));
-
-  // we expect to get maps of exactly the same shape
-  if (not masternodemap->PointSameAs(*permslavenodemap))
-    dserror("master and permuted slave node maps do not match");
-
-  // export master nodes to slave node distribution
-
-  // To do so we create vectors that contain the values of the master
-  // maps, assigned to the slave maps. On the master side we actually
-  // create just a view on the map! This vector must not be changed!
-  Teuchos::RCP<Epetra_IntVector> masternodevec =
-    Teuchos::rcp(new Epetra_IntVector(View, *permslavenodemap, masternodemap->MyGlobalElements()));
-
-  Teuchos::RCP<Epetra_IntVector> permmasternodevec =
-    Teuchos::rcp(new Epetra_IntVector(*slavenodemap));
-
-  // build exporter
-  Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
-  const int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
-  if (err)
-    dserror("failed to export master nodes");
-
   // initialize final mapping
-  slavetomasternodemapping_ =
+  master_nodegids_col_layout_ =
     Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
   // export to column map
-  LINALG::Export(*permmasternodevec,*slavetomasternodemapping_);
+  LINALG::Export(*my_master_nodegids_row_layout,*master_nodegids_col_layout_);
+
+
+  ////////////////////////////////////////////////////
+  // now we match source slave and aux dis
+  ////////////////////////////////////////////////////
+
+  // get nodes to be coupled
+  masternodes.clear();
+  DRT::UTILS::FindConditionedNodes(*sourcedis_,couplingcond_slave_,masternodes);
+  slavenodes.clear();
+  DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
+
+  // initialize search tree
+  DRT::UTILS::NodeMatchingOctree tree2(*sourcedis_, masternodes);
+
+  // match master and slave nodes using octtree
+  // master id -> slave id, distance
+  coupling.clear();
+  tree2.FindMatch(dis, slavenodes, coupling);
+
+  // all nodes should be coupled
+  if (masternodes.size() != coupling.size())
+    dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
+        "DofSetMergedProxy requires matching slave and master meshes!",
+            masternodes.size(), coupling.size());
+
+  // initialize final mapping
+  Teuchos::RCP<Epetra_IntVector>  my_slave_nodegids_row_layout =
+    Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
+
+  // loop over all coupled nodes
+  for (unsigned i=0; i<masternodes.size(); ++i)
+  {
+    // get master gid
+    int gid = masternodes[i];
+
+    // We allow to hand in master nodes that do not take part in the
+    // coupling. If this is undesired behaviour the user has to make
+    // sure all nodes were used.
+    if (coupling.find(gid) != coupling.end())
+    {
+      std::pair<int,double>& coupled = coupling[gid];
+      int slavegid = coupled.first;
+      int slavelid=dis.NodeRowMap()->LID(slavegid);
+      if(slavelid==-1)
+        dserror("slave gid %d was not found on this proc",slavegid);
+
+      // save master gid at col lid of corresponding slave node
+      (*my_slave_nodegids_row_layout)[slavelid] = gid;
+
+    }
+  }
+
+  // initialize final mapping
+  slave_nodegids_col_layout_ =
+    Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+
+  // export to column map
+  LINALG::Export(*my_slave_nodegids_row_layout,*slave_nodegids_col_layout_);
 
   return start;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetMergedProxy::NotifyAssigned()
+{
+  // make sure the real dofset gets the dofmaps
+  DofSetProxy::NotifyAssigned();
 }

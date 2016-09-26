@@ -18,6 +18,7 @@
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_lib/drt_dofset_merged_proxy.H"
@@ -31,7 +32,6 @@
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
-
 
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
@@ -109,7 +109,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
   discret_ = Teuchos::rcp(new DRT::Discretization(scatratimint_->Discretization()->Name(), com));
 
   // call complete without assigning degrees of freedom
-  discret_->FillComplete(false,true,true);
+  discret_->FillComplete(false,true,false);
 
   Teuchos::RCP<DRT::Discretization> scatradis = scatratimint_->Discretization();
 
@@ -136,7 +136,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     // build a dofset that merges the DOFs from both sides
     Teuchos::RCP<DRT::DofSet> newdofset =
         Teuchos::rcp(new DRT::DofSetMergedProxy(
-            scatradis->GetDofSetSubProxy(),
+            scatradis->GetDofSetProxy(),
             scatradis,
             "ScatraHeteroReactionMaster",
             "ScatraHeteroReactionSlave"));
@@ -146,10 +146,14 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
     // add all secondary dofsets as sub proxies
     for(int ndofset=1;ndofset<scatratimint_->Discretization()->NumDofSets();++ndofset)
-      discret_->AddDofSet(scatratimint_->Discretization()->GetDofSetSubProxy(ndofset));
+      discret_->AddDofSet(scatratimint_->Discretization()->GetDofSetProxy(ndofset));
 
-    // done. Rebuild all maps.
-    discret_->FillComplete(true,true,true);
+    // done. Rebuild all maps and boundary condition geometries
+    discret_->FillComplete(true,false,true);
+
+    if(com->MyPID() == 0)
+      std::cout << "parallel distribution of auxialiary discr. with standard ghosting" << std::endl;
+    DRT::UTILS::PrintParallelDistribution(*discret_);
   }
 
   SetIsSetup(true);

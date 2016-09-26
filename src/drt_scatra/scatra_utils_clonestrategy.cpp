@@ -164,6 +164,9 @@ std::map<std::string,std::string> SCATRA::ScatraReactionCloneStrategy::Condition
 
   // for coupled scalar transport fields
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraCoupling","ScaTraCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SSICoupling","SSICoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SSICouplingScatraToSolid","SSICouplingScatraToSolid"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SSICouplingSolidToScatra","SSICouplingSolidToScatra"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionMaster","ScatraHeteroReactionMaster"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionSlave","ScatraHeteroReactionSlave"));
 
