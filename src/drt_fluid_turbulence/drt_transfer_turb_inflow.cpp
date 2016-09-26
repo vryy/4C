@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
-\file drt_turbulent_inflow.H
+\file drt_transfer_turb_inflow.cpp
 
 \brief Methods to transfer a turbulent inflow profile from a (usually
 periodic boundary condition) separate domain to a name Dirichlet
 boundary of the actual domain
 
+\level 3
+
 <pre>
-Maintainer: Benjamin Krank
+\maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -107,7 +109,9 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
             idtoadd!=(*masteridstoadd).end();
             ++idtoadd)
         {
-          masterset.insert(*idtoadd);
+          if(dis_->HaveGlobalNode(*idtoadd))
+            if(dis_->gNode(*idtoadd)->Owner() == dis_->Comm().MyPID())
+              masterset.insert(*idtoadd);
         }
 
         break;
@@ -155,9 +159,9 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     }
 
     // these are just parameter definitions for the octree search algorithm
-    double tol            = 1e-6;
-    int    maxnodeperleaf = 250;
-    double rotangle       = 0.0;
+    const double tol            = 1e-6;
+    const int    maxnodeperleaf = 250;
+    const double rotangle       = 0.0;
 
     std::vector<int> dofsforpbcplane(2);
     {
