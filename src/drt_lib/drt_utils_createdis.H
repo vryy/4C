@@ -348,7 +348,7 @@ private:
   {
     const int myrank = sourcedis.Comm().MyPID();
     const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
-
+    const Epetra_Map* sourcenodecolmap = sourcedis.NodeColMap();
 
     // construct new elements
     std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator sourceele_iter;
@@ -377,25 +377,31 @@ private:
           dserror("no own node in element %d", actele->Id());
         }
 
+        // check if element has nodes, which are not in col map on this proc.
+        // this should not be, since each proc should have all nodes of all
+        // owned, or ghosted elements in the col map.
         if (std::count_if(nids.begin(), nids.end(),
-                          DRT::UTILS::MyGID(sourcedis.NodeColMap())) < static_cast<int>(nids.size()))
+                          DRT::UTILS::MyGID(sourcenodecolmap)) != (int)(nids.size()))
         {
-          dserror("element %d has remote non-ghost nodes",actele->Id());
+          dserror("element %d owned by proc %d has remote non-ghost nodes",actele->Id(),actele->Owner());
         }
 
+        // copy node ids of condition ele to set of column nodes
         copy(nids.begin(), nids.end(),
              inserter(colnodeset, colnodeset.begin()));
 
-        // copy node ids of condition ele to rownodeset but leave those that do
+        // copy node ids of condition ele to rownodeset except for those which do
         // not belong to this processor
         remove_copy_if(nids.begin(), nids.end(),
                        inserter(rownodeset, rownodeset.begin()),
-                       not1(DRT::UTILS::MyGID(sourcenoderowmap)));
+                       std::not1(DRT::UTILS::MyGID(sourcenoderowmap)));
       }
     }
 
-    numeleskips_=1;
-
+    // we always skip the safety checks in Finalize()
+    // because we create a discretization from a
+    // conditioned subset of the source discretiztation.
+    numeleskips_++;
     return;
   }
 
