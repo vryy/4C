@@ -1,15 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_remodelfiber.cpp
-\brief the input line should read
-  MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0
+
+\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
+the input line should read
+MAT 11 ELAST_RemodelFiber NUMMAT 2 MATIDS 111 112 TDECAY 101.0 GROWTHFAC 4.951051289713897e-04 COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 
 \level 3
 
-\maintainer Fabian Bräu
-*/
+\maintainer Fabian Braeu
 
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_remodelfiber.H"
 #include "../drt_mat/matpar_material.H"
@@ -176,22 +177,22 @@ void MAT::ELASTIC::RemodelFiber::Setup(int numgp,double rho_tot,DRT::INPUT::Line
 
   for(unsigned k=0;k<potsumfiberpas_.size();++k)
   {
-    init_rho_col_[k] = rho_tot * params_->init_w_col_->at(k);
+    init_rho_col_[k].resize(numgp,rho_tot * params_->init_w_col_->at(k));
     last_lambda_r_[k].resize(numgp,1.0);
     cur_lambda_r_[k].resize(numgp,1.0);
-    cur_rho_col_[k].resize(numgp,init_rho_col_[k]);
-    last_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    cur_rho_col_[k].resize(numgp,init_rho_col_[k][0]);
+    last_rho_col_[k].resize(numgp,init_rho_col_[k][0]);
     stress_[k].resize(numgp,1.0);
 
     potsumfiberpas_[k]->Setup(linedef);
   }
   for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
   {
-    init_rho_col_[k] = rho_tot * params_->init_w_col_->at(k);
+    init_rho_col_[k].resize(numgp,rho_tot * params_->init_w_col_->at(k));
     last_lambda_r_[k].resize(numgp,1.0);
     cur_lambda_r_[k].resize(numgp,1.0);
-    cur_rho_col_[k].resize(numgp,init_rho_col_[k]);
-    last_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    cur_rho_col_[k].resize(numgp,init_rho_col_[k][0]);
+    last_rho_col_[k].resize(numgp,init_rho_col_[k][0]);
     stress_[k].resize(numgp,1.0);
 
     potsumfiberact_[k-potsumfiberpas_.size()]->Setup(linedef);
@@ -427,7 +428,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(const LINALG::Mat
     // fiber stress for output
     potsumfiberpas_[k]->GetFiberVecs(fibervecs);
     Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
-    stress_[k][gp] = 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*ilamb_inel*ilamb_inel;
+    stress_[k][gp] = Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*ilamb_inel*ilamb_inel;
   }
   for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
   {
@@ -464,11 +465,11 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(const LINALG::Mat
     // fiber stress for output
     potsumfiberact_[k-potsumfiberpas_.size()]->GetFiberVecs(fibervecs);
     Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
-    stress_[k][gp] = 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*ilamb_inel*ilamb_inel;
+    stress_[k][gp] = Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*ilamb_inel*ilamb_inel;
 
     // active contribution
     stress_f_act = stressactive.Dot(A_strain_[k]);
-    stress_[k][gp] += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+    stress_[k][gp] += Fa.Norm2()*Fa.Norm2()*stress_f_act;
   }
 
   return;
@@ -516,12 +517,12 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
   // some variables
   double Je = 0.0;
-  double Fea_norm = 0.0;
   double sigf = 0.0;
-  double diJedrho = 0.0;
   double dsigfdrho = 0.0;
   double ddPIedrho = 0.0;
   double dddPIIedrho = 0.0;
+  LINALG::Matrix<2,1> I_pseudo(true);
+  LINALG::Matrix<1,1> dI4edlamb(true);
   LINALG::Matrix<1,1> tmp_scal(true);
   LINALG::Matrix<1,6> tmp1x6(true);
   LINALG::Matrix<3,3> tmp3x3_1(true);
@@ -531,20 +532,15 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
   LINALG::Matrix<3,3> iFgiFrM(true);
   LINALG::Matrix<3,3> FeM(true);
   LINALG::Matrix<3,3> CeM(true);
-  LINALG::Matrix<3,3> iCeM(true);
-  LINALG::Matrix<6,1> iCev(true);
   LINALG::Matrix<2,1> dPIe(true);
   LINALG::Matrix<3,1> ddPIIe(true);
   LINALG::Matrix<4,1> dddPIIIe(true);
-  LINALG::Matrix<3,1> Fea(true);
   LINALG::Matrix<3,3> diFgdrhoM(true);
   LINALG::Matrix<3,3> dFgdrhoM(true);
-  LINALG::Matrix<3,3> dFedrhoM(true);
   LINALG::Matrix<3,3> diFgdrhoiFrM(true);
   LINALG::Matrix<3,3> dCedrhoM(true);
   LINALG::Matrix<6,1> dCedrhov(true);
   LINALG::Matrix<1,1> dI4edrho(true);
-  LINALG::Matrix<1,1> dFeanorm_sqdrho(true);
   LINALG::Matrix<1,6> dsigfdCe(true);
   LINALG::Matrix<3,3> diFrdlambM(true);
   LINALG::Matrix<3,3> dFrdlambM(true);
@@ -554,11 +550,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
   LINALG::Matrix<1,1> dsigfdlamb(true);
   LINALG::Matrix<1,1> ddPIedlamb(true);
   LINALG::Matrix<1,1> dddPIIedlamb(true);
-  LINALG::Matrix<1,1> dFeanorm_sqdlamb(true);
   LINALG::Matrix<3,3> FrFgM(true);
-  LINALG::Matrix<3,3> dFrdlambFgM(true);
-  LINALG::Matrix<3,3> diCedlambM(true);
-  LINALG::Matrix<6,1> diCedlambv(true);
   LINALG::Matrix<1,6> dsigfdCedlamb(true);
   LINALG::Matrix<3,3> FrnM(true);
   LINALG::Matrix<3,3> FrniFrM(true);
@@ -570,8 +562,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
   LINALG::Matrix<3,3> dYdrhoM(true);
   LINALG::Matrix<6,1> dYdrhov(true);
   LINALG::Matrix<1,6> dsigfdCedrho(true);
-  LINALG::Matrix<3,3> diCedrhoM(true);
-  LINALG::Matrix<6,1> diCedrhov(true);
 
   // additional variables for active fiber contribution (smooth muscle)
   double stress_f_act = 0.0;
@@ -581,12 +571,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
   // right Cauchy Green tensor
   LINALG::Matrix<3,3> CM(true);
-  LINALG::Matrix<3,3> iCM(true);
   CM.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
-  iCM.Invert(CM);
-
-  // determinant of deformation gradient
-  double J = defgrd->Determinant();
 
 
   // passive fiber evaluation
@@ -611,17 +596,14 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
     Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
 
     switch(growthtype)
@@ -647,10 +629,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
       break;
     }
 
-    // dFe/drho = F * dFg^-1/drho * Fr^-1 (lambda_r const)
-    tmp3x3_1.MultiplyNN(1.0,*defgrd,diFgdrhoM,0.0);
-    dFedrhoM.MultiplyNN(1.0,tmp3x3_1,iFrM,0.0);
-
     // dCedrho (lambda_r const)
     diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
     tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
@@ -664,13 +642,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     ddPIedrho = ddPIIe(0) * dI4edrho(0);
 
     //dsigf/drho (lambda_r const)
-    diJedrho = 1./(J*density);
-    dsigfdrho = 2.*diJedrho*Fea_norm*Fea_norm*dPIe(0);
+    dsigfdrho = 2.*dI4edrho(0)*dPIe(0);
 
-    dFeanorm_sqdrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
-    dsigfdrho += 2.*(1./Je)*dPIe(0)*dFeanorm_sqdrho(0);
-
-    dsigfdrho += 2.*(1./Je)*Fea_norm*Fea_norm*ddPIedrho;
+    dsigfdrho += 2.*I_pseudo(0)*ddPIedrho;
 
 
 
@@ -685,11 +659,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
 
     // dsigfdCe
-    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCe.UpdateT(2.*dPIe(0),Av_[k],0.0);
 
-    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
-
-    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCe.UpdateT(2.*I_pseudo(0)*ddPIIe(0),Av_[k],1.0);
 
 
     // dFr^-1/dlambda_r
@@ -728,34 +700,19 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     dddPIIedlamb.MultiplyTN(dddPIIIe(0),A_strain_[k],dCedlambv,0.0);
 
 
-    // d(Fea_norm)^2/dlambda_r
-    dFeanorm_sqdlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
+    // dI4e/dlambda_r
+    dI4edlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
 
 
     // Fr * Fg
     FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
 
-    // dCe^-1/dlambda_r
-    dFrdlambFgM.MultiplyNN(1.0,dFrdlambM,FgM,0.0);
-    tmp3x3_1.MultiplyNN(1.0,dFrdlambFgM,iCM,0.0);
-    diCedlambM.MultiplyNT(1.0,tmp3x3_1,FrFgM,0.0);
-    tmp3x3_1.MultiplyNT(1.0,iCM,dFrdlambFgM,0.0);
-    diCedlambM.MultiplyNN(1.0,FrFgM,tmp3x3_1,1.0);
-    MatrixtoStressVoigtNotationVector(diCedlambM,diCedlambv);
-
-
     // (dsigf/dCe)/dlambda_r
-    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedlamb(0),iCev,0.0);
+    dsigfdCedlamb.UpdateT(2.*ddPIedlamb(0),Av_[k],0.0);
 
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIedlamb(0),Av_[k],1.0);
+    dsigfdCedlamb.UpdateT(2.*I_pseudo(0)*dddPIIedlamb(0),Av_[k],1.0);
 
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedlamb(0),Av_[k],1.0);
-
-    dsigfdCedlamb.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdlamb(0),iCev,1.0);
-
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdlamb(0),Av_[k],1.0);
-
-    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedlambv,1.0);
+    dsigfdCedlamb.UpdateT(2.*ddPIIe(0)*dI4edlamb(0),Av_[k],1.0);
 
 
 
@@ -811,28 +768,13 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     dddPIIedrho = dddPIIIe(0) * dI4edrho(0);
 
 
-    // dCe^-1/drho
-    tmp3x3_1.MultiplyNN(1.0,FrM,dFgdrhoM,0.0);
-    tmp3x3_2.MultiplyNN(1.0,tmp3x3_1,iCM,0.0);
-    diCedrhoM.MultiplyNT(1.0,tmp3x3_2,FrFgM,0.0);
-    diCedrhoM.MultiplyNT(1.0,FrFgM,tmp3x3_2,1.0);
-    MatrixtoStressVoigtNotationVector(diCedrhoM,diCedrhov);
-
-
     // (dsigf/dCe)/drho
-    dsigfdCedrho.UpdateT(-1.*diJedrho*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
-    dsigfdCedrho.UpdateT(2.*diJedrho*dPIe(0),Av_[k],1.0);
-    dsigfdCedrho.UpdateT(2.*diJedrho*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*ddPIIe(0)*dI4edrho(0),Av_[k],0.0);
 
-    dsigfdCedrho.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdrho(0),iCev,1.0);
-    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdrho(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*ddPIedrho,Av_[k],1.0);
 
-    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedrho,iCev,1.0);
-    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIedrho,Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*I_pseudo(0)*dddPIIedrho,Av_[k],1.0);
 
-    dsigfdCedrho.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedrho,Av_[k],1.0);
-
-    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedrhov,1.0);
 
 
     // dE/drho
@@ -881,24 +823,21 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
     Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
     // Evaluate fiber Cauchy stress in updated fiber direction (active contribution)
     potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
     stress_f_act = stressactive.Dot(A_strain_[k]);
     Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
 
-    sigf += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+    sigf += Fa.Norm2()*Fa.Norm2()*stress_f_act;
 
     switch(growthtype)
     {
@@ -923,10 +862,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
       break;
     }
 
-    // dFe/drho = F * dFg^-1/drho * Fr^-1 (lambda_r const)
-    tmp3x3_1.MultiplyNN(1.0,*defgrd,diFgdrhoM,0.0);
-    dFedrhoM.MultiplyNN(1.0,tmp3x3_1,iFrM,0.0);
-
     // dCedrho (lambda_r const)
     diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
     tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
@@ -940,13 +875,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     ddPIedrho = ddPIIe(0) * dI4edrho(0);
 
     //dsigf/drho (lambda_r const)
-    diJedrho = 1./(J*density);
-    dsigfdrho = 2.*diJedrho*Fea_norm*Fea_norm*dPIe(0);
+    dsigfdrho = 2.*dI4edrho(0)*dPIe(0);
 
-    dFeanorm_sqdrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
-    dsigfdrho += 2.*(1./Je)*dPIe(0)*dFeanorm_sqdrho(0);
-
-    dsigfdrho += 2.*(1./Je)*Fea_norm*Fea_norm*ddPIedrho;
+    dsigfdrho += 2.*I_pseudo(0)*ddPIedrho;
 
 
 
@@ -961,11 +892,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
 
     // dsigfdCe
-    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCe.UpdateT(2.*dPIe(0),Av_[k],0.0);
 
-    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
-
-    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCe.UpdateT(2.*I_pseudo(0)*ddPIIe(0),Av_[k],1.0);
 
 
     // dFr^-1/dlambda_r
@@ -1005,33 +934,19 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
 
     // d(Fea_norm)^2/dlambda_r
-    dFeanorm_sqdlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
+    dI4edlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
 
 
     // Fr * Fg
     FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
 
-    // dCe^-1/dlambda_r
-    dFrdlambFgM.MultiplyNN(1.0,dFrdlambM,FgM,0.0);
-    tmp3x3_1.MultiplyNN(1.0,dFrdlambFgM,iCM,0.0);
-    diCedlambM.MultiplyNT(1.0,tmp3x3_1,FrFgM,0.0);
-    tmp3x3_1.MultiplyNT(1.0,iCM,dFrdlambFgM,0.0);
-    diCedlambM.MultiplyNN(1.0,FrFgM,tmp3x3_1,1.0);
-    MatrixtoStressVoigtNotationVector(diCedlambM,diCedlambv);
-
 
     // (dsigf/dCe)/dlambda_r
-    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedlamb(0),iCev,0.0);
+    dsigfdCedlamb.UpdateT(2.*ddPIedlamb(0),Av_[k],0.0);
 
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIedlamb(0),Av_[k],1.0);
+    dsigfdCedlamb.UpdateT(2.*I_pseudo(0)*dddPIIedlamb(0),Av_[k],1.0);
 
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedlamb(0),Av_[k],1.0);
-
-    dsigfdCedlamb.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdlamb(0),iCev,1.0);
-
-    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdlamb(0),Av_[k],1.0);
-
-    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedlambv,1.0);
+    dsigfdCedlamb.UpdateT(2.*ddPIIe(0)*dI4edlamb(0),Av_[k],1.0);
 
 
 
@@ -1087,28 +1002,12 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     dddPIIedrho = dddPIIIe(0) * dI4edrho(0);
 
 
-    // dCe^-1/drho
-    tmp3x3_1.MultiplyNN(1.0,FrM,dFgdrhoM,0.0);
-    tmp3x3_2.MultiplyNN(1.0,tmp3x3_1,iCM,0.0);
-    diCedrhoM.MultiplyNT(1.0,tmp3x3_2,FrFgM,0.0);
-    diCedrhoM.MultiplyNT(1.0,FrFgM,tmp3x3_2,1.0);
-    MatrixtoStressVoigtNotationVector(diCedrhoM,diCedrhov);
-
-
     // (dsigf/dCe)/drho
-    dsigfdCedrho.UpdateT(-1.*diJedrho*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
-    dsigfdCedrho.UpdateT(2.*diJedrho*dPIe(0),Av_[k],1.0);
-    dsigfdCedrho.UpdateT(2.*diJedrho*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*ddPIIe(0)*dI4edrho(0),Av_[k],0.0);
 
-    dsigfdCedrho.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdrho(0),iCev,1.0);
-    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdrho(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*ddPIedrho,Av_[k],1.0);
 
-    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedrho,iCev,1.0);
-    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIedrho,Av_[k],1.0);
-
-    dsigfdCedrho.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedrho,Av_[k],1.0);
-
-    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedrhov,1.0);
+    dsigfdCedrho.UpdateT(2.*I_pseudo(0)*dddPIIedrho,Av_[k],1.0);
 
 
     // dE/drho
@@ -1161,37 +1060,28 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
 
   LINALG::Matrix<6,6> dsigfdCedC(true);
 
-  double Je = 0.0;
-  double Fea_norm = 0.0;
   double sigf = 0.0;
   LINALG::Matrix<3,3> tmp3x3(true);
   LINALG::Matrix<6,6> tmp6x6(true);
+  LINALG::Matrix<2,1> I_pseudo(true);
   LINALG::Matrix<3,3> FeM(true);
   LINALG::Matrix<3,3> CeM(true);
-  LINALG::Matrix<3,3> iCeM(true);
-  LINALG::Matrix<6,1> iCev(true);
   LINALG::Matrix<2,1> dPIe(true);
   LINALG::Matrix<3,1> ddPIIe(true);
   LINALG::Matrix<4,1> dddPIIIe(true);
-  LINALG::Matrix<3,1> Fea(true);
   std::vector<LINALG::Matrix<3,1> > fibervecs;
   LINALG::Matrix<3,3> FrM(true);
   LINALG::Matrix<3,3> iFrM(true);
   LINALG::Matrix<3,3> iFgiFrM(true);
   LINALG::Matrix<6,6> dYdC(true);
-  LINALG::Matrix<1,6> diJedCv(true);
-  LINALG::Matrix<1,6> dFeanorm_sqdCv(true);
+  LINALG::Matrix<1,6> dI4edCv(true);
   LINALG::Matrix<1,6> ddPIedCv(true);
   LINALG::Matrix<1,6> dddPIIedCv(true);
-  LINALG::Matrix<6,6> diCedC(true);
-  LINALG::Matrix<9,6> dCedCdlamb(true);
-  LINALG::Matrix<9,6> dCedCdrho(true);
   LINALG::Matrix<6,6> dCedC(true);
   LINALG::Matrix<6,6> dCedC_strain(true);
   LINALG::Matrix<3,3> FrdotiFrM(true);
   LINALG::Matrix<3,3> FrnM(true);
   LINALG::Matrix<3,3> FrniFrM(true);
-  LINALG::Matrix<3,3> FrFgM(true);
   LINALG::Matrix<1,6> dsigfdCe(true);
   LINALG::Matrix<3,3> YM(true);
   LINALG::Matrix<6,1> Y_strain(true);
@@ -1211,14 +1101,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
 
   // constant factor
   double fac = 1.0;
-
-  // right Cauchy Green tensor
-  LINALG::Matrix<3,3> CM(true);
-  LINALG::Matrix<3,3> iCM(true);
-  LINALG::Matrix<6,1> iCv(true);
-  CM.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
-  iCM.Invert(CM);
-  MatrixtoStressVoigtNotationVector(iCM,iCv);
 
 
   // passive fiber evaluation
@@ -1245,26 +1127,20 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
 
     // dsigf/dC (passive contribution)
-    dsigfdC.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCv,0.0);
-
-    dsigfdC.MultiplyTN(2.*(1./Je)*dPIe(0),Av_[k],dCedC_strain,1.0);
-
     dI4edC.MultiplyTN(1.0,A_strain_[k],dCedC,0.0);
-    dsigfdC.Update(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),dI4edC,1.0);
+    dsigfdC.Update(2.*dPIe(0),dI4edC,0.0);
+
+    dsigfdC.Update(2.*I_pseudo(0)*ddPIIe(0),dI4edC,1.0);
 
 
     // derivation of the growth evolution eq. w.r.t. right Cauchy Green
@@ -1283,12 +1159,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     EvaldYdC(dYdC,tmp3x3,iFgiFrM,0.5);
 
 
-    // dJe^-1/dC
-    diJedCv.UpdateT(-0.5*(1./Je),iCv,0.0);
-
-
     // d(Norm(Fe*a))^2/dC
-    dFeanorm_sqdCv.MultiplyTN(1.0,Av_[k],dCedC_strain,0.0);
+    dI4edCv.MultiplyTN(1.0,Av_[k],dCedC_strain,0.0);
 
 
     // d(dPIe)/dC
@@ -1299,38 +1171,23 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     dddPIIedCv.Update(dddPIIIe(0),dI4edC,0.0);
 
 
-    // dCe^-1/dC
-    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
-    tmp3x3.MultiplyTT(1.0,iCM,FrFgM,0.0);
-    EvaldCedC(diCedC,tmp3x3,-0.5);
-
 
     // d(sigf/dCe)/dC
-    dsigfdCedC.MultiplyNN(-Fea_norm*Fea_norm*dPIe(0),iCev,diJedCv,0.0);
-    dsigfdCedC.MultiplyNN(2.*dPIe(0),Av_[k],diJedCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],diJedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*ddPIIe(0),Av_[k],dI4edCv,0.0);
 
-    dsigfdCedC.MultiplyNN(-(1./Je)*dPIe(0),iCev,dFeanorm_sqdCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*(1./Je)*ddPIIe(0),Av_[k],dFeanorm_sqdCv,1.0);
+    dsigfdCedC.MultiplyNN(2.,Av_[k],ddPIedCv,1.0);
 
-    dsigfdCedC.MultiplyNN(-(1./Je)*Fea_norm*Fea_norm,iCev,ddPIedCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*(1./Je),Av_[k],ddPIedCv,1.0);
-
-    dsigfdCedC.MultiplyNN(2.*(1./Je)*Fea_norm*Fea_norm,Av_[k],dddPIIedCv,1.0);
-
-    dsigfdCedC.Update(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedC,1.0);
+    dsigfdCedC.MultiplyNN(2.*I_pseudo(0),Av_[k],dddPIIedCv,1.0);
 
 
     // dsigfdCe
-    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCe.UpdateT(2.*dPIe(0),Av_[k],1.0);
 
-    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
-
-    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCe.UpdateT(2.*I_pseudo(0)*ddPIIe(0),Av_[k],1.0);
 
 
     // fiber Cauchy stress (passive contribution)
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
 
     // Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
@@ -1382,35 +1239,28 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
 
     // dsigf/dC (passive contribution)
-    dsigfdC.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCv,0.0);
-
-    dsigfdC.MultiplyTN(2.*(1./Je)*dPIe(0),Av_[k],dCedC_strain,1.0);
-
     dI4edC.MultiplyTN(1.0,A_strain_[k],dCedC,0.0);
-    dsigfdC.Update(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),dI4edC,1.0);
+    dsigfdC.Update(2.*dPIe(0),dI4edC,0.0);
+
+    dsigfdC.Update(2.*I_pseudo(0)*ddPIIe(0),dI4edC,1.0);
 
     // dsigf/dC (active contribution)
     potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
     stress_f_act = stressactive.Dot(A_strain_[k]);
     Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
 
-    dsigfdC.MultiplyTN(1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2(),A_strain_[k],cmatactive,1.0);
-    dsigfdC.UpdateT(-0.5/defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act,iCv,1.0);
-    dsigfdC.UpdateT(1./defgrd->Determinant()*stress_f_act,Av_[k],1.0);
+    dsigfdC.MultiplyTN(Fa.Norm2()*Fa.Norm2(),A_strain_[k],cmatactive,1.0);
+    dsigfdC.UpdateT(stress_f_act,Av_[k],1.0);
 
 
     // derivation of the growth evolution eq. w.r.t. right Cauchy Green
@@ -1429,14 +1279,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     EvaldYdC(dYdC,tmp3x3,iFgiFrM,0.5);
 
 
-    // dJe^-1/dC
-    diJedCv.UpdateT(-0.5*(1./Je),iCv,0.0);
-
-
-    // d(Norm(Fe*a))^2/dC
-    dFeanorm_sqdCv.MultiplyTN(1.0,Av_[k],dCedC_strain,0.0);
-
-
     // d(dPIe)/dC
     ddPIedCv.Update(ddPIIe(0),dI4edC,0.0);
 
@@ -1445,41 +1287,26 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     dddPIIedCv.Update(dddPIIIe(0),dI4edC,0.0);
 
 
-    // dCe^-1/dC
-    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
-    tmp3x3.MultiplyTT(1.0,iCM,FrFgM,0.0);
-    EvaldCedC(diCedC,tmp3x3,-0.5);
-
 
     // d(sigf/dCe)/dC
-    dsigfdCedC.MultiplyNN(-Fea_norm*Fea_norm*dPIe(0),iCev,diJedCv,0.0);
-    dsigfdCedC.MultiplyNN(2.*dPIe(0),Av_[k],diJedCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],diJedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*ddPIIe(0),Av_[k],dI4edCv,0.0);
 
-    dsigfdCedC.MultiplyNN(-(1./Je)*dPIe(0),iCev,dFeanorm_sqdCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*(1./Je)*ddPIIe(0),Av_[k],dFeanorm_sqdCv,1.0);
+    dsigfdCedC.MultiplyNN(2.,Av_[k],ddPIedCv,1.0);
 
-    dsigfdCedC.MultiplyNN(-(1./Je)*Fea_norm*Fea_norm,iCev,ddPIedCv,1.0);
-    dsigfdCedC.MultiplyNN(2.*(1./Je),Av_[k],ddPIedCv,1.0);
-
-    dsigfdCedC.MultiplyNN(2.*(1./Je)*Fea_norm*Fea_norm,Av_[k],dddPIIedCv,1.0);
-
-    dsigfdCedC.Update(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedC,1.0);
+    dsigfdCedC.MultiplyNN(2.*I_pseudo(0),Av_[k],dddPIIedCv,1.0);
 
 
     // dsigfdCe
-    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCe.UpdateT(2.*dPIe(0),Av_[k],1.0);
 
-    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
-
-    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+    dsigfdCe.UpdateT(2.*I_pseudo(0)*ddPIIe(0),Av_[k],1.0);
 
 
     // fiber Cauchy stress (passive contribution)
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
     // fiber Cauchy stress (active contribution)
-    sigf += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+    sigf += Fa.Norm2()*Fa.Norm2()*stress_f_act;
 
 
     // Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
@@ -1707,9 +1534,6 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmatGrowthRemodel(
 
     cmat.MultiplyNN(cur_rho_col_[k][gp],tmp6x6,dCedC_strain,1.0);
 
-    // active fiber contribution
-    cmat.Update(cur_rho_col_[k][gp],cmatactive,1.0);
-
     for(int m=0;m<nr_grf_tot;++m)
     {
       cmat.MultiplyTN(2.0,dSdrho[nr_grf_proc+k][m],drhodC[m],1.0);
@@ -1862,23 +1686,18 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(const LINALG::M
 {
   // some variables
   std::vector<LINALG::Matrix<3,1> > fibervecs;
-  double Je = 0.0;
-  double Fea_norm = 0.0;
   double sigf = 0.0;
-  double lamb_e = 0.0;
   double stress_f_act = 0.0;
   double lamb_r_dot = 0.0;
+  LINALG::Matrix<2,1> I_pseudo(true);
   LINALG::Matrix<3,3> FrM(true);
   LINALG::Matrix<3,3> iFrM(true);
   LINALG::Matrix<3,3> iFgiFrM(true);
   LINALG::Matrix<3,3> FeM(true);
   LINALG::Matrix<3,3> CeM(true);
-  LINALG::Matrix<3,3> iCeM(true);
-  LINALG::Matrix<6,1> iCev(true);
   LINALG::Matrix<2,1> dPIe(true);
   LINALG::Matrix<3,1> ddPIIe(true);
   LINALG::Matrix<4,1> dddPIIIe(true);
-  LINALG::Matrix<3,1> Fea(true);
   LINALG::Matrix<3,1> Fa(true);
   LINALG::Matrix<6,1> stress_act(true);
   LINALG::Matrix<6,6> cmat_act(true);
@@ -1901,21 +1720,17 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(const LINALG::M
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,defgrd,iFgiFrM,0.0);
-    lamb_e = FeM.Dot(AM_[k]);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    // pseudo-invariant I4
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
     // fiber Cauchy stress (passive contribution)
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
 
     // update current reference mass density
@@ -1923,7 +1738,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(const LINALG::M
 
     // update inelastic remodeling stretch
     lamb_r_dot = ((((cur_rho_col_[k][gp]-last_rho_col_[k][gp])/dt)/last_rho_col_[k][gp]+(1./params_->tdecay_))*(sigf-sigmapre_[k])*last_lambda_r_[k][gp])/
-        (2.0*(1./Je)*(dPIe(0)+2.0*lamb_e*lamb_e*ddPIIe(0))*lamb_e*lamb_e);
+        (4.0*(dPIe(0)+I_pseudo(0)*ddPIIe(0))*I_pseudo(0));
 
     cur_lambda_r_[k][gp] = last_lambda_r_[k][gp] + dt*lamb_r_dot;
   }
@@ -1945,21 +1760,17 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(const LINALG::M
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,defgrd,iFgiFrM,0.0);
-    lamb_e = FeM.Dot(AM_[k]);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
-    iCeM.Invert(CeM);
-    MatrixtoStressVoigtNotationVector(iCeM,iCev);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
     potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
     // Evaluate fiber Cauchy stress in updated fiber direction
-    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
-    Fea_norm = Fea.Norm2();
+    // pseudo-invariant I4
+    I_pseudo(0) = CeM.Dot(AM_[k]);
 
     // fiber Cauchy stress (passive contribution)
-    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+    sigf = 2.*I_pseudo(0)*dPIe(0);
 
     // fiber Cauchy stress (active contribution)
     // dsigf/dC (active contribution)
@@ -1967,14 +1778,14 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(const LINALG::M
     stress_f_act = stress_act.Dot(A_strain_[k]);
     Fa.MultiplyNN(1.0,defgrd,fibervecs[k],0.0);
 
-    sigf += 1./defgrd.Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+    sigf += Fa.Norm2()*Fa.Norm2()*stress_f_act;
 
     // update current reference mass density
     cur_rho_col_[k][gp] = last_rho_col_[k][gp] + last_rho_col_[k][gp]*dt*params_->k_growth_*((sigf-sigmapre_[k])/sigmapre_[k]);
 
     // update inelastic remodeling stretch
     lamb_r_dot = ((((cur_rho_col_[k][gp]-last_rho_col_[k][gp])/dt)/last_rho_col_[k][gp]+(1./params_->tdecay_))*(sigf-sigmapre_[k])*last_lambda_r_[k][gp])/
-        (2.0*(1./Je)*(dPIe(0)+2.0*lamb_e*lamb_e*ddPIIe(0))*lamb_e*lamb_e);
+        (4.0*(dPIe(0)+I_pseudo(0)*ddPIIe(0))*I_pseudo(0));
 
     cur_lambda_r_[k][gp] = last_lambda_r_[k][gp] + dt*lamb_r_dot;
   }
@@ -2290,6 +2101,14 @@ void MAT::ELASTIC::RemodelFiber::VisNames(std::map<std::string,int>& names, unsi
 
     names[result_cur_rho_col] = 1;
   }
+
+  std::string result_sum_normalized_rho_col;
+  if(p == 0)
+  {
+   result_sum_normalized_rho_col = "sum_normalized_rho_col_0_0";
+   names[result_sum_normalized_rho_col] = 1;
+  }
+
 }  // VisNames()
 
 
@@ -2394,6 +2213,22 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
     return true;
   }
+
+
+
+if(name == "sum_normalized_rho_col_0_0")
+{
+  if (data.size()!= 1) dserror("size mismatch");
+  for(unsigned i=0;i<cur_rho_col_[0].size();++i)
+  {
+    data[0] += (cur_rho_col_[0][i]+cur_rho_col_[1][i]+cur_rho_col_[2][i]+cur_rho_col_[3][i])/
+       (init_rho_col_[0][i]+init_rho_col_[1][i]+init_rho_col_[2][i]+init_rho_col_[3][i]);
+  }
+  data[0] = data[0]/cur_rho_col_[0].size();
+
+  return true;
+}
+
 
 
 

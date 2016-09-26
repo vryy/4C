@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_remodelfiber.H
-\brief the input line should read MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0 COLMASSFRAC 0.5
+
+\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
 
 \level 3
 
@@ -111,13 +112,13 @@ namespace ELASTIC
 
     //@}
 
-    /// Set current mass density of one specific fiber
+    /// Update current mass density of one specific fiber
     virtual void UpdateCurMassDensity(const double& drho,
                                       const unsigned& k,
                                       const int& gp)
     { cur_rho_col_[k][gp] += drho; };
 
-    /// Set current inelastic stretch in fiberdirection
+    /// Update current inelastic stretch in fiberdirection
     virtual void UpdateCurRemodelStretch(const double& dlamb,
                                          const unsigned& k,
                                          const int& gp)
@@ -293,7 +294,7 @@ namespace ELASTIC
     std::vector<std::vector<double> > last_rho_col_;
 
     /// initial individual mass density of each fiber family at the last time step
-    std::vector<double> init_rho_col_;
+    std::vector<std::vector<double> > init_rho_col_;
 
     /// current fiber Cauchy stress
     std::vector<std::vector<double> > stress_;

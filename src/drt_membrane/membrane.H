@@ -97,9 +97,7 @@ public:
 
   //! number of element nodes
   static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  // include header because number of Gauss points are determined
-  // dependent on distype
-  #include "../drt_fem_general/drt_utils_gausspoints.H"
+
   //! number of space dimensions
   static const int numdim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 

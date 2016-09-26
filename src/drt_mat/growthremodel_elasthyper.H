@@ -6,14 +6,8 @@
 
 \level 3
 
-<pre>
 \maintainer Fabian Braeu
-            braeu@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 #ifndef GROWTHREMODEL_ELASTHYPER_H
 #define GROWTHREMODEL_ELASTHYPER_H
@@ -62,20 +56,26 @@ namespace MAT
       /// length of remodelfiber material list
       const int nummat_remodelfiber_;
 
-      /// length of elastin matrix material list
-      const int nummat_elastin_;
+      /// length of 3d elastin matrix material list
+      const int nummat_elastiniso_;
+
+      /// length of membrane elastin matrix material list
+      const int nummat_elastinmem_;
 
       /// the list of remodelfiber material IDs
       const std::vector<int>* matids_remodelfiber_;
 
-      /// the list of elastin matrix material IDs
-      const std::vector<int>* matids_elastin_;
+      /// the list of 3d elastin matrix material IDs
+      const std::vector<int>* matids_elastiniso_;
+
+      /// the list of membrane elastin matrix material IDs
+      const std::vector<int>* matids_elastinmem_;
 
       /// material ID of growth penalty material
       const int matid_penalty_;
 
       /// initial mass fraction of elastin in constraint mixture
-      const std::vector<double>* init_w_el_;
+      const double init_w_el_;
 
       /// material mass density
       const double density_;
@@ -88,6 +88,15 @@ namespace MAT
 
       /// axial prestretch of elastin matrix
       const double lamb_prestretch_ax_;
+
+      /// reference wall thickness of the idealized cylindrical aneurysm
+      const double t_ref_;
+
+      /// mean blood pressure
+      const double p_mean_;
+
+      /// inner radius of the idealized cylindrical aneurysm
+      const double ri_;
 
       /// flag for turning elastin damage on or off: 1: damage on; 0: damage off
       const int damage_;
@@ -212,6 +221,9 @@ private:
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
   protected:
+
+    /// Setup transformation matrices between the global frame and an orthogonal frame on the cylinder surface
+    void SetupTrafoMatrices();
 
     /// Setup circumferential, radial and axial structural tensor
     void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
@@ -438,20 +450,87 @@ private:
                             const int eleGID                       ///< Element ID
                             );
 
+    /// evaluate isotropic and anisotropic stress and cmat (membrane formulation)
+    void EvaluateStressCmatMembrane(
+        const LINALG::Matrix<3,3>*        defgrd,
+        const LINALG::Matrix<3,3>&        iFinel,
+        LINALG::Matrix<6,1>&              stress,
+        LINALG::Matrix<6,6>&              cmat,
+        const int                         gp,
+        const int                         eleGID
+        );
+
+    /// evaluate kinematic elastic quantities (membrane formulation)
+    void EvaluateKinQuantElastMembrane(
+        const LINALG::Matrix<3,3>& iFrg,
+        LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<3,1>& iC,
+        LINALG::Matrix<3,1>& iCrg,
+        LINALG::Matrix<3,1>& iCrgCiCrg,
+        const LINALG::Matrix<3,3>* defgrd,
+        double& rcg_e_33
+        );
+
+    /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants for the special case of an
+    /// incompressible membrane formulation
+    virtual void EvaluateInvariantDerivativesMembrane(
+        const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
+        const int& gp,                                  ///< current Gauß-point
+        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants weighted with the corresponding volume fraction
+        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants weighted with the corresponding volume fraction
+        int eleGID);                                    ///< Element ID
+
+    /// gamma and delta from partial derivatives w.r.t. invariants (membrane formulation)
+    void CalculateGammaDeltaMembrane(
+        LINALG::Matrix<3,1>& gamma_mem,              ///< factors for stress calculation
+        LINALG::Matrix<8,1>& delta_mem,              ///< factors for elasticity tensor calculation
+        const LINALG::Matrix<3,1>& prinv,            ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& dPI,              ///< first derivative with respect to invariants
+        const LINALG::Matrix<6,1>& ddPII,            ///< second derivative with respect to invariants
+        const double& rcg33);                        ///< entry of cauchygreen tensor in thickness direction
+
+    /// isotropic stress and elasticity tensor for coupled configuration (membrane formulation)
+    void EvaluateIsotropicPrincElastMembrane(
+        LINALG::Matrix<3,1>& stress_mem,
+        LINALG::Matrix<3,3>& cmat_mem,
+        LINALG::Matrix<3,1>& iCrg,
+        LINALG::Matrix<3,1>& iCrgCiCrg,
+        LINALG::Matrix<3,1>& iC,
+        LINALG::Matrix<3,1>& gamma_mem,
+        LINALG::Matrix<8,1>& delta_mem
+        );
+
+    /// Convert matrix to "stress-like" Voigt notation
+    void MatrixtoStressLikeVoigtNotation(LINALG::Matrix<3,3> A,
+                                         LINALG::Matrix<6,1>& B);
+
+    /// Convert "stress-like" Voigt notation to matrix
+    void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> A,
+                                         LINALG::Matrix<3,3>& B);
+
+    /// Evaluate Prestretches
+    void EvaluatePrestretch(const LINALG::Matrix<3,3>* defgrd,
+                            const int gp,
+                            const int eleGID);
+
+
     /// my material parameters
     MAT::PAR::GrowthRemodel_ElastHyper* params_;
 
     /// map to remodelfiber material summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::RemodelFiber> > potsumrf_;
 
-    /// map to elastin matrix material summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumel_;
+    /// map to elastin 3d matrix material summands
+    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumeliso_;
 
-    /// map to ground matrix material summands
-    Teuchos::RCP<MAT::ELASTIC::Summand> potsumpenalty_;
+    /// map to membrane elastin material summands
+    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumelmem_;
+
+    /// map to penalty elastin matrix material summands
+    Teuchos::RCP<MAT::ELASTIC::Summand> potsumelpenalty_;
 
     /// current individual mass density of elastin
-    std::vector<std::vector<double> > cur_rho_el_;
+    std::vector<double> cur_rho_el_;
 
     /// initial individual mass density of elastin
     std::vector<double> init_rho_el_;
@@ -492,13 +571,17 @@ private:
     /// structural tensor of the plane in which all fibers are located
     LINALG::Matrix<3,3> AplM_;
 
+    /// projection to local coordinates
+    LINALG::Matrix<6,6> Q_proj_loc_;
 
-    /// wall thickness in reference configuration
-    double t_ref_;
+    /// projection to global coordinates
+    LINALG::Matrix<6,6> Q_proj_glob_;
 
-    /// mean blood pressure
-    double p_mean_;
+    /// fraction of 2D material parameter of elastin
+    std::vector<double> mue_frac_;
 
+    /// first call of Evaluate()
+    std::vector<int> first_;
   };
 
 }
