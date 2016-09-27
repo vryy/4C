@@ -43,7 +43,7 @@ INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
-COUPLINGTYPE                    NoMortar
+COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------STI DYNAMIC
 SCATRATYPE                      Elch
 THERMO_INITIALFIELD             field_by_function

@@ -44,7 +44,7 @@ ITEMAX                          2
 CONVTOL                         1e-15
 ABSTOLRES                       1e-15
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
-COUPLINGTYPE                    NoMortar
+COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

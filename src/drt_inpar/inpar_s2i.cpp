@@ -62,7 +62,7 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "type of mortar meshtying",
       tuple<std::string>(
           "Undefined",
-          "NoMortar",
+          "MatchingNodes",
           "StandardMortar",
           "SaddlePointMortar_Petrov",
           "SaddlePointMortar_Bubnov",
