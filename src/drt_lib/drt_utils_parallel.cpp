@@ -280,26 +280,6 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
     Teuchos::RCP<Epetra_Map> redistributed_nodecolmap =
         Teuchos::rcp(new Epetra_Map(-1, redistribute_colnodegid_vec.size(), &redistribute_colnodegid_vec[0], 0, *com));
 
-//    ////// VARIANT
-//    Teuchos::RCP<Epetra_CrsGraph> initgraph = dis_to_redistribute.BuildNodeGraph();
-//
-//    // create the new graph and export to it
-//    Teuchos::RCP<Epetra_CrsGraph> newnodegraph;
-//
-//    newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*redistributed_noderowmap,108,false));
-//    Epetra_Export exporter2(initgraph->RowMap(),*redistributed_noderowmap);
-//    const int err = newnodegraph->Export(*initgraph,exporter2,Add);
-//    if (err<0)
-//      dserror("Graph export returned err=%d",err);
-//    newnodegraph->FillComplete();
-//    newnodegraph->OptimizeStorage();
-//
-//    // the column map will become the new ghosted distribution of nodes (standard ghosting)
-//    const Epetra_BlockMap cntmp = newnodegraph->ColMap();
-//    Teuchos::RCP<Epetra_Map> redistributed_nodecolmap  =
-//        Teuchos::rcp(new Epetra_Map(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,*com));
-//    ///////////////////////////////////////
-
     // we finally redistribute.
     // FillComplete(...) inside.
     dis_to_redistribute.Redistribute(
@@ -314,22 +294,9 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
 
     // print to screen
     PrintParallelDistribution(dis_to_redistribute);
-
-//    // safety checks
-//    int mynumtemplaterownodes = dis_template.NodeRowMap()->NumMyElements();
-//    int mynumredistributedrownodes = dis_to_redistribute.NodeRowMap()->NumMyElements();
-//    if(mynumtemplaterownodes!=mynumredistributedrownodes)
-//      dserror("Parallel distribution of row nodes is not equal!");
-//
-//    int mynumtemplatecolnodes = dis_template.NodeColMap()->NumMyElements();
-//    int mynumredistributedcolnodes = dis_to_redistribute.NodeColMap()->NumMyElements();
-//    if(mynumtemplatecolnodes!=mynumredistributedcolnodes)
-//      dserror("Parallel distribution of row nodes is not equal!");
-
   } // if more than one proc
-
   return;
-}
+} // MatchDistributionOfMatchingDiscretizations
 
 
 /*----------------------------------------------------------------------*/
