@@ -31,6 +31,8 @@ namespace DRT
 namespace PARTICLE
 {
   class Algorithm;
+  struct WallContactPoint;
+  struct ParticleCollData;
 }
 
 
@@ -38,82 +40,6 @@ namespace PARTICLE
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-
-/*====================================================================*/
-/*!
- * \brief interaction handler base for particle and meshfree interactions
- *
- * \author cattabiani
- * \date 08/16
- */
-  class InteractionHandlerBase
-  {
-
-  public:
-
-    //! @name Life
-    //@{
-
-    //! Constructor
-    InteractionHandlerBase(
-      Teuchos::RCP<DRT::Discretization> discret,
-      Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-      const Teuchos::ParameterList& particledynparams
-      );
-
-    //! Destructor
-    virtual ~InteractionHandlerBase(){ ; }
-
-    //@}
-
-    //! @name Actions
-    //@{
-
-    /// set states from time integrator to prepare collision calculation
-    virtual void SetState(
-      Teuchos::RCP<Epetra_Vector> radius,
-      Teuchos::RCP<Epetra_Vector> mass
-      );
-
-    //@}
-
-    //! @name Actions
-    //@{
-
-  protected:
-
-    /// ID of actual processor in parallel
-    int myrank_;
-
-    //! @name helper classes
-    //@{
-
-    /// particle discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
-
-    /// particle algorithm that is connected to the time integration
-    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
-
-    //@}
-
-    //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
-    //@{
-
-    //! @node-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> radiusncol_;
-    Teuchos::RCP<Epetra_Vector> masscol_;
-    //@}
-
-    //! @dof-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> disncol_;
-    Teuchos::RCP<Epetra_Vector> velncol_;
-    Teuchos::RCP<const Epetra_Vector> ang_velncol_;
-    //@}
-
-  };  // class InteractionHandlerBase
-
   /*====================================================================*/
   /*!
    * \brief Collision handler base for particle contact
@@ -121,7 +47,7 @@ namespace PARTICLE
    * \author hammerl
    * \date 09/13
    */
-  class ParticleCollisionHandlerBase : public PARTICLE::InteractionHandlerBase
+  class ParticleCollisionHandlerBase
   {
 
   public:
@@ -143,6 +69,12 @@ namespace PARTICLE
 
     //! @name Actions
     //@{
+
+    /// set states from time integrator to prepare collision calculation
+    virtual void SetState(
+      Teuchos::RCP<Epetra_Vector> radius,
+      Teuchos::RCP<Epetra_Vector> mass
+      );
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual double EvaluateParticleContact(
@@ -240,15 +172,35 @@ namespace PARTICLE
 
     //@}
 
-    /// struct to store wall contact point and additional information about corresponding wall ele
-    struct WallContactPoint {
-     int eleid;
-     LINALG::Matrix<3,1> point;
-     double penetration;
-     std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
-     std::vector<int> lm;
-     std::vector<int> lmowner;
-    };
+    /// ID of actual processor in parallel
+    int myrank_;
+
+    //! @name helper classes
+    //@{
+
+    /// particle discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
+
+    /// particle algorithm that is connected to the time integration
+    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+
+    //@}
+
+    //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
+    //@{
+
+    //! @node-based
+    //@{
+    Teuchos::RCP<Epetra_Vector> radiusncol_;
+    Teuchos::RCP<Epetra_Vector> masscol_;
+    //@}
+
+    //! @dof-based
+    //@{
+    Teuchos::RCP<Epetra_Vector> disncol_;
+    Teuchos::RCP<Epetra_Vector> velncol_;
+    Teuchos::RCP<const Epetra_Vector> ang_velncol_;
+    //@}
 
   };  // class ParticleCollisionHandlerBase
 
@@ -265,17 +217,6 @@ namespace PARTICLE
   {
 
   public:
-
-  /// struct to store particle data for faster access
-  struct ParticleCollData {
-    LINALG::Matrix<3,1> pos;
-    LINALG::Matrix<3,1> vel;
-    LINALG::Matrix<3,1> angvel;
-    double rad;
-    double mass;
-    std::vector<int> lm;
-    int owner;
-  };
 
   //! @name Life
   //@{
@@ -639,80 +580,31 @@ namespace PARTICLE
 
    };  // class ParticleCollisionHandlerMD
 
+  //! @name Container structs for faster access
+  //@{
 
-  /*====================================================================*/
-    /*!
-     * \brief MeshFree interaction handler
-     *
-     * \author cattabiani
-     * \date 08/16
-     */
-    class MeshFreeInteractionHandler : public PARTICLE::InteractionHandlerBase
-    {
+  /// struct to store wall contact point and additional information about corresponding wall ele
+  struct WallContactPoint {
+   int eleid;
+   LINALG::Matrix<3,1> point;
+   double penetration;
+   std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
+   std::vector<int> lm;
+   std::vector<int> lmowner;
+  };
 
-    public:
+  /// struct to store particle data for faster access
+  struct ParticleCollData {
+    LINALG::Matrix<3,1> pos;
+    LINALG::Matrix<3,1> vel;
+    LINALG::Matrix<3,1> angvel;
+    double rad;
+    double mass;
+    std::vector<int> lm;
+    int owner;
+  };
 
-      /// struct to store node data for faster access
-      struct ParticleInterData {
-        LINALG::Matrix<3,1> pos;
-        LINALG::Matrix<3,1> vel;
-        double rho;
-        double rad;
-        double mass;
-        double press;
-        std::vector<int> lm;
-        int owner;
-      };
-
-      //! @name Life
-      //@{
-
-      //! Constructor
-      MeshFreeInteractionHandler(
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-        const Teuchos::ParameterList& particledynparams
-        );
-
-      //! Destructor
-      ~MeshFreeInteractionHandler(){ ; }
-
-      //@}
-
-      //! @name Actions
-      //@{
-
-      /// set state partial overload from time integrator to prepare collision calculation
-      virtual void SetState(
-        Teuchos::RCP<Epetra_Vector> radius,
-        Teuchos::RCP<Epetra_Vector> mass
-        );
-
-      /// compute collisions (inter-particle and particle-wall), returns contact energy
-      void PreFetchInterData(
-        const int numcolparticles
-        );
-
-      /// compute interactions, returns 0
-      void EvaluateParticleInteraction(
-        Teuchos::RCP<Epetra_Vector> densityInter,
-        Teuchos::RCP<Epetra_Vector> velocityInter
-        );
-
-    protected:
-
-      //! @name Interaction parameters
-      //@{
-
-      std::vector<ParticleInterData> particledata_;   ///< temporary storage for all particle collision relevant data
-
-      /// weight function for meshfree interactions
-      INPAR::PARTICLE::WeightFunction weight_function_;
-
-      Teuchos::RCP<Epetra_Vector> densityncol_;
-      Teuchos::RCP<Epetra_Vector> pressurencol_;
-
-    };  // class MeshFreeInteractionHandler
+  //@}
 
 }  // namespace PARTICLE
 

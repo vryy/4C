@@ -42,49 +42,6 @@ typedef Sacado::Fad::DFad<double> FAD;
 //#define OUTPUT
 
 /*----------------------------------------------------------------------*
- | constructor for particle and meshfree interactions cattabiani 08/16  |
- *----------------------------------------------------------------------*/
-PARTICLE::InteractionHandlerBase::InteractionHandlerBase(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-  const Teuchos::ParameterList& particledynparams
-  ) :
-  myrank_(discret->Comm().MyPID()),
-  discret_(discret),
-  particle_algorithm_(particlealgorithm),
-  radiusncol_(Teuchos::null),
-  masscol_(Teuchos::null),
-  disncol_(Teuchos::null),
-  velncol_(Teuchos::null),
-  ang_velncol_(Teuchos::null)
-{
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set states from time integrator to prepare collisions   ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::InteractionHandlerBase::SetState(
-  Teuchos::RCP<Epetra_Vector> radius,
-  Teuchos::RCP<Epetra_Vector> mass)
-{
-  // node based vectors
-  radiusncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radius,*radiusncol_);
-  masscol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*mass,*masscol_);
-
-  // miraculous transformation from row to col layout ...
-  disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
-  velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
-  ang_velncol_ = discret_->GetState("bubbleangvel");
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | constructor for particle contact                        ghamm 09/13  |
  *----------------------------------------------------------------------*/
 
@@ -93,14 +50,18 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
   const Teuchos::ParameterList& particledynparams
   ) :
-  PARTICLE::InteractionHandlerBase(
-      discret,
-      particlealgorithm,
-      particledynparams
-      ),
   contact_energy_(0.0),
   g_max_(0.0),
-  writeenergyevery_(particledynparams.get<int>("RESEVRYERGY"))
+  writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
+  myrank_(discret->Comm().MyPID()),
+  discret_(discret),
+  particle_algorithm_(particlealgorithm),
+  radiusncol_(Teuchos::null),
+  masscol_(Teuchos::null),
+  disncol_(Teuchos::null),
+  velncol_(Teuchos::null),
+  ang_velncol_(Teuchos::null)
+
 {
   // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
@@ -396,6 +357,26 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   }
 }
 
+/*----------------------------------------------------------------------*
+ | set states from time integrator to prepare collisions   ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerBase::SetState(
+  Teuchos::RCP<Epetra_Vector> radius,
+  Teuchos::RCP<Epetra_Vector> mass)
+{
+  // node based vectors
+  radiusncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*radius,*radiusncol_);
+  masscol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*mass,*masscol_);
+
+  // miraculous transformation from row to col layout ...
+  disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
+  velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
+  ang_velncol_ = discret_->GetState("bubbleangvel");
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | assemble energies of particles                          ghamm 09/13  |
@@ -3775,6 +3756,7 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
 /*----------------------------------------------------------------------*
  | constructor for MeshFree interactions                   katta 08/16  |
  *----------------------------------------------------------------------*/
+/*
 PARTICLE::MeshFreeInteractionHandler::MeshFreeInteractionHandler(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
@@ -3798,6 +3780,7 @@ PARTICLE::MeshFreeInteractionHandler::MeshFreeInteractionHandler(
 /*----------------------------------------------------------------------*
  | set states overload for meshfree                        katta 08/16  |
  *----------------------------------------------------------------------*/
+/*
 void PARTICLE::MeshFreeInteractionHandler::SetState(
   Teuchos::RCP<Epetra_Vector> radius,
   Teuchos::RCP<Epetra_Vector> mass)
@@ -3818,6 +3801,7 @@ void PARTICLE::MeshFreeInteractionHandler::SetState(
 /*----------------------------------------------------------------------*
  | collect collision data for faster access                ghamm 04/16  |
  *----------------------------------------------------------------------*/
+/*
 void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
   const int numcolparticles
   )
@@ -3864,6 +3848,7 @@ void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
 /*----------------------------------------------------------------------*
  | compute MeshFree interactions                           katta 08/16  |
  *----------------------------------------------------------------------*/
+/*
 void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
   Teuchos::RCP<Epetra_Vector> densityInter,
   Teuchos::RCP<Epetra_Vector> velocityInter
@@ -4011,3 +3996,4 @@ void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
   ang_velncol_ = Teuchos::null;
 
 }
+*/
