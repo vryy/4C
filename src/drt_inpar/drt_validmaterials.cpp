@@ -2543,11 +2543,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITTEMPERATURE","initial temperature");
     AddNamedReal(m,"CPS","specific heat - constant pressure - solid state");
     AddNamedReal(m,"CPL","specific heat - constant pressure - liquid state");
-    AddNamedReal(m,"SL_LATENT_HEAT","specific latent heat - solid <-> liquid");
-    AddNamedReal(m,"SL_TRANSITION_TEMPERATURE","transition temperature - solid <-> liquid");
-    AddNamedReal(m,"S_THERMAL_EXPANSION","volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient");
-    AddNamedReal(m,"L_THERMAL_EXPANSION","volumetric thermal expansion coefficient - liquid state");
-    AddNamedReal(m,"SL_THERMAL_EXPANSION","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!");
+    AddNamedReal(m,"LATENT_HEAT_SL","specific latent heat - solid <-> liquid");
+    AddNamedReal(m,"TRANSITION_TEMPERATURE_SL","transition temperature - solid <-> liquid");
+    AddNamedReal(m,"THERMAL_EXPANSION_S","volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient");
+    AddNamedReal(m,"THERMAL_EXPANSION_L","volumetric thermal expansion coefficient - liquid state");
+    AddNamedReal(m,"THERMAL_EXPANSION_SL","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!");
 
     AppendMaterialDefinition(matlist,m);
   }

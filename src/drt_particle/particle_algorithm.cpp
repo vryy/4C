@@ -2053,7 +2053,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   Teuchos::RCP<Epetra_Vector> velnp = particles_->WriteAccessVelnp();
   Teuchos::RCP<Epetra_Vector> accnp = particles_->WriteAccessAccnp();
   Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
-  Teuchos::RCP<Epetra_Vector> SL_latent_heat = particles_->WriteAccessSL_latentHeat();
+  Teuchos::RCP<Epetra_Vector> latentHeat = particles_->WriteAccessLatentHeat();
 
   int lidNodeCounter = 0;
   for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
@@ -2080,7 +2080,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
     MassDensityUpdaterForParticleDismemberer(mass, densitynp, radius, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
     (*radius)[lidNode_new] = dismemberRadius;
     (*temperaturenp)[lidNode_new] = (*temperaturenp)[lidNode_old];
-    (*SL_latent_heat)[lidNode_new] = (*SL_latent_heat)[lidNode_old];
+    (*latentHeat)[lidNode_new] = (*latentHeat)[lidNode_old];
     // inertia-vector: sphere: I = 2/5 * m * r^2
     (*inertia)[lidNode_new] = 0.4 * (*mass)[lidNode_new] * dismemberRadius * dismemberRadius;
     for(int d=0; d<3; ++d)

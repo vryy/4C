@@ -102,11 +102,11 @@ PARTICLE::TimInt::TimInt
   dismemberRadius_(-1.0),
   CPS_(-1.0),
   CPL_(-1.0),
-  SL_latent_heat_max_(-1.0),
-  SL_transitionTemperature_(-1.0),
-  S_thermalExpansion_(-1.0),
-  L_thermalExpansion_(-1.0),
-  SL_thermalExpansion_(-1.0),
+  latentHeatSL_(-1.0),
+  transitionTemperatureSL_(-1.0),
+  thermalExpansionS_(-1.0),
+  thermalExpansionL_(-1.0),
+  thermalExpansionSL_(-1.0),
   fifc_(Teuchos::null),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
   collhandler_(Teuchos::null),
@@ -395,21 +395,21 @@ void PARTICLE::TimInt::SetInitialFields()
       dismemberRadius_ = actmat2->dismemberRadius_;
       CPS_ = actmat2->CPS_;
       CPL_ = actmat2->CPL_;
-      SL_latent_heat_max_ = actmat2->SL_latent_heat_max_;
-      SL_transitionTemperature_ = actmat2->SL_transitionTemperature_;
-      S_thermalExpansion_ = actmat2->S_thermalExpansion_;
-      L_thermalExpansion_ = actmat2->L_thermalExpansion_;
-      SL_thermalExpansion_ = actmat2->SL_thermalExpansion_;
+      latentHeatSL_ = actmat2->latentHeatSL_;
+      transitionTemperatureSL_ = actmat2->transitionTemperatureSL_;
+      thermalExpansionS_ = actmat2->thermalExpansionS_;
+      thermalExpansionL_ = actmat2->thermalExpansionL_;
+      thermalExpansionSL_ = actmat2->thermalExpansionSL_;
 
       // initialize temperature of particles
       const double temperature0 = actmat2->temperature_;
       (*temperature_)(0)->PutScalar(temperature0);
 
-      if (temperature0>SL_transitionTemperature_)
+      if (temperature0>transitionTemperatureSL_)
       {
-        SL_latent_heat_->PutScalar(SL_latent_heat_max_);
+        SL_latent_heat_->PutScalar(latentHeatSL_);
       }
-      else if (temperature0<SL_transitionTemperature_)
+      else if (temperature0<transitionTemperatureSL_)
       {
         SL_latent_heat_->PutScalar(0);
       }

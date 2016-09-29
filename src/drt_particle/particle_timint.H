@@ -207,10 +207,7 @@ namespace PARTICLE
     //@{
 
     //! Access dicretisation
-    virtual Teuchos::RCP<DRT::Discretization> Discretization()
-    {
-      return discret_;
-    }
+    virtual Teuchos::RCP<DRT::Discretization> Discretization(){ return discret_; }
 
     //! Access to rcp pointer to dofrowmap of discretization
     virtual const Epetra_Map* DofRowMapView();
@@ -321,10 +318,10 @@ namespace PARTICLE
     virtual double CPL() { return CPL_; }
 
     //! Return specific latent heat - solid <-> liquid
-    virtual double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
+    virtual double MaxSpecificLatentHeat() {return latentHeatSL_; }
 
     //! transition temperature - solid <-> liquid
-    virtual double SL_TransitionTemperature() {return SL_transitionTemperature_; }
+    virtual double SL_TransitionTemperature() {return transitionTemperatureSL_; }
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
@@ -517,15 +514,15 @@ namespace PARTICLE
     //! specific heat - constant pressure - liquid state
     double CPL_;
     //! specific latent heat - solid <-> liquid
-    double SL_latent_heat_max_;
+    double latentHeatSL_;
     //! transition temperature - solid <-> liquid
-    double SL_transitionTemperature_;
+    double transitionTemperatureSL_;
     //! volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
-    double S_thermalExpansion_;
+    double thermalExpansionS_;
     //! volumetric thermal expansion coefficient - liquid state
-    double L_thermalExpansion_;
+    double thermalExpansionL_;
     //! volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
-    double SL_thermalExpansion_;
+    double thermalExpansionSL_;
 
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;

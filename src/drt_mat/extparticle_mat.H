@@ -43,15 +43,15 @@ namespace MAT
         /// specific heat - constant pressure - liquid state
         const double CPL_;
         /// specific latent heat - solid <-> liquid
-        const double SL_latent_heat_max_;
+        const double latentHeatSL_;
         /// transition temperature - solid <-> liquid
-        const double SL_transitionTemperature_;
+        const double transitionTemperatureSL_;
         /// volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
-        const double S_thermalExpansion_;
+        const double thermalExpansionS_;
         /// volumetric thermal expansion coefficient - liquid state
-        const double L_thermalExpansion_;
+        const double thermalExpansionL_;
         /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
-        const double SL_thermalExpansion_;
+        const double thermalExpansionSL_;
 
     };  // class MAT::PAR::ExtParticleMat
   } // namespace PAR
