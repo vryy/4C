@@ -1651,8 +1651,6 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
   // copy values from col to row layout
   for(int i=0; i<discret_->NumMyColNodes(); ++i)
   {
-    std::cout << "pippo_owner" << particleData_[i].owner << std::endl;
-    std::cout << "pippo_myrank" << myrank_ << std::endl;
     if (particleData_[i].owner == myrank_)
     {
       for (int dim=0;dim<3;++dim)
