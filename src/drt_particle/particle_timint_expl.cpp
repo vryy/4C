@@ -136,12 +136,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
 /* states are given to the collision handler */
 void PARTICLE::TimIntExpl::SetStatesForCollision()
 {
-  // dof based vectors
-  discret_->SetState("bubblepos", disn_);
-  discret_->SetState("bubblevel", veln_);
-  discret_->SetState("bubbleangvel", ang_veln_);
-
-  collhandler_->SetState(radius_, mass_);
+  collhandler_->Init(disn_, veln_, ang_veln_, radius_, mass_);
 
   return;
 }

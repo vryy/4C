@@ -71,10 +71,12 @@ namespace PARTICLE
     //@{
 
     /// set states from time integrator to prepare collision calculation
-    virtual void SetState(
-      Teuchos::RCP<Epetra_Vector> radius,
-      Teuchos::RCP<Epetra_Vector> mass
-      );
+    virtual void Init(
+        Teuchos::RCP<Epetra_Vector> disn,
+        Teuchos::RCP<Epetra_Vector> veln,
+        Teuchos::RCP<Epetra_Vector> angVeln,
+        Teuchos::RCP<Epetra_Vector> radius,
+        Teuchos::RCP<Epetra_Vector> mass);
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual double EvaluateParticleContact(
@@ -188,19 +190,7 @@ namespace PARTICLE
 
     //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
     //@{
-
-    //! @node-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> radiusncol_;
-    Teuchos::RCP<Epetra_Vector> masscol_;
-    //@}
-
-    //! @dof-based
-    //@{
-    Teuchos::RCP<Epetra_Vector> disncol_;
-    Teuchos::RCP<Epetra_Vector> velncol_;
-    Teuchos::RCP<const Epetra_Vector> ang_velncol_;
-    //@}
+    std::vector<ParticleCollData> particleData_;   ///< temporary storage for all particle collision relevant data
 
   };  // class ParticleCollisionHandlerBase
 
@@ -235,11 +225,6 @@ namespace PARTICLE
 
   //! @name Actions
   //@{
-
-  /// compute collisions (inter-particle and particle-wall), returns contact energy
-  void PreFetchCollData(
-    const int numcolparticles
-    );
 
   /// compute collisions (inter-particle and particle-wall), returns contact energy
   virtual double EvaluateParticleContact(
@@ -297,10 +282,6 @@ namespace PARTICLE
     );
 
   //@}
-
-  private:
-
-  std::vector<ParticleCollData> particledata_;   ///< temporary storage for all particle collision relevant data
 
    };  // class ParticleCollisionHandlerDEM
 
@@ -562,21 +543,7 @@ namespace PARTICLE
       double& ddt
       );
 
-    /// struct to store particle data for faster access
-    struct ParticleCollData {
-      LINALG::Matrix<3,1> pos;
-      LINALG::Matrix<3,1> vel;
-      double rad;
-      double ddt;
-    };
-
      //@}
-
-   private:
-
-   Teuchos::RCP<Epetra_Vector> ddt_;   ///< col vector containing the current time of each particle between [0,dt)
-
-   std::vector<ParticleCollData> particledata_;   ///< temporary storage for all particle collision relevant data
 
    };  // class ParticleCollisionHandlerMD
 
@@ -595,9 +562,10 @@ namespace PARTICLE
 
   /// struct to store particle data for faster access
   struct ParticleCollData {
-    LINALG::Matrix<3,1> pos;
+    LINALG::Matrix<3,1> dis;
     LINALG::Matrix<3,1> vel;
     LINALG::Matrix<3,1> angvel;
+    double ddt;
     double rad;
     double mass;
     std::vector<int> lm;

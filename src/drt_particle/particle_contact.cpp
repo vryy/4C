@@ -55,13 +55,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
-  particle_algorithm_(particlealgorithm),
-  radiusncol_(Teuchos::null),
-  masscol_(Teuchos::null),
-  disncol_(Teuchos::null),
-  velncol_(Teuchos::null),
-  ang_velncol_(Teuchos::null)
-
+  particle_algorithm_(particlealgorithm)
 {
   // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
@@ -358,24 +352,68 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 }
 
 /*----------------------------------------------------------------------*
- | set states from time integrator to prepare collisions   ghamm 09/13  |
+ | set states from time integrator to prepare collisions   catta 09/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::SetState(
-  Teuchos::RCP<Epetra_Vector> radius,
-  Teuchos::RCP<Epetra_Vector> mass)
+void PARTICLE::ParticleCollisionHandlerBase::Init(
+    Teuchos::RCP<Epetra_Vector> disn,
+    Teuchos::RCP<Epetra_Vector> veln,
+    Teuchos::RCP<Epetra_Vector> angVeln,
+    Teuchos::RCP<Epetra_Vector> radius,
+    Teuchos::RCP<Epetra_Vector> mass)
 {
+  // export everything in col layout
+
+  // dof based vectors
+  Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  LINALG::Export(*disn,*disnCol);
+  Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  LINALG::Export(*veln,*velnCol);
+  Teuchos::RCP<Epetra_Vector> angVelnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  LINALG::Export(*angVeln,*angVelnCol);
   // node based vectors
-  radiusncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radius,*radiusncol_);
-  masscol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*mass,*masscol_);
+  Teuchos::RCP<Epetra_Vector> radiusCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*radius,*radiusCol);
+  Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*mass,*massCol);
 
-  // miraculous transformation from row to col layout ...
-  disncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblepos")));
-  velncol_ = Teuchos::rcp(new Epetra_Vector(*discret_->GetState("bubblevel")));
-  ang_velncol_ = discret_->GetState("bubbleangvel");
+  // fill particleData_
+  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+  particleData_.resize(numcolparticles);
 
-  return;
+  for (int i=0; i<numcolparticles; ++i)
+  {
+    // particle for which data will be collected
+    DRT::Node *particle = discret_->lColNode(i);
+
+    std::vector<int> lm;
+    lm.reserve(3);
+
+    // extract global dof ids and fill into lm_i
+    discret_->Dof(particle, lm);
+
+    ParticleCollData& data = particleData_[particle->LID()];
+
+    //position, velocity and angular velocity of particle
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disnCol,data.dis,lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velnCol,data.vel,lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*angVelnCol,data.angvel,lm);
+
+    const int lid = particle->LID();
+    // radius and mass of particle
+    data.rad = (*radiusCol)[lid];
+    data.mass = (*massCol)[lid];
+    // set ddt
+    data.ddt = 0;
+
+    // lm vector and owner
+    data.lm.swap(lm);
+    data.owner = particle->Owner();
+
+#ifdef DEBUG
+  if(particle->NumElement() != 1)
+    dserror("More than one element for this particle");
+#endif
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -450,11 +488,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   // define vector for contact force
   Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap()));
 
-  // gather data for all particles initially
-  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
-  particledata_.resize(numcolparticles);
-  PreFetchCollData(numcolparticles);
-
   const bool havepbc = particle_algorithm_->HavePBCs();
 
   // store bins, which have already been examined
@@ -464,6 +497,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   std::list<DRT::Node*> neighboring_particles;
 
   // loop over all particles
+  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
   for(int i=0; i<numcolparticles; ++i)
   {
     DRT::Node *currparticle = discret_->lColNode(i);
@@ -499,7 +533,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       DRT::Node *particle_i = NodesInCurrentBin[i];
 
       // extract data
-      ParticleCollData& data_i = particledata_[particle_i->LID()];
+      ParticleCollData& data_i = particleData_[particle_i->LID()];
 
       // compute contact with neighboring walls
       CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt,
@@ -512,13 +546,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   }
 
   // erase temporary storage for collision data
-  particledata_.clear();
-
-  radiusncol_ = Teuchos::null;
-  masscol_ = Teuchos::null;
-  velncol_ = Teuchos::null;
-  disncol_ = Teuchos::null;
-  ang_velncol_ = Teuchos::null;
+  particleData_.clear();
 
   // assemble and apply contact-forces
 //  {
@@ -570,49 +598,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
 
 /*----------------------------------------------------------------------*
- | collect collision data for faster access                ghamm 04/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerDEM::PreFetchCollData(
-  const int numcolparticles
-  )
-{
-  for (int i=0; i<numcolparticles; ++i)
-  {
-    // particle for which data will be collected
-    DRT::Node *particle = discret_->lColNode(i);
-
-    std::vector<int> lm;
-    lm.reserve(3);
-
-    // extract global dof ids and fill into lm_i
-    discret_->Dof(particle, lm);
-
-    ParticleCollData& data = particledata_[particle->LID()];
-
-    //position, velocity and angular velocity of particle
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,data.pos,lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,data.vel,lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,data.angvel,lm);
-
-    const int lid = particle->LID();
-    // radius and mass of particle
-    data.rad = (*radiusncol_)[lid];
-    data.mass = (*masscol_)[lid];
-    // lm vector and owner
-    data.lm.swap(lm);
-    data.owner = particle->Owner();
-
-#ifdef DEBUG
-  if(particle->NumElement() != 1)
-    dserror("More than one element for this particle");
-#endif
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | calculate contact with neighboring particles            ghamm 04/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
@@ -642,9 +627,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       continue;
 
     // extract data
-    const ParticleCollData& data_j = particledata_[neighborparticle->LID()];
+    const ParticleCollData& data_j = particleData_[neighborparticle->LID()];
     static LINALG::Matrix<3,1> position_j;
-    position_j.Update(data_j.pos);
+    position_j.Update(data_j.dis);
 
     // normalized mass
     const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
@@ -653,7 +638,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     if(havepbc)
     {
       static int ijk_i[3], ijk_j[3];
-      particle_algorithm_->ConvertPosToijk(data_i.pos,ijk_i);
+      particle_algorithm_->ConvertPosToijk(data_i.dis,ijk_i);
       particle_algorithm_->ConvertPosToijk(position_j,ijk_j);
       for(unsigned idim=0; idim<3; ++idim)
       {
@@ -670,7 +655,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     // distance vector and distance between two particles
     static LINALG::Matrix<3,1> r_contact;
     for(unsigned dim=0; dim<3; ++dim)
-      r_contact(dim) = position_j(dim) - data_i.pos(dim);
+      r_contact(dim) = position_j(dim) - data_i.dis(dim);
     const double norm_r_contact(r_contact.Norm2());
 
     // penetration
@@ -797,7 +782,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   const Teuchos::RCP<Epetra_FEVector>& f_structure
   )
 {
-  const LINALG::Matrix<3,1>& position_i = data_i.pos;
+  const LINALG::Matrix<3,1>& position_i = data_i.dis;
   const LINALG::Matrix<3,1>& vel_i = data_i.vel;
   const LINALG::Matrix<3,1>& angvel_i = data_i.angvel;
   const double radius_i = data_i.rad;
@@ -1475,8 +1460,7 @@ PARTICLE::ParticleCollisionHandlerMD::ParticleCollisionHandlerMD(
     discret,
     particlealgorithm,
     particledynparams
-    ),
-    ddt_(Teuchos::null)
+    )
 {
   // safety check
   if(particlealgorithm->HavePBCs())
@@ -1495,14 +1479,15 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
   Teuchos::RCP<Epetra_Vector> veln
   )
 {
-  // setup empty vector which contains current time between [0,dt) for each particle
-  ddt_ = LINALG::CreateVector(*discret_->NodeColMap(), true);
 
   // ddt is the most advanced collision time (between [0,dt))
   double ddt = 0.0;
   std::set<Teuchos::RCP<Event>, Event::Helper> eventqueue;
   // initializing the event queue with future collisions
+
   InitializeEventQueue(eventqueue, dt);
+
+
 
   // collisions are still evaluated at the end of the time step
   while ((!eventqueue.empty()) and ((ddt - dt) <= GEO::TOL14 or ddt < dt))
@@ -1658,22 +1643,26 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 
   }
 
+
   // updating of all particles to the end of the current time step
-  for (int i=0; i<discret_->NumMyColNodes(); ++i)
-  {
-    for (int dim=0; dim<3; ++dim)
-    {
-      (*disncol_)[3*i + dim] += (*velncol_)[3*i + dim] * (dt - (*ddt_)[i]);
-    }
-  }
+  for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
+    (particleData_[i].dis).Update(dt - particleData_[i].ddt,particleData_[i].vel,1);
 
   // copy values from col to row layout
-  for(int i=0; i<disn->MyLength(); ++i)
+  for(int i=0; i<discret_->NumMyColNodes(); ++i)
   {
-    int gid = disn->Map().GID(i);
-    int lid = disncol_->Map().LID(gid);
-    (*disn)[i] = (*disncol_)[lid];
-    (*veln)[i] = (*velncol_)[lid];
+    std::cout << "pippo_owner" << particleData_[i].owner << std::endl;
+    std::cout << "pippo_myrank" << myrank_ << std::endl;
+    if (particleData_[i].owner == myrank_)
+    {
+      for (int dim=0;dim<3;++dim)
+      {
+        int lidDof = disn->Map().LID((particleData_[i].lm)[dim]);
+
+        (*disn)[lidDof] = particleData_[i].dis(dim);
+        (*veln)[lidDof] = particleData_[i].vel(dim);
+      }
+    }
   }
 
 #ifdef DEBUG
@@ -1769,7 +1758,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 #endif
 
   // reset vector because it needs to be rebuild in the next time step
-  ddt_ = Teuchos::null;
+  particleData_.clear();
 
   // no internal energy is stored in contact because no overlap is allowed
   return 0.0;
@@ -1801,26 +1790,19 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
     DRT::Node* particle_1 = next_event->particle_1;
     DRT::Node* particle_2 = next_event->particle_2;
 
-    std::vector<int> lm_1, lm_2;
-    lm_1.reserve(3);
-    lm_2.reserve(3);
-
-    discret_->Dof(particle_1, lm_1);
-    discret_->Dof(particle_2, lm_2);
-
-    static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2, pos_1_new, pos_2_new, vel_1_new, vel_2_new;
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos_1, lm_1);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos_2, lm_2);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel_1, lm_1);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel_2, lm_2);
-
     int lid_1 = particle_1->LID();
     int lid_2 = particle_2->LID();
 
+    static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2, pos_1_new, pos_2_new, vel_1_new, vel_2_new;
+    pos_1 = particleData_[lid_1].dis;
+    pos_2 = particleData_[lid_2].dis;
+    vel_1 = particleData_[lid_1].vel;
+    vel_2 = particleData_[lid_2].vel;
+
     // compute particle positions and collision normal at collision time
     static LINALG::Matrix<3,1> unitcollnormal;
-    pos_1_new.Update(1.,pos_1,next_event->time-(*ddt_)[lid_1],vel_1);
-    pos_2_new.Update(1.,pos_2,next_event->time-(*ddt_)[lid_2],vel_2);
+    pos_1_new.Update(1.,pos_1,next_event->time-particleData_[lid_1].ddt,vel_1);
+    pos_2_new.Update(1.,pos_2,next_event->time-particleData_[lid_2].ddt,vel_2);
     unitcollnormal.Update(1.,pos_2_new,-1.,pos_1_new);
     unitcollnormal.Scale(1.0/unitcollnormal.Norm2());
 
@@ -1833,8 +1815,8 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
     if (deltaveln > GEO::TOL14)
     {
       // get masses
-      const double mass_1 = (*masscol_)[lid_1];
-      const double mass_2 = (*masscol_)[lid_2];
+      const double mass_1 = particleData_[lid_1].mass;
+      const double mass_2 = particleData_[lid_2].mass;
       const double invmass = 1.0 / (mass_1 + mass_2);
 
 
@@ -1847,20 +1829,15 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
       vel_2_new.Update(1.,vel_2,veln2_new-veln2,unitcollnormal);
 
       // update ddt
-      (*ddt_)[lid_1] = next_event->time;
-      (*ddt_)[lid_2] = next_event->time;
+      particleData_[lid_1].ddt = next_event->time;
+      particleData_[lid_2].ddt = next_event->time;
 
-      for (int i=0; i<3; ++i)
-      {
-        lid_1 = disncol_->Map().LID(lm_1[i]);
-        lid_2 = disncol_->Map().LID(lm_2[i]);
-        // update particle positions
-        (*disncol_)[lid_1] = pos_1_new(i);
-        (*disncol_)[lid_2] = pos_2_new(i);
-        // update particle velocities
-        (*velncol_)[lid_1] = vel_1_new(i);
-        (*velncol_)[lid_2] = vel_2_new(i);
-      }
+      particleData_[lid_1].dis = pos_1_new;
+      particleData_[lid_2].dis = pos_2_new;
+
+      particleData_[lid_1].vel = vel_1_new;
+      particleData_[lid_2].vel = vel_2_new;
+
 #ifdef OUTPUT
       std::cout << "New position of particle with GID " << particle_1->Id() << "  x: " << pos_1_new(0) << "  y: " << pos_1_new(1) << "  z: " << pos_1_new(2) << std::endl;
       std::cout << "New position of particle with GID " << particle_2->Id() << "  x: " << pos_2_new(0) << "  y: " << pos_2_new(1) << "  z: " << pos_2_new(2) << std::endl;
@@ -1917,18 +1894,10 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
 
     // write particle data
     int lid = next_event->particle_1->LID();
-    (*ddt_)[lid] = next_event->time;
+    particleData_[lid].ddt = next_event->time;
+    particleData_[lid].dis = newpos;
+    particleData_[lid].vel = newvel;
 
-    std::vector<int> lm;
-    lm.reserve(3);
-    discret_->Dof(next_event->particle_1, lm);
-
-    for (int i=0; i<3; ++i)
-    {
-      lid = disncol_->Map().LID(lm[i]);
-      (*disncol_)[lid] = newpos(i);
-      (*velncol_)[lid] = newvel(i);
-    }
 #ifdef OUTPUT
     std::cout << "New position of particle " << next_event->particle_1->Id() << "  x: " << newpos(0) << "  y: " << newpos(1) << "  z: " << newpos(2) << std::endl;
     std::cout << "New velocity of particle " << next_event->particle_1->Id() << "  x: " << newvel(0) << "  y: " << newvel(1) << "  z: " << newvel(2) << std::endl;
@@ -1962,15 +1931,15 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
 
   static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2;
   double rad_1, rad_2, ddt_1, ddt_2;
-  if(not particledata_.empty())
+  if(not particleData_.empty())
   {
-    const ParticleCollData& particle1 = particledata_[particle_1->LID()];
-    pos_1.Update(particle1.pos);
+    const ParticleCollData& particle1 = particleData_[particle_1->LID()];
+    pos_1.Update(particle1.dis);
     vel_1.Update(particle1.vel);
     rad_1 = particle1.rad;
     ddt_1 = particle1.ddt;
-    const ParticleCollData& particle2 = particledata_[particle_2->LID()];
-    pos_2.Update(particle2.pos);
+    const ParticleCollData& particle2 = particleData_[particle_2->LID()];
+    pos_2.Update(particle2.dis);
     vel_2.Update(particle2.vel);
     rad_2 = particle2.rad;
     ddt_2 = particle2.ddt;
@@ -2059,13 +2028,13 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   double radius;
   double particle_time;
 
-  if(not particledata_.empty())
+  if(not particleData_.empty())
   {
-    const ParticleCollData& particle_data = particledata_[particle->LID()];
-    position.Update(particle_data.pos);
-    velocity.Update(particle_data.vel);
-    radius = particle_data.rad;
-    particle_time = particle_data.ddt;
+    const ParticleCollData& data1 = particleData_[particle->LID()];
+    position.Update(data1.dis);
+    velocity.Update(data1.vel);
+    radius = data1.rad;
+    particle_time = data1.ddt;
   }
   else
   {
@@ -2174,21 +2143,6 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerMD::InitializingEventqueue");
 
-
-  // gather data for all particles initially
-  const int numparticles = discret_->NodeColMap()->NumMyElements();
-  particledata_.resize(numparticles);
-  {
-    for (int i=0; i<numparticles; ++i)
-    {
-      // particle for which data will be collected
-      DRT::Node *particle = discret_->lColNode(i);
-
-      ParticleCollData& data = particledata_[particle->LID()];
-      GetCollisionData(particle, data.pos, data.vel, data.rad, data.ddt);
-    }
-  }
-
   // setup of initial event queue
   std::set<int> examinedbins;
   // list of all particles in the neighborhood of currparticle
@@ -2264,9 +2218,6 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
       }
     }
   }
-
-  // important to erase initial data here as content is no longer valid during collisions
-  particledata_.clear();
 
   // print event queue
 #ifdef OUTPUT
@@ -3596,21 +3547,18 @@ void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
   const DRT::Node* particle,
-  LINALG::Matrix<3,1>& pos,
+  LINALG::Matrix<3,1>& dis,
   LINALG::Matrix<3,1>& vel,
   double& rad,
   double& ddt
   )
 {
   // data of particle 1
-  std::vector<int> lm;
-  lm.reserve(3);
-  discret_->Dof(particle, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel, lm);
   const int lid = particle->LID();
-  rad = (*radiusncol_)[lid];
-  ddt = (*ddt_)[lid];
+  dis = particleData_[lid].dis;
+  vel = particleData_[lid].vel;
+  rad = particleData_[lid].rad;
+  ddt = particleData_[lid].ddt;
 
   return;
 }
@@ -3751,249 +3699,3 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
   // order in set time increase
   return event1->time < event2->time;
 }
-
-
-/*----------------------------------------------------------------------*
- | constructor for MeshFree interactions                   katta 08/16  |
- *----------------------------------------------------------------------*/
-/*
-PARTICLE::MeshFreeInteractionHandler::MeshFreeInteractionHandler(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-  const Teuchos::ParameterList& particledynparams
-  ) :
-  PARTICLE::InteractionHandlerBase(
-    discret,
-    particlealgorithm,
-    particledynparams
-    )
-{
-  // extract input parameters
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  //find the weight function type
-  weight_function_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(particleparams,"WEIGHT_FUNCTION");
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set states overload for meshfree                        katta 08/16  |
- *----------------------------------------------------------------------*/
-/*
-void PARTICLE::MeshFreeInteractionHandler::SetState(
-  Teuchos::RCP<Epetra_Vector> radius,
-  Teuchos::RCP<Epetra_Vector> mass)
-{
-  // call the base function
-  PARTICLE::InteractionHandlerBase::SetState(radius,mass);
-
-  // node based vectors
-  densityncol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radius,*densityncol_);
-  pressurencol_ = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*mass,*pressurencol_);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | collect collision data for faster access                ghamm 04/16  |
- *----------------------------------------------------------------------*/
-/*
-void PARTICLE::MeshFreeInteractionHandler::PreFetchInterData(
-  const int numcolparticles
-  )
-{
-  for (int i=0; i<numcolparticles; ++i)
-  {
-    // particle for which data will be collected
-    DRT::Node *particle = discret_->lColNode(i);
-
-    const int lid = particle->LID();
-
-    std::vector<int> lm;
-    lm.reserve(3);
-
-    // extract global dof ids and fill into lm_i
-    discret_->Dof(particle, lm);
-
-    ParticleInterData& data = particledata_[lid];
-
-    //position, velocity and angular velocity of particle
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,data.pos,lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,data.vel,lm);
-
-
-    // pressure, density, radius and mass of particle
-    data.rho = (*densityncol_)[lid];
-    data.rad = (*radiusncol_)[lid];
-    data.mass = (*masscol_)[lid];
-    data.press = (*pressurencol_)[lid];
-    // lm vector and owner
-    data.lm.swap(lm);
-    data.owner = particle->Owner();
-
-#ifdef DEBUG
-  if(particle->NumElement() != 1)
-    dserror("More than one element for this particle");
-#endif
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute MeshFree interactions                           katta 08/16  |
- *----------------------------------------------------------------------*/
-/*
-void PARTICLE::MeshFreeInteractionHandler::EvaluateParticleInteraction(
-  Teuchos::RCP<Epetra_Vector> densityInter,
-  Teuchos::RCP<Epetra_Vector> velocityInter
-  )
-{
-  // gather data for all particles initially
-  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
-  particledata_.resize(numcolparticles);
-  PreFetchInterData(numcolparticles);
-
-  // store bins, which have already been examined
-  std::set<int> examinedbins;
-
-  // list of all particles in the neighborhood of currparticle
-  std::list<DRT::Node*> neighboring_particles;
-
-  Teuchos::RCP<PARTICLE::WeightFunctionBase> weightFunction;
-  switch (weight_function_)
-  {
-  case INPAR::PARTICLE::CubicBspline :
-  {
-    weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline() );
-    break;
-  }
-  default :
-    dserror("unknown weight function");
-  }
-  // loop over all particles
-  for(int i=0; i<numcolparticles; ++i)
-  {
-    DRT::Node *currparticle = discret_->lColNode(i);
-
-    DRT::Element* CurrentBin = currparticle->Elements()[0];
-    const int binId = CurrentBin->Id();
-
-    // if a bin has already been examined --> continue with next particle
-    if( examinedbins.find(binId) != examinedbins.end() )
-    {
-      continue;
-    }
-    //else: bin is examined for the first time --> new entry in examinedbins_
-    else
-    {
-      examinedbins.insert(binId);
-    }
-
-    // remove current content but keep memory
-    neighboring_particles.clear();
-
-    // list of walls that border on the CurrentBin
-    std::set<DRT::Element*> neighboring_walls;
-
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
-
-    DRT::Node **NodesInCurrentBin = CurrentBin->Nodes();
-    const int numparticle = CurrentBin->NumNode();
-
-    // loop over all particles in CurrentBin
-    for(int i=0; i<numparticle; ++i)
-    {
-      DRT::Node *particle_i = NodesInCurrentBin[i];
-
-      // extract data
-      const int lidNode_i = particle_i->LID();
-      ParticleInterData& data_i = particledata_[lidNode_i];
-
-      //inverse of the radius  and p/rho^2 for faster computations
-      const double invrad_i = 1/data_i.rad;
-      const double pOverRho2_i = data_i.press / (data_i.rho * data_i.rho);
-
-      //loop over the neighbouring particles
-      for(std::list<DRT::Node*>::const_iterator ineighborparticle=neighboring_particles.begin(); ineighborparticle!=neighboring_particles.end(); ++ineighborparticle)
-      {
-        const int lidNode_j = (*ineighborparticle)->LID();
-
-        // auto-interactions allowed. Uncomment to erase them
-        //if(lidNode_i == lidNode_j)
-          //continue;
-
-        // extract data j
-        const ParticleInterData& data_j = particledata_[lidNode_j];
-
-        // evaluate interactions only once just if the influence radius is the same
-        const bool trg_equalRadii = (data_i.rad == data_j.rad);
-        if(lidNode_i > lidNode_j && trg_equalRadii)
-          continue;
-
-        // distance vector and distance between two particles
-        LINALG::Matrix<3,1> r_rel;
-        r_rel.Update(1,data_j.pos,-1,data_i.pos);
-
-        // compute the specific gradient weight
-        const LINALG::Matrix<3,1> gradientWeight = weightFunction->ComputeGradientWeight(r_rel,invrad_i);
-
-        // compute the relative velocity
-        LINALG::Matrix<3,1> v_rel;
-        v_rel.Update(1,data_i.vel,-1,data_j.vel);
-        const double velDotWeightGradient = v_rel.Dot(gradientWeight);
-
-        // compute the density interaction i
-        (*densityInter)[lidNode_i] += data_j.mass * velDotWeightGradient;
-
-        // the total p/rho^2
-        const double total_pOverRho2 = pOverRho2_i + data_j.press / (data_j.rho * data_j.rho);
-
-        // preparation for LINALG::Assemble
-        Epetra_SerialDenseVector divp_i(3);
-        std::vector<int> lmowner_i(3);
-        for(int dim=0; dim<3; ++dim)
-        {
-          lmowner_i[dim] = data_i.owner;
-          divp_i[dim] = - data_j.mass * total_pOverRho2 * gradientWeight(dim);
-        }
-        // velocity interaction
-        LINALG::Assemble(*velocityInter, divp_i, data_i.lm, lmowner_i);
-
-        // mutual density interaction j. Reaction-like behavior only if the influence radii are equal!
-        if (trg_equalRadii)
-        {
-          // density interaction
-          (*densityInter)[lidNode_j] += data_i.mass * velDotWeightGradient;
-
-          // preparation for LINALG::Assemble
-          Epetra_SerialDenseVector divp_j(3);
-          std::vector<int> lmowner_j(3);
-          for(int dim=0; dim<3; ++dim)
-          {
-            lmowner_j[dim] = data_j.owner;
-            divp_j[dim] = data_i.mass * total_pOverRho2 * gradientWeight(dim);
-          }
-          // velocity interaction
-          LINALG::Assemble(*velocityInter, divp_j, data_j.lm, lmowner_j);
-        }
-      }
-    }
-  }
-
-  // erase temporary storage for collision data
-  particledata_.clear();
-
-  radiusncol_ = Teuchos::null;
-  masscol_ = Teuchos::null;
-  velncol_ = Teuchos::null;
-  disncol_ = Teuchos::null;
-  ang_velncol_ = Teuchos::null;
-
-}
-*/
