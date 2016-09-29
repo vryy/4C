@@ -34,6 +34,8 @@ namespace MAT
         //! create instance of particle additive manufacturing material
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+        /// dismembering radius
+        const double dismemberRadius_;
         /// initial temperature
         const double temperature_;
         /// specific heat - constant pressure - solid state

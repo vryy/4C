@@ -120,19 +120,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if (actmat->initialradius_ > r_max_)
       dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
 
-    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-    {
-      r_dismember_ = particleparams.get<double>("DISMEMBER_RADIUS");
-      if (r_dismember_ < 0)
-        dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
-      if (r_dismember_ < r_min_)
-        dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
-
-      if (r_dismember_ > r_max_)
-              dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
-    }
-
-
     if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 
@@ -348,6 +335,19 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       if(mu_<=0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_<=0.0))
        dserror("Friction coefficient invalid");
     }
+  }
+
+  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  {
+    const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+    r_dismember_ = actmat2->dismemberRadius_;
+    if (r_dismember_ < 0)
+      dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
+    if (r_dismember_ < r_min_)
+      dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
+
+    if (r_dismember_ > r_max_)
+            dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
   }
 }
 

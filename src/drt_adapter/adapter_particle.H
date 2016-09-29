@@ -192,7 +192,13 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
     //! Return initial density
-    virtual double initDensity() = 0;
+    virtual double InitDensity() = 0;
+
+    //! Return initial radius
+    virtual double InitRadius() = 0;
+
+    //! Return dismembering radius for melting particles
+    virtual double DismemberRadius() = 0;
 
     //! Return specific heat -constant pressure - solid state of particles
     virtual double CPS() = 0;

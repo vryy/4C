@@ -306,10 +306,13 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
     //! Return initial density
-    virtual double initDensity() { return initDensity_; }
+    virtual double InitDensity() { return initDensity_; }
 
     //! Return initial radius
-    virtual double initRadius() { return initRadius_; }
+    virtual double InitRadius() { return initRadius_; }
+
+    //! Return dismembering radius for melting particles
+    virtual double DismemberRadius() { return dismemberRadius_; }
 
     //! extract heat source - constant pressure - solid state
     virtual double CPS() { return CPS_; }
@@ -507,6 +510,8 @@ namespace PARTICLE
     double initDensity_;
     //! initial radius
     double initRadius_;
+    //! dismember radius for melting particles
+    double dismemberRadius_;
     //! specific heat - constant pressure - solid state
     double CPS_;
     //! specific heat - constant pressure - liquid state

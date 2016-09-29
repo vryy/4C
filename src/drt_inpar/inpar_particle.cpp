@@ -102,7 +102,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
-   DoubleParameter("DISMEMBER_RADIUS",-1.0,"particle radius used during dismembering (it shall be smaller than the radius of the old particle)",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle penetration",&particledyn);

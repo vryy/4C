@@ -28,20 +28,20 @@ double PARTICLE::WeightFunction_CubicBspline::ComputeWeight(
   assert(dist_rel >= 0);
   assert(invRadius >= 0);
 
-  const double norm_const = 3 / (2 * M_PI);
+  const double norm_const = 3.0 / (2 * M_PI);
   const double norm_dist_rel = 2 * dist_rel * invRadius;
 
   double weight = 0;
   if (norm_dist_rel< 1)
   {
     weight = norm_const
-        * (2 / 3 + norm_dist_rel * norm_dist_rel
+        * (2.0 / 3.0 + norm_dist_rel * norm_dist_rel
             + 0.5 * norm_dist_rel * norm_dist_rel * norm_dist_rel);
   }
   else if (norm_dist_rel< 2)
   {
     weight = 2 - norm_dist_rel;
-    weight = norm_const * (1 / 6) * weight * weight * weight;
+    weight = norm_const * (1.0 / 6.0) * weight * weight * weight;
   }
 
   return weight;
@@ -58,7 +58,7 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight
 
   assert(invRadius >= 0);
 
-  const double norm_const = 3 / (2 * M_PI);
+  const double norm_const = 3.0 / (2 * M_PI);
   const double resizer = 2 * invRadius;
 
   const double norm_dist_rel = resizer * r_rel.Norm2();
@@ -66,7 +66,7 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight
   LINALG::Matrix<3,1> weight;
 
   if (norm_dist_rel< 1)
-    weight.Update(norm_const * resizer * ((3 / 2) * norm_dist_rel - 2),r_rel);
+    weight.Update(norm_const * resizer * ((3.0 / 2.0) * norm_dist_rel - 2),r_rel);
   else if (norm_dist_rel< 2)
     weight.Update(- norm_const * resizer * (0.5 * (norm_dist_rel - 2) * (norm_dist_rel - 2) / norm_dist_rel),r_rel);
 

@@ -56,7 +56,6 @@ PARTICLE::Algorithm::Algorithm(
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
-  dismemberRadius_((double)DRT::Problem::Instance()->ParticleParams().get<double>("DISMEMBER_RADIUS")),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION"))
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -1908,10 +1907,9 @@ void PARTICLE::Algorithm::UpdateConnectivity()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ParticleDismemberer()
 {
-  if (dismemberRadius_<=0)
-  {
-    dserror("DISMEMBER_RADIUS is missing or set negative in PARTICLE DYNAMIC");
-  }
+  const double dismemberRadius = particles_->DismemberRadius();
+  if (dismemberRadius<=0)
+    dserror("DISMEMBER_RADIUS is missing");
 
   Teuchos::RCP<Epetra_Vector> dispnp = particles_->WriteAccessDispnp();
   Teuchos::RCP<Epetra_Vector> mass = particles_->WriteAccessMass();
@@ -1936,7 +1934,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
       dserror("Invalid lidNode\n");
     if (lidDof_old == -1)
       dserror("Invalid lidDof\n");
-    if (dismemberRadius_ > (*radius)[lidNode_old])
+    if (dismemberRadius > (*radius)[lidNode_old])
       dserror("DISMEMBER_RADIUS is too big!");
 
     // check if in this time step we completed the transition. This check is based on the temperature history
@@ -1945,12 +1943,12 @@ void PARTICLE::Algorithm::ParticleDismemberer()
       // --------------------------------------------------------------------
       // position of the new particles temporarily stocked to compute the gid
       // --------------------------------------------------------------------
-      const double x_step = 2 * dismemberRadius_ ;
-      const int semiLengthInParticlesx = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], x_step/2);
-      const double y_step = sqrt(3) * dismemberRadius_;
-      const int semiLengthInParticlesy = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], y_step/2);
-      const double z_step = 2 * sqrt(2) * (1/(sqrt(3))) * dismemberRadius_;
-      const int semiLengthInParticlesz = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], z_step/2);
+      const double x_step = 2 * dismemberRadius ;
+      const int semiLengthInParticlesx = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], x_step/2.0);
+      const double y_step = sqrt(3) * dismemberRadius;
+      const int semiLengthInParticlesy = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], y_step/2.0);
+      const double z_step = 2 * sqrt(2) * (1/(sqrt(3))) * dismemberRadius;
+      const int semiLengthInParticlesz = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], z_step/2.0);
       LINALG::Matrix<3,1> newRelativeParticlePosition(true);
       for (int ix=-semiLengthInParticlesx; ix<=semiLengthInParticlesx; ++ix)
       {
@@ -1963,7 +1961,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
             // line offset if it is odd in the y direction
             if (std::abs(iy)%2 == 1)
             {
-              newRelativeParticlePosition(0) += x_step/2;
+              newRelativeParticlePosition(0) += x_step/2.0;
             }
 
             // y position
@@ -1971,13 +1969,13 @@ void PARTICLE::Algorithm::ParticleDismemberer()
             // plane offset if it is odd in the z direction
             if (std::abs(iz)%2 == 1)
             {
-              newRelativeParticlePosition(0) -= x_step/2;
-              newRelativeParticlePosition(1) += y_step/3;
+              newRelativeParticlePosition(0) -= x_step/2.0;
+              newRelativeParticlePosition(1) += y_step/3.0;
             }
             // z position
             newRelativeParticlePosition(2) = iz * z_step;
             // is it inside the old radius?
-            if ((newRelativeParticlePosition.Norm2()+dismemberRadius_ <= (*radius)[lidNode_old]) && !(ix == 0 && iy == 0 && iz == 0))
+            if ((newRelativeParticlePosition.Norm2()+dismemberRadius <= (*radius)[lidNode_old]) && !(ix == 0 && iy == 0 && iz == 0))
             {
               homelessParticleTemp hpt;
               std::vector<double> newParticlePosition(3);
@@ -2080,11 +2078,11 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 
     // new masses and densities (to conserve the overall mass)
     MassDensityUpdaterForParticleDismemberer(mass, densitynp, radius, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
-    (*radius)[lidNode_new] = dismemberRadius_;
+    (*radius)[lidNode_new] = dismemberRadius;
     (*temperaturenp)[lidNode_new] = (*temperaturenp)[lidNode_old];
     (*SL_latent_heat)[lidNode_new] = (*SL_latent_heat)[lidNode_old];
     // inertia-vector: sphere: I = 2/5 * m * r^2
-    (*inertia)[lidNode_new] = 0.4 * (*mass)[lidNode_new] * dismemberRadius_ * dismemberRadius_;
+    (*inertia)[lidNode_new] = 0.4 * (*mass)[lidNode_new] * dismemberRadius * dismemberRadius;
     for(int d=0; d<3; ++d)
     {
       (*dispnp)[lidDof_new + d] = currParticle_new->X()[d];
@@ -2104,9 +2102,9 @@ void PARTICLE::Algorithm::ParticleDismemberer()
     {
       MassDensityUpdaterForParticleDismemberer(mass, densitynp, radius, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
       // radius MUST be updated after MassDensityUpdaterForParticleDismemberer
-      (*radius)[lidNode_old] = dismemberRadius_;
+      (*radius)[lidNode_old] = dismemberRadius;
       // inertia-vector: sphere: I = 2/5 * m * r^2
-      (*inertia)[lidNode_old] = 0.4 * (*mass)[lidNode_old] * dismemberRadius_ * dismemberRadius_;
+      (*inertia)[lidNode_old] = 0.4 * (*mass)[lidNode_old] * dismemberRadius * dismemberRadius;
     }
   }
 }
@@ -2123,9 +2121,10 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
     const int &lidNode_old,
     const int &nlist)
 {
+  const double dismemberRadius = particles_->DismemberRadius();
   // new masses and densities (to conserve the overall mass)
   (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
-  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius_,3));
+  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius,3));
 }
 
 /*----------------------------------------------------------------------*

@@ -98,6 +98,8 @@ PARTICLE::TimInt::TimInt
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
   initDensity_(-1.0),
+  initRadius_(-1.0),
+  dismemberRadius_(-1.0),
   CPS_(-1.0),
   CPL_(-1.0),
   SL_latent_heat_max_(-1.0),
@@ -390,6 +392,7 @@ void PARTICLE::TimInt::SetInitialFields()
       (*density_)(0)->PutScalar(initDensity_);
       const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
       // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
+      dismemberRadius_ = actmat2->dismemberRadius_;
       CPS_ = actmat2->CPS_;
       CPL_ = actmat2->CPL_;
       SL_latent_heat_max_ = actmat2->SL_latent_heat_max_;

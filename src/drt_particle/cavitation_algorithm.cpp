@@ -2694,7 +2694,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
-  const double initDensity = particles_->initDensity();
+  const double initDensity = particles_->InitDensity();
 
   double gamma = 0.0;
   double pvapor = 0.0;

@@ -250,8 +250,6 @@ namespace PARTICLE
 
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< heat sources 2 bins map
 
-    const double dismemberRadius_;
-
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
 
     //@}
