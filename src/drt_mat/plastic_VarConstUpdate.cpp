@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file plastic_VarConstUpdate.cpp
-\brief
-This file contains the hyperelastic toolbox with application to finite
+\brief This file contains the hyperelastic toolbox with application to finite
 strain plasticity using a variational constitutive update.
 
 The input line should read
 MAT 1 MAT_plasticElastHyperVCU NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45
 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
+\level 3
 
 <pre>
 \maintainer Alexander Seitz
@@ -998,8 +998,6 @@ void MAT::PlasticElastHyperVCU::EvaluateRHS(
   LINALG::Matrix<6,1> se;
   LINALG::Matrix<6,6> dummy;
   ElastHyper::Evaluate(NULL,&eeOut,params,&se,&dummy,eleGID);
-
-  LINALG::Matrix<5,1> rhs5;
 
   EvalDceDlp(last_plastic_defgrd_inverse_[gp],&defgrd,dexpOut_mat,cetrial,expOut,dcedlp,dFpiDdeltaDp);
 
