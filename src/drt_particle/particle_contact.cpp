@@ -57,24 +57,15 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   discret_(discret),
   particle_algorithm_(particlealgorithm)
 {
-
-
-
-  // extract input parameters
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
-  std::cout << "porcodio1\n";
-
+  // extract the material
   const MAT::PAR::ParticleMat* particleMat = particle_algorithm_->ParticleMat();
-
-  std::cout << "porcodio2   " << particleMat << std::endl;
-
   // currently all particles have identical density and radius
   double density = particleMat->initDensity_;
   nue_ = particleMat->poissonRatio_;
   young_ = particleMat->youngModulus_;
 
-
+  // extract input parameters
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
 
   //find the normal contact type
   normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");

@@ -207,28 +207,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
   {
     // set up the links to the materials for easy access
     // make sure that a particle material is defined in the dat-file
-    int id = -1;
-    switch (particleInteractionType_)
-    {
-    case INPAR::PARTICLE::MeshFree :
-    case INPAR::PARTICLE::Normal_DEM_thermo :
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-      break;
-    }
-    default :
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-      break;
-    }
-    }
-    // check
-    if (id==-1)
-      dserror("Could not find particle material or material type");
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-    particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
-    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
-      extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+    InitMaterials();
 
     // add fully redundant discret for particle walls with identical dofs to full structural discret
 
@@ -306,6 +285,34 @@ void PARTICLE::Algorithm::Init(bool restarted)
   UpdateHeatSourcesConnectivity(true);
 }
 
+/*----------------------------------------------------------------------*
+ | set up pointers to material bundles                     catta 09/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::InitMaterials()
+{
+  int id = -1;
+  switch (particleInteractionType_)
+  {
+  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+    break;
+  }
+  default :
+  {
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+    break;
+  }
+  }
+  // check
+  if (id==-1)
+    dserror("Could not find particle material or material type");
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
+  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
+    extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+}
 
 /*----------------------------------------------------------------------*
  | prepare time step                                       ghamm 10/12  |

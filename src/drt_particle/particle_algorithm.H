@@ -85,6 +85,9 @@ namespace PARTICLE
     /// do initialization of problem, reduced version for restart
     virtual void Init(bool restarted);
 
+    /// set up pointers to material bundles
+    virtual void InitMaterials();
+
     /// read restart
     virtual void ReadRestart(
       int restart  ///< time step from which to restart

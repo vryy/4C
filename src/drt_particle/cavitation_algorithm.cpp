@@ -739,6 +739,10 @@ void CAVITATION::Algorithm::InitCavitation()
   Teuchos::RCP<Epetra_Map> fluidelecolmapold = Teuchos::rcp(new Epetra_Map(*fluiddis_->ElementColMap()));
   CreateBins(fluiddis_);
 
+  // set up the links to the materials for easy access
+  // make sure that a particle material is defined in the dat-file
+  InitMaterials();
+
   // setup pbcs after bins have been created
   BuildParticlePeriodicBC();
 
