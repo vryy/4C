@@ -22,9 +22,9 @@
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
-#include "../drt_mat/matpar_bundle.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -97,16 +97,6 @@ PARTICLE::TimInt::TimInt
   ang_veln_(Teuchos::null),
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
-  initDensity_(-1.0),
-  initRadius_(-1.0),
-  dismemberRadius_(-1.0),
-  CPS_(-1.0),
-  CPL_(-1.0),
-  latentHeatSL_(-1.0),
-  transitionTemperatureSL_(-1.0),
-  thermalExpansionS_(-1.0),
-  thermalExpansionL_(-1.0),
-  thermalExpansionSL_(-1.0),
   fifc_(Teuchos::null),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
   collhandler_(Teuchos::null),
@@ -236,37 +226,16 @@ void PARTICLE::TimInt::SetInitialFields()
   // set material properties
   // -----------------------------------------//
 
-  // make sure that a particle material is defined in the dat-file
-  int id = -1;
+  // all particles have identical density and radius (for now)
+  const double initRadius = particle_algorithm_->ParticleMat()->initRadius_;
+  const double initDensity = particle_algorithm_->ParticleMat()->initDensity_;
 
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-    break;
-  }
-  default :
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  }
-  // check
-  if (id==-1)
-    dserror("Could not find particle material or material type");
-
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-
-  // all particles have identical density. For meshfree particles the mass is determined by density and radius of influence
-  // for the sake of semplicity
-  initDensity_ = actmat->density_;
-
-  initRadius_ = actmat->initialradius_;
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
-  radius_->PutScalar(initRadius_);
+
+  radius_->PutScalar(initRadius);
 
   // mass-vector: m = rho * 4/3 * PI *r^3
-  mass_->PutScalar(initDensity_ * 4.0/3.0 * M_PI * initRadius_ * initRadius_ * initRadius_);
+  mass_->PutScalar(initDensity * 4.0/3.0 * M_PI * initRadius * initRadius * initRadius);
 
   // -----------------------------------------//
   // set initial radius condition if existing
@@ -297,7 +266,7 @@ void PARTICLE::TimInt::SetInitialFields()
           dserror("negative initial radius");
 
         // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = initDensity_ * 4.0/3.0 * M_PI * r_p * r_p * r_p;
+        (*mass_)[lid] = initDensity * 4.0/3.0 * M_PI * r_p * r_p * r_p;
       }
     }
   }
@@ -338,7 +307,7 @@ void PARTICLE::TimInt::SetInitialFields()
       (*radius_)[lid] = random_radius;
 
       // recompute particle mass
-      (*mass_)[lid] = initDensity_*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
+      (*mass_)[lid] = initDensity*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
     }
   }
 
@@ -357,7 +326,7 @@ void PARTICLE::TimInt::SetInitialFields()
       if(amplitude)
       {
         double randomValue = DRT::Problem::Instance()->Random()->Uni();
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomValue * amplitude * initRadius_;
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomValue * amplitude * initRadius;
       }
       else
       {
@@ -381,45 +350,22 @@ void PARTICLE::TimInt::SetInitialFields()
   // set the other parameters. In case of meshfree set also pressure and density
   // -----------------------------------------//
 
-  switch (particle_algorithm_->ParticleInteractionType())
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  if (extParticleMat != NULL)
   {
-    case INPAR::PARTICLE::MeshFree :
-      // here density_ and pressure_ should be inizialized with the initial values. Yet, they can be zero without a loss of generality.
-      // no break here
-    case INPAR::PARTICLE::Normal_DEM_thermo :
-    {
-      // set density. Warining! use for meshfree this density leads only to the node masses. For everything else it must be discarded
-      (*density_)(0)->PutScalar(initDensity_);
-      const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
-      // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
-      dismemberRadius_ = actmat2->dismemberRadius_;
-      CPS_ = actmat2->CPS_;
-      CPL_ = actmat2->CPL_;
-      latentHeatSL_ = actmat2->latentHeatSL_;
-      transitionTemperatureSL_ = actmat2->transitionTemperatureSL_;
-      thermalExpansionS_ = actmat2->thermalExpansionS_;
-      thermalExpansionL_ = actmat2->thermalExpansionL_;
-      thermalExpansionSL_ = actmat2->thermalExpansionSL_;
+    // set density in the density vector (useful only for thermodynamics)
+    (*density_)(0)->PutScalar(initDensity);
 
-      // initialize temperature of particles
-      const double temperature0 = actmat2->temperature_;
-      (*temperature_)(0)->PutScalar(temperature0);
+    // initialize temperature of particles
+    const double initTemperature = extParticleMat->initTemperature_;
+    (*temperature_)(0)->PutScalar(initTemperature);
 
-      if (temperature0>transitionTemperatureSL_)
-      {
-        SL_latent_heat_->PutScalar(latentHeatSL_);
-      }
-      else if (temperature0<transitionTemperatureSL_)
-      {
-        SL_latent_heat_->PutScalar(0);
-      }
-      else
-      {
-        dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
-      }
-    }
-  default : //do nothing
-    break;
+    if (initTemperature > extParticleMat->transitionTemperatureSL_)
+      SL_latent_heat_->PutScalar(extParticleMat->latentHeatSL_);
+    else if (initTemperature < extParticleMat->transitionTemperatureSL_)
+      SL_latent_heat_->PutScalar(0);
+    else
+      dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
   }
 }
 

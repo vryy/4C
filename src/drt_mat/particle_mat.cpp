@@ -21,10 +21,10 @@ MAT::PAR::ParticleMat::ParticleMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  density_(matdata->GetDouble("DENSITY")),
-  initialradius_(matdata->GetDouble("INITRADIUS")),
-  poissonratio_(matdata->GetDouble("NUE")),
-  young_(matdata->GetDouble("YOUNG"))
+  initDensity_(matdata->GetDouble("DENSITY")),
+  initRadius_(matdata->GetDouble("INITRADIUS")),
+  poissonRatio_(matdata->GetDouble("NUE")),
+  youngModulus_(matdata->GetDouble("YOUNG"))
 {
 }
 

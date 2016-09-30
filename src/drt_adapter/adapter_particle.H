@@ -49,6 +49,14 @@ namespace PARTICLE
   class Algorithm;
 }
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMat;
+    class ExtParticleMat;
+  }
+}
 
 /*----------------------------------------------------------------------*
  | adapting adapter                                         ghamm 12/13 |
@@ -191,27 +199,6 @@ namespace ADAPTER
     //! Return inertia of particles
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
-    //! Return initial density
-    virtual double InitDensity() = 0;
-
-    //! Return initial radius
-    virtual double InitRadius() = 0;
-
-    //! Return dismembering radius for melting particles
-    virtual double DismemberRadius() = 0;
-
-    //! Return specific heat -constant pressure - solid state of particles
-    virtual double CPS() = 0;
-
-    //! Return specific heat -constant pressure - liquid state of particles
-    virtual double CPL() = 0;
-
-    //! Return specific latent heat - solid <-> liquid
-    virtual double MaxSpecificLatentHeat() = 0;
-
-    //! transition temperature - solid <-> liquid
-    virtual double SL_TransitionTemperature() = 0;
-
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
 
@@ -238,17 +225,14 @@ namespace ADAPTER
     //! extract densities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
 
-    //! extract SL latent heat
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat() = 0;
+    //! extract latent heat
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
 
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
 
     //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() = 0;
-
-    //! extract latent heat
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
 
     //! wxtract first time derivative of radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() = 0;

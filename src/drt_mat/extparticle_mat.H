@@ -37,7 +37,7 @@ namespace MAT
         /// dismembering radius
         const double dismemberRadius_;
         /// initial temperature
-        const double temperature_;
+        const double initTemperature_;
         /// specific heat - constant pressure - solid state
         const double CPS_;
         /// specific heat - constant pressure - liquid state

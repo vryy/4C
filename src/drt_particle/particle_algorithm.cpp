@@ -27,6 +27,10 @@
 #include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/inpar_particle.H"
 
+#include "../drt_mat/particle_mat.H"
+#include "../drt_mat/extparticle_mat.H"
+#include "../drt_mat/matpar_bundle.H"
+
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../linalg/linalg_utils.H"
 
@@ -56,7 +60,9 @@ PARTICLE::Algorithm::Algorithm(
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
-  particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION"))
+  particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
+  particleMat_(NULL),
+  extParticleMat_(NULL)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -199,6 +205,31 @@ void PARTICLE::Algorithm::Init(bool restarted)
   // the following has only to be done once --> skip in case of restart
   if(not restarted)
   {
+    // set up the links to the materials for easy access
+    // make sure that a particle material is defined in the dat-file
+    int id = -1;
+    switch (particleInteractionType_)
+    {
+    case INPAR::PARTICLE::MeshFree :
+    case INPAR::PARTICLE::Normal_DEM_thermo :
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+      break;
+    }
+    default :
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+      break;
+    }
+    }
+    // check
+    if (id==-1)
+      dserror("Could not find particle material or material type");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
+    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
+      extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+
     // add fully redundant discret for particle walls with identical dofs to full structural discret
 
     // get input parameters for particles
@@ -273,8 +304,6 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   // update connectivity
   UpdateHeatSourcesConnectivity(true);
-
-  return;
 }
 
 
@@ -1907,7 +1936,7 @@ void PARTICLE::Algorithm::UpdateConnectivity()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ParticleDismemberer()
 {
-  const double dismemberRadius = particles_->DismemberRadius();
+  const double dismemberRadius = extParticleMat_->dismemberRadius_;
   if (dismemberRadius<=0)
     dserror("DISMEMBER_RADIUS is missing");
 
@@ -1916,7 +1945,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
   Teuchos::RCP<Epetra_Vector> temperaturenp = particles_->WriteAccessTemperaturenp();
   Teuchos::RCP<const Epetra_Vector> temperature0 = particles_->Temperaturen();
-  const double SL_transitionTemperature = particles_->SL_TransitionTemperature();
+  const double SL_transitionTemperature = extParticleMat_->transitionTemperatureSL_;
 
   // with this snapshotting the addition of nodes does not affect the main loop
   const int maxLidNode_old = particledis_->NodeRowMap()->NumMyElements();
@@ -2121,7 +2150,7 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
     const int &lidNode_old,
     const int &nlist)
 {
-  const double dismemberRadius = particles_->DismemberRadius();
+  const double dismemberRadius = extParticleMat_->dismemberRadius_;
   // new masses and densities (to conserve the overall mass)
   (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
   (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius,3));

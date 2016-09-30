@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file particle_mat.H
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief TODO Georg. I think that this file defines the material properties of the particles
+
+\level 2
+
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 #ifndef PARTICLE_MAT_H
 #define PARTICLE_MAT_H
@@ -40,13 +39,13 @@ namespace PAR
     //@{
 
     /// density
-    const double density_;
+    const double initDensity_;
     /// initial radius of particle
-    const double initialradius_;
+    const double initRadius_;
     /// poisson ratio
-    const double poissonratio_;
+    const double poissonRatio_;
     /// youngs modulus
-    const double young_;
+    const double youngModulus_;
 
     //@}
 
@@ -127,12 +126,6 @@ public:
 
   /// return copy of this material object
   virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ParticleMat( *this ) ); }
-
-  /// return density
-  double Density() const { return params_->density_; }
-
-  /// return initial radius
-  double InitialRadius() const { return params_->initialradius_; }
 
   /// Return quick accessible material parameter data
   virtual MAT::PAR::Parameter* Parameter() const { return params_; }

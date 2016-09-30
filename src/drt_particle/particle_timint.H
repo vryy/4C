@@ -54,6 +54,14 @@ namespace PARTICLE
   class MeshFreeInteractionHandler;
 }
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMat;
+    class ExtParticleMat;
+  }
+}
 
 /*----------------------------------------------------------------------*/
 //! Particle Dynamics
@@ -302,30 +310,8 @@ namespace PARTICLE
     //! Return inertia of particles
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
-    //! Return initial density
-    virtual double InitDensity() { return initDensity_; }
-
-    //! Return initial radius
-    virtual double InitRadius() { return initRadius_; }
-
-    //! Return dismembering radius for melting particles
-    virtual double DismemberRadius() { return dismemberRadius_; }
-
-    //! extract heat source - constant pressure - solid state
-    virtual double CPS() { return CPS_; }
-
-    //! extract heat source - constant pressure - liquid state
-    virtual double CPL() { return CPL_; }
-
-    //! Return specific latent heat - solid <-> liquid
-    virtual double MaxSpecificLatentHeat() {return latentHeatSL_; }
-
-    //! transition temperature - solid <-> liquid
-    virtual double SL_TransitionTemperature() {return transitionTemperatureSL_; }
-
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
-
 
     //@}
 
@@ -351,16 +337,13 @@ namespace PARTICLE
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
     //! extract SL latent heat
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat(){ return SL_latent_heat_; }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat(){ return SL_latent_heat_; }
 
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
 
     //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
-
-    //! extract radii
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() { return SL_latent_heat_; }
 
     //! extract fist time derivative of radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusdot_; }
@@ -503,26 +486,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> ang_accn_;
     //! global vector for visualization of particle orientation
     Teuchos::RCP<Epetra_Vector> orient_;
-    //! initial density
-    double initDensity_;
-    //! initial radius
-    double initRadius_;
-    //! dismember radius for melting particles
-    double dismemberRadius_;
-    //! specific heat - constant pressure - solid state
-    double CPS_;
-    //! specific heat - constant pressure - liquid state
-    double CPL_;
-    //! specific latent heat - solid <-> liquid
-    double latentHeatSL_;
-    //! transition temperature - solid <-> liquid
-    double transitionTemperatureSL_;
-    //! volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
-    double thermalExpansionS_;
-    //! volumetric thermal expansion coefficient - liquid state
-    double thermalExpansionL_;
-    //! volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
-    double thermalExpansionSL_;
 
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;

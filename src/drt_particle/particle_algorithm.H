@@ -53,6 +53,15 @@ namespace LINALG
   class MapExtractor;
 }
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMat;
+    class ExtParticleMat;
+  }
+}
+
 /*----------------------------------------------------------------------*
  | particle algorithm                                       ghamm 09/12 |
  *----------------------------------------------------------------------*/
@@ -105,20 +114,26 @@ namespace PARTICLE
     /// and transferred if necessary
     virtual void TransferParticles(const bool updatestates, const bool ghosting = true);
 
-    std::map<int,std::list<Teuchos::RCP<HeatSource> > > & GetBins2HeatSources() {return bins2heatSources_; }
-
-    /// contact type: meshfree, particle-thermo, etc.
-    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
-
-    /// list of heat sources
-    const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
-
     /// get bins in range and call FindNeighbors
     void GetNeighbouringParticlesAndWalls(
       DRT::Node* CurrentParticle,
       std::list<DRT::Node*>& neighboring_particles,
-      std::set<DRT::Element*>& neighboring_walls
-      );
+      std::set<DRT::Element*>& neighboring_walls);
+
+    /// map that links bins to heat sources
+    std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }
+
+    /// list of heat sources
+    const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
+
+    /// contact type: meshfree, particle-thermo, etc.
+    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
+
+    /// Return the pointer to the particle material
+    const MAT::PAR::ParticleMat* ParticleMat() { return particleMat_; }
+
+    /// Return the pointer to the extended particle material
+    const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
 
   protected:
 
@@ -246,11 +261,16 @@ namespace PARTICLE
 
     const bool moving_walls_;   ///< flag whether walls are moving
 
-    std::map<int,Teuchos::RCP<HeatSource> > heatSources_; // heat source storing
+
+    std::map<int,Teuchos::RCP<HeatSource> > heatSources_; ///< heat source storing
 
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< heat sources 2 bins map
 
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
+
+    const MAT::PAR::ParticleMat* particleMat_;  ///< pointer to the extParticleMat material
+
+    const MAT::PAR::ExtParticleMat* extParticleMat_;  ///< pointer to the extParticleMat material
 
     //@}
 

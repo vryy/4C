@@ -102,9 +102,9 @@ void PARTICLE::TimIntCentrDiff::Init()
   }
 
   // simple check if the expansion speed is too elevated
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  if (extParticleMat != NULL)
   {
-
     const std::map<int,Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
     double max_HSQDot = 0;
     for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources.begin(); iHS != heatSources.end(); ++iHS)
@@ -112,23 +112,23 @@ void PARTICLE::TimIntCentrDiff::Init()
       if (iHS->second->HSQDot_> max_HSQDot)
         max_HSQDot = iHS->second->HSQDot_;
     }
-    const double min_density = initDensity_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
+    const double min_density = extParticleMat->initDensity_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
 
     const double delta_SL = max_HSQDot * (*dt_)[0]/min_density;
-    const double delta_S = delta_SL/CPS_;
-    const double delta_L = delta_SL/CPL_;
+    const double delta_S = delta_SL/extParticleMat->CPS_;
+    const double delta_L = delta_SL/extParticleMat->CPL_;
 
     const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
     const double v_max = particleparams.get<double>("MAX_VELOCITY");
     const double r_max = particleparams.get<double>("MAX_RADIUS");
     double r_max_new = r_max;
-    RadiusUpdater(thermalExpansionS_,delta_S,r_max_new);
+    RadiusUpdater(extParticleMat->thermalExpansionS_,delta_S,r_max_new);
     double v_max_thermo = 2*(r_max_new - r_max);
     r_max_new = r_max;
-    RadiusUpdater(thermalExpansionSL_,delta_SL,r_max_new);
+    RadiusUpdater(extParticleMat->thermalExpansionSL_,delta_SL,r_max_new);
     v_max_thermo = std::max(v_max_thermo,2*(r_max_new - r_max));
     r_max_new = r_max;
-    RadiusUpdater(thermalExpansionSL_,delta_L,r_max_new);
+    RadiusUpdater(extParticleMat->thermalExpansionSL_,delta_L,r_max_new);
     v_max_thermo = std::max(v_max_thermo,2*(r_max_new - r_max));
 
     if (v_max_thermo > 0.01 * v_max)
@@ -161,16 +161,29 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
 {
   const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
 
+  // extract the material pointer
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  // extract values for simpler access
+  const double CPS = extParticleMat->CPS_;
+  const double CPL = extParticleMat->CPL_;
+  const double transitionTemperatureSL = extParticleMat->transitionTemperatureSL_;
+  const double thermalExpansionS = extParticleMat->thermalExpansionS_;
+  const double thermalExpansionL = extParticleMat->thermalExpansionL_;
+  const double thermalExpansionSL = extParticleMat->thermalExpansionSL_;
+  const double latentHeatSL = extParticleMat->latentHeatSL_;
+
   // set up the new density vector
   densityn_->Update(1.0, *(*density_)(0), 0.0);
   // set up the new temperature vector
   temperaturen_->Update(1.0, *(*temperature_)(0), 0.0);
 
   // extract the map
-  const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->GetBins2HeatSources();
+  const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->Bins2HeatSources();
 
-  double inv_CPS = 1/CPS_;
-  double inv_CPL = 1/CPL_;
+
+
+  double inv_CPS = 1/CPS;
+  double inv_CPL = 1/CPL;
 
   // cycle over the map
   std::map<int, std::list<Teuchos::RCP<HeatSource> > >::const_iterator i_bin;
@@ -228,13 +241,13 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
             const double newTemperatureNoPhaseTransition = (*temperaturen_)[lidNode] + temp_LH_increase*inv_CPS;
 
             // no phase transition
-            if (newTemperatureNoPhaseTransition <= transitionTemperatureSL_)
+            if (newTemperatureNoPhaseTransition <= transitionTemperatureSL)
             {
               // delta temperature NO transition
               const double S_deltaTemperature = newTemperatureNoPhaseTransition - (*temperaturen_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionS_, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS_, S_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
               // temperature update
               (*temperaturen_)[lidNode] = newTemperatureNoPhaseTransition;
             }
@@ -243,55 +256,55 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
             else
             {
               // delta temperature BEFORE phase transition
-              const double S_deltaTemperature = transitionTemperatureSL_-(*temperaturen_)[lidNode];
+              const double S_deltaTemperature = transitionTemperatureSL-(*temperaturen_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionS_, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS_, S_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
               // delta latent heat DURING phase transition
-              const double deltaLatentHeat = temp_LH_increase - S_deltaTemperature * CPS_;
+              const double deltaLatentHeat = temp_LH_increase - S_deltaTemperature * CPS;
 
               // still in the phase transition after this the time step
-              if (deltaLatentHeat <= latentHeatSL_)
+              if (deltaLatentHeat <= latentHeatSL)
               {
                 // density and radius update
-                DensityUpdater(thermalExpansionSL_, deltaLatentHeat, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL_, deltaLatentHeat, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
                 // temperature and latent heat updates
                 (*SL_latent_heat_)[lidNode] += deltaLatentHeat;
-                (*temperaturen_)[lidNode] = transitionTemperatureSL_;
+                (*temperaturen_)[lidNode] = transitionTemperatureSL;
               }
 
               // rare case where the phase transition happens in 1 time step
               else
               {
                 // density and radius update
-                DensityUpdater(thermalExpansionSL_, latentHeatSL_, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL_, latentHeatSL_, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionSL, latentHeatSL, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radius_)[lidNode]);
                 // delta temperature AFTER phase transition
-                const double L_deltaTemperature = (deltaLatentHeat - latentHeatSL_)*inv_CPL;
+                const double L_deltaTemperature = (deltaLatentHeat - latentHeatSL)*inv_CPL;
                 // density and radius update
-                DensityUpdater(thermalExpansionL_, L_deltaTemperature, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionL_, L_deltaTemperature, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
                 // temperature and latent heat updates
-                (*temperaturen_)[lidNode] = transitionTemperatureSL_ + L_deltaTemperature;
-                (*SL_latent_heat_)[lidNode] = latentHeatSL_;
+                (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
+                (*SL_latent_heat_)[lidNode] = latentHeatSL;
               }
             }
           }
 
           //liquid state start
-          else if ((*SL_latent_heat_)[lidNode] == latentHeatSL_)
+          else if ((*SL_latent_heat_)[lidNode] == latentHeatSL)
           {
             const double newTemperatureNoPhaseTransition = (*temperaturen_)[lidNode] + temp_LH_increase*inv_CPL;
 
             // no phase transition
-            if (newTemperatureNoPhaseTransition >= transitionTemperatureSL_)
+            if (newTemperatureNoPhaseTransition >= transitionTemperatureSL)
             {
               // delta temperature NO transition
               const double L_deltaTemperature = newTemperatureNoPhaseTransition - (*temperaturen_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionL_, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL_, L_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
               // temperature update
               (*temperaturen_)[lidNode] = newTemperatureNoPhaseTransition;
             }
@@ -300,63 +313,63 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
             else
             {
               // delta temperature BEFORE phase transition
-              const double L_deltaTemperature = transitionTemperatureSL_-(*temperaturen_)[lidNode];
+              const double L_deltaTemperature = transitionTemperatureSL-(*temperaturen_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionL_, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL_, L_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
               // delta latent heat DURING phase transition
-              const double deltaLatentHeat = temp_LH_increase-(transitionTemperatureSL_-(*temperaturen_)[lidNode])*CPL_;
+              const double deltaLatentHeat = temp_LH_increase-(transitionTemperatureSL-(*temperaturen_)[lidNode])*CPL;
 
               // still in the phase transition after this the time step
-              if (-deltaLatentHeat <= latentHeatSL_)
+              if (-deltaLatentHeat <= latentHeatSL)
               {
                 // density and radius update
-                DensityUpdater(thermalExpansionSL_, deltaLatentHeat, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL_, deltaLatentHeat, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
                 // temperature and latent heat updates
                 (*SL_latent_heat_)[lidNode] += deltaLatentHeat;
-                (*temperaturen_)[lidNode] = transitionTemperatureSL_;
+                (*temperaturen_)[lidNode] = transitionTemperatureSL;
               }
 
               // rare case where the phase transition happens in 1 time step
               else
               {
                 // density and radius update
-                DensityUpdater(thermalExpansionSL_, latentHeatSL_, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL_, latentHeatSL_, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionSL, latentHeatSL, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radius_)[lidNode]);
                 // delta temperature AFTER phase transition
-                const double S_deltaTemperature = (deltaLatentHeat + latentHeatSL_)*inv_CPS;
+                const double S_deltaTemperature = (deltaLatentHeat + latentHeatSL)*inv_CPS;
                 // density and radius update
-                DensityUpdater(thermalExpansionL_, L_deltaTemperature, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionL_, L_deltaTemperature, (*radius_)[lidNode]);
+                DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
+                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
                 // temperature and latent heat updates
-                (*temperaturen_)[lidNode] = transitionTemperatureSL_ + S_deltaTemperature;
+                (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
                 (*SL_latent_heat_)[lidNode] = 0;
               }
             }
           }
 
           // transition start (solid <-> liquid)
-          else if ((*SL_latent_heat_)[lidNode] < latentHeatSL_ && (*SL_latent_heat_)[lidNode] > 0)
+          else if ((*SL_latent_heat_)[lidNode] < latentHeatSL && (*SL_latent_heat_)[lidNode] > 0)
           {
             const double newLatentHeatKeepTransitioning = (*SL_latent_heat_)[lidNode] + temp_LH_increase;
 
             // transition -> liquid
-            if (newLatentHeatKeepTransitioning > latentHeatSL_)
+            if (newLatentHeatKeepTransitioning > latentHeatSL)
             {
               // delta temperature DURING phase transition
-              const double deltaLatentHeat = latentHeatSL_ - (*SL_latent_heat_)[lidNode];
+              const double deltaLatentHeat = latentHeatSL - (*SL_latent_heat_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionSL_, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL_, deltaLatentHeat, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
               // delta latent heat AFTER phase transition
-              const double L_deltaTemperature = (newLatentHeatKeepTransitioning - latentHeatSL_) * inv_CPL;
+              const double L_deltaTemperature = (newLatentHeatKeepTransitioning - latentHeatSL) * inv_CPL;
               // density and radius update
-              DensityUpdater(thermalExpansionL_, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL_, L_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
               // temperature and latent heat updates
-              (*temperaturen_)[lidNode] = transitionTemperatureSL_ + L_deltaTemperature;
-              (*SL_latent_heat_)[lidNode] = latentHeatSL_;
+              (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
+              (*SL_latent_heat_)[lidNode] = latentHeatSL;
             }
 
             // transition -> solid
@@ -365,15 +378,15 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               // delta temperature DURING phase transition
               const double deltaLatentHeat = -(*SL_latent_heat_)[lidNode];
               // density and radius update
-              DensityUpdater(thermalExpansionSL_, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL_, deltaLatentHeat, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
               // delta latent heat AFTER phase transition
               const double S_deltaTemperature = newLatentHeatKeepTransitioning * inv_CPS;
               // density and radius update
-              DensityUpdater(thermalExpansionS_, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS_, S_deltaTemperature, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
               // temperature and latent heat updates
-              (*temperaturen_)[lidNode] = transitionTemperatureSL_ + S_deltaTemperature;
+              (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
               (*SL_latent_heat_)[lidNode] = 0;
             }
 
@@ -383,8 +396,8 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               // delta temperature DURING phase transition (this is kept just for the sake of readability)
               const double deltaLatentHeat = temp_LH_increase;
               // density and radius update
-              DensityUpdater(thermalExpansionSL_, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL_, deltaLatentHeat, (*radius_)[lidNode]);
+              DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
               // latent heat update
               (*SL_latent_heat_)[lidNode] = newLatentHeatKeepTransitioning;
             }
@@ -393,7 +406,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           // other cases, did I forget anything?
           else
           {
-            dserror("latent heat %d out of range (0 : %d). There is a nasty bug in the code?",(*SL_latent_heat_)[lidNode],latentHeatSL_);
+            dserror("latent heat %d out of range (0 : %d). There is a nasty bug in the code?",(*SL_latent_heat_)[lidNode],latentHeatSL);
           }
         }
       }

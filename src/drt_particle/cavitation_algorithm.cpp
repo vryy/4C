@@ -2694,7 +2694,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
-  const double initDensity = particles_->InitDensity();
+  const double initDensity = particleMat_->initDensity_;
 
   double gamma = 0.0;
   double pvapor = 0.0;
@@ -3252,14 +3252,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     const double timedelay = conds[i]->GetDouble("timedelay");
     const double stopinflowtime = conds[i]->GetDouble("stopinflowtime");
 
-    // make sure that a particle material is defined in the dat-file
-    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-    if (id==-1)
-      dserror("Could not find particle material");
-
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-    const double initial_radius = actmat->initialradius_;
+    const double initial_radius = particleMat_->initRadius_;
 
     const double inflowtime = 1.0 / inflow_freq;
     if(std::abs(inflowtime/Dt() - (int)(inflowtime/Dt())) > EPS9)

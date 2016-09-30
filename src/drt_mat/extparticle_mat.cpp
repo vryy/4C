@@ -22,7 +22,7 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     ) :
     ParticleMat(matdata),
     dismemberRadius_(matdata->GetDouble("DISMEMBER_RADIUS")),
-    temperature_(matdata->GetDouble("INITTEMPERATURE")),
+    initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
     CPS_(matdata->GetDouble("CPS")),
     CPL_(matdata->GetDouble("CPL")),
     latentHeatSL_(matdata->GetDouble("LATENT_HEAT_SL")),

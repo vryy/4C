@@ -28,6 +28,9 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_mat/particle_mat.H"
+#include "../drt_mat/extparticle_mat.H"
+#include "../drt_mat/matpar_bundle.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

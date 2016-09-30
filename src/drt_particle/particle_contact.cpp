@@ -57,38 +57,24 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   discret_(discret),
   particle_algorithm_(particlealgorithm)
 {
+
+
+
   // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
 
-  int id = -1;
-  // check if the material exists
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    //id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-    std::cout << "\n\n\n Warning! Initial safety checks for MeshFree still in the TODO list\n\n\n";
-    return;
-  }
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-    break;
-  }
-  default :
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  }
+  std::cout << "porcodio1\n";
 
-  if (id==-1)
-    dserror("Could not find particle material or material type");
+  const MAT::PAR::ParticleMat* particleMat = particle_algorithm_->ParticleMat();
 
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+  std::cout << "porcodio2   " << particleMat << std::endl;
 
   // currently all particles have identical density and radius
-  double density = actmat->density_;
-  nue_ = actmat->poissonratio_;
-  young_ = actmat->young_;
+  double density = particleMat->initDensity_;
+  nue_ = particleMat->poissonRatio_;
+  young_ = particleMat->youngModulus_;
+
+
 
   //find the normal contact type
   normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");
@@ -111,13 +97,10 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if(r_min_>r_max_)
       dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
 
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-
-    if (actmat->initialradius_ < r_min_)
+    if (particleMat->initRadius_ < r_min_)
       dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
 
-    if (actmat->initialradius_ > r_max_)
+    if (particleMat->initRadius_ > r_max_)
       dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
 
     if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
@@ -336,11 +319,10 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
        dserror("Friction coefficient invalid");
     }
   }
-
-  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  if (extParticleMat != NULL)
   {
-    const MAT::PAR::ExtParticleMat* actmat2 = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
-    r_dismember_ = actmat2->dismemberRadius_;
+    r_dismember_ = extParticleMat->dismemberRadius_;
     if (r_dismember_ < 0)
       dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
     if (r_dismember_ < r_min_)
