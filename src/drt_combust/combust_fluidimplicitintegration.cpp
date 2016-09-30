@@ -34,7 +34,7 @@ combustion problem.
 
 #include "../drt_combust/combust_utils_time_integration.H"
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"

@@ -30,7 +30,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
 #include "../drt_io/io.H"
 

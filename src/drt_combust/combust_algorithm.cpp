@@ -18,7 +18,7 @@
 #include "combust_fluidimplicitintegration.H"
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_mean_general.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"

@@ -34,7 +34,7 @@
 
 #include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 
 #include "../drt_io/io_pstream.H"
 

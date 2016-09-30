@@ -5,6 +5,8 @@
 
     detailed description in header file levelset_algorithm.H
 
+\level 2
+
 <pre>
 \maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
@@ -18,7 +20,7 @@
 #include "levelset_intersection_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"

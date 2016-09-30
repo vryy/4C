@@ -3,7 +3,7 @@
 
 \brief Methods to apply periodic boundary conditions
 
-\level 2
+\level 0
 
 <pre>
 \maintainer  Benjamin Krank, Martin Kronbichler

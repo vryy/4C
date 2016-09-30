@@ -47,7 +47,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/scatra_mat.H"
 
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 

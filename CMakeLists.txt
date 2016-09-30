@@ -452,7 +452,7 @@ set(OBJS_DRT_ALE_LIB
   src/drt_ale3/ale3_surface_evaluate.cpp
 )
 set(OBJS_DRT_LIB
-  src/drt_fluid/drt_periodicbc.cpp
+  src/drt_lib/drt_periodicbc.cpp
   src/drt_lib/drt_assemblestrategy.cpp
   src/drt_lib/drt_condition.cpp
   src/drt_lib/drt_conditiondefinition.cpp

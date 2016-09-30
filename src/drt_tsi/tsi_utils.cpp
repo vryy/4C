@@ -4,6 +4,10 @@
 
 \brief utility functions for tsi problems
 
+\level 2
+
+\maintainer Alexander Seitz
+
 <pre>
    Maintainer: Alexander Seitz
                seitz@lnm.mw.tum.de
@@ -37,7 +41,7 @@
 
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 
 #include "../drt_volmortar/volmortar_utils.H"
 

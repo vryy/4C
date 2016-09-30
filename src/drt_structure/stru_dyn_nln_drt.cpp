@@ -38,7 +38,7 @@
 #include "../linalg/linalg_solver.H"
 
 //periodic boundary conditions
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -18,7 +18,7 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/geo_utils.H"
 #include "../drt_io/io_control.H"

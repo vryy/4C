@@ -32,7 +32,7 @@
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_topopt.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_timint_loma_genalpha.H"
 #include "../drt_fluid/fluid_timint_loma_ost.H"

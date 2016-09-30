@@ -3,6 +3,7 @@
 
 \brief creates a second discretization as part of the complete discretization for inflow generation
 
+\level 2
 
 <pre>
 \maintainer Benjamin Krank & Martin Kronbichler
@@ -16,7 +17,7 @@
 *----------------------------------------------------------------------*/
 
 #include "../drt_fluid/fluid_discret_extractor.H"
-#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_lib/drt_periodicbc.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_io/io.H"
