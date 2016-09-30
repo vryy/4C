@@ -516,7 +516,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
   std::vector<LINALG::Matrix<3,1> > fibervecs;
 
   // some variables
-  double Je = 0.0;
   double sigf = 0.0;
   double dsigfdrho = 0.0;
   double ddPIedrho = 0.0;
@@ -594,7 +593,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
@@ -821,7 +819,6 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
 
     // elastic right Cauchy Green tensor
     FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
-    Je = FeM.Determinant();
     CeM.MultiplyTN(1.0,FeM,FeM,0.0);
 
     // get derivatives of strain energy function w.r.t. the fourth invariant
