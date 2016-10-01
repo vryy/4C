@@ -500,175 +500,30 @@ void PARTICLE::TimInt::UpdateStepTime()
 /* State vectors are updated according to the new distribution of particles */
 void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 {
-  Teuchos::RCP<Epetra_Vector> old;
-
-  if (disn_ != Teuchos::null)
-  {
-    old = disn_;
-    disn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *disn_);
-  }
-
-  if (veln_ != Teuchos::null)
-  {
-    old = veln_;
-    veln_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *veln_);
-  }
-
-  if (temperaturen_ != Teuchos::null)
-  {
-    old = temperaturen_;
-    temperaturen_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *temperaturen_);
-  }
-
-  if (pressuren_ != Teuchos::null)
-  {
-    old = pressuren_;
-    pressuren_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *pressuren_);
-  }
-
-  if (densityn_ != Teuchos::null)
-  {
-    old = densityn_;
-    densityn_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *densityn_);
-  }
-
-  if (ang_veln_ != Teuchos::null)
-  {
-    old = ang_veln_;
-    ang_veln_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *ang_veln_);
-  }
-
-  if (accn_ != Teuchos::null)
-  {
-    old = accn_;
-    accn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *accn_);
-  }
-
-  if (ang_accn_ != Teuchos::null)
-  {
-    old = ang_accn_;
-    ang_accn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *ang_accn_);
-  }
-
-  if ((*dis_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
-    dis_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*oldvec, *(*dis_)(0));
-  }
-
-  if ((*vel_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
-    vel_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*oldvec, *(*vel_)(0));
-  }
-
-  if (ang_vel_ != Teuchos::null and (*ang_vel_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*ang_vel_)(0)));
-    ang_vel_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*oldvec, *(*ang_vel_)(0));
-  }
-
-  if ((*acc_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
-    acc_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*oldvec, *(*acc_)(0));
-  }
-
-  if (temperature_ != Teuchos::null && (*temperature_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
-    temperature_->ReplaceMaps(discret_->NodeRowMap());
-    LINALG::Export(*oldvec, *(*temperature_)(0));
-  }
-
-  if (pressure_ != Teuchos::null && (*pressure_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
-    pressure_->ReplaceMaps(discret_->NodeRowMap());
-    LINALG::Export(*oldvec, *(*pressure_)(0));
-  }
-
-  if (density_ != Teuchos::null && (*density_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
-    density_->ReplaceMaps(discret_->NodeRowMap());
-    LINALG::Export(*oldvec, *(*density_)(0));
-  }
-
-  if (ang_acc_ != Teuchos::null and (*ang_acc_)(0) != Teuchos::null)
-  {
-    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*ang_acc_)(0)));
-    ang_acc_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*oldvec, *(*ang_acc_)(0));
-  }
-
-  if (orient_ != Teuchos::null)
-  {
-    old = orient_;
-    orient_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    LINALG::Export(*old, *orient_);
-  }
-
-  if (SL_latent_heat_ != Teuchos::null)
-  {
-    old = SL_latent_heat_;
-    SL_latent_heat_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *SL_latent_heat_);
-  }
-
-  if (radius_ != Teuchos::null)
-  {
-    old = radius_;
-    radius_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *radius_);
-  }
-
-  if (radius0_ != Teuchos::null)
-  {
-    old = radius0_;
-    radius0_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *radius0_);
-  }
-
-  if (radiusdot_ != Teuchos::null)
-  {
-    old = radiusdot_;
-    radiusdot_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *radiusdot_);
-  }
-
-  if (mass_ != Teuchos::null)
-  {
-    old = mass_;
-    mass_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *mass_);
-  }
-
-  if (inertia_ != Teuchos::null)
-  {
-    old = inertia_;
-    inertia_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *inertia_);
-  }
-
-  if (fifc_ != Teuchos::null)
-  {
-    fifc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-  }
-
-  return;
+  UpdateStateVectorMap(disn_);
+  UpdateStateVectorMap(veln_);
+  UpdateStateVectorMap(temperaturen_);
+  UpdateStateVectorMap(pressuren_);
+  UpdateStateVectorMap(densityn_);
+  UpdateStateVectorMap(ang_veln_);
+  UpdateStateVectorMap(accn_);
+  UpdateStateVectorMap(ang_accn_);
+  UpdateStateVectorMap(dis_);
+  UpdateStateVectorMap(vel_);
+  UpdateStateVectorMap(ang_vel_);
+  UpdateStateVectorMap(acc_);
+  UpdateStateVectorMap(temperature_);
+  UpdateStateVectorMap(pressure_);
+  UpdateStateVectorMap(density_);
+  UpdateStateVectorMap(ang_acc_);
+  UpdateStateVectorMap(orient_);
+  UpdateStateVectorMap(SL_latent_heat_);
+  UpdateStateVectorMap(radius_);
+  UpdateStateVectorMap(radius0_);
+  UpdateStateVectorMap(radiusdot_);
+  UpdateStateVectorMap(mass_);
+  UpdateStateVectorMap(inertia_);
+  UpdateStateVectorMap(fifc_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1065,4 +920,44 @@ Teuchos::RCP<const Epetra_Map> PARTICLE::TimInt::NodeRowMap()
 const Epetra_Map* PARTICLE::TimInt::NodeRowMapView()
 {
   return discret_->NodeRowMap();
+}
+
+/*-----------------------------------------------------------------------------*/
+/* Update TimIntMStep state vector with the new (appropriate) map from discret_*/
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > stateVector)
+{
+  if (stateVector != Teuchos::null and (*stateVector)(0) != Teuchos::null)
+  {
+    const Teuchos::RCP<Epetra_Vector> old = Teuchos::rcp(new Epetra_Vector(*(*stateVector)(0)));
+
+    const int stateVectorGlobalLength = (*stateVector)(0)->GlobalLength();
+    if (stateVectorGlobalLength == DofRowMap()->NumGlobalElements())
+      stateVector->ReplaceMaps(DofRowMapView());
+    else if (stateVectorGlobalLength == NodeRowMap()->NumGlobalElements())
+      stateVector->ReplaceMaps(NodeRowMapView());
+    else
+      dserror("The number of elements does not match neither the node or the dof maps. What are you introducing in this functions?");
+
+    LINALG::Export(*old, *(*stateVector)(0));
+  }
+}
+
+/*-----------------------------------------------------------------------------*/
+/* Update state vector with the new (appropriate) map from discret_*/
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > stateVector)
+{
+  if (stateVector != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> old = stateVector;
+
+    const int stateVectorGlobalLength = (*stateVector)(0)->GlobalLength();
+    if (stateVectorGlobalLength == DofRowMap()->NumGlobalElements())
+      stateVector = LINALG::CreateVector(*DofRowMap(),true);
+    else if (stateVectorGlobalLength == NodeRowMap()->NumGlobalElements())
+      stateVector = LINALG::CreateVector(*NodeRowMap(),true);
+    else
+      dserror("The number of elements does not match neither the node or the dof maps. What are you introducing in this functions?");
+
+    LINALG::Export(*old, *stateVector);
+  }
 }

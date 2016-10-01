@@ -396,6 +396,16 @@ namespace PARTICLE
 
     //! @name General purpose algorithm members
     //@{
+
+    /* Update TimIntMStep state vector with the new map from discret_*/
+    void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > stateVector);
+    /* Update state vector with the new map from discret_*/
+    void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> stateVector);
+
+    //@}
+
+    //! @name General purpose algorithm members
+    //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int myrank_;  //!< ID of actual processor in parallel
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
