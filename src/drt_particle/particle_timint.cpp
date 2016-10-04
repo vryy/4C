@@ -498,13 +498,14 @@ void PARTICLE::TimInt::UpdateStepTime()
 
 /*----------------------------------------------------------------------*/
 /* State vectors are updated according to the new distribution of particles */
+
 void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 {
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
-  UpdateStateVectorMap(temperaturen_);
-  UpdateStateVectorMap(pressuren_);
-  UpdateStateVectorMap(densityn_);
+  UpdateStateVectorMap(temperaturen_,true);
+  UpdateStateVectorMap(pressuren_,true);
+  UpdateStateVectorMap(densityn_,true);
   UpdateStateVectorMap(ang_veln_);
   UpdateStateVectorMap(accn_);
   UpdateStateVectorMap(ang_accn_);
@@ -512,17 +513,17 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(vel_);
   UpdateStateVectorMap(ang_vel_);
   UpdateStateVectorMap(acc_);
-  UpdateStateVectorMap(temperature_);
-  UpdateStateVectorMap(pressure_);
-  UpdateStateVectorMap(density_);
+  UpdateStateVectorMap(temperature_,true);
+  UpdateStateVectorMap(pressure_,true);
+  UpdateStateVectorMap(density_,true);
   UpdateStateVectorMap(ang_acc_);
   UpdateStateVectorMap(orient_);
-  UpdateStateVectorMap(SL_latent_heat_);
-  UpdateStateVectorMap(radius_);
-  UpdateStateVectorMap(radius0_);
-  UpdateStateVectorMap(radiusdot_);
-  UpdateStateVectorMap(mass_);
-  UpdateStateVectorMap(inertia_);
+  UpdateStateVectorMap(SL_latent_heat_,true);
+  UpdateStateVectorMap(radius_,true);
+  UpdateStateVectorMap(radius0_,true);
+  UpdateStateVectorMap(radiusdot_,true);
+  UpdateStateVectorMap(mass_,true);
+  UpdateStateVectorMap(inertia_,true);
   UpdateStateVectorMap(fifc_);
 }
 
@@ -924,19 +925,16 @@ const Epetra_Map* PARTICLE::TimInt::NodeRowMapView()
 
 /*-----------------------------------------------------------------------------*/
 /* Update TimIntMStep state vector with the new (appropriate) map from discret_*/
-void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > stateVector)
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType)
 {
   if (stateVector != Teuchos::null and (*stateVector)(0) != Teuchos::null)
   {
     const Teuchos::RCP<Epetra_Vector> old = Teuchos::rcp(new Epetra_Vector(*(*stateVector)(0)));
 
-    const int stateVectorGlobalLength = (*stateVector)(0)->GlobalLength();
-    if (stateVectorGlobalLength == DofRowMap()->NumGlobalElements())
-      stateVector->ReplaceMaps(DofRowMapView());
-    else if (stateVectorGlobalLength == NodeRowMap()->NumGlobalElements())
+    if (trg_nodeVectorType)
       stateVector->ReplaceMaps(NodeRowMapView());
     else
-      dserror("The number of elements does not match neither the node or the dof maps. What are you introducing in this functions?");
+      stateVector->ReplaceMaps(DofRowMapView());
 
     LINALG::Export(*old, *(*stateVector)(0));
   }
@@ -944,20 +942,20 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epe
 
 /*-----------------------------------------------------------------------------*/
 /* Update state vector with the new (appropriate) map from discret_*/
-void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > stateVector)
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > &stateVector, bool trg_nodeVectorType)
 {
   if (stateVector != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> old = stateVector;
 
-    const int stateVectorGlobalLength = (*stateVector)(0)->GlobalLength();
-    if (stateVectorGlobalLength == DofRowMap()->NumGlobalElements())
-      stateVector = LINALG::CreateVector(*DofRowMap(),true);
-    else if (stateVectorGlobalLength == NodeRowMap()->NumGlobalElements())
-      stateVector = LINALG::CreateVector(*NodeRowMap(),true);
+    if (trg_nodeVectorType)
+      stateVector = LINALG::CreateVector(*discret_->NodeRowMap(),true);
     else
-      dserror("The number of elements does not match neither the node or the dof maps. What are you introducing in this functions?");
+      stateVector = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
 
     LINALG::Export(*old, *stateVector);
   }
 }
+
+

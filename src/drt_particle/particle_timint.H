@@ -398,9 +398,9 @@ namespace PARTICLE
     //@{
 
     /* Update TimIntMStep state vector with the new map from discret_*/
-    void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > stateVector);
+    void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
     /* Update state vector with the new map from discret_*/
-    void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> stateVector);
+    void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
     //@}
 
