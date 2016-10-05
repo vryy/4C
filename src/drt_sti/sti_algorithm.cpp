@@ -61,6 +61,7 @@ STI::Algorithm::Algorithm(
     restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
     maps_(Teuchos::null),
     systemmatrix_(Teuchos::null),
+    matrixtype_(DRT::INPUT::IntegralValue<INPAR::STI::MatrixType>(stidyn,"MATRIXTYPE")),
     scatrathermoblock_(Teuchos::null),
     thermoscatrablock_(Teuchos::null),
     increment_(Teuchos::null),
@@ -160,13 +161,32 @@ STI::Algorithm::Algorithm(
       );
 
   // initialize global system matrix
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+  switch(matrixtype_)
+  {
+    case INPAR::STI::matrix_block:
+    {
+      systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *maps_,
           *maps_,
           81,
           false,
           true
           ));
+      break;
+    }
+
+    case INPAR::STI::matrix_sparse:
+    {
+      systemmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(),27,false,true));
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scatra-thermo interaction not recognized!");
+      break;
+    }
+  }
 
   // initialize scatra-thermo block of global system matrix
   scatrathermoblock_ = Teuchos::rcp(new LINALG::SparseMatrix(
@@ -222,10 +242,48 @@ void STI::Algorithm::AssembleMatAndRHS()
   AssembleODBlockThermoScatra();
 
   // build global system matrix
-  systemmatrix_->Assign(0,0,LINALG::View,*scatra_->SystemMatrix());
-  systemmatrix_->Assign(0,1,LINALG::View,*scatrathermoblock_);
-  systemmatrix_->Assign(1,0,LINALG::View,*thermoscatrablock_);
-  systemmatrix_->Assign(1,1,LINALG::View,*thermo_->SystemMatrix());
+  switch(matrixtype_)
+  {
+    case INPAR::STI::matrix_block:
+    {
+      // check global system matrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_);
+      if(blocksystemmatrix == Teuchos::null)
+        dserror("System matrix is not a block matrix!");
+
+      // construct global system matrix by assigning matrix blocks
+      blocksystemmatrix->Assign(0,0,LINALG::View,*scatra_->SystemMatrix());
+      blocksystemmatrix->Assign(0,1,LINALG::View,*scatrathermoblock_);
+      blocksystemmatrix->Assign(1,0,LINALG::View,*thermoscatrablock_);
+      blocksystemmatrix->Assign(1,1,LINALG::View,*thermo_->SystemMatrix());
+
+      break;
+    }
+
+    case INPAR::STI::matrix_sparse:
+    {
+      // check global system matrix
+      Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
+      if(systemmatrix == Teuchos::null)
+        dserror("System matrix is not a sparse matrix!");
+
+      // construct global system matrix by adding matrix blocks
+      systemmatrix->Add(*scatra_->SystemMatrix(),false,1.,0.);
+      systemmatrix->Add(*scatrathermoblock_,false,1.,1.);
+      systemmatrix->Add(*thermoscatrablock_,false,1.,1.);
+      systemmatrix->Add(*thermo_->SystemMatrix(),false,1.,1.);
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scatra-thermo interaction not recognized!");
+      break;
+    }
+  }
+
+  // finalize global system matrix
   systemmatrix_->Complete();
 
   // create full monolithic right-hand side vector

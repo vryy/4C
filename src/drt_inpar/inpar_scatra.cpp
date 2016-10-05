@@ -506,54 +506,6 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
    // this parameter defines the numerical value, if stabilization with numerical values is used
    DoubleParameter("TAU_VALUE",0.0,"Numerical value for tau for stabilization",&scatradyn_stab);
-
-  /*-------------------------------------------------------------------------*/
-
-  Teuchos::ParameterList& stidyn = list->sublist(
-      "STI DYNAMIC",
-      false,
-      "general control parameters for scatra-thermo interaction problems"
-      );
-
-  // type of scalar transport
-  setStringToIntegralParameter<int>(
-      "SCATRATYPE",
-      "Undefined",
-      "type of scalar transport",
-       tuple<std::string>(
-           "Undefined",
-           "ConvectionDiffusion",
-           "Elch"
-           ),
-       tuple<int>(
-           INPAR::SCATRA::impltype_undefined,
-           INPAR::SCATRA::impltype_std,
-           INPAR::SCATRA::impltype_elch_diffcond   // we abuse this enumeration entry here to indicate electrochemistry in general
-           ),
-       &stidyn
-       );
-
-  // specification of initial temperature field
-  setStringToIntegralParameter<int>(
-      "THERMO_INITIALFIELD",
-      "zero_field",
-      "initial temperature field for scatra-thermo interaction problems",
-      tuple<std::string>(
-          "zero_field",
-          "field_by_function",
-          "field_by_condition"
-          ),
-      tuple<int>(
-          INPAR::SCATRA::initfield_zero_field,
-          INPAR::SCATRA::initfield_field_by_function,
-          INPAR::SCATRA::initfield_field_by_condition
-          ),
-      &stidyn
-      );
-
-  // function number for initial temperature field
-  IntParameter("THERMO_INITFUNCNO",-1,"function number for initial temperature field for scatra-thermo interaction problems",&stidyn);
-
 }
 
 

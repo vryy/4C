@@ -40,6 +40,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_lubrication.H"
 #include "inpar_scatra.H"
 #include "inpar_s2i.H"
+#include "inpar_sti.H"
 #include "inpar_structure.H"
 #include "inpar_potential.H"
 #include "inpar_problemtype.H"
@@ -654,6 +655,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::LEVELSET::SetValidParameters(list);
   INPAR::ELCH::SetValidParameters(list);
   INPAR::EP::SetValidParameters(list);
+  INPAR::STI::SetValidParameters(list);
 
   INPAR::S2I::SetValidParameters(list);
   INPAR::FS3I::SetValidParameters(list);

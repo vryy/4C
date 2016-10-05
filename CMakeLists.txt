@@ -803,6 +803,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_solver_nonlin.cpp
   src/drt_inpar/inpar_ssi.cpp
   src/drt_inpar/inpar_statmech.cpp
+  src/drt_inpar/inpar_sti.cpp
   src/drt_inpar/inpar_structure.cpp
   src/drt_inpar/inpar_thermo.cpp
   src/drt_inpar/inpar_topopt.cpp

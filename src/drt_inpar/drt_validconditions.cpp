@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
+#include "inpar_sti.H"
 #include "inpar_fluid.H"
 #include "inpar_structure.H"
 #include "inpar_thermo.H"
@@ -1627,6 +1628,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::S2I::SetValidConditions(condlist);
 
   INPAR::SCATRA::SetValidConditions(condlist);
+
+  INPAR::STI::SetValidConditions(condlist);
 
   INPAR::ELCH::SetValidConditions(condlist);
 

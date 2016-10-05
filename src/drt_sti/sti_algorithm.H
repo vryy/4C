@@ -19,6 +19,8 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "../drt_inpar/inpar_sti.H"
+
 // forward declarations
 class Epetra_Map;
 class Epetra_Time;
@@ -44,6 +46,7 @@ namespace LINALG
   class MapExtractor;
   class Solver;
   class SparseMatrix;
+  class SparseOperator;
 }
 
 namespace SCATRA
@@ -153,7 +156,10 @@ namespace STI
       Teuchos::RCP<LINALG::MapExtractor> maps_;
 
       //! global system matrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+
+      //! type of global system matrix in global system of equations
+      const INPAR::STI::MatrixType matrixtype_;
 
       //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo degrees of freedom)
       Teuchos::RCP<LINALG::SparseMatrix> scatrathermoblock_;

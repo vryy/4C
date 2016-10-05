@@ -49,6 +49,7 @@ INITPOTCALC                     yes
 SCATRATYPE                      Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
+MATRIXTYPE                      sparse
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
