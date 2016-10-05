@@ -236,7 +236,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           const double temp_LH_increase = (HSQDot * dt)/(*densityn_)[lidNode];
 
           // solid state start
-          if ((*SL_latent_heat_)[lidNode] == 0)
+          if ((*latentHeat_)[lidNode] == 0)
           {
             const double newTemperatureNoPhaseTransition = (*temperaturen_)[lidNode] + temp_LH_increase*inv_CPS;
 
@@ -270,7 +270,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
                 DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
                 RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
                 // temperature and latent heat updates
-                (*SL_latent_heat_)[lidNode] += deltaLatentHeat;
+                (*latentHeat_)[lidNode] += deltaLatentHeat;
                 (*temperaturen_)[lidNode] = transitionTemperatureSL;
               }
 
@@ -287,13 +287,13 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
                 RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
                 // temperature and latent heat updates
                 (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
-                (*SL_latent_heat_)[lidNode] = latentHeatSL;
+                (*latentHeat_)[lidNode] = latentHeatSL;
               }
             }
           }
 
           //liquid state start
-          else if ((*SL_latent_heat_)[lidNode] == latentHeatSL)
+          else if ((*latentHeat_)[lidNode] == latentHeatSL)
           {
             const double newTemperatureNoPhaseTransition = (*temperaturen_)[lidNode] + temp_LH_increase*inv_CPL;
 
@@ -327,7 +327,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
                 DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
                 RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
                 // temperature and latent heat updates
-                (*SL_latent_heat_)[lidNode] += deltaLatentHeat;
+                (*latentHeat_)[lidNode] += deltaLatentHeat;
                 (*temperaturen_)[lidNode] = transitionTemperatureSL;
               }
 
@@ -344,21 +344,21 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
                 RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
                 // temperature and latent heat updates
                 (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
-                (*SL_latent_heat_)[lidNode] = 0;
+                (*latentHeat_)[lidNode] = 0;
               }
             }
           }
 
           // transition start (solid <-> liquid)
-          else if ((*SL_latent_heat_)[lidNode] < latentHeatSL && (*SL_latent_heat_)[lidNode] > 0)
+          else if ((*latentHeat_)[lidNode] < latentHeatSL && (*latentHeat_)[lidNode] > 0)
           {
-            const double newLatentHeatKeepTransitioning = (*SL_latent_heat_)[lidNode] + temp_LH_increase;
+            const double newLatentHeatKeepTransitioning = (*latentHeat_)[lidNode] + temp_LH_increase;
 
             // transition -> liquid
             if (newLatentHeatKeepTransitioning > latentHeatSL)
             {
               // delta temperature DURING phase transition
-              const double deltaLatentHeat = latentHeatSL - (*SL_latent_heat_)[lidNode];
+              const double deltaLatentHeat = latentHeatSL - (*latentHeat_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
               RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
@@ -369,14 +369,14 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
               // temperature and latent heat updates
               (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
-              (*SL_latent_heat_)[lidNode] = latentHeatSL;
+              (*latentHeat_)[lidNode] = latentHeatSL;
             }
 
             // transition -> solid
             else if (newLatentHeatKeepTransitioning < 0)
             {
               // delta temperature DURING phase transition
-              const double deltaLatentHeat = -(*SL_latent_heat_)[lidNode];
+              const double deltaLatentHeat = -(*latentHeat_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
               RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
@@ -387,7 +387,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
               // temperature and latent heat updates
               (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
-              (*SL_latent_heat_)[lidNode] = 0;
+              (*latentHeat_)[lidNode] = 0;
             }
 
             // we stay in the transition zone
@@ -399,14 +399,14 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
               RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
               // latent heat update
-              (*SL_latent_heat_)[lidNode] = newLatentHeatKeepTransitioning;
+              (*latentHeat_)[lidNode] = newLatentHeatKeepTransitioning;
             }
           }
 
           // other cases, did I forget anything?
           else
           {
-            dserror("latent heat %d out of range (0 : %d). There is a nasty bug in the code?",(*SL_latent_heat_)[lidNode],latentHeatSL);
+            dserror("latent heat %d out of range (0 : %d). There is a nasty bug in the code?",(*latentHeat_)[lidNode],latentHeatSL);
           }
         }
       }
@@ -447,8 +447,8 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
   if(collhandler_ != Teuchos::null)
   {
   // new angular-velocities \f$ang_V_{n+1/2}\f$
-  ang_veln_->Update(1.0, *(*ang_vel_)(0), 0.0);
-  ang_veln_->Update(dthalf, *(*ang_acc_)(0), 1.0);
+  angVeln_->Update(1.0, *(*angVel_)(0), 0.0);
+  angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
 
   // initialize vectors for contact force and moment
   f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
@@ -460,13 +460,13 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
   }
   //--------------------------------------------------------------
 
-  ComputeAcc(f_contact, m_contact, accn_, ang_accn_);
+  ComputeAcc(f_contact, m_contact, accn_, angAccn_);
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);
   if(collhandler_ != Teuchos::null)
   {
-    ang_veln_->Update(dthalf,*ang_accn_,1.0);
+    angVeln_->Update(dthalf,*angAccn_,1.0);
     // for visualization of orientation vector
     if(writeorientation_)
       RotateOrientVector(dt);

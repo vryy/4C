@@ -250,65 +250,69 @@ namespace PARTICLE
     //! Read and set restart state
     virtual void ReadRestartState();
 
-    //! known displacements at \f$t_{n}\f$
+    //! Read-only displacements \f$D_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
 
-    //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
-
-    //! unknown velocities \f$V_{n}\f$
+    //! Read-only velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
 
-    //! unknown accelerations \f$A_{n}\f$
+    //! Read-only accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
 
-    //! unknown temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
+    //! Read-only angular-velocities \f$angV_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*angVel_)(0); }
 
-    //! unknown pressure \f$P_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressuren() { return (*pressure_)(0); }
+    //! Read-only angular-accelerations \f$angA_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*angAcc_)(0); }
 
-    //! unknown pressure \f$D_{n}\f$
+    //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
-    //! Return velocities \f$V_{n+1}\f$
+    //! Read-only temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
+
+
+
+    //! Read-only displacements \f$D_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
+
+    //! Read-only velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
 
-    //! Return accelerations \f$A_{n+1}\f$
+    //! Read-only accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
 
-    //! Return temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
+    //! Read-only angular-velocities \f$angV_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngVelnp() { return angVeln_; }
 
-    //! Return pressure \f$P_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() { return pressuren_; }
+    //! Read-only angular-accelerations \f$angA_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngAccnp() { return angAccn_; }
 
-    //! Return density \f$D_{n+1}\f$
+    //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
-    //! unknown angular velocities \f$V_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*ang_vel_)(0); }
+    //! Read-only temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
 
-    //! unknown angular accelerations \f$A_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*ang_acc_)(0); }
-
-    //! Return radii of particles \f$R_{0}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
-
-    //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
+    //! Read-only radii \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
 
-    //! Return latent heat of particles \f$L_{n}\f$ or \f$L_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() { return SL_latent_heat_; }
+    //! Read-only radii \f$R_0\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
 
-    //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusdot_; }
+    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusDot_; }
 
-    //! Return mass of particles
+    //! Read-only masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
 
-    //! Return inertia of particles
+    //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
+
+    //! Read-only latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() { return latentHeat_; }
+
+
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
@@ -318,49 +322,49 @@ namespace PARTICLE
     //! @name Extract methods
     //@{
 
-    /// extract displacements
+    //! Extract displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return disn_; }
 
-    //! extract velocities
+    //! Extract velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
 
-    //! Return accelerations
+    //! Extract accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accn_; }
 
-    //! extract temperatures
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
+    //! Extract angular-velocities \f$angV_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngVelnp(){ return angVeln_; }
 
-    //! extract pressure
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressurenp(){ return pressuren_; }
+    //! Extract angular-accelerations \f$angA_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngAccnp() { return angAccn_; }
 
-    //! Return density
+    //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
-    //! extract SL latent heat
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat(){ return SL_latent_heat_; }
+    //! Extract temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
 
-    //! extract initial radii
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
-
-    //! extract radii
+    //! Extract radii \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
 
-    //! extract fist time derivative of radii
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusdot_; }
+    //! extract radii \f$R_{0}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
 
-    //! extract mass vector
+    //! Extract time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusDot_; }
+
+    //! Extract masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
 
-    //! extract inertia vector
+    //! Extract inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
 
-    //@}
+    //! Extract latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat(){ return latentHeat_; }
 
     //! Set forces due to interface loads, the force is expected external-force-like
-    virtual void SetForceInterface
-    (
-      Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
-    );
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce);  ///< the force on interface
+
+    //@}
 
     //! @name Time step helpers
     //@{
@@ -450,56 +454,54 @@ namespace PARTICLE
     //! @name Global state vectors
     //@{
 
-    //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
+    //! Displacements \f${D}_{n}, D_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > dis_;
-    //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
+    //! Velocities \f${V}_{n}, V_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
-    //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
+    //! Accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
-    //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
-    //! global pressure \f${P}_{n+1}\f$ at \f$p_{n+1}\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > pressure_;
-    //! global pressure \f${D}_{n+1}\f$ at \f$d_{n+1}\f$
+    //! Angular-velocities \f${angV}_{n}, angV_{n-1}, ...\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angVel_;
+    //! Angular-accelerations \f${angA}_{n}, angA_{n-1}, ...\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angAcc_;
+    //! Densities \f${\rho}_{n+1}\f$ at \f$\rho_{n+1}\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
-    //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! Temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
+
+    //! Displacements \f${D}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
-    //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! Velocities \f${V}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;
-    //! global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! Accelerations \f${A}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;
-    //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>  temperaturen_;
-    //! global pressure \f${P}_{n+1}\f$ at \f$p_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>  pressuren_;
-    //! global density \f${D}_{n+1}\f$ at \f$d_{n+1}\f$
+    //! Angular-velocities \f${angV}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> angVeln_;
+    //! Angular-acceleration \f${angA}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> angAccn_;
+    //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>  densityn_;
-    //! radius of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> SL_latent_heat_;
-    //! radius of each particle at \f$t_{0}\f$
-    Teuchos::RCP<Epetra_Vector> radius_;
-    //! latent heat of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> radius0_;
-    //! first derivative of time of radius of each particle at \f$t_{n}\f$ or $\f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> radiusdot_;
-    //! mass of each particle at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> mass_;
-    //! moment of inertia of each particle at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> inertia_;
-    //! global angular-velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ang_vel_;
-    //! global angular-accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ang_acc_;
-    //! global angular-velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ang_veln_;
-    //! global angular-acceleration \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ang_accn_;
-    //! global vector for visualization of particle orientation
-    Teuchos::RCP<Epetra_Vector> orient_;
+    //! Temperatures \f${T}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>  temperaturen_;
+
 
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
+    //! Vector for visualization of particle orientation
+    Teuchos::RCP<Epetra_Vector> orient_;
 
+    //! Radii \f$R_{n}\f$ or \f$R_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> radius_;
+    //! Radii \f$R_{0}\f$
+    Teuchos::RCP<Epetra_Vector> radius0_;
+    //! Time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> radiusDot_;
+    //! Masses \f$M_{n}\f$ or \f$M_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> mass_;
+    //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> inertia_;
+    //! Latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> latentHeat_;
 
     //@}
 
@@ -518,9 +520,6 @@ namespace PARTICLE
 
     //! collision handler for particles
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
-
-    //! interaction handler for meshfree
-    Teuchos::RCP<PARTICLE::MeshFreeInteractionHandler> interhandler_;
 
     //@}
 

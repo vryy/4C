@@ -139,65 +139,69 @@ namespace ADAPTER
     //! Read and set restart state
     virtual void ReadRestartState() = 0;
 
-    //! known displacements at \f$t_{n}\f$
+    //! Read-only displacements \f$D_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
-    //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
-
-    //! unknown velocities \f$V_{n}\f$
+    //! Read-only velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
-    //! unknown accelerations \f$A_{n}\f$
+    //! Read-only accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
-    //! unknown temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
-
-    //! unknown pressure \f$P_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressuren() = 0;
-
-    //! unknown pressure \f$D_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
-
-    //! Return velocities \f$V_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
-
-    //! Return accelerations \f$A_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
-
-    //! Return temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
-
-    //! Return pressure \f$P_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() = 0;
-
-    //! Return density \f$D_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
-
-    //! unknown angular velocities \f$V_{n}\f$
+    //! Read-only angular-velocities \f$angV_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() = 0;
 
-    //! unknown angular accelerations \f$A_{n}\f$
+    //! Read-only angular-accelerations \f$angA_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngAccn() = 0;
 
-    //! Return radii of particles \f$R_{0}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
+    //! Read-only densities \f$\rho_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
 
-    //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
+    //! Read-only temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
+
+
+
+    //! Read-only displacements \f$D_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
+
+    //! Read-only velocities \f$V_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
+
+    //! Read-only accelerations \f$A_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+
+    //! Read-only angular-velocities \f$angV_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngVelnp() = 0;
+
+    //! Read-only angular-accelerations \f$angA_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngAccnp() = 0;
+
+    //! Read-only densities \f$\rho_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
+
+    //! Read-only temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
+
+    //! Read-only radii \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() = 0;
 
-    //! Return latent heat of particles \f$L_{n}\f$ or \f$L_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() = 0;
+    //! Read-only radii \f$R_0\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
 
-    //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() = 0;
 
-    //! Return mass of particles
+    //! Read-only masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Mass() = 0;
 
-    //! Return inertia of particles
+    //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
+
+    //! Read-only latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() = 0;
+
+
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
@@ -207,41 +211,44 @@ namespace ADAPTER
     //! @name Extract methods
     //@{
 
-    /// extract displacements
+    //! Extract displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() = 0;
 
-    //! extract velocities
+    //! Extract velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
-    //! extract accelerations
+    //! Extract accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() = 0;
 
-    //! extract temperatures
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
+    //! Extract angular-velocities \f$angV_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngVelnp() = 0;
 
-    //! extract pressures
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressurenp() = 0;
+    //! Extract angular-accelerations \f$angA_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngAccnp() = 0;
 
-    //! extract densities
+    //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
 
-    //! extract latent heat
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
+    //! Extract temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
 
-    //! extract initial radii
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
-
-    //! extract radii
+    //! Extract radii \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() = 0;
 
-    //! wxtract first time derivative of radii
+    //! extract radii \f$R_{0}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
+
+    //! Extract time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() = 0;
 
-    //! extract mass vector
+    //! Extract masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() = 0;
 
-    //! extract inertia vector
+    //! Extract inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
+
+    //! Extract latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
 
     //@}
 

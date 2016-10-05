@@ -77,30 +77,36 @@ PARTICLE::TimInt::TimInt
   dis_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
-  temperature_(Teuchos::null),
-  pressure_(Teuchos::null),
+  angVel_(Teuchos::null),
+  angAcc_(Teuchos::null),
   density_(Teuchos::null),
+  temperature_(Teuchos::null),
+
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
-  temperaturen_(Teuchos::null),
-  pressuren_(Teuchos::null),
+  angVeln_(Teuchos::null),
+  angAccn_(Teuchos::null),
   densityn_(Teuchos::null),
-  SL_latent_heat_(Teuchos::null),
+  temperaturen_(Teuchos::null),
+
+
+  fifc_(Teuchos::null),
+  orient_(Teuchos::null),
+
   radius_(Teuchos::null),
   radius0_(Teuchos::null),
-  radiusdot_(Teuchos::null),
+  radiusDot_(Teuchos::null),
+
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
-  ang_vel_(Teuchos::null),
-  ang_acc_(Teuchos::null),
-  ang_veln_(Teuchos::null),
-  ang_accn_(Teuchos::null),
-  orient_(Teuchos::null),
-  fifc_(Teuchos::null),
+  latentHeat_(Teuchos::null),
+
+
+
+
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  collhandler_(Teuchos::null),
-  interhandler_(Teuchos::null)
+  collhandler_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -141,42 +147,43 @@ void PARTICLE::TimInt::Init()
   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  // radius of each particle
+  radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  // mass of each particle
+  mass_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    // pressures P_{n}
-    pressure_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    // no break here
+
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // densities D_{n}
     density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     // temperatures T_{n}
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    // densities D_{n+1} at d_{n+1}
+    densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
+    // temperatures T_{n+1} at t_{n+1}
+    temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
     // latent heat
-    SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+    latentHeat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     break;
   }
   default : //do nothing
     break;
   }
 
-  // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  // radius of each particle
-  radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-
   if(variableradius_)
   {
     // initial radius of each particle for time dependent radius
     radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     // time derivative of radius of each particle for time dependent radius
-    radiusdot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+    radiusDot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
   }
-  // mass of each particle
-  mass_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+
 
   // set initial fields
   SetInitialFields();
@@ -199,15 +206,10 @@ void PARTICLE::TimInt::Init()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    // pressures P_{n+1} at p_{n+1}
-    pressuren_ = Teuchos::rcp(new Epetra_Vector(*(*pressure_)(0)));
-    // no break here
+
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
-    // densities D_{n+1} at d_{n+1}
-    densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
-    // temperatures T_{n+1} at t_{n+1}
-    temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
+
     break;
   }
   default : //do nothing
@@ -361,9 +363,9 @@ void PARTICLE::TimInt::SetInitialFields()
     (*temperature_)(0)->PutScalar(initTemperature);
 
     if (initTemperature > extParticleMat->transitionTemperatureSL_)
-      SL_latent_heat_->PutScalar(extParticleMat->latentHeatSL_);
+      latentHeat_->PutScalar(extParticleMat->latentHeatSL_);
     else if (initTemperature < extParticleMat->transitionTemperatureSL_)
-      SL_latent_heat_->PutScalar(0);
+      latentHeat_->PutScalar(0);
     else
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
   }
@@ -401,7 +403,7 @@ void PARTICLE::TimInt::ComputeAcc(
   Teuchos::RCP<Epetra_Vector> f_contact,
   Teuchos::RCP<Epetra_Vector> m_contact,
   Teuchos::RCP<Epetra_Vector> global_acc,
-  Teuchos::RCP<Epetra_Vector> global_ang_acc)
+  Teuchos::RCP<Epetra_Vector> global_angAcc)
 {
   int numrownodes = discret_->NodeRowMap()->NumMyElements();
 
@@ -426,7 +428,7 @@ void PARTICLE::TimInt::ComputeAcc(
     {
       const double invinertia = 1.0/(*inertia_)[i];
       for(int dim=0; dim<3; ++dim)
-        (*global_ang_acc)[i*3+dim] = invinertia * (*m_contact)[i*3+dim];
+        (*global_angAcc)[i*3+dim] = invinertia * (*m_contact)[i*3+dim];
     }
   }
 
@@ -501,30 +503,31 @@ void PARTICLE::TimInt::UpdateStepTime()
 
 void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 {
-  UpdateStateVectorMap(disn_);
-  UpdateStateVectorMap(veln_);
-  UpdateStateVectorMap(temperaturen_,true);
-  UpdateStateVectorMap(pressuren_,true);
-  UpdateStateVectorMap(densityn_,true);
-  UpdateStateVectorMap(ang_veln_);
-  UpdateStateVectorMap(accn_);
-  UpdateStateVectorMap(ang_accn_);
   UpdateStateVectorMap(dis_);
   UpdateStateVectorMap(vel_);
-  UpdateStateVectorMap(ang_vel_);
   UpdateStateVectorMap(acc_);
-  UpdateStateVectorMap(temperature_,true);
-  UpdateStateVectorMap(pressure_,true);
+  UpdateStateVectorMap(angVel_);
+  UpdateStateVectorMap(angAcc_);
   UpdateStateVectorMap(density_,true);
-  UpdateStateVectorMap(ang_acc_);
+  UpdateStateVectorMap(temperature_,true);
+
+  UpdateStateVectorMap(disn_);
+  UpdateStateVectorMap(veln_);
+  UpdateStateVectorMap(accn_);
+  UpdateStateVectorMap(angVeln_);
+  UpdateStateVectorMap(angAccn_);
+  UpdateStateVectorMap(densityn_,true);
+  UpdateStateVectorMap(temperaturen_,true);
+
+  UpdateStateVectorMap(fifc_);
   UpdateStateVectorMap(orient_);
-  UpdateStateVectorMap(SL_latent_heat_,true);
+
   UpdateStateVectorMap(radius_,true);
   UpdateStateVectorMap(radius0_,true);
-  UpdateStateVectorMap(radiusdot_,true);
+  UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
   UpdateStateVectorMap(inertia_,true);
-  UpdateStateVectorMap(fifc_);
+  UpdateStateVectorMap(latentHeat_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -573,12 +576,6 @@ void PARTICLE::TimInt::ReadRestartState()
     switch (particle_algorithm_->ParticleInteractionType())
     {
     case INPAR::PARTICLE::MeshFree :
-    {
-      // read pressure
-      reader.ReadVector(pressuren_, "pressure");
-      pressure_->UpdateSteps(*pressuren_);
-      // no break here
-    }
     case INPAR::PARTICLE::Normal_DEM_thermo :
     {
       // read density
@@ -606,10 +603,10 @@ void PARTICLE::TimInt::ReadRestartState()
         (*inertia_)[lid] = 0.4 * (*mass_)[lid] * rad * rad;
       }
 
-      reader.ReadVector(ang_veln_, "ang_velocity");
-      ang_vel_->UpdateSteps(*ang_veln_);
-      reader.ReadVector(ang_accn_, "ang_acceleration");
-      ang_acc_->UpdateSteps(*ang_accn_);
+      reader.ReadVector(angVeln_, "ang_velocity");
+      angVel_->UpdateSteps(*angVeln_);
+      reader.ReadVector(angAccn_, "ang_acceleration");
+      angAcc_->UpdateSteps(*angAccn_);
       if(writeorientation_)
         reader.ReadVector(orient_, "orientation");
     }
@@ -618,7 +615,7 @@ void PARTICLE::TimInt::ReadRestartState()
     if(variableradius_ == true)
     {
       reader.ReadVector(radius0_, "radius0");
-      reader.ReadVector(radiusdot_, "radiusdot");
+      reader.ReadVector(radiusDot_, "radiusdot");
     }
   }
 
@@ -686,8 +683,6 @@ void PARTICLE::TimInt::OutputRestart
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    output_->WriteVector("pressure", (*pressure_)(0));
-    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     output_->WriteVector("density", (*density_)(0));
@@ -704,15 +699,15 @@ void PARTICLE::TimInt::OutputRestart
   if(variableradius_)
   {
     output_->WriteVector("radius0", radius0_, output_->nodevector);
-    output_->WriteVector("radiusdot", radiusdot_, output_->nodevector);
+    output_->WriteVector("radiusdot", radiusDot_, output_->nodevector);
   }
 
   if(collhandler_ != Teuchos::null)
   {
-    if(ang_veln_ != Teuchos::null)
+    if(angVeln_ != Teuchos::null)
     {
-      output_->WriteVector("ang_velocity", (*ang_vel_)(0));
-      output_->WriteVector("ang_acceleration", (*ang_acc_)(0));
+      output_->WriteVector("ang_velocity", (*angVel_)(0));
+      output_->WriteVector("ang_acceleration", (*angAcc_)(0));
     }
 
     if(writeorientation_)
@@ -764,8 +759,6 @@ void PARTICLE::TimInt::OutputState
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    output_->WriteVector("pressure", (*pressure_)(0), output_->nodevector);
-    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     output_->WriteVector("density", (*density_)(0), output_->nodevector);
@@ -814,7 +807,7 @@ void PARTICLE::TimInt::DetermineEnergy()
         kinetic_energy += pow((*veln_)[i*3+dim], 2.0 );
 
         // rotation
-        rot_energy += pow((*ang_veln_)[i*3+dim], 2.0);
+        rot_energy += pow((*angVeln_)[i*3+dim], 2.0);
       }
 
       intergy_ += (*mass_)[i] * specific_energy;

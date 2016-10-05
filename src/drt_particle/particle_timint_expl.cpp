@@ -59,11 +59,11 @@ void PARTICLE::TimIntExpl::Init()
     // allocate vectors
     inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
-    ang_vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-    ang_acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    angVel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    angAcc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
-    ang_veln_ = LINALG::CreateVector(*DofRowMapView(),true);
-    ang_accn_ = LINALG::CreateVector(*DofRowMapView(),true);
+    angVeln_ = LINALG::CreateVector(*DofRowMapView(),true);
+    angAccn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
     if(writeorientation_)
     {
@@ -103,9 +103,6 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-    //    P_{n} := P_{n+1}, P_{n-1} := P_{n}
-    pressure_->UpdateSteps(*pressuren_);
-    // no break here
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     //    D_{n} := T_{n+1}, D_{n-1} := D_{n}
@@ -122,10 +119,10 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   {
     // new angular-velocities at t_{n+1} -> t_n
     //    ang_V_{n} := ang_V_{n+1}, ang_V_{n-1} := ang_V_{n}
-    ang_vel_->UpdateSteps(*ang_veln_);
+    angVel_->UpdateSteps(*angVeln_);
     // new angular-accelerations at t_{n+1} -> t_n
     //    ang_A_{n} := ang_A_{n+1}, ang_A_{n-1} := ang_A_{n}
-    ang_acc_->UpdateSteps(*ang_accn_);
+    angAcc_->UpdateSteps(*angAccn_);
   }
 
   return;
@@ -136,7 +133,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
 /* states are given to the collision handler */
 void PARTICLE::TimIntExpl::SetStatesForCollision()
 {
-  collhandler_->Init(disn_, veln_, ang_veln_, radius_, mass_);
+  collhandler_->Init(disn_, veln_, angVeln_, radius_, mass_);
 
   return;
 }
@@ -165,12 +162,12 @@ void PARTICLE::TimIntExpl::RotateOrientVector(double dt)
   int numrownodes = discret_->NodeRowMap()->NumMyElements();
   for(int i=0; i<numrownodes; ++i)
   {
-    double ang_vel[3];
+    double angVel[3];
     double r[3];
 
     for(int dim=0; dim<3; ++dim)
     {
-      ang_vel[dim] = (*ang_veln_)[i*3+dim];
+      angVel[dim] = (*angVeln_)[i*3+dim];
       r[dim] = (*orient_)[i*3+dim];
     }
 
@@ -178,9 +175,9 @@ void PARTICLE::TimIntExpl::RotateOrientVector(double dt)
 
     // simplified/linearized orient vector - just for visualization
     // delta_r = \Delta t * (ang_vel x r)
-    (*orient_)[i*3]   += dt * (ang_vel[1] * r[2] - ang_vel[2] * r[1]);
-    (*orient_)[i*3+1] += dt * (ang_vel[2] * r[0] - ang_vel[0] * r[2]);
-    (*orient_)[i*3+2] += dt * (ang_vel[0] * r[1] - ang_vel[1] * r[0]);
+    (*orient_)[i*3]   += dt * (angVel[1] * r[2] - angVel[2] * r[1]);
+    (*orient_)[i*3+1] += dt * (angVel[2] * r[0] - angVel[0] * r[2]);
+    (*orient_)[i*3+2] += dt * (angVel[0] * r[1] - angVel[1] * r[0]);
     //--------------------------------------------------------------
 
     //more exactly------------------------------------------------

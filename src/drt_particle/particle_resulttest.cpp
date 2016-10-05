@@ -38,8 +38,6 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
     radius_  = tintegrator.Radius();
   if (tintegrator.Densitynp() != Teuchos::null)
     density_  = tintegrator.Densitynp();
-  if (tintegrator.Pressurenp() != Teuchos::null)
-    pressure_  = tintegrator.Pressurenp();
   if (tintegrator.Temperaturenp() != Teuchos::null)
     temperature_  = tintegrator.Temperaturenp();
 }
