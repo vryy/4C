@@ -511,9 +511,6 @@ void STI::Algorithm::ReadRestart(
   // set time and time step
   SetTimeStep(scatra_->Time(),step);
 
-  // ToDo: check and remove
-  dserror("Restart functionality for scatra-thermo interaction has not been tested yet. Feel free to do it and remove this error.");
-
   return;
 } // STI::Algorithm::ReadRestart
 
