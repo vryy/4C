@@ -4,6 +4,9 @@
 \brief Write (time and space) averaged values to file for
 turbulent flow over a periodic hill
 
+\maintainer Benjamin Krank
+
+\level 2
 
 <pre>
 o Create sets for various evaluation lines in domain
@@ -133,20 +136,6 @@ private:
 
   //! number of locations in x1- and x2-direction for statistical evaluation
   int  numx1statlocations_;
-
-  //! half of the element length in x1-direction
-
-  double x1elemlengthhalf_;
-
-  //! distance between x1-coordinates and x1setstatlocations
-  double dist_;
-
-  //! allowed minimum distance between x1-coordinates and x1setstatlocations = x1elemlengthhalf_
-  double mindist_;
-
-  double x1max_;
-  double x1min_;
-
 
   //! The discretisation (required for nodes, dofs etc;)
   Teuchos::RCP<DRT::Discretization> discret_;
