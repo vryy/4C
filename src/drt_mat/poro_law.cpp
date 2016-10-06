@@ -17,6 +17,8 @@
 #include "matpar_bundle.H"
 #include "poro_law.H"
 
+#include "poro_density_law.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::PoroLaw::PoroLaw(
@@ -427,4 +429,96 @@ void MAT::PAR::PoroLawLinBiot::ConstitutiveDerivatives(
   if(dW_dphiref)  *dW_dphiref   = -1.0;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::PAR::PoroLawDensityDependent::PoroLawDensityDependent(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: PoroLaw(matdata)
+{
+  const int densityID = matdata->GetInt("DENSITYLAWID");
+  densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(densityID);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawDensityDependent::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawDensityDependent::ComputePorosity(
+                                       const double& refporosity,
+                                       const double& press,
+                                       const double& J,
+                                       const int& gp,
+                                       double& porosity,
+                                       double* dphi_dp,
+                                       double* dphi_dJ,
+                                       double* dphi_dJdp,
+                                       double* dphi_dJJ,
+                                       double* dphi_dpp,
+                                       double* dphi_dphiref)
+{
+  // compute relation of reference to current density
+  const double reldensity = densitylaw_->ComputeRefDensityToCurDensity(press);
+  const double reldensityderiv = densitylaw_->ComputeRefDensityToCurDensityDerivative(press);
+  const double reldensityderivderiv = densitylaw_->ComputeRefDensityToCurDensitySecondDerivative(press);
+
+  // compute porosity
+  porosity = 1.0 - reldensity*(1.0-refporosity)/J;
+
+  if(dphi_dp)
+    *dphi_dp      = -1.0*reldensityderiv*(1.0-refporosity)/J;
+  if(dphi_dJ)
+    *dphi_dJ      =  reldensity*(1.0-refporosity)/(J*J);
+  if(dphi_dJdp)
+    *dphi_dJdp    =  reldensityderiv*(1.0-refporosity)/(J*J);
+  if(dphi_dJJ)
+    *dphi_dJJ     = -2.0 * reldensityderiv*(1.0-refporosity)/(J*J*J);
+  if(dphi_dpp)
+    *dphi_dpp     = -1.0*reldensityderivderiv*(1.0-refporosity)/J;
+  if(dphi_dphiref)
+    *dphi_dphiref = reldensity/J;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawDensityDependent::ConstitutiveDerivatives(
+    Teuchos::ParameterList& params,
+    double     press,
+    double     J,
+    double     porosity,
+    double     refporosity,
+    double*    dW_dp,
+    double*    dW_dphi,
+    double*    dW_dJ,
+    double*    dW_dphiref,
+    double*    W)
+{
+  // compute relation of reference to current density
+  const double reldensity = densitylaw_->ComputeRefDensityToCurDensity(press);
+  const double reldensityderiv = densitylaw_->ComputeRefDensityToCurDensityDerivative(press);
+
+  if(W)           *W            = porosity - 1.0 + reldensity*(1.0-refporosity)/J;
+  if(dW_dp)       *dW_dp        = reldensityderiv*(1.0-refporosity)/J;
+  if(dW_dphi)     *dW_dphi      = 1.0;
+  if(dW_dJ)       *dW_dJ        = -1.0*reldensity*(1.0-refporosity)/(J*J);
+  if(dW_dphiref)  *dW_dphiref   = -1.0*reldensity/J;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+double MAT::PAR::PoroLawDensityDependent::InvBulkmodulus() const
+{
+  return densitylaw_->InvBulkmodulus();
 }

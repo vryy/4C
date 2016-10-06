@@ -2162,6 +2162,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
+  // incompressible skeleton law for porosity depending on the density
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawDensityDependent",
+                                            "porosity depending on the density",
+                                            INPAR::MAT::m_poro_law_density_dependent));
+
+    AddNamedInt(m,"DENSITYLAWID","material ID of density law");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // density law for constant density in porous multiphase medium
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroDensityLawConstant",
+                                            "density law for constant density in porous multiphase medium",
+                                            INPAR::MAT::m_poro_densitylaw_constant));
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // density law for constant density in porous multiphase medium
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroDensityLawExp",
+                                            "density law for pressure dependent exponential function",
+                                            INPAR::MAT::m_poro_densitylaw_exp));
+
+    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -2272,7 +2305,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_fluidporo_singlephase));
 
     AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
-    AddNamedReal(m,"DENSITY","density");
+    AddNamedInt(m,"DENSITYLAWID","ID of density law");
+    AddNamedReal(m,"DENSITY","reference/initial density");
     AddNamedReal(m,"BULKMODULUS","bulk modulus of phase");
     AddNamedReal(m,"PERMEABILITY","relative permeability of phase");
     AddNamedInt(m,"DOFTYPEID","ID of dof definition");

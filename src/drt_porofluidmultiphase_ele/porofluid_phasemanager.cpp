@@ -97,8 +97,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   // standard evaluate call
   case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
   {
-    // derivatives needed
-    phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+    // porosity (includes derivatves) needed
+    phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
 
     // enhance by diffusion tensor
     switch(nsd)
@@ -140,7 +140,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphase
     pressure_(numphases,0.0),
     saturation_(numphases,0.0),
     solidpressure_(0.0),
-    porosity_(0.0),
     ele_(NULL),
     isevaluated_(false),
     issetup_(false)
@@ -161,7 +160,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
     pressure_(old.pressure_),
     saturation_(old.saturation_),
     solidpressure_(old.solidpressure_),
-    porosity_(old.porosity_),
     ele_(NULL),
     isevaluated_(old.isevaluated_),
     issetup_(old.issetup_)
@@ -301,10 +299,6 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
 
-  // compute the porosity
-  // TODO linearizations of porosity w.r.t. pressure
-  porosity_ = ComputePorosity(*structmat,J,solidpressure_);
-
   // done
   isevaluated_ = true;
 
@@ -330,36 +324,6 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ClearGPState()
   isevaluated_ = false;
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  compute the porosity                                    vuong 08/16 |
- *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ComputePorosity(
-    MAT::StructPoro&  structmat,
-    double J,
-    double pres
-  )
-{
-  double porosity=0.0;
-
-  //empty parameter list
-  Teuchos::ParameterList params;
-
-  //use structure material to evaluate porosity
-  structmat.ComputePorosity( params,
-                              pres,
-                              J,
-                              -1,
-                              porosity,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              false);
-
-  return porosity;
 }
 
 /*----------------------------------------------------------------------*
@@ -427,21 +391,11 @@ const std::vector<double>& DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Pr
   return pressure_;
 }
 
-/*----------------------------------------------------------------------*
- *  get porosity                                            vuong 08/16 |
-*----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Porosity() const
-{
-  CheckIsEvaluated();
-
-  return porosity_;
-}
-
 
 /*----------------------------------------------------------------------*
  *   get bulk modulus of phase 'phasenum'                    vuong 08/16 |
 *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Bulkmodulus(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulus(
     const MAT::Material& material,
     int phasenum) const
 {
@@ -450,22 +404,22 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Bulkmodulus(
   const MAT::FluidPoroSinglePhase& singlephasemat =
       POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
-  return singlephasemat.Bulkmodulus();
+  return singlephasemat.InvBulkmodulus();
 }
 
 /*----------------------------------------------------------------------*
  *   get bulk modulus of phase 'phasenum'                    vuong 08/16 |
 *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Bulkmodulus(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulus(
     int phasenum) const
 {
-  return Bulkmodulus(*Element()->Material(),phasenum);
+  return InvBulkmodulus(*Element()->Material(),phasenum);
 }
 
 /*----------------------------------------------------------------------*
  *   get inverse bulk modulus of solid phase                 vuong 08/16 |
 *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::BulkmodulusInvSolid(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulusSolid(
     const MAT::StructPoro& material
     ) const
 {
@@ -475,7 +429,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::BulkmodulusInvSolid(
 /*----------------------------------------------------------------------*
  *   get inverse bulk modulus of solid phase                 vuong 08/16 |
 *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::BulkmodulusInvSolid() const
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulusSolid() const
 {
   //access second material in structure element
   dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
@@ -484,7 +438,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::BulkmodulusInvSolid() 
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
 
-  return BulkmodulusInvSolid(*structmat);
+  return InvBulkmodulusSolid(*structmat);
 }
 
 /*----------------------------------------------------------------------*
@@ -728,6 +682,108 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SolidPressureDerivDer
   return (*solidpressurederivderiv_)(doftoderive,doftoderive2);
 }
 
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | constructor                                              vuong 08/16 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDerivAndPorosity(
+    Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager)
+:   PhaseManagerDeriv(phasemanager),
+    porosity_(0.0),
+    porosityderiv_(Teuchos::null)
+{
+  const int numphases = phasemanager_->NumPhases();
+  // initialize matrixes and vectors
+  porosityderiv_= Teuchos::rcp(new Epetra_SerialDenseVector(numphases));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate pressures, saturations and derivatives at GP     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPState(
+    double                 J,
+    const VariableManagerMinAccess& varmanager)
+{
+  // evaluate base class
+  PhaseManagerDeriv::EvaluateGPState(J,varmanager);
+
+  //access second material in structure element
+  dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
+  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
+
+  // cast second material to poro material
+  Teuchos::RCP<MAT::StructPoro> structmat
+  = Teuchos::rcp_static_cast<MAT::StructPoro>(phasemanager_->Element()->Material(1));
+
+  // derivative of porosity w.r.t. solid pressure
+  double dporosity_dp=0.0;
+
+  //empty parameter list
+  Teuchos::ParameterList params;
+
+  //use structure material to evaluate porosity
+  structmat->ComputePorosity( params,
+                              phasemanager_->SolidPressure(),
+                              J,
+                              -1,
+                              porosity_,
+                              &dporosity_dp,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              false);
+
+  // calculate the derivative of the porosity
+  for(int iphase=0; iphase<phasemanager_->NumPhases(); iphase++)
+      (*porosityderiv_)(iphase)   = dporosity_dp*SolidPressureDeriv(iphase);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | zero all values at GP                                     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::ClearGPState()
+{
+  // this is just a safety call. All quantities should be recomputed
+  // in the next EvaluateGPState call anyway, but you never know ...
+
+  PhaseManagerDeriv::ClearGPState();
+
+  //zero everything
+  porosity_=0.0;
+  porosityderiv_->Scale(0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *  get porosity                                            vuong 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::Porosity() const
+{
+  CheckIsEvaluated();
+
+  return porosity_;
+}
+
+/*----------------------------------------------------------------------*
+ *  get derivative of saturation of phase                   vuong 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDeriv(
+    int doftoderive) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return (*porosityderiv_)(doftoderive);
+}
 
 /*----------------------------------------------------------------------*
  * **********************************************************************

@@ -93,6 +93,7 @@
 #include "fluidporo_singlephaselaw.H"
 #include "structporo.H"
 #include "poro_law.H"
+#include "poro_density_law.H"
 #include "structporo_reaction.H"
 #include "structporo_reaction_ecm.H"
 #include "spring.H"
@@ -467,6 +468,27 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
     MAT::PAR::PoroLawLinBiot* params = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_law_density_dependent:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawDensityDependent(curmat));
+    MAT::PAR::PoroLawDensityDependent* params = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_densitylaw_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
+    MAT::PAR::PoroDensityLawConstant* params = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_poro_densitylaw_exp:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
+    MAT::PAR::PoroDensityLawExp* params = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_fluidporo_phaselaw_linear:

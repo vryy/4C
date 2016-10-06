@@ -84,6 +84,13 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
       porolaw_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
       break;
     }
+  case INPAR::MAT::m_poro_law_density_dependent:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::PoroLawDensityDependent(curmat));
+      porolaw_ = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat->Parameter());
+      break;
+    }
   default:
     dserror("invalid material for porosity law %d", curmat->Type());
     break;
@@ -160,6 +167,17 @@ inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
 double MAT::StructPoro::InvBulkmodulus() const
 {
   return params_->porolaw_->InvBulkmodulus();
+}
+
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+double MAT::StructPoro::Density() const
+{
+  if(params_->initporosity_==1.0)
+    return mat_->Density();
+  else
+    return ( (1.0-params_->initporosity_) * mat_->Density());
 }
 
 /*----------------------------------------------------------------------*

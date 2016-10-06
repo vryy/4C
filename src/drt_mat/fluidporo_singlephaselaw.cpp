@@ -35,6 +35,61 @@ MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *  factory method for phase law                       vuong 08/16      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(
+    int phaselawId)
+{
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(phaselawId);
+
+  // phase law
+  MAT::PAR::FluidPoroPhaseLaw* phaselaw = NULL;
+
+  // build the pressure-saturation law
+  switch (curmat->Type())
+  {
+  case INPAR::MAT::m_fluidporo_phaselaw_linear:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
+    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
+    break;
+  }
+  case INPAR::MAT::m_fluidporo_phaselaw_tangent:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
+    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
+    break;
+  }
+  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
+    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    break;
+  }
+  default:
+    dserror("invalid pressure-saturation law for material %d", curmat->Type());
+    break;
+  }
+
+  return phaselaw;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(

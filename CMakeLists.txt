@@ -559,6 +559,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plasticnlnlogneohooke.cpp
   src/drt_mat/superelastic_sma.cpp
   src/drt_mat/poro_law.cpp
+  src/drt_mat/poro_density_law.cpp
   src/drt_mat/robinson.cpp
   src/drt_mat/scalardepinterp.cpp
   src/drt_mat/scatra_growth_scd.cpp

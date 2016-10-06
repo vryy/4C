@@ -33,6 +33,7 @@ namespace MAT
 
   //forward declaration
   class FluidPoroPhaseDof;
+  class PoroDensityLaw;
 
     /*----------------------------------------------------------------------*/
     /// material parameters for a single phase of porous multiphase fluid
@@ -69,10 +70,10 @@ namespace MAT
         const double permeability_;
         /// bulk modulus
         const double bulkmodulus_;
-        /// ID of type of degree of freedom
-        const int phasedofID_;
         /// type of degree of freedom
         FluidPoroPhaseDof* phasedof_;
+        /// type of degree of freedom
+        PoroDensityLaw* densitylaw_;
 
         //@}
 
@@ -211,10 +212,10 @@ namespace MAT
         return params_->permeability_;
       }
 
-      /// return bulkmodulus
-      double Bulkmodulus() const
+      /// return inverse bulk modulus (compressibility)
+      double InvBulkmodulus() const
       {
-        return params_->bulkmodulus_;
+        return 1.0/params_->bulkmodulus_;
       }
 
       /// return type of degree of freedom

@@ -269,7 +269,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixAn
        |                                 |
         \                               /
    */
-   const double prefac = timefacfac*phasemanager.Porosity();
+   const double prefac = timefacfac;
 
    LINALG::Matrix<nen,1>    conv;
    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateVectorAn
   {
     // convective term
     const double conv_phi = variablemanager.ConVelnp()->Dot((*variablemanager.GradPhinp())[idof]);
-    conv_sat += rhsfac*phasemanager.Porosity()*phasemanager.SaturationDeriv(curphase,idof)*conv_phi;
+    conv_sat += rhsfac*phasemanager.SaturationDeriv(curphase,idof)*conv_phi;
   }
   for (int vi=0; vi<nen; ++vi)
   {
@@ -685,11 +685,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
   // saturation
   const double saturation = phasemanager.Saturation(curphase);
 
-  // bulkmodulus of phase
-  const double bulkmodulus = phasemanager.Bulkmodulus(curphase);
+  // inverse bulk modulus of phase (compressibility)
+  const double invbulkmodulus = phasemanager.InvBulkmodulus(curphase);
 
   // pre factor
-  const double facfacmass = fac*phasemanager.Porosity()*saturation/bulkmodulus;
+  const double facfacmass = fac*phasemanager.Porosity()*saturation*invbulkmodulus;
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
@@ -727,7 +727,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
         facfacmass2 += timefacfac*phasemanager.PressureDeriv(curphase,idof)*(*variablemanager.Phidtnp())[idof];
     }
 
-    facfacmass2 *= phasemanager.Porosity()/bulkmodulus;
+    facfacmass2 *= phasemanager.Porosity()*invbulkmodulus;
 
     for (int vi=0; vi<nen; ++vi)
     {
@@ -743,6 +743,44 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
 
           mymat(fvi,fui) +=
               vfunct*phasemanager.SaturationDeriv(curphase,idof);
+        }
+      }
+    }
+  }
+
+  //----------------------------------------------------------------
+  // linearization of porosity w.r.t. dof
+  //----------------------------------------------------------------
+  {
+    const std::vector<double>& phinp = *variablemanager.Phinp();
+    double hist=0.0;
+    if(curphase==phasetoadd)
+      hist = (*variablemanager.Hist())[curphase];
+
+    double facfacmass = fac*phasemanager.PressureDeriv(curphase,phasetoadd)*(phinp[phasetoadd]-hist);
+
+    for (int idof=0; idof<numdofpernode; ++idof)
+    {
+      if(idof!=phasetoadd)
+        facfacmass += timefacfac*phasemanager.PressureDeriv(curphase,idof)*(*variablemanager.Phidtnp())[idof];
+    }
+
+    facfacmass *= saturation*invbulkmodulus;
+
+    for (int vi=0; vi<nen; ++vi)
+    {
+      const double v = facfacmass*funct(vi);
+      const int fvi = vi*numdofpernode+phasetoadd;
+
+      for (int ui=0; ui<nen; ++ui)
+      {
+        const double vfunct = v*funct(ui);
+        for (int idof=0; idof<numdofpernode; ++idof)
+        {
+          const int fui = ui*numdofpernode+idof;
+
+          mymat(fvi,fui) +=
+              vfunct*phasemanager.PorosityDeriv(idof);
         }
       }
     }
@@ -783,8 +821,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
   // saturation
   const double saturation = phasemanager.Saturation(curphase);
 
-  // bulk modulus of phase
-  const double bulkmodulus = phasemanager.Bulkmodulus(curphase);
+  // inverse bulk modulus of phase (compressibility)
+  const double invbulkmodulus = phasemanager.InvBulkmodulus(curphase);
 
   double vtrans = 0.0;
 
@@ -795,7 +833,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
     if(idof!=phasetoadd)
       vtrans += rhsfac*phasemanager.PressureDeriv(curphase,idof)*phidtnp[idof];
 
-  vtrans *= porosity*saturation/bulkmodulus;
+  vtrans *= porosity*saturation*invbulkmodulus;
 
   for (int vi=0; vi<nen; ++vi)
   {
@@ -832,7 +870,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
 
   //  get inverse bulkmodulus (=compressiblity)
   // TODO linearization of bulkmodulus
-  const double invsolidbulkmodulus = phasemanager.BulkmodulusInvSolid();
+  const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
 
   //----------------------------------------------------------------
   // standard Galerkin transient term
@@ -898,6 +936,49 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
       }
     }
   }
+
+  //----------------------------------------------------------------
+  // linearization of porosity w.r.t. dof
+  //----------------------------------------------------------------
+  {
+    const std::vector<double>& phinp = *variablemanager.Phinp();
+    const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+    double hist=0.0;
+    if(curphase==phasetoadd)
+      hist = (*variablemanager.Hist())[curphase];
+
+    double facfacmass3 = -1.0*invsolidbulkmodulus;
+
+    std::vector<double> val(numdofpernode,0.0);
+
+    for (int idof=0; idof<numdofpernode; ++idof)
+    {
+      const double solidpressurederiv = phasemanager.SolidPressureDeriv(idof);
+      if(idof==curphase)
+        for (int jdof=0; jdof<numdofpernode; ++jdof)
+          val[jdof]+= fac*solidpressurederiv*phasemanager.PorosityDeriv(jdof)*(phinp[idof]-hist);
+      else
+        for (int jdof=0; jdof<numdofpernode; ++jdof)
+          val[jdof]+= timefacfac*solidpressurederiv*phasemanager.PorosityDeriv(jdof)*(phidtnp[idof]);
+    }
+
+    for (int vi=0; vi<nen; ++vi)
+    {
+      const double v = facfacmass3*funct(vi);
+      const int fvi = vi*numdofpernode+phasetoadd;
+
+      for (int ui=0; ui<nen; ++ui)
+      {
+        const double vfunct = v*funct(ui);
+        for (int idof=0; idof<numdofpernode; ++idof)
+        {
+          const int fui = ui*numdofpernode+idof;
+
+          mymat(fvi,fui) +=vfunct*val[idof];
+        }
+      }
+    }
+  }
   return;
 }
 
@@ -930,7 +1011,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
   const std::vector<double>&  phidtnp = *variablemanager.Phidtnp();
 
   //  get inverse bulkmodulus (=compressiblity)
-  const double invsolidbulkmodulus = phasemanager.BulkmodulusInvSolid();
+  const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
 
   //TODO check genalpha
   // compute scalar at integration point
@@ -977,7 +1058,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
     double                                                      fac
   )
 {
-  // call base class
+  // call base class with scaled factors
   EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixAndAssemble(
       elemat,
       funct,
@@ -987,8 +1068,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
       numdofpernode,
       phasemanager,
       variablemanager,
-      timefacfac,
-      fac
+      phasemanager.Saturation(curphase)*timefacfac,
+      phasemanager.Saturation(curphase)*fac
     );
 
   // get matrix to fill
@@ -996,7 +1077,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
 
   //  get inverse bulkmodulus (=compressiblity)
   // TODO linearization of bulkmodulus
-  const double invsolidbulkmodulus = phasemanager.BulkmodulusInvSolid();
+  const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
 
   //----------------------------------------------------------------
   // linearization of saturation w.r.t. dof
@@ -1008,19 +1089,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
     if(curphase==phasetoadd)
       hist = (*variablemanager.Hist())[curphase];
 
-    double facfacmass2 = fac*phasemanager.SolidPressureDeriv(curphase)*(phinp[curphase]-hist);
+    double facfacmass = fac*phasemanager.SolidPressureDeriv(curphase)*(phinp[curphase]-hist);
 
     for (int idof=0; idof<numdofpernode; ++idof)
     {
       if(idof!=curphase)
-        facfacmass2 += timefacfac*phasemanager.SolidPressureDeriv(idof)*phidtnp[idof];
+        facfacmass += timefacfac*phasemanager.SolidPressureDeriv(idof)*phidtnp[idof];
     }
 
-    facfacmass2 *= (1.0-phasemanager.Porosity())*invsolidbulkmodulus;
+    facfacmass *= (1.0-phasemanager.Porosity())*invsolidbulkmodulus;
 
     for (int vi=0; vi<nen; ++vi)
     {
-      const double v = facfacmass2*funct(vi);
+      const double v = facfacmass*funct(vi);
       const int fvi = vi*numdofpernode+phasetoadd;
 
       for (int ui=0; ui<nen; ++ui)
@@ -1096,23 +1177,62 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
   // get matrix to fill
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
-  const double facfacmass = fac*phasemanager.Porosity();
   //----------------------------------------------------------------
-  // standard Galerkin transient term
+  // linearization of saturation w.r.t. dof
   //----------------------------------------------------------------
-  for (int vi=0; vi<nen; ++vi)
   {
-    const double v = facfacmass*funct(vi);
-    const int fvi = vi*numdofpernode+phasetoadd;
-
-    for (int ui=0; ui<nen; ++ui)
+    const double facfacmass = fac*phasemanager.Porosity();
+    for (int vi=0; vi<nen; ++vi)
     {
-      const double vfunct = v*funct(ui);
-      for (int idof=0; idof<numdofpernode; ++idof)
-      {
-        const int fui = ui*numdofpernode+idof;
+      const double v = facfacmass*funct(vi);
+      const int fvi = vi*numdofpernode+phasetoadd;
 
-        mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
+      for (int ui=0; ui<nen; ++ui)
+      {
+        const double vfunct = v*funct(ui);
+        for (int idof=0; idof<numdofpernode; ++idof)
+        {
+          const int fui = ui*numdofpernode+idof;
+
+          mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
+        }
+      }
+    }
+  }
+
+  //----------------------------------------------------------------
+  // linearization of porosity w.r.t. dof
+  //----------------------------------------------------------------
+  {
+    // read data from manager
+    double hist = 0.0;
+    if(curphase==phasetoadd)
+      hist = (*variablemanager.Hist())[curphase];
+    const std::vector<double>&  phinp = *variablemanager.Phinp();
+    const std::vector<double>&  phidtnp = *variablemanager.Phidtnp();
+
+    //TODO genalpha
+    // compute scalar at integration point
+    double facfacmass = fac*phasemanager.SaturationDeriv(curphase,phasetoadd)*(phinp[phasetoadd]-hist);
+
+    for (int idof=0; idof<numdofpernode; ++idof)
+      if(phasetoadd!=idof)
+        facfacmass += timefacfac*phasemanager.SaturationDeriv(curphase,idof)*phidtnp[idof];
+
+    for (int vi=0; vi<nen; ++vi)
+    {
+      const double v = facfacmass*funct(vi);
+      const int fvi = vi*numdofpernode+phasetoadd;
+
+      for (int ui=0; ui<nen; ++ui)
+      {
+        const double vfunct = v*funct(ui);
+        for (int idof=0; idof<numdofpernode; ++idof)
+        {
+          const int fui = ui*numdofpernode+idof;
+
+          mymat(fvi,fui) += vfunct*phasemanager.PorosityDeriv(idof);
+        }
       }
     }
   }

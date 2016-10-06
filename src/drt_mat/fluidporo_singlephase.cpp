@@ -18,6 +18,7 @@
 #include "fluidporo_singlephase.H"
 
 #include "fluidporo_singlephaseDof.H"
+#include "poro_density_law.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -32,7 +33,6 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
   bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
-  phasedofID_(matdata->GetInt("DOFTYPEID")),
   isinit_(false)
 {
   // retrieve problem instance to read from
@@ -45,8 +45,12 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("Sorry dude, no materials defined.");
 
+  // create density law
+  densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(matdata->GetInt("DENSITYLAWID"));
+
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(phasedofID_);
+  Teuchos::RCP<MAT::PAR::Material> curmat =
+      DRT::Problem::Instance(probinst)->Materials()->ById(matdata->GetInt("DOFTYPEID"));
 
   switch (curmat->Type())
   {

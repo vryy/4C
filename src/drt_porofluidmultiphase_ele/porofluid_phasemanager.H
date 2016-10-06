@@ -129,24 +129,21 @@ class PhaseManagerInterface
     //! get pressure of all phases
     virtual const std::vector<double>& Pressure() const =0;
 
-    //! get porosity
-    virtual double Porosity() const =0;
-
     //! get bulk modulus of phase 'phasenum'
-    virtual double Bulkmodulus(
+    virtual double InvBulkmodulus(
         const MAT::Material& material,
         int phasenum) const=0;
 
     //! get bulk modulus of phase 'phasenum'
-    virtual double Bulkmodulus(
+    virtual double InvBulkmodulus(
         int phasenum) const=0;
 
     //! get inverse bulk modulus of solid phase
-    virtual double BulkmodulusInvSolid(
+    virtual double InvBulkmodulusSolid(
         const MAT::StructPoro& material) const=0;
 
     //! get inverse bulk modulus of solid phase
-    virtual double BulkmodulusInvSolid() const=0;
+    virtual double InvBulkmodulusSolid() const=0;
 
     //! get density of phase 'phasenum'
     virtual double Density(
@@ -163,6 +160,15 @@ class PhaseManagerInterface
     //@}
 
     //! @name Access methods (optional)
+
+    //! get porosity
+    virtual double Porosity() const
+    {dserror("Porosity not available for this phase manager!");return 0.0;};
+
+    //! get derivative of porosity w.r.t. DOF 'doftoderive'
+    virtual double PorosityDeriv(
+            int doftoderive) const
+    {dserror("Derivative of porosity not available for this phase manager!");return 0.0;};
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
@@ -271,24 +277,21 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! get pressure of all phases
     const std::vector<double>& Pressure() const;
 
-    //! get porosity
-    double Porosity() const;
-
     //! get bulk modulus of phase 'phasenum'
-    double Bulkmodulus(
+    double InvBulkmodulus(
         const MAT::Material& material,
         int phasenum) const;
 
     //! get bulk modulus of phase 'phasenum'
-    double Bulkmodulus(
+    double InvBulkmodulus(
         int phasenum) const;
 
     //! get inverse bulk modulus of solid phase
-    double BulkmodulusInvSolid(
+    double InvBulkmodulusSolid(
         const MAT::StructPoro& material) const;
 
     //! get inverse bulk modulus of solid phase
-    double BulkmodulusInvSolid() const;
+    double InvBulkmodulusSolid() const;
 
     //! get density of phase 'phasenum'
     double Density(
@@ -324,13 +327,6 @@ class PhaseManagerCore : public PhaseManagerInterface
         const std::vector<double>& phi,
         std::vector<double>& phi_transformed);
 
-    //! compute porosity
-    double ComputePorosity(
-        MAT::StructPoro &  structmat,    //!< material of the structure
-        double             J,             //!< determinant of deformation gradient
-        double pres
-      );
-
     //! transformation of degrees of freedom to true pressures
     Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;
 
@@ -345,8 +341,6 @@ class PhaseManagerCore : public PhaseManagerInterface
     std::vector<double> saturation_;
     //! solid pressure
     double solidpressure_;
-    //! porosity
-    double porosity_;
 
     //! the current element
     const DRT::Element* ele_;
@@ -392,6 +386,11 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     UnWrap() {return phasemanager_->UnWrap();};
 
     //! @name Access methods
+
+    //! get derivative of porosity w.r.t. DOF 'doftoderive'
+    virtual double PorosityDeriv(
+            int doftoderive) const
+    {return phasemanager_->PorosityDeriv(doftoderive);};
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
@@ -453,24 +452,24 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     {return phasemanager_->Pressure();};
 
     //! get bulk modulus of phase 'phasenum'
-    virtual double Bulkmodulus(
+    virtual double InvBulkmodulus(
         const MAT::Material& material,
         int phasenum) const
-    {return phasemanager_->Bulkmodulus(material,phasenum);};
+    {return phasemanager_->InvBulkmodulus(material,phasenum);};
 
     //! get bulk modulus of phase 'phasenum'
-    virtual double Bulkmodulus(
+    virtual double InvBulkmodulus(
         int phasenum) const
-    {return phasemanager_->Bulkmodulus(phasenum);};
+    {return phasemanager_->InvBulkmodulus(phasenum);};
 
     //! get inverse bulk modulus of solid phase
-    double BulkmodulusInvSolid(
+    double InvBulkmodulusSolid(
         const MAT::StructPoro& material) const
-    {return phasemanager_->BulkmodulusInvSolid(material);};
+    {return phasemanager_->InvBulkmodulusSolid(material);};
 
     //! get inverse bulk modulus of solid phase
-    double BulkmodulusInvSolid() const
-    {return phasemanager_->BulkmodulusInvSolid();};
+    double InvBulkmodulusSolid() const
+    {return phasemanager_->InvBulkmodulusSolid();};
 
     //! get porosity
     virtual double Porosity() const
@@ -583,6 +582,50 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
     Teuchos::RCP<Epetra_SerialDenseVector> solidpressurederiv_;
     //! second derivative of solid pressure w.r.t. degrees of freedom;
     Teuchos::RCP<Epetra_SerialDenseMatrix> solidpressurederivderiv_;
+
+
+  };
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+
+//! wrapper class, extensions for porosity
+class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
+  {
+  public:
+    //! constructor
+    explicit PhaseManagerDerivAndPorosity(Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager);
+
+    //! destructor
+    virtual ~PhaseManagerDerivAndPorosity(){};
+
+    //! evaluate pressures, saturations and derivatives at GP
+    void EvaluateGPState(
+        double                 J,
+        const VariableManagerMinAccess& varmanager);
+
+    //! clear the states
+    void ClearGPState();
+
+    //! @name Access methods
+
+    //! get porosity
+    double Porosity() const;
+
+    //! get derivative of porosity w.r.t. DOF 'doftoderive'
+    double PorosityDeriv(
+            int doftoderive) const;
+
+    //@}
+
+  private:
+
+    //! porosity
+    double porosity_;
+
+    //! derivative of porosity w.r.t. degrees of freedom
+    Teuchos::RCP<Epetra_SerialDenseVector> porosityderiv_;
 
   };
 

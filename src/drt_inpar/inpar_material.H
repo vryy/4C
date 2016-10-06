@@ -110,7 +110,10 @@ namespace INPAR
       m_poro_law_linear,                       ///< linear law for porosity
       m_poro_law_logNeoHooke_Penalty,          ///< neo hookeian like law for porosity + penalty term
       m_poro_law_incompr_skeleton,             ///< porosity law for incompressible skeleton phase
-      m_poro_law_linear_biot,                  ///< porosity law for incompressible skeleton phase
+      m_poro_law_linear_biot,                  ///< porosity law for linear biot law
+      m_poro_law_density_dependent,            ///< porosity law for density dependence
+      m_poro_densitylaw_constant,              ///< density law for constant density in porous multiphase medium
+      m_poro_densitylaw_exp,                   ///< density law for pressure dependent exponential function
       m_scatra,                                ///< scalar transport material
       m_scatra_multiporo,                      ///< scalar transport material for multiphase porous flow
       m_scatra_aniso,                          ///< anisotropic scalar transport material

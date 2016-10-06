@@ -43,6 +43,9 @@ namespace PAR
       ;
     }
 
+    //! build the phase dof
+    static FluidPoroPhaseDof* CreatePhaseDof(int phasedofId);
+
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial() {return Teuchos::null;};
 
@@ -76,10 +79,6 @@ namespace PAR
             int phasenum,
             int doftoderive,
             const std::vector<double>& state) const =0;
-
-  protected:
-    //! build the phase law
-    MAT::PAR::FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
 
   };
 

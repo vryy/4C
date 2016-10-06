@@ -30,10 +30,10 @@ MAT::PAR::FluidPoroPhaseDof::FluidPoroPhaseDof(Teuchos::RCP<MAT::PAR::Material> 
 }
 
 /*----------------------------------------------------------------------*
- *  factory method for phase law                       vuong 08/16      |
+ *  factory method for phase dof                       vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseDof::CreatePhaseLaw(
-    int phaselawId)
+MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(
+    int phasedofId)
 {
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -46,41 +46,47 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseDof::CreatePhaseLaw(
     dserror("Sorry dude, no materials defined.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(phaselawId);
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(phasedofId);
 
   // phase law
-  MAT::PAR::FluidPoroPhaseLaw* phaselaw = NULL;
+  MAT::PAR::FluidPoroPhaseDof* phasedof = NULL;
 
-  // build the pressure-saturation law
-  switch (curmat->Type())
-  {
-  case INPAR::MAT::m_fluidporo_phaselaw_linear:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
-    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
-    break;
-  }
-  case INPAR::MAT::m_fluidporo_phaselaw_tangent:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
-    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
-    break;
-  }
-  case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
-    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
-    break;
-  }
-  default:
-    dserror("invalid pressure-saturation law for material %d", curmat->Type());
-    break;
-  }
+   switch (curmat->Type())
+   {
+   case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
+   {
+     if (curmat->Parameter() == NULL)
+       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
+     phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
+     break;
+   }
+   case INPAR::MAT::m_fluidporo_phasedof_pressure:
+   {
+     if (curmat->Parameter() == NULL)
+       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
+     phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
+     break;
+   }
+   case INPAR::MAT::m_fluidporo_phasedof_pressuresum:
+   {
+     if (curmat->Parameter() == NULL)
+       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressureSum(curmat));
+     phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressureSum*>(curmat->Parameter());
+     break;
+   }
+   case INPAR::MAT::m_fluidporo_phasedof_saturation:
+   {
+     if (curmat->Parameter() == NULL)
+       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
+     phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
+     break;
+   }
+   default:
+     dserror("invalid pressure-saturation law for material %d", curmat->Type());
+     break;
+   }
 
-  return phaselaw;
+  return phasedof;
 }
 
 /************************************************************************/
@@ -95,7 +101,7 @@ MAT::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
   diffpresCoeffs_(matdata->Get<std::vector<int> >("PRESCOEFF")),
   phaselawId_(matdata->GetInt("PHASELAWID"))
 {
-  phaselaw_ = CreatePhaseLaw(phaselawId_);
+  phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
 }
 
@@ -191,7 +197,7 @@ MAT::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
 : FluidPoroPhaseDof(matdata),
   phaselawId_(matdata->GetInt("PHASELAWID"))
 {
-  phaselaw_ = CreatePhaseLaw(phaselawId_);
+  phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
 }
 
@@ -367,7 +373,7 @@ MAT::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
   phaselawId_(matdata->GetInt("PHASELAWID"))
 {
 
-  phaselaw_ = CreatePhaseLaw(phaselawId_);
+  phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
 }
 

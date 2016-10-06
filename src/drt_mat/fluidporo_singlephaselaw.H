@@ -45,6 +45,9 @@ namespace PAR
       ;
     }
 
+    //! build the phase law
+    static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
+
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial() {return Teuchos::null;};
 
@@ -188,9 +191,9 @@ namespace PAR
 
     /// @name material parameters
     //@{
-    //! relative tension coefficient
+    //! function ID for evaluation of saturation
     const int functionID_saturation_;
-    //! exponent within phase law
+    //! function ID for evaluation of pressure
     const int functionID_pressure_;
     //@}
 
