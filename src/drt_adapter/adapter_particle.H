@@ -154,6 +154,9 @@ namespace ADAPTER
     //! Read-only angular-accelerations \f$angA_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngAccn() = 0;
 
+    //! Read-only radii \f$R_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() = 0;
+
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
 
@@ -177,14 +180,14 @@ namespace ADAPTER
     //! Read-only angular-accelerations \f$angA_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngAccnp() = 0;
 
+    //! Read-only radii \f$R_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() = 0;
+
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
 
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
-
-    //! Read-only radii \f$R_{n}\f$ or \f$R_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radius() = 0;
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
@@ -226,14 +229,17 @@ namespace ADAPTER
     //! Extract angular-accelerations \f$angA_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngAccnp() = 0;
 
+    //! Extract radii \f$R_{n}\f$ for legacy code
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusn() = 0;
+
+    //! Extract radii \f$R_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() = 0;
+
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
 
     //! Extract temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
-
-    //! Extract radii \f$R_{n}\f$ or \f$R_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() = 0;
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;

@@ -376,6 +376,7 @@ void PARTICLE::Algorithm::Integrate()
   }
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
+
   particles_->IntegrateStep();
 
   return;
@@ -656,7 +657,22 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     particles_->Veln()->MaxValue(&extrema[1]);
     const double maxvel = std::max(-extrema[0], extrema[1]);
     double maxrad = 0.0;
-    particles_->Radius()->MaxValue(&maxrad);
+
+    switch (particleInteractionType_)
+    {
+    case INPAR::PARTICLE::MeshFree :
+    case INPAR::PARTICLE::Normal_DEM_thermo :
+    {
+      particles_->Radiusnp()->MaxValue(&maxrad);
+      break;
+    }
+    default :
+    {
+      particles_->Radiusn()->MaxValue(&maxrad);
+      break;
+    }
+    }
+
     if(maxrad + maxvel*dt > 0.5*cutoff_radius_)
     {
       int lid = -1;
@@ -1130,7 +1146,7 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // leave here in case nothing to do
-  if(particles_->Radius()->GlobalLength() == 0)
+  if(particles_->Radiusn()->GlobalLength() == 0)
     return;
 
   // set of homeless particles
@@ -1949,7 +1965,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 
   Teuchos::RCP<Epetra_Vector> dispnp = particles_->WriteAccessDispnp();
   Teuchos::RCP<Epetra_Vector> mass = particles_->WriteAccessMass();
-  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadiusnp();
   Teuchos::RCP<Epetra_Vector> temperaturenp = particles_->WriteAccessTemperaturenp();
   Teuchos::RCP<const Epetra_Vector> temperature0 = particles_->Temperaturen();
   const double SL_transitionTemperature = extParticleMat_->transitionTemperatureSL_;
@@ -2083,7 +2099,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   // reset/set of the pointers after updatestestesafterparticletransfer
   dispnp = particles_->WriteAccessDispnp();
   mass = particles_->WriteAccessMass();
-  radius = particles_->WriteAccessRadius();
+  radius = particles_->WriteAccessRadiusnp();
   temperaturenp = particles_->WriteAccessTemperaturenp();
   Teuchos::RCP<Epetra_Vector> densitynp = particles_->WriteAccessDensitynp();
   Teuchos::RCP<Epetra_Vector> velnp = particles_->WriteAccessVelnp();

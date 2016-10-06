@@ -86,16 +86,16 @@ void PARTICLE::TimIntCentrDiff::Init()
   // check for validity of input data
   if(collhandler_ != Teuchos::null)
   {
-    const int numparticle = radius_->GlobalLength();
+    const int numparticle = (*radius_)(0)->GlobalLength();
     if(numparticle > 0)
     {
       double maxradius = 1.0e12;
-      radius_->MaxValue(&maxradius);
+      (*radius_)(0)->MaxValue(&maxradius);
       if(maxradius > collhandler_->GetMaxRadius())
         dserror("Input parameter MAX_RADIUS invalid");
 
       double minradius = -1.0;
-      radius_->MinValue(&minradius);
+      (*radius_)(0)->MinValue(&minradius);
       if(minradius < collhandler_->GetMinRadius())
         dserror("Input parameter MIN_RADIUS invalid");
     }
@@ -144,13 +144,11 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   // Temperatures are slaves of displacements meaning that there is a time-lag
   // of one time step because ComputeTemperatures is based on disn_ {n+1}.
   // It can change in the future, just invert their order here
-
   ComputeDisplacements();
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-  {
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo ||
+      particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
     ComputeThermodynamics();
-  }
 
   return 0;
 }
@@ -171,11 +169,6 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
   const double thermalExpansionL = extParticleMat->thermalExpansionL_;
   const double thermalExpansionSL = extParticleMat->thermalExpansionSL_;
   const double latentHeatSL = extParticleMat->latentHeatSL_;
-
-  // set up the new density vector
-  densityn_->Update(1.0, *(*density_)(0), 0.0);
-  // set up the new temperature vector
-  temperaturen_->Update(1.0, *(*temperature_)(0), 0.0);
 
   // extract the map
   const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->Bins2HeatSources();
@@ -247,7 +240,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double S_deltaTemperature = newTemperatureNoPhaseTransition - (*temperaturen_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radiusn_)[lidNode]);
               // temperature update
               (*temperaturen_)[lidNode] = newTemperatureNoPhaseTransition;
             }
@@ -259,7 +252,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double S_deltaTemperature = transitionTemperatureSL-(*temperaturen_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radiusn_)[lidNode]);
               // delta latent heat DURING phase transition
               const double deltaLatentHeat = temp_LH_increase - S_deltaTemperature * CPS;
 
@@ -268,7 +261,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               {
                 // density and radius update
                 DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radiusn_)[lidNode]);
                 // temperature and latent heat updates
                 (*latentHeat_)[lidNode] += deltaLatentHeat;
                 (*temperaturen_)[lidNode] = transitionTemperatureSL;
@@ -279,12 +272,12 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               {
                 // density and radius update
                 DensityUpdater(thermalExpansionSL, latentHeatSL, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radiusn_)[lidNode]);
                 // delta temperature AFTER phase transition
                 const double L_deltaTemperature = (deltaLatentHeat - latentHeatSL)*inv_CPL;
                 // density and radius update
                 DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radiusn_)[lidNode]);
                 // temperature and latent heat updates
                 (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
                 (*latentHeat_)[lidNode] = latentHeatSL;
@@ -304,7 +297,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double L_deltaTemperature = newTemperatureNoPhaseTransition - (*temperaturen_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radiusn_)[lidNode]);
               // temperature update
               (*temperaturen_)[lidNode] = newTemperatureNoPhaseTransition;
             }
@@ -316,7 +309,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double L_deltaTemperature = transitionTemperatureSL-(*temperaturen_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radiusn_)[lidNode]);
               // delta latent heat DURING phase transition
               const double deltaLatentHeat = temp_LH_increase-(transitionTemperatureSL-(*temperaturen_)[lidNode])*CPL;
 
@@ -325,7 +318,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               {
                 // density and radius update
                 DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radiusn_)[lidNode]);
                 // temperature and latent heat updates
                 (*latentHeat_)[lidNode] += deltaLatentHeat;
                 (*temperaturen_)[lidNode] = transitionTemperatureSL;
@@ -336,12 +329,12 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               {
                 // density and radius update
                 DensityUpdater(thermalExpansionSL, latentHeatSL, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionSL, latentHeatSL, (*radiusn_)[lidNode]);
                 // delta temperature AFTER phase transition
                 const double S_deltaTemperature = (deltaLatentHeat + latentHeatSL)*inv_CPS;
                 // density and radius update
                 DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
-                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
+                RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radiusn_)[lidNode]);
                 // temperature and latent heat updates
                 (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
                 (*latentHeat_)[lidNode] = 0;
@@ -361,12 +354,12 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double deltaLatentHeat = latentHeatSL - (*latentHeat_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radiusn_)[lidNode]);
               // delta latent heat AFTER phase transition
               const double L_deltaTemperature = (newLatentHeatKeepTransitioning - latentHeatSL) * inv_CPL;
               // density and radius update
               DensityUpdater(thermalExpansionL, L_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionL, L_deltaTemperature, (*radiusn_)[lidNode]);
               // temperature and latent heat updates
               (*temperaturen_)[lidNode] = transitionTemperatureSL + L_deltaTemperature;
               (*latentHeat_)[lidNode] = latentHeatSL;
@@ -379,12 +372,12 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double deltaLatentHeat = -(*latentHeat_)[lidNode];
               // density and radius update
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radiusn_)[lidNode]);
               // delta latent heat AFTER phase transition
               const double S_deltaTemperature = newLatentHeatKeepTransitioning * inv_CPS;
               // density and radius update
               DensityUpdater(thermalExpansionS, S_deltaTemperature, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionS, S_deltaTemperature, (*radiusn_)[lidNode]);
               // temperature and latent heat updates
               (*temperaturen_)[lidNode] = transitionTemperatureSL + S_deltaTemperature;
               (*latentHeat_)[lidNode] = 0;
@@ -397,7 +390,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
               const double deltaLatentHeat = temp_LH_increase;
               // density and radius update
               DensityUpdater(thermalExpansionSL, deltaLatentHeat, (*densityn_)[lidNode]);
-              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radius_)[lidNode]);
+              RadiusUpdater(thermalExpansionSL, deltaLatentHeat, (*radiusn_)[lidNode]);
               // latent heat update
               (*latentHeat_)[lidNode] = newLatentHeatKeepTransitioning;
             }
@@ -426,11 +419,9 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
   const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
   // new velocities \f$V_{n+1/2}\f$
-  veln_->Update(1.0, *(*vel_)(0), 0.0);
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
   // new displacements \f$D_{n+1}\f$
-  disn_->Update(1.0, *(*dis_)(0), 0.0);
   disn_->Update(dt, *veln_, 1.0);
 
   // apply Dirichlet BCs
@@ -477,5 +468,6 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
 
   return 0;
 }
+
 
 

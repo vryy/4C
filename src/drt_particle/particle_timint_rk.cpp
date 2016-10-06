@@ -4,8 +4,9 @@
 \brief Particle time integration with Runge-Kutta time integration
        scheme of 2nd/4th order (explicit),
 
+\level 3
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -50,7 +51,7 @@ void PARTICLE::TimIntRK::Init()
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // radii
-  radius_  = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(),true));
+  radius_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
   // signs
   sign_  =  Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(),true));
 
@@ -156,11 +157,12 @@ void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *disn_);
   }
 
-  if (radius_ != Teuchos::null)
+  if (radius_ != Teuchos::null && (*radius_)(0) != Teuchos::null)
   {
-    old = radius_;
-    radius_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *radius_);
+    old = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
+    radius_->ReplaceMaps(NodeRowMapView());
+
+    LINALG::Export(*old, *(*radius_)(0));
   }
 
   if (sign_ != Teuchos::null)
@@ -199,7 +201,7 @@ void PARTICLE::TimIntRK::OutputRestart
   output_->ParticleOutput(step_, (*time_)[0], true);
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", disn_);
-  output_->WriteVector("radius", radius_, output_->nodevector);
+  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
   output_->WriteVector("sign", sign_, output_->nodevector);
 
   // maps are rebuild in every step so that reuse is not possible
@@ -240,7 +242,7 @@ void PARTICLE::TimIntRK::OutputState
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", disn_);
 
-  output_->WriteVector("radius", radius_, output_->nodevector);
+  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
   output_->WriteVector("sign", sign_, output_->nodevector);
 
   // maps are rebuild in every step so that reuse is not possible
@@ -271,7 +273,7 @@ void PARTICLE::TimIntRK::ReadRestartState()
 
   // now, state vectors an be read in
   reader.ReadVector(disn_, "displacement");
-  reader.ReadVector(radius_, "radius");
+  reader.ReadVector((*radius_)(0), "radius");
   reader.ReadVector(sign_, "sign");
 
   return;

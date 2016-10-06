@@ -2,6 +2,8 @@
 /*!
 \file scatra_particle_coupling.cpp
 
+\level 3
+
 \brief Algorithm to track particles for level-set problems
 
 \maintainer Ursula Rasthofer
@@ -593,7 +595,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   }
 
   // reset to zero just to be sure
-  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadiusn();
   radius->Scale(0.0);
 
   // -------------------------------------------------------------------
@@ -1014,7 +1016,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
   // get sign vector
   Teuchos::RCP<const Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Sign();
   // and radius vector
-  Teuchos::RCP<const Epetra_Vector> radius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Radius();
+  Teuchos::RCP<const Epetra_Vector> radius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Radiusn();
 
   // -------------------------------------------------------------------
   //                     find escaped particles
@@ -1106,7 +1108,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
   LINALG::Export(*(Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Sign()),*signcol);
 
   Teuchos::RCP<Epetra_Vector> radiuscol = Teuchos::rcp(new Epetra_Vector(*(particledis_->NodeColMap()),true));
-  LINALG::Export(*(particles_->Radius()),*radiuscol);
+  LINALG::Export(*(particles_->Radiusn()),*radiuscol);
 
   Teuchos::RCP<Epetra_Vector> disnpcol = Teuchos::rcp(new Epetra_Vector(*(particledis_->DofColMap()),true));
   LINALG::Export(*(particles_->Dispnp()),*disnpcol);
@@ -1357,7 +1359,7 @@ void PARTICLE::ScatraParticleCoupling::AdjustParticleRadii()
   LINALG::Export(*row_phinp,*phinp);
 
   // get radius and sign vector
-  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadiusn();
   Teuchos::RCP<const Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Sign();
 
   // loop all particles
@@ -1443,7 +1445,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   const Epetra_Map* noderowmap = particledis_->NodeRowMap();
   // get sign and radius vector
   Teuchos::RCP<Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
-  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadiusn();
 
   // map containing ids of bins (equal to elements) which will get additional particles
   // as well as the required number of positive and negative particles
@@ -2247,7 +2249,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   // get sign vector
   sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
   // get radius vector
-  radius = particles_->WriteAccessRadius();
+  radius = particles_->WriteAccessRadiusn();
 
   // get maps
   const Epetra_Map* dofrowmap = particledis_->DofRowMap();

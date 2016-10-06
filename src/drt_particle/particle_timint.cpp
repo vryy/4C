@@ -79,6 +79,7 @@ PARTICLE::TimInt::TimInt
   acc_(Teuchos::null),
   angVel_(Teuchos::null),
   angAcc_(Teuchos::null),
+  radius_(Teuchos::null),
   density_(Teuchos::null),
   temperature_(Teuchos::null),
 
@@ -87,23 +88,18 @@ PARTICLE::TimInt::TimInt
   accn_(Teuchos::null),
   angVeln_(Teuchos::null),
   angAccn_(Teuchos::null),
+  radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
   temperaturen_(Teuchos::null),
-
 
   fifc_(Teuchos::null),
   orient_(Teuchos::null),
 
-  radius_(Teuchos::null),
   radius0_(Teuchos::null),
   radiusDot_(Teuchos::null),
-
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
   latentHeat_(Teuchos::null),
-
-
-
 
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
   collhandler_(Teuchos::null)
@@ -138,37 +134,22 @@ PARTICLE::TimInt::TimInt
 /* initialization of time integration */
 void PARTICLE::TimInt::Init()
 {
-
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
-
-  // displacements D_{n}
+  // initialize the vectors
   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // velocities V_{n}
   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // create empty interface force vector
+  radius_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // radius of each particle
-  radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  // mass of each particle
   mass_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
-    // densities D_{n}
     density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    // temperatures T_{n}
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    // densities D_{n+1} at d_{n+1}
-    densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
-    // temperatures T_{n+1} at t_{n+1}
-    temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
-    // latent heat
     latentHeat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     break;
   }
@@ -184,7 +165,6 @@ void PARTICLE::TimInt::Init()
     radiusDot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
   }
 
-
   // set initial fields
   SetInitialFields();
 
@@ -196,27 +176,24 @@ void PARTICLE::TimInt::Init()
     discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, dbcmaps_);
   }
 
-  // displacements D_{n+1} at t_{n+1}
+  // copy everything into the n+1 state vectors
   disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
-  // velocities V_{n+1} at t_{n+1}
   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
-  // accelerations A_{n+1} at t_{n+1}
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
-
+    radiusn_  = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
+    densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
+    temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
     break;
   }
   default : //do nothing
     break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -234,7 +211,7 @@ void PARTICLE::TimInt::SetInitialFields()
 
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
 
-  radius_->PutScalar(initRadius);
+  (*radius_)(0)->PutScalar(initRadius);
 
   // mass-vector: m = rho * 4/3 * PI *r^3
   mass_->PutScalar(initDensity * 4.0/3.0 * M_PI * initRadius * initRadius * initRadius);
@@ -261,9 +238,9 @@ void PARTICLE::TimInt::SetInitialFields()
       {
         DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
         double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0,discret_.get());
-        double r_p = (*radius_)[lid];
+        double r_p = (*(*radius_)(0))[lid];
         r_p *= function_value * scalar;
-        (*radius_)[lid] = r_p;
+        (*(*radius_)(0))[lid] = r_p;
         if(r_p <= 0.0)
           dserror("negative initial radius");
 
@@ -290,7 +267,7 @@ void PARTICLE::TimInt::SetInitialFields()
       const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
 
       // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
-      DRT::Problem::Instance()->Random()->SetMeanVariance((*radius_)[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+      DRT::Problem::Instance()->Random()->SetMeanVariance((*(*radius_)(0))[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
       // generate normally distributed random value for particle radius
       double random_radius = DRT::Problem::Instance()->Random()->Normal();
@@ -306,7 +283,7 @@ void PARTICLE::TimInt::SetInitialFields()
       }
 
       // set particle radius to random value
-      (*radius_)[lid] = random_radius;
+      (*(*radius_)(0))[lid] = random_radius;
 
       // recompute particle mass
       (*mass_)[lid] = initDensity*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
@@ -469,15 +446,9 @@ void PARTICLE::TimInt::ApplyDirichletBC
   // \c dis then also holds prescribed new Dirichlet displacements
   discret_->ClearState();
   if (recreatemap)
-  {
-    discret_->EvaluateDirichlet(p, dis, vel, acc,
-                                Teuchos::null, dbcmaps_);
-  }
+    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, dbcmaps_);
   else
-  {
-    discret_->EvaluateDirichlet(p, dis, vel, acc,
-                               Teuchos::null, Teuchos::null);
-  }
+    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   return;
@@ -508,6 +479,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(acc_);
   UpdateStateVectorMap(angVel_);
   UpdateStateVectorMap(angAcc_);
+  UpdateStateVectorMap(radius_,true);
   UpdateStateVectorMap(density_,true);
   UpdateStateVectorMap(temperature_,true);
 
@@ -516,13 +488,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(accn_);
   UpdateStateVectorMap(angVeln_);
   UpdateStateVectorMap(angAccn_);
+  UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
   UpdateStateVectorMap(temperaturen_,true);
 
   UpdateStateVectorMap(fifc_);
   UpdateStateVectorMap(orient_);
 
-  UpdateStateVectorMap(radius_,true);
   UpdateStateVectorMap(radius0_,true);
   UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
@@ -558,68 +530,76 @@ void PARTICLE::TimInt::ReadRestartState()
 {
   IO::DiscretizationReader reader(discret_, step_);
   // maps need to be adapted to restarted discretization
+
   UpdateStatesAfterParticleTransfer();
 
-  // start with reading radius in order to find out whether particles exist
-  reader.ReadVector(radius_, "radius");
+  // start with reading mass in order to find out whether particles exist
+  reader.ReadVector(mass_, "mass");
 
-  if(radius_->GlobalLength() != 0)
+  // check, in case there is nothing, do not read the file
+  if(mass_->GlobalLength() == 0)
+    return;
+
+  // now, the remaining state vectors an be read in
+  reader.ReadVector(disn_, "displacement");
+  dis_->UpdateSteps(*disn_);
+  reader.ReadVector(veln_, "velocity");
+  vel_->UpdateSteps(*veln_);
+  reader.ReadVector(accn_, "acceleration");
+  acc_->UpdateSteps(*accn_);
+
+
+  switch (particle_algorithm_->ParticleInteractionType())
   {
-    // now, remaining state vectors an be read in
-    reader.ReadVector(disn_, "displacement");
-    dis_->UpdateSteps(*disn_);
-    reader.ReadVector(veln_, "velocity");
-    vel_->UpdateSteps(*veln_);
-    reader.ReadVector(accn_, "acceleration");
-    acc_->UpdateSteps(*accn_);
-
-    switch (particle_algorithm_->ParticleInteractionType())
-    {
-    case INPAR::PARTICLE::MeshFree :
-    case INPAR::PARTICLE::Normal_DEM_thermo :
-    {
-      // read density
-      reader.ReadVector(densityn_, "density");
-      density_->UpdateSteps(*densityn_);
-      // read temperature
-      reader.ReadVector(temperaturen_, "temperature");
-      temperature_->UpdateSteps(*temperaturen_);
-      break;
-    }
-    default : //do nothing
-      break;
-    }
-
-    reader.ReadVector(mass_, "mass");
-
-    // read in particle collision relevant data
-    if(collhandler_ != Teuchos::null)
-    {
-      // initialize inertia
-      for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
-      {
-        const double rad = (*radius_)[lid];
-        // inertia-vector: sphere: I = 2/5 * m * r^2
-        (*inertia_)[lid] = 0.4 * (*mass_)[lid] * rad * rad;
-      }
-
-      reader.ReadVector(angVeln_, "ang_velocity");
-      angVel_->UpdateSteps(*angVeln_);
-      reader.ReadVector(angAccn_, "ang_acceleration");
-      angAcc_->UpdateSteps(*angAccn_);
-      if(writeorientation_)
-        reader.ReadVector(orient_, "orientation");
-    }
-
-    // read in variable radius relevant data
-    if(variableradius_ == true)
-    {
-      reader.ReadVector(radius0_, "radius0");
-      reader.ReadVector(radiusDot_, "radiusdot");
-    }
+  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    // read radius
+    reader.ReadVector(radiusn_, "radius");
+    radius_->UpdateSteps(*radiusn_);
+    // read density
+    reader.ReadVector(densityn_, "density");
+    density_->UpdateSteps(*densityn_);
+    // read temperature
+    reader.ReadVector(temperaturen_, "temperature");
+    temperature_->UpdateSteps(*temperaturen_);
+    break;
+  }
+  default :
+  {
+    // create a dummy vector to extract the radius vector (radiusn_ does not exist)
+    Teuchos::RCP<Epetra_Vector> radius = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+    reader.ReadVector(radius, "radius");
+    radius_->UpdateSteps(*radius);
+    break;
+  }
   }
 
-  return;
+  // read in particle collision relevant data
+  if(collhandler_ != Teuchos::null)
+  {
+    // initialize inertia
+    for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
+    {
+      const double rad = (*(*radius_)(0))[lid];
+      // inertia-vector: sphere: I = 2/5 * m * r^2
+      (*inertia_)[lid] = 0.4 * (*mass_)[lid] * rad * rad;
+    }
+
+    reader.ReadVector(angVeln_, "ang_velocity");
+    angVel_->UpdateSteps(*angVeln_);
+    reader.ReadVector(angAccn_, "ang_acceleration");
+    angAcc_->UpdateSteps(*angAccn_);
+    if(writeorientation_)
+      reader.ReadVector(orient_, "orientation");
+  }
+
+  // read in variable radius relevant data
+  if(variableradius_ == true)
+  {
+    reader.ReadVector(radius0_, "radius0");
+    reader.ReadVector(radiusDot_, "radiusdot");
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -676,9 +656,15 @@ void PARTICLE::TimInt::OutputRestart
   // mesh is written to disc
   output_->ParticleOutput(step_, (*time_)[0], true);
   output_->NewStep(step_, (*time_)[0]);
+
   output_->WriteVector("displacement", (*dis_)(0));
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
+
+  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
+  output_->WriteVector("mass", mass_, output_->nodevector);
+
+
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
@@ -693,9 +679,6 @@ void PARTICLE::TimInt::OutputRestart
     break;
   }
 
-
-  output_->WriteVector("radius", radius_, output_->nodevector);
-  output_->WriteVector("mass", mass_, output_->nodevector);
   if(variableradius_)
   {
     output_->WriteVector("radius0", radius0_, output_->nodevector);
@@ -748,14 +731,13 @@ void PARTICLE::TimInt::OutputState
   // mesh is not written to disc, only maximum node id is important for output
   output_->ParticleOutput(step_, (*time_)[0], false);
   output_->NewStep(step_, (*time_)[0]);
+
   output_->WriteVector("displacement", (*dis_)(0));
   output_->WriteVector("velocity", (*vel_)(0));
   if(writevelacc_)
-  {
     output_->WriteVector("acceleration", (*acc_)(0));
-  }
 
-  output_->WriteVector("radius", radius_, output_->nodevector);
+  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :

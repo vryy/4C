@@ -279,10 +279,8 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     // particle time step is solved
     bool reset = false;
     Integrate(reset);
-
     // deal with particle inflow
     ParticleInflow();
-
     // transfer particles into their correct bins at least every 10th of the fluid time step size;
     // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
     // velocity as the fluid
@@ -388,9 +386,9 @@ void CAVITATION::Algorithm::ComputePressAndRadiusNorm(double& pressnorm_L2, doub
   }
 
   // normalization for bubble radius for convergence check
-  particles_->Radius()->Norm2(&radiusnorm_L2);
+  particles_->Radiusn()->Norm2(&radiusnorm_L2);
   // if radius norm is almost zero
-  if (radiusnorm_L2 < 1e-6 && particles_->Radius()->GlobalLength() != 0)
+  if (radiusnorm_L2 < 1e-6 && particles_->Radiusn()->GlobalLength() != 0)
   {
     if(myrank_ == 0)
       std::cout << "radius norm is almost zero: " << radiusnorm_L2 << " --> set to one " << std::endl;
@@ -407,7 +405,7 @@ void CAVITATION::Algorithm::ComputePressAndRadiusNorm(double& pressnorm_L2, doub
 void CAVITATION::Algorithm::PrepareRelaxation(const int outeriter)
 {
   // do not iterate if particle field is empty and leave here
-  if(particles_->Radius()->GlobalLength() == 0)
+  if(particles_->Radiusn()->GlobalLength() == 0)
   {
     if(myrank_ == 0)
     {
@@ -427,8 +425,8 @@ void CAVITATION::Algorithm::PrepareRelaxation(const int outeriter)
   if(outeriter==0)
   {
     SaveParticleData();
-    radius_i_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
-    couplingradius_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
+    radius_i_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radiusn()));
+    couplingradius_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radiusn()));
   }
 
   return;
@@ -447,7 +445,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
 )
 {
   // do not iterate if particle field is empty and leave here
-  if(particles_->Radius()->GlobalLength() == 0)
+  if(particles_->Radiusn()->GlobalLength() == 0)
   {
     converged = true;
     particlereset = false;
@@ -476,8 +474,8 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       // and radius solution from current step
 
       del_ = Teuchos::rcp(new Epetra_Vector(*radius_i_));
-      del_->Update(1.0, *particles_->Radius(), -1.0);
-      radius_i_->Update(1.0, *particles_->Radius(), 0.0);
+      del_->Update(1.0, *particles_->Radiusn(), -1.0);
+      radius_i_->Update(1.0, *particles_->Radiusn(), 0.0);
       delhist_ = LINALG::CreateVector(*particles_->NodeRowMap(), true);
 
       // constrain the Aitken factor in the 1st relaxation step of new time
@@ -518,14 +516,14 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
     // compute delta R: increment R^{i+1}_{n+1} - R^{i}_{n+1}
     double radiusincnorm_L2(0.0);
     Teuchos::RCP<Epetra_Vector> res = Teuchos::rcp(new Epetra_Vector(*radius_i_));
-    res->Update(1.0,*particles_->Radius(),-1.0);
+    res->Update(1.0,*particles_->Radiusn(),-1.0);
     res->Norm2(&radiusincnorm_L2);
 
     if(pressincnorm_L2 / pressnorm_L2 < ittol_ && radiusincnorm_L2 / radiusnorm_L2 < ittol_)
       converged = true;
 
     // save radius from current iteration i+1 which will be iter i next time
-    radius_i_->Update(1.0, *particles_->Radius(), 0.0);
+    radius_i_->Update(1.0, *particles_->Radiusn(), 0.0);
 
     double radiusincnorm_Linf(0.0);
     res->ReciprocalMultiply(1.0, *radius_i_, *res, 0.0);
@@ -557,7 +555,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
         delhist_->Update(-1.0,*del_,0.0);  // -r^i_{n+1}
 
         // in between update new increment del_ = r^{i+1}_{n+1} = R^{i+1} - R^{i,relaxed}
-        del_->Update(1.0,*particles_->Radius(),-1.0, *couplingradius_, 0.0);
+        del_->Update(1.0,*particles_->Radiusn(),-1.0, *couplingradius_, 0.0);
 
         // ... and add new increment +r^{i+1}_{n+1}
         delhist_->Update(1.0,*del_,1.0);
@@ -592,10 +590,10 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
         // safety check: compute difference of latest converged solution and relaxed solution
         double diffnorm(0.0);
         Teuchos::RCP<Epetra_Vector> finaldiff = Teuchos::rcp(new Epetra_Vector(*couplingradius_));
-        finaldiff->Update(1.0,*particles_->Radius(),-1.0);
+        finaldiff->Update(1.0,*particles_->Radiusn(),-1.0);
         finaldiff->Norm2(&diffnorm);
         double radiusnorm(0.0);
-        particles_->Radius()->Norm2(&radiusnorm);
+        particles_->Radiusn()->Norm2(&radiusnorm);
         if(myrank_ == 0)
           std::cout << " info: abs norm of difference of coupling radius and real radius is: " << diffnorm << "\n"
               << " info: relative norm of differences is: " << diffnorm / radiusnorm << "\n"
@@ -612,10 +610,10 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       // safety check: compare latest converged solution and latest relaxed solution
       double diffnorm(0.0);
       Teuchos::RCP<Epetra_Vector> finaldiff = Teuchos::rcp(new Epetra_Vector(*couplingradius_));
-      finaldiff->Update(1.0,*particles_->Radius(),-1.0);
+      finaldiff->Update(1.0,*particles_->Radiusn(),-1.0);
       finaldiff->Norm2(&diffnorm);
       double radiusnorm(0.0);
-      particles_->Radius()->Norm2(&radiusnorm);
+      particles_->Radiusn()->Norm2(&radiusnorm);
       if(myrank_ == 0)
       {
         std::cout << "\n relative L2 error press: " << pressincnorm_L2 / pressnorm_L2 << " < " << ittol_ << "\n"
@@ -663,7 +661,7 @@ void CAVITATION::Algorithm::SaveParticleData()
     storeinertia_ = Teuchos::rcp(new Epetra_Vector(*particles_->Inertia()));
   }
 
-  storerad_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
+  storerad_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radiusn()));
   storemass_ = Teuchos::rcp(new Epetra_Vector(*particles_->Mass()));
 
   if(computeradiusRPbased_)
@@ -701,7 +699,7 @@ void CAVITATION::Algorithm::ResetParticleData()
     Teuchos::rcp_const_cast<Epetra_Vector>(particles_->AngAccn())->Update(1.0, *storeang_acc_, 0.0);
     Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Inertia())->Update(1.0, *storeinertia_, 0.0);
   }
-  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Radius())->Update(1.0, *storerad_, 0.0);
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Radiusn())->Update(1.0, *storerad_, 0.0);
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Mass())->Update(1.0, *storemass_, 0.0);
 
   if(computeradiusRPbased_)
@@ -840,7 +838,7 @@ void CAVITATION::Algorithm::InitCavitation()
   if(fluidfrac_relevant)
   {
     fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
-    CalculateFluidFraction(particles_->Radius());
+    CalculateFluidFraction(particles_->Radiusn());
     // and copy values from n+1 to n
     // leading to an initial zero time derivative
     fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
@@ -885,7 +883,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
-  Teuchos::RCP<const Epetra_Vector> bubbleradiusn = particles_->Radius();
+  Teuchos::RCP<const Epetra_Vector> bubbleradiusn = particles_->Radiusn();
   Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
 
   // set state for pressure evaluation in fluid
@@ -1147,7 +1145,7 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
       // distribute the void fraction properly to the underlying fluid elements
       if(timestepsizeratio_ > 10)
         TransferParticles(true);
-      CalculateFluidFraction(particles_->Radius());
+      CalculateFluidFraction(particles_->Radiusn());
       SetFluidFraction();
       break;
     }
@@ -1192,7 +1190,6 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
 
   // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
-
   return;
 }
 
@@ -1244,7 +1241,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
   Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Velnp();
   Teuchos::RCP<const Epetra_Vector> bubbleacc = particles_->Accnp();
-  Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radius();
+  Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radiusn();
   Teuchos::RCP<const Epetra_Vector> bubblemass = particles_->Mass();
 
   // vectors to be filled with forces,
@@ -2169,7 +2166,7 @@ void CAVITATION::Algorithm::ComputeRadius()
   // get needed variables for RP equation for all particles
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
   Teuchos::RCP<const Epetra_Vector> bubbleradius0 = particles_->Radius0();
-  Teuchos::RCP<Epetra_Vector> bubbleradiusn = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusn = particles_->WriteAccessRadiusn();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
   Teuchos::RCP<const Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
@@ -2528,7 +2525,7 @@ void CAVITATION::Algorithm::ParticleInflow()
     //----------------------------------------------
     // do blending of radius of inflow particles
     //----------------------------------------------
-    Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadius();
+    Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusn();
     Teuchos::RCP<const Epetra_Vector> massn = particles_->Mass();
     Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
 
@@ -2692,7 +2689,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   const Epetra_Map* noderowmap = particledis_->NodeRowMap();
   Teuchos::RCP<Epetra_Vector> disn = particles_->WriteAccessDispnp();
   Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
-  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusn();
   Teuchos::RCP<Epetra_Vector> massn = particles_->WriteAccessMass();
   Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
@@ -2893,7 +2890,7 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
     reader_fl.ReadVector(fluidfracn_,"fluid_fraction");
   }
 
-  if(particles_->Radius()->GlobalLength() != 0)
+  if(particles_->Radiusn()->GlobalLength() != 0)
   {
     IO::DiscretizationReader reader_p(particles_->Discretization(), restartparticles_);
 

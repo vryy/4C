@@ -331,7 +331,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> angVeln,
-    Teuchos::RCP<Epetra_Vector> radius,
+    Teuchos::RCP<Epetra_Vector> radiusn,
     Teuchos::RCP<Epetra_Vector> mass)
 {
   // export everything in col layout
@@ -344,8 +344,8 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   Teuchos::RCP<Epetra_Vector> angVelnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
   LINALG::Export(*angVeln,*angVelnCol);
   // node based vectors
-  Teuchos::RCP<Epetra_Vector> radiusCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radius,*radiusCol);
+  Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  LINALG::Export(*radiusn,*radiusnCol);
   Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
   LINALG::Export(*mass,*massCol);
 
@@ -373,7 +373,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
 
     const int lid = particle->LID();
     // radius and mass of particle
-    data.rad = (*radiusCol)[lid];
+    data.rad = (*radiusnCol)[lid];
     data.mass = (*massCol)[lid];
     // set ddt
     data.ddt = 0;

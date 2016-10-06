@@ -75,7 +75,7 @@ void PARTICLE::TimIntExpl::Init()
     // initialize inertia
     for(int n=0; n<discret_->NumMyRowNodes(); ++n)
     {
-      double r_p = (*radius_)[n];
+      double r_p = (*(*radius_)(0))[n];
 
       //inertia-vector: sphere: I = 2/5 * m * r^2
       (*inertia_)[n] = 0.4 * (*mass_)[n] * r_p * r_p;
@@ -105,7 +105,9 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   case INPAR::PARTICLE::MeshFree :
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
-    //    D_{n} := T_{n+1}, D_{n-1} := D_{n}
+    //    R_{n} := R_{n+1}, R_{n-1} := R_{n}
+    radius_->UpdateSteps(*radiusn_);
+    //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
     density_->UpdateSteps(*densityn_);
     //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
     temperature_->UpdateSteps(*temperaturen_);
@@ -133,9 +135,20 @@ void PARTICLE::TimIntExpl::UpdateStepState()
 /* states are given to the collision handler */
 void PARTICLE::TimIntExpl::SetStatesForCollision()
 {
-  collhandler_->Init(disn_, veln_, angVeln_, radius_, mass_);
-
-  return;
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_);
+    break;
+  }
+  default :
+  {
+    collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
+    break;
+  }
+  }
 }
 
 

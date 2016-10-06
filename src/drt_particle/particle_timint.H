@@ -265,6 +265,9 @@ namespace PARTICLE
     //! Read-only angular-accelerations \f$angA_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*angAcc_)(0); }
 
+    //! Read-only radii \f$R_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return (*radius_)(0); }
+
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
@@ -288,14 +291,14 @@ namespace PARTICLE
     //! Read-only angular-accelerations \f$angA_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngAccnp() { return angAccn_; }
 
+    //! Read-only radii \f$\rho_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() { return radiusn_; }
+
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
-
-    //! Read-only radii \f$R_{n}\f$ or \f$R_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
@@ -337,14 +340,17 @@ namespace PARTICLE
     //! Extract angular-accelerations \f$angA_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngAccnp() { return angAccn_; }
 
+    //! Extract radii \f$R_{n}\f$ for legacy code
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusn() { return (*radius_)(0); }
+
+    //! Extract radii \f$R_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() { return radiusn_; }
+
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
     //! Extract temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
-
-    //! Extract radii \f$R_{n}\f$ or \f$R_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
@@ -464,6 +470,8 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angVel_;
     //! Angular-accelerations \f${angA}_{n}, angA_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angAcc_;
+    //! Radii \f$R_{n+1}\f$ at \f$R_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
     //! Densities \f${\rho}_{n+1}\f$ at \f$\rho_{n+1}\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
     //! Temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
@@ -479,6 +487,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> angVeln_;
     //! Angular-acceleration \f${angA}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> angAccn_;
+    //! Radii \f$R_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>  radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>  densityn_;
     //! Temperatures \f${T}_{n+1}\f$
@@ -490,8 +500,6 @@ namespace PARTICLE
     //! Vector for visualization of particle orientation
     Teuchos::RCP<Epetra_Vector> orient_;
 
-    //! Radii \f$R_{n}\f$ or \f$R_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> radius_;
     //! Radii \f$R_{0}\f$
     Teuchos::RCP<Epetra_Vector> radius0_;
     //! Time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
