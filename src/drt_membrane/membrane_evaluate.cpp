@@ -26,6 +26,7 @@
 #include "../drt_mat/material.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/compogden.H"
+#include "../drt_mat/growthremodel_elasthyper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -107,7 +108,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     case calc_struct_update_istep:
     {
       // Update materials
-      SolidMaterial()->Update();
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      Update_element(mydisp,params,Material());
     }
     break;
 
@@ -498,8 +503,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     LINALG::Matrix<numdof_,numdof_>*       stiffmatrix,           // element stiffness matrix
     LINALG::Matrix<numdof_,numdof_>*       massmatrix,            // element mass matrix
     LINALG::Matrix<numdof_,1>*             force,                 // element internal force vector
-    LINALG::Matrix<numgpt_post_,6>*             elestress,             // stresses at GP
-    LINALG::Matrix<numgpt_post_,6>*             elestrain,             // strains at GP
+    LINALG::Matrix<numgpt_post_,6>*        elestress,             // stresses at GP
+    LINALG::Matrix<numgpt_post_,6>*        elestrain,             // strains at GP
     Teuchos::ParameterList&                params,                // algorithmic parameters e.g. time
     const INPAR::STR::StressType           iostress,              // stress output option
     const INPAR::STR::StrainType           iostrain)              // strain output option
@@ -561,11 +566,22 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // principle stretch in thickness direction
     double lambda3 = 1.0;
 
-    // Remark:
-    // incompressibility condition to get principle stretch in thickness direction
-    // can be considered as an initialization of the Newton-Raphson procedure in mem_Material3dPlane(...)
-    // where the full stress state is reduced to a plane stress by varying the entries of the Green-Lagrange strain tensor
-    lambda3 = std::sqrt(1.0/(dxds1.Dot(dxds1)*dxds2.Dot(dxds2)-std::pow(dxds1.Dot(dxds2),2.0)));
+    if(Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
+      // Remark:
+      // incompressibility is just valid for the elastic quantities, therefore
+      // use thickness from previous iteration step to get principle stretch in thickness direction to account for growth in thickness direction
+      // the EvaluateMembrane() function updates the entry of cauchygreen_local(2,2)
+      lambda3 = cur_thickness_[gp]/thickness_;
+    }
+    else
+    {
+      // Remark:
+      // incompressibility condition to get principle stretch in thickness direction
+      // can be considered as an initialization of the Newton-Raphson procedure in mem_Material3dPlane(...)
+      // where the full stress state is reduced to a plane stress by varying the entries of the Green-Lagrange strain tensor
+      lambda3 = std::sqrt(1.0/(dxds1.Dot(dxds1)*dxds2.Dot(dxds2)-std::pow(dxds1.Dot(dxds2),2.0)));
+    }
 
     // surface deformation gradient in 3 dimensions in global coordinates
     mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_global);
@@ -591,12 +607,33 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // material tangent matrix for plane stress
     LINALG::Matrix<3,3> cmat(true);
 
-    /*===============================================================================*
+    if(Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
+      // Gauß-point coordinates in reference configuration
+      // gp reference coordinates
+      LINALG::Matrix<numnod_,1> funct(true);
+      funct = shapefcts;
+      LINALG::Matrix<1,noddof_> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
+
+      // call material law, evaluation in membrane local coordinates
+      params.set("dXds1",dXds1);
+      params.set("dXds2",dXds2);
+      params.set("dxds1",dxds1);
+      params.set("dxds2",dxds2);
+
+      static_cast <MAT::GrowthRemodel_ElastHyper*>(Material().get())->EvaluateMembrane(defgrd_local,cauchygreen_local,Q_trafo,params,&pkstress,&cmat,Id());
+    }
+    else
+    {
+      /*===============================================================================*
      | standard evaluation                                                           |
-     *===============================================================================*/
-    // call 3 dimensional material law and reduce to a plane stress state
-    // no incompressibility fulfilled here (use \nue close to 0.5 or volumetric strain energy function)
-    mem_Material3dPlane(dXds1,dXds2,dxds1,dxds2,defgrd_global,cauchygreen_local,pkstress,cmat,Q_trafo,params);
+       *===============================================================================*/
+      // call 3 dimensional material law and reduce to a plane stress state
+      // no incompressibility fulfilled here (use \nue close to 0.5 or volumetric strain energy function)
+      mem_Material3dPlane(dXds1,dXds2,dxds1,dxds2,defgrd_global,cauchygreen_local,pkstress,cmat,Q_trafo,params);
+    }
 
     // update principle stretch in thickness direction as cauchygreen_local(2,2) changes in the material evaluation
     lambda3 = std::sqrt(cauchygreen_local(2,2));
@@ -604,18 +641,14 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // update surface deformation gradient in 3 dimensions in global coordinates
     mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_global);
 
-    // update surface deformation gradient in 3 dimensions in local coordinates
-    mem_globaltolocal(Q_trafo,defgrd_global,defgrd_local);
-
     /*===============================================================================*
      | update current thickness at gp                                                |
      *===============================================================================*/
-    curr_thickness_[gp] = lambda3*thickness_;
+    cur_thickness_[gp] = lambda3*thickness_;
 
     /*===============================================================================*
      | calculate force, stiffness matrix and mass matrix                             |
      *===============================================================================*/
-
     // evaluate stiffness matrix and force vector if needed
     if (stiffmatrix != NULL && force != NULL)
     {
@@ -961,7 +994,7 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
    if (data.size()!= 1) dserror("size mismatch");
    for(int gp=0; gp<intpoints_.nquad; gp++)
    {
-     data[0] += curr_thickness_[gp];
+     data[0] += cur_thickness_[gp];
    }
    data[0] = data[0]/intpoints_.nquad;
 
@@ -1551,6 +1584,81 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
   return;
 
 } // DRT::ELEMENTS::Membrane::mem_defgrd_global
+
+/*---------------------------------------------------------------------------------------------*
+ |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
+ *---------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Membrane<distype>::Update_element(std::vector<double>& disp,
+                                                      Teuchos::ParameterList& params,
+                                                      Teuchos::RCP<MAT::Material> mat)
+{
+  // Calculate current deformation gradient
+  if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+  {
+    // get reference configuration and determine current configuration
+    LINALG::Matrix<numnod_,noddof_> xrefe(true);
+    LINALG::Matrix<numnod_,noddof_> xcurr(true);
+
+    mem_configuration(disp,xrefe,xcurr);
+
+    /*===============================================================================*
+     | loop over the gauss points                                                    |
+     *===============================================================================*/
+
+    // allocate vector for shape functions and matrix for derivatives at gp
+    LINALG::Matrix<numdim_, numnod_> derivs(true);
+
+    for (int gp=0; gp<intpoints_.nquad; ++gp)
+    {
+
+      // get gauss points from integration rule
+      double xi_gp = intpoints_.qxg[gp][0];
+      double eta_gp = intpoints_.qxg[gp][1];
+
+      // get derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D_deriv1(derivs,xi_gp,eta_gp,Shape());
+
+      /*===============================================================================*
+       | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
+       *===============================================================================*/
+
+      LINALG::Matrix<numdim_,numnod_> derivs_ortho(true);
+      double G1G2_cn;
+      LINALG::Matrix<noddof_,1> dXds1(true);
+      LINALG::Matrix<noddof_,1> dXds2(true);
+      LINALG::Matrix<noddof_,1> dxds1(true);
+      LINALG::Matrix<noddof_,1> dxds2(true);
+      LINALG::Matrix<noddof_,noddof_> Q_trafo(true);
+
+      mem_orthonormalbase(xrefe,xcurr,derivs,derivs_ortho,G1G2_cn,dXds1,dXds2,dxds1,dxds2,Q_trafo);
+
+      /*===============================================================================*
+       | surface deformation gradient                                                  |
+       *===============================================================================*/
+
+      // surface deformation gradient in 3 dimensions in global coordinates
+      LINALG::Matrix<noddof_,noddof_> defgrd_global(true);
+
+      // principle stretch in thickness direction
+      double lambda3 = cur_thickness_[gp]/thickness_;
+
+      // surface deformation gradient in 3 dimensions in global coordinates
+      mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_global);
+
+      // surface deformation gradient in 3 dimensions in local coordinates
+      LINALG::Matrix<3,3> defgrd_local(true);
+      mem_globaltolocal(Q_trafo,defgrd_global,defgrd_local);
+
+      // call material update of m_growthremodel_elasthyper (calculate and update inelastic deformation gradient)
+      static_cast <MAT::GrowthRemodel_ElastHyper*>(mat.get())->UpdateMembrane(defgrd_local,Q_trafo,gp,params,Id());
+    }
+  }
+
+  SolidMaterial()->Update();
+
+  return;
+}
 
 template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
 template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;

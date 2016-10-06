@@ -178,18 +178,18 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(const LINALG::Matrix<3,3> defgrd,
+void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(const LINALG::Matrix<3,3> CM,
                                                                       LINALG::Matrix<6,6>& cmat,
                                                                       LINALG::Matrix<6,1>& stress,
                                                                       const int eleGID)
 {
-  double lambda = 0.0;
-  lambda =  A_(0)*defgrd(0,0) + A_(1)*defgrd(1,1) + A_(2)*defgrd(2,2)
-      + A_(3)*defgrd(0,1) + A_(4)*defgrd(1,2) + A_(5)*defgrd(0,2)
-      + A_(3)*defgrd(1,0) + A_(4)*defgrd(2,1) + A_(5)*defgrd(2,0);
+  double lambda_sq = 0.0;
+  lambda_sq =  A_(0)*CM(0,0) + A_(1)*CM(1,1) + A_(2)*CM(2,2)
+      + A_(3)*CM(0,1) + A_(4)*CM(1,2) + A_(5)*CM(0,2)
+      + A_(3)*CM(1,0) + A_(4)*CM(2,1) + A_(5)*CM(2,0);
 
-  stress.Update(dPIact_*1./(lambda*lambda),A_,0.0);
-  cmat.MultiplyNT(-2.0*dPIact_*1./(lambda*lambda*lambda*lambda),A_,A_,0.0);
+  stress.Update(dPIact_*1./lambda_sq,A_,0.0);
+  cmat.MultiplyNT(-2.0*dPIact_*1./(lambda_sq*lambda_sq),A_,A_,0.0);
 
   return;
 }

@@ -211,8 +211,23 @@ private:
                         Teuchos::ParameterList& params,       ///< Container for additional information
                         const int eleGID);                    ///< Element ID
 
+    virtual void UpdateMembrane(const LINALG::Matrix<3,3> defgrd_loc,    ///< Deformation gradient in local coordinates
+                                const LINALG::Matrix<3,3> Q_trafo,       ///< Transformation matrix between local and global coordinate system
+                                const int gp,                            ///< Current Gauß-Point
+                                Teuchos::ParameterList& params,          ///< Container for additional information
+                                const int eleGID);                       ///< Element ID
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// hyperelastic stress response plus elasticity tensor for membrane element (membrane formulation)
+    virtual void EvaluateMembrane(LINALG::Matrix<3,3>& defgrd_local,       ///< Deformation gradient in local coordinates
+                                  LINALG::Matrix<3,3>& cauchygreen_local,  ///< right Cauchy-Green in local coordinates
+                                  LINALG::Matrix<3,3>& Q_trafo,            ///< transformation matrix from local to global system
+                                  Teuchos::ParameterList& params,          ///< Container for additional information
+                                  LINALG::Matrix<3,1>* stress,             ///< 2nd Piola-Kirchhoff stresses in membrane coordinates
+                                  LINALG::Matrix<3,3>* cmat,               ///< Constitutive matrix in membrane coordinates
+                                  const int eleGID);                       ///< Element ID
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
@@ -223,7 +238,7 @@ private:
   protected:
 
     /// Setup transformation matrices between the global frame and an orthogonal frame on the cylinder surface
-    void SetupTrafoMatrices();
+    void SetupTrafoMatrices(LINALG::Matrix<3,3> Q_trafo);
 
     /// Setup circumferential, radial and axial structural tensor
     void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
@@ -236,16 +251,16 @@ private:
 
     virtual void EvaluateKinQuantElast(
         const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<3,3> iFinel,
+        const LINALG::Matrix<3,3> iFin,
         const int gp,
-        LINALG::Matrix<6,1>& iCinel,
-        LINALG::Matrix<6,1>& iCinelCiCinel,
+        LINALG::Matrix<6,1>& iCin,
+        LINALG::Matrix<6,1>& iCinCiCin,
         LINALG::Matrix<6,1>& iC,
-        LINALG::Matrix<3,3>& iCinelC,
-        LINALG::Matrix<3,3>& iFinelCe,
-        LINALG::Matrix<9,1>& CiFinel,
-        LINALG::Matrix<9,1>& CiFinelCe,
-        LINALG::Matrix<9,1>& CiFineliCe,
+        LINALG::Matrix<3,3>& iCinC,
+        LINALG::Matrix<3,3>& iFinCe,
+        LINALG::Matrix<9,1>& CiFin,
+        LINALG::Matrix<9,1>& CiFinCe,
+        LINALG::Matrix<9,1>& CiFiniCe,
         LINALG::Matrix<3,1>& prinv);
 
     /// calculate principal invariants
@@ -264,8 +279,8 @@ private:
     virtual void EvaluateInvariantDerivatives(
         const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
         const int& gp,                                  ///< current Gauß-point
-        LINALG::Matrix<3,1>& dPIw,                      ///< first derivative with respect to invariants weighted with the corresponding volume fraction
-        LINALG::Matrix<6,1>& ddPIIw,                    ///< second derivative with respect to invariants weighted with the corresponding volume fraction
+        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants weighted with the corresponding volume fraction
+        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants weighted with the corresponding volume fraction
         int eleGID                                      ///< Element ID
         );
 
@@ -417,7 +432,7 @@ private:
     /// Thus the first two indices are stored in stress-like Voigt notation.
     /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
     /// Be aware that this is NOT symmetric w.r.t. A and B !!!
-    void AddtodPK2diFinel(LINALG::Matrix<6,9>& dPK2diFinel,
+    void AddtodPK2diFin(LINALG::Matrix<6,9>& dPK2diFin,
         LINALG::Matrix<3,3> A,
         LINALG::Matrix<3,3> B,
         double fac);
@@ -440,6 +455,11 @@ private:
     /// convert non-symmetric 2-tensor to 9x1 vector
     void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
 
+    /// convert stress and cmat to global coordinate system
+    void ConvertStressCmatLoctoGlob(LINALG::Matrix<3,1> stress_loc,     /// 2nd Piola Kirchhoff stress in local coordinates
+                                    LINALG::Matrix<3,3> cmat_loc,       /// Stiffness tensor in local coordinates
+                                    LINALG::Matrix<6,1>& stress_glob,   /// 2nd Piola Kirchhoff stress in global coordinates
+                                    LINALG::Matrix<6,6>& cmat_glob);    /// Stiffness tensor in global coordinates
 
     /// evaluates stress and cmat during prestressing
     void EvaluateStressCmat(const LINALG::Matrix<3,3>* defgrd,     ///< Deformation gradient
@@ -452,22 +472,22 @@ private:
 
     /// evaluate isotropic and anisotropic stress and cmat (membrane formulation)
     void EvaluateStressCmatMembrane(
-        const LINALG::Matrix<3,3>*        defgrd,
-        const LINALG::Matrix<3,3>&        iFinel,
-        LINALG::Matrix<6,1>&              stress,
-        LINALG::Matrix<6,6>&              cmat,
+        LINALG::Matrix<3,3>&              C_loc,
+        const LINALG::Matrix<3,3>&        iFin_loc,
+        LINALG::Matrix<3,1>&              stress_loc,
+        LINALG::Matrix<3,3>&              cmat_loc,
         const int                         gp,
         const int                         eleGID
         );
 
     /// evaluate kinematic elastic quantities (membrane formulation)
     void EvaluateKinQuantElastMembrane(
-        const LINALG::Matrix<3,3>& iFrg,
+        const LINALG::Matrix<3,3>& iFin_loc,
         LINALG::Matrix<3,1>& prinv,
-        LINALG::Matrix<3,1>& iC,
-        LINALG::Matrix<3,1>& iCrg,
-        LINALG::Matrix<3,1>& iCrgCiCrg,
-        const LINALG::Matrix<3,3>* defgrd,
+        LINALG::Matrix<3,1>& iC_loc,
+        LINALG::Matrix<3,1>& iCrg_loc,
+        LINALG::Matrix<3,1>& iCrgCiCrg_loc,
+        LINALG::Matrix<3,3>& C_loc,
         double& rcg_e_33
         );
 

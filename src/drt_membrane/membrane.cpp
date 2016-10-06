@@ -47,7 +47,7 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner) :
 So_base(id,owner),
 thickness_(0.0),
-curr_thickness_(0),
+cur_thickness_(0),
 data_(),
 planetype_(plane_stress),
 intpoints_(DRT::UTILS::intrule_tri_3point)
@@ -86,7 +86,7 @@ intpoints_(DRT::UTILS::intrule_tri_3point)
     dserror("shape type unknown!\n");
     break;
   }
-  curr_thickness_.resize(intpoints_.nquad, thickness_);
+  cur_thickness_.resize(intpoints_.nquad, thickness_);
   return;
 }
 
@@ -98,12 +98,12 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype>& old) :
 So_base(old),
 thickness_(old.thickness_),
-curr_thickness_(old.curr_thickness_),
+cur_thickness_(old.cur_thickness_),
 data_(old.data_),
 planetype_(old.planetype_),
 intpoints_(old.intpoints_)
 {
-  curr_thickness_.resize(intpoints_.nquad, thickness_);
+  cur_thickness_.resize(intpoints_.nquad, thickness_);
   return;
 }
 
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::Membrane<distype>::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,thickness_);
 
   // current thickness_
-  AddtoPack(data,curr_thickness_);
+  AddtoPack(data,cur_thickness_);
 
   // data_
   AddtoPack(data,data_);
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   // thickness_
   ExtractfromPack(position,data,thickness_);
   // current thickness_
-  ExtractfromPack(position,data,curr_thickness_);
+  ExtractfromPack(position,data,cur_thickness_);
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

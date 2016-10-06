@@ -164,7 +164,7 @@ namespace ELASTIC
     /// evaluate stress and cmat
     /// ATTENTION: this is only the active contribution of the fiber!
     virtual void EvaluateActiveStressCmatAniso(
-        const LINALG::Matrix<3,3> defgrd,    ///< deformation gradient
+        const LINALG::Matrix<3,3> CM,        ///< rigtht Cauchy Green tensor
         LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress
         const int eleGID                     ///< element GID

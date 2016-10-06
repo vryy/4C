@@ -42,7 +42,7 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(const std::string& eletype,
 
   // initialize current thickness at all gp
   for(int i=0;i<intpoints_.nquad;++i)
-    curr_thickness_[i] = thickness_;
+    cur_thickness_[i] = thickness_;
 
 
   // temporary variable for read-in

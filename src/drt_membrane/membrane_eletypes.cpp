@@ -64,7 +64,7 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation( DRT::Element * dwe
 
 void DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )

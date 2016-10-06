@@ -200,9 +200,20 @@ namespace ELASTIC
       const int eleGID                              ///< element ID
       );
 
+    /// Explicit local time integration: updates current collagen density and inelastic fiber stretch (membrane formulation)
+    virtual void EvaluateGrowthAndRemodelingExplMembrane(
+      const LINALG::Matrix<3,3>& defgrd_loc,        ///< deformation gradient
+      const LINALG::Matrix<3,3>& Q_trafo,           ///< transformation matrix between local and global coordinate system
+      const double v,                               ///< current volume change
+      const double dt,                              ///< time step size
+      const LINALG::Matrix<3,3> iFgM,               ///< inverse inelastic growth deformation gradient
+      const int gp,                                 ///< current gp
+      const int eleGID                              ///< element ID
+      );
+
     /// prestressing step: evaluate fibers in a "normal" way (no growth and/or remodeling)
     virtual void EvaluateAnisotropicStressCmat(
-      const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
+      const LINALG::Matrix<3,3> CM,        ///< right Cauchy Green tensor
       const LINALG::Matrix<3,3> iFg,       ///< inverse inelastic growth deformation gradient
       LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
       LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress

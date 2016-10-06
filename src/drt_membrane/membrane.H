@@ -383,6 +383,13 @@ public:
 
   //@}
 
+protected:
+
+  /// Update history variables at the end of time step (fiber direction, inelastic deformation) (braeu 07/16)
+  void Update_element(
+        std::vector<double>& disp,          // current displacements
+        Teuchos::ParameterList& params,     // algorithmic parameters e.g. time
+        Teuchos::RCP<MAT::Material> mat);   // material
 
 private:
 
@@ -412,7 +419,7 @@ private:
   double                                          thickness_;
 
   //! current membrane thickness at gauss point
-  std::vector<double>                             curr_thickness_;
+  std::vector<double>                             cur_thickness_;
 
   //! container containing all kind of membrane thisandthat
   DRT::Container                                  data_;
