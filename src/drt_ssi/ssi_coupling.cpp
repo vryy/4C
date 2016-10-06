@@ -26,8 +26,6 @@
 #include"../drt_inpar/inpar_volmortar.H"
 #include "../drt_volmortar/volmortar_utils.H"
 
-
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_dofset_mapped_proxy.H"
 
@@ -408,11 +406,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(
     for (unsigned i=0; i<conds_struct.size(); ++i)
       couplingids.insert(conds_struct[i]->GetInt("coupling id"));
 
-      Teuchos::RCP<DRT::DofSet> newdofset =
+      Teuchos::RCP<DRT::DofSet> newdofset_scatra =
           Teuchos::rcp(new DRT::DofSetMappedProxy(structdis->GetDofSetProxy(),structdis,"SSICouplingSolidToScatra",couplingids));
 
       // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
-      if (scatradis->AddDofSet(newdofset)!=1)
+      if (scatradis->AddDofSet(newdofset_scatra)!=1)
         dserror("unexpected dof sets in scatra field");
   }
 

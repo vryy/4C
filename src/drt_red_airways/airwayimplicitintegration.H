@@ -30,7 +30,6 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 
 #include "Epetra_Vector.h"

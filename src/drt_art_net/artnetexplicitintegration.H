@@ -7,13 +7,11 @@
 
      o two-step Taylor-Galerkin
 
+\level 2
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Christian Roth
+
+
 
 *----------------------------------------------------------------------*/
 
@@ -37,7 +35,6 @@ Maintainer: Mahmoud Ismail
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 #include "art_junction.H"
 #include "art_write_gnuplot.H"

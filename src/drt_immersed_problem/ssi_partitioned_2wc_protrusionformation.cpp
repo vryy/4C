@@ -21,7 +21,6 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_hex20.H"

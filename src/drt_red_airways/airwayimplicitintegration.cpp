@@ -22,7 +22,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_control.H"
 #include "../drt_mat/maxwell_0d_acinus_Ogden.H"

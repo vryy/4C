@@ -7,13 +7,11 @@
 
      o two-step Taylor-Galerking scheme
 
+\level 2
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Christian Roth
+
+
 *----------------------------------------------------------------------*/
 
 
@@ -27,7 +25,6 @@ Maintainer: Mahmoud Ismail
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 #include "artery_resulttest.H"
 #include "art_junction.H"
