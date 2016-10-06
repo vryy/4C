@@ -2,13 +2,11 @@
 /*!
 \file adapter_coupling.cpp
 
-\brief
+\brief Coupling of two discretizations (surface- or volume-coupling)
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
@@ -16,7 +14,7 @@ Maintainer: Matthias Mayr
 #include <algorithm>
 
 #include "adapter_coupling.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/drt_matchingoctree.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"

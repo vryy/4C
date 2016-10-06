@@ -22,7 +22,7 @@
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_particle/binning_strategy.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/drt_matchingoctree.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -1059,7 +1059,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_elementdefinition.cpp
   src/drt_lib/drt_elementtype.cpp
   src/drt_lib/drt_exporter.cpp
-  src/drt_lib/drt_nodematchingoctree.cpp
+  src/drt_lib/drt_matchingoctree.cpp
   src/drt_lib/drt_parser.cpp
   src/drt_lib/drt_resulttest.cpp
   src/drt_lib/drt_utils.cpp

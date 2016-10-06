@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_nodematchingoctree.cpp
+\file drt_matchingoctree.cpp
 
 \brief Search closest node in given set of nodes using an octree search
 
@@ -14,7 +14,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "drt_nodematchingoctree.H"
+#include "drt_matchingoctree.H"
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_globalproblem.H"

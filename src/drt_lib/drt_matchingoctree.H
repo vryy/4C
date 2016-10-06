@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_nodematchingoctree.H
+\file drt_matchingoctree.H
 
 \brief connect nodes from two nodesets by their distance
 
@@ -12,8 +12,8 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef NODEMATCHINGOCTREE_H
-#define NODEMATCHINGOCTREE_H
+#ifndef MATCHINGOCTREE_H
+#define MATCHINGOCTREE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -365,4 +365,4 @@ private:
 }
 }
 
-#endif  // not NODEMATCHINGOCTREE_H
+#endif  // not MATCHINGOCTREE_H
