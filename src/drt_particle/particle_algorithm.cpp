@@ -1893,38 +1893,38 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
   {
     // force restart heatSources status
     if (trg_forceRestart)
-      iHS->second->HSactive_ = false;
+      iHS->second->active_ = false;
 
     // map assignment
-    if (iHS->second->HSTstart_<=Time() && iHS->second->HSTend_>=Time() && iHS->second->HSactive_ == false)
+    if (iHS->second->Tstart_<=Time() && iHS->second->Tend_>=Time() && iHS->second->active_ == false)
     {
       // find the bins
-      int HSZone_ijk_minVer[3];
-      int HSZone_ijk_maxVer[3];
-      ConvertPosToijk(&(iHS->second->HSZone_minVer_[0]), HSZone_ijk_minVer);
-      ConvertPosToijk(&(iHS->second->HSZone_maxVer_[0]), HSZone_ijk_maxVer);
+      int minVerZone_ijk[3];
+      int maxVerZone_ijk[3];
+      ConvertPosToijk(&(iHS->second->minVerZone_[0]), minVerZone_ijk);
+      ConvertPosToijk(&(iHS->second->maxVerZone_[0]), maxVerZone_ijk);
       const int ijk_range[] = {
-          HSZone_ijk_minVer[0],HSZone_ijk_maxVer[0],
-          HSZone_ijk_minVer[1],HSZone_ijk_maxVer[1],
-          HSZone_ijk_minVer[2],HSZone_ijk_maxVer[2]};
+          minVerZone_ijk[0],maxVerZone_ijk[0],
+          minVerZone_ijk[1],maxVerZone_ijk[1],
+          minVerZone_ijk[2],maxVerZone_ijk[2]};
       std::set<int>  binIds;
       GidsInijkRange(&ijk_range[0], binIds, false);
 
-      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",iHS->second->HSid_);
+      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",iHS->second->id_);
 
       // create/update the map
       for (std::set<int>::const_iterator iBin = binIds.begin(); iBin != binIds.end(); ++iBin)
           if(particledis_->ElementRowMap()->LID(*iBin) >= 0)
             bins2heatSources_[*iBin].push_back(iHS->second);
 
-      iHS->second->HSactive_ = true;
+      iHS->second->active_ = true;
     }
   }
 
   // heat source deactivation
   for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
   {
-    if ((iHS->second->HSTend_<Time() || iHS->second->HSTstart_>Time()) && iHS->second->HSactive_ == true)
+    if ((iHS->second->Tend_<Time() || iHS->second->Tstart_>Time()) && iHS->second->active_ == true)
     {
       // remove elements from the map
       for (std::map<int,std::list<Teuchos::RCP<HeatSource> > >::iterator iBin = bins2heatSources_.begin(); iBin != bins2heatSources_.end(); ++iBin)
@@ -1938,7 +1938,7 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
           }
         }
       }
-      iHS->second->HSactive_ = false;
+      iHS->second->active_ = false;
     }
   }
 }
@@ -2254,26 +2254,4 @@ void PARTICLE::Algorithm::GetBinContent(
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- | heat source                                             catta 06/16  |
- *----------------------------------------------------------------------*/
-PARTICLE::HeatSource::HeatSource(
-  bool HSactive,
-  const int HSid,
-  const std::vector<double> HSZone_minVer,
-  const std::vector<double> HSZone_maxVer,
-  const double HSQDot,
-  const double HSTstart,
-  const double HSTend
-  ) :
-  HSactive_(HSactive),
-  HSid_(HSid),
-  HSZone_minVer_(HSZone_minVer),
-  HSZone_maxVer_(HSZone_maxVer),
-  HSQDot_(HSQDot),
-  HSTstart_(HSTstart),
-  HSTend_(HSTend)
-{
 }

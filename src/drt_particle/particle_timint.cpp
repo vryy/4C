@@ -579,12 +579,7 @@ void PARTICLE::TimInt::ReadRestartState()
   if(collhandler_ != Teuchos::null)
   {
     // initialize inertia
-    for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
-    {
-      const double rad = (*(*radius_)(0))[lid];
-      // inertia-vector: sphere: I = 2/5 * m * r^2
-      (*inertia_)[lid] = 0.4 * (*mass_)[lid] * rad * rad;
-    }
+    ComputeInertia();
 
     reader.ReadVector(angVeln_, "ang_velocity");
     angVel_->UpdateSteps(*angVeln_);
@@ -933,4 +928,21 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > &stateV
   }
 }
 
+/*-----------------------------------------------------------------------------*/
+/* Compute the inertia vector
+ * The vector should be already initialized
+ * The most updated radius is used (radius_ vs radiusn_)
+ * inertia-vector -> sphere: I = 2/5 * m * r^2 */
+void PARTICLE::TimInt::ComputeInertia()
+{
+  // Find the most-updated radius vector
+  Teuchos::RCP<Epetra_Vector> radius;
+  if (radiusn_ != Teuchos::null)
+    radius = radiusn_;
+  else
+    radius = (*radius_)(0);
 
+  // inertia-vector -> sphere: I = 2/5 * m * r^2
+  inertia_->Multiply(1.0,*radius,*radius,0);
+  inertia_->Multiply(0.4,*mass_,*inertia_,0);
+}

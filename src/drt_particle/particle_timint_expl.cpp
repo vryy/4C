@@ -57,8 +57,6 @@ void PARTICLE::TimIntExpl::Init()
   if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
     // allocate vectors
-    inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-
     angVel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
     angAcc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
@@ -72,14 +70,10 @@ void PARTICLE::TimIntExpl::Init()
       InitializeOrientVector();
     }
 
-    // initialize inertia
-    for(int n=0; n<discret_->NumMyRowNodes(); ++n)
-    {
-      double r_p = (*(*radius_)(0))[n];
+    inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
-      //inertia-vector: sphere: I = 2/5 * m * r^2
-      (*inertia_)[n] = 0.4 * (*mass_)[n] * r_p * r_p;
-    }
+    // compute inertia
+    ComputeInertia();
   }
 
   return;

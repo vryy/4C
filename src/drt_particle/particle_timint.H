@@ -407,10 +407,15 @@ namespace PARTICLE
     //! @name General purpose algorithm members
     //@{
 
+    /* Compute the inertia vector
+     * The vector should be already initialized
+     * The most updated radius is used (radius_ vs radiusn_)
+     * inertia-vector -> sphere: I = 2/5 * m * r^2 */
+    virtual void ComputeInertia();
     /* Update TimIntMStep state vector with the new map from discret_*/
-    void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
+    virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
     /* Update state vector with the new map from discret_*/
-    void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
+    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
     //@}
 

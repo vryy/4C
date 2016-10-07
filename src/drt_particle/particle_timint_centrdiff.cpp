@@ -106,15 +106,15 @@ void PARTICLE::TimIntCentrDiff::Init()
   if (extParticleMat != NULL)
   {
     const std::map<int,Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
-    double max_HSQDot = 0;
+    double max_QDot = 0;
     for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources.begin(); iHS != heatSources.end(); ++iHS)
     {
-      if (iHS->second->HSQDot_> max_HSQDot)
-        max_HSQDot = iHS->second->HSQDot_;
+      if (iHS->second->QDot_> max_QDot)
+        max_QDot = iHS->second->QDot_;
     }
     const double min_density = extParticleMat->initDensity_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
 
-    const double delta_SL = max_HSQDot * (*dt_)[0]/min_density;
+    const double delta_SL = max_QDot * (*dt_)[0]/min_density;
     const double delta_S = delta_SL/extParticleMat->CPS_;
     const double delta_L = delta_SL/extParticleMat->CPL_;
 
@@ -196,9 +196,9 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
     for (i_HS = i_bin->second.begin(); i_HS != i_bin->second.end(); i_HS++)
     {
       // extract vertexes
-      const double* HSZone_minVer = &(*i_HS)->HSZone_minVer_[0];
-      const double* HSZone_maxVer = &(*i_HS)->HSZone_maxVer_[0];
-      const double HSQDot = (*i_HS)->HSQDot_;
+      const double* minVerZone = &(*i_HS)->minVerZone_[0];
+      const double* maxVerZone = &(*i_HS)->maxVerZone_[0];
+      const double QDot = (*i_HS)->QDot_;
 
       // cycle over the nodes of the bin
       const int N_particlesNoAdditions = currbin->NumNode();
@@ -212,12 +212,12 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
         int gidDof = discret_->Dof(activeNode,0);
         int lidDof = disn_->Map().LID(gidDof);
 
-        if (HSZone_minVer[0]<=(*disn_)[lidDof  ] &&
-            HSZone_minVer[1]<=(*disn_)[lidDof+1] &&
-            HSZone_minVer[2]<=(*disn_)[lidDof+2] &&
-            HSZone_maxVer[0]>=(*disn_)[lidDof  ] &&
-            HSZone_maxVer[1]>=(*disn_)[lidDof+1] &&
-            HSZone_maxVer[2]>=(*disn_)[lidDof+2])
+        if (minVerZone[0]<=(*disn_)[lidDof  ] &&
+            minVerZone[1]<=(*disn_)[lidDof+1] &&
+            minVerZone[2]<=(*disn_)[lidDof+2] &&
+            maxVerZone[0]>=(*disn_)[lidDof  ] &&
+            maxVerZone[1]>=(*disn_)[lidDof+1] &&
+            maxVerZone[2]>=(*disn_)[lidDof+2])
         {
           // find the node position
           const int gidNode = activeNode->Id();
@@ -226,7 +226,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
             dserror("lidNode is not on this proc ");
 
           // update temperatures, SL_latent_heat, densities, and radii
-          const double temp_LH_increase = (HSQDot * dt)/(*densityn_)[lidNode];
+          const double temp_LH_increase = (QDot * dt)/(*densityn_)[lidNode];
 
           // solid state start
           if ((*latentHeat_)[lidNode] == 0)

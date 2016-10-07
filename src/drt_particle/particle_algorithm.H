@@ -279,29 +279,34 @@ namespace PARTICLE
 
   }; // Algorithm
 
-  class HeatSource
+  struct HeatSource
   {
   public:
 
   HeatSource(
-    bool HSactive,                            ///< flag that simplifies the connectivity algorithm
-    const int HSid,                           ///< unique id over all heat sources conditions
-    const std::vector<double> HSZone_minVer,  ///< heat zone, vertex 0
-    const std::vector<double> HSZone_maxVer,  ///< heat zone, vertex 1
-    const double HSQDot,                      ///< intake q/s
-    const double HSTstart,                    ///< t start
-    const double HSTend                       ///< t end
-  );
+    bool active,                            ///< flag that simplifies the connectivity algorithm
+    const int id,                           ///< unique id over all heat sources conditions
+    const std::vector<double> minVerZone,   ///< heat zone, vertex 0
+    const std::vector<double> maxVerZone,   ///< heat zone, vertex 1
+    const double QDot,                      ///< intake q/s
+    const double Tstart,                    ///< t start
+    const double Tend) :                    ///< t end
+       active_(active),
+       id_(id),
+       minVerZone_(minVerZone),
+       maxVerZone_(maxVerZone),
+       QDot_(QDot),
+       Tstart_(Tstart),
+       Tend_(Tend) {}
 
   // internal variables
-  bool HSactive_;                             ///< flag that simplifies the connectivity algorithm
-  const int HSid_;                            ///< unique id over all heat sources conditions
-  const std::vector<double> HSZone_minVer_;   ///< heat zone, vertex 0
-  const std::vector<double> HSZone_maxVer_;   ///< heat zone, vertex 1
-  const double HSQDot_;                       ///< intake heat per second per unit volume ( q/(s * V) )
-  const double HSTstart_;                     ///< t start
-  const double HSTend_;                       ///< t end
-
+  bool active_;                             ///< flag that simplifies the connectivity algorithm
+  const int id_;                            ///< unique id over all heat sources conditions
+  const std::vector<double> minVerZone_;    ///< heat zone, vertex 0
+  const std::vector<double> maxVerZone_;    ///< heat zone, vertex 1
+  const double QDot_;                       ///< intake heat per second per unit volume ( q/(s * V) )
+  const double Tstart_;                     ///< t start
+  const double Tend_;                       ///< t end
   }; // HeatSource
 
   struct homelessParticleTemp
