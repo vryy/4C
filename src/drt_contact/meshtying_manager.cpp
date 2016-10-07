@@ -605,6 +605,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     mtparams.set<std::string>("REDUNDANT_STORAGE","Master");
     mtparams.set<std::string>("SYSTEM","condensed");
     mtparams.set<bool>("NURBS",false);
+    mtparams.set<std::string>("STRATEGY","LagrangianMultipliers");
   }
 
   // *********************************************************************
