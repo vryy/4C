@@ -693,18 +693,24 @@ void CAVITATION::Algorithm::ResetParticleData()
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Dispn())->Update(1.0, *storedis_, 0.0);
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Veln())->Update(1.0, *storevel_, 0.0);
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Accn())->Update(1.0, *storeacc_, 0.0);
+  // dispnp already reset in LINALG::Export above
+  particles_->WriteAccessVelnp()->Update(1.0, *storevel_, 0.0);
+  particles_->WriteAccessAccnp()->Update(1.0, *storeacc_, 0.0);
+
   if(particles_->HaveCollHandler())
   {
     Teuchos::rcp_const_cast<Epetra_Vector>(particles_->AngVeln())->Update(1.0, *storeang_vel_, 0.0);
     Teuchos::rcp_const_cast<Epetra_Vector>(particles_->AngAccn())->Update(1.0, *storeang_acc_, 0.0);
-    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Inertia())->Update(1.0, *storeinertia_, 0.0);
+    particles_->WriteAccessAngVelnp()->Update(1.0, *storeang_vel_, 0.0);
+    particles_->WriteAccessAngAccnp()->Update(1.0, *storeang_acc_, 0.0);
+    particles_->WriteAccessInertia()->Update(1.0, *storeinertia_, 0.0);
   }
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Radiusn())->Update(1.0, *storerad_, 0.0);
-  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Mass())->Update(1.0, *storemass_, 0.0);
+  particles_->WriteAccessMass()->Update(1.0, *storemass_, 0.0);
 
   if(computeradiusRPbased_)
   {
-    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->RadiusDot())->Update(1.0, *storeraddot_, 0.0);
+    particles_->WriteAccessRadiusDot()->Update(1.0, *storeraddot_, 0.0);
     dtsub_->Update(1.0, *storedtsub_, 0.0);
     // export pg0_ as this vector is not stored
     Teuchos::RCP<Epetra_Vector> old = pg0_;
@@ -985,6 +991,10 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
     for (int d=0; d<dim_; ++d)
       (*bubblevelnp)[posx+d] = elevec1(d);
   }
+
+  // copy values also to t_n
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Veln())->Update(1.0, *bubblevelnp, 0.0);
+
   return;
 }
 
@@ -1178,6 +1188,7 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
 
   if(particlereset)
   {
+    // reset particle data here after the latest dispnp was used to compute the fluid fraction
     ResetParticleData();
     particlereset = false;
   }

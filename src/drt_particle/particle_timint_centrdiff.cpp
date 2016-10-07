@@ -406,8 +406,6 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
     }
   }
 
-
-
   return 0;
 }
 
@@ -437,17 +435,16 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
   //---------------------Compute Collisions-----------------------
   if(collhandler_ != Teuchos::null)
   {
-  // new angular-velocities \f$ang_V_{n+1/2}\f$
-  angVeln_->Update(1.0, *(*angVel_)(0), 0.0);
-  angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
+    // new angular-velocities \f$ang_V_{n+1/2}\f$
+    angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
 
-  // initialize vectors for contact force and moment
-  f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-  m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    // initialize vectors for contact force and moment
+    f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-  SetStatesForCollision();
+    SetStatesForCollision();
 
-  intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact);
+    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact);
   }
   //--------------------------------------------------------------
 

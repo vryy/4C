@@ -17,6 +17,8 @@ DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Cavitation
 RESTART                         0
+-----------------------------------------------------------------IO
+VERBOSITY                       Standard
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BOUNDINGBOX                     -0.05 -0.05 -0.0625 +0.05 +0.05 +0.0625
@@ -170,11 +172,11 @@ LOWER_BOUND -4.9375e-2 -4.9975e-2 -3.125e-2
 UPPER_BOUND +4.9375e-2 -4.9975e-2 +3.125e-2
 INTERVALS   22 1 2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid ELEMENT 3 QUANTITY fluidfraction VALUE   9.99848355597068084e-01  TOLERANCE 1.0e-11
-FLUID DIS fluid ELEMENT 80 QUANTITY fluidfraction VALUE  9.99874519887980373e-01  TOLERANCE 1.0e-11
-FLUID DIS fluid ELEMENT 155 QUANTITY fluidfraction VALUE 9.99901192949867568e-01  TOLERANCE 1.0e-11
-PARTICLE DIS particle NODE 1830 QUANTITY dispx VALUE     -3.99527806263512975e-02 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 1830 QUANTITY dispy VALUE     -4.98705585341103694e-02 TOLERANCE 7.0e-10
+FLUID DIS fluid ELEMENT 3 QUANTITY fluidfraction VALUE   9.99774722287094519e-01  TOLERANCE 2.0e-11
+FLUID DIS fluid ELEMENT 80 QUANTITY fluidfraction VALUE  9.99814771935635505e-01  TOLERANCE 2.0e-11
+FLUID DIS fluid ELEMENT 155 QUANTITY fluidfraction VALUE 9.99960772586419133e-01  TOLERANCE 2.0e-11
+PARTICLE DIS particle NODE 1830 QUANTITY dispx VALUE     -3.99556472737177468e-02 TOLERANCE 1.0e-09
+PARTICLE DIS particle NODE 1830 QUANTITY dispy VALUE     -4.92572960752643910e-02 TOLERANCE 7.0e-10
 PARTICLE DIS particle NODE 1830 QUANTITY dispz VALUE 3.125e-02 TOLERANCE 1.0e-12
 ---------------------------------------------------------------END
 // END
