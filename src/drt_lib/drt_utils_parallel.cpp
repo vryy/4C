@@ -199,7 +199,7 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
 /*---------------------------------------------------------------------*
 |  Redistribute Nodes Matching Template Discretization     rauch 09/16 |
 *----------------------------------------------------------------------*/
-void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+void DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
     DRT::Discretization&     dis_template,
     DRT::Discretization&     dis_to_redistribute
     )
@@ -211,11 +211,11 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
     // print to screen
     if(com->MyPID() == 0)
     {
-      IO::cout(IO::verbose)<<"+-----------------------------------------------------------------------+"<<IO::endl;
-      IO::cout(IO::verbose)<<"|   Match distribution of discr. "<<std::setw(11)<<
+      IO::cout(IO::verbose)<<"+---------------------------------------------------------------------------+"<<IO::endl;
+      IO::cout(IO::verbose)<<"|   Match nodal distribution of discr. "<<std::setw(11)<<
           dis_to_redistribute.Name()<<
-          "to discr. "<<std::setw(11)<<dis_template.Name()<<" ...   |"<<IO::endl;
-      IO::cout(IO::verbose)<<"+-----------------------------------------------------------------------+"<<IO::endl;
+          "to discr. "<<std::setw(11)<<dis_template.Name()<<" ... |"<<IO::endl;
+      IO::cout(IO::verbose)<<"+---------------------------------------------------------------------------+"<<IO::endl;
     }
 
     // get node map of template dis
@@ -236,7 +236,9 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
       redistribute_nodegid_vec[lid] = redistribute_noderowmap->GID(lid);
 
     // initialize search tree for matching with template (source) nodes
-    DRT::UTILS::NodeMatchingOctree tree(dis_template, my_template_nodegid_vec,150,1e-07);
+    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+    tree.Init(dis_template,my_template_nodegid_vec,150,1e-07);
+    tree.Setup();
 
     // map that will be filled with matched nodes.
     // mapping: redistr. node gid to (template node gid, dist.).
@@ -250,14 +252,6 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
         matched_node_map );
 
     std::map<int,std::vector<double> >::iterator it;
-
-//    // DEBUG
-//    std::cout<<matched_node_map.size()<<std::endl;
-//    std::cout <<" template gids" << " => " << "redistribute gids "<<'\n';
-//    for (it=matched_node_map.begin(); it!=matched_node_map.end(); ++it)
-//      std::cout <<"PROC "<<com->MyPID()<<" : " <<it->first << " => "
-//      << (it->second)[0] << " , "<<(it->second)[1]<<" , "<<(it->second)[2]<< '\n';
-//    // END DEBUG
 
     // fill vectors with row gids for new distribution
     redistribute_nodegid_vec.clear();
@@ -291,6 +285,179 @@ void DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
         true,  // killdofs
         true   // killcond
     );
+
+    // print to screen
+    PrintParallelDistribution(dis_to_redistribute);
+  } // if more than one proc
+  return;
+} // MatchDistributionOfMatchingDiscretizations
+
+
+/*---------------------------------------------------------------------*
+|  Redistribute Elements Matching Template Discretization  rauch 09/16 |
+*----------------------------------------------------------------------*/
+void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
+    DRT::Discretization&     dis_template,
+    DRT::Discretization&     dis_to_redistribute
+    )
+{
+  // clone communicator of target discretization
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( dis_template.Comm().Clone());
+  if(com->NumProc()>1)
+  {
+    // print to screen
+    if(com->MyPID() == 0)
+    {
+      IO::cout(IO::verbose)<<"+-----------------------------------------------------------------------------+"<<IO::endl;
+      IO::cout(IO::verbose)<<"|   Match element distribution of discr. "<<std::setw(11)<<
+          dis_to_redistribute.Name()<<
+          "to discr. "<<std::setw(11)<<dis_template.Name()<<" ... |"<<IO::endl;
+      IO::cout(IO::verbose)<<"+-----------------------------------------------------------------------------+"<<IO::endl;
+    }
+
+    // get ele map of template dis
+    const Epetra_Map* template_elecolmap =
+        dis_template.ElementColMap();
+    if(template_elecolmap==NULL)
+      dserror("elecolmap==NULL");
+    // get ele map of dis to be redistributed
+    const Epetra_Map* redistribute_elerowmap =
+        dis_to_redistribute.ElementRowMap();
+    if(redistribute_elerowmap==NULL)
+      dserror("elerowmap==NULL");
+    // get node map of template dis
+    const Epetra_Map* template_nodecolmap =
+        dis_template.NodeColMap();
+    if(template_nodecolmap==NULL)
+      dserror("nodecolmap==NULL");
+    // get node map of dis to be redistributed
+    const Epetra_Map* redistribute_noderowmap =
+        dis_to_redistribute.NodeRowMap();
+    if(redistribute_noderowmap==NULL)
+      dserror("noderowmap==NULL");
+
+    ////////////////////////////////////////
+    // MATCH ELEMENTS
+    ////////////////////////////////////////
+    // create vectors
+    std::vector<int> my_template_elegid_vec(template_elecolmap->NumMyElements());
+    std::vector<int> redistribute_rowelegid_vec(redistribute_elerowmap->NumMyElements());
+
+    // fill vector with processor local ele gids for template dis
+    for(int lid=0; lid<template_elecolmap->NumMyElements();++lid)
+      my_template_elegid_vec[lid] = template_elecolmap->GID(lid);
+
+    // fill vec with processor local ele gids of dis to be redistributed
+    for(int lid=0; lid<redistribute_elerowmap->NumMyElements();++lid)
+      redistribute_rowelegid_vec[lid] = redistribute_elerowmap->GID(lid);
+
+    // initialize search tree for matching with template (source,master) elements
+    DRT::UTILS::ElementMatchingOctree elementmatchingtree = DRT::UTILS::ElementMatchingOctree();
+    elementmatchingtree.Init(dis_template,my_template_elegid_vec,150,1e-07);
+    elementmatchingtree.Setup();
+
+    // map that will be filled with matched elements.
+    // mapping: redistr. ele gid to (template ele gid, dist.).
+    // note: 'FillSlaveToMasterGIDMapping' loops over all
+    //        template eles and finds corresponding redistr. eles.
+    std::map<int,std::vector<double> > matched_ele_map;
+    // match target (slave) nodes to source (master) nodes using octtree
+    elementmatchingtree.FillSlaveToMasterGIDMapping(
+        dis_to_redistribute,
+        redistribute_rowelegid_vec,
+        matched_ele_map );
+
+    // declare iterator
+    std::map<int,std::vector<double> >::iterator it;
+
+    // fill vectors with row and col gids for new distribution
+    std::vector<int> redistribute_colelegid_vec;
+    redistribute_rowelegid_vec.clear();
+    for (it=matched_ele_map.begin(); it!=matched_ele_map.end(); ++it)
+    {
+      // if this proc owns the template element we also want to own
+      // the element of the redistributed discretization.
+      // we also want to own all nodes of this element.
+      if((int)(it->second)[2]==1)
+        redistribute_rowelegid_vec.push_back(it->first);
+
+      redistribute_colelegid_vec.push_back(it->first);
+    }
+    std::cout<<"PROC "<<dis_to_redistribute.Comm().MyPID()<<" :  "<<matched_ele_map.size()<<std::endl;
+    // construct redistributed element row map
+    Teuchos::RCP<Epetra_Map> redistributed_elerowmap =
+        Teuchos::rcp(new Epetra_Map(-1, redistribute_rowelegid_vec.size(), &redistribute_rowelegid_vec[0], 0, *com));
+
+    // construct redistributed element col map
+    Teuchos::RCP<Epetra_Map> redistributed_elecolmap =
+        Teuchos::rcp(new Epetra_Map(-1, redistribute_colelegid_vec.size(), &redistribute_colelegid_vec[0], 0, *com));
+
+    ////////////////////////////////////////
+    // MATCH NODES
+    ////////////////////////////////////////
+    // create vectors
+    std::vector<int> my_template_nodegid_vec(template_nodecolmap->NumMyElements());
+    std::vector<int> redistribute_nodegid_vec(redistribute_noderowmap->NumMyElements());
+    std::vector<int> redistribute_colnodegid_vec;
+
+    // fill vector with processor local node gids for template dis
+    for(int lid=0; lid<template_nodecolmap->NumMyElements();++lid)
+      my_template_nodegid_vec[lid] = template_nodecolmap->GID(lid);
+
+    // fill vec with processor local node gids of dis to be redistributed
+    for(int lid=0; lid<redistribute_noderowmap->NumMyElements();++lid)
+      redistribute_nodegid_vec[lid] = redistribute_noderowmap->GID(lid);
+
+    // initialize search tree for matching with template (source) nodes
+    DRT::UTILS::NodeMatchingOctree nodematchingtree = DRT::UTILS::NodeMatchingOctree();
+    nodematchingtree.Init(dis_template,my_template_nodegid_vec,150,1e-07);
+    nodematchingtree.Setup();
+
+    // map that will be filled with matched nodes.
+    // mapping: redistr. node gid to (template node gid, dist.).
+    // note: FindMatch loops over all template nodes
+    //       and finds corresponding redistr. nodes.
+    std::map<int,std::vector<double> > matched_node_map;
+    // match target nodes to source nodes using octtree
+    nodematchingtree.FillSlaveToMasterGIDMapping(
+        dis_to_redistribute,
+        redistribute_nodegid_vec,
+        matched_node_map );
+
+    // fill vectors with row gids for new distribution
+    redistribute_nodegid_vec.clear();
+    //std::vector<int> redistribute_colnodegid_vec;
+    for (it=matched_node_map.begin(); it!=matched_node_map.end(); ++it)
+    {
+      // if this proc owns the template node we also want to own
+      // the node of the redistributed discretization
+      if((int)(it->second)[2]==1)
+        redistribute_nodegid_vec.push_back(it->first);
+
+      redistribute_colnodegid_vec.push_back(it->first);
+    }
+
+    // construct redistributed node row map
+    Teuchos::RCP<Epetra_Map> redistributed_noderowmap =
+        Teuchos::rcp(new Epetra_Map(-1, redistribute_nodegid_vec.size(), &redistribute_nodegid_vec[0], 0, *com));
+
+    // construct redistributed node col map
+    Teuchos::RCP<Epetra_Map> redistributed_nodecolmap =
+        Teuchos::rcp(new Epetra_Map(-1, redistribute_colnodegid_vec.size(), &redistribute_colnodegid_vec[0], 0, *com));
+
+    // export the nodes
+    dis_to_redistribute.ExportRowNodes(*redistributed_noderowmap,false,false);
+    dis_to_redistribute.ExportColumnNodes(*redistributed_nodecolmap,false,false);
+    // export the elements
+    dis_to_redistribute.ExportRowElements(*redistributed_elerowmap,false,false);
+    dis_to_redistribute.ExportColumnElements(*redistributed_elecolmap,false,false);
+
+    ////////////////////////////////////////
+    // FINISH
+    ////////////////////////////////////////
+    int err = dis_to_redistribute.FillComplete(true,false,true);
+
+    if (err) dserror("FillComplete() returned err=%d",err);
 
     // print to screen
     PrintParallelDistribution(dis_to_redistribute);

@@ -83,7 +83,9 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     Teuchos::RCP<std::vector<int> > sourcenodes = iter_source->second;
 
     // initialize search tree for search
-    DRT::UTILS::NodeMatchingOctree tree(dis, *iter_target->second);
+    DRT::UTILS::NodeMatchingOctree nodematchingtree = DRT::UTILS::NodeMatchingOctree();
+    nodematchingtree.Init(dis, *iter_target->second,150,1e-08);
+    nodematchingtree.Setup();
 
     // map that will be filled with coupled nodes for this condition
     // mapping: target node gid to (source node gid, distance)
@@ -91,7 +93,7 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     //       and finds corresponding target nodes.
     std::map<int,std::pair<int,double> > condcoupling;
     // match target and source nodes using octtree
-    tree.FindMatch(*sourcedis_, *sourcenodes, condcoupling);
+    nodematchingtree.FindMatch(*sourcedis_, *sourcenodes, condcoupling);
 
     // check if all nodes where matched for this condition ID
     if (iter_target->second->size() != condcoupling.size())

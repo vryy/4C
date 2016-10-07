@@ -109,6 +109,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
             idtoadd!=(*masteridstoadd).end();
             ++idtoadd)
         {
+          // we construct the local octree only with nodes owned by this proc
           if(dis_->HaveGlobalNode(*idtoadd))
             if(dis_->gNode(*idtoadd)->Owner() == dis_->Comm().MyPID())
               masterset.insert(*idtoadd);
@@ -128,7 +129,10 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
             idtoadd!=(*slaveidstoadd).end();
             ++idtoadd)
         {
-          slaveset.insert(*idtoadd);
+          // we only try to match owned nodes of each proc
+          if(dis_->HaveGlobalNode(*idtoadd))
+            if(dis_->gNode(*idtoadd)->Owner() == dis_->Comm().MyPID())
+              slaveset.insert(*idtoadd);
         }
 
         break;
@@ -177,15 +181,12 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     }
 
     // build processor local octree
-    DRT::UTILS::NodeMatchingOctree nodematchingoctree(
-      *dis_         ,
-      masternodeids ,
-      maxnodeperleaf,
-      tol
-      );
+    DRT::UTILS::NodeMatchingOctree nodematchingoctree = DRT::UTILS::NodeMatchingOctree();
+    nodematchingoctree.Init(*dis_,masternodeids,maxnodeperleaf,tol);
+    nodematchingoctree.Setup();
 
     // create map from gid masternode -> gid corresponding slavenode
-    nodematchingoctree.CreateGlobalNodeMatching(
+    nodematchingoctree.CreateGlobalEntityMatching(
         slavenodeids   ,
         dofsforpbcplane,
         rotangle,

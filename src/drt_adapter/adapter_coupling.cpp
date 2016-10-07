@@ -277,8 +277,10 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                    const bool matchall,
                                    const double tolerance)
 {
-  // match master and slave nodes using Peter's octtree
-  DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, tolerance);
+  // match master and slave nodes using octree
+  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  tree.Init(masterdis,masternodes,150,1e-08);
+  tree.Setup();
 
   std::map<int,std::pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);

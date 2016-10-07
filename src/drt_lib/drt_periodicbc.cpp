@@ -653,12 +653,15 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   tm2_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_ ));
 
   // build processor local octree
-  DRT::UTILS::NodeMatchingOctree nodematchingoctree(
-    *discret_     ,
-    masternodeids ,
-    maxnodeperleaf,
-    tol
-    );
+  DRT::UTILS::NodeMatchingOctree nodematchingoctree =
+      DRT::UTILS::NodeMatchingOctree();
+
+  nodematchingoctree.Init(
+      *discret_,
+      masternodeids,
+      maxnodeperleaf,
+      tol);
+  nodematchingoctree.Setup();
   // time measurement --- this causes the TimeMonitor tm2 to stop here
   tm2_ref_ = Teuchos::null;
 
@@ -672,7 +675,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   {
 
     // create map from gid masternode -> gid corresponding slavenode
-    nodematchingoctree.CreateGlobalNodeMatching(
+    nodematchingoctree.CreateGlobalEntityMatching(
         slavenodeids   ,
         dofsforpbcplane,
         rotangle,

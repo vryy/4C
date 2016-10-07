@@ -57,11 +57,29 @@ namespace UTILS
    *
    * \note The discretization serving as template and the discretization
    *       supposed to be redistributed have to be matching! That means,
-   *       nodal positions have to be coincide.
+   *       nodal positions have to coincide.
    *
   \param dis_template        (in) : discretization with parallel distr., serving as template
   \param dis_to_redistribute (in) : discretization which is redistributed matching to dis_template  */
-  void MatchDistributionOfMatchingDiscretizations(
+  void MatchNodalDistributionOfMatchingDiscretizations(
+    DRT::Discretization&     dis_template,
+    DRT::Discretization&     dis_to_redistribute );
+
+  /*! \brief Redistribute elements matching to another discretization.
+   *
+   *    The difference to \ref MatchNodalDistributionOfMatchingDiscretizations
+   *    is, that a equal distribution of nodes may lead to unequal distribution
+   *    of elements, depending on the algorithm, determining which elements are
+   *    owned and which elements are ghosted. This method makes sure, that element
+   *    ownerships match and nodes are distributed accordingly.
+   *
+   * \note The discretization serving as template and the discretization
+   *       supposed to be redistributed have to be matching! That means,
+   *       nodal positions have to coincide.
+   *
+  \param dis_template        (in) : discretization with parallel distr., serving as template
+  \param dis_to_redistribute (in) : discretization which is redistributed matching to dis_template  */
+  void MatchElementDistributionOfMatchingDiscretizations(
     DRT::Discretization&     dis_template,
     DRT::Discretization&     dis_to_redistribute );
 

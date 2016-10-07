@@ -20,34 +20,52 @@
 #include "drt_globalproblem.H"
 #include "standardtypes_cpp.H"
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
-  const DRT::Discretization&       actdis,
-  const std::vector <int> &        masternodeids,
-  int                              maxnodeperleaf,
-  double                           tol
-  ):
-  // call constructor for "nontrivial" objects
-  discret_(actdis),
-  tol_(tol)
+DRT::UTILS::MatchingOctree::MatchingOctree() :
+  discret_(NULL),
+  tol_(-1.0),
+  masterentityids_(NULL),
+  maxtreenodesperleaf_(-1),
+  issetup_(false),
+  isinit_(false)
 {
+  return;
+}// MatchingOctree::MatchingOctree
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::MatchingOctree::Init(
+    const DRT::Discretization&       actdis,
+    const std::vector <int> &        masternodeids,
+    const int                        maxnodeperleaf,
+    const double                     tol )
+{
+  SetIsSetup(false);
+
+  discret_ = &actdis;
+  masterentityids_ = &masternodeids;
+  maxtreenodesperleaf_ = maxnodeperleaf;
+  tol_ = tol;
+
+  SetIsInit(true);
+  return 0;
+}// MatchingOctree::Init
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::MatchingOctree::Setup()
+{
+  CheckIsInit();
+
+  const int nummygids = masterentityids_->size();
+
   // extract all masternodes on this proc from the list masternodeids
   std::vector <int> masternodesonthisproc;
 
-  for(int locn=0;locn<(int)masternodeids.size();locn++)
-  {
-    // if node is on this proc
-    if(not discret_.HaveGlobalNode(masternodeids[locn]))
-      dserror("NodeMatchingOctree can only be constructed with nodes,\n"
-              "which are either owned, or ghosted by the proc.");
-
-    masternodesonthisproc.push_back(masternodeids[locn]);
-
-  }
-
   // construct octree if proc has masternodes
-  if(masternodesonthisproc.size()>0)
+  if(nummygids>0)
   {
     // create initial bounding box for all nodes
     //
@@ -57,29 +75,37 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     //                 |  zmin  zmax  |
     //                 +-            -+
     //
-    Epetra_SerialDenseMatrix   initialboundingbox(3,2);
-
-    DRT::Node* actnode = discret_.gNode(masternodesonthisproc[0]);
+    Epetra_SerialDenseMatrix initialboundingbox(3,2);
+    double pointcoord[3];
+    CalcPointCoordinate(discret_,masterentityids_->at(0),&pointcoord[0]);
     for (int dim=0;dim<3;dim++)
     {
-      initialboundingbox(dim,0)=actnode->X()[dim]-tol_;
-      initialboundingbox(dim,1)=actnode->X()[dim]+tol_;
+      initialboundingbox(dim,0)=pointcoord[dim]-tol_;
+      initialboundingbox(dim,1)=pointcoord[dim]+tol_;
 
       // store coordinates of one point in master plane (later on, one
       // coordinate of the masternode will be substituted by the coordinate
       // of the master plane)
-      masterplanecoords_.push_back(actnode->X()[dim]);
+      masterplanecoords_.push_back(pointcoord[dim]);
     }
 
-    for(unsigned locn=0;locn<masternodesonthisproc.size();locn++)
+    for(unsigned locn=0;locn<(unsigned)nummygids;locn++)
     {
-      DRT::Node* actnode = discret_.gNode(masternodesonthisproc[locn]);
+      // check if entity is on this proc
+      if(not CheckHaveEntity(discret_, masterentityids_->at(locn)))
+        dserror("MatchingOctree can only be constructed with entities,\n"
+            "which are either owned, or ghosted by calling proc.");
+
+      masternodesonthisproc.push_back(masterentityids_->at(locn));
+
+      CalcPointCoordinate(discret_,masternodesonthisproc[locn],&pointcoord[0]);
+
       for (int dim=0;dim<3;dim++)
       {
         initialboundingbox(dim,0)=std::min(initialboundingbox(dim,0),
-                                       actnode->X()[dim]-tol_);
+            pointcoord[dim]-tol_);
         initialboundingbox(dim,1)=std::max(initialboundingbox(dim,1),
-                                       actnode->X()[dim]+tol_);
+            pointcoord[dim]+tol_);
       }
     }
 
@@ -87,30 +113,85 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     // all other layers are generated down here by recursive calls
     int initlayer = 0;
 
-    octreeroot_ = Teuchos::rcp(new OctreeElement(
-        discret_,
+    octreeroot_ = CreateOctreeElement(
         masternodesonthisproc,
         initialboundingbox,
-        initlayer,
-        maxnodeperleaf,
-        tol_));
+        initlayer);
   }
 
+  SetIsSetup(true);
+  return 0;
+}// MatchingOctree::Setup
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::MatchingOctree::~MatchingOctree()
+{
   return;
-} // NodeMatchingOctree::NodeMatchingOctree
-
+}// MatchingOctree::~MatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
-  const std::vector<int>    &     slavenodeids,
-  const std::vector<int>    &     dofsforpbcplane,
-  const double               rotangle,
-  std::map<int,std::vector<int> >&     midtosid
+bool DRT::UTILS::MatchingOctree::SearchClosestEntityOnThisProc(
+  const std::vector<double>& x,
+  int           & idofclosestpoint,
+  double        & distofclosestpoint,
+  bool          searchsecond
   )
 {
-  int myrank  =discret_.Comm().MyPID();
-  int numprocs=discret_.Comm().NumProc();
+  // flag
+  bool nodeisinbox=false;
+
+  nodeisinbox = octreeroot_->IsPointInBoundingBox(x);
+
+  if (nodeisinbox==true)
+  {
+    // the node is inside the bounding box. So maybe the closest one is
+    // here on this proc -> search for it
+
+    if(octreeroot_==Teuchos::null)
+    {
+      dserror("No root for octree on proc");
+    }
+
+    Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
+
+    while(octreeele->IsLeaf()==false)
+    {
+      octreeele = octreeele->ReturnChildContainingPoint(x);
+
+      if(octreeele==Teuchos::null)
+      {
+        dserror("Child is nullpointer");
+      }
+    }
+
+    // now get closest point in leaf
+    octreeele->SearchClosestNodeInLeaf(
+        x,
+        idofclosestpoint,
+        distofclosestpoint,
+        tol_,
+        searchsecond);
+  }
+
+  return nodeisinbox;
+}// MatchingOctree::SearchClosestNodeOnThisProc
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(
+  const std::vector<int>&          slavenodeids,
+  const std::vector<int>&          dofsforpbcplane,
+  const double                     rotangle,
+  std::map<int,std::vector<int> >& midtosid
+  )
+{
+  CheckIsInit();
+  CheckIsSetup();
+
+  int myrank  =discret_->Comm().MyPID();
+  int numprocs=discret_->Comm().NumProc();
 
   // map from global masternodeids to distances to their global slave
   // counterpart
@@ -137,17 +218,10 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   for(int globn=0;globn<(int)slavenodeids.size();globn++)
   {
     // is this slavenode on this proc?
-    if(discret_.HaveGlobalNode(slavenodeids[globn]))
+    if(CheckHaveEntity(discret_,slavenodeids[globn]))
     {
-      // get the slavenode
-      DRT::Node* actnode = discret_.gNode(slavenodeids[globn]);
-
-      // take only nodes which are not ghosted
-      if (actnode->Owner() == myrank)
-      {
-        // Add node to list of nodes which will be sent to the next proc
-        actnode->Pack(data);
-      }
+      // Add node to list of nodes which will be sent to the next proc
+      PackEntity(data,discret_,slavenodeids[globn]);
     } // end if slavenode on proc
   } // end loop globn
 
@@ -156,17 +230,11 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   for(int globn=0;globn<(int)slavenodeids.size();globn++)
   {
     // is this slavenode on this proc?
-    if(discret_.HaveGlobalNode(slavenodeids[globn]))
+    if(CheckHaveEntity(discret_,slavenodeids[globn]))
     {
-      // get the slavenode
-      DRT::Node* actnode = discret_.gNode(slavenodeids[globn]);
+      // Add node to list of nodes which will be sent to the next proc
+      PackEntity(data,discret_,slavenodeids[globn]);
 
-      // take only nodes which are not ghosted
-      if (actnode->Owner() == myrank)
-      {
-        // Add node to list of nodes which will be sent to the next proc
-        actnode->Pack(data);
-      }
     } // end if slavenode on proc
   } // end loop globn
 
@@ -176,7 +244,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   // -> 2) round robin loop
 #ifdef PARALLEL
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(discret_.Comm());
+  DRT::Exporter exporter(discret_->Comm());
 #endif
 
   for (int np=0;np<numprocs;np++)
@@ -243,14 +311,17 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
       // extracted node data
       Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
 
-      // cast ParObject to Node
-      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
+      // check type of ParObject, and return gid
+      const int id = CheckValidEntityType(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if(masterplanecoords_.empty()!=true)
       {
+        double pointcoord[3];
+        CalcPointCoordinate(o.getRawPtr(),&pointcoord[0]);
+
         // get its coordinates
         std::vector <double> x(3);
 
@@ -258,16 +329,16 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         {
           for (int dim=0;dim<3;dim++)
           {
-            x[dim] = actnode->X()[dim];
+            x[dim] = pointcoord[dim];
           }
         }
         else
         {
           // if there is a rotationally symmetric periodic boundary condition:
           // rotate slave plane for making it parallel to the master plane
-          x[0] = actnode->X()[0]*cos(rotangle) + actnode->X()[1]*sin(rotangle);
-          x[1] = actnode->X()[0]*(-sin(rotangle)) + actnode->X()[1]*cos(rotangle);
-          x[2] = actnode->X()[2];
+          x[0] = pointcoord[0]*cos(rotangle) + pointcoord[1]*sin(rotangle);
+          x[1] = pointcoord[0]*(-sin(rotangle)) + pointcoord[1]*cos(rotangle);
+          x[2] = pointcoord[2];
         }
 
         // Substitute the coordinate normal to the master plane by the
@@ -317,7 +388,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
         bool       nodeisinbox;
 
-        nodeisinbox=this->SearchClosestNodeOnThisProc(
+        nodeisinbox=this->SearchClosestEntityOnThisProc(
           x,
           idofclosestpoint,
           distofclosestpoint);
@@ -337,7 +408,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
             if(diststom[idofclosestpoint] > distofclosestpoint)
             {
         (midtosid[idofclosestpoint]).clear();
-        (midtosid[idofclosestpoint]).push_back(actnode->Id());
+        (midtosid[idofclosestpoint]).push_back(id);
               diststom[idofclosestpoint] = distofclosestpoint;
             }
       else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9
@@ -345,14 +416,14 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         diststom[idofclosestpoint]>distofclosestpoint-1e-9
         )
       {
-        (midtosid[idofclosestpoint]).push_back(actnode->Id());
+        (midtosid[idofclosestpoint]).push_back(id);
       }
           }
           else
           {
             // this is the first estimate for a closest point
       (midtosid[idofclosestpoint]).clear();
-      (midtosid[idofclosestpoint]).push_back(actnode->Id());
+      (midtosid[idofclosestpoint]).push_back(id);
             diststom[idofclosestpoint] = distofclosestpoint;
 
           }
@@ -380,21 +451,21 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 #endif
   } // end loop np
 
-
-
   return;
-} // CreateGlobalNodeMatching
+} // MatchingOctree::CreateGlobalNodeMatching
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::NodeMatchingOctree::FindMatch(
+void DRT::UTILS::MatchingOctree::FindMatch(
                                    const DRT::Discretization& slavedis,
                                    const std::vector<int>& slavenodeids,
                                    std::map<int,std::pair<int,double> >& coupling)
 {
-  int numprocs = discret_.Comm().NumProc();
+  CheckIsInit();
+  CheckIsSetup();
 
-  int slaverank = slavedis.Comm().MyPID();
+  int numprocs = discret_->Comm().NumProc();
+
   if (slavedis.Comm().NumProc()!=numprocs)
     dserror("compared discretizations must live on same procs");
 
@@ -435,17 +506,10 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
   for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
   {
     // is this slavenode on this proc?
-    if (slavedis.HaveGlobalNode(slavenodeids[globn]))
+    if (CheckHaveEntity(&slavedis, slavenodeids[globn]))
     {
-      // get the slavenode
-      DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
-
-      // take only nodes which are not ghosted
-      if (actnode->Owner() == slaverank)
-      {
         // Add node to list of nodes which will be sent to the next proc
-        DRT::ParObject::AddtoPack(data,actnode);
-      }
+        PackEntity(data,&slavedis,slavenodeids[globn]);
     }
   }
 
@@ -454,17 +518,10 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
   for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
   {
     // is this slavenode on this proc?
-    if (slavedis.HaveGlobalNode(slavenodeids[globn]))
+    if (CheckHaveEntity(&slavedis, slavenodeids[globn]))
     {
-      // get the slavenode
-      DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
-
-      // take only nodes which are not ghosted
-      if (actnode->Owner() == slaverank)
-      {
         // Add node to list of nodes which will be sent to the next proc
-        DRT::ParObject::AddtoPack(data,actnode);
-      }
+        PackEntity(data,&slavedis,slavenodeids[globn]);
     }
   }
 
@@ -476,7 +533,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  DRT::Exporter exporter(discret_.Comm());
+  DRT::Exporter exporter(discret_->Comm());
 
   for (int np=0; np<numprocs; np++)
   {
@@ -485,7 +542,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
     if (np > 0) // in the first step, we keep all nodes on this proc
     {
 #ifdef PARALLEL
-      int myrank   = discret_.Comm().MyPID();
+      int myrank   = discret_->Comm().MyPID();
       MPI_Request request;
       int         tag    =myrank;
 
@@ -540,18 +597,19 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
       // extracted node data
       Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
 
-      // cast ParObject to Node
-      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
-      if (actnode==NULL)
-        dserror("unpack of invalid data");
+      // cast ParObject to specific type and return id
+      const int id = CheckValidEntityType(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if (not masterplanecoords_.empty())
       {
+        double pointcoord[3];
+        CalcPointCoordinate(o.getRawPtr(),&pointcoord[0]);
+
         // get its coordinates
-        std::vector<double> x(actnode->X(), actnode->X()+3);
+        std::vector<double> x(pointcoord, pointcoord+3);
 
         //--------------------------------------------------------
         // 3) now search for closest master point on this proc
@@ -560,14 +618,14 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
-        if (SearchClosestNodeOnThisProc(x, gid, dist))
+        if (SearchClosestEntityOnThisProc(x, gid, dist))
         {
           std::map<int,std::pair<int,double> >::iterator found = coupling.find(gid);
 
           // search for second point with same distance, if found gid is already in coupling
           if (found != coupling.end())
           {
-            if (SearchClosestNodeOnThisProc(x, gid, dist, true))
+            if (SearchClosestEntityOnThisProc(x, gid, dist, true))
             {
               found = coupling.find(gid);
             }
@@ -576,7 +634,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
           // we are interested in the closest match
           if (found==coupling.end() or coupling[gid].second > dist)
           {
-            coupling[gid] = std::make_pair(actnode->Id(), dist);
+            coupling[gid] = std::make_pair(id, dist);
           }
         }
       }
@@ -591,16 +649,20 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(
     // we need a new receive buffer
     rblockofnodes.clear();
   }
-}
+  return;
+} // MatchingOctree::FindMatch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
+void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(
     const DRT::Discretization& slavedis,
     const std::vector<int>& slavenodeids,
     std::map<int,std::vector<double> >& coupling)
 {
-  int numprocs = discret_.Comm().NumProc();
+  CheckIsInit();
+  CheckIsSetup();
+
+  int numprocs = discret_->Comm().NumProc();
 
   if (slavedis.Comm().NumProc()!=numprocs)
     dserror("compared discretizations must live on same procs");
@@ -623,20 +685,14 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
 
   for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
   {
-    // get the slavenode
-    DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
-    // Add node to list of nodes which will be sent to the next proc
-    DRT::ParObject::AddtoPack(data,actnode);
+    PackEntity(data,&slavedis,slavenodeids[globn]);
   }
 
   data.StartPacking();
 
   for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
   {
-    // get the slavenode
-    DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
-    // Add node to list of nodes which will be sent to the next proc
-    DRT::ParObject::AddtoPack(data,actnode);
+    PackEntity(data,&slavedis,slavenodeids[globn]);
   }
 
   swap( sblockofnodes, data() );
@@ -647,7 +703,7 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  DRT::Exporter exporter(discret_.Comm());
+  DRT::Exporter exporter(discret_->Comm());
 
   for (int np=0; np<numprocs; np++)
   {
@@ -656,7 +712,7 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
     if (np > 0) // in the first step, we keep all nodes on this proc
     {
 #ifdef PARALLEL
-      int myrank   = discret_.Comm().MyPID();
+      int myrank   = discret_->Comm().MyPID();
       MPI_Request request;
       int         tag    =myrank;
 
@@ -705,24 +761,24 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
+      UnPackEntity(index,rblockofnodes,data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
 
-      // cast ParObject to Node
-      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
-      if (actnode==NULL)
-        dserror("unpack of invalid data");
+      const int id = CheckValidEntityType(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if (not masterplanecoords_.empty())
       {
+        double pointcoord[3];
+        CalcPointCoordinate(o.getRawPtr(),&pointcoord[0]);
+
         // get its coordinates
-        std::vector<double> x(actnode->X(), actnode->X()+3);
+        std::vector<double> x(pointcoord, pointcoord+3);
 
         //--------------------------------------------------------
         // 3) now search for closest master point on this proc
@@ -731,32 +787,32 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
-        if (SearchClosestNodeOnThisProc(x, gid, dist))
+        if (SearchClosestEntityOnThisProc(x, gid, dist))
         {
           std::map<int,std::vector<double> >::iterator found
-              = coupling.find(actnode->Id());
+              = coupling.find(id);
 
           // search for second point with same distance,
           // if found gid is already in coupling
           if (found != coupling.end())
           {
-            if (SearchClosestNodeOnThisProc(x, gid, dist, true))
+            if (SearchClosestEntityOnThisProc(x, gid, dist, true))
             {
-              found = coupling.find(actnode->Id());
+              found = coupling.find(id);
             }
           }
 
           // we are interested in the closest match
-          if (found==coupling.end() or (coupling[actnode->Id()])[1] > dist)
+          if (found==coupling.end() or (coupling[id])[1] > dist)
           {
             if(dist <= tol_)
             {
-              bool isrownode = (discret_.NodeRowMap()->LID(gid) != -1);
+              bool isrownode = CheckEntityOwner(discret_,gid);
               std::vector<double> myvec(3); // initialize vector
-              myvec[0]=(double)gid; // save gid in vector
+              myvec[0]=(double)gid; // save master gid in vector
               myvec[1]=dist;        // save distance in vector
-              myvec[2]=(double)isrownode; // save row col info in vector
-              coupling[actnode->Id()] = myvec; // copy vector to map
+              myvec[2]=(double)isrownode; // save master row col info in vector
+              coupling[id] = myvec; // copy vector to map
             }
           }
         }
@@ -772,55 +828,17 @@ void DRT::UTILS::NodeMatchingOctree::FillSlaveToMasterGIDMapping(
     // we need a new receive buffer
     rblockofnodes.clear();
   }
-}
+  return;
+} // MatchingOctree::FillSlaveToMasterGIDMapping
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
-  const std::vector<double>& x,
-  int           & idofclosestpoint,
-  double        & distofclosestpoint,
-  bool          searchsecond
-  )
+DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree() :
+  MatchingOctree()
 {
-  // flag
-  bool nodeisinbox=false;
-
-  nodeisinbox = octreeroot_->IsPointInBoundingBox(x);
-
-  if (nodeisinbox==true)
-  {
-    // the node is inside the bounding box. So maybe the closest one is
-    // here on this proc -> search for it
-
-    if(octreeroot_==Teuchos::null)
-    {
-      dserror("No root for octree on proc");
-    }
-
-    Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
-
-    while(octreeele->IsLeaf()==false)
-    {
-      octreeele = octreeele->ReturnChildContainingPoint(x);
-
-      if(octreeele==Teuchos::null)
-      {
-        dserror("Child is nullpointer");
-      }
-    }
-
-    // now get closest point in leaf
-    octreeele->SearchClosestNodeInLeaf(
-        x,
-        idofclosestpoint,
-        distofclosestpoint,
-        tol_,
-        searchsecond);
-  }
-
-  return nodeisinbox;
-}// NodeMatchingOctree::SearchClosestNodeOnThisProc
+  return;
+} // NodeMatchingOctree::NodeMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -829,47 +847,463 @@ DRT::UTILS::NodeMatchingOctree::~NodeMatchingOctree()
   return;
 }// NodeMatchingOctree::~NodeMatchingOctree
 
-
-DRT::UTILS::OctreeElement::OctreeElement(
-  const DRT::Discretization&       actdis,
-  std::vector <int> &              nodeidstoadd,
-  Epetra_SerialDenseMatrix&        boundingboxtoadd,
-  int                              layer,
-  int                              maxnodeperleaf,
-  double                           tol
-  ):
-// call constructor for "nontrivial" objects
-  discret_(actdis)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(
+    const DRT::Discretization* dis,
+    const int id,
+    double* coord)
 {
+  DRT::Node* actnode = dis->gNode(id);
 
-  boundingbox_ = boundingboxtoadd;
-  layer_       = layer;
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=actnode->X()[idim];
+
+  return;
+} // NodeMatchingOctree::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//! calc unique coordinate of entity
+void  DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(
+    DRT::ParObject* entity,
+    double* coord)
+{
+  DRT::Node* actnode = dynamic_cast<DRT::Node*>(entity);
+  if (actnode==NULL)
+    dserror("dynamic_cast failed");
+
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=actnode->X()[idim];
+
+  return;
+} // NodeMatchingOctree::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::NodeMatchingOctree::CheckHaveEntity(
+    const DRT::Discretization* dis,
+    const int id)
+{
+  return dis->HaveGlobalNode(id);
+} // NodeMatchingOctree::CheckHaveEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::NodeMatchingOctree::CheckEntityOwner(
+    const DRT::Discretization* dis,
+    const int id)
+{
+  return (dis->gNode(id)->Owner() == dis->Comm().MyPID());
+} // NodeMatchingOctree::CheckEntityOwner
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::NodeMatchingOctree::PackEntity(
+    PackBuffer& data,
+    const DRT::Discretization* dis,
+    const int id)
+{
+  // get the slavenode
+  DRT::Node* actnode = dis->gNode(id);
+  // Add node to list of nodes which will be sent to the next proc
+  DRT::ParObject::AddtoPack(data,actnode);
+
+  return;
+} // NodeMatchingOctree::PackEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::NodeMatchingOctree::UnPackEntity(
+    std::vector<char>::size_type& index,
+    std::vector<char>& rblockofnodes,
+    std::vector<char>& data)
+{
+  DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
+  return;
+} // NodeMatchingOctree::UnPackEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o)
+{
+  // cast ParObject to Node
+  DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
+  if (actnode==NULL)
+    dserror("unpack of invalid data");
+
+  return actnode->Id();
+} // NodeMatchingOctree::CheckValidEntityType
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::OctreeElement>
+DRT::UTILS::NodeMatchingOctree::CreateOctreeElement(
+    std::vector <int> &              nodeidstoadd,
+    Epetra_SerialDenseMatrix&        boundingboxtoadd,
+    int                              layer)
+{
+  Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement =
+      Teuchos::rcp(new OctreeNodalElement());
+
+  newtreeelement->Init(
+      *discret_,
+      nodeidstoadd,
+      boundingboxtoadd,
+      layer,
+      maxtreenodesperleaf_,
+      tol_);
+
+  newtreeelement->Setup();
+
+  return newtreeelement;
+}// NodeMatchingOctree::CreateOctreeElement
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::ElementMatchingOctree::ElementMatchingOctree() :
+  MatchingOctree()
+{
+  return;
+} // ElementMatchingOctree::ElementMatchingOctree
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::ElementMatchingOctree::~ElementMatchingOctree()
+{
+  return;
+}// ElementMatchingOctree::~ElementMatchingOctree
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(
+    const DRT::Discretization* dis,
+    const int id,
+    double* coord)
+{
+  DRT::Element* actele = dis->gElement(id);
+
+  const int numnode = actele->NumNode();
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=0.0;
+
+  for(int node=0;node<numnode;node++)
+    for(int idim=0;idim<dim;idim++)
+      coord[idim]+=(actele->Nodes())[node]->X()[idim];
+
+  return;
+} // ElementMatchingOctree::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void  DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(
+    DRT::ParObject* entity,
+    double* coord)
+{
+  DRT::Element* actele = dynamic_cast<DRT::Element*>(entity);
+  if (actele==NULL)
+    dserror("dynamic_cast failed");
+
+  DRT::Node** nodes = actele->Nodes();
+  if(nodes==NULL)
+    dserror("could not get pointer to nodes");
+
+  const int numnode = actele->NumNode();
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=0.0;
+
+  for(int node=0;node<numnode;node++)
+    for(int idim=0;idim<dim;idim++)
+      coord[idim]+=(nodes[node]->X())[idim];
+
+  return;
+} // ElementMatchingOctree::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::ElementMatchingOctree::CheckHaveEntity(
+    const DRT::Discretization* dis,
+    const int id)
+{
+  return dis->HaveGlobalElement(id);
+} // ElementMatchingOctree::CheckHaveEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::ElementMatchingOctree::CheckEntityOwner(
+    const DRT::Discretization* dis,
+    const int id)
+{
+  return (dis->gElement(id)->Owner() == dis->Comm().MyPID());
+} // ElementMatchingOctree::CheckHaveEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::ElementMatchingOctree::PackEntity(
+    PackBuffer& data,
+    const DRT::Discretization* dis,
+    const int id)
+{
+  // get the slavenode
+  DRT::Element* actele = dis->gElement(id);
+  DRT::Node** nodes = actele->Nodes();
+  // Add node to list of nodes which will be sent to the next proc
+  DRT::ParObject::AddtoPack(data,actele->NumNode());
+  DRT::ParObject::AddtoPack(data,actele);
+  for(int node=0;node<actele->NumNode();node++)
+    DRT::ParObject::AddtoPack(data,nodes[node]);
+
+  return;
+} // ElementMatchingOctree::PackEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::ElementMatchingOctree::UnPackEntity(
+    std::vector<char>::size_type& index,
+    std::vector<char>& rblockofnodes,
+    std::vector<char>& data)
+{
+  nodes_.clear();
+  int numnode = DRT::ParObject::ExtractInt(index,rblockofnodes);
+  DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
+
+  for(int node=0;node<numnode;node++)
+  {
+    std::vector<char> nodedata;
+    DRT::ParObject::ExtractfromPack(index,rblockofnodes,nodedata);
+    Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(nodedata));
+    Teuchos::RCP<DRT::Node> actnode = Teuchos::rcp_dynamic_cast<DRT::Node >(o);
+    if(actnode==Teuchos::null)
+      dserror("cast from ParObject to Node failed");
+    nodes_.insert(std::pair<int,Teuchos::RCP<DRT::Node> >(actnode->Id(),actnode));
+  }
+
+  return;
+} // ElementMatchingOctree::UnPackEntity
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::ElementMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o)
+{
+  // cast ParObject to element
+  DRT::Element* actele = dynamic_cast<DRT::Element*>(o.get());
+  if (actele==NULL)
+    dserror("unpack of invalid data");
+
+  // set nodal pointers for this element
+  actele->BuildNodalPointers(nodes_);
+
+  return actele->Id();
+} // ElementMatchingOctree::CheckValidEntityType
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::OctreeElement>
+DRT::UTILS::ElementMatchingOctree::CreateOctreeElement(
+    std::vector <int> &              nodeidstoadd,
+    Epetra_SerialDenseMatrix&        boundingboxtoadd,
+    int                              layer)
+{
+  Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement =
+      Teuchos::rcp(new OctreeElementElement());
+
+  newtreeelement->Init(
+      *discret_,
+      nodeidstoadd,
+      boundingboxtoadd,
+      layer,
+      maxtreenodesperleaf_,
+      tol_);
+
+  newtreeelement->Setup();
+
+  return newtreeelement;
+}// ElementMatchingOctree::CreateOctreeElement
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::OctreeNodalElement::OctreeNodalElement() :
+  OctreeElement()
+{
+  return;
+} //OctreeElement()
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::OctreeNodalElement::CalcPointCoordinate(
+    const DRT::Discretization* dis,
+    const int id,
+    double* coord)
+{
+  DRT::Node* actnode = dis->gNode(id);
+
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=actnode->X()[idim];
+
+  return;
+} // OctreeNodalElement::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::OctreeElement>
+DRT::UTILS::OctreeNodalElement::CreateOctreeElement(
+    std::vector <int> &              nodeidstoadd,
+    Epetra_SerialDenseMatrix&        boundingboxtoadd,
+    int                              layer)
+{
+  Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement =
+      Teuchos::rcp(new OctreeNodalElement());
+
+  newtreeelement->Init(
+      *discret_,
+      nodeidstoadd,
+      boundingboxtoadd,
+      layer,
+      maxtreenodesperleaf_,
+      tol_);
+
+  newtreeelement->Setup();
+
+  return newtreeelement;
+}// OctreeNodalElement::CreateOctreeElement
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::OctreeElementElement::OctreeElementElement() :
+  OctreeElement()
+{
+  return;
+}// OctreeElementElement::OctreeElementElement
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::OctreeElementElement::CalcPointCoordinate(
+    const DRT::Discretization* dis,
+    const int id,
+    double* coord)
+{
+  DRT::Element* actele = dis->gElement(id);
+
+  const int numnode = actele->NumNode();
+  const int dim = 3;
+
+  for(int idim=0;idim<dim;idim++)
+    coord[idim]=0.0;
+
+  for(int node=0;node<numnode;node++)
+    for(int idim=0;idim<dim;idim++)
+      coord[idim]+=(actele->Nodes())[node]->X()[idim];
+
+  return;
+} // OctreeElementElement::CalcPointCoordinate
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::OctreeElement>
+DRT::UTILS::OctreeElementElement::CreateOctreeElement(
+    std::vector <int> &              nodeidstoadd,
+    Epetra_SerialDenseMatrix&        boundingboxtoadd,
+    int                              layer)
+{
+  Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement =
+      Teuchos::rcp(new OctreeElementElement());
+
+  newtreeelement->Init(
+      *discret_,
+      nodeidstoadd,
+      boundingboxtoadd,
+      layer,
+      maxtreenodesperleaf_,
+      tol_);
+
+  newtreeelement->Setup();
+
+  return newtreeelement;
+}// OctreeElementElement::CreateOctreeElement
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::OctreeElement::OctreeElement() :
+  discret_(NULL),
+  layer_(-1),
+  maxtreenodesperleaf_(-1),
+  tol_(-1.0),
+  issetup_(false),
+  isinit_(false)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::OctreeElement::Init(
+    const DRT::Discretization&       actdis,
+    std::vector <int>&               nodeidstoadd,
+    const Epetra_SerialDenseMatrix&  boundingboxtoadd,
+    const int                        layer,
+    const int                        maxnodeperleaf,
+    const double                     tol)
+{
+  SetIsSetup(false);
+
+  discret_=&actdis;
+  boundingbox_=boundingboxtoadd;
+  nodeids_=nodeidstoadd;
+  layer_=layer;
+  maxtreenodesperleaf_=maxnodeperleaf;
+  tol_=tol;
+
+  SetIsInit(true);
+  return 0;
+} // OctreeElement::Init
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::UTILS::OctreeElement::Setup()
+{
+  CheckIsInit();
 
   if(layer_>200)
   {
     dserror("max.depth of octree: 200. Can't append further children\n");
   }
 
-  int numnodestoadd = nodeidstoadd.size();
+  int numnodestoadd = nodeids_.size();
   // if number of slavenodes on this proc is too large split the element
-  if (numnodestoadd>maxnodeperleaf)
+  if (numnodestoadd>maxtreenodesperleaf_)
   {
     // mean coordinate value in direction of the longest edge
     double mean[3];
+    double pointcoord[3];
 
     for(int dim=0;dim<3;dim++)
     {
-      mean[dim]=0;
+      mean[dim]=0.0;
+      pointcoord[dim]=0.0;
     }
 
     // calculate mean coordinate for all directions
     for(int locn=0;locn<numnodestoadd;locn++)
     {
-      DRT::Node* actnode = discret_.gNode(nodeidstoadd[locn]);
+      CalcPointCoordinate(discret_,nodeids_.at(locn),&pointcoord[0]);
 
       for(int dim=0;dim<3;dim++)
       {
-        mean[dim]+=actnode->X()[dim];
+        mean[dim]+=pointcoord[dim];
       }
     }
 
@@ -880,7 +1314,7 @@ DRT::UTILS::OctreeElement::OctreeElement(
 
     // direction specifies which side will be cut (the one with the largest
     // value of the mean distance to the "lower" boundary)
-    int    direction=0;
+    int direction=0;
 
 
     // the maximum distance of the mean value from the boundary of the box
@@ -973,58 +1407,105 @@ DRT::UTILS::OctreeElement::OctreeElement(
     //
 
 
-    childboundingbox1(direction,1)=wheretocut+tol;
-    childboundingbox2(direction,0)=wheretocut-tol;
+    childboundingbox1(direction,1)=wheretocut+tol_;
+    childboundingbox2(direction,0)=wheretocut-tol_;
 
     // distribute nodes to children
     std::vector <int> childnodeids1;
     std::vector <int> childnodeids2;
-    for(int locn=0;locn<(int)nodeidstoadd.size();locn++)
+    for(int locn=0;locn<(int)nodeids_.size();locn++)
     {
-      double coordinate=discret_.gNode(nodeidstoadd[locn])->X()[direction];
+      CalcPointCoordinate(discret_,nodeids_.at(locn),&pointcoord[0]);
 
       // node is in "lower" bounding box
-      if(coordinate<childboundingbox1(direction,1))
+      if(pointcoord[direction]<childboundingbox1(direction,1))
       {
-        childnodeids1.push_back(nodeidstoadd[locn]);
+        childnodeids1.push_back(nodeids_.at(locn));
       }
       // node is in "upper" bounding box
-      if(coordinate>childboundingbox2(direction,0))
+      if(pointcoord[direction]>childboundingbox2(direction,0))
       {
-        childnodeids2.push_back(nodeidstoadd[locn]);
+        childnodeids2.push_back(nodeids_.at(locn));
       }
     }
 
     // we do not need the full node id vector anymore --- it was distributed
     // to the children --> throw it away
-    nodeidstoadd.clear();
+    nodeids_.clear();
 
     // append children to parent
-    octreechild1_ = Teuchos::rcp(new OctreeElement(discret_,
-                                                         childnodeids1,
-                                                         childboundingbox1,
-                                                         layer_+1,
-                                                         maxnodeperleaf,
-                                                         tol));
-    octreechild2_ = Teuchos::rcp(new OctreeElement(discret_,
-                                                         childnodeids2,
-                                                         childboundingbox2,
-                                                         layer_+1,
-                                                         maxnodeperleaf,
-                                                         tol));
+    octreechild1_ = CreateOctreeElement(childnodeids1,childboundingbox1,layer_+1);
+
+    octreechild2_ = CreateOctreeElement(childnodeids2,childboundingbox2,layer_+1);
+
   } // end number of slavenodes on this proc is too large split the element
   else
   {
-    if ((int)nodeidstoadd.size() == 0)
+    if ((int)nodeids_.size() == 0)
     {
       dserror("Trying to create leaf with no nodes. Stop.");
     }
-
-    // we have a leave element
-    nodeids_     = nodeidstoadd;
   }
+
+  SetIsSetup(true);
+  return 0;
+} // OctreeElement::Setup
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
+  const std::vector <double> & x,
+  int             & idofclosestpoint,
+  double          & distofclosestpoint,
+  const double    & elesize,
+  bool              searchsecond
+  )
+{
+  CheckIsInit();
+  CheckIsSetup();
+
+  double thisdist;
+  std::vector <double> dx(3);
+  double pointcoord[3];
+
+  // the first node is the guess for the closest node
+  CalcPointCoordinate(discret_,nodeids_.at(0),&pointcoord[0]);
+  for (int dim=0;dim<3;dim++)
+  {
+    dx[dim]=pointcoord[dim]-x[dim];
+  }
+
+  distofclosestpoint = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
+  idofclosestpoint   = nodeids_.at(0);
+
+  // now loop the others and check whether they are better
+  for (int nn=1;nn<(int)nodeids_.size();nn++)
+  {
+    CalcPointCoordinate(discret_,nodeids_.at(nn),&pointcoord[0]);
+
+    for (int dim=0;dim<3;dim++)
+    {
+      dx[dim]=pointcoord[dim]-x[dim];
+    }
+    thisdist = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
+
+    if (thisdist < (distofclosestpoint - 1e-02*elesize))
+    {
+      distofclosestpoint = thisdist;
+      idofclosestpoint = nodeids_.at(nn);
+    }
+    else
+    {
+      if ((abs(thisdist - distofclosestpoint) < 1e-02*elesize) & (searchsecond == true))
+      {
+        distofclosestpoint = thisdist;
+        idofclosestpoint = nodeids_.at(nn);
+      }
+    }
+  }
+
   return;
-} //OctreeElement()
+}// OctreeElement::SearchClosestNodeInLeaf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1032,6 +1513,9 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
   const std::vector <double> &x
   )
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   bool nodeinboundingbox=true;
 
   for (int dim=0;dim<3;dim++)
@@ -1048,10 +1532,16 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
   return nodeinboundingbox;
 } //OctreeElement::IsPointInBoundingBox
 
-Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::OctreeElement>
+DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
   const std::vector <double> &x
   )
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   Teuchos::RCP<OctreeElement> nextelement;
 
   if (this->octreechild1_ == Teuchos::null || this->octreechild2_ == Teuchos::null)
@@ -1099,62 +1589,11 @@ void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
 
   for (int nn=0; nn<(int)nodeids_.size(); ++nn)
   {
-    os << nodeids_[nn] << " ";
+    os << nodeids_.at(nn) << " ";
   }
   os << std::endl;
   return;
 } // OctreeElement::Print(ostream& os)
-
-void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
-  const std::vector <double> & x,
-  int             & idofclosestpoint,
-  double          & distofclosestpoint,
-  const double    & elesize,
-  bool              searchsecond
-  )
-{
-  double          thisdist;
-  std::vector <double> dx(3);
-
-  // the first node is the guess for the closest node
-  DRT::Node* actnode = discret_.gNode(this->nodeids_[0]);
-  for (int dim=0;dim<3;dim++)
-  {
-    dx[dim]=actnode->X()[dim]-x[dim];
-  }
-
-  distofclosestpoint = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
-  idofclosestpoint   = this->nodeids_[0];
-
-  // now loop the others and check whether they are better
-  for (int nn=1;nn<(int)this->nodeids_.size();nn++)
-  {
-    actnode = discret_.gNode(this->nodeids_[nn]);
-
-    for (int dim=0;dim<3;dim++)
-    {
-      dx[dim]=actnode->X()[dim]-x[dim];
-    }
-    thisdist = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
-
-    if (thisdist < (distofclosestpoint - 1e-02*elesize))
-    {
-      distofclosestpoint = thisdist;
-      idofclosestpoint = this->nodeids_[nn];
-    }
-    else
-    {
-      if ((abs(thisdist - distofclosestpoint) < 1e-02*elesize) & (searchsecond == true))
-      {
-        distofclosestpoint = thisdist;
-        idofclosestpoint = this->nodeids_[nn];
-      }
-    }
-  }
-
-
-  return;
-}// OctreeElement::SearchClosestNodeInLeaf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

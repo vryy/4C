@@ -91,11 +91,16 @@ void ssi_drt()
 
   if (redistribute == (int)SSI::match)
   {
-    DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
-        *problem->GetDis("structure"),
-        *problem->GetDis("scatra")
-        );
-//    DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("scatra"));
+    // first we bin the scatra discretization
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+    dis.push_back(problem->GetDis("scatra"));
+    DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+
+    // now we redistribute the structure dis to match the scatra dis
+    DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
+        *problem->GetDis("scatra"),
+        *problem->GetDis("structure")
+    );
   }
   else if(redistribute == (int)SSI::binning)
   {

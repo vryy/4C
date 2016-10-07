@@ -57,7 +57,9 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
 
   // initialize search tree
-  DRT::UTILS::NodeMatchingOctree tree(*sourcedis_, masternodes);
+  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  tree.Init(*sourcedis_,masternodes,150);
+  tree.Setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
@@ -116,12 +118,13 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
 
   // initialize search tree
-  DRT::UTILS::NodeMatchingOctree tree2(*sourcedis_, masternodes);
+  tree.Init(*sourcedis_,masternodes,150);
+  tree.Setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
   coupling.clear();
-  tree2.FindMatch(dis, slavenodes, coupling);
+  tree.FindMatch(dis, slavenodes, coupling);
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())

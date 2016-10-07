@@ -344,10 +344,10 @@ void CellMigrationControlAlgorithm()
 
     if(redistribute)
     {
-      DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+      DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
           *problem->GetDis("cell"),
           *problem->GetDis("cellscatra"));
-      DRT::UTILS::MatchDistributionOfMatchingDiscretizations(
+      DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
           *problem->GetDis("cell"),
           *problem->GetDis("ale"));
     }
