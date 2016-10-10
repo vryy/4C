@@ -96,6 +96,12 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
+  // check if vec is a null pointer
+  if (vec == Teuchos::null)
+  {
+    dserror("vec is a null pointer. You need to allocate memory before calling this function");
+  }
+
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
