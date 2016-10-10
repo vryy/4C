@@ -279,7 +279,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 {
   // match master and slave nodes using octree
   DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
-  tree.Init(masterdis,masternodes,150,1e-08);
+  tree.Init(masterdis,masternodes,150,1e-06);
   tree.Setup();
 
   std::map<int,std::pair<int,double> > coupling;
