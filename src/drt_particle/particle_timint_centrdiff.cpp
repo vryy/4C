@@ -102,6 +102,8 @@ void PARTICLE::TimIntCentrDiff::Init()
   }
 
   // simple check if the expansion speed is too elevated
+  std::cout << "Warning! You have erased the expansion check!\n";
+  /*
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
   if (extParticleMat != NULL)
   {
@@ -134,6 +136,7 @@ void PARTICLE::TimIntCentrDiff::Init()
     if (v_max_thermo > 0.01 * v_max)
       dserror("WARNING! The expansion speed of the particle radii is bigger that 1\% of MAX_VELOCITY. Dismembered particles can explode");
   }
+  */
   return;
 }
 
@@ -151,6 +154,205 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     ComputeThermodynamics();
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/* integrate step - thermodynamics*/
+void PARTICLE::TimIntCentrDiff::ComputeThermodynamics1()
+{
+  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+
+  // extract the material properties
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  const double specEnthalpyST = extParticleMat->SpecEnthalpyST();
+  const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
+  const double CPS = extParticleMat->CPS_;
+  const double inv_CPS = 1/CPS;
+  const double CPL = extParticleMat->CPL_;
+  const double inv_CPL = 1/CPL;
+  const double latentHeatSL = extParticleMat->latentHeatSL_;
+  const double thermalExpansionS = extParticleMat->thermalExpansionS_;
+  const double thermalExpansionL = extParticleMat->thermalExpansionL_;
+  const double thermalExpansionSL = extParticleMat->thermalExpansionSL_;
+
+  // extract the map
+  const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->Bins2HeatSources();
+
+  // cycle over the map
+  std::map<int, std::list<Teuchos::RCP<HeatSource> > >::const_iterator i_bin;
+  for (i_bin = bins2heatSources.begin(); i_bin != bins2heatSources.end(); ++i_bin)
+  {
+    // extract the current bin
+    DRT::Element* currbin = discret_->gElement(i_bin->first);
+
+    if(currbin->Owner() != myrank_)
+      dserror("trying to eval a ghost bin :-(");
+
+    // find the nodes of the bin
+    DRT::Node** particles = currbin->Nodes();
+
+    // cycle over the heat sources
+    std::list<Teuchos::RCP<HeatSource> >::const_iterator i_HS;
+    for (i_HS = i_bin->second.begin(); i_HS != i_bin->second.end(); i_HS++)
+    {
+      // extract vertexes
+      const double* minVerZone = &(*i_HS)->minVerZone_[0];
+      const double* maxVerZone = &(*i_HS)->maxVerZone_[0];
+      const double QDot = (*i_HS)->QDot_;
+
+      // cycle over the nodes of the bin
+      const int numNode = currbin->NumNode();
+      for(int i_particle=0; i_particle < numNode; i_particle++)
+      {
+        // position of the current particle
+        DRT::Node* activeNode = particles[i_particle];
+
+        int gidDof = discret_->Dof(activeNode,0);
+        int lidDof = disn_->Map().LID(gidDof);
+
+        if (minVerZone[0]<=(*disn_)[lidDof  ] &&
+            minVerZone[1]<=(*disn_)[lidDof+1] &&
+            minVerZone[2]<=(*disn_)[lidDof+2] &&
+            maxVerZone[0]>=(*disn_)[lidDof  ] &&
+            maxVerZone[1]>=(*disn_)[lidDof+1] &&
+            maxVerZone[2]>=(*disn_)[lidDof+2])
+        {
+          // find the node position
+          const int gidNode = activeNode->Id();
+          const int lidNode = discret_->NodeRowMap()->LID(gidNode);
+          if(lidNode < 0)
+            dserror("lidNode is not on this proc ");
+          // update specEnthalpy
+          (*specEnthalpyn_)[lidNode] = (QDot * dt)/(*densityn_)[lidNode];
+        }
+      }
+    }
+  }
+
+  // update the other state vectors (\rho and R)
+  for (int lidNode = 0; lidNode < discret_->NumMyRowNodes(); ++lidNode)
+  {
+    const double oldSpecEnthalpy = (*(*specEnthalpy_)(0))[lidNode];
+    const double newSpecEnthalpy = (*specEnthalpyn_)[lidNode];
+    // skip in case the specEnthalpy did not change
+    if (newSpecEnthalpy != oldSpecEnthalpy)
+    {
+      // compute the current volume
+      double volume = Radius2Volume((*radiusn_)[lidNode]);
+      // specEnthalpy difference
+      double deltaSpecEnthalpy = newSpecEnthalpy - oldSpecEnthalpy;
+
+      // --- compute the new volume --- //
+
+      // WAS it solid?
+      if (oldSpecEnthalpy <= specEnthalpyST)
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in solid state
+          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= EffExpCoeff(thermalExpansionSL,latentHeatSL);
+          deltaSpecEnthalpy -= latentHeatSL;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
+        }
+        // it IS transition state
+        else
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in solid state
+          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+        }
+      }
+      // WAS it liquid?
+      else if (oldSpecEnthalpy >= specEnthalpyTL)
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in the transition state
+          volume *= EffExpCoeff(thermalExpansionSL,-latentHeatSL);
+          deltaSpecEnthalpy -= -latentHeatSL;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
+        }
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
+        // it IS transition state
+        else
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+        }
+      }
+      // it WAS in transition state
+      else
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in transition state
+          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
+        }
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in transition state
+          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpyUpToTransition);
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in liquid state
+          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
+        }
+        // it IS transition state
+        else
+          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+      }
+
+      // --- compute the new volume --- //
+
+      // updates
+      (*radiusn_)[lidNode] = Volume2Radius(volume);
+      (*densityn_)[lidNode] = (*mass_)[lidNode]/volume;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -411,7 +613,7 @@ int PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
 
 /*----------------------------------------------------------------------*/
 /* integrate step - displacement related physics*/
-int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
+void PARTICLE::TimIntCentrDiff::ComputeDisplacements()
 {
   const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
   const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
@@ -462,8 +664,6 @@ int PARTICLE::TimIntCentrDiff::ComputeDisplacements()
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
-
-  return 0;
 }
 
 

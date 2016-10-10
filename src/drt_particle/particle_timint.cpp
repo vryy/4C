@@ -82,6 +82,7 @@ PARTICLE::TimInt::TimInt
   radius_(Teuchos::null),
   density_(Teuchos::null),
   temperature_(Teuchos::null),
+  specEnthalpy_(Teuchos::null),
 
   disn_(Teuchos::null),
   veln_(Teuchos::null),
@@ -91,6 +92,7 @@ PARTICLE::TimInt::TimInt
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
   temperaturen_(Teuchos::null),
+  specEnthalpyn_(Teuchos::null),
 
   fifc_(Teuchos::null),
   orient_(Teuchos::null),
@@ -150,6 +152,7 @@ void PARTICLE::TimInt::Init()
   {
     density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    specEnthalpy_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     latentHeat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     break;
   }
@@ -189,10 +192,37 @@ void PARTICLE::TimInt::Init()
     radiusn_  = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
     densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
+    specEnthalpyn_ = Teuchos::rcp(new Epetra_Vector(*(*specEnthalpy_)(0)));
     break;
   }
   default : //do nothing
     break;
+  }
+
+  // decide whether there is particle contact
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  {
+
+    // allocate vectors
+    angVel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    angAcc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+
+
+
+    // copy the vectors to the (n+1) state vectors
+    angVeln_ = LINALG::CreateVector(*DofRowMapView(),true);
+    angAccn_ = LINALG::CreateVector(*DofRowMapView(),true);
+
+    if(writeorientation_)
+    {
+      // initialize orientation-vector for visualization
+      orient_ = LINALG::CreateVector(*DofRowMapView(),true);
+      InitializeOrientVector();
+    }
+
+    // fill vectors
+    ComputeInertia();
   }
 }
 
@@ -245,7 +275,7 @@ void PARTICLE::TimInt::SetInitialFields()
           dserror("negative initial radius");
 
         // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = initDensity * 4.0/3.0 * M_PI * r_p * r_p * r_p;
+        (*mass_)[lid] = initDensity * Radius2Volume(r_p);
       }
     }
   }
@@ -284,9 +314,8 @@ void PARTICLE::TimInt::SetInitialFields()
 
       // set particle radius to random value
       (*(*radius_)(0))[lid] = random_radius;
-
       // recompute particle mass
-      (*mass_)[lid] = initDensity*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
+      (*mass_)[lid] = initDensity * Radius2Volume(random_radius);
     }
   }
 
@@ -337,12 +366,20 @@ void PARTICLE::TimInt::SetInitialFields()
 
     // initialize temperature of particles
     const double initTemperature = extParticleMat->initTemperature_;
+    const double transitionTemperatureSL = extParticleMat->transitionTemperatureSL_;
     (*temperature_)(0)->PutScalar(initTemperature);
 
-    if (initTemperature > extParticleMat->transitionTemperatureSL_)
+    if (initTemperature > transitionTemperatureSL)
+    {
       latentHeat_->PutScalar(extParticleMat->latentHeatSL_);
-    else if (initTemperature < extParticleMat->transitionTemperatureSL_)
+      const double tempDiff = initTemperature - transitionTemperatureSL;
+      (*specEnthalpy_)(0)->PutScalar(extParticleMat->SpecEnthalpyTL() + tempDiff * extParticleMat->CPL_);
+    }
+    else if (initTemperature < transitionTemperatureSL)
+    {
       latentHeat_->PutScalar(0);
+      (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
+    }
     else
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
   }
@@ -482,6 +519,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radius_,true);
   UpdateStateVectorMap(density_,true);
   UpdateStateVectorMap(temperature_,true);
+  UpdateStateVectorMap(specEnthalpy_,true);
 
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
@@ -491,6 +529,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
   UpdateStateVectorMap(temperaturen_,true);
+  UpdateStateVectorMap(specEnthalpyn_,true);
 
   UpdateStateVectorMap(fifc_);
   UpdateStateVectorMap(orient_);
@@ -563,6 +602,9 @@ void PARTICLE::TimInt::ReadRestartState()
     // read temperature
     reader.ReadVector(temperaturen_, "temperature");
     temperature_->UpdateSteps(*temperaturen_);
+    // read specEnthalpy
+    reader.ReadVector(specEnthalpyn_, "specEnthalpy");
+    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
     break;
   }
   default :
@@ -668,6 +710,7 @@ void PARTICLE::TimInt::OutputRestart
   {
     output_->WriteVector("density", (*density_)(0));
     output_->WriteVector("temperature", (*temperature_)(0));
+    output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0));
     break;
   }
   default : // do nothing
@@ -740,6 +783,7 @@ void PARTICLE::TimInt::OutputState
   {
     output_->WriteVector("density", (*density_)(0), output_->nodevector);
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
+    output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0), output_->nodevector);
     break;
   }
   default : //do nothing
@@ -945,4 +989,44 @@ void PARTICLE::TimInt::ComputeInertia()
   // inertia-vector -> sphere: I = 2/5 * m * r^2
   inertia_->Multiply(1.0,*radius,*radius,0);
   inertia_->Multiply(0.4,*mass_,*inertia_,0);
+}
+
+/*----------------------------------------------------------------------*/
+/* compute temperature from the specEnthalpy  */
+void PARTICLE::TimInt::ComputeTemperature()
+{
+  //extract the interesting parameters
+  const double specEnthalpyST = particle_algorithm_->ExtParticleMat()->SpecEnthalpyST();
+  const double specEnthalpyTL = particle_algorithm_->ExtParticleMat()->SpecEnthalpyTL();
+  const double transitionTemperatureSL = particle_algorithm_->ExtParticleMat()->transitionTemperatureSL_;
+  const double CPS = particle_algorithm_->ExtParticleMat()->CPS_;
+  const double CPL = particle_algorithm_->ExtParticleMat()->CPL_;
+
+  for (int lidNode = 0; lidNode < discret_->NodeRowMap()->NumMyElements(); ++lidNode)
+  {
+    // extract the nodes values
+    const double &currNodeSpecEnthalpy = (*(*specEnthalpy_)(0))[lidNode];
+    double &currNodeTemperature = (*(*temperature_)(0))[lidNode];
+
+    // compute temperature of the node
+    if (currNodeSpecEnthalpy < specEnthalpyST)
+      currNodeTemperature = currNodeSpecEnthalpy/CPS;
+    else if (currNodeSpecEnthalpy > specEnthalpyTL)
+      currNodeTemperature = transitionTemperatureSL + (currNodeSpecEnthalpy - specEnthalpyTL)/CPL;
+    else
+      currNodeTemperature = transitionTemperatureSL;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* initialization of vector for visualization of the particle orientation */
+void PARTICLE::TimInt::InitializeOrientVector()
+{
+  int numrownodes = discret_->NodeRowMap()->NumMyElements();
+  for(int i=0; i<numrownodes; ++i)
+  {
+    (*orient_)[i*3] = 0.0;
+    (*orient_)[i*3+1] = 0.0;
+    (*orient_)[i*3+2] = 1.0;
+  }
 }

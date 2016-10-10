@@ -163,6 +163,9 @@ namespace ADAPTER
     //! Read-only temperatures \f$T_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
 
+    //! Read-only specific enthalpies \f$H_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() = 0;
+
 
 
     //! Read-only displacements \f$D_{n+1}\f$
@@ -188,6 +191,9 @@ namespace ADAPTER
 
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
+
+    //! Read-only specific enthalpies \f$H_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> specEnthalpynp() = 0;
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
@@ -240,6 +246,9 @@ namespace ADAPTER
 
     //! Extract temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
+
+    //! Extract specific enthalpies \f$H_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp() = 0;
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;

@@ -52,31 +52,6 @@ void PARTICLE::TimIntExpl::Init()
 {
   // call base class init
   TimInt::Init();
-
-  // decide whether there is particle contact
-  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
-  {
-    // allocate vectors
-    angVel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-    angAcc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-
-    angVeln_ = LINALG::CreateVector(*DofRowMapView(),true);
-    angAccn_ = LINALG::CreateVector(*DofRowMapView(),true);
-
-    if(writeorientation_)
-    {
-      // initialize orientation-vector for visualization
-      orient_ = LINALG::CreateVector(*DofRowMapView(),true);
-      InitializeOrientVector();
-    }
-
-    inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-
-    // compute inertia
-    ComputeInertia();
-  }
-
-  return;
 }
 
 
@@ -105,6 +80,8 @@ void PARTICLE::TimIntExpl::UpdateStepState()
     density_->UpdateSteps(*densityn_);
     //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
     temperature_->UpdateSteps(*temperaturen_);
+    //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
+    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
     break;
   }
   default : // do nothing
@@ -144,23 +121,6 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/* initialization of vector for visualization of the particle orientation */
-void PARTICLE::TimIntExpl::InitializeOrientVector()
-{
-  int numrownodes = discret_->NodeRowMap()->NumMyElements();
-  for(int i=0; i<numrownodes; ++i)
-  {
-    (*orient_)[i*3] = 0.0;
-    (*orient_)[i*3+1] = 0.0;
-    (*orient_)[i*3+2] = 1.0;
-  }
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*/
 /* update of vector for visualization of the particle orientation */

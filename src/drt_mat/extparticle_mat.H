@@ -27,31 +27,38 @@ namespace MAT
       ExtParticleMat(
             Teuchos::RCP<MAT::PAR::Material> matdata
             );
+      //! destructor
+      virtual ~ExtParticleMat(){return;};
 
-        //! destructor
-        virtual ~ExtParticleMat(){return;};
+      //! return the threshold specific enthalpy (solid <-> transition)
+      virtual double SpecEnthalpyST() const { return transitionTemperatureSL_ * CPS_; }
 
-        //! create instance of particle additive manufacturing material
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      //! return the threshold specific enthalpy (transition <-> liquid)
+      virtual double SpecEnthalpyTL() const { return SpecEnthalpyST() + latentHeatSL_; }
 
-        /// dismembering radius
-        const double dismemberRadius_;
-        /// initial temperature
-        const double initTemperature_;
-        /// specific heat - constant pressure - solid state
-        const double CPS_;
-        /// specific heat - constant pressure - liquid state
-        const double CPL_;
-        /// specific latent heat - solid <-> liquid
-        const double latentHeatSL_;
-        /// transition temperature - solid <-> liquid
-        const double transitionTemperatureSL_;
-        /// volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
-        const double thermalExpansionS_;
-        /// volumetric thermal expansion coefficient - liquid state
-        const double thermalExpansionL_;
-        /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
-        const double thermalExpansionSL_;
+      //! create instance of particle additive manufacturing material
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// dismembering radius
+      const double dismemberRadius_;
+      /// initial temperature
+      const double initTemperature_;
+      /// specific heat - constant pressure - solid state
+      const double CPS_;
+      /// specific heat - constant pressure - liquid state
+      const double CPL_;
+      /// specific latent heat - solid <-> liquid
+      const double latentHeatSL_;
+      /// transition temperature - solid <-> liquid
+      const double transitionTemperatureSL_;
+      /// volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
+      const double thermalExpansionS_;
+      /// volumetric thermal expansion coefficient - liquid state
+      const double thermalExpansionL_;
+      /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
+      const double thermalExpansionSL_;
+
+
 
     };  // class MAT::PAR::ExtParticleMat
   } // namespace PAR

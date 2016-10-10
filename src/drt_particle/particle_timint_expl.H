@@ -3,8 +3,10 @@
 \file particle_timint_expl.H
 \brief Particle time integration with explicit time integration
 
+\level 3
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -85,9 +87,6 @@ namespace PARTICLE
 
     //! states are given to the collision handler
     virtual void SetStatesForCollision();
-
-    //! initialization of vector for visualization of the particle orientation
-    virtual void InitializeOrientVector();
 
     //! update of vector for visualization of the particle orientation
     virtual void RotateOrientVector(double dt);

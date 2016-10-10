@@ -29,6 +29,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 
 // forward declarations
@@ -274,6 +275,9 @@ namespace PARTICLE
     //! Read-only temperatures \f$T_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
 
+    //! Read-only specific enthalpies \f$H_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() { return (*specEnthalpy_)(0); }
+
 
 
     //! Read-only displacements \f$D_{n+1}\f$
@@ -299,6 +303,9 @@ namespace PARTICLE
 
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
+
+    //! Read-only specific enthalpies \f$H_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> specEnthalpynp() { return specEnthalpyn_; }
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
@@ -351,6 +358,9 @@ namespace PARTICLE
 
     //! Extract temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
+
+    //! Extract specific enthalpies \f$H_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
@@ -407,15 +417,29 @@ namespace PARTICLE
     //! @name General purpose algorithm members
     //@{
 
+    /* Update TimIntMStep state vector with the new map from discret_*/
+    virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
+
+    /* Update state vector with the new map from discret_*/
+    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
+
+    /* Radius -> volume */
+    double Radius2Volume(double radius) { return (4.0 / 3.0) * M_PI * radius * radius * radius; };
+
+    /* Volume -> radius */
+    double Volume2Radius(double volume) { return std::pow((3.0 / 4.0) * M_1_PI * volume, 1.0 / 3.0); };
+
     /* Compute the inertia vector
      * The vector should be already initialized
      * The most updated radius is used (radius_ vs radiusn_)
      * inertia-vector -> sphere: I = 2/5 * m * r^2 */
     virtual void ComputeInertia();
-    /* Update TimIntMStep state vector with the new map from discret_*/
-    virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
-    /* Update state vector with the new map from discret_*/
-    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
+
+    /* Compute the temperature from the specEnthalpy */
+    virtual void ComputeTemperature();
+
+    //! initialization of vector for visualization of the particle orientation
+    virtual void InitializeOrientVector();
 
     //@}
 
@@ -475,12 +499,14 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angVel_;
     //! Angular-accelerations \f${angA}_{n}, angA_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angAcc_;
-    //! Radii \f$R_{n+1}\f$ at \f$R_{n+1}\f$
+    //! Radii \f$R_{n}, R_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
-    //! Densities \f${\rho}_{n+1}\f$ at \f$\rho_{n+1}\f$
+    //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
-    //! Temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    //! Temperatures \f$T_{n}, T_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
+    //! Specific enthalpies \f$H_{n}, H_{n-1}, ...\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > specEnthalpy_;
 
     //! Displacements \f${D}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -493,11 +519,13 @@ namespace PARTICLE
     //! Angular-acceleration \f${angA}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> angAccn_;
     //! Radii \f$R_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>  radiusn_;
+    Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>  densityn_;
+    Teuchos::RCP<Epetra_Vector> densityn_;
     //! Temperatures \f${T}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>  temperaturen_;
+    Teuchos::RCP<Epetra_Vector> temperaturen_;
+    //! Specific Enthalpies \f${H}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> specEnthalpyn_;
 
 
     //! additional external forces
