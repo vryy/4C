@@ -622,7 +622,7 @@ E 13 - NUMDOF 3 ONOFF 1 1 1 STIFF 5000.0 5000.0 5000.0 VISCO 0.0 0.0 0.0 DISPLOF
  ----------------------------------DESIGN SURF IMPEDANCE CONDITIONS
 DSURF  1
 // fluid_outflow_all
-E 3 - 1 resistive R1 0.01 R2 0.01 C 0.01 TIMEPERIOD 0.03
+E 3 - 1 resistive R1 0.01 R2 0.01 C 0.01 TIMEPERIOD 0.03 CURVE -1
 --------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF  1
 // fluid_outflow_all

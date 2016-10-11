@@ -69,7 +69,11 @@ public:
   /*!
   \brief Calculate impedance tractions and add it to fluid residual and linearisation
   */
-  void AddImpedanceBCToResidualAndSysmat(const double dta, Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
+  void AddImpedanceBCToResidualAndSysmat(
+                       const double dta,
+                       const double time,
+                       Teuchos::RCP<Epetra_Vector>& residual,
+                       Teuchos::RCP<LINALG::SparseOperator>& sysmat );
 
   /*!
   \brief Wrap for time update of impedance conditions
@@ -158,6 +162,7 @@ protected:
       Teuchos::RCP<Epetra_Vector>& residual,
       Teuchos::RCP<LINALG::SparseOperator>& sysmat,
       const double dta,
+      const double time,
       const int condid );
 
   /*!
@@ -205,6 +210,9 @@ private:
 
   //! 'material' parameters required for artery tree
   const double R1_, R2_, C_;
+
+  //! curve number
+  const int curvenum_;
 
   //! traction vector for impedance bc
   Teuchos::RCP<Epetra_Vector> impedancetbc_;

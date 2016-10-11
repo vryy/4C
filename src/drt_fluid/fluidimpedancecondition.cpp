@@ -99,7 +99,11 @@ void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int
 /*----------------------------------------------------------------------*
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const double dta, Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat )
+void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(
+    const double dta,
+    const double time,
+    Teuchos::RCP<Epetra_Vector>& residual,
+    Teuchos::RCP<LINALG::SparseOperator>& sysmat )
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
 
@@ -108,7 +112,7 @@ void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const 
     //calc flux
     mapiter->second->FluidImpedanceBc::FlowRateCalculation(mapiter->first);
     //calc pressure and traction vector and appliy to fluid residual and sysmat
-    mapiter->second->FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(residual,sysmat, dta,mapiter->first);
+    mapiter->second->FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(residual, sysmat, dta, time, mapiter->first);
   }
   return;
 }
@@ -187,7 +191,8 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
     period_(impedancecond->GetDouble("TIMEPERIOD")),
     R1_(impedancecond->GetDouble("R1")),
     R2_(impedancecond->GetDouble("R2")),
-    C_(impedancecond->GetDouble("C"))
+    C_(impedancecond->GetDouble("C")),
+    curvenum_(impedancecond->GetInt("CURVE"))
 {
   if(myrank_ == 0)
   {
@@ -229,11 +234,12 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   // this is our check if it has already been initialized
 
   // some safety check
-  if ( not(treetype_ == "windkessel" or treetype_ == "resistive") )
+  if ( not(treetype_ == "windkessel" or treetype_ == "resistive" or treetype_ == "pressure_by_curve") )
     dserror("TYPE %s not supported!",treetype_.c_str());
 
   if(myrank_ == 0)
   {
+    std::cout<<"Impedance type: "<<treetype_.c_str()<<std::endl;
     std::cout<<"------------------------------------------------------"<<std::endl;
   }
 
@@ -321,6 +327,7 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
     Teuchos::RCP<Epetra_Vector>& residual,
     Teuchos::RCP<LINALG::SparseOperator>& sysmat,
     const double dta,
+    const double time,
     const int condid )
 {
   // ---------------------------------------------------------------------//
@@ -345,6 +352,11 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
     Q_np_fac = fac * ( C_*R1_*R2_ + dta*theta_*(R1_+R2_) );
 
     pressure = p_n_fac * P_n_ + Q_np_fac * Q_np_ + Q_n_fac * Q_n_;
+  }
+  else if(treetype_ == "pressure_by_curve")
+  {
+    pressure= DRT::Problem::Instance()->Curve(curvenum_-1).f(time);
+    Q_np_fac=0.0;
   }
   else
   {
@@ -455,7 +467,10 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
 {
   const double actpressure = P_np_;
 
-  if ( (fmod(time+1e-8,period_)-1e-8) < 1e-8*time) //iff we are at the beginning of a new period
+  // NOTE:: time may be a huge number (e.g. in case of multiscale in time AC-FS3I).
+  // Hence, the naive approach fmod(time+1e.8,period_)-1e-8 < 1e-8) is not suited.
+  // This one is unintuitive but gives same results and is save!
+  if ( fabs((fmod(time+period_/2,period_)-period_/2))/time < 1e-12 ) //iff we are at the beginning of a new period
   {
     WKrelerror_ = fabs((actpressure - P_0_)/actpressure);
     P_0_ = actpressure;
@@ -498,16 +513,13 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   stream3 <<"P_0"<<condnum;
   output.WriteDouble(stream3.str(), P_0_);
 
-  if ( treetype_ == "windkessel")
-  {
-    stream4 << "P_n" << condnum;
-    // write the input pressure at time step n
-    output.WriteDouble(stream4.str(), P_n_);
+  stream4 << "P_n" << condnum;
+  // write the input pressure at time step n
+  output.WriteDouble(stream4.str(), P_n_);
 
-    stream5 << "Q_n" << condnum;
-    // write the flux pressure at time step n
-    output.WriteDouble(stream5.str(), Q_n_);
-  }
+  stream5 << "Q_n" << condnum;
+  // write the flux pressure at time step n
+  output.WriteDouble(stream5.str(), Q_n_);
 
   return;
 }
@@ -531,6 +543,14 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   stream3 <<"P_0"<<condnum;
   P_0_ = reader.ReadDouble(stream3.str());
 
+  stream4 << "P_n" << condnum;
+  // read the input pressure at time step n
+  P_n_ = reader.ReadDouble(stream4.str());
+
+  stream5 << "Q_n" << condnum;
+  // read the flux pressure at time step n
+  Q_n_ = reader.ReadDouble(stream5.str());
+
   //get pressure difference and pressure of last period
   if ( abs(WKrelerror_ - 1.0) < 1e-14) //if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
   {
@@ -541,17 +561,6 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   else
   {
     WKrelerror_ = 0.0;
-  }
-
-  if(treetype_ == "windkessel")
-  {
-    stream4 << "P_n" << condnum;
-    // read the input pressure at time step n
-    P_n_ = reader.ReadDouble(stream4.str());
-
-    stream5 << "Q_n" << condnum;
-    // read the flux pressure at time step n
-    Q_n_ = reader.ReadDouble(stream5.str());
   }
 
   return;

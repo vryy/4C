@@ -869,13 +869,14 @@ void INPAR::REDAIRWAYS::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
   impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("TYPE", "windkessel",
-                                                                      Teuchos::tuple<std::string>("windkessel","resistive"),
-                                                                      Teuchos::tuple<std::string>("windkessel","resistive"),
+                                                                      Teuchos::tuple<std::string>("windkessel","resistive","pressure_by_curve"),
+                                                                      Teuchos::tuple<std::string>("windkessel","resistive","pressure_by_curve"),
                                                                       true)));
   AddNamedReal(impedancebc,"R1");
   AddNamedReal(impedancebc,"R2");
   AddNamedReal(impedancebc,"C");
   AddNamedReal(impedancebc,"TIMEPERIOD");
+  AddNamedInt(impedancebc,"CURVE");
 
   condlist.push_back(impedancebc);
 }

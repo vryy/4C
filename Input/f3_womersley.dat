@@ -156,7 +156,7 @@ DSURF                           1
 E 3 -
 --------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
 DSURF                           1
-E 3 - 1 windkessel R1 0.11 R2 2.2 C 0.6 TIMEPERIOD 1.0
+E 3 - 1 windkessel R1 0.11 R2 2.2 C 0.6 TIMEPERIOD 1.0 CURVE -1
 --------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
 DSURF                           1
 E 1 - 1 POLYNOMIAL PREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val -1.0 Curve 1 SelfEvaluateNormal 0.0 0.0 0.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
