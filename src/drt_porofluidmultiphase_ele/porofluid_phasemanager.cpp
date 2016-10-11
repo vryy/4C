@@ -714,8 +714,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   PhaseManagerDeriv::EvaluateGPState(J,varmanager);
 
   //access second material in structure element
-  dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
-  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
+  dsassert(phasemanager_->Element()->NumMaterial() > 1,"no second material defined for element ");
+  dsassert(phasemanager_->Element()->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
 
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat
