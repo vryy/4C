@@ -70,11 +70,12 @@ void SCATRA::TimIntCardiacMonodomainHDG::Setup()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::Update(const int num)
 {
-  // Standard Update
-  TimIntHDG::Update(num);
 
   // time update of myocard material
   ElementMaterialTimeUpdate();
+
+  // Standard Update
+  TimIntHDG::Update(num);
 
   return;
 }

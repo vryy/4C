@@ -267,6 +267,9 @@ void DRT::ELEMENTS::ScaTraHDG::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, degree);
   degree = completepol_;
   AddtoPack(data, degree);
+  degree = degree_old_;
+  AddtoPack(data, degree);
+
 }
 
 
@@ -293,6 +296,8 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
   degree_ = val;
   ExtractfromPack(position,data,val);
   completepol_ = val;
+  ExtractfromPack(position,data,val);
+  degree_old_ = val;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

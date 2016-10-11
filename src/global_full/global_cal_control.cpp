@@ -35,6 +35,7 @@
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_dyn.H"
 #include "../drt_porofluidmultiphase/porofluidmultiphase_dyn.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
+#include "../drt_scatra/scatra_cardiac_monodomain_dyn.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_sti/sti_dyn.H"
@@ -76,9 +77,11 @@ void ntacal()
       ehl_dyn();
       break;
     case prb_scatra_endoexocytosis:
-    case prb_cardiac_monodomain:
     case prb_scatra:
       scatra_dyn(restart);
+      break;
+    case prb_cardiac_monodomain:
+      scatra_cardiac_monodomain_dyn(restart);
       break;
     case prb_sti:
       sti_dyn(restart);

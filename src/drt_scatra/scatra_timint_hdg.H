@@ -146,10 +146,9 @@ protected:
 
   //! adapt variable vectors required due to the change of the degrees of the test functions
   virtual void AdaptVariableVector(
-      std::vector<bool>                          adaptelements,
-      Teuchos::RCP<Epetra_Vector> *              phi_new,
+      Teuchos::RCP<Epetra_Vector>                phi_new,
       Teuchos::RCP<Epetra_Vector>                phi_old,
-      Teuchos::RCP<Epetra_Vector> *              intphi_new,
+      Teuchos::RCP<Epetra_Vector>                intphi_new,
       Teuchos::RCP<Epetra_Vector>                intphi_old,
       int                                        nds_var_old,
       int                                        nds_intvar_old,

@@ -317,10 +317,10 @@ namespace
     //build average of values
     for (int i=0; i<phi->MyLength(); ++i)
     {
-        (*phi)[i] /= touchCount[i];
-        (*tracephi)[i] /= touchCount[i];
-        for (int d=0; d<ndim; ++d)
-          (*gradphi)[d][i] /= touchCount[i];
+      (*phi)[i] /= touchCount[i];
+      (*tracephi)[i] /= touchCount[i];
+      for (int d=0; d<ndim; ++d)
+        (*gradphi)[d][i] /= touchCount[i];
     }
     dis.ClearState(true);
   }
@@ -814,14 +814,10 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // get cpu time
   const double tcadapt = Teuchos::Time::wallTime();
 
-
   // cast and check if hdg discretization is provided
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
   if (hdgdis == NULL)
     dserror("Did not receive an HDG discretization");
-
-  // vector to store if element degree is changed
-  std::vector<bool> adaptelements(discret_->NumMyColElements());
 
   // vector to store the dofs per single element
   std::vector<int> eledofs;
@@ -847,68 +843,55 @@ void SCATRA::TimIntHDG::AdaptDegree()
 //  const double tccalcerr = Teuchos::Time::wallTime();
 
   // loop over elements
-  for (unsigned int iele=0; iele<adaptelements.size(); ++iele)
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
     // add new location array in vector for each element
     la_old.push_back(DRT::Element::LocationArray(discret_->NumDofSets()));
 
     DRT::Element *ele = discret_->lColElement(iele);
 
-    // fill location array
+    // fill location array and store it for later use
     ele->LocationVector(*discret_,la_old[iele],false);
 
-    DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    if(ele->Owner() == discret_->Comm().MyPID())
+    {
+      DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
 
-    // call routine on elements to project values from old to new element vector
-    ele->Evaluate(eleparams,*discret_,la_old[iele],dummyMat,dummyMat,dummyVec,dummyVec,dummyVec);
+      // call routine on elements to calculate error on element
+      ele->Evaluate(eleparams,*discret_,la_old[iele],dummyMat,dummyMat,dummyVec,dummyVec,dummyVec);
 
-    double error = eleparams.get<double>("error");
-    double errorlog=0;
+      double error = eleparams.get<double>("error");
+      double errorlog=0;
 
-    if(error < 0)
-      dserror("Error is negative!");
+      if(error < 0)
+        dserror("Error is negative!");
 
-    if(error > 0)
-      errorlog = log(error/padapterrortol_);
-    else
-      errorlog = 0.;
+      if(error > 0)
+        errorlog = log(error/padapterrortol_);
+      else
+        errorlog = 0.;
 
+      int deg = hdgele->Degree() + ceil(errorlog/padapterrorbase_);
 
-    int deg = hdgele->Degree() + ceil(errorlog/padapterrorbase_);
+      if(deg < 0)
+        deg = 0;
+      else if(deg > padaptdegreemax_)
+        deg = padaptdegreemax_;
 
-    if(deg < 0)
-      deg = 0;
-    else if(deg > padaptdegreemax_)
-      deg = padaptdegreemax_;
+      // set degree on element
+      hdgele->SetDegree(deg);
 
-    // set adapt element to true, otherwise dofs are not projected in this element
-    if(hdgele->Degree() != deg)
-      adaptelements[iele] = true;
-    else
-      adaptelements[iele] = false;
-
-    // set degree on element
-    hdgele->SetDegree(deg);
-
-    const int eleIndex = discret_->ElementRowMap()->LID(ele->Id());
-    if (eleIndex >= 0)
-      (*elementdegree_)[eleIndex] = deg;
-
-
-    // store the number of dofs for the element
-    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+      // store element degree (only for output)
+      const int eleIndex = discret_->ElementRowMap()->LID(ele->Id());
+      if (eleIndex >= 0)
+        (*elementdegree_)[eleIndex] = deg;
+    }
   }
 
   // end time measurement for element
 //  double dtcalcerr=Teuchos::Time::wallTime()-tccalcerr;
 //  std::cout << "Time measurement for error calculation: " << dtcalcerr << std::endl;
 
-  {
-    // create new local dofset for the new interior element dofs with adpated element order
-    Teuchos::RCP<DRT::DofSetAuxProxy> eledofs_new = Teuchos::rcp(new DRT::DofSetAuxProxy(&*discret_->GetDofSetProxy(),0,eledofs,0,false));
-    // replace old interior element dofs with the new created dofset
-    discret_->ReplaceDofSet(nds_intvar_,eledofs_new,false);
-  }
 
   // number of dofset in location array
   int nds_intvar_old(discret_->NumDofSets()+2);
@@ -921,6 +904,27 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // assign the degrees of freedom to the adapted dofsets
   hdgdis_->AssignDegreesOfFreedom(0);
+
+  // replace all ghosted element with the original thus the correct polynomial degree is used
+  discret_->ExportColumnElements(*discret_->ElementColMap(),false, false);
+
+  hdgdis_->FillComplete();
+
+  // store the number of dofs per element on vector
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    // store the number of dofs for the element
+    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+  }
+
+  // create new local dofset for the new interior element dofs with adapted element order
+  Teuchos::RCP<DRT::DofSetAuxProxy> eledofs_new = Teuchos::rcp(new DRT::DofSetAuxProxy(&*discret_->GetDofSetProxy(),0,eledofs,0,false));
+  // replace old interior element dofs with the new created dofset
+  discret_->ReplaceDofSet(nds_intvar_,eledofs_new,false);
+
+  hdgdis_->AssignDegreesOfFreedom(0);
+
   // clear map cache since after every FillComplete() / AssignDegreesOfFreedom() old maps are stored in the mapstack
   output_->ClearMapCache();
 
@@ -956,10 +960,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // call element routine to project the old values to the new state vectors
   AdaptVariableVector(
-      adaptelements,
-      &phin_,
+      phin_,
       phin_old,
-      &intphin_,
+      intphin_,
       intphin_old,
       nds_var_old,
       nds_intvar_old,
@@ -968,10 +971,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
       facedofs_old->DofRowMap());
 
   AdaptVariableVector(
-      adaptelements,
-      &phinp_,
+      phinp_,
       phinp_old,
-      &intphinp_,
+      intphinp_,
       intphinp_old,
       nds_var_old,
       nds_intvar_old,
@@ -979,21 +981,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
       eledofs_old->DofRowMap(),
       facedofs_old->DofRowMap());
 
-  // end time measurement for element
-//  double dtproject=Teuchos::Time::wallTime()-tcproject;
-//  std::cout << "Time measurement for projection: " << dtproject << std::endl;
-
-
-  // get cpu time
-//  const double tcmatinit = Teuchos::Time::wallTime();
-
-  // calculate matrices on element for adapted dofsets
   CalcMatInitial();
-
-  // end time measurement for element
-//  double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
-//  std::cout << "Time measurement calc mat initial: " << dtmatinit << std::endl;
-
 
   // end time measurement for element
   double dtadapt=Teuchos::Time::wallTime()-tcadapt;
@@ -1010,10 +998,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
  | degrees                                                hoermann 07/16|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntHDG::AdaptVariableVector(
-    std::vector<bool>                          adaptelements,
-    Teuchos::RCP<Epetra_Vector> *              phi_new,
+    Teuchos::RCP<Epetra_Vector>                phi_new,
     Teuchos::RCP<Epetra_Vector>                phi_old,
-    Teuchos::RCP<Epetra_Vector> *              intphi_new,
+    Teuchos::RCP<Epetra_Vector>                intphi_new,
     Teuchos::RCP<Epetra_Vector>                intphi_old,
     int                                        nds_var_old,
     int                                        nds_intvar_old,
@@ -1048,95 +1035,53 @@ void SCATRA::TimIntHDG::AdaptVariableVector(
   // create location array for new dofsets
   DRT::Element::LocationArray la_temp(discret_->NumDofSets());
 
-  double error = 0;
-
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
-    // check if element degree or element degree of neighboring element has changed
-//    if(adaptelements[iele] || la[0].lm_.size() != la[nds_var_old].lm_.size())
-      if(true)
+    DRT::Element *ele = discret_->lColElement(iele);
+
+    // fill location array for adapted dofsets
+    ele->LocationVector(*discret_,la_temp,false);
+
+    for(int i=0; i<discret_->NumDofSets(); i++)
     {
-
-      DRT::Element *ele = discret_->lColElement(iele);
-
-      // fill location array for adpated dofsets
-      ele->LocationVector(*discret_,la_temp,false);
-
-      for(int i=0; i<discret_->NumDofSets(); i++)
-      {
-        // copy old and new location arrays to global location array la
-        la[i] = la_temp[i];
-        la[discret_->NumDofSets()+i] = la_old[iele][i];
-      }
-
-          const unsigned size = la_temp[0].lm_.size();
-
-          if (static_cast<std::size_t>(phi_ele.M()) != size)
-            phi_ele.Shape(la[0].lm_.size(), 1);
-          else
-            memset(phi_ele.Values(),0.,size*sizeof(double));
-          if (intphi_ele.M() != discret_->NumDof(nds_intvar_,ele))
-            intphi_ele.Shape(discret_->NumDof(nds_intvar_,ele), 1);
-          else
-            memset(intphi_ele.Values(),0.,discret_->NumDof(nds_intvar_,ele)*sizeof(double));
-
-      // call routine on elements to project values from old to new element vector
-      ele->Evaluate(eleparams,*discret_,la,dummyMat,dummyMat,phi_ele,intphi_ele,dummyVec);
-
-      // store projected values of the element on the new state vector for the interior variables
-      if (ele->Owner() == discret_->Comm().MyPID())
-      {
-        std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-        dsassert(localDofs.size() == static_cast<std::size_t>(intphi_ele.M()), "Internal error");
-        for (unsigned int i=0; i<localDofs.size(); ++i)
-          localDofs[i] = intdofrowmap->LID(localDofs[i]);
-        (*intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), &localDofs[0]);
-      }
-
-      // now fill the element vector into the new state vector for the trace values
-      for (unsigned int i=0; i<la[0].lm_.size(); ++i)
-      {
-        const int lid = dofrowmap->LID(la[0].lm_[i]);
-        if (lid >= 0)
-        {
-          // safety check if value for trace dof is set for all elements the same (interior face)
-          if ((**phi_new)[lid] != 0)
-            error += std::abs((**phi_new)[lid]-phi_ele(i));
-          (**phi_new)[lid] = phi_ele(i);
-        }
-      }
+      // copy old and new location arrays to global location array la
+      la[i] = la_temp[i];
+      la[discret_->NumDofSets()+i] = la_old[iele][i];
     }
+
+    const unsigned size = la_temp[0].lm_.size();
+
+    if (static_cast<std::size_t>(phi_ele.M()) != size)
+      phi_ele.Shape(la[0].lm_.size(), 1);
     else
+      memset(phi_ele.Values(),0.,size*sizeof(double));
+    if (intphi_ele.M() != discret_->NumDof(nds_intvar_,ele))
+      intphi_ele.Shape(discret_->NumDof(nds_intvar_,ele), 1);
+    else
+      memset(intphi_ele.Values(),0.,discret_->NumDof(nds_intvar_,ele)*sizeof(double));
+
+    // call routine on elements to project values from old to new element vector
+    ele->Evaluate(eleparams,*discret_,la,dummyMat,dummyMat,phi_ele,intphi_ele,dummyVec);
+
+    // store projected values of the element on the new state vector for the interior variables
+    if (ele->Owner() == discret_->Comm().MyPID())
     {
-      // copy old values of the element on the new state vector for the interior variables
-      for (unsigned int i=0; i<la[nds_intvar_].lm_.size(); ++i)
-      {
-        const int lid = intdofrowmap->LID(la[nds_intvar_].lm_[i]);
-        const int lid_old = intdofrowmap_old->LID(la[nds_intvar_old].lm_[i]);
-        if (lid >= 0)
-          (**intphi_new)[lid] = (*intphi_old)[lid_old];
-      }
-      // now copy the old state vector on the new state vector for the trace values
-      for (unsigned int i=0; i<la[0].lm_.size(); ++i)
-      {
-        const int lid = dofrowmap->LID(la[0].lm_[i]);
-        const int lid_old = dofrowmap_old->LID(la[nds_var_old].lm_[i]);
-        if (lid >= 0)
-        {
-          // safety check if value for trace dof is set for all elements the same (interior face)
-          if ((**phi_new)[lid] != 0)
-            error += std::abs((**phi_new)[lid]-(*phi_old)[lid_old]);
-          (**phi_new)[lid] = (*phi_old)[lid_old];
-        }
-      }
+      std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
+      dsassert(localDofs.size() == static_cast<std::size_t>(intphi_ele.M()), "Internal error");
+      for (unsigned int i=0; i<localDofs.size(); ++i)
+        localDofs[i] = intdofrowmap->LID(localDofs[i]);
+      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), &localDofs[0]);
+    }
+
+    // now fill the element vector into the new state vector for the trace values
+    for (unsigned int i=0; i<la[0].lm_.size(); ++i)
+    {
+      const int lid = dofrowmap->LID(la[0].lm_[i]);
+
+      if (lid >= 0)
+        (*phi_new)[lid] = phi_ele(i);
     }
   }
-
-//  double globerror = 0;
-//  discret_->Comm().SumAll(&error, &globerror, 1);
-//  if (discret_->Comm().MyPID() == 0)
-//    std::cout << "Error project when setting face twice: " << globerror << std::endl;
-
 
   return;
 }

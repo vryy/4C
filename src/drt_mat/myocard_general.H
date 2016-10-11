@@ -72,8 +72,13 @@ public:
   ///  returns current internal state of the material
   virtual double GetInternalState(const int k, int gp) const
   {
-    dserror("Multiple Gauss points only implemented for MV and FHN model");
-    return 0.;
+    if(gp > 0)
+    {
+      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      return 0.;
+    }
+    else
+      return GetInternalState(k);
   };
 
   ///  set internal state of the material
@@ -82,7 +87,11 @@ public:
   ///  set internal state of the material for multiple Gauss points
   virtual void SetInternalState(const int k, const double val, int gp)
   {
-    dserror("Multiple Gauss points only implemented for MV and FHN model");
+    if(gp > 0)
+      dserror("Multiple Gauss points only implemented for MV and FHN model");
+    else
+      SetInternalState(k,val);
+
     return;
   };
 

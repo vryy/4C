@@ -61,7 +61,7 @@ SEMIIMPLICIT                    yes
 PADAPTIVITY                     yes
 PADAPTERRORTOL                  1e-6
 PADAPTERRORBASE                 1.66
-PADAPTDEGREEMAX                 4
+PADAPTDEGREEMAX                 3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          20
 ABSTOLRES                       1e-12
@@ -5733,6 +5733,6 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 1.93412513030991295e+00 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 1.87890751971793812e+00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

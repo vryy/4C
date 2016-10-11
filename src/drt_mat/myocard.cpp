@@ -111,13 +111,12 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, difftensor_);
 
   // pack history data
-  if (myocard_mat_ != Teuchos::null)
-    {
-      for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
-        {
-          AddtoPack(data, myocard_mat_->GetInternalState(k));
-        }
-    }
+  if (myocard_mat_ != Teuchos::null && params_ != NULL)
+  {
+    for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
+      for(int i=0; i<params_->num_gp; ++i) // loop over Gauss points
+        AddtoPack(data, myocard_mat_->GetInternalState(k,i));
+  }
 
   return;
 }
@@ -159,10 +158,11 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
       // unpack history data
      double val;
      for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
-     {
-       ExtractfromPack(position, data, val);
-       myocard_mat_->SetInternalState(k,val);
-     }
+       for(int i=0; i<params_->num_gp; ++i) // loop over Gauss points
+       {
+         ExtractfromPack(position, data, val);
+         myocard_mat_->SetInternalState(k,val,i);
+       }
 
      if (position != data.size())
      dserror("Mismatch in size of data %d <-> %d",data.size(),position);

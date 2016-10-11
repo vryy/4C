@@ -1086,6 +1086,7 @@ set(OBJS_DRT_LUBRICATION
 set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_algorithm.cpp
   src/drt_scatra/scatra_dyn.cpp
+  src/drt_scatra/scatra_cardiac_monodomain_dyn.cpp
   src/drt_levelset/levelset_algorithm.cpp
   src/drt_levelset/levelset_algorithm_utils.cpp
   src/drt_levelset/levelset_algorithm_reinit.cpp

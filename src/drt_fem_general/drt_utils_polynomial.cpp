@@ -1075,6 +1075,7 @@ LagrangeBasisTet<3>::FillFeketePoints(const unsigned int degree)
     feketePoints_(0,c) = 0.25;
     feketePoints_(1,c) = 0.25;
     feketePoints_(2,c) = 0.25;
+    ++c;
   }
   else
     for (unsigned int i=0; i<=degree; ++i)
