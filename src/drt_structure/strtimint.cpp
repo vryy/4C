@@ -2526,7 +2526,7 @@ void STR::TimInt::OutputRestart
                           conman_->GetRefBaseValues());
   }
 
-  // Cardiovascular0D
+  // 0D cardiovascular models
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
     output_->WriteVector("cv0ddof",
@@ -2685,7 +2685,7 @@ void STR::TimInt::AddRestartToOutputState()
   // 0D cardiovascular models
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("cvdof",
+    output_->WriteVector("cv0ddof",
                           cardvasc0dman_->Get0DDofVector());
     output_->WriteVector("refvolval",
                           cardvasc0dman_->GetRefVolValue());
