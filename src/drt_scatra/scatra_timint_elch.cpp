@@ -53,9 +53,11 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     gstatnumite_    (0),
     gstatincrement_ (0.),
     dlcapexists_    (false),
+    lastsocstep_    (-1),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null),
     electrodesoc_   (Teuchos::null),
+    electrodecrates_(Teuchos::null),
     electrodeconc_  (Teuchos::null),
     electrodeeta_   (Teuchos::null),
     electrodecurr_  (Teuchos::null),
@@ -120,13 +122,15 @@ void SCATRA::ScaTraTimIntElch::Setup()
     std::cout<<"Constant F/RT                    = "<<frt_<<std::endl;
   }
 
-  // initialize vector for states of charge of resolved electrodes
+  // initialize vectors for states of charge and C rates of resolved electrodes
   std::vector<DRT::Condition*> electrodesocconditions;
   discret_->GetCondition("ElectrodeSOC",electrodesocconditions);
   if(electrodesocconditions.size() > 0)
   {
     electrodesoc_ = Teuchos::rcp(new std::vector<double>);
     electrodesoc_->resize(electrodesocconditions.size(),-1.);
+    electrodecrates_ = Teuchos::rcp(new std::vector<double>);
+    electrodecrates_->resize(electrodesocconditions.size(),-1.);
   }
 
   // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total electric currents at electrode boundaries
@@ -990,7 +994,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // compute C rate for current electrode
       double c_rate(0.);
       if((*electrodesoc_)[condid] != -1.)
-        c_rate = (soc-(*electrodesoc_)[condid])/dta_*3600.;
+        c_rate = (soc-(*electrodesoc_)[condid])/((step_-lastsocstep_)*dta_)*3600.;
 
       // determine operation mode
       std::string mode;
@@ -1003,6 +1007,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
       // update state of charge for current electrode
       (*electrodesoc_)[condid] = soc;
+
+      // update C rate for current electrode
+      (*electrodecrates_)[condid] = c_rate;
 
       // print results to screen and files
       if(myrank_ == 0)
@@ -1036,6 +1043,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     // print finish line to screen
     if(myrank_ == 0)
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl << std::endl;
+
+    // update time step when states of charge of resolved electrodes were computed the last time
+    lastsocstep_ = step_;
   }
 
   return;

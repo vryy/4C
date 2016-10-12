@@ -4,6 +4,8 @@
 
 \brief result tests for electrochemistry problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -51,6 +53,10 @@ double SCATRA::ElchResultTest::ResultSpecial(
     result = (*ElchTimInt()->ElectrodeSOC())[0];
   else if(quantity == "soc2")
     result = (*ElchTimInt()->ElectrodeSOC())[1];
+  else if(quantity == "c-rate" or quantity == "c-rate1")
+    result = (*ElchTimInt()->ElectrodeCRates())[0];
+  else if(quantity == "c-rate2")
+    result = (*ElchTimInt()->ElectrodeCRates())[1];
   else if(quantity == "cellvoltage")
     result = ElchTimInt()->CellVoltage();
   else

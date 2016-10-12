@@ -145,6 +145,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! return states of charge of resolved electrodes
   const Teuchos::RCP<std::vector<double> >& ElectrodeSOC() const {return electrodesoc_;};
 
+  //! return C rates with respect to resolved electrodes
+  const Teuchos::RCP<std::vector<double> >& ElectrodeCRates() const {return electrodecrates_;};
+
   //! return mean reactant concentrations at electrode boundaries
   const Teuchos::RCP<std::vector<double> >& ElectrodeConc() const {return electrodeconc_;};
 
@@ -275,6 +278,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! flag for (de)activation of double layer capacity
   bool dlcapexists_;
 
+  //! time step when states of charge of resolved electrodes were computed the last time
+  unsigned lastsocstep_;
+
   //! electro-kinetics toggle
   //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
   Teuchos::RCP<Epetra_Vector> ektoggle_;
@@ -285,6 +291,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! states of charge of resolved electrodes
   Teuchos::RCP<std::vector<double> > electrodesoc_;
+
+  //! C rates with respect to resolved electrodes
+  Teuchos::RCP<std::vector<double> > electrodecrates_;
 
   //! mean reactant concentrations at electrode boundaries
   Teuchos::RCP<std::vector<double> > electrodeconc_;

@@ -20,13 +20,6 @@ Test case for electrode-electrolyte interface coupling:
 //ELEMENTS    1560
 //NODES       533
 DIM           3
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -36,6 +29,8 @@ TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   1
+RESULTSEVRY                     2
+RESTARTEVRY                     5
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -88,6 +83,8 @@ SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.26475801525061726e+01 TOLERANCE
 SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 3.77032796052932451e+00 TOLERANCE 1.e-09         // local electric potential at cathode-electrolyte interface (cathode side)
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444412960199653e-01 TOLERANCE 1.e-10          // anode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363864696869072e-01 TOLERANCE 1.e-10          // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.99999999931311478e+00 TOLERANCE 1.e-09      // anode C rate
+SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -7.49449618915409843e+00 TOLERANCE 1.e-09      // cathode C rate
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77032702189777291e+00 TOLERANCE 1.e-09   // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
 ----------------------------------------------------------DESIGN DESCRIPTION

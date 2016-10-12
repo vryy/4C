@@ -13,7 +13,7 @@ Academic test case for multi-scale scalar transport:
 - two 1D micro scales, each consisting of 5 line2 elements
 - macro scale with initial scalar value 0
 - micro scale 1 with initial scalar value 0
-- micro scale 2 with intiial scalar value 1
+- micro scale 2 with initial scalar value 1
 - coupling between macro and micro scales based on constant permeability
 - diffusion on macro scale from micro scale 2 region towards micro scale 1 region
 - symmetry boundary conditions, i.e., homogeneous Neumann boundary conditions, at both ends of macro scale
