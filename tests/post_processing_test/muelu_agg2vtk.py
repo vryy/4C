@@ -67,7 +67,8 @@ def main(argv=None):
   # initialize dictionary for spatial coordinates of nodes associated with single matrix blocks
   blockids2nodecoords = {}
   for iblock in sections['DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING']:
-    blockids2nodecoords[int(iblock[1])] = []
+    if iblock[0][:2] != '//':
+      blockids2nodecoords[int(iblock[1])] = []
 
   # fill dictionary by looping over all nodes from *.dat input file
   for inode in sections['DVOL-NODE TOPOLOGY']:
