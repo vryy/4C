@@ -1666,6 +1666,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MIN_ACTIVATION","Minimal value for the rescaled activation");
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
     AddNamedReal(m,"ACTIVATION_THRES","Threshold for activation (contraction starts when activation function is larger than this value, relaxes otherwise)");
+    AddNamedBool(m,"STRAIN_DEPENDENCY","model strain dependency of contractility (Frank-Starling law): no (false) or yes (true)", false, true);
+    AddNamedReal(m,"LAMBDA_LOWER","lower fiber stretch for Frank-Starling law",1.0,true);
+    AddNamedReal(m,"LAMBDA_UPPER","upper fiber stretch for Frank-Starling law",1.0,true);
     AddNamedReal(m,"GAMMA","azimuth angle",0.0,true);
     AddNamedReal(m,"THETA","polar angle",0.0,true);
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);

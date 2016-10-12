@@ -32,6 +32,9 @@ MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
   minactiv_(matdata->GetDouble("MIN_ACTIVATION")),
   activationthreshold_(matdata->GetDouble("ACTIVATION_THRES")),
   sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),
+  strain_dep_(matdata->GetInt("STRAIN_DEPENDENCY")),
+  lambda_lower_(matdata->GetDouble("LAMBDA_LOWER")),
+  lambda_upper_(matdata->GetDouble("LAMBDA_UPPER")),
   gamma_(matdata->GetDouble("GAMMA")),
   theta_(matdata->GetDouble("THETA")),
   init_(matdata->GetInt("INIT")),
@@ -79,6 +82,13 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition
   // Setup of active stress model
   tauc_n_ = params_->tauc0_;
   tauc_np_ = params_->tauc0_;
+
+  // reasonability check...
+  if (params_->strain_dep_)
+  {
+    if (params_->lambda_lower_ >= params_->lambda_upper_)
+      dserror("LAMBDA_LOWER should be lower than LAMBDA_UPPER. Seems reasonable, doesn't it? Dude...");
+  }
 
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
@@ -203,15 +213,44 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const double* coordgpref_ = &(*pos_)[0];
     activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,totaltime,NULL);
   }
+
+  double lambda = 0.0;
+  double scale = 0.0;
+  double n0 = 1.0;
+  if (params_->strain_dep_)
+  {
+    // squared stretch along fiber direction
+    double I4 = 0.0;
+    I4 =  A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2)
+        + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5);
+    // stretch along fiber direction
+    lambda = sqrt(I4);
+    scale = -4./(pow((params_->lambda_lower_ - params_->lambda_upper_),2.0));
+    // Frank-Starling factor n0 for strain-dependent contractility
+    if(lambda >= params_->lambda_lower_ and lambda <= params_->lambda_upper_)
+      n0 = scale * (lambda - params_->lambda_lower_)*(lambda - params_->lambda_upper_);
+    else
+      n0 = 0.0;
+  }
+
   activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
   double abs_u_ = abs(activationFunction);
   double absplus_u_ = abs_u_*(activationFunction>0.0);
-  tauc_np_ =  (tauc_n_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
+  tauc_np_ =  (tauc_n_/dt + n0*params_->sigma_*absplus_u_)/(1/dt + abs_u_);
   stress.Update(tauc_np_, A_, 1.0);
 
-   // no contribution to cmat
-  // double delta = 0.0;
-  // cmat.MultiplyNT(delta, A_, A_, 1.0);
+  // only contribution to cmat if we have strain dependency!
+  if (params_->strain_dep_)
+  {
+    double dtauc_np_dC = 0.0;
+    // Cmat_active = 2 * dS_active / dC = 2 * dtau(t) / dC \otimes (a_0 \otimes a_0)
+    if(lambda >= params_->lambda_lower_ and lambda <= params_->lambda_upper_)
+      dtauc_np_dC = 2.*scale * (1. - (params_->lambda_upper_ + params_->lambda_lower_)/(2.*lambda)) * params_->sigma_*absplus_u_/(1/dt + abs_u_);
+    else
+      dtauc_np_dC = 0.0;
+    cmat.MultiplyNT(dtauc_np_dC, A_, A_, 1.0);
+  }
+
 }
 
 /*----------------------------------------------------------------------*/

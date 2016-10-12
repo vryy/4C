@@ -28,7 +28,7 @@ namespace ELASTIC
     ///
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_AnisoActiveStress_Evolution SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
+    /// MAT 1 ELAST_AnisoActiveStress_Evolution SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 [STRAIN_DEPENDENCY No] [LAMBDA_LOWER 0.707] [LAMBDA_UPPER 1.414]
     class AnisoActiveStress_Evolution : public MAT::PAR::Parameter
     {
     public:
@@ -56,6 +56,12 @@ namespace ELASTIC
       double activationthreshold_;
       /// Where the activation comes from: 0=scatra , >0 Id for FUNCT
       int sourceactiv_;
+      /// is there a strain dependency for the active tension?
+      int strain_dep_;
+      /// lower stretch threshold
+      double lambda_lower_;
+      /// upper stretch threshold
+      double lambda_upper_;
       /// azimute angle of spherical coordinates
       double gamma_;
       /// polar angle of spherical coordinates
@@ -87,32 +93,34 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// This is a simplification of the muscle contraction law proposed in [1], where the strain rate
-  /// dependency is dropped for the sake of simplicity, resulting in the following first order ODE
-  /// for the active stress tau, compare [2]:
+  /// This is a simplification of the muscle contraction law proposed in [1],[2],
+  /// resulting in the following first order ODE for the active stress tau, compare [3]:
   ///\f[
-  ///   \frac{d}{dt} \tau = \sigma_0 |u|_+ - \tau |u|, \quad \tau(0) = 0
+  ///   \frac{d}{dt} \tau = n_0 \sigma_0 |u|_+ - \tau |u|, \quad \tau(0) = tau_0
   ///\f]
   /// where \f$\sigma_0\f$ is the contractility (asymptotic value of \tau) and u is a control variable either provided by
   /// a electrophysiology simulation or by a user-specified function
+  /// therein, n0 is a strain-dependent factor that may take into account the Frank-Starling effect!
+  /// n0 \in [0; 1] scales the contractility depending on a lower and upper fiber stretch lambda
+  /// using a flipped parabola, n0 = -(lambda - lambda_lower)*(lambda - lambda_upper) * 4/(lambda_lower-lambda_upper)^2,
+  /// which is an approximation to the function from Sainte-Marie et al. 2006, Fig. 2(ii)
+  /// other laws might be thought of here, since hardly any literature provides a meaningful dependency...
   ///
-  /// Due to the active stress approach, see [3], the active stress will be added along a given
+  /// Due to the active stress approach, see [4], the active stress will be added along a given
   /// fiber direction f_0 to the 2nd Piola-Kirchhoff stress:
   ///\f[
   ///   S_{active} = \tau(t) f_0 \otimes f_0
   ///\f]
-  /// Beware that the original study formulated the active stress for the cauchy stresses. For the
-  /// sake of simplicity, we drop the dependency of J, which would normally arise by the pull back
-  /// operation. Since we assure nearly incompressible material behaviour, where J\f$\approx\f$1, the
-  /// results should not be influenced much.
   ///
   /// <h3>References</h3>
   /// <ul>
-  /// <li> [1] 2001_Bestel, Clément, Sorine - A Biomechanical Model of Muscle Contraction (2001), Medical Image Computing and
+  /// <li> [1] 2012 Chapelle, Le Tallec, Moireau, Sorine - An energy-preserving muscle tissue model: formulation and compatible discretizations,
+  // Journal for Multiscale Computational Engineering 10(2):189-211 (2012)
+  /// <li> [2] 2001 Bestel, Clément, Sorine - A Biomechanical Model of Muscle Contraction (2001), Medical Image Computing and
   /// Computer-Assisted Intervention (MICCAI'01), vol. 2208, Springer-Verlag Berlin, 1159-1161
-  /// <li> [2] 2002_Sermesant, Coudièr, Delingette, Ayache - Progress towards an electromechanical model of the heart for cardiac image analysis. (2002)
+  /// <li> [3] 2002 Sermesant, Coudièr, Delingette, Ayache - Progress towards an electromechanical model of the heart for cardiac image analysis. (2002)
   /// IEEE International Symposium on Biomedical Imaging, 10-13
-  /// <li> [3] 1998_Hunter, McCulloch, ter Keurs - Modelling the mechanical properties of cardiac muscle (1998),
+  /// <li> [4] 1998 Hunter, McCulloch, ter Keurs - Modelling the mechanical properties of cardiac muscle (1998),
   /// Progress in Biophysics and Molecular Biology
   /// </ul>
   ///
