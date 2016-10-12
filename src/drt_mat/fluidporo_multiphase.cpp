@@ -18,8 +18,13 @@
 #include <vector>
 #include "fluidporo_multiphase.H"
 #include "fluidporo_singlephase.H"
+
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc_utils.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+
+#include <Epetra_SerialDenseSolver.h>
 
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
@@ -28,7 +33,9 @@ MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : MatList(matdata),
-  permeability_(matdata->GetDouble("PERMEABILITY"))
+  permeability_(matdata->GetDouble("PERMEABILITY")),
+  dof2pres_(Teuchos::null),
+  isinit_(false)
 {
 }
 
@@ -38,6 +45,55 @@ MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(
 Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroMultiPhase(this));
+}
+
+/*----------------------------------------------------------------------*
+ | initialize                                               vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroMultiPhase::Initialize()
+{
+  //  matrix holding the conversion from pressures and dofs
+  dof2pres_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(nummat_,nummat_));
+
+  //  matrix holding the conversion from pressures and dofs
+  // reset
+  dof2pres_->Scale(0.0);
+
+  for(int iphase=0;iphase<(int)matids_->size();iphase++)
+  {
+    // get the single phase material by its ID
+    const int matid = (*matids_)[iphase];
+    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
+
+    // safety check and cast
+    if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+      dserror("only poro singlephase material valid");
+    const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+
+    // consistency checks
+    if( singlephase.PoroDofType() == INPAR::MAT::m_fluidporo_phasedof_pressuresum
+        and iphase!= nummat_-1)
+      dserror("Only the last material in the list of poro multiphase materials needs to be of type 'PressureSum'!");
+    if(singlephase.PoroDofType() !=  INPAR::MAT::m_fluidporo_phasedof_pressuresum
+        and iphase== nummat_-1
+        and nummat_!=1)
+      dserror("The last material in the list of poro multiphase materials needs to be of type 'PressureSum'!");
+
+    // fill the coefficients into matrix
+    singlephase.FillDoFMatrix(*dof2pres_,iphase);
+  }
+
+  // invert dof2pres_ to get conversion from dofs to pressures
+  {
+    Epetra_SerialDenseSolver inverse;
+    inverse.SetMatrix(*dof2pres_);
+    int err = inverse.Invert();
+    if (err != 0)
+      dserror("Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs linear independent?",err);
+  }
+
+  isinit_=true;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -104,6 +160,9 @@ void MAT::FluidPoroMultiPhase::Initialize()
           Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second,true);
       actphase->Initialize();
     }
+
+    if(not paramsporo_->isinit_)
+      paramsporo_->Initialize();
   }
   return;
 }
@@ -171,5 +230,64 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
   // -> position check cannot be done in this case
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*
+ *  Evaluate generalized pressure of all phases            vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::EvaluateGenPressure(
+    std::vector<double>& genpressure,
+    const std::vector<double>& phinp) const
+{
+  // evaluate the pressures
+  for(int iphase=0; iphase<NumMat(); iphase++)
+  {
+    //get the single phase material
+    const MAT::FluidPoroSinglePhase& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this,iphase);
+
+    // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
+    genpressure[iphase] = singlephasemat.EvaluateGenPressure(iphase,phinp);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *   Evaluate saturation of the phase                       vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::EvaluateSaturation(
+    std::vector<double>& saturation,
+    const std::vector<double>& phinp,
+    const std::vector<double>& pressure) const
+{
+  saturation[NumMat()-1] = 1.0;
+  for(int iphase=0; iphase<NumMat()-1; iphase++)
+  {
+    // get the single phase material
+    const MAT::FluidPoroSinglePhase& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this,iphase);
+
+    saturation[iphase] = singlephasemat.EvaluateSaturation(iphase,phinp,pressure);
+    // the saturation of the last phase is 1.0- (sum of all saturations)
+    saturation[NumMat()-1] -= saturation[iphase];
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | transform generalized pressures to true pressures        vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
+    const std::vector<double>& phinp,
+    std::vector<double>& phi_transformed) const
+{
+  // get trafo matrix
+  const Epetra_SerialDenseMatrix& dof2pres = *paramsporo_->dof2pres_;
+  //simple matrix vector product
+  phi_transformed.resize(phinp.size());
+  for(int i=0;i<NumMat();i++)
+    for(int j=0;j<NumMat();j++)
+      phi_transformed[i] += dof2pres(i,j)*phinp[j];
+  return;
 }
 

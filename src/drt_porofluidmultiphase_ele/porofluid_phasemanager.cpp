@@ -134,7 +134,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphases):
-    dof2pres_(Teuchos::null),
     numphases_(numphases),
     genpressure_(numphases,0.0),
     pressure_(numphases,0.0),
@@ -144,9 +143,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphase
     isevaluated_(false),
     issetup_(false)
 {
-  //  matrix holding the conversion from pressures and dofs
-  dof2pres_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases_,numphases_));
-
   return;
 }
 
@@ -154,7 +150,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphase
  | copy constructor                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseManagerCore& old):
-    dof2pres_(old.dof2pres_),
     numphases_(old.numphases_),
     genpressure_(old.genpressure_),
     pressure_(old.pressure_),
@@ -195,38 +190,6 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
         "of DOFs (%i phases and %i DOFs)!"
         , numphases_, multiphasemat.NumMat());
 
-  //  matrix holding the conversion from pressures and dofs
-  // reset
-  dof2pres_->Scale(0.0);
-
-  for(int iphase=0; iphase<numphases_; iphase++)
-  {
-    // get the single phase material
-    const MAT::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
-
-    // consistency checks
-    if( singlephasemat.PoroDofType() == INPAR::MAT::m_fluidporo_phasedof_pressuresum
-        and iphase!= numphases_-1)
-      dserror("Only the last material in the list of poro multiphase materials needs to be of type 'PressureSum'!");
-    if(singlephasemat.PoroDofType() !=  INPAR::MAT::m_fluidporo_phasedof_pressuresum
-        and iphase== numphases_-1
-        and numphases_!=1)
-      dserror("The last material in the list of poro multiphase materials needs to be of type 'PressureSum'!");
-
-    // fill the coefficients into matrix
-    singlephasemat.FillDoFMatrix(*dof2pres_,iphase);
-  }
-
-  // invert dof2pres_ to get conversion from dofs to pressures
-  {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(*dof2pres_);
-    int err = inverse.Invert();
-    if (err != 0)
-      dserror("Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs linear independent?",err);
-  }
-
   issetup_=true;
   return;
 }
@@ -263,31 +226,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   saturation_.resize(numphases_,0.0);
 
   // evaluate the pressures
-  for(int iphase=0; iphase<numphases_; iphase++)
-  {
-    //get the single phase material
-    const MAT::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
-
-    // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
-    genpressure_[iphase] = singlephasemat.EvaluateGenPressure(iphase,phinp);
-  }
+  multiphasemat.EvaluateGenPressure(genpressure_,phinp);
 
   //! transform generalized pressures to true pressure values
-  TransformGenPresToTruePres(genpressure_,pressure_);
+  multiphasemat.TransformGenPresToTruePres(genpressure_,pressure_);
 
   // explicit evaluation of saturation
-  saturation_[numphases_-1] = 1.0;
-  for(int iphase=0; iphase<numphases_-1; iphase++)
-  {
-    // get the single phase material
-    const MAT::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(multiphasemat,iphase);
-
-    saturation_[iphase] = singlephasemat.EvaluateSaturation(iphase,phinp,pressure_);
-    // the saturation of the last phase is 1.0- (sum of all saturations)
-    saturation_[numphases_-1] -= saturation_[iphase];
-  }
+  multiphasemat.EvaluateSaturation(saturation_,phinp,pressure_);
 
   // solid pressure = sum (S_i*p_i)
   solidpressure_ = std::inner_product(saturation_.begin(),saturation_.end(),pressure_.begin(),0.0);
@@ -323,21 +268,6 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ClearGPState()
   // states are reseted
   isevaluated_ = false;
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | transform generalized pressures to true pressures        vuong 08/16 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::TransformGenPresToTruePres(
-    const std::vector<double>& phinp,
-    std::vector<double>& phi_transformed)
-{
-  //simple matrix vector product
-  phi_transformed.resize(phinp.size());
-  for(int i=0;i<numphases_;i++)
-    for(int j=0;j<numphases_;j++)
-      phi_transformed[i] += (*dof2pres_)(i,j)*phinp[j];
   return;
 }
 

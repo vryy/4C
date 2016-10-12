@@ -322,14 +322,6 @@ class PhaseManagerCore : public PhaseManagerInterface
     }
 
   private:
-    //! transform generalized pressures to true pressures
-    void TransformGenPresToTruePres(
-        const std::vector<double>& phi,
-        std::vector<double>& phi_transformed);
-
-    //! transformation of degrees of freedom to true pressures
-    Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;
-
     //! number of phases
     const int numphases_;
 

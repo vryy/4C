@@ -43,11 +43,20 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// initialize the material
+      virtual void Initialize();
+
       /// @name material parameters
       //@{
       /// permeability
       const double permeability_;
       //@}
+
+      //! transformation of degrees of freedom to true pressures
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;
+
+      //! initialize flag
+      bool isinit_;
 
     };  // class FluidPoroMultiPhase
 
@@ -138,6 +147,27 @@ private:
 
     /// return whether reaction terms need to be evaluated
     virtual bool IsReactive() const {return false;};
+
+    /// evaluate the generalized(!) pressure and saturation of all phases
+    void EvaluateGenPressureAndSaturation(
+        std::vector<double>& genpressure,
+        const std::vector<double>& phinp) const;
+
+    /// evaluate the generalized(!) pressure of all phases
+    void EvaluateGenPressure(
+        std::vector<double>& genpressure,
+        const std::vector<double>& phinp) const;
+
+    /// evaluate saturation of all phases
+    void EvaluateSaturation(
+        std::vector<double>& saturation,
+        const std::vector<double>& phinp,
+        const std::vector<double>& pressure) const;
+
+    //! transform generalized pressures to true pressures
+    void TransformGenPresToTruePres(
+        const std::vector<double>& phi,
+        std::vector<double>& phi_transformed) const;
 
   private:
 
