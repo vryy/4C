@@ -27,6 +27,7 @@
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -61,7 +62,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   stiff_cardio_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *GState().DofRowMapView(), 81, true, true));
 
-  Teuchos::RCP<LINALG::Solver> dummysolver;
+  Teuchos::RCP<LINALG::Solver> dummysolver(new LINALG::Solver(disnp_ptr_->Comm()));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
