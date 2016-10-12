@@ -375,6 +375,9 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
+  // test whether newmap is non-overlapping
+  if (!newmap.UniqueGIDs()) dserror("new map not unique");
+
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
