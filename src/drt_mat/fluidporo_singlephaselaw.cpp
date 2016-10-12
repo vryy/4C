@@ -25,13 +25,8 @@
 MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  numdof_(matdata->GetInt("NUMDOF")),
-  presids_(matdata->Get<std::vector<int> >("PRESCOEFF"))
+: Parameter(matdata)
 {
-  // check if sizes fit
-  if (numdof_ != (int)presids_->size())
-    dserror("number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
   return;
 }
 
@@ -75,6 +70,13 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(
     phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     break;
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_constraint:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawConstraint(curmat));
+    phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat->Parameter());
+    break;
+  }
   case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
   {
     if (curmat->Parameter() == NULL)
@@ -96,9 +98,15 @@ MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : FluidPoroPhaseLaw(matdata),
+  numdof_(matdata->GetInt("NUMDOF")),
+  presids_(matdata->Get<std::vector<int> >("PRESCOEFF")),
   reltensions_(matdata->GetDouble("RELTENSION")),
   sat0_(matdata->GetDouble("SATURATION_0"))
 {
+  // check if sizes fit
+  if (numdof_ != (int)presids_->size())
+    dserror("number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
+
   return;
 }
 
@@ -170,11 +178,15 @@ MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : FluidPoroPhaseLaw(matdata),
+  numdof_(matdata->GetInt("NUMDOF")),
+  presids_(matdata->Get<std::vector<int> >("PRESCOEFF")),
   reltensions_(matdata->GetDouble("RELTENSION")),
   exp_(matdata->GetDouble("EXP")),
   sat0_(matdata->GetDouble("SATURATION_0"))
 {
-
+  // check if sizes fit
+  if (numdof_ != (int)presids_->size())
+    dserror("number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
   return;
 }
 
@@ -251,9 +263,15 @@ MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : FluidPoroPhaseLaw(matdata),
+  numdof_(matdata->GetInt("NUMDOF")),
+  presids_(matdata->Get<std::vector<int> >("PRESCOEFF")),
   functionID_saturation_(matdata->GetInt("FUNCTSAT")),
   functionID_pressure_(matdata->GetInt("FUNCTPRES"))
 {
+  // check if sizes fit
+  if (numdof_ != (int)presids_->size())
+    dserror("number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
+  return;
 }
 
 /*----------------------------------------------------------------------*

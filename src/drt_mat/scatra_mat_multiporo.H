@@ -42,6 +42,8 @@ public:
   /// create material instance of matching type with my parameters
   virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+  /// density
+  const double density_;
   /// ID of fluid phase the scalar is associated with
   const int phaseID_;
 
@@ -141,6 +143,12 @@ public:
   virtual MAT::PAR::Parameter* Parameter() const
   {
     return params_;
+  }
+
+  /// return phase density
+  virtual double Density() const
+  {
+    return params_->density_;
   }
 
   /// return phase ID

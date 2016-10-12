@@ -67,13 +67,6 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(
      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
      break;
    }
-   case INPAR::MAT::m_fluidporo_phasedof_pressuresum:
-   {
-     if (curmat->Parameter() == NULL)
-       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressureSum(curmat));
-     phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressureSum*>(curmat->Parameter());
-     break;
-   }
    case INPAR::MAT::m_fluidporo_phasedof_saturation:
    {
      if (curmat->Parameter() == NULL)
@@ -112,6 +105,14 @@ void MAT::PAR::FluidPoroPhaseDofDiffPressure::Initialize()
 {
   phaselaw_->Initialize();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *  return phase law type                                  vuong 08/16 |
+*----------------------------------------------------------------------*/
+INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawType() const
+{
+  return phaselaw_->Type();
 }
 
 /*----------------------------------------------------------------------*
@@ -211,6 +212,14 @@ void MAT::PAR::FluidPoroPhaseDofPressure::Initialize()
 }
 
 /*----------------------------------------------------------------------*
+ *  return phase law type                                  vuong 08/16 |
+*----------------------------------------------------------------------*/
+INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType() const
+{
+  return phaselaw_->Type();
+}
+
+/*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
 *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofPressure::FillDoFMatrix(
@@ -276,91 +285,6 @@ double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateDerivOfDofWrtPressure(
   return presurederiv;
 }
 
-
-/************************************************************************/
-/************************************************************************/
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseDofPressureSum::FluidPoroPhaseDofPressureSum(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: FluidPoroPhaseDof(matdata)
-{
-}
-
-/*----------------------------------------------------------------------*
- *  fill the dof matrix with the phase dofs                 vuong 08/16 |
-*----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroPhaseDofPressureSum::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat,
-    int numphase) const
-{
-  // just mark the corresponding entry in the matrix
-  dofmat(numphase,numphase) = 1.0;
-}
-
-/*----------------------------------------------------------------------*
- *  Evaluate generalized pressure of a phase                vuong 08/16 |
-*----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressureSum::EvaluateGenPressure(
-    int phasenum,
-    const std::vector<double>& state) const
-{
-  // return the corresponding dof value
-  return state[phasenum];
-}
-
-
-/*----------------------------------------------------------------------*
- *   Evaluate saturation of the phase                       vuong 08/16 |
-*----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressureSum::EvaluateSaturation(
-    int phasenum,
-    const std::vector<double>& state,
-    const std::vector<double>& pressure) const
-{
-  // the saturation is calculated from the other phases -> the phase manager class handles this
-  dserror("The saturation of the last phase needs to be computed form the sum of all other saturations");
-
-  return 0.0;
-}
-
-
-/*--------------------------------------------------------------------------*
- *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
-*---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressureSum::EvaluateDerivOfSaturationWrtPressure(
-    int phasenum,
-    int doftoderive,
-    const std::vector<double>& state) const
-{
-  // the derivative is determined by the other phases,
-  // as the saturation is given as 1.0 - (sum of saturation of all other phases)
-  // It is evaluated by the phase manager class
-  dserror("The saturation of the last phase needs to be computed form the sum of all other saturations");
-
-  return 0.0;
-}
-
-
-/*----------------------------------------------------------------------------------------*
- * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
-*----------------------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressureSum::EvaluateDerivOfDofWrtPressure(
-    int phasenum,
-    int doftoderive,
-    const std::vector<double>& state) const
-{
-  double presurederiv = 0.0;
-
-  // respective derivative of w.r.t. is either 0 or 1
-  if(phasenum==doftoderive)
-    presurederiv = 1.0;
-
-  return presurederiv;
-}
-
 /************************************************************************/
 /************************************************************************/
 
@@ -386,6 +310,13 @@ void MAT::PAR::FluidPoroPhaseDofSaturation::Initialize()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *  return phase law type                                  vuong 08/16 |
+*----------------------------------------------------------------------*/
+INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType() const
+{
+  return phaselaw_->Type();
+}
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
@@ -395,7 +326,7 @@ void MAT::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
     int numphase) const
 {
   // get pressure coefficients of phase law
-  const std::vector<int>* presIDs = phaselaw_->presids_;
+  const std::vector<int>* presIDs = phaselaw_->PresIds();
 
   // safety check
   if((int)presIDs->size() != dofmat.N())

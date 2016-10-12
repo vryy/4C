@@ -54,13 +54,8 @@ namespace PAR
     /// initialize
     virtual void Initialize()=0;
 
-    /// @name material parameters
-    //@{
-    //! number of degrees of freedom
-    const int numdof_;
-    //! coefficients defining the pressures involved int the pressure-saturation law
-    const std::vector<int>* presids_;
-    //@}
+    /// pressure ids involved in phase law
+    virtual const std::vector<int>* PresIds()=0;
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(
@@ -99,11 +94,18 @@ namespace PAR
 
     /// @name material parameters
     //@{
+    //! number of degrees of freedom
+    const int numdof_;
+    //! coefficients defining the pressures involved int the pressure-saturation law
+    const std::vector<int>* presids_;
     //! 'relative tension' parameter (proportionality coefficient)
     const double reltensions_;
     //! saturation value at zero pressure
     const double  sat0_;
     //@}
+
+    /// pressure ids involved in phase law
+    virtual const std::vector<int>* PresIds() {return presids_;};
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(
@@ -144,6 +146,10 @@ namespace PAR
 
     /// @name material parameters
     //@{
+    //! number of degrees of freedom
+    const int numdof_;
+    //! coefficients defining the pressures involved int the pressure-saturation law
+    const std::vector<int>* presids_;
     //! relative tension coefficient
     const double reltensions_;
     //! exponent within phase law
@@ -151,6 +157,9 @@ namespace PAR
     //! saturation value at zero pressure
     const double  sat0_;
     //@}
+
+    /// pressure ids involved in phase law
+    virtual const std::vector<int>* PresIds() {return presids_;};
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(const std::vector<double>& pressure) const;
@@ -167,6 +176,56 @@ namespace PAR
     virtual double EvaluateDerivOfPressureWrtSaturation(
         int doftoderive,
         double saturation) const;
+
+  };
+  // class FluidPoroPhaseLawTangent
+
+  /*----------------------------------------------------------------------*/
+  //! a phase law indicating that the saturation is calculated from
+  //! saturation constraint (i.e. the sum of all saturations is equal to one)
+  class FluidPoroPhaseLawConstraint: public FluidPoroPhaseLaw
+  {
+  public:
+
+    /// standard constructor
+    explicit FluidPoroPhaseLawConstraint(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : FluidPoroPhaseLaw(matdata)
+    {};
+
+    /// destructor
+    virtual ~FluidPoroPhaseLawConstraint()
+    {
+      ;
+    }
+
+    /// initialize
+    virtual void Initialize(){return;};
+
+    /// pressure ids involved in phase law
+    virtual const std::vector<int>* PresIds()
+    {dserror("The constraint phase law does not have pressure coupling! \n "
+        "Combining Saturation DOF and constraint phase law is invalid!"); return NULL;};
+
+
+    //! evaluate saturation of phase
+    virtual double EvaluateSaturation(const std::vector<double>& pressure) const
+    {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
+
+    //! evaluate derivative of saturation w.r.t. pressure
+    virtual double EvaluateDerivOfSaturationWrtPressure(
+        int doftoderive,
+        const std::vector<double>& state) const
+    {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
+
+    //! evaluate generalized pressure related to phase law
+    virtual double EvaluateGenPressure(double saturation) const
+    {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
+
+    //! evaluate derivative of pressure w.r.t. saturation
+    virtual double EvaluateDerivOfPressureWrtSaturation(
+        int doftoderive,
+        double saturation) const
+    {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
   };
   // class FluidPoroPhaseLawTangent
@@ -191,11 +250,18 @@ namespace PAR
 
     /// @name material parameters
     //@{
+    //! number of degrees of freedom
+    const int numdof_;
+    //! coefficients defining the pressures involved int the pressure-saturation law
+    const std::vector<int>* presids_;
     //! function ID for evaluation of saturation
     const int functionID_saturation_;
     //! function ID for evaluation of pressure
     const int functionID_pressure_;
     //@}
+
+    /// pressure ids involved in phase law
+    virtual const std::vector<int>* PresIds() {return presids_;};
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(const std::vector<double>& pressure) const;

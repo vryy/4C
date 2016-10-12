@@ -68,10 +68,10 @@ namespace INPAR
       m_fluidporo_multiphase_reactions,        ///< collection of single phase materials for reavcitve multiphase flow through porous medium
       m_fluidporo_phasedof_pressure,           ///< pressure DOF for multiphase flow through porous medium
       m_fluidporo_phasedof_saturation,         ///< saturation DOF for multiphase flow through porous medium
-      m_fluidporo_phasedof_pressuresum,        ///< sumed pressure DOF for multiphase flow through porous medium
       m_fluidporo_phasedof_diffpressure,       ///< diffrenetial pressure DOF for multiphase flow through porous medium
       m_fluidporo_phaselaw_linear,             ///< linear pressure-saturation relationship
       m_fluidporo_phaselaw_tangent,            ///< tangent pressure-saturation relationship
+      m_fluidporo_phaselaw_constraint,         ///< the saturation constraint
       m_fluidporo_phaselaw_byfunction,         ///< pressure-saturation relationship defined by functions in input file
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction

@@ -68,13 +68,6 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
     phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
     break;
   }
-  case INPAR::MAT::m_fluidporo_phasedof_pressuresum:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressureSum(curmat));
-    phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofPressureSum*>(curmat->Parameter());
-    break;
-  }
   case INPAR::MAT::m_fluidporo_phasedof_saturation:
   {
     if (curmat->Parameter() == NULL)
@@ -201,11 +194,19 @@ void MAT::FluidPoroSinglePhase::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- *  fill the dof matrix with the phase dofs                 vuong 08/16 |
+ *  return dof type                                         vuong 08/16 |
 *----------------------------------------------------------------------*/
 INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroDofType() const
 {
   return params_->phasedof_->Type();
+}
+
+/*----------------------------------------------------------------------*
+ *  return phase law type                                  vuong 08/16 |
+*----------------------------------------------------------------------*/
+INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroPhaseLawType() const
+{
+  return params_->phasedof_->PoroPhaseLawType();
 }
 
 /*----------------------------------------------------------------------*

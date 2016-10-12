@@ -460,10 +460,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // access state vector
   const std::vector<double>& phinp = *varmanager.Phinp();
 
+  //cast
+  const MAT::FluidPoroMultiPhase& multiphasemat =
+      static_cast<const MAT::FluidPoroMultiPhase&>(material);
+
   // calculate the derivative of the pressure (actually first its inverse)
-  for(int iphase=0; iphase<numphases; iphase++)
-    for(int jphase=0; jphase<numphases; jphase++)
-      (*pressurederiv_)(iphase,jphase)   = EvaluateDerivOfDofWrtPressure(material,iphase,jphase,phinp);
+  multiphasemat.EvaluateDerivOfDofWrtPressure(*pressurederiv_,phinp);
 
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
@@ -477,17 +479,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // calculate derivatives of saturation w.r.t. pressure
   Epetra_SerialDenseMatrix deriv(numphases,numphases);
-  for(int iphase=0; iphase<numphases-1; iphase++)
-  {
-    for(int jphase=0; jphase<numphases; jphase++)
-    {
-      const double saturationderiv = EvaluateDerivOfSaturationWrtPressure(material,iphase,jphase,phinp);
-      deriv(iphase,jphase) = saturationderiv;
-      // the saturation of the last phase is 1.0- (sum of all saturations)
-      // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
-      deriv(numphases-1,jphase) += -1.0*saturationderiv;
-    }
-  }
+  multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv,phinp);
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
@@ -531,38 +523,6 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::ClearGPState()
 
 
   return;
-}
-
-/*---------------------------------------------------------------------------*
- *  evaluate derivative of saturation with respect to pressure   vuong 08/16 |
-*---------------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateDerivOfSaturationWrtPressure(
-    const MAT::Material& material,
-    int phasenum,
-    int doftoderive,
-    const std::vector<double>& state) const
-{
-  //get the single phase material
-  const MAT::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
-
-  return singlephasemat.EvaluateDerivOfSaturationWrtPressure(phasenum,doftoderive,state);
-}
-
-/*-----------------------------------------------------------------------------------*
- * evaluate derivative of degree of freedom with respect to pressure     vuong 08/16 |
-*------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateDerivOfDofWrtPressure(
-    const MAT::Material& material,
-    int phasenum,
-    int doftoderive,
-    const std::vector<double>& state) const
-{
-  //get the single phase material
-  const MAT::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
-
-  return singlephasemat.EvaluateDerivOfDofWrtPressure(phasenum,doftoderive,state);
 }
 
 /*----------------------------------------------------------------------*

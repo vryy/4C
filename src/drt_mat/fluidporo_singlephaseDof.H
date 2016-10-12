@@ -52,6 +52,9 @@ namespace PAR
     /// initialize
     virtual void Initialize()=0;
 
+    /// return type of phase law
+    virtual INPAR::MAT::MaterialType PoroPhaseLawType() const=0;
+
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
         Epetra_SerialDenseMatrix& dofmat,
@@ -100,6 +103,9 @@ namespace PAR
     /// initialize
     virtual void Initialize();
 
+    /// return type of phase law
+    INPAR::MAT::MaterialType PoroPhaseLawType() const;
+
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
         Epetra_SerialDenseMatrix& dofmat,
@@ -135,54 +141,6 @@ namespace PAR
     FluidPoroPhaseLaw* phaselaw_;
   };
 
-  //! sumed pressure degree of freedom (the last phase) within a porous fluid
-  class FluidPoroPhaseDofPressureSum: public FluidPoroPhaseDof
-  {
-
-  public:
-
-    /// standard constructor
-    explicit FluidPoroPhaseDofPressureSum(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-    /// destructor
-    virtual ~FluidPoroPhaseDofPressureSum()
-    {
-      ;
-    }
-
-    /// initialize
-    virtual void Initialize(){return;};
-
-    /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-    virtual void FillDoFMatrix(
-        Epetra_SerialDenseMatrix& dofmat,
-        int numphase) const ;
-
-    /// evaluate saturation of the phase
-    virtual double EvaluateSaturation(
-        int phasenum,
-        const std::vector<double>& state,
-        const std::vector<double>& pressure) const;
-
-    /// evaluate the generalized(!) pressure of this phase
-    virtual double EvaluateGenPressure(
-            int phasenum,
-            const std::vector<double>& state) const;
-
-    //! evaluate derivative of saturation with respect to pressure
-    virtual double EvaluateDerivOfSaturationWrtPressure(
-        int phasenum,
-        int doftoderive,
-        const std::vector<double>& state) const;
-
-    //! evaluate derivative of degree of freedom with respect to pressure
-    virtual double EvaluateDerivOfDofWrtPressure(
-            int phasenum,
-            int doftoderive,
-            const std::vector<double>& state) const;
-
-  };
-
   //! differential pressure degree of freedom of a single phase of porous multiphase fluid
   class FluidPoroPhaseDofDiffPressure: public FluidPoroPhaseDof
   {
@@ -200,6 +158,9 @@ namespace PAR
 
     /// initialize
     virtual void Initialize();
+
+    /// return type of phase law
+    INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(
@@ -255,6 +216,9 @@ namespace PAR
 
     /// initialize
     virtual void Initialize();
+
+    /// return type of phase law
+    INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     virtual void FillDoFMatrix(

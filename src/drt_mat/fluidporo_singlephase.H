@@ -221,6 +221,9 @@ namespace MAT
       /// return type of degree of freedom
       INPAR::MAT::MaterialType PoroDofType() const;
 
+      /// return type of phase law
+      INPAR::MAT::MaterialType PoroPhaseLawType() const;
+
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
       void FillDoFMatrix(
           Epetra_SerialDenseMatrix& dofmat,

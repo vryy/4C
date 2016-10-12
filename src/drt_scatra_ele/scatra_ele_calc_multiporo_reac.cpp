@@ -354,11 +354,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   if(iquad==-1)
     dserror("no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
-  //read the porosity from the diffusion manager and scale it with the saturation
-  const double porosity = poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k);
-
   const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(material);
+
+  //read the porosity from the diffusion manager and scale it with the saturation and the density
+  const double porosity = poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k)*actmat->Density();
 
   {
     // set diffusivity (scaled with porosity)

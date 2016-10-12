@@ -550,20 +550,6 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
 
   private:
 
-    //! evaluate derivative of saturation with respect to pressure
-    double EvaluateDerivOfSaturationWrtPressure(
-        const MAT::Material& material,
-        int phasenum,
-        int doftoderive,
-        const std::vector<double>& state) const;
-
-    //! evaluate derivative of degree of freedom with respect to pressure
-    double EvaluateDerivOfDofWrtPressure(
-        const MAT::Material& material,
-        int phasenum,
-        int doftoderive,
-        const std::vector<double>& state) const;
-
     //! derivative of true pressure w.r.t. degrees of freedom
     // first index: pressure, second index: dof
     Teuchos::RCP<Epetra_SerialDenseMatrix> pressurederiv_;

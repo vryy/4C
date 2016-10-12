@@ -505,6 +505,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::FluidPoroPhaseLawTangent* params = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_fluidporo_phaselaw_constraint:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawConstraint(curmat));
+    MAT::PAR::FluidPoroPhaseLawConstraint* params = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
   {
     if (curmat->Parameter() == NULL)
@@ -524,13 +531,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
     MAT::PAR::FluidPoroPhaseDofPressure* params = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_fluidporo_phasedof_pressuresum:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressureSum(curmat));
-    MAT::PAR::FluidPoroPhaseDofPressureSum* params = static_cast<MAT::PAR::FluidPoroPhaseDofPressureSum*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_fluidporo_phasedof_saturation:

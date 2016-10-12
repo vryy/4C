@@ -278,6 +278,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_scatra_multiporo));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"DENSITY","density");
     AddNamedInt(m,"PHASEID","ID of fluid phase the scalar is associated with");
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
@@ -2350,17 +2351,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofPressureSum",
-                                            "one degrree of freedom for multiphase flow in deformable porous media",
-                                            INPAR::MAT::m_fluidporo_phasedof_pressuresum));
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // one degree of freedom for on single phase of a multiphase flow in a poroelastic material
-  {
-    Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSinglePhaseDofSaturation",
                                             "one degrree of freedom for multiphase flow in deformable porous media",
                                             INPAR::MAT::m_fluidporo_phasedof_saturation));
@@ -2401,6 +2391,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMDOF","number of DoFs",0);
     AddNamedIntVector(m,"PRESCOEFF","Coefficients for pressure dependence","NUMDOF",0);
     AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // constraint law for pressure-saturation law in porous media multiphase problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PhaseLawConstraint",
+                                            "constraint fluid phase of porous medium",
+                                            INPAR::MAT::m_fluidporo_phaselaw_constraint));
 
     AppendMaterialDefinition(matlist,m);
   }

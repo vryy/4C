@@ -28,6 +28,7 @@ MAT::PAR::ScatraMatMultiPoro::ScatraMatMultiPoro(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : ScatraMat(matdata),
+  density_(matdata->GetDouble("DENSITY")),
   phaseID_(matdata->GetInt("PHASEID"))
 {
 }

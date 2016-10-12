@@ -55,6 +55,9 @@ namespace MAT
       //! transformation of degrees of freedom to true pressures
       Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;
 
+      //! number of constraint saturation phase
+      int constraintphaseID_;
+
       //! initialize flag
       bool isinit_;
 
@@ -168,6 +171,16 @@ private:
     void TransformGenPresToTruePres(
         const std::vector<double>& phi,
         std::vector<double>& phi_transformed) const;
+
+    //! evaluate derivative of degree of freedom with respect to pressure
+    void EvaluateDerivOfDofWrtPressure(
+            Epetra_SerialDenseMatrix& derivs,
+            const std::vector<double>& state) const;
+
+    //! evaluate derivative of saturation with respect to pressure
+    void EvaluateDerivOfSaturationWrtPressure(
+        Epetra_SerialDenseMatrix& derivs,
+        const std::vector<double>& state) const;
 
   private:
 

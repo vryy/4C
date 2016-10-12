@@ -54,7 +54,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
       // add scalar names
       {
         std::ostringstream temp;
-        temp << k;
+        temp << k+1;
         scalarnames_[k] = "phi"+temp.str();
 
         if(not Function(functID_-1).IsVariable(0,scalarnames_[k]))
@@ -67,7 +67,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
       // add pressure names
       {
         std::ostringstream temp;
-        temp << k;
+        temp << k+1;
         pressurenames_[k] = "p"+temp.str();
 
         if(not Function(functID_-1).IsVariable(0,pressurenames_[k]))
@@ -77,7 +77,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
       // add saturation names
       {
         std::ostringstream temp;
-        temp << k;
+        temp << k+1;
         saturationnames_[k] = "S"+temp.str();
 
         if(not Function(functID_-1).IsVariable(0,saturationnames_[k]))
