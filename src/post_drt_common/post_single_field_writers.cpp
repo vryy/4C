@@ -524,6 +524,7 @@ void ParticleFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("density", "density", nodebased, 1);
   writer_->WriteResult("pressure", "pressure", nodebased, 1);
   writer_->WriteResult("temperature", "temperature", nodebased, 1);
+  writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
   writer_->WriteResult("sign", "sign", nodebased, 1);
   writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);
 }

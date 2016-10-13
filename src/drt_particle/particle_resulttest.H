@@ -66,13 +66,11 @@ private:
   Teuchos::RCP<const Epetra_Vector> vel_;
   //! global acceleration DOFs
   Teuchos::RCP<const Epetra_Vector> acc_;
-  //! global radius DOFs
+  //! global radius
   Teuchos::RCP<const Epetra_Vector> radius_;
-  //! global density DOFs
+  //! global density
   Teuchos::RCP<const Epetra_Vector> density_;
-  //! global pressure DOFs
-    Teuchos::RCP<const Epetra_Vector> pressure_;
-  //! global temperature DOFs
+  //! global temperature
   Teuchos::RCP<const Epetra_Vector> temperature_;
 
 };

@@ -83,14 +83,10 @@ namespace PARTICLE
     virtual void ComputeDisplacements();
 
     //! integrate step - thermodynamic-related physics
-    virtual void ComputeThermodynamics1();
-
-
-    //! integrate step - temperature related physics
-    virtual int ComputeThermodynamics();
+    virtual void ComputeThermodynamics();
 
     //! expansion coefficient for radius and density (in case of thermodinamics)
-    double EffExpCoeff(const double &thermalExpansion, const double &delta) {return thermalExpansion * delta + 1; }
+    virtual double EffExpCoeff(const double &thermalExpansion, const double &delta) {return thermalExpansion * delta + 1; }
 
   };  // class TimIntCentrDiff
 

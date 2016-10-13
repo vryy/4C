@@ -42,8 +42,10 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
 
   if (tintegrator.Densitynp() != Teuchos::null)
     density_  = tintegrator.Densitynp();
-  if (tintegrator.Temperaturenp() != Teuchos::null)
-    temperature_  = tintegrator.Temperaturenp();
+
+  Teuchos::RCP<const Epetra_Vector> temperaturen = tintegrator.Temperaturenp();
+  if (temperaturen != Teuchos::null)
+    temperature_ = temperaturen;
 }
 
 /*----------------------------------------------------------------------*/

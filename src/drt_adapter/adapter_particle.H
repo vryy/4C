@@ -160,11 +160,11 @@ namespace ADAPTER
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
 
-    //! Read-only temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
-
     //! Read-only specific enthalpies \f$H_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() = 0;
+
+    //! Read-only specific temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
 
 
 
@@ -189,11 +189,11 @@ namespace ADAPTER
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
 
+    //! Read-only specific enthalpies \f$H_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() = 0;
+
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
-
-    //! Read-only specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> specEnthalpynp() = 0;
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
@@ -206,9 +206,6 @@ namespace ADAPTER
 
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
-
-    //! Read-only latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() = 0;
 
 
 
@@ -244,9 +241,6 @@ namespace ADAPTER
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
 
-    //! Extract temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
-
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp() = 0;
 
@@ -262,8 +256,16 @@ namespace ADAPTER
     //! Extract inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
 
-    //! Extract latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
+    //@}
+
+    //! @name Compute Methods
+    //@{
+
+    //! Compute the inertia vector
+    virtual void ComputeInertia(const int &lidNode) = 0;
+
+    //! Compute inertia for the entire vector
+    virtual void ComputeInertia(bool trg_createInertiaVector) = 0;
 
     //@}
 

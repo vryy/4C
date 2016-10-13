@@ -272,11 +272,11 @@ namespace PARTICLE
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
-    //! Read-only temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
-
     //! Read-only specific enthalpies \f$H_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() { return (*specEnthalpy_)(0); }
+
+    //! Read-only temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return ComputeTemperature((*specEnthalpy_)(0)); }
 
 
 
@@ -301,11 +301,11 @@ namespace PARTICLE
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
-    //! Read-only temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
-
     //! Read-only specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> specEnthalpynp() { return specEnthalpyn_; }
+    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() { return specEnthalpyn_; }
+
+    //! Read-only temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return ComputeTemperature(specEnthalpyn_); }
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
@@ -318,9 +318,6 @@ namespace PARTICLE
 
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
-
-    //! Read-only latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() { return latentHeat_; }
 
 
 
@@ -356,9 +353,6 @@ namespace PARTICLE
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
-    //! Extract temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
-
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
 
@@ -371,14 +365,25 @@ namespace PARTICLE
     //! Extract masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
 
-    //! Extract inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
+    //! Extract masses \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
-
-    //! Extract latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat(){ return latentHeat_; }
 
     //! Set forces due to interface loads, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce);  ///< the force on interface
+
+    //@}
+
+    //! @name Compute Methods
+    //@{
+
+    //! Compute the inertia vector
+    //! The vector should be already initialized
+    //! The most updated radius is used (radius_ vs radiusn_)
+    //! inertia-vector -> sphere: I = 2/5 * m * r^2
+    virtual void ComputeInertia(const int &lidNode);
+
+    //! Compute inertia for the entire vector
+    virtual void ComputeInertia(bool trg_createInertiaVector = false);
 
     //@}
 
@@ -429,14 +434,8 @@ namespace PARTICLE
     /* Volume -> radius */
     double Volume2Radius(double volume) { return std::pow((3.0 / 4.0) * M_1_PI * volume, 1.0 / 3.0); };
 
-    /* Compute the inertia vector
-     * The vector should be already initialized
-     * The most updated radius is used (radius_ vs radiusn_)
-     * inertia-vector -> sphere: I = 2/5 * m * r^2 */
-    virtual void ComputeInertia();
-
     /* Compute the temperature from the specEnthalpy */
-    virtual void ComputeTemperature();
+    virtual Teuchos::RCP<const Epetra_Vector> ComputeTemperature(Teuchos::RCP<const Epetra_Vector> specEnthalpy);
 
     //! initialization of vector for visualization of the particle orientation
     virtual void InitializeOrientVector();
@@ -503,8 +502,6 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
     //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
-    //! Temperatures \f$T_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
     //! Specific enthalpies \f$H_{n}, H_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > specEnthalpy_;
 
@@ -522,8 +519,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
-    //! Temperatures \f${T}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> temperaturen_;
     //! Specific Enthalpies \f${H}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> specEnthalpyn_;
 
@@ -541,8 +536,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
-    //! Latent heats \f$LH_{n}\f$ or \f$LH_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> latentHeat_;
 
     //@}
 

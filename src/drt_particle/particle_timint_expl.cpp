@@ -78,8 +78,6 @@ void PARTICLE::TimIntExpl::UpdateStepState()
     radius_->UpdateSteps(*radiusn_);
     //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
     density_->UpdateSteps(*densityn_);
-    //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
-    temperature_->UpdateSteps(*temperaturen_);
     //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
     break;
