@@ -2,7 +2,7 @@
 /*!
 \file extparticle_mat.H
 
-\brief Particle material with support for thermodynamics
+\brief Multi-purpose Particle-MeshFree material with support for thermodynamics
 
 \level 3
 
@@ -31,10 +31,31 @@ namespace MAT
       virtual ~ExtParticleMat(){return;};
 
       //! return the threshold specific enthalpy (solid <-> transition)
-      virtual double SpecEnthalpyST() const { return transitionTemperatureSL_ * CPS_; }
+      virtual double SpecEnthalpyST() const { return transitionTemperature_ * CPS_; }
 
       //! return the threshold specific enthalpy (transition <-> liquid)
-      virtual double SpecEnthalpyTL() const { return SpecEnthalpyST() + latentHeatSL_; }
+      virtual double SpecEnthalpyTL() const { return SpecEnthalpyST() + latentHeat_; }
+
+      //! return the nominal speed of sound in case of small density variations and solid phase
+      virtual double SpeedOfSoundS() const { return std::pow(youngModulus_/initDensity_,0.5); }
+
+      //! return the nominal speed of sound in case of small density variations and liquid phase
+      virtual double SpeedOfSoundL() const { return std::pow(compressibilityModulus_/initDensity_,0.5); }
+
+      //! return the nominal speed of sound in case of small density variations and transition phase
+      virtual double SpeedOfSoundT(const double specEnthalpy) const
+      {
+        // safety check
+        if (specEnthalpy < SpecEnthalpyST() || specEnthalpy > SpecEnthalpyTL())
+          dserror("This particle is not in transition phase");
+
+        // linear interpolation between the Young and compressibility moduli
+        const double alpha = ( compressibilityModulus_ - youngModulus_)/latentHeat_;
+        const double qq = youngModulus_ - SpecEnthalpyST() * alpha;
+        const double xx = alpha * specEnthalpy + qq;
+
+        return std::pow(xx/initDensity_,0.5);
+      }
 
       //! create instance of particle additive manufacturing material
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -48,16 +69,17 @@ namespace MAT
       /// specific heat - constant pressure - liquid state
       const double CPL_;
       /// specific latent heat - solid <-> liquid
-      const double latentHeatSL_;
+      const double latentHeat_;
       /// transition temperature - solid <-> liquid
-      const double transitionTemperatureSL_;
+      const double transitionTemperature_;
       /// volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
       const double thermalExpansionS_;
       /// volumetric thermal expansion coefficient - liquid state
       const double thermalExpansionL_;
-      /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
-      const double thermalExpansionSL_;
-
+      /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!
+      const double thermalExpansionT_;
+      /// compressibility modulus for the liquid phase
+      const double compressibilityModulus_;
 
 
     };  // class MAT::PAR::ExtParticleMat

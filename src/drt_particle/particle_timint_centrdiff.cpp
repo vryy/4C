@@ -113,7 +113,7 @@ void PARTICLE::TimIntCentrDiff::Init()
     const double inv_CPL = 1/CPL;
     const double thermalExpansionS = extParticleMat->thermalExpansionS_;
     const double thermalExpansionL = extParticleMat->thermalExpansionL_;
-    const double thermalExpansionSL = extParticleMat->thermalExpansionSL_;
+    const double thermalExpansionT = extParticleMat->thermalExpansionT_;
 
     // extract the boundaries
     const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
@@ -135,7 +135,7 @@ void PARTICLE::TimIntCentrDiff::Init()
     double v_max_thermo = 2*(Volume2Radius(volume) - r_max);
 
     volume = Radius2Volume(r_max);
-    volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+    volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
     v_max_thermo = std::max(v_max_thermo,2*(Volume2Radius(volume) - r_max));
 
     volume = Radius2Volume(r_max);
@@ -177,10 +177,10 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
   const double inv_CPS = 1/CPS;
   const double CPL = extParticleMat->CPL_;
   const double inv_CPL = 1/CPL;
-  const double latentHeatSL = extParticleMat->latentHeatSL_;
+  const double latentHeatT = extParticleMat->latentHeat_;
   const double thermalExpansionS = extParticleMat->thermalExpansionS_;
   const double thermalExpansionL = extParticleMat->thermalExpansionL_;
-  const double thermalExpansionSL = extParticleMat->thermalExpansionSL_;
+  const double thermalExpansionT = extParticleMat->thermalExpansionT_;
 
   // extract the map
   const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->Bins2HeatSources();
@@ -267,8 +267,8 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionSL,latentHeatSL);
-          deltaSpecEnthalpy -= latentHeatSL;
+          volume *= EffExpCoeff(thermalExpansionT,latentHeatT);
+          deltaSpecEnthalpy -= latentHeatT;
 
           // expansion in liquid state
           volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
@@ -283,7 +283,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
         }
       }
       // WAS it liquid?
@@ -299,8 +299,8 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in the transition state
-          volume *= EffExpCoeff(thermalExpansionSL,-latentHeatSL);
-          deltaSpecEnthalpy -= -latentHeatSL;
+          volume *= EffExpCoeff(thermalExpansionT,-latentHeatT);
+          deltaSpecEnthalpy -= -latentHeatT;
 
           // expansion in liquid state
           volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
@@ -318,7 +318,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
         }
       }
       // it WAS in transition state
@@ -330,7 +330,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
 
           // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpyUpToTransition);
+          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpyUpToTransition);
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in liquid state
@@ -342,7 +342,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
           const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
 
           // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpyUpToTransition);
+          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpyUpToTransition);
           deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
 
           // expansion in liquid state
@@ -350,7 +350,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
         }
         // it IS transition state
         else
-          volume *= EffExpCoeff(thermalExpansionSL,deltaSpecEnthalpy);
+          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
       }
 
       // --- compute the new volume --- //

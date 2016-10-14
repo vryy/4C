@@ -81,6 +81,7 @@ PARTICLE::TimInt::TimInt
   angAcc_(Teuchos::null),
   radius_(Teuchos::null),
   density_(Teuchos::null),
+  densityDot_(Teuchos::null),
   specEnthalpy_(Teuchos::null),
 
   disn_(Teuchos::null),
@@ -90,6 +91,7 @@ PARTICLE::TimInt::TimInt
   angAccn_(Teuchos::null),
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
+  densityDotn_(Teuchos::null),
   specEnthalpyn_(Teuchos::null),
 
   fifc_(Teuchos::null),
@@ -99,9 +101,11 @@ PARTICLE::TimInt::TimInt
   radiusDot_(Teuchos::null),
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
+  pressure_(Teuchos::null),
 
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  collhandler_(Teuchos::null)
+  collhandler_(Teuchos::null)//,
+//interhandler_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -145,6 +149,10 @@ void PARTICLE::TimInt::Init()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    densityDot_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    pressure_ = LINALG::CreateVector(*NodeRowMapView(), true);
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     density_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
@@ -182,6 +190,9 @@ void PARTICLE::TimInt::Init()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     radiusn_  = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
@@ -350,22 +361,33 @@ void PARTICLE::TimInt::SetInitialFields()
   // -----------------------------------------//
 
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  if (extParticleMat != NULL)
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  {
+    // the pressure at the beginning is null because the density is everywhere equal to the nominal initial density
+    // ComputePressure();
+  }// no break
+  case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // set density in the density vector (useful only for thermodynamics)
     (*density_)(0)->PutScalar(initDensity);
 
     // initialize temperature of particles
     const double initTemperature = extParticleMat->initTemperature_;
-    const double transitionTemperatureSL = extParticleMat->transitionTemperatureSL_;
-    const double tempDiff = initTemperature - transitionTemperatureSL;
+    const double transitionTemperature = extParticleMat->transitionTemperature_;
+    const double tempDiff = initTemperature - transitionTemperature;
 
     if (tempDiff > 0)
       (*specEnthalpy_)(0)->PutScalar(extParticleMat->SpecEnthalpyTL() + tempDiff * extParticleMat->CPL_);
-    else if (initTemperature < transitionTemperatureSL)
+    else if (initTemperature < transitionTemperature)
       (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
     else
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+    break;
+  }
+  default : //do nothing
+    break;
   }
 }
 
@@ -502,6 +524,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(angAcc_);
   UpdateStateVectorMap(radius_,true);
   UpdateStateVectorMap(density_,true);
+  UpdateStateVectorMap(densityDot_,true);
   UpdateStateVectorMap(specEnthalpy_,true);
 
   UpdateStateVectorMap(disn_);
@@ -511,6 +534,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(angAccn_);
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
+  UpdateStateVectorMap(densityDotn_,true);
   UpdateStateVectorMap(specEnthalpyn_,true);
 
   UpdateStateVectorMap(fifc_);
@@ -520,6 +544,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
   UpdateStateVectorMap(inertia_,true);
+  UpdateStateVectorMap(pressure_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -572,6 +597,11 @@ void PARTICLE::TimInt::ReadRestartState()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    // read densityDot
+    reader.ReadVector(densityDotn_, "densityDot");
+    densityDot_->UpdateSteps(*densityDotn_);
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // read radius
@@ -944,10 +974,7 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > &stateV
 }
 
 /*-----------------------------------------------------------------------------*/
-/* Compute the inertia vector
- * The vector should be already initialized
- * The most updated radius is used (radius_ vs radiusn_)
- * inertia-vector -> sphere: I = 2/5 * m * r^2 */
+// Compute inertia
 void PARTICLE::TimInt::ComputeInertia(const int &lidNode)
 {
   // Find the most-updated radius vector
@@ -964,13 +991,12 @@ void PARTICLE::TimInt::ComputeInertia(const int &lidNode)
 
 /*-----------------------------------------------------------------------------*/
 /* Compute the inertia vector
- * The vector should be already initialized
  * The most updated radius is used (radius_ vs radiusn_)
  * inertia-vector -> sphere: I = 2/5 * m * r^2 */
 void PARTICLE::TimInt::ComputeInertia(bool trg_createInertiaVector)
 {
   // rebuild the inertia vector
-  if (trg_createInertiaVector)
+  if (trg_createInertiaVector || inertia_ == Teuchos::null)
     inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
   // compute inertia for every particle
@@ -989,7 +1015,7 @@ Teuchos::RCP<const Epetra_Vector> PARTICLE::TimInt::ComputeTemperature(Teuchos::
   //extract the interesting parameters
   const double specEnthalpyST = particle_algorithm_->ExtParticleMat()->SpecEnthalpyST();
   const double specEnthalpyTL = particle_algorithm_->ExtParticleMat()->SpecEnthalpyTL();
-  const double transitionTemperatureSL = particle_algorithm_->ExtParticleMat()->transitionTemperatureSL_;
+  const double transitionTemperature = particle_algorithm_->ExtParticleMat()->transitionTemperature_;
   const double CPS = particle_algorithm_->ExtParticleMat()->CPS_;
   const double inv_CPS = 1/CPS;
   const double CPL = particle_algorithm_->ExtParticleMat()->CPL_;
@@ -1009,12 +1035,62 @@ Teuchos::RCP<const Epetra_Vector> PARTICLE::TimInt::ComputeTemperature(Teuchos::
     if (currNodeSpecEnthalpy < specEnthalpyST)
       currNodeTemperature = currNodeSpecEnthalpy * inv_CPS;
     else if (currNodeSpecEnthalpy > specEnthalpyTL)
-      currNodeTemperature = transitionTemperatureSL + (currNodeSpecEnthalpy - specEnthalpyTL) * inv_CPL;
+      currNodeTemperature = transitionTemperature + (currNodeSpecEnthalpy - specEnthalpyTL) * inv_CPL;
     else
-      currNodeTemperature = transitionTemperatureSL;
+      currNodeTemperature = transitionTemperature;
   }
 
   return temperature;
+}
+
+/*-----------------------------------------------------------------------------*/
+// Compute the pressure
+void PARTICLE::TimInt::ComputePressure(const int &lidNode, bool trg_Nplus1)
+{
+  // n+1 or not? Let's pick the correct pointer
+  Teuchos::RCP<Epetra_Vector> specEnthalpy, density;
+  if (trg_Nplus1)
+  {
+    specEnthalpy = specEnthalpyn_;
+    density = densityn_;
+  }
+  else
+  {
+    specEnthalpy = (*specEnthalpy_)(0);
+    density = (*density_)(0);
+  }
+
+  // extract the material parameters
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  const double initDensity = extParticleMat->initDensity_;
+  const double specEnthalpyST = extParticleMat->SpecEnthalpyST();
+  const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
+  const double speedOfSoundS = extParticleMat->SpeedOfSoundS();
+  const double speedOfSoundL = extParticleMat->SpeedOfSoundL();
+
+  const double densityDelta = (*density)[lidNode] - initDensity;
+  if ((*specEnthalpy)[lidNode] <= specEnthalpyST)
+    (*pressure_)[lidNode] = std::pow(speedOfSoundS,2) * densityDelta;
+  else if ((*specEnthalpy)[lidNode] >= specEnthalpyTL)
+    (*pressure_)[lidNode] = std::pow(speedOfSoundL,2) * densityDelta;
+  else
+  {
+    const double speedOfSoundT = extParticleMat->SpeedOfSoundT((*specEnthalpy)[lidNode]);
+    (*pressure_)[lidNode] = std::pow(speedOfSoundT,2) * densityDelta;
+  }
+}
+
+/*-----------------------------------------------------------------------------*/
+// Compute pressure vector
+void PARTICLE::TimInt::ComputePressure(bool trg_createPressureVector, bool trg_Nplus1)
+{
+  // rebuild the pressure vector
+  if (trg_createPressureVector || pressure_ == Teuchos::null)
+    pressure_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+
+  // compute inertia for every particle
+  for (int lidNode = 0; lidNode < discret_->NodeRowMap()->NumMyElements(); ++lidNode)
+    ComputePressure(lidNode, trg_Nplus1);
 }
 
 /*----------------------------------------------------------------------*/

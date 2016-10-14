@@ -25,11 +25,12 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
     CPS_(matdata->GetDouble("CPS")),
     CPL_(matdata->GetDouble("CPL")),
-    latentHeatSL_(matdata->GetDouble("LATENT_HEAT_SL")),
-    transitionTemperatureSL_(matdata->GetDouble("TRANSITION_TEMPERATURE_SL")),
+    latentHeat_(matdata->GetDouble("LATENT_HEAT")),
+    transitionTemperature_(matdata->GetDouble("TRANSITION_TEMPERATURE")),
     thermalExpansionS_(matdata->GetDouble("THERMAL_EXPANSION_S")),
     thermalExpansionL_(matdata->GetDouble("THERMAL_EXPANSION_L")),
-    thermalExpansionSL_(matdata->GetDouble("THERMAL_EXPANSION_SL"))
+    thermalExpansionT_(matdata->GetDouble("THERMAL_EXPANSION_T")),
+    compressibilityModulus_(matdata->GetDouble("COMPRESSIBILITY"))
 {
   return;
 }

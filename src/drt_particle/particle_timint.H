@@ -272,6 +272,9 @@ namespace PARTICLE
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
+    //! Read-only time derivative of densities \f$\dot{\rho}_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() { return (*densityDot_)(0); }
+
     //! Read-only specific enthalpies \f$H_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() { return (*specEnthalpy_)(0); }
 
@@ -301,6 +304,9 @@ namespace PARTICLE
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
+    //! Read-only time derivative of densities \f$\dot{\rho}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() { return densityDotn_; }
+
     //! Read-only specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() { return specEnthalpyn_; }
 
@@ -318,6 +324,9 @@ namespace PARTICLE
 
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
+
+    //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
 
 
 
@@ -353,6 +362,9 @@ namespace PARTICLE
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
+    //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() { return densityDotn_; }
+
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
 
@@ -368,6 +380,9 @@ namespace PARTICLE
     //! Extract masses \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
 
+    //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() { return pressure_; }
+
     //! Set forces due to interface loads, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce);  ///< the force on interface
 
@@ -377,7 +392,6 @@ namespace PARTICLE
     //@{
 
     //! Compute the inertia vector
-    //! The vector should be already initialized
     //! The most updated radius is used (radius_ vs radiusn_)
     //! inertia-vector -> sphere: I = 2/5 * m * r^2
     virtual void ComputeInertia(const int &lidNode);
@@ -428,6 +442,17 @@ namespace PARTICLE
     /* Update state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
+    /* Compute the pressure from the density */
+
+
+    //! initialization of vector for visualization of the particle orientation
+    virtual void InitializeOrientVector();
+
+    //@}
+
+    //! @name Protected Compute Methods
+    //@{
+
     /* Radius -> volume */
     double Radius2Volume(double radius) { return (4.0 / 3.0) * M_PI * radius * radius * radius; };
 
@@ -437,8 +462,11 @@ namespace PARTICLE
     /* Compute the temperature from the specEnthalpy */
     virtual Teuchos::RCP<const Epetra_Vector> ComputeTemperature(Teuchos::RCP<const Epetra_Vector> specEnthalpy);
 
-    //! initialization of vector for visualization of the particle orientation
-    virtual void InitializeOrientVector();
+    //! Compute the pressure of lidNode
+    virtual void ComputePressure(const int &lidNode, bool trg_Nplus1 = false);
+
+    //! Compute pressure for the entire vector
+    virtual void ComputePressure(bool trg_createPressureVector = false, bool trg_Nplus1 = false);
 
     //@}
 
@@ -502,6 +530,8 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
     //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
+    //! Time derivative of densities \f$\dot{\rho}_{n}, \dot{\rho}_{n-1}, ...\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > densityDot_;
     //! Specific enthalpies \f$H_{n}, H_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > specEnthalpy_;
 
@@ -519,7 +549,9 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
-    //! Specific Enthalpies \f${H}_{n+1}\f$
+    //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> densityDotn_;
+    //! Specific enthalpies \f${H}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> specEnthalpyn_;
 
 
@@ -536,6 +568,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
+    //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> pressure_;
 
     //@}
 
@@ -554,6 +588,9 @@ namespace PARTICLE
 
     //! collision handler for particles
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
+
+    //! interaction handler for particles
+    //Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandlerBase> interhandler_;
 
     //@}
 

@@ -2566,7 +2566,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // multipurpose meshfree/particle material for additive manufacturing
+  // multipurpose meshfree-particle material for additive manufacturing
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_ExtParticle",
@@ -2581,11 +2581,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITTEMPERATURE","initial temperature");
     AddNamedReal(m,"CPS","specific heat - constant pressure - solid state");
     AddNamedReal(m,"CPL","specific heat - constant pressure - liquid state");
-    AddNamedReal(m,"LATENT_HEAT_SL","specific latent heat - solid <-> liquid");
-    AddNamedReal(m,"TRANSITION_TEMPERATURE_SL","transition temperature - solid <-> liquid");
+    AddNamedReal(m,"LATENT_HEAT","specific latent heat - solid <-> liquid");
+    AddNamedReal(m,"TRANSITION_TEMPERATURE","transition temperature - solid <-> liquid");
     AddNamedReal(m,"THERMAL_EXPANSION_S","volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient");
     AddNamedReal(m,"THERMAL_EXPANSION_L","volumetric thermal expansion coefficient - liquid state");
-    AddNamedReal(m,"THERMAL_EXPANSION_SL","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!");
+    AddNamedReal(m,"THERMAL_EXPANSION_T","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!");
+    AddNamedReal(m,"COMPRESSIBILITY","compressibility modulus for the liquid phase");
 
     AppendMaterialDefinition(matlist,m);
   }
