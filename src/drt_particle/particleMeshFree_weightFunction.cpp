@@ -20,29 +20,22 @@
  | compute the cubicBspline weight function           cattabiani 08/16  |
  *----------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_CubicBspline::ComputeWeight(
-  const double dist_rel,
-  const double invRadius
+  const double distRel,
+  const double radius
   )
 {
-  // assertions for the sake of safety
-  assert(dist_rel >= 0);
-  assert(invRadius >= 0);
+  // safety checks
+  assert(distRel >= 0);
+  assert(radius >= 0);
 
-  const double norm_const = 3.0 / (2 * M_PI);
-  const double norm_dist_rel = 2 * dist_rel * invRadius;
+  const double norm_const = 1.5 * M_1_PI;
+  const double norm_dist_rel = 2 * distRel / radius;
 
   double weight = 0;
   if (norm_dist_rel< 1)
-  {
-    weight = norm_const
-        * (2.0 / 3.0 + norm_dist_rel * norm_dist_rel
-            + 0.5 * norm_dist_rel * norm_dist_rel * norm_dist_rel);
-  }
+    weight = norm_const * (2.0 / 3.0 - std::pow(norm_dist_rel,2) + 0.5 * std::pow(norm_dist_rel,3));
   else if (norm_dist_rel< 2)
-  {
-    weight = 2 - norm_dist_rel;
-    weight = norm_const * (1.0 / 6.0) * weight * weight * weight;
-  }
+    weight = norm_const * (1.0 / 6.0) * std::pow(2 - norm_dist_rel,3);
 
   return weight;
 }
@@ -51,24 +44,26 @@ double PARTICLE::WeightFunction_CubicBspline::ComputeWeight(
  | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
 LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight(
-  const LINALG::Matrix<3,1>& r_rel,
-  const double invRadius
+  const LINALG::Matrix<3,1>& rRel,
+  const double radius
   )
 {
+  // safety checks
+  assert(radius >= 0);
 
-  assert(invRadius >= 0);
+  const double norm_const = 1.5 * M_1_PI;
+  const double rRelNorm = rRel.Norm2();
+  const double resizer_temp = 2 / radius;
+  const double norm_dist_rel = resizer_temp * rRelNorm;
+  const double resizer = resizer_temp / rRelNorm;
 
-  const double norm_const = 3.0 / (2 * M_PI);
-  const double resizer = 2 * invRadius;
-
-  const double norm_dist_rel = resizer * r_rel.Norm2();
-
+  // create an empty vector
   LINALG::Matrix<3,1> weight;
 
   if (norm_dist_rel< 1)
-    weight.Update(norm_const * resizer * ((3.0 / 2.0) * norm_dist_rel - 2),r_rel);
+    weight.Update(norm_const * resizer * (1.5 * std::pow(norm_dist_rel,2) - 2 * norm_dist_rel),rRel);
   else if (norm_dist_rel< 2)
-    weight.Update(- norm_const * resizer * (0.5 * (norm_dist_rel - 2) * (norm_dist_rel - 2) / norm_dist_rel),r_rel);
+    weight.Update(- 0.5 * norm_const * resizer * std::pow(norm_dist_rel - 2,2),rRel);
 
   return weight;
 }

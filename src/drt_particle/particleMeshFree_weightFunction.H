@@ -41,10 +41,10 @@ namespace PARTICLE
      //@{
 
      //!
-     virtual double ComputeWeight(const double dist_rel, const double radius) = 0;
+     virtual double ComputeWeight(const double distRel, const double radius) = 0;
 
      //!
-     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& r_rel, const double radius) = 0;
+     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& posRel, const double radius) = 0;
 
      //@}
 
@@ -68,10 +68,10 @@ namespace PARTICLE
      //@{
 
      //!
-     virtual double ComputeWeight(const double dist_rel, const double radius);
+     virtual double ComputeWeight(const double distRel, const double radius);
 
      //!
-     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& r_rel, const double radius);
+     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& posRel, const double radius);
 
      //@}
 
