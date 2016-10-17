@@ -23,25 +23,6 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
-    Teuchos::RCP<DRT::Discretization> sourcedis,
-    Teuchos::RCP<DRT::Discretization> targetdis) const
-{
-  // is the source discretization ready?
-  if (!sourcedis->Filled()) sourcedis->FillComplete(false,false,false);
-
-  // is the target discretization really empty?
-  if (targetdis->NumGlobalElements() or targetdis->NumGlobalNodes())
-  {
-    dserror("There are %d elements and %d nodes in target discretization. Panic.",
-        targetdis->NumGlobalElements(), targetdis->NumGlobalNodes());
-  }
-  // Ok. Let's go on
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
     const DRT::Discretization& sourcedis,
     const DRT::Discretization& targetdis) const
 {
@@ -57,15 +38,15 @@ void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
   }
   // Ok. Let's go on
   return;
-}
+} // DRT::UTILS::DiscretizationCreatorBase::InitialChecks
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
     const DRT::Discretization& sourcedis,
     DRT::Discretization& targetdis,
-    std::set<int>& rownodeset,
-    std::set<int>& colnodeset,
+    const std::set<int>& rownodeset,
+    const std::set<int>& colnodeset,
     const bool isnurbsdis,
     const bool buildimmersednode
     ) const
@@ -82,11 +63,11 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
       int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid)!=rownodeset.end())
       {
-        DRT::Node* fluidnode = sourcedis.lRowNode(i);
+        DRT::Node* node_to_create = sourcedis.lRowNode(i);
         if(!buildimmersednode)
-          targetdis.AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+          targetdis.AddNode(Teuchos::rcp(new DRT::Node(gid, node_to_create->X(), myrank)));
         else
-          targetdis.AddNode(Teuchos::rcp(new IMMERSED::ImmersedNode(gid, fluidnode->X(), myrank)));
+          targetdis.AddNode(Teuchos::rcp(new IMMERSED::ImmersedNode(gid, node_to_create->X(), myrank)));
       }
     }
   }
@@ -97,10 +78,9 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
       const int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid)!=rownodeset.end())
       {
-        DRT::NURBS::ControlPoint* fluidnode
-        =
-          dynamic_cast<DRT::NURBS::ControlPoint* >(sourcedis.lRowNode(i));
-          targetdis.AddNode(Teuchos::rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
+        DRT::NURBS::ControlPoint* node_to_create
+            = dynamic_cast<DRT::NURBS::ControlPoint* >(sourcedis.lRowNode(i));
+          targetdis.AddNode(Teuchos::rcp(new DRT::NURBS::ControlPoint(gid, node_to_create->X(),node_to_create->W(),myrank)));
       }
     }
   }
@@ -109,48 +89,26 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
   targetdis.CheckFilledGlobally();
 
   return;
-}
-
+} // DRT::UTILS::DiscretizationCreatorBase::CreateNodes
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
-    std::set<int>& rownodeset,const DRT::Discretization& targetdis) const
+Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateMap(
+    std::set<int>& gidset,const DRT::Discretization& targetdis) const
 {
   // we get the node maps almost for free
-  std::vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
-  rownodeset.clear();
+  std::vector<int> targetgidvec(gidset.begin(), gidset.end());
+  gidset.clear();
 
-  Teuchos::RCP<Epetra_Map> targetnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
-      targetnoderowvec.size(),
-      &targetnoderowvec[0],
+  Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(new Epetra_Map(-1,
+      targetgidvec.size(),
+      &targetgidvec[0],
       0,
       targetdis.Comm()));
-  targetnoderowvec.clear();
+  targetgidvec.clear();
 
-  return targetnoderowmap ;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
-    std::set<int>& colnodeset,const DRT::Discretization& targetdis) const
-{
-  // we get the node maps almost for free
-  std::vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
-  colnodeset.clear();
-
-  Teuchos::RCP<Epetra_Map> targetnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
-      targetnodecolvec.size(),
-      &targetnodecolvec[0],
-      0,
-      targetdis.Comm()));
-  targetnodecolvec.clear();
-
-  return targetnodecolmap;
-}
-
+  return map ;
+} // DRT::UTILS::DiscretizationCreatorBase::CreateMap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -175,7 +133,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
     }
     conds.clear();
   }
-}
+} // DRT::UTILS::DiscretizationCreatorBase::CopyConditions
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -183,9 +141,11 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
     const DRT::Discretization& sourcedis,
     DRT::Discretization& targetdis) const
 {
-  // redistribute nodes to column (ghost) map
-  DRT::UTILS::RedistributeWithNewNodalDistribution(targetdis,
-      *targetnoderowmap_, *targetnodecolmap_);
+  // export according to previously filled maps
+  targetdis.ExportRowNodes(*targetnoderowmap_);
+  targetdis.ExportColumnNodes(*targetnodecolmap_);
+  targetdis.ExportRowElements(*targetelerowmap_);
+  targetdis.ExportColumnElements(*targetelecolmap_);
   targetdis.FillComplete();
 
   // extra work for NURBS discretizations
@@ -236,8 +196,10 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 
   // all done ;-)
   return;
-}
+} // DRT::UTILS::DiscretizationCreatorBase::Finalize
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
 {
   // this defines the valid input line
@@ -252,12 +214,14 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
   lines->Add(structure);
 
   return lines;
-}
+} // DRT::UTILS::ValidCloningMaterialMapLines
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::UTILS::PrintCloningMaterialMapDatHeader()
 {
   Teuchos::RCP<DRT::INPUT::Lines> lines = ValidCloningMaterialMapLines();
   lines->Print(std::cout);
 
   return;
-}
+} // DRT::UTILS::PrintCloningMaterialMapDatHeader

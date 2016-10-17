@@ -48,14 +48,15 @@ class DiscretizationCreatorBase
 {
 public:
 
-  /// constructor
+  //! constructor
   explicit DiscretizationCreatorBase():
   numeleskips_(0)
   {}
 
-  /// destructor
+  //! destructor
   virtual ~DiscretizationCreatorBase() {}
 
+  //! copy given conditions from source to target discretization
   void CopyConditions(
       const DRT::Discretization& sourcedis,
       DRT::Discretization& targetdis,
@@ -63,44 +64,45 @@ public:
 
 protected:
 
+  //! construct row nodes for cloned target discretization
   void CreateNodes(
       const DRT::Discretization& sourcedis,
       DRT::Discretization& targetdis,
-      std::set<int>& rownodeset,
-      std::set<int>& colnodeset,
+      const std::set<int>& rownodeset,
+      const std::set<int>& colnodeset,
       const bool isnurbsdis,
       const bool buildimmersednode
       ) const;
 
-  Teuchos::RCP<Epetra_Map> CreateNodeRowMap(
-      std::set<int>& rownodeset,const DRT::Discretization& targetdis) const;
+  //! construct and return Epetra_Map
+  Teuchos::RCP<Epetra_Map> CreateMap(
+      std::set<int>& gidset,const DRT::Discretization& targetdis) const;
 
-  Teuchos::RCP<Epetra_Map> CreateNodeColMap(
-      std::set<int>& colnodeset,const DRT::Discretization& targetdis) const;
-
-  void InitialChecks(
-      Teuchos::RCP<DRT::Discretization> sourcedis,
-      Teuchos::RCP<DRT::Discretization> targetdis) const;
-
+  //! do some checks
   void InitialChecks(
       const DRT::Discretization& sourcedis,
       const DRT::Discretization& targetdis) const;
 
+  //! export target nodes and elements and perform some checks
   void Finalize(
       const DRT::Discretization& sourcedis,
       DRT::Discretization& targetdis) const;
 
 protected:
 
+  //! map containing gids of owned nodes
   Teuchos::RCP<Epetra_Map> targetnoderowmap_;
+  //! map containing gids of owned + ghosted nodes
   Teuchos::RCP<Epetra_Map> targetnodecolmap_;
+  //! map containing gids of owned elements
+  Teuchos::RCP<Epetra_Map> targetelerowmap_;
+  //! map containing gids of owned + ghosted elements
+  Teuchos::RCP<Epetra_Map> targetelecolmap_;
   //! local number of skipped elements during cloning
   int numeleskips_;
 
-private:
+}; // class DiscretizationCreatorBase
 
-
-};
 
 /// class for cloning a new discretization from an existing one
 template <class CloneStrategy>
@@ -111,6 +113,7 @@ public:
 
   /// constructor
   explicit DiscretizationCreator() {};
+
   /// destructor
   virtual ~DiscretizationCreator() {};
 
@@ -135,7 +138,7 @@ public:
           sourcedis.Name().c_str(),targetdis.Name().c_str());
 
     return;
-  }
+  }; // CreateCloneFieldMatMap
 
   /// method for cloning a new discretization from an existing one
   void CreateMatchingDiscretization(
@@ -149,7 +152,7 @@ public:
     // as defined in the input file section "--CLONING MATERIAL MAP"
 
     // check and analyze source discretization (sorcedis must be filled!)
-    InitialChecks(sourcedis,targetdis);
+    InitialChecks(*sourcedis,*targetdis);
 
     // We have to find out all the material ids of the source discretization.
     // All cloned elements will receive the same material with the provided matid.
@@ -172,13 +175,13 @@ public:
     CreateMatchingDiscretization(sourcedis,targetdis,matmap);
 
     return;
-  };
+  }; // CreateMatchingDiscretization
 
   /// method for cloning a new discretization from an existing one
   void CreateMatchingDiscretization(
       Teuchos::RCP<DRT::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
-      Teuchos::RCP<DRT::Discretization> targetdis, ///< Teuchos::RCP to empty target discretization
-      const std::map<int,int> matmap ///< map of material IDs (source element -> target element)
+      Teuchos::RCP<DRT::Discretization> targetdis,  ///< Teuchos::RCP to empty target discretization
+      const std::map<int,int> matmap                ///< map of material IDs (source element -> target element)
       )
   {
     // try to cast sourcedis to NurbsDiscretisation
@@ -192,16 +195,18 @@ public:
     bool buildimmersednode(inode!=NULL);
 
     // check and analyze source discretization
-    InitialChecks(sourcedis,targetdis);
-    AnalyzeSourceDis(sourcedis,eletype_,egid_,rownodeset_,colnodeset_);
+    InitialChecks(*sourcedis,*targetdis);
+    AnalyzeSourceDis(sourcedis,eletype_,rownodeset_,colnodeset_,roweleset_,coleleset_);
 
     // do the node business
     CreateNodes(*sourcedis,*targetdis,rownodeset_,colnodeset_,isnurbsdis,buildimmersednode);
-    targetnoderowmap_ = CreateNodeRowMap(rownodeset_,*targetdis);
-    targetnodecolmap_ = CreateNodeColMap(colnodeset_,*targetdis);
+    targetnoderowmap_ = CreateMap(rownodeset_,*targetdis);
+    targetnodecolmap_ = CreateMap(colnodeset_,*targetdis);
 
     // create elements
     CreateElements(sourcedis,targetdis,matmap,isnurbsdis);
+    targetelerowmap_ = CreateMap(roweleset_,*targetdis);
+    targetelecolmap_ = CreateMap(coleleset_,*targetdis);
 
     // copy desired conditions from source to target discretization
     std::map<std::string,std::string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
@@ -209,7 +214,7 @@ public:
 
     // call Redistribute, FillComplete etc.
     Finalize(*sourcedis,*targetdis);
-  };
+  }; // CreateMatchingDiscretization
 
   /// method for cloning a new discretization from an existing condition using the actual condition
   void CreateMatchingDiscretizationFromCondition(
@@ -235,7 +240,8 @@ public:
     DRT::UTILS::FindConditionObjects(sourceelements,conds);
 
     CreateMatchingDiscretizationFromCondition(sourcedis,sourceelements,targetdis,matmap);
-  }
+    return;
+  }; // CreateMatchingDiscretizationFromCondition
 
   /// method for cloning a new discretization from an existing condition using the condition name
     void CreateMatchingDiscretizationFromCondition(
@@ -251,7 +257,8 @@ public:
     DRT::UTILS::FindConditionObjects(sourcedis, sourceelements, condname);
 
     CreateMatchingDiscretizationFromCondition(sourcedis,sourceelements,targetdis,matmap);
-  }
+    return;
+  }; // CreateMatchingDiscretizationFromCondition
 
 private:
 
@@ -273,16 +280,17 @@ private:
       dynamic_cast<IMMERSED::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
     bool buildimmersednode(inode!=NULL);
 
-    AnalyzeConditionedSourceDis(sourcedis,sourceelements,eletype_,egid_,rownodeset_,colnodeset_);
+    AnalyzeConditionedSourceDis(sourcedis,sourceelements,eletype_,rownodeset_,colnodeset_,roweleset_,coleleset_);
 
     // do the node business
     CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,isnurbsdis,buildimmersednode);
-//    Teuchos::RCP<DRT::Discretization> targetdis_ptr = Teuchos::rcpFromRef(targetdis);
-    targetnoderowmap_ = CreateNodeRowMap(rownodeset_,targetdis);
-    targetnodecolmap_ = CreateNodeColMap(colnodeset_,targetdis);
+    targetnoderowmap_ = CreateMap(rownodeset_,targetdis);
+    targetnodecolmap_ = CreateMap(colnodeset_,targetdis);
 
     // create elements
     CreateElementsFromCondition(sourceelements,targetdis,matmap,isnurbsdis);
+    targetelerowmap_ = CreateMap(roweleset_,targetdis);
+    targetelecolmap_ = CreateMap(coleleset_,targetdis);
 
     // copy desired conditions from source to target discretization
     std::map<std::string,std::string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
@@ -290,15 +298,17 @@ private:
 
     // call Redistribute, FillComplete etc.
     Finalize(sourcedis,targetdis);
-  };
+    return;
+  }; // CreateMatchingDiscretizationFromCondition
 
   /// get element type std::strings and global id's and nodes from source discretization
   void AnalyzeSourceDis(
       Teuchos::RCP<DRT::Discretization> sourcedis,
       std::vector<std::string>& eletype,
-      std::vector<int>& egid,
       std::set<int>& rownodeset,
-      std::set<int>& colnodeset
+      std::set<int>& colnodeset,
+      std::set<int>& roweleset,
+      std::set<int>& coleleset
       )
   {
     const Epetra_Map* noderowmap = sourcedis->NodeRowMap();
@@ -315,10 +325,15 @@ private:
 
       // we get the element type std::string and a boolean if this element
       // is considered! (see submeshes for Fluid-ALE case!)
-      if(CloneStrategy::DetermineEleType(actele, ismyele, eletype_))
+      if(CloneStrategy::DetermineEleType(actele, ismyele, eletype))
       {
+        // we make sure, that the cloned discretization
+        // has the same parallel distribution as the
+        // source discretization.
         if (ismyele)
-          egid.push_back(actele->Id());
+          roweleset.insert(actele->Id());
+
+        coleleset.insert(actele->Id());
 
         // copy node ids of actele to rownodeset but leave those that do
         // not belong to this processor
@@ -332,18 +347,18 @@ private:
       else
         numeleskips_++;
     } // loop over my elements
-
     return;
-  }
+  }; // AnalyzeSourceDis
 
   /// get element type std::strings and global id's and nodes from conditioned source discretization
   void AnalyzeConditionedSourceDis(
       const DRT::Discretization& sourcedis,
       const std::map<int, Teuchos::RCP<DRT::Element> >& sourceelements,
       std::vector<std::string>& eletype,
-      std::vector<int>& egid,
       std::set<int>& rownodeset,
-      std::set<int>& colnodeset
+      std::set<int>& colnodeset,
+      std::set<int>& roweleset,
+      std::set<int>& coleleset
       )
   {
     const int myrank = sourcedis.Comm().MyPID();
@@ -361,10 +376,20 @@ private:
 
       // we get the element type std::string and a boolean if this element
       // is considered! (see submeshes for Fluid-ALE case!)
-      if(CloneStrategy::DetermineEleType(&(*actele), ismyele, eletype_))
+      if(CloneStrategy::DetermineEleType(&(*actele), ismyele, eletype))
       {
+        // we make sure, that the cloned discretization
+        // has the same parallel distribution as the
+        // source discretization.
+        // as prerequisite it is required that the parallel
+        // distribution of the condition geometry matches
+        // the distribution of the underlying parent elements.
+        // this is made sure in drt_discret_condition.cpp
+        // (rauch 10/16).
         if (ismyele)
-          egid.push_back(actele->Id());
+          roweleset.insert(actele->Id());
+
+        coleleset.insert(actele->Id());
 
         // get global node ids
         std::vector<int> nids;
@@ -403,7 +428,7 @@ private:
     // conditioned subset of the source discretiztation.
     numeleskips_++;
     return;
-  }
+  }; // AnalyzeConditionedSourceDis
 
   /// create new elements and add them to the target discretization
   void CreateElements(
@@ -425,9 +450,10 @@ private:
     // construct new elements
     // The order of the elements might be different from that of the
     // source elements. We don't care. There are no dofs to these elements.
-    for (std::size_t i=0; i<egid_.size(); ++i)
+    std::set<int>::iterator it = roweleset_.begin();
+    for (std::size_t i=0; i<roweleset_.size(); ++i)
     {
-      DRT::Element* sourceele = sourcedis->gElement(egid_[i]);
+      DRT::Element* sourceele = sourcedis->gElement(*it);
 
       std::string approxtype = "Polynomial";
       if(isnurbsdis)
@@ -463,9 +489,9 @@ private:
       }
 
       // create a new element of desired type with the same global element id
-      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
+      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,*it,myrank);
 
-      // get global node ids of fluid element
+      // get global node ids of source element
       std::vector<int> nids;
       nids.reserve(sourceele->NumNode());
       transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
@@ -498,8 +524,10 @@ private:
 
         dserror("no matching material ID (%d) in map",src_matid);
       }
+    it++;
     }
-  }
+    return;
+  }; // CreateElements
 
   /// create new elements from the condition and add them to the target discretization
   void CreateElementsFromCondition(
@@ -521,13 +549,14 @@ private:
     // construct new elements
     // The order of the elements might be different from that of the
     // source elements. We don't care. There are no dofs to these elements.
-    for (std::size_t i=0; i<egid_.size(); ++i)
+    std::set<int>::iterator it = roweleset_.begin();
+    for (std::size_t i=0; i<roweleset_.size(); ++i)
     {
       std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator src_ele_citer =
-          sourceelements.find(egid_[i]);
+          sourceelements.find(*it);
       if (src_ele_citer == sourceelements.end())
         dserror("The source element %d could not be found in the source "
-            "condition element map!",egid_[i]);
+            "condition element map!",*it);
 
       DRT::Element* sourceele = src_ele_citer->second.get();
       if (sourceele == NULL)
@@ -565,8 +594,14 @@ private:
           dserror("unknown type of nurbs element\n");
         }
       }
-      // create a new element of desired type with the same global element id
-      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
+
+      // get owner of source element
+      const int sourceeleowner = sourceele->Owner();
+      if(myrank!=sourceeleowner)
+        dserror("roweleset_ should only contain my element gids!");
+
+      // create a new element of desired type with the same global element id and same owner as source element
+      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,*it,sourceeleowner);
 
       // get global node ids of fluid element
       std::vector<int> nids;
@@ -614,15 +649,19 @@ private:
 
         dserror("no matching material ID (%d) in map",src_matid);
       }
+    it++;
     }
-  }
+    return;
+  } // CreateElementsFromCondition
 
   //! set of row nodes
   std::set<int> rownodeset_;
   //! set of column nodes
   std::set<int> colnodeset_;
-  //! vector for holding global element ids
-  std::vector<int> egid_;
+  //! set of row elements
+  std::set<int> roweleset_;
+  //! set of column elements
+  std::set<int> coleleset_;
   //! vector for holding each (desired) element type std::string
   std::vector<std::string> eletype_;
 
@@ -656,9 +695,8 @@ private:
               << " as a clone of discretization " << sourcedis->Name()
               << " in...." << time.ElapsedTime() << " secs\n\n";
    }
-
    return;
- }
+ }; // CloneDiscretization
 
  /// clone target discretization from a given condition of the source discretization
  template <class CloneStrategy>
@@ -691,9 +729,8 @@ private:
      IO::cout << " of the discretization " << sourcedis.Name()
               << " in...." << time.ElapsedTime() << " secs\n\n";
    }
-
    return;
- }
+ }; // CloneDiscretizationFromCondition
 
  /// clone target discretization from a given condition of the source discretization
  template <class CloneStrategy>
@@ -724,15 +761,14 @@ private:
               << "\" of the discretization " << sourcedis.Name()
               << " in...." << time.ElapsedTime() << " secs\n\n";
    }
-
    return;
- }
+ }; // CloneDiscretizationFromCondition
 
-
+ //! construct and return cloning material map input lines
  Teuchos::RCP<DRT::INPUT::Lines> ValidCloningMaterialMapLines();
 
+ //! helper method for printout
  void PrintCloningMaterialMapDatHeader();
-
 
 } // namespace UTILS
 } // namespace DRT
