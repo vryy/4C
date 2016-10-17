@@ -94,7 +94,8 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
     epren_(true),
     ivelint_jump_(true),
     itraction_jump_(true),
-    itraction_jump_matrix_(true),
+    proj_tangential_(true),
+    LB_proj_matrix_(true),
     ivelintn_jump_(true),
     itractionn_jump_(true),
     velint_s_(true),
@@ -1868,20 +1869,20 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
         LINALG::Matrix<my::nsd_,1> ivelint_jump (true);
         LINALG::Matrix<my::nsd_,1> itraction_jump (true);
-        LINALG::Matrix<my::nsd_,my::nsd_> itraction_jump_matrix (true);
-        bool is_traction_jump = true;
+        LINALG::Matrix<my::nsd_,my::nsd_> proj_tangential (true);
+        LINALG::Matrix<my::nsd_,my::nsd_> LB_proj_matrix (true);
 
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
             ivelint_jump,
             itraction_jump,
-            itraction_jump_matrix,
+            proj_tangential,
+            LB_proj_matrix,
             x_gp_lin,
             normal,
             si,
-            rst,
-            is_traction_jump
+            rst
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3574,20 +3575,20 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         ivelint_jump_.Clear();
         itraction_jump_.Clear();
-        itraction_jump_matrix_.Clear();
-        bool is_traction_jump = true;
+        proj_tangential_.Clear();
+        LB_proj_matrix_.Clear();
 
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
             ivelint_jump_,
             itraction_jump_,
-            itraction_jump_matrix_,
+            proj_tangential_,
+            LB_proj_matrix_,
             x_gp_lin_,
             normal_,
             si,
-            rst_,
-            is_traction_jump
+            rst_
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3630,8 +3631,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             pres_timefacfac,             // impl. pressure with new OST: dt * fac, else theta*dt*fac
             viscaf_master_,              // dynvisc viscosity in background fluid
             viscaf_slave_,               // dynvisc viscosity in embedded fluid
-            kappa_m,                     // mortaring weighting
-            kappa_s,                     // mortaring weighting
             my::densaf_,                 // fluid density
             my::funct_,                  // bg shape functions
             my::derxy_,                  // bg shape function gradient
@@ -3639,10 +3638,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             press,                       // bg p^n+1
             my::velint_,                 // bg u^n+1
             ivelint_jump_,               // prescribed interface velocity, Dirichlet values or jump height for coupled problems
-            itraction_jump_,             // prescribed interface traction, jump height for coupled problems
-            itraction_jump_matrix_,      // prescribed interface traction matrix for Laplace-Beltrami projection
-            is_traction_jump,
-            configmap                     // Configuration Map
+            itraction_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
+            proj_tangential_,            // tangential projection matrix
+            LB_proj_matrix_,             // prescribed projection matrix for laplace-beltrami problems
+            configmap                    // Configuration Map
           );
 
           if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3737,8 +3736,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               isImplPressureNewOst,
               viscaf_master_,              // dynvisc viscosity in background fluid
               viscaf_slave_,               // dynvisc viscosity in embedded fluid
-              kappa_m,                     // mortaring weighting
-              kappa_s,                     // mortaring weighting
               my::densn_,                  // fluid density
               my::funct_,                  // bg shape functions
               my::derxy_,                  // bg shape function gradient
@@ -3746,6 +3743,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::funct_.Dot(epren_),       // bg p^n
               my::velintn_,                 // bg u^n
               ivelintn_jump_,               // velocity jump at interface (i.e. [| u |])
+              proj_tangential_,            // tangential projection matrix
               itractionn_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
               configmap_n
             );
@@ -3794,12 +3792,12 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
     LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
     LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
-    LINALG::Matrix<my::nsd_,my::nsd_>& projection_matrix,                    ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami or splitting of tangential and normal directions
+    LINALG::Matrix<my::nsd_,my::nsd_>&  proj_tangential,                     ///< tangential projection matrix
+    LINALG::Matrix<my::nsd_,my::nsd_>&  LB_proj_matrix,                      ///< prescribed projection matrix for laplace-beltrami problems
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
-    LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
-    bool& is_xtpf_curvature_impl                                             ///< is it a traction jump or is it a laplace-beltrami
+    LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
@@ -3856,7 +3854,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
 
     // The velocity is evaluated twice in this framework...
-    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,projection_matrix,x,normal,cond,eval_dirich_at_gp);
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,proj_tangential,x,normal,cond,eval_dirich_at_gp);
 
     if(!eval_dirich_at_gp)
     {
@@ -3870,7 +3868,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
 
-    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,projection_matrix,my::eid_,my::funct_,my::derxy_,normal);
+    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,proj_tangential,my::eid_,my::funct_,my::derxy_,normal);
 
     break;
   }
@@ -3884,7 +3882,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
 
     if(gamma_m_ != 0.0)
     {
-      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,projection_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff,is_xtpf_curvature_impl);
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,LB_proj_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff);
     }
 
     break;
@@ -3903,8 +3901,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   //   Furthermore, if it is a Laplace-Beltrami way of calculating the surface tension,
   //   do not fill the matrix as it contains the "projection matrix" for LB implementation.
   if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP
-      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP
-      and is_xtpf_curvature_impl != false)
+      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
   {
     //Create normal projection matrix.
     LINALG::Matrix<my::nsd_,my::nsd_> eye(true);
@@ -3914,7 +3911,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     {
       for(int j =0; j<my::nsd_; ++j)
       {
-        projection_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
+        proj_tangential(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
       }
     }
   }

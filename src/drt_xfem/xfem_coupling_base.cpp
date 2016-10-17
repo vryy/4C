@@ -137,6 +137,11 @@ void XFEM::CouplingBase::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::XStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
 
+  //Starting from here are some special Terms
+  configuration_map_[INPAR::XFEM::F_LB_Rhs] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_LB_Rhs] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::F_TJ_Rhs] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::X_TJ_Rhs] = std::pair<bool,double>(false,0.0);
   return;
 }
 

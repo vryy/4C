@@ -246,7 +246,12 @@ namespace INPAR
       FStr_Pen_t_Col,
       XStr_Pen_Col,
       XStr_Pen_n_Col,
-      XStr_Pen_t_Col
+      XStr_Pen_t_Col,
+      //Starting from here are some special Terms (before adding new one think if it's possible to reuse the old terms without duplicating code.)
+      F_LB_Rhs, //Laplace Belatrami Term for traction jump master fluid sided (used only for two phase flow atm)
+      X_LB_Rhs,  // ==||== slave fluid sided (used only for two phase flow atm)
+      F_TJ_Rhs, //Traction jump term with given traction jump vector master fluid sided (used only for two phase flow atm)
+      X_TJ_Rhs, //Traction jump term with given traction jump vector slave fluid sided (used only for two phase flow atm)
     };
 
     /// set the xfem parameters

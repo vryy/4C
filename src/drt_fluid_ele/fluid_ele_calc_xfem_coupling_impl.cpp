@@ -842,8 +842,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const double &                    pres_timefacfac,        ///< scaling for pressure part
   const double &                    visceff_m,              ///< viscosity in coupling master fluid
   const double &                    visceff_s,              ///< viscosity in coupling slave fluid
-  const double &                    kappa_m,                ///< mortaring weight for coupling master
-  const double &                    kappa_s,                ///< mortaring weight for coupling slave
   const double &                    density_m,              ///< fluid density (master) USED IN XFF
   const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
@@ -852,8 +850,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
   const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
   const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
-  const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-  const bool                        is_traction_jump,       ///< is it a normal traction jump or calculated throw laplace-beltrami
+  const LINALG::Matrix<nsd_,nsd_>&  proj_tangential,        ///< tangential projection matrix
+  const LINALG::Matrix<nsd_,nsd_>&  LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
 {
@@ -873,24 +871,12 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   dyn_visc_=visceff_m; //Todo: Finally move this scaling away from element level (This should be fine for kappa_m = 1)
  //--------------------------------------------
 
-// Create projection matrices
-//--------------------------------------------
-
-  if( not(eval_coupling_ and  (!is_traction_jump)) )
-  {
-    //Normal case
-    proj_tangential_=itraction_jump_matrix;
-    proj_normal_.Scale(0.0);
-    for(unsigned i=0; i<nsd_; i++) proj_normal_(i,i) = 1.0;
-    proj_normal_.Update(-1.0,proj_tangential_,1.0);
-  }
-  else
-  {
-    //Laplace-Beltrami case - itraction_jump_matrix =/= projection matrix
-    // If LB needs a projection for some other purpose, then a new variable has to be
-    //    handed down to NIT_evaluateCoupling.
-    NIT_Create_Standard_Projection_Matrices(normal);
-  }
+  // Create projection matrices
+  //--------------------------------------------
+  proj_tangential_=proj_tangential;
+  proj_normal_.Scale(0.0);
+  for(unsigned i=0; i<nsd_; i++) proj_normal_(i,i) = 1.0;
+  proj_normal_.Update(-1.0,proj_tangential_,1.0);
 
   half_normal_.Update(0.5,normal,0.0);
   normal_pres_timefacfac_.Update(pres_timefacfac,normal,0.0);
@@ -1318,13 +1304,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     //-----------------------------------------------------------------
     // standard consistency traction jump term
     // Only needed for XTPF
-    if( eval_coupling_ and is_traction_jump)
+    if(configmap.at(INPAR::XFEM::F_TJ_Rhs).first || configmap.at(INPAR::XFEM::X_TJ_Rhs).first)
     {
       // funct_s * timefac * fac * kappa_m
-      funct_s_timefacfac_km_.Update(kappa_m * timefacfac, funct_s_, 0.0);
+      funct_s_timefacfac_km_.Update(configmap.at(INPAR::XFEM::X_TJ_Rhs).second * timefacfac, funct_s_, 0.0);
 
       // funct_m * timefac * fac * kappa_s
-      funct_m_timefacfac_ks_.Update(kappa_s * timefacfac, funct_m, 0.0);
+      funct_m_timefacfac_ks_.Update(configmap.at(INPAR::XFEM::F_TJ_Rhs).second* timefacfac, funct_m, 0.0);
 
       NIT_Traction_Consistency_Term(
         funct_m_timefacfac_ks_,
@@ -1335,18 +1321,18 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
     //-----------------------------------------------------------------
     // projection matrix approach (Laplace-Beltrami)
-    if( eval_coupling_ and  (!is_traction_jump) )
+    if(configmap.at(INPAR::XFEM::F_LB_Rhs).first || configmap.at(INPAR::XFEM::X_LB_Rhs).first)
     {
       LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
-      derxy_s_timefacfac_km.Scale(kappa_m*timefacfac);
+      derxy_s_timefacfac_km.Scale(configmap.at(INPAR::XFEM::X_LB_Rhs).second*timefacfac);
 
       LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
-      derxy_m_timefacfac_ks.Scale(kappa_s*timefacfac);
+      derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::F_LB_Rhs).second*timefacfac);
 
       NIT_Projected_Traction_Consistency_Term(
       derxy_m_timefacfac_ks,
       derxy_s_timefacfac_km,
-      itraction_jump_matrix);
+      LB_proj_matrix);
     }
     //-------------------------------------------- Traction-Jump added (XTPF)
   }
@@ -1359,20 +1345,19 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOldState(
   const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-  const double &                           timefacfac,             ///< dt*(1-theta)*fac
+  const double &                           timefacfac,              ///< dt*(1-theta)*fac
   bool                                     isImplPressure,          ///< flag for implicit pressure treatment
   const double &                           visceff_m,               ///< viscosity in coupling master fluid
   const double &                           visceff_s,               ///< viscosity in coupling slave fluid
-  const double &                           kappa_m,                 ///< mortaring weight for coupling master
-  const double &                           kappa_s,                 ///< mortaring weight for coupling slave
   const double &                           density_m,               ///< fluid density (master) USED IN XFF
   const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
-  const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,               ///< coupling master spatial velocity derivatives
-  const double &                           pres_m,                 ///< coupling master pressure
-  const LINALG::Matrix<nsd_,1> &           velint_m,               ///< coupling master interface velocity
-  const LINALG::Matrix<nsd_,1> &           ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-  const LINALG::Matrix<nsd_,1> &           itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+  const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                ///< coupling master spatial velocity derivatives
+  const double &                           pres_m,                  ///< coupling master pressure
+  const LINALG::Matrix<nsd_,1> &           velint_m,                ///< coupling master interface velocity
+  const LINALG::Matrix<nsd_,1> &           ivelint_jump,            ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+  const LINALG::Matrix<nsd_,nsd_>&         proj_tangential,         ///< tangential projection matrix
+  const LINALG::Matrix<nsd_,1> &           itraction_jump,          ///< prescribed interface traction, jump height for coupled problems
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
 {
@@ -1390,6 +1375,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   //--------------------------------------------
 
   //TODO: @XFEM-Team Add possibility to use new One Step Theta with Robin Boundary Condition.
+
+  // Create projection matrices
+  //--------------------------------------------
+  proj_tangential_=proj_tangential;
+  proj_normal_.Scale(0.0);
+  for(unsigned i=0; i<nsd_; i++) proj_normal_(i,i) = 1.0;
+  proj_normal_.Update(-1.0,proj_tangential_,1.0);
 
   half_normal_.Update(0.5,normal,0.0);
   normal_pres_timefacfac_.Update(timefacfac,normal,0.0);
@@ -1764,19 +1756,38 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
 
   //-----------------------------------------------------------------
   // standard consistency traction jump term
-  if( eval_coupling_ )
+  // Only needed for XTPF
+  if(configmap.at(INPAR::XFEM::F_TJ_Rhs).first || configmap.at(INPAR::XFEM::X_TJ_Rhs).first)
   {
     // funct_s * timefac * fac * kappa_m
-    funct_s_timefacfac_km_.Update(kappa_m * timefacfac,funct_s_,0.0);
+    funct_s_timefacfac_km_.Update(configmap.at(INPAR::XFEM::F_TJ_Rhs).second * timefacfac, funct_s_, 0.0);
 
     // funct_m * timefac * fac * kappa_s
-    funct_m_timefacfac_ks_.Update(kappa_s * timefacfac, funct_m, 0.0);
+    funct_m_timefacfac_ks_.Update(configmap.at(INPAR::XFEM::X_TJ_Rhs).second* timefacfac, funct_m, 0.0);
 
     NIT_Traction_Consistency_Term(
       funct_m_timefacfac_ks_,
       funct_s_timefacfac_km_,
       itraction_jump
     );
+  }
+
+  //-----------------------------------------------------------------
+  // projection matrix approach (Laplace-Beltrami)
+  if(configmap.at(INPAR::XFEM::F_LB_Rhs).first || configmap.at(INPAR::XFEM::X_LB_Rhs).first)
+  {
+    dserror("Check if we need the (Laplace-Beltrami) for the old timestep, "
+        "then you should not forget to add the LB_proj_matrix as member to this function?");
+//    LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
+//    derxy_s_timefacfac_km.Scale(configmap.at(INPAR::XFEM::F_LB_Rhs).second*timefacfac);
+//
+//    LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
+//    derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::X_LB_Rhs).second*timefacfac);
+//
+//    NIT_Projected_Traction_Consistency_Term(
+//    derxy_m_timefacfac_ks,
+//    derxy_s_timefacfac_km,
+//    LB_proj_matrix);
   }
 
   return;

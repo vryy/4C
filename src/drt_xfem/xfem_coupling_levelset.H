@@ -635,14 +635,8 @@ public:
   /// initialize surface tension specific parameters
   void SetSurfaceTensionSpecifcParameters(
       INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
-      INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami)
-  {
-    surftensapprox_ = surftensapprox;
-    laplacebeltrami_ = laplacebeltrami;
-
-    surfacetension_init_ = true;
-
-  }
+      INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami
+      );
 
   /// set material pointer for coupling slave side
   void GetInterfaceSlaveMaterial(
@@ -900,8 +894,7 @@ public:
       M1&       funct,                  ///< local shape function for Gauss Point (from fluid element)
       M2&       derxy,                  ///< local derivatives of shape function for Gauss Point (from fluid element)
       M3&       normal,                 ///< surface normal of cut element
-      double&   surf_coeff,             ///< surface tension coefficient gamma
-      bool&     is_traction_jump        ///< is it a normal traction jump or done through laplace-beltrami
+      double&   surf_coeff              ///< surface tension coefficient gamma
   )
   {
 
@@ -928,8 +921,6 @@ public:
     }
     else
     {
-
-      is_traction_jump=false;
       //itraction_jump_matrix.Scale(0.0);
 
       // P = (\delta_{ij} - n_{i}n{j})

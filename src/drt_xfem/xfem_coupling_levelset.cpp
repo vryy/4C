@@ -1191,6 +1191,34 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
 
   return;
 }
+/*--------------------------------------------------------------------------*
+/// initialize surface tension specific parameters
+*--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::SetSurfaceTensionSpecifcParameters(
+    INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
+    INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami)
+{
+  surftensapprox_ = surftensapprox;
+  laplacebeltrami_ = laplacebeltrami;
+
+  surfacetension_init_ = true;
+
+  //Initialize Traction Jump Terms (Also Remove other version for safety!)
+  if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
+  {
+    configuration_map_[INPAR::XFEM::F_LB_Rhs] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_LB_Rhs] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_TJ_Rhs] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::X_TJ_Rhs] = std::pair<bool,double>(false,0.0);
+  }
+  else
+  {
+    configuration_map_[INPAR::XFEM::F_LB_Rhs] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::X_LB_Rhs] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_TJ_Rhs] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::X_TJ_Rhs] = std::pair<bool,double>(true,1.0);
+  }
+}
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -1257,6 +1285,9 @@ void XFEM::LevelSetCouplingTwoPhase::InitConfigurationMap()
     configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+
+    //Traction Jump Terms are initialized in SetSurfaceTensionSpecifcParameters
+    //(If no traction jump nothing else to do!)
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
     dserror("XFEM::LevelSetCouplingTwoPhase: Averaging Strategy not set!");
@@ -1288,6 +1319,18 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
     //Configuration of Adjount Consistency Terms
     configuration_map_[INPAR::XFEM::F_Adj_Row].second = kappa_m;
     configuration_map_[INPAR::XFEM::X_Adj_Row].second = 1.-kappa_m;
+
+    //Traction Jump Terms
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
+    {
+      configuration_map_[INPAR::XFEM::F_LB_Rhs].second = 1.-kappa_m;
+      configuration_map_[INPAR::XFEM::X_LB_Rhs].second = kappa_m;
+    }
+    else
+    {
+      configuration_map_[INPAR::XFEM::F_TJ_Rhs].second = 1.-kappa_m;
+      configuration_map_[INPAR::XFEM::X_TJ_Rhs].second = kappa_m;
+    }
   }
   else
     dserror("XFEM::LevelSetCouplingTwoPhase: You want to initialize another strategy than harmonic?");

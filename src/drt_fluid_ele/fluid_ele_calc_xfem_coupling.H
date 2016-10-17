@@ -290,44 +290,41 @@ namespace DRT
 
         //! build coupling matrices for Nitsche's method (NIT)
         virtual void NIT_evaluateCoupling(
-          const LINALG::Matrix<nsd_,1> &    normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-          const double &                    timefacfac,             ///< theta*dt
-          const double &                    pres_timefacfac,        ///< timescaling for pressure
-          const double &                    visceff_m,              ///< viscosity in coupling master fluid
-          const double &                    visceff_s,              ///< viscosity in coupling slave fluid
-          const double &                    kappa_m,                ///< mortaring weight for coupling master
-          const double &                    kappa_s,                ///< mortaring weight for coupling slave
-          const double &                    density_m,              ///< fluid density (master)
-          const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
-          const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
-          const double &                    press_m,                ///< coupling master pressure
-          const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
-          const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
-          const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const bool                        is_traction_jump,        ///< is it a normal traction jump or calculated throw laplace-beltrami
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
+            const LINALG::Matrix<nsd_,1> &    normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+            const double &                    timefacfac,             ///< theta*dt*fac
+            const double &                    pres_timefacfac,        ///< scaling for pressure part
+            const double &                    visceff_m,              ///< viscosity in coupling master fluid
+            const double &                    visceff_s,              ///< viscosity in coupling slave fluid
+            const double &                    density_m,              ///< fluid density (master) USED IN XFF
+            const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
+            const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
+            const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
+            const double &                    pres_m,                 ///< coupling master pressure
+            const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
+            const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+            const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+            const LINALG::Matrix<nsd_,nsd_>&  proj_tangential,        ///< tangential projection matrix
+            const LINALG::Matrix<nsd_,nsd_>&  LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         virtual void NIT_evaluateCouplingOldState(
-          const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-          const double &                           timefacfacn,             ///< dt*(1-theta)*fac
-          bool                                     isImplPressure,          ///< flag for implicit pressure treatment
-          const double &                           visceff_m,               ///< viscosity in coupling master fluid
-          const double &                           visceff_s,               ///< viscosity in coupling slave fluid
-          const double &                           kappa_m,                 ///< mortaring weight for coupling master
-          const double &                           kappa_s,                 ///< mortaring weight for coupling slave
-          const double &                           density_m,               ///< fluid density (master) USED IN XFF
-          const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
-          const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_,nsd_> &        vderxyn_m,               ///< coupling master spatial velocity derivatives
-          const double &                           presn_m,                 ///< coupling master pressure
-          const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
-          const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
+            const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+            const double &                           timefacfac,              ///< dt*(1-theta)*fac
+            bool                                     isImplPressure,          ///< flag for implicit pressure treatment
+            const double &                           visceff_m,               ///< viscosity in coupling master fluid
+            const double &                           visceff_s,               ///< viscosity in coupling slave fluid
+            const double &                           density_m,               ///< fluid density (master) USED IN XFF
+            const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
+            const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
+            const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                ///< coupling master spatial velocity derivatives
+            const double &                           pres_m,                  ///< coupling master pressure
+            const LINALG::Matrix<nsd_,1> &           velint_m,                ///< coupling master interface velocity
+            const LINALG::Matrix<nsd_,1> &           ivelint_jump,            ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+            const LINALG::Matrix<nsd_,nsd_>&         proj_tangential,         ///< tangential projection matrix
+            const LINALG::Matrix<nsd_,1> &           itraction_jump,          ///< prescribed interface traction, jump height for coupled problems
+            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
 
       };
