@@ -984,8 +984,7 @@ public:
 
   virtual void GetCondition(const std::string& name, std::vector<Teuchos::RCP<Condition> >& out) const;
 
-  /*!
-  \brief Get a condition with a certain name
+  /*! \brief Get a condition with a certain name
 
   Returns the first condition with name name found in the multimap.
   If multiple conditions with the same name exist, the first condition is
@@ -1008,9 +1007,6 @@ public:
 
   /// return all conditions defined on this discretization
   virtual std::multimap<std::string,Teuchos::RCP<Condition> >& GetAllConditions(){ return condition_; }
-
-  /// Set new nodes to a condition & build geometry new
-  virtual void ModifyCondition(const std::string& name, std::vector<int>& nodegid, bool buildgeom = true);
 
   //@}
 
@@ -1989,9 +1985,16 @@ protected:
   virtual bool BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
-  \brief Build the geometry of surfaces for a certain surface condition
+  \brief Build the geometry of surfaces for a certain surface condition.
 
-  */
+  \note On exit, the parallel distribution of the newly created surface geometry
+  matches the distribution of the originating volume. Each surface is owned by the
+  same proc as the underlying volume element (rauch 10/16).
+
+  \author Michael Gee
+  \date 01/07
+
+  \version rework by Andreas Rauch ( rauch 10/16 )       */
   virtual bool BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
@@ -2106,26 +2109,34 @@ protected:
     Teuchos::RCP<Epetra_Vector>  systemvectordd,
     const Teuchos::RCP<const Epetra_Vector>& toggle);
 
-  /*!
-   *  A helper function for BuildSurfacesinCondition,
-   *  BuildLinesinCondition, BuildInternalFaces, etc.
+  /*! \brief Helper method
    *
+   *  A helper method for BuildLinesinCondition and
+   *  BuildSurfacesinCondition, below.
    *  Gets a map (vector_of_nodes)->Element that maps
    *
    *  (A map with globally unique ids.)
    *
+   * \note The point here is to make sure the element gid are the same on any
+   *  parallel distribution of the elements. Thus we allreduce thing to
+   *  processor 0 and sort the element descriptions (vectors of nodal ids)
+   * there.
+   *
+   *  \warning This routine has not been optimized for efficiency. I don't think that is
+   *  needed.
+   *
    *  \param comm (i) communicator
    *  \param elementmap (i) map (vector_of_nodes_ids)->(element) that maps
    *  the nodes of an element to the element itself.
-   *
    *  \param finalelements (o) map (global_id)->(element) that can be
    *  added to a condition.
    *
-   *  h.kue 09/07
-   */
-  virtual void AssignGlobalIDs(const Epetra_Comm& comm,
-                               const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
-                               std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
+   *  \author h.kue
+   *  \date 09/07    */
+  virtual void AssignGlobalIDs(
+      const Epetra_Comm& comm,
+      const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
+      std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
 
   // internal data
   std::string                            name_;              // name of this discretization
