@@ -348,6 +348,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("COMPONENT")
     .AddNamedDoubleVector("VAREXPR",3)
     .AddNamedString("FUNCTION")
+    .AddOptionalNamedInt("NUMCONSTANTS")
+    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
   DRT::INPUT::LineDefinition varexpr;
@@ -355,6 +357,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("FUNCT")
     .AddNamedDoubleVector("VAREXPR",3)
     .AddNamedString("FUNCTION")
+    .AddOptionalNamedInt("NUMCONSTANTS")
+    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
   DRT::INPUT::LineDefinition componentexpr;
@@ -363,6 +367,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("COMPONENT")
     .AddNamedDoubleVector("EXPR",3)
     .AddNamedString("FUNCTION")
+    .AddOptionalNamedInt("NUMCONSTANTS")
+    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
   DRT::INPUT::LineDefinition expr;
@@ -370,6 +376,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("FUNCT")
     .AddNamedDoubleVector("EXPR",3)
     .AddNamedString("FUNCTION")
+    .AddOptionalNamedInt("NUMCONSTANTS")
+    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
@@ -862,7 +870,11 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         std::string component;
         function->ExtractString("FUNCTION",component);
 
-        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+        std::vector<std::pair<std::string,double> > constants;
+        if (function->HaveNamed("CONSTANTS"))
+          function->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
+
+        vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
         functions_.push_back(vecfunc);
       }
       else if (function->HaveNamed("EXPR"))
@@ -874,7 +886,11 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         std::string component;
         function->ExtractString("FUNCTION",component);
 
-        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+        std::vector<std::pair<std::string,double> > constants;
+        if (function->HaveNamed("CONSTANTS"))
+          function->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
+
+        vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
         functions_.push_back(vecfunc);
       }
       else
@@ -912,7 +928,11 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
             std::string component;
             functions[j]->ExtractString("FUNCTION",component);
 
-            vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+            std::vector<std::pair<std::string,double> > constants;
+            if (functions[j]->HaveNamed("CONSTANTS"))
+              functions[j]->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
+
+            vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
           }
           else
             dserror("unrecognized component for 'EXPR' function");
@@ -946,7 +966,11 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
             std::string component;
             functions[j]->ExtractString("FUNCTION",component);
 
-            vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+            std::vector<std::pair<std::string,double> > constants;
+            if (functions[j]->HaveNamed("CONSTANTS"))
+              functions[j]->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
+
+            vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
           }
           else
             dserror("unrecognized component for 'VAREXPR' function");
@@ -1042,7 +1066,8 @@ DRT::UTILS::ExprFunction::~ExprFunction()
 void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
                                        double x,
                                        double y,
-                                       double z
+                                       double z,
+                                       std::vector<std::pair<std::string,double> > constants
   )
 {
   // build the parser for the function evaluation
@@ -1052,6 +1077,9 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
   parser->AddVariable("y",0);
   parser->AddVariable("z",0);
   parser->AddVariable("t",0);
+  //add constants
+  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
+    parser->AddVariable(it->first,it->second);
   // parse
   parser->ParseFunction();
 
@@ -1063,6 +1091,9 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
   parserd->AddVariable("y",0);
   parserd->AddVariable("z",0);
   parserd->AddVariable("t",0);
+  //add constants
+  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
+    parserd->AddVariable(it->first,it->second);
   // parse
   parserd->ParseFunction();
 
@@ -1224,7 +1255,8 @@ DRT::UTILS::VariableExprFunction::~VariableExprFunction()
 void DRT::UTILS::VariableExprFunction::AddExpr(std::string buf,
                                        double x,
                                        double y,
-                                       double z
+                                       double z,
+                                       std::vector<std::pair<std::string,double> > constants
   )
 {
   // do the almost same as the expression function (base class) but do not yet parse!
@@ -1235,6 +1267,12 @@ void DRT::UTILS::VariableExprFunction::AddExpr(std::string buf,
   // build the parser for the function derivative evaluation
   Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > parserd =
       Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double> >(buf));
+
+  // add constants
+  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
+    parser->AddVariable(it->first,it->second);
+  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
+    parserd->AddVariable(it->first,it->second);
 
   // save the parsers
   expr_.push_back(parser);
@@ -1329,7 +1367,10 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
     expr_[index]->SetValue(it->first,it->second);
   // set the values of the constants
   for( it=constants.begin() ; it!=constants.end() ; it++)
-    expr_[index]->SetValue(it->first,it->second);
+  {
+    if( expr_[index]->IsVariable(it->first) )
+      expr_[index]->SetValue(it->first,it->second);
+  }
 
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
@@ -1414,8 +1455,9 @@ std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
   // set the values of the constants
   for( it=constants.begin() ; it!=constants.end() ; it++)
   {
-    // set the value in expression
-    exprd_[index]->SetValue(it->first,it->second);
+    if( exprd_[index]->IsVariable(it->first) )
+      // set the value in expression
+      exprd_[index]->SetValue(it->first,it->second);
   }
 
   // evaluate the expression
