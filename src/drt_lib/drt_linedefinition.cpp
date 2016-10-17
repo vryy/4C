@@ -32,11 +32,15 @@ namespace INPUT
   public:
     TagComponent(std::string name) : name_(name) {}
 
+    virtual ~TagComponent() {}
+
     virtual LineComponent* Clone() { return new TagComponent(name_); }
 
     virtual void Print(std::ostream& stream) { stream << name_; }
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
 
     virtual bool Read(std::istream& stream);
 
@@ -54,11 +58,15 @@ namespace INPUT
     NamedComponent(std::string name, type value)
       : name_(name), value_(value) {}
 
+    virtual ~NamedComponent() {}
+
     virtual LineComponent* Clone() { return new NamedComponent(name_,value_); }
 
     virtual void Print(std::ostream& stream) { stream << name_ << " " << value_; }
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
 
     virtual bool Read(std::istream& stream);
 
@@ -78,6 +86,8 @@ namespace INPUT
   public:
     UnnamedComponent(std::string name, type value)
       : NamedComponent<type>(name,value) {}
+
+    virtual ~UnnamedComponent() {}
 
     virtual LineComponent* Clone() { return new UnnamedComponent(this->name_,this->value_); }
 
@@ -99,6 +109,8 @@ namespace INPUT
     NamedVectorComponent(std::string name, const std::vector<type>& values)
       : name_(name), values_(values.begin(),values.end()) {}
 
+    virtual ~NamedVectorComponent() {}
+
     virtual LineComponent* Clone() { return new NamedVectorComponent<type>(name_,values_); }
 
     virtual void Print(std::ostream& stream)
@@ -108,6 +120,8 @@ namespace INPUT
     }
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
 
     virtual bool Read(std::istream& stream);
 
@@ -120,6 +134,47 @@ namespace INPUT
     std::vector<type> values_;
   };
 
+  /// line component to describe a string followed by a vector of values
+  /// specialization for pair
+  template < >
+  template <typename T1,typename T2>
+  class NamedVectorComponent< std::pair<T1,T2> > : public LineComponent
+  {
+  public:
+    NamedVectorComponent(std::string name, int length) : name_(name), values_(length) {}
+
+    NamedVectorComponent(std::string name, const std::vector< std::pair<T1,T2> >& values)
+      : name_(name), values_(values.begin(),values.end()) {}
+
+    virtual ~NamedVectorComponent() {}
+
+    virtual LineComponent* Clone() { return new NamedVectorComponent< std::pair<T1,T2> >(name_,values_); }
+
+    virtual void Print(std::ostream& stream)
+    {
+      stream << name_ << " ";
+      for(typename std::vector< std::pair<T1,T2> >::iterator it = values_.begin();it!=values_.end();it++)
+      {
+        stream << it->first << " ";
+        stream << it->second << " ";
+      };
+    }
+
+    virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
+
+    virtual bool Read(std::istream& stream);
+
+    virtual bool IsNamed(std::string name) { return name==name_; }
+
+    std::vector< std::pair<T1,T2> > Value() const { return values_; }
+
+  protected:
+    std::string name_;
+    std::vector< std::pair<T1,T2> > values_;
+  };
+
   /// line component to describe a vector of values without a (visible) string
   template <class type>
   class UnnamedVectorComponent : public NamedVectorComponent<type>
@@ -130,6 +185,8 @@ namespace INPUT
 
     UnnamedVectorComponent(std::string name, const std::vector<type>& values)
       : NamedVectorComponent<type>(name, values) {}
+
+    virtual ~UnnamedVectorComponent() {}
 
     virtual LineComponent* Clone() { return new UnnamedVectorComponent<type>(this->name_,this->values_); }
 
@@ -156,6 +213,8 @@ namespace INPUT
     NamedVariableVectorComponent(std::string name, const std::vector<type>& values, std::string lengthdef)
       : NamedVectorComponent<type>(name,values), lengthdef_(lengthdef) {}
 
+    virtual ~NamedVariableVectorComponent() {}
+
     virtual LineComponent* Clone() { return new NamedVariableVectorComponent<type>(this->name_,this->values_,lengthdef_); }
 
     virtual void Print(std::ostream& stream)
@@ -164,7 +223,7 @@ namespace INPUT
       //std::copy(values_.begin(), values_.end(), std::ostream_iterator<type>(stream, " "));
     }
 
-    virtual bool Read(LineDefinition& definition, std::istream& stream);
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
 
   private:
     std::string lengthdef_;
@@ -179,7 +238,15 @@ bool DRT::INPUT::TagComponent::Read(DRT::INPUT::LineDefinition& definition, std:
 {
   std::string tag;
   stream >> tag;
-  return tag==name_ and !(stream.fail());
+  return Read(definition,tag,stream);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::INPUT::TagComponent::Read(DRT::INPUT::LineDefinition& definition, std::string& name, std::istream& stream)
+{
+  return name==name_ and !(stream.fail());
 }
 
 
@@ -201,6 +268,15 @@ bool DRT::INPUT::NamedComponent<type>::Read(DRT::INPUT::LineDefinition& definiti
   std::string name;
   stream >> name;
 
+ return Read(definition,name,stream);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <class type>
+bool DRT::INPUT::NamedComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::string& name, std::istream& stream)
+{
   // here we do not require any whitespace
   // This is needed for "FUNCT1" and such nonsense
 
@@ -238,6 +314,15 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& de
   std::string name;
   stream >> name;
 
+  return Read(definition,name,stream);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <class type>
+bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::string& name, std::istream& stream)
+{
   // here we require whitespaces between name and values
 
   if (name != name_)
@@ -263,8 +348,56 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+template<typename T1,typename T2>
+bool DRT::INPUT::NamedVectorComponent< std::pair<T1,T2> >::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+{
+  std::string name;
+  stream >> name;
+
+  return Read(definition,name,stream);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<typename T1,typename T2>
+bool DRT::INPUT::NamedVectorComponent< std::pair<T1,T2> >::Read(
+    DRT::INPUT::LineDefinition& definition,
+    std::string& name,
+    std::istream& stream)
+{
+  // here we require whitespaces between name and values
+
+  if (name != name_)
+    return false;
+
+  return Read(stream);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<typename T1,typename T2>
+bool DRT::INPUT::NamedVectorComponent< std::pair<T1,T2> >::Read(std::istream& stream)
+{
+  for (unsigned i=0; i<values_.size(); ++i)
+  {
+    stream >> values_[i].first;
+    // here we require whitespaces between name and values
+    stream >> values_[i].second;
+  }
+
+  return !(stream.fail());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 template <class type>
-bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(
+    DRT::INPUT::LineDefinition& definition,
+    std::string& name,
+    std::istream& stream)
 {
   // Find expected vector on line. It has to be read already!
 
@@ -272,7 +405,7 @@ bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefini
   definition.ExtractInt(lengthdef_,length);
   this->values_.resize(length);
 
-  return NamedVectorComponent<type>::Read(definition,stream);
+  return NamedVectorComponent<type>::Read(definition,name,stream);
 }
 
 
@@ -530,6 +663,18 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedPairOfStringAndDoubleVector(
+    std::string name, std::string lengthdef)
+{
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVariableVectorComponent< std::pair<std::string,double> >(name,lengthdef);
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 {
   for (unsigned i=0; i<components_.size(); ++i)
@@ -551,12 +696,14 @@ void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::LineDefinition::Read(std::istream& stream)
 {
   return Read(stream, 0);
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -589,7 +736,7 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* s
     std::map<std::string,LineComponent*>::iterator i = optionaltail_.find(name);
     if (i==optionaltail_.end())
       return false;
-    if (not i->second->Read(stream))
+    if (not i->second->Read(*this,name,stream))
       return false;
     readtailcomponents_.insert(name);
   }
@@ -677,6 +824,20 @@ void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::INPUT::LineDefinition::ExtractPairOfStringAndDoubleVector(std::string name, std::vector< std::pair<std::string,double> >& v)
+{
+  NamedVectorComponent< std::pair<std::string,double> >* c = dynamic_cast<NamedVectorComponent< std::pair<std::string,double> >*>(FindNamed(name));
+  if (c!=NULL)
+  {
+    v = c->Value();
+    return;
+  }
+  dserror("double vector '%s' not found", name.c_str());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string name)
 {
   if (readtailcomponents_.find(name)!=readtailcomponents_.end())
@@ -697,6 +858,7 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string nam
   }
   return NULL;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

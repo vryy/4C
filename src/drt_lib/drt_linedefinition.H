@@ -53,6 +53,9 @@ namespace INPUT
     virtual bool Read(LineDefinition& definition, std::istream& stream) = 0;
 
     /// try to read component from input line
+    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) = 0;
+
+    /// try to read component from input line
     virtual bool Read(std::istream& stream) = 0;
 
     /// tell if the component has the specified name tag
@@ -146,6 +149,14 @@ namespace INPUT
     /// add a name followed by a vector of double variables
     LineDefinition& AddOptionalNamedDoubleVector(std::string name, int length);
 
+    /// add a name followed by a vector of double variables
+    /*!
+      The parameter \p lengthdef specifies the name of an integer component
+      that gives the length of the vector. The integer component has to
+      precede the vector definition on the input line.
+     */
+    LineDefinition& AddOptionalNamedPairOfStringAndDoubleVector(std::string name, std::string lengthdef);
+
     //@}
 
     /// print to dat file comment
@@ -180,6 +191,7 @@ namespace INPUT
     void ExtractIntVector(std::string name, std::vector<int>& v);
     void ExtractDouble(std::string name, double& value);
     void ExtractDoubleVector(std::string name, std::vector<double>& v);
+    void ExtractPairOfStringAndDoubleVector(std::string name, std::vector< std::pair<std::string,double> >& v);
 
     //@}
 
