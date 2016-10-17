@@ -114,27 +114,27 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
 //  dsassert(scalarnames_.size()==scalar.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
 
   if(numphases_!=(int)pressure.size())
-    dserror("Invalid number of pressure values for this the fluid poro reaction material!");
+    dserror("Invalid number of pressure values for this fluid poro reaction material!");
   if(numphases_!=(int)saturation.size())
-    dserror("Invalid number of saturation values for this the fluid poro reaction material!");
+    dserror("Invalid number of saturation values for this fluid poro reaction material!");
   if(numscal_!=(int)scalar.size())
-    dserror("Invalid number of scalar values for this the fluid poro reaction material!");
+    dserror("Invalid number of scalar values for this fluid poro reaction material!");
 
   if(numphases_!=(int)reacderivsporosity.size())
-    dserror("Invalid length of vector for porosity derivatives for this the fluid poro reaction material!");
+    dserror("Invalid length of vector for porosity derivatives for this fluid poro reaction material!");
   if(numphases_!=(int)reacderivspressure.size())
-    dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   for (int k=0;k<numphases_;k++)
   {
     if(numphases_!=(int)reacderivspressure[k].size())
-      dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   }
   if(numphases_!=(int)reacderivssaturation.size())
-    dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   for (int k=0;k<numphases_;k++)
   {
     if(numphases_!=(int)reacderivssaturation[k].size())
-      dserror("Invalid length of vector for pressure derivatives for this the fluid poro reaction material!");
+      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   }
 
   std::vector<std::pair<std::string,double> > variables;

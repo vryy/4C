@@ -113,7 +113,7 @@ MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(
-    const std::vector<double>& pressure) const
+    const std::vector<double>& pressure)
 {
   // check if sizes fit
   if (pressure.size() != presids_->size())
@@ -130,7 +130,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& state)
 {
   // check if sizes fit
   if (state.size() != presids_->size())
@@ -148,7 +148,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfSaturationWrtPressure(
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive,
-    double saturation) const
+    double saturation)
 {
 
   if((*presids_)[doftoderive]==0)
@@ -161,7 +161,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfPressureWrtSaturation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation) const
+double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 {
 
   double presval = 1.0/reltensions_ *(saturation-sat0_);
@@ -194,7 +194,7 @@ MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(
-    const std::vector<double>& pressure) const
+    const std::vector<double>& pressure)
 {
   // check if sizes fit
   if (pressure.size() != presids_->size())
@@ -211,7 +211,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& state)
 {
   // check if sizes fit
   if (state.size() != presids_->size())
@@ -232,7 +232,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfSaturationWrtPressure(
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive,
-    double saturation) const
+    double saturation)
 {
 
   if((*presids_)[doftoderive]==0)
@@ -246,7 +246,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfPressureWrtSaturation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation) const
+double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation)
 {
 
   double presval = 1.0/reltensions_ *std::tan(0.5*M_PI*std::pow(sat0_-saturation,1.0/exp_));
@@ -283,10 +283,21 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
   if(Function(functionID_pressure_-1).NumberComponents()!=1)
     dserror("expected only one component for the pressure evaluation");
 
+  // define saturation variable
   if(not Function(functionID_pressure_-1).IsVariable(0,"S"))
     Function(functionID_pressure_-1).AddVariable(0,"S",0.0);
+  // define pressure variable
   if(not Function(functionID_saturation_-1).IsVariable(0,"dp"))
     Function(functionID_saturation_-1).AddVariable(0,"dp",0.0);
+
+  // initialize pressure vector for function evaluation
+  dp_.clear();
+  dp_.push_back(std::pair<std::string,double>("dp",0.0));
+
+  // initialize saturation vector for function evaluation
+  S_.clear();
+  S_.push_back(std::pair<std::string,double>("S",0.0));
+
   return;
 }
 
@@ -312,7 +323,7 @@ inline DRT::UTILS::VariableExprFunction& MAT::PAR::FluidPoroPhaseLawByFunction::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
-    const std::vector<double>& pressure) const
+    const std::vector<double>& pressure)
 {
   // check if sizes fit
   if (pressure.size() != presids_->size())
@@ -320,17 +331,17 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
 
   double presval = std::inner_product(presids_->begin(),presids_->end(),pressure.begin(),0.0);
 
-  std::vector<std::pair<std::string,double> > variables(1);
-  variables[0]=std::pair<std::string,double>("dp",presval);
+  // directly write into entry without checking the name for performance reasons
+  dp_[0].second = presval;
 
-  return Function(functionID_saturation_-1).Evaluate(0,variables);
+  return Function(functionID_saturation_-1).Evaluate(0,dp_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& state)
 {
   // check if sizes fit
   if (state.size() != presids_->size())
@@ -340,10 +351,10 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
     return 0.0;
 
   double presval = std::inner_product(presids_->begin(),presids_->end(),state.begin(),0.0);
-  std::vector<std::pair<std::string,double> > variables(1);
-  variables[0]=std::pair<std::string,double>("dp",presval);
+  // directly write into entry without checking the name for performance reasons
+  dp_[0].second = presval;
 
-  std::vector<double> deriv = Function(functionID_saturation_-1).FctDer(0,variables);
+  std::vector<double> deriv = Function(functionID_saturation_-1).FctDer(0,dp_);
 
   return deriv[0]*(*presids_)[doftoderive];
 }
@@ -352,26 +363,26 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive,
-    double saturation) const
+    double saturation)
 {
 
   if((*presids_)[doftoderive]==0)
     return 0.0;
 
-  std::vector<std::pair<std::string,double> > variables(1);
-  variables[0]=std::pair<std::string,double>("S",saturation);
+  // directly write into entry without checking the name for performance reasons
+  S_[0].second = saturation;
 
-  std::vector<double> deriv = Function(functionID_pressure_-1).FctDer(0,variables);
+  std::vector<double> deriv = Function(functionID_pressure_-1).FctDer(0,S_);
 
   return deriv[0]*(*presids_)[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation) const
+double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation)
 {
-  std::vector<std::pair<std::string,double> > variables(1);
-  variables[0]=std::pair<std::string,double>("S",saturation);
+  // directly write into entry without checking the name for performance reasons
+  S_[0].second = saturation;
 
-  return Function(functionID_pressure_-1).Evaluate(0,variables);
+  return Function(functionID_pressure_-1).Evaluate(0,S_);
 }

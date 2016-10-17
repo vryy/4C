@@ -366,6 +366,74 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
   return;
 }
 
+/*----------------------------------------------------------------------/
+ | calculate advanced reaction terms                        Thon 08/16 |
+/----------------------------------------------------------------------*/
+double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
+    const int k,                                                     //!< current scalar id
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  {
+    return CalcReaBodyForceTerm(k,phinp,constants,ReacCoeff()*Stoich()->at(k),scale_phi);// scalar at integration point np
+  }
+  else
+    return 0.0;
+}
+
+/*----------------------------------------------------------------------/
+ | calculate advanced reaction term derivatives             Thon 08/16 |
+/----------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
+    const int k,                                                     //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  {
+    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeff()*Stoich()->at(k),scale_phi);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  helper for calculating advanced reaction terms           thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
+    int k,                                                           //!< current scalar id
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,constants,*Couprole(),scale_reac,scale_phi);
+}
+
+/*--------------------------------------------------------------------------------*
+ |  helper for calculating advanced reaction term derivatives          thon 08/16 |
+ *--------------------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
+    int k,                                                           //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,constants,*Couprole(),scale_reac,scale_phi);
+
+  return;
+}
+
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */

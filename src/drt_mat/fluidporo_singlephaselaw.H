@@ -59,19 +59,19 @@ namespace PAR
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(
-        const std::vector<double>& pressure) const = 0;
+        const std::vector<double>& pressure) = 0;
 
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) const = 0;
+        const std::vector<double>& state) = 0;
 
     //! evaluate generalized pressure related to phase law
-    virtual double EvaluateGenPressure(double saturation) const = 0;
+    virtual double EvaluateGenPressure(double saturation) = 0;
 
     //! evaluate derivative of pressure w.r.t. saturation
     virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive,
-        double saturation) const = 0;
+        double saturation) = 0;
   };
 
   /*----------------------------------------------------------------------*/
@@ -109,19 +109,19 @@ namespace PAR
 
     //! evaluate saturation of phase
     virtual double EvaluateSaturation(
-        const std::vector<double>& pressure) const;
+        const std::vector<double>& pressure);
 
     //! evaluate generalized pressure related to phase law
-    virtual double EvaluateGenPressure(double saturation) const;
+    virtual double EvaluateGenPressure(double saturation);
 
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& state);
 
     //! evaluate derivative of pressure w.r.t. saturtion
     virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive,
-        double saturation) const;
+        double saturation);
 
   };
   // class FluidPoroPhaseLawLinear
@@ -162,20 +162,20 @@ namespace PAR
     virtual const std::vector<int>* PresIds() {return presids_;};
 
     //! evaluate saturation of phase
-    virtual double EvaluateSaturation(const std::vector<double>& pressure) const;
+    virtual double EvaluateSaturation(const std::vector<double>& pressure);
 
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& state);
 
     //! evaluate generalized pressure related to phase law
-    virtual double EvaluateGenPressure(double saturation) const;
+    virtual double EvaluateGenPressure(double saturation);
 
     //! evaluate derivative of pressure w.r.t. saturation
     virtual double EvaluateDerivOfPressureWrtSaturation(
         int doftoderive,
-        double saturation) const;
+        double saturation);
 
   };
   // class FluidPoroPhaseLawTangent
@@ -208,23 +208,23 @@ namespace PAR
 
 
     //! evaluate saturation of phase
-    virtual double EvaluateSaturation(const std::vector<double>& pressure) const
+    virtual double EvaluateSaturation(const std::vector<double>& pressure)
     {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) const
+        const std::vector<double>& state)
     {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
     //! evaluate generalized pressure related to phase law
-    virtual double EvaluateGenPressure(double saturation) const
+    virtual double EvaluateGenPressure(double saturation)
     {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
     //! evaluate derivative of pressure w.r.t. saturation
     virtual double EvaluateDerivOfPressureWrtSaturation(
         int doftoderive,
-        double saturation) const
+        double saturation)
     {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
   };
@@ -264,23 +264,29 @@ namespace PAR
     virtual const std::vector<int>* PresIds() {return presids_;};
 
     //! evaluate saturation of phase
-    virtual double EvaluateSaturation(const std::vector<double>& pressure) const;
+    virtual double EvaluateSaturation(const std::vector<double>& pressure);
 
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& state);
 
     //! evaluate generalized pressure related to phase law
-    virtual double EvaluateGenPressure(double saturation) const;
+    virtual double EvaluateGenPressure(double saturation);
 
     //! evaluate derivative of pressure w.r.t. saturation
     virtual double EvaluateDerivOfPressureWrtSaturation(
         int doftoderive,
-        double saturation) const;
+        double saturation);
 
   private:
+    //! helper method for function access
     inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+
+    //! vector for input of differential pressure to function
+    std::vector<std::pair<std::string,double> > dp_;
+    //! vector for input of saturation to function
+    std::vector<std::pair<std::string,double> > S_;
   };
   // class FluidPoroPhaseLawTangent
 

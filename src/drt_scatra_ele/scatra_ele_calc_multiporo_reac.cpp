@@ -28,6 +28,7 @@
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/matlist_reactions.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -44,7 +45,6 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(c
 {
   // replace internal variable manager by internal variable manager for muliporo
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerMultiPoro<my::nsd_, my::nen_>(my::numscal_));
-
 
   return;
 }
@@ -389,6 +389,77 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetInternalVariablesFor
       my::ehist_);
 
   return;
+}
+
+/*-------------------------------------------------------------------------------*
+ |  Set advanced reaction terms and derivatives                      vuong 08/16 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerms(
+    const int                                 k,          //!< index of current scalar
+    const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+    )
+{
+  FillCouplingVector();
+
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
+
+  remanager->AddToReaBodyForce(
+      matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),couplingvalues_),
+      k);
+
+  matreaclist->CalcReaBodyForceDerivMatrix(
+      k,
+      remanager->GetReaBodyForceDerivVector(k),
+      my::scatravarmanager_->Phinp(),
+      couplingvalues_);
+
+}
+
+/*-------------------------------------------------------------------------------*
+ |  fill the coupling vector                                         vuong 08/16 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVector()
+{
+  // if it is empty rebuilt it
+  if(couplingvalues_.empty())
+  {
+    //pressures
+    const std::vector<double>& pressures = VarManager()->Pressure();
+    const int numphases = pressures.size();
+    for(int i =0;i<numphases;i++)
+    {
+      std::ostringstream temp;
+      temp << i+1;
+      couplingvalues_.push_back(std::pair<std::string,double>("p"+temp.str(),pressures[i]));
+    }
+    //saturation
+    const std::vector<double>& saturations = VarManager()->Saturation();
+    for(int i =0;i<numphases;i++)
+    {
+      std::ostringstream temp;
+      temp << i+1;
+      couplingvalues_.push_back(std::pair<std::string,double>("S"+temp.str(),saturations[i]));
+    }
+    //porosity
+    couplingvalues_.push_back(std::pair<std::string,double>("porosity",poro::DiffManager()->GetPorosity(0)));
+  }
+  // directly copy values (rely on order for performance reasons)
+  else
+  {
+    //pressures
+    const std::vector<double>& pressures = VarManager()->Pressure();
+    const int numphases = pressures.size();
+    for(int i =0;i<numphases;i++)
+      couplingvalues_[i].second=pressures[i];
+    //saturation
+    const std::vector<double>& saturations = VarManager()->Saturation();
+    for(int i =0;i<numphases;i++)
+      couplingvalues_[numphases+i].second=saturations[i];
+    //porosity
+    couplingvalues_[2*numphases].second=poro::DiffManager()->GetPorosity(0);
+  }
 }
 
 /*-----------------------------------------------------------------------------*

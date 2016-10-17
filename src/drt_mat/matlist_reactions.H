@@ -163,6 +163,23 @@ private:
             const double scale = 1.0
         ) const;
 
+    ///advanced reaction terms
+    double CalcReaBodyForceTerm(
+        const int k,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string,double> >& constants,
+        const double scale = 1.0
+    ) const;
+
+    /// calculate advanced reaction term derivatives
+    void CalcReaBodyForceDerivMatrix(
+            const int k,
+            std::vector<double>& derivs,
+            const std::vector<double>& phinp,
+            const std::vector<std::pair<std::string,double> >& constants,
+            const double scale = 1.0
+        ) const;
+
   protected:
 
     /// setup of material map

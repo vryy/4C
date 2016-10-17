@@ -99,6 +99,12 @@ public:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
+  //! Set advanced reaction terms and derivatives
+  virtual void SetAdvancedReactionTerms(
+      const int                                 k,          //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+  );
+
   //! compute pore pressure
   virtual double ComputePorePressure(
     );
@@ -137,6 +143,8 @@ public:
     const double                  densnp       //!< density at time_(n+1)
   );
 
+  void FillCouplingVector();
+
   protected:
   //! nodal flux values at t_(n+1)
   std::vector<LINALG::Matrix<my::nsd_,my::nen_> > efluxnp_;
@@ -146,6 +154,10 @@ public:
   std::vector<LINALG::Matrix<my::nen_,1> > esatnp_;
   //! nodal solid pressure at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nen_,1> esolidpresnp_;
+
+  //! a vector containing all quantities, the equation is coupled with
+  //! (i.e. pressures, saturations and porosity)
+  std::vector<std::pair<std::string,double> > couplingvalues_;
 
 };
 
@@ -163,7 +175,7 @@ public:
     multiconv_(0),
     pressure_(0),
     saturation_(0),
-    solildpressure_(0.0),
+    solidpressure_(0.0),
     scalartophaseID_(numscal,-1)
   {return;}
 
@@ -207,7 +219,7 @@ public:
      }
 
      // solid pressure
-     solildpressure_ = esolidpresnp.Dot(funct);
+     solidpressure_ = esolidpresnp.Dot(funct);
 
      // check if the IDs make sense
      for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)
@@ -242,25 +254,37 @@ public:
   };
 
   //! return pressure associated with scalar k
-  virtual double Pressure(const int k) const
+  double Pressure(const int k) const
   {
     return pressure_[scalartophaseID_[k]];
   };
 
+  //! return pressures
+  const std::vector<double>& Pressure() const
+  {
+    return pressure_;
+  };
+
   //! return saturation associated with scalar k
-  virtual double Saturation(const int k) const
+  double Saturation(const int k) const
   {
     return saturation_[scalartophaseID_[k]];
   };
 
-  //! return solid pressure
-  virtual double SolidPressure() const
+  //! return saturation associated with scalar k
+  const std::vector<double>& Saturation() const
   {
-    return solildpressure_;
+    return saturation_;
+  };
+
+  //! return solid pressure
+  double SolidPressure() const
+  {
+    return solidpressure_;
   };
 
   //! set scalar ID to phase ID mapping
-  virtual void SetPhaseID(const int scalarID, const int phaseID)
+  void SetPhaseID(const int scalarID, const int phaseID)
   {
     scalartophaseID_[scalarID] = phaseID;
   };
@@ -277,7 +301,7 @@ private:
   //! phase saturation
   std::vector<double> saturation_;
   //! solid pressure
-  double solildpressure_;
+  double solidpressure_;
 
   //! mapping from scalar ID to phase ID
   std::vector<int > scalartophaseID_;

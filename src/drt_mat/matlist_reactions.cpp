@@ -267,3 +267,49 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | calculate advanced reaction terms                         thon 08/16 |
+ *----------------------------------------------------------------------*/
+double MAT::MatListReactions::CalcReaBodyForceTerm(
+        const int k,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string,double> >& constants,
+        const double scale
+    ) const
+{
+  double bodyforcetermK=0.0;
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp,constants, scale);
+  }
+
+  return bodyforcetermK;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate advanced reaction term derivatives              thon 08/16 |
+ *----------------------------------------------------------------------*/
+void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
+        const int k,
+        std::vector<double>& derivs,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string,double> >& constants,
+        const double scale
+    ) const
+{
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp,constants, scale);
+  }
+
+  return;
+}
