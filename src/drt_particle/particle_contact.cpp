@@ -17,7 +17,6 @@
 #include "particle_contact.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
-#include "particleMeshFree_weightFunction.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"

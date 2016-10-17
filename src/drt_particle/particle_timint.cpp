@@ -104,8 +104,8 @@ PARTICLE::TimInt::TimInt
   pressure_(Teuchos::null),
 
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  collhandler_(Teuchos::null)//,
-//interhandler_(Teuchos::null)
+  collhandler_(Teuchos::null),
+  interHandler_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )

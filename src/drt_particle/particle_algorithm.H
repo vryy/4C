@@ -105,29 +105,31 @@ namespace PARTICLE
       );
 
     /// get wall discretization
-    Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
+    virtual Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
 
     /// get underlyling structural problem
-    Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
+    virtual Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
 
     /// return gravity acceleration
-    LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
+    virtual LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
     virtual void TransferParticles(const bool updatestates, const bool ghosting = true);
 
     /// get bins in range and call FindNeighbors
-    void GetNeighbouringParticlesAndWalls(
-      DRT::Node* CurrentParticle,
-      std::list<DRT::Node*>& neighboring_particles,
-      std::set<DRT::Element*>& neighboring_walls);
+    virtual void GetNeighbouringParticlesAndWalls(
+                    DRT::Node* CurrentParticle,
+                    std::list<DRT::Node*>& neighboring_particles,
+                    std::set<DRT::Element*>& neighboring_walls);
+
+    virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
 
     /// map that links bins to heat sources
-    std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }
+    virtual std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }
 
     /// list of heat sources
-    const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
+    virtual const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
 
     /// contact type: meshfree, particle-thermo, etc.
     INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }

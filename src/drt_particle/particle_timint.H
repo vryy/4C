@@ -52,7 +52,7 @@ namespace PARTICLE
 {
   class Algorithm;
   class ParticleCollisionHandlerBase;
-  class MeshFreeInteractionHandler;
+  class ParticleMeshFreeInteractionHandler;
 }
 
 namespace MAT
@@ -333,6 +333,9 @@ namespace PARTICLE
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
 
+    //! does interaction handler exist?
+    virtual bool HaveInterHandler() {return (interHandler_!=Teuchos::null); }
+
     //@}
 
     //! @name Extract methods
@@ -590,7 +593,7 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
 
     //! interaction handler for particles
-    //Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandlerBase> interhandler_;
+    Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler_;
 
     //@}
 

@@ -19,6 +19,7 @@
 #include "particle_timint_expl.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
+#include "particleMeshFree_interaction.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -72,11 +73,15 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    //    \dot{\rho}_{n} := \dot{\rho}_{n+1}, \dot{\rho}_{n-1} := \dot{\rho}_{n}
+    densityDot_->UpdateSteps(*densityDotn_);
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     //    R_{n} := R_{n+1}, R_{n-1} := R_{n}
     radius_->UpdateSteps(*radiusn_);
-    //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
+    //    \rho_{n} := \rho_{n+1}, \rho_{n-1} := \rho_{n}
     density_->UpdateSteps(*densityn_);
     //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
@@ -107,6 +112,10 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    interHandler_->SetStateVectors(disn_, veln_, radiusn_, densityn_, pressure_);
+    break;
+  }
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_);

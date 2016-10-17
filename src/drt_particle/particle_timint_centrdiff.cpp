@@ -20,6 +20,7 @@
 #include "particle_timint_centrdiff.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
+#include "particleMeshFree_interaction.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -59,7 +60,7 @@ void PARTICLE::TimIntCentrDiff::Init()
   {
   case INPAR::PARTICLE::MeshFree:
   {
-    //interhandler_ = Teuchos::rcp(new PARTICLE::MeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams));
+    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams));
     break;
   }
   case INPAR::PARTICLE::Normal_DEM:
@@ -401,7 +402,17 @@ void PARTICLE::TimIntCentrDiff::ComputeDisplacements()
   }
   //--------------------------------------------------------------
 
-  ComputeAcc(f_contact, m_contact, accn_, angAccn_);
+  if (interHandler_ != Teuchos::null)
+  {
+    // the density update scheme is equal to the displacement update scheme. It can change at your will
+    // new densities \f$\rho_{n+1}\f$
+    densityn_->Update(dt, *densityDotn_, 1.0);
+
+    // direct update of the accelerations
+    interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_);
+  }
+  else
+    ComputeAcc(f_contact, m_contact, accn_, angAccn_);
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);

@@ -221,6 +221,9 @@ namespace ADAPTER
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
 
+    //! does interaction handler exist?
+    virtual bool HaveInterHandler() = 0;
+
     //@}
 
     //! @name Extract methods
