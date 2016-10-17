@@ -39,6 +39,7 @@ POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy()
       "PoroSurfaceNeumann", "SurfaceNeumann"));
   conditions_to_copy.insert(std::pair<std::string, std::string> (
       "PoroVolumeNeumann", "VolumeNeumann"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
 
   return conditions_to_copy;
 }

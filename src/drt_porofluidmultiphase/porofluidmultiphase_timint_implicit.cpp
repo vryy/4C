@@ -1348,7 +1348,42 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
   }
   case INPAR::POROFLUIDMULTIPHASE::initfield_field_by_condition:
   {
-    dserror("'initfield_field_by_condition' not yet implemented");
+    // set initial field for ALL existing scatra fields in condition
+    const std::string field = "PoroMultiFluid";
+
+    const int numdof = discret_->NumDof(0,discret_->lRowNode(0));
+
+    // get initial field conditions
+    std::vector<DRT::Condition*> initfieldconditions(0);
+    discret_->GetCondition("Initfield",initfieldconditions);
+
+    if(not initfieldconditions.size())
+      dserror("Tried to evaluate initial field by condition without a corresponding condition defined on the PoroMultiFluid discretization!");
+    std::set<int> numdofpernode;
+    for(unsigned icond=0; icond<initfieldconditions.size(); icond++)
+    {
+      const int condmaxnumdofpernode =numdof;
+
+      if(condmaxnumdofpernode != 0)
+        numdofpernode.insert(condmaxnumdofpernode);
+    }
+
+    if(numdofpernode.empty())
+      dserror("No DOFs defined on initial field condtion!");
+
+    const int maxnumdofpernode = *(numdofpernode.rbegin());
+
+    std::vector<int> localdofs(maxnumdofpernode);
+    for (int i = 0; i < maxnumdofpernode; i++)
+    {
+      localdofs[i] = i;
+    }
+    discret_->EvaluateInitialField(field,phin_,localdofs);
+
+    // initialize also the solution vector. These values are a pretty good guess for the
+    // solution after the first time step (much better than starting with a zero vector)
+    phinp_->Update(1.0,*phin_ ,0.0);
+
     break;
   }
   default:
