@@ -735,7 +735,7 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0,"displacement",GState().GetDisN());
+  Discret().SetState(0,"displacement",GState().GetDisNp());
   Discret().SetState(0,"residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices

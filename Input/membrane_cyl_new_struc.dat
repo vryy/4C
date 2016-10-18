@@ -1,0 +1,388 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    32
+//NODES       40
+DIM           3
+-----------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+NUMALEDIS                       1
+NUMARTNETDIS                    1
+NUMTHERMDIS                     1
+NUMAIRWAYSDIS                   1
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+RESTARTTIME                     -1
+SHAPEFCT                        Polynomial
+RANDSEED                        -1
+-----------------------------------------------------------------IO
+OUTPUT_GMSH                     No
+OUTPUT_BIN                      yes
+OUTPUT_EVERY_ITER               no
+OEI_FILE_COUNTER                0
+STRUCT_DISP                     Yes
+STRUCT_VEL_ACC                  No
+STRUCT_SE                       No
+STRUCT_STRESS                   Cauchy
+STRUCT_COUPLING_STRESS          No
+STRUCT_STRAIN                   GL
+STRUCT_PLASTIC_STRAIN           No
+STRUCT_SURFACTANT               No
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_WALL_SHEAR_STRESS         No
+FLUID_ELEDATA_EVRY_STEP         No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  None
+THERM_TEMPGRAD                  None
+FILESTEPS                       1000
+STDOUTEVRY                      1
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+PREFIX_GROUP_ID                 No
+LIMIT_OUTP_TO_PROC              -1
+-------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+DYNAMICTYP                      Statics
+PRESTRESS                       none
+PRESTRESSTIME                   0
+RESULTSEVRY                     1
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+TIMESTEP                        0.1
+NUMSTEP                         10
+MAXTIME                         5
+DAMPING                         No
+M_DAMP                          -1
+K_DAMP                          -1
+TOLDISP                         1e-10
+NORM_DISP                       Abs
+TOLRES                          1e-08
+NORM_RESF                       Abs
+TOLPRE                          1e-08
+NORM_PRES                       Abs
+TOLINCO                         1e-08
+NORM_INCO                       Abs
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFINCO              And
+NORMCOMBI_RESFDISP              And
+STC_SCALING                     no
+STC_LAYER                       1
+PTCDT                           0.1
+TOLCONSTR                       1e-08
+MAXITER                         50
+MINITER                         0
+ITERNORM                        L2
+DIVERCONT                       stop
+NLNSOL                          fullnewton
+LSMAXITER                       30
+ALPHA_LS                        0.5
+SIGMA_LS                        0.0001
+MATERIALTANGENT                 analytical
+CONTROLTYPE                     load
+CONTROLNODE                     -1 -1 -1
+LOADLIN                         yes
+MASSLIN                         No
+PREDICT                         ConstDis
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+UZAWAMAXITER                    50
+UZAWAALGO                       direct
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+LUMPMASS                        No
+MODIFIEDEXPLEULER               Yes
+LINEAR_SOLVER                   1
+YOUNG_IS_TEMP_DEPENDENT         No
+GEOMETRY                        full
+---------------------------------------------------NONLINEAR SOLVER
+XML_FILE                        none
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+AZSOLVE                         GMRES
+AZPREC                          ILU
+IFPACKOVERLAP                   0
+IFPACKGFILL                     0
+IFPACKFILL                      1
+IFPACKCOMBINE                   Add
+AZDROP                          0
+AZPOLY                          3
+AZSUB                           50
+AZCONV                          AZ_r0
+AZOUTPUT                        0
+AZREUSE                         0
+AZITER                          1000
+AZGRAPH                         0
+AZBDIAG                         0
+AZTOL                           1e-08
+AZOMEGA                         0
+DWINDTAU                        1.5
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_AGG_SIZE                     27
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_DAMPCOARSE                   1
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOTIMES                     1 1 1 1 1
+ML_COARSEN                      UC
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+MueLu_INITSMOOTHER              SGS
+SUB_SOLVER1                     -1
+SUB_SOLVER2                     -1
+MueLu_INITSMOO_SWEEPS           1
+MueLu_INITSMOO_DAMPING          1
+MueLu_MIN_AGG_SIZE              6
+MueLu_REBALANCE                 No
+MueLu_REBALANCE_NONZEROIMBALANCE 1.2
+MueLu_REBALANCE_MINROWS         1000
+MueLu_REUSE                     nothing
+BGS2X2_FLIPORDER                block0_block1_order
+BGS2X2_GLOBAL_DAMPING           1
+BGS2X2_BLOCK1_DAMPING           1
+BGS2X2_BLOCK2_DAMPING           1
+PERMUTE_SYSTEM                  none
+NON_DIAGDOMINANCE_RATIO         1
+VERBOSITY                       0
+STRATIMIKOS_XMLFILE             none
+NAME                            Solver
+SIMPLE_DAMPING                  1
+AMGNXN_TYPE                     AMG(BGS)
+AMGNXN_XML_FILE                 none
+-----------------------------------------------------UMFPACK SOLVER
+SOLVER                          undefined
+AZSOLVE                         GMRES
+AZPREC                          ILU
+IFPACKOVERLAP                   0
+IFPACKGFILL                     0
+IFPACKFILL                      1
+IFPACKCOMBINE                   Add
+AZDROP                          0
+AZPOLY                          3
+AZSUB                           50
+AZCONV                          AZ_r0
+AZOUTPUT                        0
+AZREUSE                         0
+AZITER                          1000
+AZGRAPH                         0
+AZBDIAG                         0
+AZTOL                           1e-08
+AZOMEGA                         0
+DWINDTAU                        1.5
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_AGG_SIZE                     27
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_DAMPCOARSE                   1
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOTIMES                     1 1 1 1 1
+ML_COARSEN                      UC
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+MueLu_INITSMOOTHER              SGS
+SUB_SOLVER1                     -1
+SUB_SOLVER2                     -1
+MueLu_INITSMOO_SWEEPS           1
+MueLu_INITSMOO_DAMPING          1
+MueLu_MIN_AGG_SIZE              6
+MueLu_REBALANCE                 No
+MueLu_REBALANCE_NONZEROIMBALANCE 1.2
+MueLu_REBALANCE_MINROWS         1000
+MueLu_REUSE                     nothing
+BGS2X2_FLIPORDER                block0_block1_order
+BGS2X2_GLOBAL_DAMPING           1
+BGS2X2_BLOCK1_DAMPING           1
+BGS2X2_BLOCK2_DAMPING           1
+PERMUTE_SYSTEM                  none
+NON_DIAGDOMINANCE_RATIO         1
+VERBOSITY                       0
+STRATIMIKOS_XMLFILE             none
+NAME                            No_name
+SIMPLE_DAMPING                  1
+AMGNXN_TYPE                     AMG(BGS)
+AMGNXN_XML_FILE                 none
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
+MAT 2 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.49
+MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1
+-----------------------------------------------CLONING MATERIAL MAP
+-------------------------------------------------------------CURVE1
+CURVE 1 on EXPR FUNC t t1 0.0 t2 1.0
+-------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.48539402165821732 TOLERANCE 1e-8
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 3
+NDLINE  2
+NDSURF  1
+NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+// surf
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 orthopressure
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  2
+// curve-x
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// curve+x
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    34 DNODE 1
+NODE    37 DNODE 2
+NODE    39 DNODE 3
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    33 DLINE 1
+NODE    34 DLINE 1
+NODE    35 DLINE 1
+NODE    36 DLINE 1
+NODE    37 DLINE 1
+NODE    38 DLINE 1
+NODE    39 DLINE 1
+NODE    40 DLINE 1
+NODE    1 DLINE 2
+NODE    2 DLINE 2
+NODE    5 DLINE 2
+NODE    7 DLINE 2
+NODE    9 DLINE 2
+NODE    11 DLINE 2
+NODE    13 DLINE 2
+NODE    15 DLINE 2
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    5 DSURFACE 1
+NODE    6 DSURFACE 1
+NODE    7 DSURFACE 1
+NODE    8 DSURFACE 1
+NODE    9 DSURFACE 1
+NODE    10 DSURFACE 1
+NODE    11 DSURFACE 1
+NODE    12 DSURFACE 1
+NODE    13 DSURFACE 1
+NODE    14 DSURFACE 1
+NODE    15 DSURFACE 1
+NODE    16 DSURFACE 1
+NODE    17 DSURFACE 1
+NODE    18 DSURFACE 1
+NODE    19 DSURFACE 1
+NODE    20 DSURFACE 1
+NODE    21 DSURFACE 1
+NODE    22 DSURFACE 1
+NODE    23 DSURFACE 1
+NODE    24 DSURFACE 1
+NODE    25 DSURFACE 1
+NODE    26 DSURFACE 1
+NODE    27 DSURFACE 1
+NODE    28 DSURFACE 1
+NODE    29 DSURFACE 1
+NODE    30 DSURFACE 1
+NODE    31 DSURFACE 1
+NODE    32 DSURFACE 1
+NODE    33 DSURFACE 1
+NODE    34 DSURFACE 1
+NODE    35 DSURFACE 1
+NODE    36 DSURFACE 1
+NODE    37 DSURFACE 1
+NODE    38 DSURFACE 1
+NODE    39 DSURFACE 1
+NODE    40 DSURFACE 1
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD  2.0000000000000000e+01  0.0000000000000000e+00 -1.0000000000000000e+01
+NODE         2 COORD  2.0000000000000000e+01 -7.0710678118654746e+00 -7.0710678118654746e+00
+NODE         3 COORD  1.5000000000000000e+01 -7.0710678118654773e+00 -7.0710678118654720e+00
+NODE         4 COORD  1.5000000000000000e+01  0.0000000000000000e+00 -1.0000000000000000e+01
+NODE         5 COORD  2.0000000000000000e+01 -1.0000000000000000e+01 -6.1232339957367653e-16
+NODE         6 COORD  1.5000000000000000e+01 -1.0000000000000000e+01 -6.1232339957367653e-16
+NODE         7 COORD  2.0000000000000000e+01 -7.0710678118654746e+00  7.0710678118654746e+00
+NODE         8 COORD  1.5000000000000000e+01 -7.0710678118654746e+00  7.0710678118654746e+00
+NODE         9 COORD  2.0000000000000000e+01 -1.2246467991473531e-15  1.0000000000000000e+01
+NODE        10 COORD  1.5000000000000000e+01 -1.2246467991473531e-15  1.0000000000000000e+01
+NODE        11 COORD  2.0000000000000000e+01  7.0710678118654746e+00  7.0710678118654773e+00
+NODE        12 COORD  1.5000000000000000e+01  7.0710678118654746e+00  7.0710678118654746e+00
+NODE        13 COORD  2.0000000000000000e+01  1.0000000000000000e+01  1.8369701987210296e-15
+NODE        14 COORD  1.5000000000000000e+01  1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        15 COORD  2.0000000000000000e+01  7.0710678118654773e+00 -7.0710678118654720e+00
+NODE        16 COORD  1.5000000000000002e+01  7.0710678118654808e+00 -7.0710678118654684e+00
+NODE        17 COORD  1.0000000000000000e+01 -7.0710678118654746e+00 -7.0710678118654746e+00
+NODE        18 COORD  1.0000000000000000e+01  0.0000000000000000e+00 -1.0000000000000000e+01
+NODE        19 COORD  1.0000000000000000e+01 -1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        20 COORD  1.0000000000000000e+01 -7.0710678118654746e+00  7.0710678118654746e+00
+NODE        21 COORD  1.0000000000000000e+01 -1.2246467991473531e-15  1.0000000000000000e+01
+NODE        22 COORD  1.0000000000000000e+01  7.0710678118654720e+00  7.0710678118654773e+00
+NODE        23 COORD  1.0000000000000000e+01  1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        24 COORD  1.0000000000000000e+01  7.0710678118654808e+00 -7.0710678118654684e+00
+NODE        25 COORD  5.0000000000000018e+00 -7.0710678118654773e+00 -7.0710678118654720e+00
+NODE        26 COORD  5.0000000000000009e+00  0.0000000000000000e+00 -1.0000000000000000e+01
+NODE        27 COORD  5.0000000000000018e+00 -1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        28 COORD  5.0000000000000000e+00 -7.0710678118654746e+00  7.0710678118654746e+00
+NODE        29 COORD  5.0000000000000000e+00 -1.2246467991473531e-15  1.0000000000000000e+01
+NODE        30 COORD  4.9999999999999991e+00  7.0710678118654746e+00  7.0710678118654746e+00
+NODE        31 COORD  4.9999999999999991e+00  1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        32 COORD  4.9999999999999991e+00  7.0710678118654808e+00 -7.0710678118654684e+00
+NODE        33 COORD  4.3297802811774642e-16 -7.0710678118654773e+00 -7.0710678118654720e+00
+NODE        34 COORD  6.1232339957367653e-16  0.0000000000000000e+00 -1.0000000000000000e+01
+NODE        35 COORD -1.1248198369963931e-31 -1.0000000000000000e+01  1.8369701987210296e-15
+NODE        36 COORD -4.3297802811774672e-16 -7.0710678118654746e+00  7.0710678118654773e+00
+NODE        37 COORD -6.1232339957367653e-16  1.2246467991473531e-15  1.0000000000000000e+01
+NODE        38 COORD -4.3297802811774657e-16  7.0710678118654746e+00  7.0710678118654746e+00
+NODE        39 COORD  3.7493994566546429e-32  1.0000000000000000e+01 -6.1232339957367653e-16
+NODE        40 COORD  4.3297802811774657e-16  7.0710678118654746e+00 -7.0710678118654746e+00
+------------------------------------------------STRUCTURE ELEMENTS
+1 MEMBRANE QUAD4  1 2 3 4    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+2 MEMBRANE QUAD4  2 5 6 3    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+3 MEMBRANE QUAD4  5 7 8 6    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+4 MEMBRANE QUAD4  7 9 10 8    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+5 MEMBRANE QUAD4  9 11 12 10    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+6 MEMBRANE QUAD4  11 13 14 12    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+7 MEMBRANE QUAD4  13 15 16 14    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+8 MEMBRANE QUAD4  15 1 4 16    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+9 MEMBRANE QUAD4  4 3 17 18    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+10 MEMBRANE QUAD4  3 6 19 17    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+11 MEMBRANE QUAD4  6 8 20 19    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+12 MEMBRANE QUAD4  8 10 21 20    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+13 MEMBRANE QUAD4  10 12 22 21    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+14 MEMBRANE QUAD4  12 14 23 22    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+15 MEMBRANE QUAD4  14 16 24 23    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+16 MEMBRANE QUAD4  16 4 18 24    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+17 MEMBRANE QUAD4  18 17 25 26    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+18 MEMBRANE QUAD4  17 19 27 25    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+19 MEMBRANE QUAD4  19 20 28 27    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+20 MEMBRANE QUAD4  20 21 29 28    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+21 MEMBRANE QUAD4  21 22 30 29    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+22 MEMBRANE QUAD4  22 23 31 30    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+23 MEMBRANE QUAD4  23 24 32 31    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+24 MEMBRANE QUAD4  24 18 26 32    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+25 MEMBRANE QUAD4  26 25 33 34    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+26 MEMBRANE QUAD4  25 27 35 33    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+27 MEMBRANE QUAD4  27 28 36 35    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+28 MEMBRANE QUAD4  28 29 37 36    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+29 MEMBRANE QUAD4  29 30 38 37    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+30 MEMBRANE QUAD4  30 31 39 38    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+31 MEMBRANE QUAD4  31 32 40 39    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+32 MEMBRANE QUAD4  32 26 34 40    MAT 1 KINEM nonlinear THICK 0.1 STRESS_STRAIN plane_stress FIBER1 1 0 0
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------------------END
+// END

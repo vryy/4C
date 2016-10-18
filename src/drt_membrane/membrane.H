@@ -393,19 +393,6 @@ protected:
 
 private:
 
-  //! action parameters recognized by membrane
-  enum ActionType
-  {
-    none,
-    calc_struct_nlnstiff,
-    calc_struct_nlnstiffmass,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,
-    calc_struct_stress,
-    postprocess_stress,
-    calc_cur_normal_at_point
-  };
-
   /// type of 2D dimension reduction
   enum DimensionalReduction
   {

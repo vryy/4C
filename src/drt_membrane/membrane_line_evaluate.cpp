@@ -26,6 +26,8 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_timecurve.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
@@ -38,6 +40,9 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
                                                           Epetra_SerialDenseVector& elevec1,
                                                           Epetra_SerialDenseMatrix* elemat1)
 {
+  // set params interface pointer in the parent element
+  ParentElement()->SetParamsInterfacePtr(params);
+
   // get type of condition
   enum LoadType
   {
@@ -63,7 +68,14 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   */
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+
+  double time = -1.0;
+
+  if (ParentElement()->IsParamsInterface())
+    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
+
   if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available

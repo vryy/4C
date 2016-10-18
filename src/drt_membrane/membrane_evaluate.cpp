@@ -30,6 +30,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,8 +46,6 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
                                                Epetra_SerialDenseVector& elevec2_epetra,
                                                Epetra_SerialDenseVector& elevec3_epetra)
 {
-  DRT::ELEMENTS::Membrane<distype>::ActionType act = Membrane<distype>::none;
-
   // determine size of each element matrix
   LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
   LINALG::Matrix<numdof_,numdof_> elemat2(elemat2_epetra.A(),true);
@@ -54,24 +53,36 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
   LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
   LINALG::Matrix<numdof_,1> elevec3(elevec3_epetra.A(),true);
 
-  // get the action required
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_nlnstiff")                        act = Membrane::calc_struct_nlnstiff;
-  else if (action=="calc_struct_nlnstiffmass")                    act = Membrane::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_update_istep")                    act = Membrane::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")                     act = Membrane::calc_struct_reset_istep;
-  else if (action=="calc_struct_stress")                          act = Membrane::calc_struct_stress;
-  else if (action=="postprocess_stress")                          act = Membrane::postprocess_stress;
-  else if (action=="calc_cur_normal_at_point")                    act = Membrane::calc_cur_normal_at_point;
-  else {dserror("Unknown type of action for Membrane");}
+  // set params interface pointer
+  SetParamsInterfacePtr(params);
+
+  // start with ActionType none
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="calc_struct_nlnstiff")                        act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_nlnstiffmass")                    act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_update_istep")                    act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")                     act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_stress")                          act = ELEMENTS::struct_calc_stress;
+    else if (action=="postprocess_stress")                          act = ELEMENTS::struct_postprocess_stress;
+    else {dserror("Unknown type of action for Membrane");}
+  }
 
   switch(act)
   {
     /*===============================================================================*
-     | calc_struct_nlnstiff                                                          |
+     | struct_calc_nlnstiff                                                          |
      *===============================================================================*/
-    case calc_struct_nlnstiff:
+    case ELEMENTS::struct_calc_nlnstiff:
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -86,9 +97,9 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | calc_struct_nlnstiffmass                                                      |
+     | struct_calc_nlnstiffmass                                                      |
      *===============================================================================*/
-    case calc_struct_nlnstiffmass: // do mass, stiffness and internal forces
+    case ELEMENTS::struct_calc_nlnstiffmass: // do mass, stiffness and internal forces
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -103,9 +114,24 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | calc_struct_update_istep                                                      |
+     | struct_calc_internalforce                                                     |
      *===============================================================================*/
-    case calc_struct_update_istep:
+    case ELEMENTS::struct_calc_internalforce:
+    {
+      // need current displacement
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      mem_nlnstiffmass(lm,mydisp,NULL,NULL,&elevec1,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+    }
+    break;
+
+    /*===============================================================================*
+     | struct_calc_update_istep                                                      |
+     *===============================================================================*/
+    case ELEMENTS::struct_calc_update_istep:
     {
       // Update materials
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -117,9 +143,9 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | calc_struct_reset_istep                                                       |
+     | struct_calc_reset_istep                                                       |
      *===============================================================================*/
-    case calc_struct_reset_istep:
+    case ELEMENTS::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
@@ -127,9 +153,9 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | calc_struct_stress                                                            |
+     | struct_calc_stress                                                            |
      *===============================================================================*/
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_stress:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
@@ -140,17 +166,33 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
-        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
+        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
+
+        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+
+        if (IsParamsInterface())
+        {
+          stressdata   = ParamsInterface().MutableStressDataPtr();
+          straindata   = ParamsInterface().MutableStrainDataPtr();
+
+          iostress   = ParamsInterface().GetStressOutputType();
+          iostrain   = ParamsInterface().GetStrainOutputType();
+        }
+        else
+        {
+          stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+          straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+          iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+          iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        }
 
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
 
         LINALG::Matrix<numgpt_post_,6> stress;
         LINALG::Matrix<numgpt_post_,6> strain;
-
-        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // determine strains and/or stresses
         mem_nlnstiffmass(lm,mydisp,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
@@ -176,9 +218,9 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | postprocess_stress                                                            |
+     | struct_postprocess_stress                                                     |
      *===============================================================================*/
-    case postprocess_stress:
+    case ELEMENTS::struct_postprocess_stress:
     {
       const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
@@ -282,62 +324,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     break;
 
     /*===============================================================================*
-     | calc_cur_normal_at_point (vector not normalized)                              |
+     | struct_calc_recover                                                           |
      *===============================================================================*/
-    case calc_cur_normal_at_point:
+    case ELEMENTS::struct_calc_recover:
     {
-      // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-      // get reference configuration and determine current configuration
-      LINALG::Matrix<numnod_,noddof_> xrefe(true);
-      LINALG::Matrix<numnod_,noddof_> xcurr(true);
-
-      mem_configuration(mydisp,xrefe,xcurr);
-
-      // get target position in parameter space
-      const double target_xi = elevec2_epetra[0];
-      const double target_eta = elevec2_epetra[1];
-
-      // allocate vector for shape functions and matrix for derivatives at target point
-      LINALG::Matrix<numnod_,1> shapefcts(true);
-      LINALG::Matrix<numdim_, numnod_> derivs(true);
-
-      // get shape functions and derivatives in the plane of the element
-      DRT::UTILS::shape_function_2D(shapefcts,target_xi,target_eta,Shape());
-      DRT::UTILS::shape_function_2D_deriv1(derivs,target_xi,target_eta,Shape());
-
-      /*===============================================================================*
-       | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
-       *===============================================================================*/
-
-      LINALG::Matrix<numdim_,numnod_> derivs_ortho(true);
-      double G1G2_cn;
-      LINALG::Matrix<noddof_,1> dXds1(true);
-      LINALG::Matrix<noddof_,1> dXds2(true);
-      LINALG::Matrix<noddof_,1> dxds1(true);
-      LINALG::Matrix<noddof_,1> dxds2(true);
-      LINALG::Matrix<noddof_,noddof_> Q_trafo(true);
-
-      mem_orthonormalbase(xrefe,xcurr,derivs,derivs_ortho,G1G2_cn,dXds1,dXds2,dxds1,dxds2,Q_trafo);
-
-      // determine normal vector, not normalized!
-      // determine cross product x,1 x x,2
-      LINALG::Matrix<noddof_,1> xcurr_cross(true);
-      xcurr_cross(0) = dxds1(1)*dxds2(2)-dxds1(2)*dxds2(1);
-      xcurr_cross(1) = dxds1(2)*dxds2(0)-dxds1(0)*dxds2(2);
-      xcurr_cross(2) = dxds1(0)*dxds2(1)-dxds1(1)*dxds2(0);
-
-      xcurr_cross.Scale(-1.0);  //FUCHS
-
-      // give back normal vector
-      // ATTENTION: vector not normalized
-      elevec1_epetra[0] = xcurr_cross(0);
-      elevec1_epetra[1] = xcurr_cross(1);
-      elevec1_epetra[2] = xcurr_cross(2);
+      // do nothing here
     }
     break;
 
@@ -345,7 +336,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
      | default                                                                       |
      *===============================================================================*/
     default:
-      dserror("Unknown type of action for Membrane");
+      dserror("Unknown type of action for Membrane: %s",ActionType2String(act).c_str());
     break;
   }
 
@@ -364,13 +355,23 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList&   
                                                       Epetra_SerialDenseVector& elevec1_epetra,
                                                       Epetra_SerialDenseMatrix* elemat1_epetra)
 {
+  // set params interface pointer
+  SetParamsInterfacePtr(params);
+
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+
+  double time = -1.0;
+
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
+
   if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
@@ -525,9 +526,6 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
   for (int gp=0; gp<intpoints_.nquad; ++gp)
   {
-    // set current gauss point
-    params.set<int>("gp",gp);
-
     // get gauss points from integration rule
     double xi_gp = intpoints_.qxg[gp][0];
     double eta_gp = intpoints_.qxg[gp][1];
@@ -609,6 +607,12 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
     if(Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
+      if (IsParamsInterface())
+        dserror("Material m_growthremodel_elasthyper not valid with new structure time integration. Set INT_STRATEGY to Old in STRUCTURAL DYNAMIC");
+
+      // set current gauss point
+      params.set<int>("gp",gp);
+
       // Gauß-point coordinates in reference configuration
       // gp reference coordinates
       LINALG::Matrix<numnod_,1> funct(true);
@@ -628,7 +632,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     else
     {
       /*===============================================================================*
-     | standard evaluation                                                           |
+       | standard evaluation                                                           |
        *===============================================================================*/
       // call 3 dimensional material law and reduce to a plane stress state
       // no incompressibility fulfilled here (use \nue close to 0.5 or volumetric strain energy function)
@@ -649,6 +653,33 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     /*===============================================================================*
      | calculate force, stiffness matrix and mass matrix                             |
      *===============================================================================*/
+    // evaluate just force vector (stiffness matrix not needed)
+    if (stiffmatrix == NULL && force != NULL)
+    {
+      // determine B matrix for all 4 nodes, Gruttmann1992 equation (36)
+      LINALG::Matrix<noddof_,numdof_> B_matrix(true);
+
+      for (int i=0; i<numnod_; ++i)
+      {
+        B_matrix(0,noddof_*i+0) = derivs_ortho(0,i)*dxds1(0);
+        B_matrix(1,noddof_*i+0) = derivs_ortho(1,i)*dxds2(0);
+        B_matrix(2,noddof_*i+0) = derivs_ortho(0,i)*dxds2(0)+derivs_ortho(1,i)*dxds1(0);
+
+        B_matrix(0,noddof_*i+1) = derivs_ortho(0,i)*dxds1(1);
+        B_matrix(1,noddof_*i+1) = derivs_ortho(1,i)*dxds2(1);
+        B_matrix(2,noddof_*i+1) = derivs_ortho(0,i)*dxds2(1)+derivs_ortho(1,i)*dxds1(1);
+
+        B_matrix(0,noddof_*i+2) = derivs_ortho(0,i)*dxds1(2);
+        B_matrix(1,noddof_*i+2) = derivs_ortho(1,i)*dxds2(2);
+        B_matrix(2,noddof_*i+2) = derivs_ortho(0,i)*dxds2(2)+derivs_ortho(1,i)*dxds1(2);
+      }
+
+      double fac = gpweight*thickness_*G1G2_cn;
+
+      // determine force and stiffness matrix, Gruttmann1992 equation (37) and (39)
+      force->MultiplyTN(fac,B_matrix,pkstress,1.0);
+    }
+
     // evaluate stiffness matrix and force vector if needed
     if (stiffmatrix != NULL && force != NULL)
     {
