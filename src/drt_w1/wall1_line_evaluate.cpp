@@ -21,14 +21,11 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_elements_paramsinterface.H"
 
 #include "../drt_mat/structporo.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-
-using POTENTIAL::PotentialManager;
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
@@ -542,8 +539,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     act = Wall1Line::calc_struct_centerdisp;
   else if (action == "calc_struct_areaconstrstiff")
     act = Wall1Line::calc_struct_areaconstrstiff;
-  else if (action == "calc_potential_stiff")
-    act = Wall1Line::calc_potential_stiff;
   else
     dserror("Unknown type of action for Wall1_Line");
   //create communicator
@@ -696,37 +691,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     elevector3[0] = areaele;
   }
     break;
-
-    // compute additional stresses due to intermolecular potential forces
-  case calc_potential_stiff:
-  {
-    Teuchos::RCP<PotentialManager> potentialmanager = params.get<
-        Teuchos::RCP<PotentialManager> >("pot_man_", Teuchos::null);
-    if (potentialmanager == Teuchos::null)
-      dserror("No PotentialManager in Wall1 line available");
-
-    Teuchos::RCP<DRT::Condition> cond =
-        params.get<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::null);
-    if (cond == Teuchos::null)
-      dserror("Condition not available in Wall1 line");
-
-    const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-
-    if (cond->Type() == DRT::Condition::LJ_Potential_Line) // Lennard-Jones potential
-    {
-      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule,
-          params, lm, elematrix1, elevector1);
-    }
-    else if (cond->Type() == DRT::Condition::ElectroRepulsion_Potential_Line) // electro static repulsion potential
-    {
-      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule,
-          params, lm, elematrix1, elevector1);
-    }
-    else
-      dserror("Unknown condition type %d", cond->Type());
-  }
-    break;
-
   default:
     dserror("Unimplemented type of action for Soh8Surface");
     break;

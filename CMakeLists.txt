@@ -795,7 +795,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_poromultiphase.cpp
   src/drt_inpar/inpar_poromultiphase_scatra.cpp
   src/drt_inpar/inpar_porofluidmultiphase.cpp
-  src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
   src/drt_inpar/inpar_s2i.cpp
   src/drt_inpar/inpar_scatra.cpp
@@ -1969,14 +1968,6 @@ set(OBJS_DRT_IO_LIB
 set(OBJS_FORTRAN
   src/fortran/hex_fserv.f
 )
-set(OBJS_DRT_POTENTIAL
-  src/drt_potential/drt_potential.cpp
-  src/drt_potential/drt_potential_container.cpp
-  src/drt_potential/drt_potential_dofset.cpp
-  src/drt_potential/drt_potential_manager.cpp
-  src/drt_potential/drt_potential_surface.cpp
-  src/drt_potential/drt_potential_volume.cpp
-)
 set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
 )
@@ -2631,7 +2622,6 @@ add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
 add_library(drt_lib_meshfree ${OBJS_DRT_MESHFREE_DISCRET_LIB})
-add_library(drt_lib_potential ${OBJS_DRT_POTENTIAL})
 add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
@@ -2653,7 +2643,6 @@ set(SUPPORT_LIBRARIES
   drt_lib_contact
   # Libraries needed by elements
   drt_lib_surfstress
-  drt_lib_potential
   drt_lib_xfem
   drt_lib_xfem_combust
   drt_lib_cut

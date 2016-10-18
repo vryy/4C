@@ -36,7 +36,6 @@
 #include "inpar_acou.H"
 #include "inpar_invanalysis.H"
 #include "inpar_levelset.H"
-#include "inpar_potential.H"
 #include "inpar_bio.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
@@ -1650,8 +1649,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
 
   INPAR::CRACK::SetValidConditions(condlist);
-
-  INPAR::POTENTIAL::SetValidConditions(condlist);
 
   INPAR::INVANA::SetValidConditions(condlist);
 

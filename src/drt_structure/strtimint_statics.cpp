@@ -240,10 +240,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
 
-  // potential forces
-  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
-  TestForceStiffPotential(timen_, disn_, step_);
-
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
   ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);

@@ -437,10 +437,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // add surface stress force
   ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, fintn_, stiff_);
 
-  // add potential forces
-  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
-  TestForceStiffPotential(timen_, disn_, step_);
-
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
   psprdash.set("time_fac", gamma_/(beta_*(*dt_)[0]));

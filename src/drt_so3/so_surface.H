@@ -232,7 +232,6 @@ public: // changed to public rauch 05/2014
     calc_struct_constrarea,
     calc_init_vol,
     calc_surfstress_stiff,
-    calc_potential_stiff,
     calc_struct_areaconstrstiff,
     calc_struct_monitarea,
     prestress_update,

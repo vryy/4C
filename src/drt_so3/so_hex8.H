@@ -417,7 +417,6 @@ protected:
     multi_eas_init,           //!< multi-scale: initialize EAS parameters on microscale
     multi_eas_set,            //!< multi-scale: set EAS parameters on microscale
     multi_calc_dens,          //!< multi-scale: calculate homogenized density
-    calc_potential_stiff,     //!< volume interaction potential
     calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness

@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file so_sh8_evaluate.cpp
-\brief
-
+\brief some element evaluate
+\level 2
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -29,7 +29,6 @@ Maintainer: Alexander Popp
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/micromaterial.H"
-#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_condition.H"
 
 
@@ -75,7 +74,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
-  else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
   else dserror("Unknown type of action for So_Sh8");
 
   // what should the element do
@@ -405,31 +403,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       {
         CalcSTCMatrix(elemat1,stc_scaling,params.get<int>("stc_layer"),lm, discretization,true);
       }
-    }
-    break;
-    // compute additional stresses due to intermolecular potential forces
-    case calc_potential_stiff:
-    {
-      Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
-        params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
-      if (potentialmanager==Teuchos::null)
-        dserror("No PotentialManager in Solid SH8 available");
-
-      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
-      if (cond==Teuchos::null)
-        dserror("Condition not available in Solid SH8 available");
-
-      if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
-      {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
-      }
-      if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume) // Van der Walls forces
-      {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
-      }
-      if( cond->Type()!=DRT::Condition::LJ_Potential_Volume &&
-          cond->Type()!=DRT::Condition::VanDerWaals_Potential_Volume)
-            dserror("Unknown condition type %d",cond->Type());
     }
     break;
     default:

@@ -31,7 +31,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_potential/drt_potential_manager.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -76,7 +75,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     else if (action=="calc_struct_reset_istep")   act = ELEMENTS::struct_calc_reset_istep;
     else if (action=="calc_struct_energy")        act = ELEMENTS::struct_calc_energy;
     else if (action=="calc_struct_errornorms")    act = ELEMENTS::struct_calc_errornorms;
-    else if (action=="calc_potential_stiff")      act = ELEMENTS::calc_potential_stiff;
     else if (action=="calc_struct_mass_volume")   act = ELEMENTS::struct_calc_mass_volume;
     else dserror("Unknown type of action %s for Wall1", action.c_str());
   }
@@ -873,26 +871,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       elevec1[3] = mass_ref;
       elevec1[4] = mass_mat;
       elevec1[5] = mass_cur;
-      break;
-    }
-    //==================================================================================
-    case ELEMENTS::calc_potential_stiff:
-    {
-      Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
-        params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
-      if (potentialmanager==Teuchos::null)
-        dserror("No PotentialManager in Wall1 Volume available");
-
-      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
-      if (cond==Teuchos::null)
-        dserror("Condition not available in Wall1 Volume");
-
-      if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
-      {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elemat1, elevec1);
-      }
-      else
-        dserror("Unknown condition type %d",cond->Type());
       break;
     }
     //==================================================================================

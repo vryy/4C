@@ -73,11 +73,6 @@ namespace STATMECH
   class StatMechManagerBilayer;
 }
 
-namespace POTENTIAL
-{
-  class PotentialManager;
-}
-
 namespace LINALG
 {
   class Solver;
@@ -1190,9 +1185,6 @@ namespace STR
 
     //! surface stresses
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
-
-    //! potential conditions
-    Teuchos::RCP<POTENTIAL::PotentialManager> potman_;
 
     //! bridge for meshtying and contact
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> cmtbridge_;

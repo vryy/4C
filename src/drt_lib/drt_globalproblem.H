@@ -299,7 +299,6 @@ public:
   const Teuchos::ParameterList& MultiLevelMonteCarloParams() const { return getParameterList()->sublist("MULTI LEVEL MONTE CARLO"); }
   const Teuchos::ParameterList& MortarCouplingParams() const { return getParameterList()->sublist("MORTAR COUPLING"); }
   const Teuchos::ParameterList& ContactDynamicParams() const { return getParameterList()->sublist("CONTACT DYNAMIC"); }
-  const Teuchos::ParameterList& InteractionPotentialParams() const { return getParameterList()->sublist("INTERACTION POTENTIAL"); }
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
   const Teuchos::ParameterList& StatisticalMechanicsParams() const { return getParameterList()->sublist("STATISTICAL MECHANICS"); }
   const Teuchos::ParameterList& ThermalDynamicParams() const { return getParameterList()->sublist("THERMAL DYNAMIC"); }

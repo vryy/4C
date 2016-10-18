@@ -315,7 +315,6 @@ protected:
                              ///< during iteration to last converged state
     calc_struct_energy,      ///< calculate internal energy of element
     calc_struct_errornorms,  ///< compute error norms (L2,H1,energy)
-    calc_potential_stiff,    ///< calculate volume potential
 
     calc_struct_mass_volume  ///< calc volume and mass
   };
@@ -988,7 +987,6 @@ private:
     calc_struct_areaconstrstiff,
     calc_struct_centerdisp,
     calc_struct_constrarea,
-    calc_potential_stiff,
     calc_struct_area_poro
   };
 

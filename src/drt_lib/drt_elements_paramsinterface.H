@@ -54,7 +54,6 @@ namespace ELEMENTS {
     multi_init_eas,                         //!< multi-scale: initialize EAS parameters on microscale
     multi_set_eas,                          //!< multi-scale: set EAS parameters on microscale
     multi_calc_dens,                        //!< multi-scale: calculate homogenized density
-    calc_potential_stiff,                   //!< volume interaction potential
     shell_calc_stc_matrix,                  //!< calculate scaled director matrix for thin shell structures
     shell_calc_stc_matrix_inverse,          //!< calculate inverse of scaled director matrix for thin shell structures
     struct_calc_ptcstiff,                   //!< calculate artificial stiffness due to PTC solution strategy
@@ -152,9 +151,6 @@ namespace ELEMENTS {
         break;
       case multi_calc_dens:
         return "multi_calc_dens";
-        break;
-      case calc_potential_stiff:
-        return "calc_potential_stiff";
         break;
       case shell_calc_stc_matrix:
         return "shell_calc_stc_matrix";

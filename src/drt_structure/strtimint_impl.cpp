@@ -46,7 +46,6 @@
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_statmech/statmech_manager.H"
-#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -54,6 +53,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
@@ -1160,65 +1160,6 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
     surfstressman_->EvaluateSurfStress(p, disn, fint, stiff);
   }
   // bye bye
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate _certain_ potential forces and stiffness
- * evaluation happens internal-force like */
-void STR::TimIntImpl::ApplyForceStiffPotential
-(
-  const double time,
-  const Teuchos::RCP<Epetra_Vector> dis,
-  Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<LINALG::SparseOperator>& stiff
-)
-{
-  // potential force loads (but on internal force vector side)
-  if (potman_ != Teuchos::null)
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
-    Teuchos::ParameterList p; // create the parameters for manager
-    p.set("pot_man", potman_);
-    p.set("total time", time);
-    potman_->EvaluatePotential(p, dis, fint, mat);
-    stiff = mat;
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/* TEST evaluate _certain_ potential forces and stiffness
- * evaluation happens internal-force like */
-void STR::TimIntImpl::TestForceStiffPotential
-(
-  const double                        time,
-  const Teuchos::RCP<Epetra_Vector>   dis,
-  const int                           step
-)
-{
-  // potential force loads (but on internal force vector side)
-  if (potman_ != Teuchos::null)
-  {
-    if(potman_->ComputeAnalyticalSolution())
-    {
-      Teuchos::ParameterList p; // create the parameters for manager
-      p.set("pot_man", potman_);
-      p.set("total time", time);
-
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_test =
-          Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, false, LINALG::SparseMatrix::FE_MATRIX));
-      Teuchos::RCP<Epetra_Vector> fint_test =
-          LINALG::CreateVector(*DofRowMapView(), true);
-      fint_test->PutScalar(0.0);
-      stiff_test->Zero();
-
-      potman_->TestEvaluatePotential(p, dis, fint_test, stiff_test, time, step);
-    }
-  }
-
   return;
 }
 

@@ -36,7 +36,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
@@ -69,6 +68,7 @@
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_multiply.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_ssn_plast_eletypes.H"
@@ -149,7 +149,6 @@ STR::TimInt::TimInt
   cardvasc0dman_(Teuchos::null),
   springman_(Teuchos::null),
   surfstressman_(Teuchos::null),
-  potman_(Teuchos::null),
   cmtbridge_(Teuchos::null),
   beamcman_(Teuchos::null),
   statmechman_(Teuchos::null),
@@ -329,17 +328,6 @@ void STR::TimInt::Setup()
   surfstressman_ = Teuchos::rcp(new UTILS::SurfStressManager(discret_,
                                                              sdynparams_,
                                                              DRT::Problem::Instance()->OutputControlFile()->FileName()));
-
-  // Check for potential conditions
-  {
-    std::vector<DRT::Condition*> potentialcond(0);
-    discret_->GetCondition("Potential", potentialcond);
-    if (potentialcond.size())
-    {
-      potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_));
-      stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-    }
-  }
 
   // check whether we have locsys BCs and create LocSysManager if so
   // after checking

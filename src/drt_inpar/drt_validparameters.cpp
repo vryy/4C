@@ -42,7 +42,6 @@ Maintainer: Martin Kronbichler
 #include "inpar_s2i.H"
 #include "inpar_sti.H"
 #include "inpar_structure.H"
-#include "inpar_potential.H"
 #include "inpar_problemtype.H"
 #include "inpar_thermo.H"
 #include "inpar_tsi.H"
@@ -634,7 +633,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::WEAR::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
-  INPAR::POTENTIAL::SetValidParameters(list);
   INPAR::STATMECH::SetValidParameters(list);
   INPAR::CRACK::SetValidParameters(list);
   INPAR::LOCA::SetValidParameters(list);

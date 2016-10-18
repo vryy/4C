@@ -366,9 +366,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
 
-  // potential forces
-  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
-
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new internal forces and stiffness

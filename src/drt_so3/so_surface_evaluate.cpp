@@ -9,6 +9,8 @@
 *----------------------------------------------------------------------*/
 
 #include "so_surface.H"
+#include "../headers/definitions.h"
+#include "../headers/standardtypes.h"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -20,7 +22,6 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_potential/drt_potential_manager.H"
 #include "Sacado.hpp"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -33,7 +34,6 @@
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 using UTILS::SurfStressManager;
-using POTENTIAL::PotentialManager;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -689,7 +689,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_areaconstrstiff")  act = StructuralSurface::calc_struct_areaconstrstiff;
   else if (action=="calc_init_vol")                act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
-  else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
   else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
   else if (action=="calc_brownian_motion_damping") act = StructuralSurface::calc_brownian_motion_damping;
   else if (action=="calc_struct_centerdisp")       act = StructuralSurface::calc_struct_centerdisp;
@@ -1168,36 +1167,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, newstep);
     }
     else
-      dserror("Unknown condition type %d",cond->Type());
-  }
-  break;
-  // compute additional stresses due to intermolecular potential forces
-  case calc_potential_stiff:
-  {
-    Teuchos::RCP<PotentialManager> potentialmanager =
-        params.get<Teuchos::RCP<PotentialManager> >("pot_man",Teuchos::null);
-    if (potentialmanager==Teuchos::null)
-      dserror("No PotentialManager in Solid3 Surface available");
-
-    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
-    if (cond==Teuchos::null)
-      dserror("Condition not available in Solid3 Surface");
-
-    if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
-    {
-      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elematrix1, elevector1);
-    }
-    if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
-    {
-      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
-    }
-    if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface) // Electrostatic potential
-    {
-      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
-    }
-    if( cond->Type()!=DRT::Condition::LJ_Potential_Surface &&
-        cond->Type()!=DRT::Condition::ElectroRepulsion_Potential_Surface &&
-        cond->Type()!=DRT::Condition::VanDerWaals_Potential_Surface)
       dserror("Unknown condition type %d",cond->Type());
   }
   break;
