@@ -198,6 +198,32 @@ public:
     return completepol_;
   }
 
+  //! Sets bool to false if degree of element changes after p-adaption
+  void SetPadaptEle(bool adapt)
+  {
+    padpatele_ = adapt;
+    return;
+  }
+
+  //! Returns bool if degree of element changes after p-adaption (true if degree changes)
+  bool PadaptEle() const
+  {
+    return padpatele_;
+  }
+
+  //! Sets bool if element matrices are initialized
+  void SetMatInit(bool matinit)
+  {
+    matinit_ = matinit;
+    return;
+  }
+
+  //! Returns bool if element matrices are initialized
+  bool MatInit() const
+  {
+    return matinit_;
+  }
+
   //! Returns the degree of the element for the interior DG space
   int NumDofPerElementAuxiliary() const
   {
@@ -339,6 +365,12 @@ private:
 
   //! stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
+
+  //! stores if element degree changes after p-adaption
+  bool padpatele_;
+
+  //! stores if element matrices are initialized
+  bool matinit_;
 
 }; // class ScaTraHDG
 

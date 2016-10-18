@@ -207,7 +207,9 @@ onfdofs_(0),
 onfdofs_old_(0),
 degree_(1),
 degree_old_(0),
-completepol_(true)
+completepol_(true),
+padpatele_(true),
+matinit_(false)
 {}
 
 
@@ -223,7 +225,9 @@ onfdofs_(0),
 onfdofs_old_(0),
 degree_(old.degree_),
 degree_old_(old.degree_old_),
-completepol_(old.completepol_)
+completepol_(old.completepol_),
+padpatele_(true),
+matinit_(false)
 {}
 
 

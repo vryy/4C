@@ -262,19 +262,22 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
   }
   case SCATRA::calc_mat_initial:
   {
-    shapes_->Evaluate(*ele);
-    ElementInit(ele);
-    ReadGlobalVectors(ele, discretization, la);
-    GetMaterialParams(ele);
-    localSolver_->ComputeMatrices(ele);
-    localSolver_->CondenseLocalPart(hdgele);
+    if (hdgele->PadaptEle() || !hdgele->MatInit())
+    {
+      shapes_->Evaluate(*ele);
+      ElementInit(ele);
+      ReadGlobalVectors(ele, discretization, la);
+      GetMaterialParams(ele);
+      localSolver_->ComputeMatrices(ele);
+      localSolver_->CondenseLocalPart(hdgele);
+    }
     zeroMatrix(elemat1_epetra);
     localSolver_->AddDiffMat(elemat1_epetra,hdgele);
+
     break;
   }
   case SCATRA::project_field:
   {
-    ElementInit(ele);
     shapes_->Evaluate(*ele);
     return ProjectField(
         ele,
@@ -655,7 +658,7 @@ ComputeFaceMatrices (const int                    face,
     break;
   }
 
-  // TODO: Add convection term (velocity at quadrature points on face)
+  // Add convection term (velocity at quadrature points on face)
   // at the moment it is set to zero
   Epetra_SerialDenseMatrix velface(nsd_,shapesface_->nqpoints_);
 
@@ -865,8 +868,13 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
     tempinteriorphin(i) = interiorPhin(i);
 
   Epetra_SerialDenseVector tempinteriorgradphin(hdgele->ndofs_*nsd_);
+  for (unsigned int i = 0; i < hdgele->ndofs_*nsd_; i++)
+    tempinteriorgradphin(i) = interiorPhin(hdgele->ndofs_+i);
+
   int onfdofs = elevec.M();
   Epetra_SerialDenseVector trace_SDV(onfdofs);
+  for (int i = 0; i < onfdofs; ++i)
+    trace_SDV(i) = tracen(i);
 
   Epetra_SerialDenseVector tracenp_SDV(onfdofs);
   for (int i = 0; i < onfdofs; ++i)
@@ -1587,6 +1595,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ElementInit(
   hdgele->Ivecnp_.Shape(hdgele->ndofs_,1);
   hdgele->Imatnpderiv_.Shape(hdgele->ndofs_,hdgele->ndofs_);
 
+  hdgele->SetMatInit(true);
+
   return;
 } // ElementInit
 
@@ -1608,6 +1618,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
 
   DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
+  // set change of element degree to false
+  hdgele->SetPadaptEle(false);
 
   Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_old = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->DegreeOld(),
                                                               usescompletepoly_,
@@ -1646,6 +1658,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
         elevec2(i)=intphi[i];
     else
     {
+      // set change of element degree to true
+      hdgele->SetPadaptEle(true);
       Epetra_SerialDenseMatrix tempMat(shapes_->ndofs_*(nsd_+1),shapes_old->ndofs_*(nsd_+1));
 
       for(unsigned int i=0; i<shapes_->ndofs_;  i++)
@@ -1697,6 +1711,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
           elevec1(nfdofs+i)=tracephi[nfdofs_old+i];
       else
       {
+        // set change of element degree to true
+        hdgele->SetPadaptEle(true);
 
         Epetra_SerialDenseMatrix tempMat1(shapesface_->nfdofs_,shapesface_old->nfdofs_);
 
@@ -1724,6 +1740,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
   }
   else
   {
+    if(hdgele->DegreeOld() != hdgele->Degree())
+      hdgele->SetPadaptEle(true); // set change of element degree to true
+
     unsigned int size_ndofs = std::min(shapes_old->ndofs_,shapes_->ndofs_);
     for(unsigned int i=0; i<nsd_+1; i++)
       for(unsigned int j=0; j<size_ndofs; j++)
@@ -1755,6 +1774,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
       Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_-1> > polySpaceFace_old = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(polyparams);
 
 //      Epetra_SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
+
+      if(ele->Faces()[face]->Degree() != hdgeleface->DegreeOld())
+        hdgele->SetPadaptEle(true); // set change of element degree to true
 
       unsigned int size_nfdofs = std::min(shapesface_->nfdofs_,shapesface_old->nfdofs_);
       for (unsigned int i=0; i<size_nfdofs; i++)

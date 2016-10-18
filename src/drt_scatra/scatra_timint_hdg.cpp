@@ -888,10 +888,12 @@ void SCATRA::TimIntHDG::AdaptDegree()
     }
   }
 
-  // end time measurement for element
+//  // end time measurement for element
 //  double dtcalcerr=Teuchos::Time::wallTime()-tccalcerr;
 //  std::cout << "Time measurement for error calculation: " << dtcalcerr << std::endl;
 
+//  // get cpu time
+//  const double tcfillcomplete = Teuchos::Time::wallTime();
 
   // number of dofset in location array
   int nds_intvar_old(discret_->NumDofSets()+2);
@@ -955,7 +957,11 @@ void SCATRA::TimIntHDG::AdaptDegree()
   phin_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
 
 
-  // get cpu time
+//  // end time measurement for element
+//  double dtfillcomplete=Teuchos::Time::wallTime()-tcfillcomplete;
+//  std::cout << "Time measurement fill complete: " << dtfillcomplete << std::endl;
+
+//  // get cpu time
 //  const double tcproject = Teuchos::Time::wallTime();
 
   // call element routine to project the old values to the new state vectors
@@ -981,7 +987,18 @@ void SCATRA::TimIntHDG::AdaptDegree()
       eledofs_old->DofRowMap(),
       facedofs_old->DofRowMap());
 
+//  // end time measurement for element
+//  double dtproject=Teuchos::Time::wallTime()-tcproject;
+//  std::cout << "Time measurement for projection: " << dtproject << std::endl;
+//
+//  // get cpu time
+//  const double tcmatinit = Teuchos::Time::wallTime();
+
   CalcMatInitial();
+
+//  // end time measurement for element
+//  double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
+//  std::cout << "Time measurement calc mat initial: " << dtmatinit << std::endl;
 
   // end time measurement for element
   double dtadapt=Teuchos::Time::wallTime()-tcadapt;
