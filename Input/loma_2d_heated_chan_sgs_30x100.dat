@@ -1,8 +1,5 @@
 //
-// Maintainer: Ursula Rasthofer
-// rasthofer@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15236
+// Maintainer: Volker Gravemeier
 //
 // necessary defines: D_FLUID2 BINIO
 //
@@ -9791,7 +9788,7 @@ NODE 3131 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 3026 QUANTITY velx VALUE 1.66848239429654349e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 3026 QUANTITY vely VALUE -1.22638511255435789e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.65027548153729242e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.65027557184015095e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 3026 QUANTITY phi VALUE 2.93296978338016061e+02 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

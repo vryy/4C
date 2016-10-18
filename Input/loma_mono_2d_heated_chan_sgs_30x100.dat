@@ -1,8 +1,5 @@
 //
-// Maintainer: Ursula Rasthofer
-// rasthofer@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15236
+// Maintainer: Volker Gravemeier
 //
 // necessary defines: D_FLUID2 BINIO
 //
@@ -50,7 +47,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2000
 NUMSTEP                         20
 NUMSTASTEPS                     0
@@ -9811,7 +9808,7 @@ NODE 3131 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 3026 QUANTITY velx VALUE 1.69014221105888290e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 3026 QUANTITY vely VALUE -1.26614363514832629e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.64274662296764173e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.64274677281987369e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 3026 QUANTITY phi VALUE 2.93441794225866317e+02 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END
