@@ -261,7 +261,11 @@ void PARTICLE::Algorithm::Init(bool restarted)
       TransferParticles(true, true);
 
     // determine consistent initial acceleration for the particles
-    CalculateAndApplyForcesToParticles();
+    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
+      CalculateAndApplyAccelerationsToParticles();
+    else
+      CalculateAndApplyForcesToParticles();
+
     particles_->DetermineMassDampConsistAccel();
 
     // set up Heat Sources in a map
@@ -341,7 +345,10 @@ void PARTICLE::Algorithm::PrepareTimeStep()
 void PARTICLE::Algorithm::Integrate()
 {
 
-  CalculateAndApplyForcesToParticles();
+  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
+    CalculateAndApplyAccelerationsToParticles();
+  else
+    CalculateAndApplyForcesToParticles();
 
   if(particlewalldis_ != Teuchos::null)
   {
@@ -415,6 +422,29 @@ void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   return;
 }
 
+
+/*-------------------------------------------------------------------------------------*
+ | calculate accelerations on particleMeshFree and apply it               katta 10/16  |
+ *-------------------------------------------------------------------------------------*/
+void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles");
+
+  // vector to be filled with forces
+  Teuchos::RCP<Epetra_Vector> accelerations = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+
+  // all row particles are evaluated
+  const int numrownodes = particledis_->NumMyRowNodes();
+
+  for (int i=0; i<numrownodes; ++i)
+    for(int dim=0; dim<3; ++dim)
+      (*accelerations)[i*3+dim] = gravity_acc_(dim);
+
+  // apply forces to particles
+  particles_->WriteAccessAccnp()->Update(1.0,*accelerations,0);
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

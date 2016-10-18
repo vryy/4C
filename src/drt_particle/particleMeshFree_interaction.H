@@ -68,16 +68,17 @@ namespace PARTICLE
     //! @name Actions
     //@{
 
-    //! set col vectors
-    virtual void SetStateVectors(
-      Teuchos::RCP<const Epetra_Vector> disn,
-      Teuchos::RCP<const Epetra_Vector> veln,
-      Teuchos::RCP<const Epetra_Vector> radiusn,
-      Teuchos::RCP<const Epetra_Vector> densityn,
-      Teuchos::RCP<const Epetra_Vector> pressure);
+    //! set state vectors (col type)
+    virtual void SetStateVectors();
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual void EvaluateParticleMeshFreeInteractions(
+      Teuchos::RCP<Epetra_Vector> accn,
+      Teuchos::RCP<Epetra_Vector> densityDotn);
+
+    virtual void CalcNeighboringParticleMeshFreeInteraction(
+      const int lidNodeCol_i,
+      const std::list<DRT::Node*> neighboring_particles,
       Teuchos::RCP<Epetra_Vector> accn,
       Teuchos::RCP<Epetra_Vector> densityDotn);
 
@@ -85,6 +86,14 @@ namespace PARTICLE
 
 
   protected:
+
+    //! @name weight functions
+    //@{
+
+    /// compute the weight function gradient (cubicBspline type)
+    virtual void GradientWeightFunction_CubicBSpline(LINALG::Matrix<3,1> &WFGrad, const double &radius);
+
+    //@}
 
     //! @name helper classes
     //@{
@@ -103,23 +112,33 @@ namespace PARTICLE
     /// ID of actual processor in parallel
     int myrank_;
 
-    /// Weight function
-    Teuchos::RCP<PARTICLE::WeightFunctionBase> weightFunction_;
+    /// temporary storage of particleMeshFree data
+    std::vector<ParticleMeshFreeData> particleMeshFreeData_;
 
-    //@}
-
-    //! @name col vectors
-    //@{
-
-    Teuchos::RCP<Epetra_Vector> disnCol_;
-    Teuchos::RCP<Epetra_Vector> velnCol_;
-    Teuchos::RCP<Epetra_Vector> radiusnCol_;
-    Teuchos::RCP<Epetra_Vector> densitynCol_;
-    Teuchos::RCP<Epetra_Vector> pressureCol_;
+    /// weight function type
+    const INPAR::PARTICLE::WeightFunction weightFunctionType_;
 
     //@}
 
   };  // class ParticleCollisionHandler
+
+  //! @name Container structs for faster access
+  //@{
+
+  /// struct to store particleMeshFree data for faster access
+  struct ParticleMeshFreeData {
+    LINALG::Matrix<3,1> dis;
+    LINALG::Matrix<3,1> vel;
+    double radius;
+    double density;
+    double mass;
+    double pressure;
+    int gid;
+    std::vector<int> lm;
+    int owner;
+  };
+
+  //@}
 
 }  // namespace PARTICLE
 /*----------------------------------------------------------------------*/

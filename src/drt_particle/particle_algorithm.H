@@ -151,6 +151,9 @@ namespace PARTICLE
     /// force on particles is calculated and applied
     virtual void CalculateAndApplyForcesToParticles(bool init = false);
 
+    /// accelerations on particleMeshFree are calculated and applied
+    virtual void CalculateAndApplyAccelerationsToParticles(bool init = false);
+
     /// update the current time step
     virtual void Update();
 

@@ -364,10 +364,6 @@ void PARTICLE::TimInt::SetInitialFields()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
-  {
-    // the pressure at the beginning is null because the density is everywhere equal to the nominal initial density
-    // ComputePressure();
-  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // set density in the density vector (useful only for thermodynamics)
@@ -389,6 +385,12 @@ void PARTICLE::TimInt::SetInitialFields()
   default : //do nothing
     break;
   }
+
+  // the pressure at the beginning is null because the density is everywhere equal to the nominal initial density.
+  // Yet, it is computed to avoid annoying bugs in the future
+  // It is here because it is a slave of the density
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+    ComputePressure();
 }
 
 /*----------------------------------------------------------------------*/

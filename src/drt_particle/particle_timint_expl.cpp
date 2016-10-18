@@ -91,6 +91,11 @@ void PARTICLE::TimIntExpl::UpdateStepState()
     break;
   }
 
+  // update the pressure
+  // It is here because it is a slave of the density
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+    ComputePressure();
+
   if(collhandler_ != Teuchos::null)
   {
     // new angular-velocities at t_{n+1} -> t_n
@@ -113,7 +118,7 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   {
   case INPAR::PARTICLE::MeshFree :
   {
-    interHandler_->SetStateVectors(disn_, veln_, radiusn_, densityn_, pressure_);
+    interHandler_->SetStateVectors();
     break;
   }
   case INPAR::PARTICLE::Normal_DEM_thermo :

@@ -49,10 +49,16 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::ComputeGradientWeight
   )
 {
   // safety checks
-  assert(radius >= 0);
+  assert(radius > 0);
 
   const double norm_const = 1.5 * M_1_PI;
   const double rRelNorm = rRel.Norm2();
+
+  // solving the particular case in which two particles perfectly overlap
+  if (rRelNorm <= 1e-16)
+    dserror("particles are overlapping");
+    //return rRel;
+
   const double resizer_temp = 2 / radius;
   const double norm_dist_rel = resizer_temp * rRelNorm;
   const double resizer = resizer_temp / rRelNorm;
