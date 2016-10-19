@@ -59,7 +59,7 @@ THETA                           0.5
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 MATID                           -1
 VELOCITYFIELD                   zero
@@ -76,7 +76,6 @@ NEUMANNINFLOW                   no
 CONV_HEAT_TRANS                 no
 SKIPINITDER                     no
 FSSUGRDIFF                      No
-MESHTYING                       no
 LINEAR_SOLVER                   1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          3

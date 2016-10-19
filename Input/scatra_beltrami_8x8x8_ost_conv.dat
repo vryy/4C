@@ -36,12 +36,12 @@ ALPHA_F                         1.0                           // 0.666666
 ALPHA_M                         1.0                           // 0.833333
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
-CONVFORM convective //conservative
+CONVFORM                        convective //conservative
 CONVTOL                         1e-06
 GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
-NONLINITER Newton //fixed_point_like
+NONLINITER                      Newton //fixed_point_like
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
@@ -50,8 +50,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           8
-MESHTYING                       no
+RESULTSEVRY                     8
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

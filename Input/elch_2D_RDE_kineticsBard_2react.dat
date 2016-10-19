@@ -39,7 +39,6 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MATID                           7
 MAXTIME                         1000
-MESHTYING                       no
 NUMSTEP                         16
 OUTPUTSCALARS                   entire_domain
 OUTPUT_GMSH                     No
