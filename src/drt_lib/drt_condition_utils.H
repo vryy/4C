@@ -235,36 +235,6 @@ namespace DRT
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis,
                                                        const std::string& condname);
 
-
-    //! create discretization from a given condition
-    Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-      Teuchos::RCP<DRT::Discretization> sourcedis,    ///< discretization with condition
-      const std::string&                condname,     ///< name of the condition, by which the derived discretization is identified
-      const std::string&                discret_name, ///< name of the new discretization
-      const std::string&                element_name,  ///< name/type of the elements to be created
-      const std::vector<std::string>&   conditions_to_copy,  ///< list of conditions that will be copied to the new discretization
-      const int                         label = -1     ///< consider only conditions with specified label
-      );
-
-    //! create discretization from a given condition
-    Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-        const DRT::Discretization&      sourcedis,         ///< discretization with condition
-        const DRT::Condition&           cond,              ///< condition, from which the derived discretization is derived
-        const std::string&              discret_name,      ///< name of the new discretization
-        const std::string&              element_name,      ///< name/type of the elements to be created
-        const std::vector<std::string>& conditions_to_copy ///< list of conditions that will be copied to the new discretization
-        );
-
-    //! create discretization from a given condition
-    Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-        const DRT::Discretization&                         sourcedis,         ///< discretization with condition
-        const std::map<int, Teuchos::RCP<DRT::Element> >&  sourceelements,    ///< element map/geometry of the condition
-        const std::string&                                 discret_name,      ///< name of the new discretization
-        const std::string&                                 element_name,      ///< name/type of the elements to be created
-        const std::vector<std::string>&                    conditions_to_copy ///< list of conditions that will be copied to the new discretization
-        );
-
-
     //!collects elements by labels (have to be implemented in the corresponding condition
     void CollectElementsByConditionLabel(
         const DRT::Discretization&           discret,               ///< discretization with condition

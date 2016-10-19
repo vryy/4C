@@ -3,8 +3,10 @@
 
 \brief control routine of topology optimization for fluid domains
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
+\maintainer Martin Winklmaier
             winklmaier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -64,6 +66,7 @@ void fluid_topopt_dyn()
   if (optidis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<TOPOPT::TopoptFluidCloneStrategy>(fluiddis,optidis);
+    optidis->FillComplete();
   }
   else
     dserror("Optimization discretization is not empty as it should be!");

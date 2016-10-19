@@ -88,6 +88,7 @@ void FS3I::BiofilmFSI::Init()
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy> > alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>() );
     alecreator->CreateMatchingDiscretization(structdis,structaledis,11);
+    structaledis->FillComplete();
   }
   if (comm_.MyPID()==0)
   {

@@ -4,8 +4,10 @@
 
 \brief Perform all operations related to ALE cracking
 
+\level 2
+
 <pre>
-Maintainer: Sudhakar
+\maintainer Sudhakar Y.
             sudhakar@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -39,6 +41,7 @@ DRT::CRACK::aleCrack::aleCrack( Teuchos::RCP<DRT::Discretization> dis )
   if (!aledis->Filled()) aledis->FillComplete();
 
   DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis_,aledis);
+  aledis->FillComplete();
   if( aledis->NumGlobalElements() == 0 )
     dserror( "No elements found in ALE discretization" );
 

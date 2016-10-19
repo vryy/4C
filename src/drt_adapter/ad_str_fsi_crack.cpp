@@ -4,8 +4,10 @@
 
 \brief Adapter Layer for FSI with cracking structure
 
+\level 2
+
 <pre>
-Maintainer: Sudhakar
+\maintainer Sudhakar Y.
             sudhakar@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15267
@@ -16,7 +18,7 @@ Maintainer: Sudhakar
 /* headers */
 #include "ad_str_fsi_crack.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
@@ -131,7 +133,15 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   std::string cutterdis_name ("boundary_of_");
   cutterdis_name += structdis_->Name();
 
-  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  boundary_dis =
+      discreator->CreateMatchingDiscretizationFromCondition(
+          *structdis_,
+          condname,
+          cutterdis_name,
+          "BELE3_3",
+          conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true));
   boundary_dis->ReplaceDofSet(newdofset);
@@ -385,7 +395,14 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 #else
   Teuchos::RCP<DRT::Discretization> temp_dis = Teuchos::null;
 
-  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  temp_dis = discreator->
+      CreateMatchingDiscretizationFromCondition(
+          *structdis_,
+          condname, cutterdis_name,
+          "BELE3_3",
+          conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true));
   temp_dis->ReplaceDofSet(newdofset);

@@ -180,6 +180,7 @@ void immersed_problem_drt()
       if (aledis->NumGlobalNodes()==0)
       {
         DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+        aledis->FillComplete();
         // setup material in every ALE element
         Teuchos::ParameterList params;
         params.set<std::string>("action", "setup_material");

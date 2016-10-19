@@ -146,7 +146,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   targetdis.ExportColumnNodes(*targetnodecolmap_);
   targetdis.ExportRowElements(*targetelerowmap_);
   targetdis.ExportColumnElements(*targetelecolmap_);
-  targetdis.FillComplete();
+  targetdis.FillComplete(false,false,false);
 
   // extra work for NURBS discretizations
 

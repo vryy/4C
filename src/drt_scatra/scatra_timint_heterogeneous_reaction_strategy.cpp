@@ -149,7 +149,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
       discret_->AddDofSet(scatratimint_->Discretization()->GetDofSetProxy(ndofset));
 
     // done. Rebuild all maps and boundary condition geometries
-    discret_->FillComplete(true,false,true);
+    discret_->FillComplete(true,true,true);
 
     if(com->MyPID() == 0)
       std::cout << "parallel distribution of auxialiary discr. with standard ghosting" << std::endl;

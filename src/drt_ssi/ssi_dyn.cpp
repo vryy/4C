@@ -96,6 +96,12 @@ void ssi_drt()
     dis.push_back(problem->GetDis("scatra"));
     DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
 
+    DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+        *problem->GetDis("scatra"),
+        *problem->GetDis("scatra"),
+        "ScatraHeteroReactionMaster",
+        "ScatraHeteroReactionSlave" );
+
     // now we redistribute the structure dis to match the scatra dis
     DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
         *problem->GetDis("scatra"),

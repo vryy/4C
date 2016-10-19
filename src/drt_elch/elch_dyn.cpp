@@ -147,7 +147,7 @@ void elch_dyn(int restart)
     {
       // fill scatra discretization by cloning fluid discretization
       DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
-
+      scatradis->FillComplete();
       // determine implementation type of cloned scatra elements
       INPAR::SCATRA::ImplType impltype(INPAR::SCATRA::impltype_undefined);
       if(DRT::INPUT::IntegralValue<int>(elchcontrol,"DIFFCOND_FORMULATION"))

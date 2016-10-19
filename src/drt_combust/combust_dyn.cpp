@@ -80,6 +80,7 @@ void combust_dyn()
   {
     // fill scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,gfuncdis);
+    gfuncdis->FillComplete();
 
     // set implementation type of cloned scatra elements to levelset
     for(int i=0; i<gfuncdis->NumMyColElements(); ++i)

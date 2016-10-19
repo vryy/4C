@@ -4,6 +4,8 @@
 
 \brief main control routine for monolithic scalar-thermo interaction
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -88,7 +90,7 @@ void sti_dyn(
 
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo interaction
   DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis,thermodis);
-
+  thermodis->FillComplete(true,true,true);
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if(thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
     dserror("Thermo discretization has illegal number of dofsets!");

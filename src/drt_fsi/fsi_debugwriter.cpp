@@ -1,4 +1,9 @@
-
+/*!----------------------------------------------------------------------
+\file fsi_debugwriter.cpp
+\brief write debug information for fsi applications
+\level 2
+\maintainer Matthias Mayr
+*----------------------------------------------------------------------*/
 
 #include <sstream>
 
@@ -9,7 +14,7 @@
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "fsi_monolithic.H"
 
-#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_io/io_control.H"
@@ -19,12 +24,21 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
+FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) :
+itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
-  dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3_3",conditions_to_copy);
-  dis_->FillComplete();
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  dis_ = discreator->CreateMatchingDiscretizationFromCondition(
+     *dis,
+     "FSICoupling",
+     "boundary",
+     "BELE3_3",
+     conditions_to_copy);
+
+  dis_->FillComplete(true,true,true);
 
   coup_ = Teuchos::rcp(new ADAPTER::Coupling());
   const int ndim = DRT::Problem::Instance()->NDim();
@@ -88,7 +102,8 @@ void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_
 /*----------------------------------------------------------------------*/
 FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(Teuchos::RCP<DRT::Discretization> dis, const std::string& name)
   : dis_(dis),
-    name_(name)
+    name_(name),
+    itnum_(-1)
 {
 }
 

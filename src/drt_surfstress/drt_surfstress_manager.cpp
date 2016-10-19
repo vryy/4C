@@ -4,8 +4,10 @@
 \brief Class controlling surface stresses due to interfacial phenomena
 and containing all necessary history data
 
+\level 2
+
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -23,7 +25,7 @@ Maintainer: Lena Yoshihara
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../linalg/linalg_utils.H"
 
 /*-------------------------------------------------------------------*
@@ -71,10 +73,16 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     std::string condname = "SurfaceStress";
     conditions_to_copy.push_back(condname);
 
-    surfdiscret_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, condname,
-                                                                 "boundary", "BELE3_3",
-                                                                 conditions_to_copy);
-    surfdiscret_->FillComplete();
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+    surfdiscret_ = discreator->CreateMatchingDiscretizationFromCondition(
+        *discret_,
+        condname,
+        "boundary",
+        "BELE3_3",
+        conditions_to_copy);
+
+    surfdiscret_->FillComplete(true,true,true);
     std::string outfile = file_prefix + "_" + condname;
 
     const int ndim = DRT::Problem::Instance()->NDim();

@@ -71,6 +71,7 @@ void SetupPoro(bool setmaterialpointers=true)
 
     //create fluid discretization
     DRT::UTILS::CloneDiscretization<PoroCloneStrategy>(structdis,fluiddis);
+    fluiddis->FillComplete();
 
     //set material pointers
     if(setmaterialpointers)
@@ -170,7 +171,7 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
   {
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(structdis,scatradis);
-
+    scatradis->FillComplete();
     // set implementation type
     for(int i=0; i<scatradis->NumMyColElements(); ++i)
     {

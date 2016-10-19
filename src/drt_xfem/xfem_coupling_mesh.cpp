@@ -21,14 +21,13 @@ xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "xfem_discretization_utils.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-
-#include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_utils_parallel.H"
-//
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_transparent_independent.H"
+
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
-//
+
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_crack/crackUtils.H"
@@ -112,8 +111,10 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
 
   //--------------------------------
   // create the new cutter discretization form the conditioned coupling discretization
-  cutter_dis_ = DRT::UTILS::CreateDiscretizationFromCondition(
-      cond_dis_,                ///< discretization with condition
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  cutter_dis_ = discreator->CreateMatchingDiscretizationFromCondition(
+      *cond_dis_,               ///< discretization with condition
       cond_name_,               ///< name of the condition, by which the derived discretization is identified
       cutterdis_name,           ///< name of the new discretization
       GetBELEName(cond_dis_),   ///< name/type of the elements to be created
@@ -134,20 +135,9 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
       DRT::TransparentIndependentDofSet(cond_dis_,parallel));
 
   cutter_dis_->ReplaceDofSet(newdofset); //do not call this with true!!
-  cutter_dis_->FillComplete();
 
   // create node and element distribution with elements and nodes ghosted on all processors
-  const Epetra_Map noderowmap = *cutter_dis_->NodeRowMap();
-  const Epetra_Map elemrowmap = *cutter_dis_->ElementRowMap();
-
-  // put all boundary nodes and elements onto all processors
-  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
-  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
-
-  // redistribute nodes and elements to column (ghost) map
-  cutter_dis_->ExportColumnNodes(nodecolmap);
-  cutter_dis_->ExportColumnElements(elemcolmap);
-
+  DRT::UTILS::GhostDiscretizationOnAllProcs(cutter_dis_);
   cutter_dis_->FillComplete();
 }
 

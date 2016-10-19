@@ -112,6 +112,7 @@ void FS3I::PartFS3I::Init()
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    aledis->FillComplete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -143,7 +144,7 @@ void FS3I::PartFS3I::Init()
 
     // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
-
+    fluidscatradis->FillComplete();
     // set implementation type of cloned scatra elements to advanced reactions
     for(int i=0; i<fluidscatradis->NumMyColElements(); ++i)
     {
@@ -194,7 +195,7 @@ void FS3I::PartFS3I::Init()
 
     // fill structure-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,structscatradis);
-
+    structscatradis->FillComplete();
     // set implementation type of cloned scatra elements to advanced reactions
     for(int i=0; i<structscatradis->NumMyColElements(); ++i)
     {

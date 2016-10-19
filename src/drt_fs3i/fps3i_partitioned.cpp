@@ -161,6 +161,7 @@ void FS3I::PartFPS3I::Init()
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
+    fluidscatradis->FillComplete();
 
     // set implementation type of cloned scatra elements to advanced reactions
     for(int i=0; i<fluidscatradis->NumMyColElements(); ++i)

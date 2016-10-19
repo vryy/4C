@@ -8,12 +8,6 @@
 
 \maintainer Alexander Seitz
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
 */
 
 
@@ -184,6 +178,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
       dserror("MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is empty!");
 
     DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis,thermdis);
+    thermdis->FillComplete();
 
     // connect degrees of freedom for periodic boundary conditions
     {

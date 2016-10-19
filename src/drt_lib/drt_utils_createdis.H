@@ -62,6 +62,171 @@ public:
       DRT::Discretization& targetdis,
       const std::map<std::string,std::string>& conditions_to_copy) const;
 
+  //! Base class version for creation of matching discretization without material
+  Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      const DRT::Discretization&      sourcedis, ///< discretization with condition
+      const DRT::Condition&           cond,      ///< condition, from which the derived discretization is derived
+      const std::string&              discret_name, ///< name of the new discretization
+      const std::string&              element_name, ///< name/type of the elements to be created
+      const std::vector<std::string>& conditions_to_copy ///< list of conditions that will be copied to the new discretization
+  )
+  {
+    if (cond.Nodes()==NULL or cond.Nodes()->size()==0)
+      dserror("The condition has no nodes!");
+
+    // make sure connectivity is all set
+    // we don't care, whether dofs exist or not
+    if (!sourcedis.Filled())
+      dserror("sourcedis is not filled");
+
+    // get this condition's elements
+    std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
+    const std::map< int, Teuchos::RCP< DRT::Element > >& geo = cond.Geometry();
+    sourceelements.insert(geo.begin(),geo.end());
+
+    return CreateMatchingDiscretizationFromCondition(
+        sourcedis,
+        sourceelements,
+        discret_name,
+        element_name,
+        conditions_to_copy);
+  }; // CreateMatchingDiscretizationFromCondition
+
+  //! Base class version for creation of matching discretization without material
+  Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      const DRT::Discretization&         sourcedis,    ///< discretization with condition
+      const std::string&                 condname,     ///< name of the condition, by which the derived discretization is identified
+      const std::string&                 discret_name, ///< name of the new discretization
+      const std::string&                 element_name, ///< name/type of the elements to be created
+      const std::vector<std::string>&    conditions_to_copy, ///< list of conditions that will be copied to the new discretization
+      const int                          label = -1    ///< consider only conditions with specified label
+      )
+  {
+    // make sure connectivity is all set
+    // we don't care, whether dofs exist or not
+    if (!sourcedis.Filled())
+      dserror("sourcedis is not filled");
+
+    // We need to test for all elements (including ghosted ones) to
+    // catch all nodes
+    std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
+    DRT::UTILS::FindConditionObjects(sourcedis, sourceelements, condname, label);
+
+    return CreateMatchingDiscretizationFromCondition(
+        sourcedis,
+        sourceelements,
+        discret_name,
+        element_name,
+        conditions_to_copy);
+  }; // CreateDiscretizationFromCondition
+
+  //! method for cloning a new discretization from an existing condition without material
+  Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      const DRT::Discretization&                         sourcedis,      ///< discretization with condition
+      const std::map<int, Teuchos::RCP<DRT::Element> >&  sourceelements, ///< element map/geometry of the condition
+      const std::string&                                 discret_name,   ///< name of the new discretization
+      const std::string&                                 element_name,   ///< name/type of the elements to be created
+      const std::vector<std::string>&                    conditions_to_copy ///< list of conditions that will be copied to the new discretization
+  )
+  {
+    Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis.Comm().Clone());
+    const int myrank = com->MyPID();
+    const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
+
+    Teuchos::RCP<DRT::Discretization> targetdis =
+        Teuchos::rcp(new DRT::Discretization(discret_name,com));
+
+    // construct new elements
+    for (std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator sourceele_iter = sourceelements.begin();
+        sourceele_iter != sourceelements.end();
+        ++sourceele_iter)
+    {
+      const Teuchos::RCP<DRT::Element> sourceele = sourceele_iter->second;
+
+      // get global node ids
+      std::vector<int> nids;
+      nids.reserve(sourceele->NumNode());
+      transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
+          back_inserter(nids), std::mem_fun(&DRT::Node::Id));
+
+      if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenoderowmap))==0)
+      {
+        dserror("no own node in element %d", sourceele->Id());
+      }
+
+      if (std::count_if(nids.begin(), nids.end(),
+          DRT::UTILS::MyGID(sourcedis.NodeColMap())) < static_cast<int>(nids.size()))
+      {
+        dserror("element %d has remote non-ghost nodes",sourceele->Id());
+      }
+
+      copy(nids.begin(), nids.end(),
+          inserter(colnodeset_, colnodeset_.begin()));
+
+      // copy node ids of condition ele to rownodeset but leave those that do
+      // not belong to this processor
+      remove_copy_if(nids.begin(), nids.end(),
+          inserter(rownodeset_, rownodeset_.begin()),
+          not1(DRT::UTILS::MyGID(sourcenoderowmap)));
+
+      // Do not clone ghost elements here! Those will be handled by the
+      // discretization itself.
+      if (sourceele->Owner()==myrank)
+      {
+        // create an element with the same global element id
+        Teuchos::RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+        // set the same global node ids to the new element
+        condele->SetNodeIds(nids.size(), &nids[0]);
+        // add element
+        targetdis->AddElement(condele);
+        roweleset_.insert(sourceele->Id());
+      }
+      coleleset_.insert(sourceele->Id());
+    } // loop over all source elements
+
+    // construct new nodes, which use the same global id as the source nodes
+    for (int i=0; i<sourcenoderowmap->NumMyElements(); ++i)
+    {
+      const int gid = sourcenoderowmap->GID(i);
+      if (rownodeset_.find(gid)!=rownodeset_.end())
+      {
+        const DRT::Node* sourcenode = sourcedis.lRowNode(i);
+        targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
+      }
+    }
+
+    // we get the element maps almost for free
+    targetelerowmap_ = CreateMap(roweleset_,*targetdis);
+    targetelecolmap_ = CreateMap(coleleset_,*targetdis);
+    // we get the node maps almost for free
+    targetnoderowmap_ = CreateMap(rownodeset_,*targetdis);
+    targetnodecolmap_ = CreateMap(colnodeset_,*targetdis);
+
+    // copy selected conditions to the new discretization
+    for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
+        conditername != conditions_to_copy.end();
+        ++conditername)
+    {
+      std::vector<DRT::Condition*> conds;
+      sourcedis.GetCondition(*conditername, conds);
+      for (unsigned i=0; i<conds.size(); ++i)
+      {
+        // We use the same nodal ids and therefore we can just copy the conditions.
+        targetdis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
+      }
+    }
+
+    // we always skip the safety checks in Finalize()
+    // because we create a discretization from a
+    // conditioned subset of the source discretiztation.
+    numeleskips_++;
+
+    // call Redistribute, FillComplete etc.
+    Finalize(sourcedis,*targetdis);
+
+    return targetdis;
+  }; // CreateDiscretizationFromCondition without material
+
 protected:
 
   //! construct row nodes for cloned target discretization
@@ -72,7 +237,7 @@ protected:
       const std::set<int>& colnodeset,
       const bool isnurbsdis,
       const bool buildimmersednode
-      ) const;
+  ) const;
 
   //! construct and return Epetra_Map
   Teuchos::RCP<Epetra_Map> CreateMap(
@@ -90,6 +255,16 @@ protected:
 
 protected:
 
+  //! set of row nodes
+  std::set<int> rownodeset_;
+  //! set of column nodes
+  std::set<int> colnodeset_;
+  //! set of row elements
+  std::set<int> roweleset_;
+  //! set of column elements
+  std::set<int> coleleset_;
+  //! vector for holding each (desired) element type std::string
+  std::vector<std::string> eletype_;
   //! map containing gids of owned nodes
   Teuchos::RCP<Epetra_Map> targetnoderowmap_;
   //! map containing gids of owned + ghosted nodes
@@ -262,7 +437,7 @@ public:
 
 private:
 
-  /// method for cloning a new discretization from an existing condition
+  /// method for cloning a new discretization from an existing condition with material
   void CreateMatchingDiscretizationFromCondition(
       const DRT::Discretization&                             sourcedis, ///< ref. to source discretization
       const std::map<int, Teuchos::RCP<DRT::Element> >& sourceelements, ///< conditioned element map to clone
@@ -299,7 +474,7 @@ private:
     // call Redistribute, FillComplete etc.
     Finalize(sourcedis,targetdis);
     return;
-  }; // CreateMatchingDiscretizationFromCondition
+  }; // CreateMatchingDiscretizationFromCondition with material
 
   /// get element type std::strings and global id's and nodes from source discretization
   void AnalyzeSourceDis(
@@ -653,17 +828,6 @@ private:
     }
     return;
   } // CreateElementsFromCondition
-
-  //! set of row nodes
-  std::set<int> rownodeset_;
-  //! set of column nodes
-  std::set<int> colnodeset_;
-  //! set of row elements
-  std::set<int> roweleset_;
-  //! set of column elements
-  std::set<int> coleleset_;
-  //! vector for holding each (desired) element type std::string
-  std::vector<std::string> eletype_;
 
 }; // class DiscretizationCreator
 

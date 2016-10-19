@@ -172,7 +172,7 @@ void SSI::SSI_Base::InitDiscretizations(
   {
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
-
+    scatradis->FillComplete();
     // set implementation type
     for(int i=0; i<scatradis->NumMyColElements(); ++i)
     {

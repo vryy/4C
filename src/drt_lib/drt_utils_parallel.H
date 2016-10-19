@@ -19,8 +19,6 @@
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
-#include "../drt_adapter/adapter_coupling.H"
-
 
 namespace DRT
 {
@@ -83,6 +81,25 @@ namespace UTILS
     DRT::Discretization&     dis_template,
     DRT::Discretization&     dis_to_redistribute );
 
+  /*! \brief Redistribute conditioned elements matching other conditioned elements.
+   *
+   * Redistribute the elements of discretization dis_to_redistribute, wearing the
+   * condition condname_redistribute to match the parallel distribution of the
+   * elements of discretization dis_template, wearing the condition condname_redistribute.
+   *
+   * \note The elements serving as template and the elements supposed to be redistributed
+   * have to be matching! That means, nodal positions have to coincide.
+   *
+  \param dis_template        (i) : discretization with parallel distr., serving as template
+  \param dis_to_redistribute (i) : discretization which is redistributed matching to dis_template
+  \param condname_template   (i) : condition on template dis with template distribution
+  \param condname_redistribute (i) : condition on elements to be redistributed */
+  void MatchElementDistributionOfMatchingConditionedElements(
+    DRT::Discretization&     dis_template,
+    DRT::Discretization&     dis_to_redistribute,
+    const std::string& condname_template,
+    const std::string& condname_redistribute );
+
   /// print information about parallel mesh distribution
   void PrintParallelDistribution(const DRT::Discretization& dis);
 
@@ -109,6 +126,37 @@ namespace UTILS
       const Teuchos::RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
       const Teuchos::RCP<DRT::Discretization> subdis      ///< subdiscretization prescribing ghosting
   );
+
+  /*! \brief Fill processor local row and col vectors with element ids fitting the desired parallel distribution.
+
+  \author Andreas Rauch
+  \date   10/16
+
+  \param dis_template        (i): template for parallel distribution
+  \param dis_to_redistribute (i): discretization supposed to be distributed matching template
+  \param row_id_vec_to_fill  (o): on exit this vector contains the matched element row gids
+  \param col_id_vec_to_fill  (o): on exit this vector contains the matched element col gids  */
+  void MatchElementRowColDistribution(
+      const DRT::Discretization& dis_template,
+      const DRT::Discretization& dis_to_redistribute,
+      std::vector<int>& row_id_vec_to_fill,
+      std::vector<int>& col_id_vec_to_fill);
+
+  /*! \brief Fill processor local row and col vectors with node ids fitting the desired parallel distribution.
+
+  \author Andreas Rauch
+  \date   10/16
+
+  \param dis_template        (i): template for parallel distribution
+  \param dis_to_redistribute (i): discretization supposed to be distributed matching template
+  \param row_id_vec_to_fill  (o): on exit this vector contains the matched node row gids
+  \param col_id_vec_to_fill  (o): on exit this vector contains the matched node col gids  */
+  void MatchNodalRowColDistribution(
+      const DRT::Discretization& dis_template,
+      const DRT::Discretization& dis_to_redistribute,
+      std::vector<int>& row_id_vec_to_fill,
+      std::vector<int>& col_id_vec_to_fill);
+
 
 } // namespace UTILS
 } // namespace DRT

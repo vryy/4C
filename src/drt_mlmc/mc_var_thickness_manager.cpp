@@ -2,9 +2,9 @@
 /*!
 \file mc_var_thickness_manager.cpp
 \brief class to modify wall thickness of cardiovascular structures on the fly
-
+\level 2
 <pre>
-Maintainer: Jonas Biehler
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             089 - 28915276
 </pre>
@@ -109,8 +109,8 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   // clone ale mesh from structure discretization
   if (aledis_->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(discret_,
-        aledis_);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(discret_, aledis_);
+    aledis_->FillComplete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
