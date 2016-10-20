@@ -368,6 +368,7 @@ void CellMigrationControlAlgorithm()
     // FillComplete for ale dis is called deeper in the code.
     problem->GetDis("cell")->FillComplete(true,false,true);
     problem->GetDis("cellscatra")->FillComplete(true,false,true);
+    problem->GetDis("ale")->FillComplete(true,false,true);
 
     // parallel redistriution is finished. Let us call Setup()
     // here all state vectors are constructed.
