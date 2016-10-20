@@ -114,6 +114,7 @@ namespace DRT
  template<typename T, typename U>
  std::vector<T>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
  std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class packing its own base class
+ std::pair<T,U>
  std::set<T>
  LINALG::Matrix<T,U>
  std::vector<LINALG::Matrix<T,U> >
@@ -273,6 +274,24 @@ public:
 
     if (i != numentries)
       dserror("Something wrong with number of elements");
+
+    return;
+  }
+
+  /*!
+   \brief Add stuff to the end of a char vector data
+
+   This method is templated for std::pair<T,U>
+   \param data (in/out) : char string stuff shall be added to
+   \param stuff (in)    : std::pair<T,U> that get's added to stuff
+
+   */
+  template<typename T, typename U>
+  static void AddtoPack(PackBuffer& data, const std::pair<T, U> & stuff)
+  {
+
+    AddtoPack(data, stuff.first);
+    AddtoPack(data, stuff.second);
 
     return;
   }
@@ -549,6 +568,27 @@ public:
       //add to map
       stuff.insert(std::pair<T, U>(first, second));
     }
+
+    return;
+  }
+
+  /*!
+   \brief Extract stuff from a char vector data and increment position
+
+   This method is templated for stuff of type std::pair<T,U>
+
+   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+   \param data (in)         : char vector where stuff is extracted from
+   \param stuff (out)       : std::pair<T,U> to extract from data
+
+   */
+  template<typename T, typename U>
+  static void ExtractfromPack(std::vector<char>::size_type& position,
+      const std::vector<char>& data, std::pair<T, U>& stuff)
+  {
+
+    ExtractfromPack(position, data, stuff.first);
+    ExtractfromPack(position, data, stuff.second);
 
     return;
   }

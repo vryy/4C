@@ -286,8 +286,14 @@ public:
   /// get a random number
   double Uni();
 
+  /// get a vector of random numbers of size count
+  void Uni(std::vector<double>& randvec, int count);
+
   /// get a random number
   double Normal();
+
+  /// get a vector of random numbers of size count
+  void Normal(std::vector<double>& randvec, int count);
 
   /// set the random seed
   void SetRandSeed(const unsigned int seed);

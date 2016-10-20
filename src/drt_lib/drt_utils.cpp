@@ -1091,10 +1091,40 @@ double DRT::UTILS::Random::Uni()
   return uni_rand_no_();
 }
 
+/// get a vector of random numbers of size count
+void DRT::UTILS::Random::Uni(std::vector<double>& randvec, int count)
+{
+  // resize vector
+  randvec.resize(count);
+
+  // resize vector
+  for(int i=0; i<count; ++i)
+  {
+    randvec[i] = uni_rand_no_();
+  }
+
+  return;
+}
+
 /// get a random number
 double DRT::UTILS::Random::Normal()
 {
   return norm_rand_no_();
+}
+
+/// get a vector of random numbers of size count
+void DRT::UTILS::Random::Normal(std::vector<double>& randvec, int count)
+{
+  // resize vector
+  randvec.resize(count);
+
+  // resize vector
+  for(int i=0; i<count; ++i)
+  {
+    randvec[i] = norm_rand_no_();
+  }
+
+  return;
 }
 
 /// set the random seed
