@@ -136,7 +136,6 @@ namespace INPUT
 
   /// line component to describe a string followed by a vector of values
   /// specialization for pair
-  template < >
   template <typename T1,typename T2>
   class NamedVectorComponent< std::pair<T1,T2> > : public LineComponent
   {
