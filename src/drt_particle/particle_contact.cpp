@@ -333,20 +333,33 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     Teuchos::RCP<Epetra_Vector> radiusn,
     Teuchos::RCP<Epetra_Vector> mass)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::ContactInit");
   // export everything in col layout
 
   // dof based vectors
   Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  LINALG::Export(*disn,*disnCol);
   Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  LINALG::Export(*veln,*velnCol);
   Teuchos::RCP<Epetra_Vector> angVelnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  LINALG::Export(*angVeln,*angVelnCol);
+
+  // setup importer for dof based vectors once in the beginning and reuse it
+  Epetra_Import dofimporter(*discret_->DofColMap(), *discret_->DofRowMap());
+  int err = 0;
+  err += disnCol->Import(*disn, dofimporter, Insert);
+  err += velnCol->Import(*veln, dofimporter, Insert);
+  err += angVelnCol->Import(*angVeln, dofimporter, Insert);
+  if (err)
+    dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
+
   // node based vectors
   Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*radiusn,*radiusnCol);
   Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  LINALG::Export(*mass,*massCol);
+
+  // setup importer for node based vectors once in the beginning and reuse it
+  Epetra_Import nodeimporter(*discret_->NodeColMap(), *discret_->NodeRowMap());
+  err += radiusnCol->Import(*radiusn, nodeimporter, Insert);
+  err += massCol->Import(*mass, nodeimporter, Insert);
+  if (err)
+    dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
 
   // fill particleData_
   const int numcolparticles = discret_->NodeColMap()->NumMyElements();
@@ -443,7 +456,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   Teuchos::RCP<Epetra_Vector> m_contact
   )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::TimeforContactSearchAndCalculation");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
   contact_energy_ = 0.0;
 
