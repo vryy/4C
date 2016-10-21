@@ -95,7 +95,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 SIMULATION_TYPE     lipid_bilayer
 THERMALBATH         uniform
-FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
+FRICTIONMODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
 DBCTYPE             std                   // none shearfixed sheartrans pinnodes,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
 NETWORKTYPE         std                   // specify network / simulation type
@@ -104,16 +104,16 @@ SEARCHRES           50                    // resolution for search routine linke
 CHECKORIENT         Yes                   // check orientation betw. two filaments before linking them
 FIXEDSEED           Yes //No                    // (de)activate pesudo-randomness
 INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
-RANDNUMTIMEINT      -1.0                    // within this time interval, the applied random number is held constant
+TIMEINTCONSTRANDNUMB      -1.0                    // within this time interval, the applied random number is held constant
 MAXRANDFORCE        -1.0                    // cutoff for random numbers. Multiple of std. dev. Beyond this value, another random number will be pulled
 //============== OUTPUT SET UP ==============
 GMSHOUTPUT          No                   // visualization via Gmsh
-GMSHNINTPT          10                    // Number of interpolation points for higher order plotting (in case of beam3eb)
+GMSHNUMINTPT          10                    // Number of interpolation points for higher order plotting (in case of beam3eb)
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT      vesceqshapes // structanaly viscoelasticity
-GMSHOUTINTERVALS    1                  // gmsh output interval
-OUTPUTINTERVALS     1                  // specialoutput interval
+SPECIALOUTPUT      vesceqshapes // structanaly viscoelasticity
+GMSHOUTINTERVAL    1                  // gmsh output interval
+OUTPUTINTERVAL     1                  // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
 ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact

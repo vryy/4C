@@ -117,8 +117,7 @@ namespace INPAR
                                    "CentrDiff",
                                    "AdamsBashforth2",
                                    "EulerMaruyama",
-                                   "EulerImpStoch",
-                                   "StatMech"),
+                                   "EulerImpStoch"),
                                  tuple<int>(
                                    dyna_statics,
                                    dyna_genalpha,
@@ -129,8 +128,7 @@ namespace INPAR
                                    dyna_centrdiff,
                                    dyna_ab2,
                                    dyna_euma,
-                                   dyna_euimsto,
-                                   dyna_statmech),
+                                   dyna_euimsto),
                                  &sdyn);
 
     setStringToIntegralParameter<int>("PRESTRESS","none","prestressing takes values none mulf id",

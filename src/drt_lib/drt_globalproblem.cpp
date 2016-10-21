@@ -1538,22 +1538,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
 
-  case prb_statmech:
-  {
-
-    structdis = Teuchos::rcp(new DRT::DiscretizationFaces("structure",reader.Comm()));
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-
-    AddDis("structure", structdis);
-
-    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
-
-    break;
-  }
-
   case prb_loma:
   {
     // create empty discretizations

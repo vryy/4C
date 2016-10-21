@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_ptc.H
 
+\brief pseudo transient solution method
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015

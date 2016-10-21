@@ -363,3 +363,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::
   // there are no model specific solution entries
   return Teuchos::null;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Cardiovascular0D::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()

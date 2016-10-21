@@ -385,3 +385,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::
   // there are no model specific solution entries
   return Teuchos::null;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()

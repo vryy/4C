@@ -846,3 +846,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::
   CheckInit();
   return GState().GetDisN();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()

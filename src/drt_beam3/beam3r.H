@@ -30,6 +30,9 @@
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
 
+#include "../drt_inpar/inpar_statmech.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 #include "beam3_base.H"
 
 
@@ -375,8 +378,7 @@ public:
    * vpernode: interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))*/
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
   void SetUpReferenceGeometry(const std::vector<double>& xrefe,
-                              const std::vector<double>& rotrefe,
-                              const bool secondinit = false);
+                              const std::vector<double>& rotrefe);
 
   //@}
 
@@ -1354,8 +1356,6 @@ private:
   //! calculation of nonlinear stiffness and mass matrix
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
   void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&   params,
-                                                 std::vector<double>&      acc,
-                                                 std::vector<double>&      vel,
                                                  std::vector<double>&      disp,
                                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                                  Epetra_SerialDenseMatrix* massmatrix,
@@ -1375,6 +1375,16 @@ private:
   void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
                                       LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1>& disp_totlag_centerline,
                                       std::vector<LINALG::TMatrix<FADordouble,4,1> >&    Q_i);
+
+  //! extract those Dofs relevant for centerline-interpolation from total state vector
+  template<unsigned int nnodecl, unsigned int vpernode>
+  void ExtractCenterlineDofValues(const std::vector<double>&           dofvec,
+                                 LINALG::Matrix<3*vpernode*nnodecl,1>& dofvec_centerline) const;
+
+  //! extract those Dofs relevant for centerline-interpolation from total state vector
+  void ExtractCenterlineDofValues(const std::vector<double>& dofvec,
+                                  std::vector<double>&       dofvec_centerline) const;
+
 
   //! lump mass matrix
   template<unsigned int nnode>
@@ -1411,8 +1421,7 @@ private:
                    std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass);//!< element internal force vector
 
   //! computes damping coefficients for employed friction model
-  void MyDampingConstants(Teuchos::ParameterList& params,
-                         LINALG::Matrix<3,1>&    gamma);
+  void MyDampingConstants(LINALG::Matrix<3,1>&    gamma);
 
   //! computes rotational damping forces and stiffness
   template<unsigned int nnode> //number of nodes
@@ -1462,11 +1471,6 @@ private:
                            const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                            LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
                            LINALG::Matrix<ndim,ndim>&    velbackgroundgrad); //!<gradient of velocity of background fluid
-
-  //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  template<unsigned int nnode, int ndim> //number of nodes, number of dimensions
-  void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-                std::vector<double>&    disp); //!<element disp vector
 
 
   //@}

@@ -281,3 +281,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteraction::
   // there are no model specific solution entries
   return Teuchos::null;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()

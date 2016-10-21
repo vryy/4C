@@ -70,14 +70,14 @@ BEAMS_EXTVAL                    2.0
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 GMSHOUTPUT                      No
-FRICTION_MODEL                  anisotropicconsistent
+FRICTIONMODEL                  anisotropicconsistent
 ETA                             1e-3
 KT                              0.0
 CTRANSPTC0                      0.0
 CROTPTC0                        0.145
 ALPHAPTC                        6.0
-GMSHOUTINTERVALS                1
-OUTPUTINTERVALS                 1000
+GMSHOUTINTERVAL                1
+OUTPUTINTERVAL                 1000
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym

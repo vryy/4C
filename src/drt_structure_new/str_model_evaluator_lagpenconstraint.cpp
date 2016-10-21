@@ -392,3 +392,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::
   // there are no model specific solution entries
   return Teuchos::null;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::LagPenConstraint::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()

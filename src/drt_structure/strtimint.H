@@ -35,7 +35,6 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_discret_faces.H"
-#include "../drt_statmech_bilayer/statmech_manager_bilayer.H"
 
 
 // forward declarations
@@ -65,12 +64,6 @@ namespace CONTACT
 {
   class Beam3cmanager;
   class MeshtyingContactBridge;
-}
-
-namespace STATMECH
-{
-  class StatMechManager;
-  class StatMechManagerBilayer;
 }
 
 namespace LINALG
@@ -716,9 +709,6 @@ namespace STR
     //! Read and set restart values for beam contact
     void ReadRestartBeamContact();
 
-    //! Read and set restart values for statmech
-    void ReadRestartStatMech();
-
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
 
@@ -1021,31 +1011,6 @@ namespace STR
 
     //@}
 
-    //! @name Statistical Mechanics methods
-    //@{
-
-    //! return bool indicating if statmech is defined
-    bool HaveStatMech() { return (statmechman_ != Teuchos::null); }
-
-    //! return bool indicating if statmech for lipid bilayer  is defined
-    bool HaveStatMechBilayer() { return (statmechmanBilayer_ != Teuchos::null); }
-
-    //! return bool indicating if statmech for network & lipid bilayer is defined
-    bool HaveStatMechNetworkBilayer() { return (statmechman_ != Teuchos::null && statmechmanBilayer_ != Teuchos::null); }
-
-    //! return statmech manager
-    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() {return statmechman_;}
-
-    //! return statmech managerbilayer
-    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer() {return statmechmanBilayer_;}
-
-    //! Check if statistical mechanics is chosen in input file and
-    //! create manager object + initialize all relevant stuff if so
-    void PrepareStatMech();
-
-    //@}
-
-
     //! @name Structure with ale specific methods
     //@{
 
@@ -1194,12 +1159,6 @@ namespace STR
 
     //! semi-smooth plasticity
     Teuchos::RCP<DRT::UTILS::PlastSsnManager> plastman_;
-
-    //! statistical mechanics
-    Teuchos::RCP<STATMECH::StatMechManager> statmechman_;
-
-    //! statistical mechanics
-    Teuchos::RCP<STATMECH::StatMechManagerBilayer> statmechmanBilayer_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

@@ -39,6 +39,8 @@ namespace MODELEVALUATOR {
   class Generic;
 } // namespace MODELEVALUATOR
 namespace TIMINT {
+  class DataSMDyn;
+
   /** \brief Structural dynamics data container for the structural (time) integration
    *
    * This data container holds everything, which refers directly to the
@@ -80,7 +82,7 @@ namespace TIMINT {
     inline void CheckInit() const
     {
       if (!IsInit())
-        dserror("Call Init() and Setup() first!");
+        dserror("Init() has not been called, yet!");
     }
 
     /// Check if Init() and Setup() have been called, yet.
@@ -279,6 +281,17 @@ namespace TIMINT {
 
     /// check if the given element technology is active.
     bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
+    ///@}
+
+    /// @name Get model specific data container
+    ///@{
+    /// Returns statmech data container (read access)
+    Teuchos::RCP<const DataSMDyn> GetDataSMDynPtr() const
+    {
+      if (sm_data_ptr_.is_null())
+        dserror("The statmech model is not active!");
+      return sm_data_ptr_;
+    }
     ///@}
 
     /// @name Get the different status test control parameters (read only)
@@ -837,6 +850,14 @@ namespace TIMINT {
     int divconnumfinestep_;
 
     ///@}
+
+    /// @name pointer to model specific data container
+    ///@{
+
+    /// pointer to the linear solvers map
+    Teuchos::RCP<STR::TIMINT::DataSMDyn> sm_data_ptr_;
+    ///@}
+
     ///@}
     /** \brief Ptr to the structural dynamics parameter list
      *
@@ -932,7 +953,7 @@ namespace TIMINT {
   /** \brief Generalized alpha structural dynamics data container
    *
    * This data container is derived from the standard structural dynamics data container
-   * and contains some special GenAlpha input parameters.
+   * and contains some special OneStepTheta input parameters.
    *
    * \author Michael Hiermeier */
   class OneStepThetaDataSDyn : public BaseDataSDyn

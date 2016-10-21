@@ -4,12 +4,9 @@
 
 \brief Algorithm to control cavitation simulations
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\maintainer Ursula Rasthofer
+
+\level 3
 *----------------------------------------------------------------------*/
 
 #ifndef SCATRA_PARTICLE_COUPLING_H
@@ -166,6 +163,8 @@ namespace PARTICLE
       else
         return false;
     };
+
+    INPAR::BINSTRATEGY::BinContent bin_volcontent_;
 
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;     ///< underlying scatra time integrator
 

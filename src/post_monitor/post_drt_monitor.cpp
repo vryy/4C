@@ -1985,7 +1985,6 @@ int main(int argc, char** argv)
       break;
     }
     case prb_structure:
-    case prb_statmech:
     {
       StructMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);

@@ -1,15 +1,16 @@
-/*!--------------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file drt_meshfree_multibin.cpp
-\brief
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief element type class of meshfree multibin, creating the same
 
-*--------------------------------------------------------------------------*/
+\maintainer Georg Hammerl
+
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
+
 
 #include "drt_meshfree_multibin.H"
 
@@ -55,7 +56,9 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create( const in
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
-:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner)
+:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner),
+    associatedeleid_(INPAR::BINSTRATEGY::enumsize),
+    associatedele_(INPAR::BINSTRATEGY::enumsize)
 {
   return;
 }
@@ -65,10 +68,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old)
 :   DRT::MESHFREE::MeshfreeBin<DRT::Element>(old),
-    associatedwalleleid_(old.associatedwalleleid_),
-    associatedwallele_(old.associatedwallele_),
-    associatedfluideleid_(old.associatedfluideleid_),
-    associatedfluidele_(old.associatedfluidele_)
+    associatedeleid_(old.associatedeleid_)
 {
   return;
 }
@@ -107,84 +107,67 @@ void DRT::MESHFREE::MeshfreeMultiBin::Print(std::ostream& os) const
   os << "MeshfreeMultiBin ";
   DRT::Element::Print(os);
 
-  const int nwallele = NumAssociatedWallEle();
-  const int* walleleids = AssociatedWallEleIds();
+  const int nwallele = NumAssociatedEle(INPAR::BINSTRATEGY::Surface);
+  const int* walleleids = AssociatedEleIds(INPAR::BINSTRATEGY::Surface);
   if (nwallele > 0)
   {
     os << " Associated wall elements ";
     for (int j=0; j<nwallele; ++j) os << std::setw(10) << walleleids[j] << " ";
   }
 
-  const int nfluidele = NumAssociatedFluidEle();
-  const int* wfluideleids = AssociatedFluidEleIds();
+  const int nfluidele = NumAssociatedEle(INPAR::BINSTRATEGY::Volume);
+  const int* wfluideleids = AssociatedEleIds(INPAR::BINSTRATEGY::Volume);
   if (nfluidele > 0)
   {
     os << " Associated fluid elements ";
     for (int j=0; j<nfluidele; ++j) os << std::setw(10) << wfluideleids[j] << " ";
   }
 
+  const int nbeamele = NumAssociatedEle(INPAR::BINSTRATEGY::Beam);
+  const int* wbeameleids = AssociatedEleIds(INPAR::BINSTRATEGY::Beam);
+  if (nbeamele > 0)
+  {
+    os << " Associated beam elements ";
+    for (int j=0; j<nbeamele; ++j) os << std::setw(10) << wbeameleids[j] << " ";
+  }
+
   return;
 }
 
 /*--------------------------------------------------------------------------*
- | Delete a single wall element from the bin           (public) ghamm 04/13 |
+ | Delete a single element from the bin                (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedWallEle(int gid)
+void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedEle(INPAR::BINSTRATEGY::BinContent bin_content, int gid)
 {
-  for (unsigned int i = 0; i<associatedwalleleid_.size(); i++){
-    if (associatedwalleleid_[i]==gid){
-      associatedwalleleid_.erase(associatedwalleleid_.begin()+i);
-      associatedwallele_.erase(associatedwallele_.begin()+i);
+  for (unsigned int i = 0; i<associatedeleid_[bin_content].size(); i++){
+    if (associatedeleid_[bin_content][i]==gid){
+      associatedeleid_[bin_content].erase(associatedeleid_[bin_content].begin()+i);
+      associatedele_[bin_content].erase(associatedele_[bin_content].begin()+i);
       return;
     }
   }
-  dserror("Connectivity issues: No wall element with specified gid to delete in bin. ");
+  dserror("Connectivity issues: No element with specified gid to delete in bin. ");
   return;
 }
 
 /*--------------------------------------------------------------------------*
  | Delete all wall elements from current bin           (public) ghamm 09/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::RemoveAssociatedWallEles()
+void DRT::MESHFREE::MeshfreeMultiBin::RemoveAssociatedEles(INPAR::BINSTRATEGY::BinContent bin_content)
 {
-      associatedwalleleid_.clear();
-      associatedwallele_.clear();
+  associatedeleid_[bin_content].clear();
+  associatedele_[bin_content].clear();
+
   return;
 }
 
 /*--------------------------------------------------------------------------*
- | Delete a single fluid element from the bin          (public) ghamm 04/13 |
+ |  Build element pointers                             (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedFluidEle(int gid)
+bool DRT::MESHFREE::MeshfreeMultiBin::BuildElePointers(INPAR::BINSTRATEGY::BinContent bin_content, DRT::Element** eles)
 {
-  for (unsigned int i = 0; i<associatedfluideleid_.size(); i++){
-    if (associatedfluideleid_[i]==gid){
-      associatedfluideleid_.erase(associatedfluideleid_.begin()+i);
-      associatedfluidele_.erase(associatedfluidele_.begin()+i);
-      return;
-    }
-  }
-  dserror("Connectivity issues: No fluid element with specified gid to delete in bin. ");
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Build wall element pointers                    (public) ghamm 04/13 |
- *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeMultiBin::BuildWallElePointers(DRT::Element** walleles)
-{
-  associatedwallele_.resize(NumAssociatedWallEle());
-  for (int i=0; i<NumAssociatedWallEle(); ++i) associatedwallele_[i] = walleles[i];
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Build fluid element pointers                   (public) ghamm 04/13 |
- *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeMultiBin::BuildFluidElePointers(DRT::Element** fluideles)
-{
-  associatedfluidele_.resize(NumAssociatedFluidEle());
-  for (int i=0; i<NumAssociatedFluidEle(); ++i) associatedfluidele_[i] = fluideles[i];
+  associatedele_[bin_content].resize(NumAssociatedEle(bin_content));
+  for (int i=0; i<NumAssociatedEle(bin_content); ++i) associatedele_[bin_content][i] = eles[i];
   return true;
 }
 
@@ -201,10 +184,10 @@ void DRT::MESHFREE::MeshfreeMultiBin::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // add base class DRT::Element
   DRT::Element::Pack(data);
-  // add vector associatedwalleleid_
-  AddtoPack(data,associatedwalleleid_);
-  // add vector associatedfluideleid_
-  AddtoPack(data,associatedfluideleid_);
+  // add vector associatedeleid_
+  for(int i=0;i<INPAR::BINSTRATEGY::enumsize;++i)
+    AddtoPack(data,associatedeleid_[i]);
+
   return;
 }
 
@@ -222,13 +205,10 @@ void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Element::Unpack(basedata);
-  // extract associatedwalleleid_
-  ExtractfromPack(position,data,associatedwalleleid_);
-  // extract associatedfluideleid_
-  ExtractfromPack(position,data,associatedfluideleid_);
-  // associatedwallele_ is NOT communicated
-  associatedwallele_.clear();
-  // associatedwallele_ is NOT communicated
-  associatedfluidele_.clear();
+  // extract associatedeleid_
+  for(int i=0;i<INPAR::BINSTRATEGY::enumsize;++i)
+    ExtractfromPack(position,data,associatedeleid_[i]);
+  // associatedele_ is NOT communicated
+  associatedele_.clear();
   return;
 }

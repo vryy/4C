@@ -22,6 +22,14 @@
 #include "../drt_lib/drt_elements_paramsinterface.H"    // base class
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enums
 
+#include "../drt_inpar/inpar_statmech.H"
+#include "Epetra_MultiVector.h"
+
+
+// forward declaration
+namespace STATMECH {
+  class ParamsInterface;
+}
 namespace STR {
 namespace ELEMENTS {
   class BeamParamsInterface;
@@ -80,8 +88,10 @@ namespace ELEMENTS {
     virtual double GetTimIntFactorVel() const = 0;
     //! @}
 
-    //! @name access to model specific parameter interfaces
+
+    //! @name Model specific interfaces
     //! @{
+    virtual Teuchos::RCP<STATMECH::ParamsInterface> GetStatMechParamInterface() const = 0;
 
     //! get pointer to special parameter interface for beam elements
     virtual const Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
@@ -162,6 +172,43 @@ namespace ELEMENTS {
 } // namespace ELEMENTS
 } // namespace STR
 
+/*! \brief Parameter interface for statmech data exchange between integrator and structure (beam) elements*/
+namespace STATMECH {
+  class ParamsInterface
+  {
+    public:
+    //! destructor
+    virtual ~ParamsInterface() {};
+
+    //! get friction model for polymer dynamics
+    virtual const INPAR::STATMECH::FrictionModel& GetFrictionModel() const = 0;
+
+    //! get dirichlet boundary condtion type
+    virtual const INPAR::STATMECH::DBCType& GetDbcType() const = 0;
+
+    //! get vector holding the dimensions of the periodic box
+    virtual const Teuchos::RCP<std::vector<double> >& GetPeriodLength() const = 0;
+
+    //! get shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain
+    virtual const double& GetShearAmplitude() const = 0;
+
+    //! get background fluid viscosity
+    virtual const double& GetEta() const = 0;
+
+    //! get direction of applied dirchlet boundary conditions
+    virtual const int& GetDbcDispDir() const = 0;
+
+    //! get specified time curve number of imposed Dirichlet BCs
+    virtual const int& GetCurveNumber() const = 0;
+
+    //! get start time for action
+    virtual const double& GetStartTimeAction() const = 0;
+
+    //! get the current step length
+    virtual const Teuchos::RCP< Epetra_MultiVector>& GetRadomForces() const= 0;
+
+  };  // class ParamsInterface
+} // namespace STATMECH
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_ */

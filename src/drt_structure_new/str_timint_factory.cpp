@@ -147,8 +147,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
       dyntype == INPAR::STR::dyna_genalpha          or
       dyntype == INPAR::STR::dyna_genalpha_liegroup or
       dyntype == INPAR::STR::dyna_onesteptheta      or
-      dyntype == INPAR::STR::dyna_gemm              or
-      dyntype == INPAR::STR::dyna_statmech)
+      dyntype == INPAR::STR::dyna_gemm )
     ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());
 
   return ti_strategy;

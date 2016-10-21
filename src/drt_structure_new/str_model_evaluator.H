@@ -100,7 +100,13 @@ namespace MODELEVALUATOR {
     /*! \brief reset all model states (incl. the structural dynamic state)
      *
      *  \param x (in) : current full state vector */
-    void ResetStates(const Epetra_Vector& x);
+    void ResetStates(const Epetra_Vector& x) const;
+
+    /*! \brief reset all model states (incl. the structural dynamic state)
+     *
+     *  \param x (in) : current full state vector
+     *  \param setstate (in) : flag to set state */
+    void ResetStates(const Epetra_Vector& x, bool setstate) const;
 
     //! Write current restart
     void WriteRestart(IO::DiscretizationWriter& iowriter,
@@ -141,6 +147,9 @@ namespace MODELEVALUATOR {
 
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+
+    //! Do things after writing output
+    void PostOutput();
 
     //! reset all variables which are directly related to the current new step n+1.
     void ResetStepState();

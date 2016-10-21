@@ -129,13 +129,18 @@ namespace TIMINT {
      *  \author mwgee (originally)                         \date 03/07 */
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
-    /// things that should be done after updating
-    virtual void PostUpdate() = 0;
-
-    /*  This function is supposed to reset all variables which are directly related
+    /** \brief reset step configuration after time step
+     *
+     *  This function is supposed to reset all variables which are directly related
      *  to the current new step n+1. To be more precise all variables ending with "Np"
      *  have to be reseted. */
     virtual void ResetStepState();
+
+    /// things that should be done after updating
+    virtual void PostUpdate() = 0;
+
+    /// things that should be done after output
+    virtual void PostOutput();
     //!@}
 
     //! @name Accessors

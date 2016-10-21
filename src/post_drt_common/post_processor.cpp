@@ -130,7 +130,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     case prb_structure:
-    case prb_statmech:
     case prb_invana:
     {
         PostField* field = problem.get_discretization(0);

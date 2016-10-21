@@ -104,10 +104,10 @@ namespace MODELEVALUATOR{
     void DetermineEnergy();
 
     //! derived
-    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+    virtual void ResetStepState();
 
     //! derived
-    virtual void ResetStepState();
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
@@ -117,6 +117,10 @@ namespace MODELEVALUATOR{
 
     //! derived
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+
+    //! [derived]
+    virtual void PostOutput();
+
     //! @}
 
   private:

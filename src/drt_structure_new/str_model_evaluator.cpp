@@ -146,17 +146,18 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x,
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
+
+  // ---------------------------------------------------------------------------
+  // reset model specific variables
+  // ---------------------------------------------------------------------------
+  ResetStates(x,false);
+
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-  {
     // if one model evaluator failed, skip the remaining ones and return false
-    if (not ok) break;
-
-    (*me_iter)->Reset(x);
-    ok = (*me_iter)->EvaluateForce();
-  }
+    ok = (ok ? (*me_iter)->EvaluateInitialForce() : false);
 
   // ---------------------------------------------------------------------------
   // put everything together
@@ -167,15 +168,24 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x,
 
   return ok;
 
-
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x)
+void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x) const
+{
+  // default ResetStates call
+  ResetStates(x,true);
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate) const
 {
   Vector::iterator me_iter;
-  int_ptr_->SetState(x);
+  if(setstate)
+    int_ptr_->SetState(x);
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     (*me_iter)->Reset(x);
   return;
@@ -194,17 +204,18 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f,
   f.PutScalar(0.0);
   // update the state variables of the current time integrator
   int_ptr_->SetState(x);
+
+  // ---------------------------------------------------------------------------
+  // reset model specific variables
+  // ---------------------------------------------------------------------------
+  ResetStates(x);
+
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-  {
     // if one model evaluator failed, skip the remaining ones and return false
-    if (not ok) break;
-
-    (*me_iter)->Reset(x);
-    ok = (*me_iter)->EvaluateForce();
-  }
+    ok = (ok ? (*me_iter)->EvaluateForce() : false);
 
   // ---------------------------------------------------------------------------
   // put everything together
@@ -228,17 +239,18 @@ bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
   jac.Zero();
   // update the state variables of the current time integrator
   int_ptr_->SetState(x);
+
+  // ---------------------------------------------------------------------------
+  // reset model specific variables
+  // ---------------------------------------------------------------------------
+  ResetStates(x);
+
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-  {
     // if one model evaluator failed, skip the remaining ones and return false
-    if (not ok) break;
-
-    (*me_iter)->Reset(x);
-    ok = (*me_iter)->EvaluateStiff();
-  }
+    ok = (ok ? (*me_iter)->EvaluateStiff() : false);
 
   // ---------------------------------------------------------------------------
   // put everything together
@@ -294,17 +306,18 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
   jac.Zero();
   // update the state variables of the current time integrator
   int_ptr_->SetState(x);
+
+  // ---------------------------------------------------------------------------
+  // reset model specific variables
+  // ---------------------------------------------------------------------------
+  ResetStates(x);
+
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-  {
     // if one model evaluator failed, skip the remaining ones and return false
-    if (not ok) break;
-
-    (*me_iter)->Reset(x);
-    ok = (*me_iter)->EvaluateForceStiff();
-  }
+    ok = (ok ? (*me_iter)->EvaluateForceStiff() : false);
 
   // ---------------------------------------------------------------------------
   // put everything together
@@ -469,6 +482,16 @@ void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter)
   Vector::const_iterator me_iter;
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     (*me_iter)->OutputStepState(iowriter);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::PostOutput()
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->PostOutput();
 }
 
 /*----------------------------------------------------------------------------*

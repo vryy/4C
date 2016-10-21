@@ -730,6 +730,16 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::PostOutput()
+{
+  CheckInitSetup();
+ // empty
+
+  return;
+} // PostOutput()
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::PrintBanner() const
 {
   if (GState().GetMyRank()!=0)
@@ -928,4 +938,3 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
   }
   return;
 }
-

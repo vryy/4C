@@ -373,12 +373,6 @@ namespace STR
       Teuchos::RCP<Epetra_Vector>& disi //!< residual displacement vector
     );
 
-    //! Check residual displacement and scale it if necessary
-    void LimitStepsizeBeam
-    (
-      Teuchos::RCP<Epetra_Vector>& disi //!< residual displacement vector
-    );
-
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void ApplyForceStiffSpringDashpot
     (

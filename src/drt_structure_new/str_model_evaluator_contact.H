@@ -110,6 +110,9 @@ namespace MODELEVALUATOR {
 
     //! [derived]
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+
+    //! [derived]
+    virtual void PostOutput();
     //! @}
 
     //! @name Accessors

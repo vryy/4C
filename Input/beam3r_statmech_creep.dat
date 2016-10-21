@@ -61,7 +61,7 @@ THETA                           1 //header_01 end
 -------------------------------------------------------STATISTICAL MECHANICS
 //====                          GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH                     uniform
-FRICTION_MODEL                  anisotropicconsistent   // isotropicconsistent isotropiclumped
+FRICTIONMODEL                  anisotropicconsistent   // isotropicconsistent isotropiclumped
 DBCTYPE                         movablesupport1d        // none shearfixed sheartrans pinnodes, choose DBC type
 NBCTYPE                         constcreep              // Neumann boundary condition type
 CHECKORIENT                     Yes                     // check orientation betw. two filaments before linking them
@@ -71,9 +71,9 @@ INITIALSEED                     1                       // manipulate initial se
 GMSHOUTPUT                      No                      // visualization via Gmsh
 GMSHNETSTRUCT                   No                      // visualize structure detection
 PlotFactorThick                 0                       // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT                  none                    // densitydensitycorr viscoelasticity
-GMSHOUTINTERVALS                1                       // gmsh output interval
-OUTPUTINTERVALS                 1                       // specialoutput interval
+SPECIALOUTPUT                  none                    // densitydensitycorr viscoelasticity
+GMSHOUTINTERVAL                1                       // gmsh output interval
+OUTPUTINTERVAL                 1                       // specialoutput interval
 //==============EVENT TRIGGERS =============
 ACTIONTIME                      0.0 0.0 0.0             // start actions equilibration time, kt switch time,...,STARTTIMEACT
 ACTIONDT                        0.01 0.01 0.01          // time step sizes corresponding to ACTIONTIME
@@ -100,15 +100,15 @@ NBCCURVENUMBER                  2                       // Neumann boundary cond
 //==============FILAMENT MODEL =============
 FILAMENTMODEL                   std
 NUM_EVAL_ELEMENTS               32                      // number of (initial) beam elements
-RISEPERBSPOT                    0.00277                 // rise per monomer in the actin helix
-ROTPERBSPOT                     -2.8999                 // rotation per monomer in the actin helix
-BSPOTOFFSET                     -1.5707963              // angular offset of binding spots per filament with respect to the nodes' material IT 1.0 IR1 1.0 IR2 1.0 TRIADS
-PHIBSPOT                        0.5234                  // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
-BSPOTINTERVAL                   1                       // every n-th binding spot is available for binding
+RISEPERBINSPOT                    0.00277                 // rise per monomer in the actin helix
+ROTPERBINSPOT                     -2.8999                 // rotation per monomer in the actin helix
+BINSPOTOFFSET                     -1.5707963              // angular offset of binding spots per filament with respect to the nodes' material IT 1.0 IR1 1.0 IR2 1.0 TRIADS
+PHIBINSPOT                        0.5234                  // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
+BINSPOTINTERVAL                   1                       // every n-th binding spot is available for binding
 //============CROSSLINKER MODEL ============
 LINKERMODEL                     std
-N_crosslink                     6                       // number of crosslinkers in the simulated volume
-INITOCCUPIEDBSPOTS              0                       // number of crosslinker elements set up before the first time step
+NUMCROSSLINK                     6                       // number of crosslinkers in the simulated volume
+INITOCCUPIEDBINSPOTS              0                       // number of crosslinker elements set up before the first time step
 R_LINK                          0.1                     // distance between the two binding domains of a linker
 DeltaR_LINK                     0.02                    // deviation from r_link
 ALINK                           4.751658e-06            // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
@@ -116,8 +116,8 @@ ILINK                           4.4918e-11              // ilink=0 ->Stab!
 IPLINK                          8.9836e-11              // 2xilink
 ELINK                           2560000                 // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
 CORIENT                         0                       // stiffness of the potential which determines probability of a certain crosslinker orientation
-PHI0                            0                       // preferred binding angle betw. two filaments
-PHI0DEV                         0.392699081698724       // deviation from phi0
+PHIZERO                            0                       // preferred binding angle betw. two filaments
+PHIZERODEV                         0.392699081698724       // deviation from phi0
 REDUCECROSSLINKSBY              0                       // reduce the linker number by this number at starttimeact_
 //==============PTC parameters =============
 CTRANSPTC0                      0                       // translational PTC damping

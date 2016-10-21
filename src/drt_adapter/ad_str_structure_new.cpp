@@ -23,7 +23,6 @@
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
-#include "ad_str_statmech.H"
 #include "ad_str_invana.H"
 
 #include "../drt_structure/strtimada_create.H"
@@ -119,7 +118,6 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
-  case INPAR::STR::dyna_statmech :
     SetupTimInt();  // <-- here is the show
     break;
   default :
@@ -349,7 +347,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   actdis_->GetCondition("Mortar", mtcond);
   if (mtcond.size())
     modeltypes.insert(INPAR::STR::model_meshtying);
-  // ---------------------------------------------------------------------------
+
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
   std::vector<DRT::Condition*> cardiovasc0dcond_windkesselonly(0);
@@ -364,6 +362,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       cardiovasc0dcond_arterialproxdist.size() or
       cardiovasc0dcond_arterialvenoussyspulcoupled.size())
     modeltypes.insert(INPAR::STR::model_cardiovascular0d);
+
   // ---------------------------------------------------------------------------
   // check for constraint conditions
   // ---------------------------------------------------------------------------
@@ -406,6 +405,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
     modeltypes.insert(INPAR::STR::model_lag_pen_constraint);
+
   // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
@@ -471,6 +471,18 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
 
   if (strategy != INPAR::BEAMCONTACT::bstr_none or beampotconditions.size())
     modeltypes.insert(INPAR::STR::model_beam_interaction);
+
+  // ---------------------------------------------------------------------------
+  // check for brownian dynamics
+  // ---------------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB"))
+    modeltypes.insert(INPAR::STR::model_browniandyn);
+
+  // ---------------------------------------------------------------------------
+  // check for crosslinking in biopolymer networks
+  // ---------------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "CROSSLINKER"))
+    modeltypes.insert(INPAR::STR::model_crosslinking);
 
   // hopefully we haven't forgotten anything
   return;
@@ -739,7 +751,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
   switch (probtype)
   {
     case prb_structure: // pure structural time adaptivity
-    case prb_statmech:
     case prb_crack:
     {
       str_wrapper_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, ti_strategy));
@@ -865,9 +876,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
     }
     case prb_struct_ale:
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy));
-      break;
-    case prb_statmech:
-      str_wrapper_ = (Teuchos::rcp(new StructureStatMech(ti_strategy)));
       break;
     case prb_invana:
       str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));

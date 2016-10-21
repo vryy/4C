@@ -22,6 +22,7 @@
 #include "binning_strategy.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_inpar/inpar_binstrategy.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -114,8 +115,13 @@ namespace PARTICLE
     virtual LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
 
     /// particles are checked whether they have moved out of their current bin
+    /// and transferred if necessary, update states and do ghosting if needed
+    virtual void TransferParticles(const bool updatestates,
+                                   const bool ghosting = true);
+
+    /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual void TransferParticles(const bool updatestates, const bool ghosting = true);
+    virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp);
 
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringParticlesAndWalls(
@@ -139,6 +145,66 @@ namespace PARTICLE
 
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
+
+    /// get neighbouring bin gids
+    void GetNeighbouringBinGids(
+      const int currbinId,
+      std::vector<int>& binIds
+      );
+
+    /// get particles and wall elements in given bins
+    void GetBinContent(
+      std::set<DRT::Element*>        &eles,
+      INPAR::BINSTRATEGY::BinContent bincontent,
+      std::vector<int>&              binIds,
+      bool                           roweles = false
+      );
+
+    /// node is placed into the correct row bin or put into the set of homeless particles
+    virtual bool PlaceNodeCorrectly(
+      Teuchos::RCP<DRT::Node> node,  ///< node to be placed
+      const double* currpos,  ///< current position of this node
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
+      );
+
+    /// round robin loop to fill particles into its correct bin on according proc
+    virtual void FillParticlesIntoBinsRoundRobin(
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
+      );
+
+    /// bins are distributed to the processors
+    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
+
+    /// setup ghosting of bins and particles
+    virtual void SetupGhosting(
+      Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
+      );
+
+    /// build bin colume map
+    virtual void BuildBinColMap(
+        Teuchos::RCP<Epetra_Map>      newrowbins,
+        std::map<int, std::set<int> > exteletobinmap  ///< extended map of bins
+      );
+
+    /// extend ghosting according to bin distribution
+    virtual void ExtendBinGhosting(
+        Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<Epetra_Map>          rowbins,
+        Teuchos::RCP<Epetra_Vector>       disnp,
+        std::map<int, std::set<int> >&    extbintoelemap,
+        bool                              particle_ghosting,
+        bool                              eleghosting
+        );
+
+    /// extended ghosting of bins and particles and eles of other discret
+    virtual Teuchos::RCP<Epetra_Map> ExtendPartAndEleGhosting(
+      const Epetra_Map*              initial_elecolmap,
+      std::map<int, std::set<int> >& binelemap,
+      std::map<int, std::set<int> >& ext_bintoele_ghosting,
+      Teuchos::RCP<Epetra_Map>       rowbins,
+      bool                           particle_ghosting,
+      bool                           eleghosting
+      );
 
   protected:
 
@@ -166,9 +232,6 @@ namespace PARTICLE
     /// update state vectors which do not live in the time integrator to new layout
     virtual void UpdateStates(){};
 
-    /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
-
     // bins are redistributed according to the current fill level with particles
     virtual void DynamicLoadBalancing();
 
@@ -178,26 +241,9 @@ namespace PARTICLE
     /// rough safety check for proper bin size
     virtual void BinSizeSafetyCheck(const double dt);
 
-    /// round robin loop to fill particles into its correct bin on according proc
-    virtual void FillParticlesIntoBinsRoundRobin(
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
-      );
-
     /// fill particles into their correct bin on according proc
     virtual void FillParticlesIntoBinsRemoteIdList(
       std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles   ///< set of homeless particles
-      );
-
-    /// node is placed into the correct row bin or put into the set of homeless particles
-    virtual bool PlaceNodeCorrectly(
-      Teuchos::RCP<DRT::Node> node,  ///< node to be placed
-      const double* currpos,  ///< current position of this node
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
-      );
-
-    /// setup ghosting of bins and particles
-    virtual void SetupGhosting(
-      Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
       );
 
     /// particle walls are set up and assigned to bins
@@ -279,6 +325,8 @@ namespace PARTICLE
     const MAT::PAR::ParticleMat* particleMat_;  ///< pointer to the extParticleMat material
 
     const MAT::PAR::ExtParticleMat* extParticleMat_;  ///< pointer to the extParticleMat material
+
+    INPAR::BINSTRATEGY::BinContent bin_surfcontent_;
 
     //@}
 

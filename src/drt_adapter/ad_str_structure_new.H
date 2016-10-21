@@ -195,11 +195,13 @@ namespace ADAPTER {
     int NumStep() const
     { return GetStepEnd(); }
 
+    /// Sets number of time steps (in case of time adaptivity)
+    virtual void SetStepEnd(int step_end) = 0;
+
     /// Take the time and integrate (time loop)
     /// \date 11/08
     virtual int Integrate() = 0;
 
-    /// do something in case nonlinear solution does not converge for some reason
     /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is only called in STR::TIMINT::Implicit::Solve()
     /// and not on the structure in the adapter time loop
     INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) {dserror("You should not be here"); return nonlinsoldiv;};
@@ -463,12 +465,6 @@ namespace ADAPTER {
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
-
-    /// return statmech manager
-    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() = 0;
-
-    //! return statmech managerbilayer
-    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer() = 0;
 
     ///@}
 

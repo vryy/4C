@@ -54,6 +54,7 @@ namespace INPAR
       m_cnst_art,                              ///< 1D_Artery constant material properties
       m_compogden,                             ///< compressible Ogden material (with shell8)
       m_constraintmixture,                     ///< growth and remodeling of arteries
+      m_crosslinkermat,                        ///< material for crosslinker in biopolymer networks
       m_elasthyper,                            ///< collection of hyperelastic materials
       m_elchmat,                               ///< material for porous separators
       m_elchphase,                             ///< material for porous phase inside porous separator

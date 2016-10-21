@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_create.cpp
+
 \brief Creation of structural time integrators in accordance with user's wishes
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-*/
+\maintainer Alexander Popp
 
+\level 1
+*/
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <ctime>
@@ -28,7 +25,6 @@ Maintainer: Alexander Popp
 #include "strtimint_expleuler.H"
 #include "strtimint_centrdiff.H"
 #include "strtimint_ab2.H"
-#include "strtimint_statmech.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -125,14 +121,6 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(timeparams, ioflags, sdyn, xparams,
                                              actdis, solver, contactsolver, output));
-      break;
-    }
-
-    // Statistical Mechanics Time Integration
-    case INPAR::STR::dyna_statmech :
-    {
-      sti = Teuchos::rcp(new STR::TimIntStatMech(ioflags, sdyn, xparams,
-                                                 actdis, solver, contactsolver, output));
       break;
     }
 

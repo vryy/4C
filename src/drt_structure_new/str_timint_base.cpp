@@ -91,7 +91,7 @@ void STR::TIMINT::Base::Setup()
   // ---------------------------------------------------------------------------
   // Create the Dirichlet Boundary Condition handler
   // ---------------------------------------------------------------------------
-  dbc_ptr_ = Teuchos::rcp(new STR::Dbc());
+  dbc_ptr_ = STR::BuildDbc(DataSDyn());
   /* FixMe It would be sufficient to use a constant discretization,
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
@@ -332,6 +332,7 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
   OutputStep(forced_writerestart);
   // write Gmsh output
   writeGmshStrucOutputStep();
+  int_ptr_->PostOutput();
 }
 
 /*----------------------------------------------------------------------------*

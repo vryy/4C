@@ -16,6 +16,7 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_levelset/levelset_algorithm.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_inpar/inpar_binstrategy.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -51,6 +52,7 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
   Teuchos::RCP<Teuchos::ParameterList> params
   ) : PARTICLE::Algorithm(scatra->Discretization()->Comm(),*params),
+  bin_volcontent_(INPAR::BINSTRATEGY::Volume),
   scatra_(scatra),
   scatradis_(scatra->Discretization()),
   params_(params),
@@ -79,13 +81,13 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   if (restarted)
   {
     // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
-    particledis_->FillComplete(false,false,false);
+    bindis_->FillComplete(false,false,false);
 
     std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
-    Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
+    Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
     for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
     {
-      DRT::Node* node = particledis_->gNode(particlerowmap->GID(lid));
+      DRT::Node* node = bindis_->gNode(particlerowmap->GID(lid));
       const double* currpos = node->X();
       PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
     }
@@ -93,18 +95,18 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
     // start round robin loop to fill particles into their correct bins
     FillParticlesIntoBinsRoundRobin(homelessparticles);
 
-    particledis_->FillComplete(true, false, true);
+    bindis_->FillComplete(true, false, true);
     return;
   }
 
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
-  particledis_->FillComplete(false,false,false);
+  bindis_->FillComplete(false,false,false);
   // extract noderowmap because it will be called Reset() after adding elements
-  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
   CreateBins(scatradis_);
 
   // setup pbcs after bins have been created
-  BuildParticlePeriodicBC();
+  BuildPeriodicBC();
 
   // gather all scatra col eles in each bin for proper extended ghosting
   std::map<int, std::set<int> > scatraelesinbins;
@@ -116,7 +118,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
-    DRT::Node* node = particledis_->gNode(particlerowmap->GID(lid));
+    DRT::Node* node = bindis_->gNode(particlerowmap->GID(lid));
     const double* currpos = node->X();
     PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
   }
@@ -130,7 +132,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   // some output
   if (myrank_ == 0)
     IO::cout << "after ghosting" << IO::endl;
-  DRT::UTILS::PrintParallelDistribution(*particledis_);
+  DRT::UTILS::PrintParallelDistribution(*bindis_);
   DRT::UTILS::PrintParallelDistribution(*scatradis_);
 
   // -------------------------------------------------------------------
@@ -148,7 +150,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   else
     timintpara.set<int>("RESULTSEVRY",params_->get<int>("RESULTSEVRY"));
   Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(timintpara, particledis_));
+      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(timintpara, bindis_));
   particles_ = particles->ParticleField();
   // set particle algorithm into time integration
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
@@ -162,7 +164,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
 
   // get characteristic element length of scatra discretization
   // assumed equal to bin edge length
-//  std::cout << "number of bins " << particledis_->NumMyRowElements() << std::endl;
+//  std::cout << "number of bins " << bindis_->NumMyRowElements() << std::endl;
 //  std::cout << bin_size_[0] << "  " << bin_size_[1] << "  " << bin_size_[2] << std::endl;
 //  if (std::abs(bin_size_[0]-bin_size_[1]) > 10e-9 or std::abs(bin_size_[0]-bin_size_[2]) > 10e-9)
 //    dserror("Cubic bins expected");
@@ -273,14 +275,14 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   LINALG::Export(*row_phinp,*phinp);
 
   // loop all row bins on this proc
-  for (int ibin = 0; ibin < particledis_->NumMyRowElements(); ibin++)
+  for (int ibin = 0; ibin < bindis_->NumMyRowElements(); ibin++)
   {
     // get pointer to current bin
-    DRT::Element* actele = particledis_->lRowElement(ibin);
+    DRT::Element* actele = bindis_->lRowElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
-    DRT::Element** scatraelesinbin = actbin->AssociatedFluidEles();
+    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_volcontent_);
     // check for null-pointer in case of holes in the domain
     if (scatraelesinbin == NULL)
       continue;
@@ -292,7 +294,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     bool next_bin = false;
 
     // loop all elements in bin
-    for(int iele = 0; iele < actbin->NumAssociatedFluidEle(); iele++)
+    for(int iele = 0; iele < actbin->NumAssociatedEle(bin_volcontent_); iele++)
     {
       DRT::Element* scatraele = scatraelesinbin[iele];
       if (scatraele->Shape() != DRT::Element::hex8)
@@ -446,19 +448,19 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   // -------------------------------------------------------------------
 
   // initialize particle id with largest particle id in use + 1 (on each proc)
-  int maxparticleid = particledis_->NodeRowMap()->MaxAllGID();
+  int maxparticleid = bindis_->NodeRowMap()->MaxAllGID();
   int currentparticleid = maxparticleid;
 
   // compute local offset for global id numbering
   int myoffset = 0;
 
   // communicate number of bins of each proc to all procs
-  const int numproc = particledis_->Comm().NumProc();
+  const int numproc = bindis_->Comm().NumProc();
 
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     int numbins = particlebins.size();
-    particledis_->Comm().Broadcast(&numbins, 1, iproc);
+    bindis_->Comm().Broadcast(&numbins, 1, iproc);
     if (myrank_>iproc)
      myoffset += numbins;
   }
@@ -467,7 +469,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   // some output
   int mynumbins = particlebins.size();
   int allnumbins = 0;
-  particledis_->Comm().SumAll(&mynumbins,&allnumbins,1);
+  bindis_->Comm().SumAll(&mynumbins,&allnumbins,1);
   if (myrank_ == 0)
     std::cout << "--- total number of expected particles  "<< (2 * num_particles_per_bin_ * allnumbins) << std::endl;
 
@@ -561,7 +563,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   }
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  particledis_->FillComplete(true, false, true);
+  bindis_->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
@@ -576,17 +578,17 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   Teuchos::RCP<Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
 
   // get maps
-  const Epetra_Map* dofrowmap = particledis_->DofRowMap();
-  const Epetra_Map* noderowmap = particledis_->NodeRowMap();
+  const Epetra_Map* dofrowmap = bindis_->DofRowMap();
+  const Epetra_Map* noderowmap = bindis_->NodeRowMap();
 
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get global id of current particle
     const int gid = noderowmap->GID(inode);
 
-    DRT::Node* currparticle = particledis_->gNode(gid);
+    DRT::Node* currparticle = bindis_->gNode(gid);
     // get the first dof gid of a particle and convert it into a LID
-    int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+    int doflid = dofrowmap->LID(bindis_->Dof(currparticle, 0));
 
     // insert values into state vectors
     (*sign)[inode] = particle_sign[gid];
@@ -622,7 +624,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   Teuchos::RCP<Epetra_Vector> disn = Teuchos::rcp(new Epetra_Vector(*disnp));
 
   // loop all particles and initialize phi_target, phi_particle and gradphi_particle
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get sign of particle
     const double signP = (*sign)[inode];
@@ -656,9 +658,9 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // store values
     (*phi_particle)[inode] = current_phi_particle;
 
-    DRT::Node* currparticle = particledis_->gNode(gid);
+    DRT::Node* currparticle = bindis_->gNode(gid);
     // get the first dof gid of a particle and convert it into a LID
-    int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+    int doflid = dofrowmap->LID(bindis_->Dof(currparticle, 0));
     for (int idim=0; idim<3; ++idim)
       (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
 
@@ -671,7 +673,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   }
 
   // total (global) number of seeded particles
-  const int global_num_particles = particledis_->NumGlobalNodes();
+  const int global_num_particles = bindis_->NumGlobalNodes();
 
   // some output and checks
   if (myrank_ == 0)
@@ -708,27 +710,27 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     particles_->UpdateStatesAfterParticleTransfer();
     // likewise update present vectors according to the new distribution of particles
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // check new position
@@ -740,16 +742,16 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // get new maps
-      const Epetra_Map* att_dofrowmap = particledis_->DofRowMap();
-      const Epetra_Map* att_noderowmap = particledis_->NodeRowMap();
+      const Epetra_Map* att_dofrowmap = bindis_->DofRowMap();
+      const Epetra_Map* att_noderowmap = bindis_->NodeRowMap();
 
       // get dof lid
       const int gid = att_noderowmap->GID(inode);
-      DRT::Node* currparticle = particledis_->gNode(gid);
-      int doflid = att_dofrowmap->LID(particledis_->Dof(currparticle, 0));
+      DRT::Node* currparticle = bindis_->gNode(gid);
+      int doflid = att_dofrowmap->LID(bindis_->Dof(currparticle, 0));
 
       if ((*lambda)[inode] > 0.0)
       {
@@ -847,27 +849,27 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // update state vectors
@@ -885,13 +887,13 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     std::vector<int> part_del;
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // particles with lambda != 0.0 will be deleted
       if ((*lambda)[inode] > (0.0+1.0e-8))
       {
         // get particle
-        DRT::Node *currparticle = particledis_->lRowNode(inode);
+        DRT::Node *currparticle = bindis_->lRowNode(inode);
         // store gid
         part_del.push_back(currparticle->Id());
       }
@@ -902,7 +904,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
 
     // transfer phi_particle, which will be used below to set the radius, to new map
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
   }
 
@@ -929,7 +931,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   radius = particles_->WriteAccessRadius();
   sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
 
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get phi and sign
     const double myphi = (*phi_particle)[inode];
@@ -1031,7 +1033,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
   std::map<int,std::set<int> > escaped_particles_list;
 
   // loop all particles
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get phi and gradient of particle at current particle position
     double phi_particle = 0.0;
@@ -1040,7 +1042,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
 
     // element coordinates of particle position in scatra element
     LINALG::Matrix<3,1> elecoord(true);
-    DRT::Element* scatraele = GetEleCoordinates(particledis_->NodeRowMap()->GID(inode),elecoord);
+    DRT::Element* scatraele = GetEleCoordinates(bindis_->NodeRowMap()->GID(inode),elecoord);
 
     // compute level-set value (false=no computation of gradient)
     GetLSValParticle(phi_particle,normal_particle,scatraele,elecoord,phinp,false);
@@ -1056,7 +1058,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
     {
       if (signP*phi_particle < 0.0)
         // add escaped particle
-        escaped_particles_list[scatraele->Id()].insert((particledis_->lRowNode(inode))->Id());
+        escaped_particles_list[scatraele->Id()].insert((bindis_->lRowNode(inode))->Id());
     }
     else if (escaped_ == INPAR::PARTICLE::full)
     {
@@ -1064,7 +1066,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
       const double radiusP = (*radius)[inode];
       if ((signP*phi_particle < 0.0) and (std::abs(phi_particle)>radiusP)) // phi_particle equal to distance to interface (at least approximately)
         // add escaped particle
-        escaped_particles_list[scatraele->Id()].insert((particledis_->lRowNode(inode))->Id());
+        escaped_particles_list[scatraele->Id()].insert((bindis_->lRowNode(inode))->Id());
     }
     else
       dserror("Unknown escape criterion!");
@@ -1104,13 +1106,13 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
   Teuchos::RCP<Epetra_Vector> corrected_phinp = Teuchos::rcp(new Epetra_Vector(*(scatradis_->DofRowMap()),true));
 
   // get sign, radius and position vector in col layout
-  Teuchos::RCP<Epetra_Vector> signcol = Teuchos::rcp(new Epetra_Vector(*(particledis_->NodeColMap()),true));
+  Teuchos::RCP<Epetra_Vector> signcol = Teuchos::rcp(new Epetra_Vector(*(bindis_->NodeColMap()),true));
   LINALG::Export(*(Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Sign()),*signcol);
 
-  Teuchos::RCP<Epetra_Vector> radiuscol = Teuchos::rcp(new Epetra_Vector(*(particledis_->NodeColMap()),true));
+  Teuchos::RCP<Epetra_Vector> radiuscol = Teuchos::rcp(new Epetra_Vector(*(bindis_->NodeColMap()),true));
   LINALG::Export(*(particles_->Radiusn()),*radiuscol);
 
-  Teuchos::RCP<Epetra_Vector> disnpcol = Teuchos::rcp(new Epetra_Vector(*(particledis_->DofColMap()),true));
+  Teuchos::RCP<Epetra_Vector> disnpcol = Teuchos::rcp(new Epetra_Vector(*(bindis_->DofColMap()),true));
   LINALG::Export(*(particles_->Dispnp()),*disnpcol);
 
 #if 0
@@ -1158,7 +1160,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           // get current particle id
           const int partgid = *ipart;
           // transfer to lid
-          const int partlid = particledis_->NodeColMap()->LID(partgid);
+          const int partlid = bindis_->NodeColMap()->LID(partgid);
           // get sign of particle
           const double actsignP = (*signcol)[partlid];
           // get radius of particle
@@ -1166,9 +1168,9 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
 
           // get position of particle
           LINALG::Matrix<3,1> actpositionP(true);
-          DRT::Node* currparticle = particledis_->gNode(partgid);
+          DRT::Node* currparticle = bindis_->gNode(partgid);
           // get the first dof gid of a particle and convert it into a LID
-          const int partdoflid = particledis_->DofColMap()->LID(particledis_->Dof(currparticle, 0));
+          const int partdoflid = bindis_->DofColMap()->LID(bindis_->Dof(currparticle, 0));
           for (int idim=0; idim<3; ++idim)
             actpositionP(idim,0) = (*disnpcol)[partdoflid+idim];
 
@@ -1272,7 +1274,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           // get current particle id
           const int partgid = *ipart;
           // transfer to lid
-          const int partlid = particledis_->NodeColMap()->LID(partgid);
+          const int partlid = bindis_->NodeColMap()->LID(partgid);
           // get sign of particle
           const double actsignP = (*signcol)[partlid];
           // get radius of particle
@@ -1280,9 +1282,9 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
 
           // get position of particle
           LINALG::Matrix<3,1> actpositionP(true);
-          DRT::Node* currparticle = particledis_->gNode(partgid);
+          DRT::Node* currparticle = bindis_->gNode(partgid);
           // get the first dof gid of a particle and convert it into a LID
-          const int partdoflid = particledis_->DofColMap()->LID(particledis_->Dof(currparticle, 0));
+          const int partdoflid = bindis_->DofColMap()->LID(bindis_->Dof(currparticle, 0));
           for (int idim=0; idim<3; ++idim)
             actpositionP(idim,0) = (*disnpcol)[partdoflid+idim];
 
@@ -1363,7 +1365,7 @@ void PARTICLE::ScatraParticleCoupling::AdjustParticleRadii()
   Teuchos::RCP<const Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->Sign();
 
   // loop all particles
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get phi of particle at current particle position
     double myphi = 0.0;
@@ -1372,7 +1374,7 @@ void PARTICLE::ScatraParticleCoupling::AdjustParticleRadii()
 
     // element coordinates of particle position in scatra element
     LINALG::Matrix<3,1> elecoord(true);
-    DRT::Element* scatraele = GetEleCoordinates(particledis_->NodeRowMap()->GID(inode),elecoord);
+    DRT::Element* scatraele = GetEleCoordinates(bindis_->NodeRowMap()->GID(inode),elecoord);
 
     // compute level-set value (false=no computation of gradient)
     GetLSValParticle(myphi,normal_particle,scatraele,elecoord,phinp,false);
@@ -1442,7 +1444,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   // -------------------------------------------------------------------
 
   // get node row map
-  const Epetra_Map* noderowmap = particledis_->NodeRowMap();
+  const Epetra_Map* noderowmap = bindis_->NodeRowMap();
   // get sign and radius vector
   Teuchos::RCP<Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
   Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadiusn();
@@ -1464,14 +1466,14 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   LINALG::Export(*row_phinp,*phinp);
 
   // loop all row bins on this proc
-  for (int ibin = 0; ibin < particledis_->NumMyRowElements(); ibin++)
+  for (int ibin = 0; ibin < bindis_->NumMyRowElements(); ibin++)
   {
     // get pointer to current bin
-    DRT::Element* actele = particledis_->lRowElement(ibin);
+    DRT::Element* actele = bindis_->lRowElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
-    DRT::Element** scatraelesinbin = actbin->AssociatedFluidEles();
+    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_volcontent_);
     // check for null-pointer in case of holes in the domain
     if (scatraelesinbin == NULL)
       continue;
@@ -1520,7 +1522,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     bool found_ele = false;
 
     // search for underlying scatra element
-    for(int iele=0; iele<actbin->NumAssociatedFluidEle(); ++iele)
+    for(int iele=0; iele<actbin->NumAssociatedEle(bin_volcontent_); ++iele)
     {
       DRT::Element* scatraele = scatraelesinbin[iele];
       if (scatraele->Shape() != DRT::Element::hex8)
@@ -2055,10 +2057,10 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   // for problems with merging interfaces
   if (delete_more_>1.0)
   {
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // get gid
-      const int mygid = particledis_->NodeRowMap()->GID(inode);
+      const int mygid = bindis_->NodeRowMap()->GID(inode);
       // get phi of particle at current particle position
       double myphi = 0.0;
       // we do not need the gradient here, so this is just a dummy
@@ -2110,7 +2112,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   scatradis_->Comm().SumAll(&mydelpart,&alldelpart,1);
   if (myrank_ == 0)
   {
-    std::cout << "--- current number of particles " << particledis_->NumGlobalNodes() << std::endl;
+    std::cout << "--- current number of particles " << bindis_->NumGlobalNodes() << std::endl;
     std::cout << "--- number of particles to be deleted " << alldelpart << std::endl;
   }
 
@@ -2119,21 +2121,21 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
 
   // some output and checks
   if (myrank_ == 0)
-    std::cout << "--- current number of particles " << particledis_->NumGlobalNodes() << std::endl;
+    std::cout << "--- current number of particles " << bindis_->NumGlobalNodes() << std::endl;
 
   // -------------------------------------------------------------------
   //             seed new particles
   // -------------------------------------------------------------------
 
   // initialize particle id with largest particle id in use + 1 (on each proc)
-  int maxparticleid = particledis_->NodeRowMap()->MaxAllGID();
+  int maxparticleid = bindis_->NodeRowMap()->MaxAllGID();
   int currentparticleid = maxparticleid;
 
   // compute local offset for global id numbering
   int myoffset = 0;
 
   // communicate number of expected new particles of each proc to all procs
-  const int numproc = particledis_->Comm().NumProc();
+  const int numproc = bindis_->Comm().NumProc();
 
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
@@ -2144,7 +2146,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
 
     // std::cout << "myrank  " << myrank_ << "   numparts  " << numparts << std::endl;
 
-    particledis_->Comm().Broadcast(&numparts, 1, iproc);
+    bindis_->Comm().Broadcast(&numparts, 1, iproc);
     if (myrank_>iproc)
      myoffset += numparts;
   }
@@ -2235,7 +2237,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   }
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  particledis_->FillComplete(true, false, true);
+  bindis_->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
@@ -2252,9 +2254,9 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   radius = particles_->WriteAccessRadiusn();
 
   // get maps
-  const Epetra_Map* dofrowmap = particledis_->DofRowMap();
+  const Epetra_Map* dofrowmap = bindis_->DofRowMap();
   // update node row map due to FillCompleteCall
-  noderowmap = particledis_->NodeRowMap();
+  noderowmap = bindis_->NodeRowMap();
 
   // prepare also attraction
   // noderowmap-based vectors
@@ -2283,9 +2285,9 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     // get global id of current particle
     const int gid = it->first;
 
-    DRT::Node* currparticle = particledis_->gNode(gid);
+    DRT::Node* currparticle = bindis_->gNode(gid);
     // get the first dof gid of a particle and convert it into a LID
-    const int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+    const int doflid = dofrowmap->LID(bindis_->Dof(currparticle, 0));
     // get particle lid
     const int partlid = noderowmap->LID(gid);
 
@@ -2360,7 +2362,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   if (myrank_ == 0)
   {
     std::cout << "--- total number of reseeded particles  "<< global_num_particles << std::endl;
-    std::cout << "--- total number of particles  "<< particledis_->NumGlobalNodes() << std::endl;
+    std::cout << "--- total number of particles  "<< bindis_->NumGlobalNodes() << std::endl;
   }
 
 #if 0
@@ -2392,27 +2394,27 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     particles_->UpdateStatesAfterParticleTransfer();
     // likewise update present vectors according to the new distribution of particles
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // check new position
@@ -2424,16 +2426,16 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // get new maps
-      const Epetra_Map* att_dofrowmap = particledis_->DofRowMap();
-      const Epetra_Map* att_noderowmap = particledis_->NodeRowMap();
+      const Epetra_Map* att_dofrowmap = bindis_->DofRowMap();
+      const Epetra_Map* att_noderowmap = bindis_->NodeRowMap();
 
       // get dof lid
       const int gid = att_noderowmap->GID(inode);
-      DRT::Node* currparticle = particledis_->gNode(gid);
-      int doflid = att_dofrowmap->LID(particledis_->Dof(currparticle, 0));
+      DRT::Node* currparticle = bindis_->gNode(gid);
+      int doflid = att_dofrowmap->LID(bindis_->Dof(currparticle, 0));
 
       if ((*lambda)[inode] > 0.0)
       {
@@ -2531,27 +2533,27 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // update state vectors
@@ -2569,13 +2571,13 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     std::vector<int> part_del;
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // particles with lambda != 0.0 will be deleted
       if ((*lambda)[inode] > (0.0+1.0e-8))
       {
         // get particle
-        DRT::Node *currparticle = particledis_->lRowNode(inode);
+        DRT::Node *currparticle = bindis_->lRowNode(inode);
         // store gid
         part_del.push_back(currparticle->Id());
       }
@@ -2674,27 +2676,27 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     TransferParticles(true, false);
     // update present vectors according to the new distribution of particles
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // check new position
@@ -2706,16 +2708,16 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // get new maps
-      const Epetra_Map* att_dofrowmap = particledis_->DofRowMap();
-      const Epetra_Map* att_noderowmap = particledis_->NodeRowMap();
+      const Epetra_Map* att_dofrowmap = bindis_->DofRowMap();
+      const Epetra_Map* att_noderowmap = bindis_->NodeRowMap();
 
       // get dof lid
       const int gid = att_noderowmap->GID(inode);
-      DRT::Node* currparticle = particledis_->gNode(gid);
-      int doflid = att_dofrowmap->LID(particledis_->Dof(currparticle, 0));
+      DRT::Node* currparticle = bindis_->gNode(gid);
+      int doflid = att_dofrowmap->LID(bindis_->Dof(currparticle, 0));
 
       if ((*lambda)[inode] > 0.0)
       {
@@ -2814,27 +2816,27 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;
     old = lambda;
-    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    lambda = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);
 
     old = phi_target;
-    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_target = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_target);
 
     old = phi_particle;
-    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    phi_particle = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
 
     old = norm_gradphi_particle;
-    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    norm_gradphi_particle = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *norm_gradphi_particle);
 
     old = inc_dis;
-    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    inc_dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *inc_dis);
 
     old = disn;
-    disn = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    disn = LINALG::CreateVector(*bindis_->DofRowMap(),true);
     LINALG::Export(*old, *disn);
 
     // update state vectors
@@ -2852,13 +2854,13 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     std::vector<int> part_del;
 
     // loop all particles
-    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
     {
       // particles with lambda != 0.0 will be deleted
       if ((*lambda)[inode] > (0.0+1.0e-8))
       {
         // get particle
-        DRT::Node *currparticle = particledis_->lRowNode(inode);
+        DRT::Node *currparticle = bindis_->lRowNode(inode);
         // store gid
         part_del.push_back(currparticle->Id());
       }
@@ -2884,7 +2886,7 @@ void PARTICLE::ScatraParticleCoupling::DeleteParticles(
     // get gid
     const double gid = part_del[ipart];
     // get particle
-    DRT::Node *currparticle = particledis_->gNode(gid);
+    DRT::Node *currparticle = bindis_->gNode(gid);
     if(currparticle->NumElement() != 1)
       dserror("ERROR: A particle is assigned to more than one bin!");
     // get corresponding bin
@@ -2895,11 +2897,11 @@ void PARTICLE::ScatraParticleCoupling::DeleteParticles(
     dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
 
     // remove particle from discretization
-    particledis_->DeleteNode(gid);
+    bindis_->DeleteNode(gid);
   }
 
   // finish discretization
-  particledis_->FillComplete(true,false,false);
+  bindis_->FillComplete(true,false,false);
   // adapt state vectors to new maps
   particles_->UpdateStatesAfterParticleTransfer();
 
@@ -2917,12 +2919,12 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
   )
 {
   // get particle corresponding to lid
-  DRT::Node* currparticle = particledis_->gNode(particle_gid);
+  DRT::Node* currparticle = bindis_->gNode(particle_gid);
 
   Teuchos::RCP<const Epetra_Vector> particlepos = particles_->Dispnp();
   // fill particle position
   LINALG::Matrix<3,1> particleposition;
-  std::vector<int> lm_b = particledis_->Dof(currparticle);
+  std::vector<int> lm_b = bindis_->Dof(currparticle);
   int posx = particlepos->Map().LID(lm_b[0]);
   for (int idim=0; idim<3; ++idim)
     particleposition(idim,0) = (*particlepos)[posx+idim];
@@ -2941,8 +2943,8 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
   if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
   DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-  DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
-  int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_volcontent_);
+  int numscatraelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
 
   // search for underlying scatra element with standard search in case nothing was found
   for(int ele=0; ele<numscatraelesinbin; ++ele)
@@ -2979,12 +2981,12 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
   )
 {
   // get particle corresponding to lid
-  DRT::Node* currparticle = particledis_->gNode(particle_gid);
+  DRT::Node* currparticle = bindis_->gNode(particle_gid);
 
   Teuchos::RCP<const Epetra_Vector> particlepos = particles_->Dispnp();
   // fill particle position
   LINALG::Matrix<3,1> particleposition;
-  std::vector<int> lm_b = particledis_->Dof(currparticle);
+  std::vector<int> lm_b = bindis_->Dof(currparticle);
   int posx = particlepos->Map().LID(lm_b[0]);
   for (int idim=0; idim<3; ++idim)
     particleposition(idim,0) = (*particlepos)[posx+idim];
@@ -3018,8 +3020,8 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinatesFromPosition(
   DRT::Element* targetscatraele = NULL;
   elecoord.Clear();
 
-  DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
-  int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_volcontent_);
+  int numscatraelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
 
   // search for underlying scatra element with standard search in case nothing was found
   for(int ele=0; ele<numscatraelesinbin; ++ele)
@@ -3192,15 +3194,15 @@ void PARTICLE::ScatraParticleCoupling::GetVelParticle(
 Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::GetVelocity(const double theta)
 {
   // inialize vector for particle velocities to be filled
-  const Epetra_Map* dofrowmap = particledis_->DofRowMap();
-  const Epetra_Map* noderowmap = particledis_->NodeRowMap();
+  const Epetra_Map* dofrowmap = bindis_->DofRowMap();
+  const Epetra_Map* noderowmap = bindis_->NodeRowMap();
   Teuchos::RCP< Epetra_Vector> vel = LINALG::CreateVector(*dofrowmap,true);
 
   // get velocity field from scatra
   const Teuchos::RCP< Epetra_Vector> lsvel = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(scatra_)->ConVelTheta(theta);
 
   // loop all particles
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get global id of current particle
     const int gid = noderowmap->GID(inode);
@@ -3217,9 +3219,9 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::GetVelocity(const 
     LINALG::Matrix<3,1> vel_particle(true);
     GetVelParticle(vel_particle,scatraele,elecoord,lsvel);
 
-    DRT::Node* currparticle = particledis_->gNode(gid);
+    DRT::Node* currparticle = bindis_->gNode(gid);
     // get the first dof gid of a particle and convert it into a LID
-    int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+    int doflid = dofrowmap->LID(bindis_->Dof(currparticle, 0));
     for (int idim=0; idim<3; ++idim)
       (*vel)[doflid+idim] = vel_particle(idim,0);
   }
@@ -3238,7 +3240,7 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
   //--------------------------------------------------------------------
 
   // Note: IndependentDofSet is used; new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
-  particledis_->FillComplete(true, false, true);
+  bindis_->FillComplete(true, false, true);
 
   // set bin row map to be equal to bin col map because we do not have ghosting
   bincolmap_ = binrowmap;
@@ -3310,11 +3312,11 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
   {
     for(std::map<int, std::set<int> >::const_iterator biniter=extendedscatraghosting.begin(); biniter!=extendedscatraghosting.end(); ++biniter)
     {
-      DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(biniter->first));
+      DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->gElement(biniter->first));
       for(std::set<int>::const_iterator scatraeleiter=biniter->second.begin(); scatraeleiter!=biniter->second.end(); ++scatraeleiter)
       {
         int scatraeleid = *scatraeleiter;
-        currbin->AddAssociatedFluidEle(scatraeleid, scatradis_->gElement(scatraeleid));
+        currbin->AddAssociatedEle(bin_volcontent_,scatraeleid, scatradis_->gElement(scatraeleid));
 //          cout << "in bin with id:" << currbin->Id() << " is fluid ele with id" << fluideleid << "with pointer" << fluiddis_->gElement(fluideleid) << endl;
       }
     }
@@ -3330,20 +3332,20 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
 void PARTICLE::ScatraParticleCoupling::BuildElementToBinPointers()
 {
   // loop over column bins and fill scatra elements
-  const int numcolbin = particledis_->NumMyColElements();
+  const int numcolbin = bindis_->NumMyColElements();
   for (int ibin=0; ibin<numcolbin; ++ibin)
   {
-    DRT::Element* actele = particledis_->lColElement(ibin);
+    DRT::Element* actele = bindis_->lColElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-    const int numfluidele = actbin->NumAssociatedFluidEle();
-    const int* fluideleids = actbin->AssociatedFluidEleIds();
+    const int numfluidele = actbin->NumAssociatedEle(bin_volcontent_);
+    const int* fluideleids = actbin->AssociatedEleIds(bin_volcontent_);
     std::vector<DRT::Element*> fluidelements(numfluidele);
     for(int iele=0; iele<numfluidele; ++iele)
     {
       const int fluideleid = fluideleids[iele];
       fluidelements[iele] = scatradis_->gElement(fluideleid);
     }
-    actbin->BuildFluidElePointers(&fluidelements[0]);
+    actbin->BuildElePointers(bin_volcontent_,&fluidelements[0]);
   }
 
   return;
@@ -3413,10 +3415,10 @@ void PARTICLE::ScatraParticleCoupling::DeleteParticlesOutOfPhysicalDomain()
   std::vector<int> deleteparticles;
 
   // loop all particles
-  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  for (int inode=0; inode<bindis_->NumMyRowNodes(); inode++)
   {
     // get global id of current particle
-    const int gid = (particledis_->NodeRowMap())->GID(inode);
+    const int gid = (bindis_->NodeRowMap())->GID(inode);
 
     // element coordinates of particle position in scatra element
     LINALG::Matrix<3,1> elecoord(true);

@@ -85,7 +85,9 @@ namespace INPAR
       model_springdashpot,        ///< evaluate the springdashpot model
       model_lag_pen_constraint,   ///< evaluate the Lagrange or/and penalty enforced constraint models
       model_partitioned_coupling, ///< evaluate any partitioned coupling contributions
-      model_beam_interaction,   ///< evaluate the model for contact/potential/... interactions of beams
+      model_beam_interaction,     ///< evaluate the model for contact/potential/... interactions of beams
+      model_browniandyn,          ///< evaluate the brownian dynamics model
+      model_crosslinking,         ///< evaluate the crosslinking model
       model_vague                 ///< undefined model type
     };
 
@@ -120,6 +122,12 @@ namespace INPAR
         break;
       case model_beam_interaction :
         return "BeamInteraction";
+        break;
+      case model_browniandyn :
+        return "BrownianDyn";
+        break;
+      case model_crosslinking :
+        return "Crosslinking";
         break;
       default :
         dserror("Cannot make std::string for model type %d", name);
@@ -168,8 +176,7 @@ namespace INPAR
       dyna_centrdiff,                  ///< central differences (explicit)
       dyna_ab2,                        ///< Adams-Bashforth 2nd order (explicit)
       dyna_euma,                       ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto,                    ///< Euler implicit scheme for SDE's (stochastic, implicit)
-      dyna_statmech                    ///< Statistical Mechanics Time Integration
+      dyna_euimsto                     ///< Euler implicit scheme for SDE's (stochastic, implicit)
     };
 
     /// Map time integrator to std::string
@@ -203,9 +210,6 @@ namespace INPAR
         break;
       case dyna_ab2 :
         return "AdamsBashforth2" ;
-        break;
-      case dyna_statmech :
-        return "StatMech" ;
         break;
       default :
         dserror("Cannot make std::string for time integrator %d", name);

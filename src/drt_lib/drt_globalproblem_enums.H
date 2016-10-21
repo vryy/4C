@@ -71,7 +71,6 @@ typedef enum _PROBLEM_TYP
   prb_scatra,               // scalar transport problem (e.g. convection-diffusion)
   prb_scatra_endoexocytosis,// biochemical transport problem (e.g. convection-diffusion) for endo-/and exocytosis
   prb_ssi,                  // scalar structure interaction
-  prb_statmech,             // structural problem
   prb_sti,                  // scalar-thermo interaction
   prb_struct_ale,           // structural problem, ale formulation
   prb_structure,            // structural problem

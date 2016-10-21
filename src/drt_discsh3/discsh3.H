@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------*/
+/*!
 \file discsh3.H
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\brief discsh3 element
 
-*----------------------------------------------------------------------*/
+\maintainer Dhrubajyoti Mukherjee
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 //header file only included if not yet included!
 #ifndef DISCSH3_H
 #define DISCSH3_H

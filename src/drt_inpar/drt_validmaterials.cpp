@@ -1496,6 +1496,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // material for a crosslinker in a biopolymer simulation
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Crosslinker",
+                                            "material or a linker in a biopolymer network",
+                                            INPAR::MAT::m_crosslinkermat));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe
   {
     Teuchos::RCP<MaterialDefinition> m

@@ -24,6 +24,9 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+
 /* number of linear subsegments used for visualization of beam centerline
  * in vtu format (see post_drt_vtu_writer.cpp) */
 #define BEAMSVTUVISUALSUBSEGMENTS 10
@@ -34,6 +37,10 @@ namespace ELEMENTS {
   class ParamsInterface;
 } // namespace ELEMENTS
 } // namespace STR
+
+namespace STATMECH {
+  class ParamsInterface;
+}
 
 namespace DRT {
 namespace ELEMENTS {
@@ -72,6 +79,8 @@ public:
    *  \date 04/16 */
   virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
 
+  virtual void SetStatMechParamsInterfacePtr();
+
   /** \brief returns true if the parameter interface is defined and initialized, otherwise false
    *
    *  \author hiermeier
@@ -84,6 +93,10 @@ public:
    *  \author hiermeier
    *  \date 04/16 */
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+  virtual Teuchos::RCP<STATMECH::ParamsInterface> StatMechParamsInterfacePtr() const;
+
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  virtual int HowManyRandomNumbersINeed() {return 0;};
 
   /** \brief get access to the element reference length
    *        (i.e. arc-length in stress-free configuration)
@@ -160,44 +173,21 @@ public:
    *  \date 06/16 */
   virtual double GetJacobiFacAtXi(const double& xi) const = 0;
 
+  /** \brief Get number of degrees of freedom of a single node
+   *
+   *  \author eichinger
+   *  \date 08/16 */
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    dserror("not implemented");
+    return -1;
+  }
+
   /** \brief get centerline position at xi \in [-1,1] (element parameter space) in stress-free reference configuration
    *
    *  \author grill
    *  \date 06/16 */
-  inline void GetRefPosAtXi(LINALG::Matrix<3,1>& refpos, const double& xi) const
-  {
-    const int numclnodes = this->NumCenterlineNodes();
-    int numnodalvalues = 0;
-    this->HermiteCenterlineInterpolation() ? numnodalvalues = 2 : numnodalvalues=1;
-    std::vector<double> refdofval;
-    refdofval.reserve(3*numnodalvalues*numclnodes);
-    const DRT::Node* const* nodes = this->Nodes();
-
-    if (nodes[0]==NULL) dserror("Cannot get nodes of this element");
-
-    // centerline nodes are always the first numclnodes nodes of the element
-    for (int n=0; n<numclnodes; ++n)
-    {
-      std::vector<int> dofindices;
-
-      this->PositionDofIndices(dofindices, *(nodes[n]));
-
-      for (std::vector<int>::const_iterator it=dofindices.begin(); it!=dofindices.end(); ++it)
-        refdofval.push_back((nodes[n]->X())[*it]);
-
-      if (this->HermiteCenterlineInterpolation())
-      {
-        LINALG::Matrix<3,1> Tref_node;
-        this->GetRefTangentAtNode(Tref_node,n);
-        for (int d=0; d<3; ++d)
-          refdofval.push_back(Tref_node(d));
-      }
-    }
-
-    this->GetPosAtXi(refpos,xi,refdofval);
-
-    return;
-  }
+  void GetRefPosAtXi(LINALG::Matrix<3,1>& refpos, const double& xi) const;
 
   /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
    *
@@ -213,9 +203,24 @@ public:
    *
    *  \author grill
    *  \date 06/16 */
-  virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos, const double& xi, const std::vector<double>& disp_totlag) const
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos,
+                          const double& xi,
+                          const std::vector<double>& disp_totlag) const
   {
     // ToDo make pure virtual and add/generalize implementations in beam eles
+    dserror("not implemented");
+  }
+
+  /** \brief get triad at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 07/16 */
+  virtual void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
+                            const double&              xi,
+                            const std::vector<double>& psi_totlag) const
+  {
+    // ToDo make pure virtual and add/generalize implementations in beam eles
+    // so far only implemented for beam3r
     dserror("not implemented");
   }
 
@@ -227,13 +232,25 @@ protected:
   inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
   { if (not IsParamsInterface())
       dserror("The interface ptr is not set!");
-    return *interface_ptr_; }
+    return *interface_ptr_;
+  }
+
+  inline STATMECH::ParamsInterface& StatMechParamsInterface() const
+  {
+    return *sm_interface_ptr_;
+  }
+
+  //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+  virtual void UnShiftNodePosition(std::vector<double>& disp,
+                                   unsigned int nnode); //!<element disp vector
 
 private:
   /** \brief interface ptr
    *
    *  data exchange between the element and the time integrator. */
   Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+
+ Teuchos::RCP<STATMECH::ParamsInterface> sm_interface_ptr_;
 
   /*!
   \brief Default Constructor must not be called

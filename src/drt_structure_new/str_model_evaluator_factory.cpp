@@ -24,6 +24,8 @@
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_lagpenconstraint.H"
 #include "str_model_evaluator_beaminteraction.H"
+#include "str_model_evaluator_browniandyn.H"
+#include "str_model_evaluator_crosslinking.H"
 
 
 
@@ -56,6 +58,12 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         break;
       case INPAR::STR::model_springdashpot:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
+        break;
+      case INPAR::STR::model_browniandyn:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BrownianDyn());
+        break;
+      case INPAR::STR::model_crosslinking:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Crosslinking());
         break;
       case INPAR::STR::model_contact:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());

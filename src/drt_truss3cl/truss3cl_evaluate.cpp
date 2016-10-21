@@ -887,7 +887,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
   LINALG::Matrix<ndim,1> evaluationpoint;
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -985,7 +985,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
                                                       Epetra_SerialDenseVector&  fforce)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
 
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);

@@ -108,6 +108,9 @@ namespace MODELEVALUATOR{
     //! derived
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
 
+    //! [derived]
+    virtual void PostOutput();
+
   private:
     //! all spring dashpot instances
     std::vector<Teuchos::RCP<UTILS::SpringDashpotNew> > springs_;

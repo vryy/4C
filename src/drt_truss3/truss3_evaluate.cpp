@@ -1,12 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------------------
  \file truss3_evaluate.cpp
+
  \brief three dimensional total Lagrange truss element (can be connected to beam3 elements and adapts assembly automatically according to the thereby changed number of nodal degrees of freedom)
 
-
 \maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+
+\level 3
 
 
  *-----------------------------------------------------------------------------------------------------------*/
@@ -14,7 +13,6 @@
 #include "truss3.H"
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
-#include "../drt_statmech/statmech_manager.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
@@ -2510,7 +2508,7 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList
   LINALG::Matrix<ndim,1> evaluationpoint;
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
 
   //damping coefficients for translational and rotational degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -2611,7 +2609,7 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&   
                                                       Epetra_SerialDenseVector&  DummyForce)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
 
   //damping coefficients for three translational and one rotational degree of freedom
   LINALG::Matrix<3,1> gamma(true);

@@ -35,7 +35,6 @@
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
@@ -45,7 +44,6 @@
 #include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_statmech/statmech_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -63,9 +61,8 @@
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_discsh3/discsh3.H"
-
 #include "../drt_crack/crackUtils.H"
-
+#include "../drt_structure_new/str_timint_databiopolynetdyn.H"
 #include "../solver_nonlin/nln_operator_base.H"
 #include "../solver_nonlin/nln_operator_factory.H"
 #include "../solver_nonlin/nln_problem.H"
@@ -254,15 +251,6 @@ void STR::TimIntImpl::Setup()
   {
     dserror("Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
-  }
-
-  // Initiate Edge element for discrete shell elements
-  if(DRT::Problem::Instance()->ProblemType() == prb_statmech)
-  {
-    const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    INPAR::STATMECH::SimulationType simype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::SimulationType>(statmechparams,"SIMULATION_TYPE");
-    if (simype==INPAR::STATMECH::simulation_type_lipid_bilayer)
-      InitializeEdgeElements();
   }
 
   // setup tolerances and binary operators for convergence check of contact/meshtying problems
@@ -945,53 +933,7 @@ void STR::TimIntImpl::ApplyForceStiffInternal
   // *********** time measurement ***********
   double dtcpu = timer_->WallTime();
   // *********** time measurement ***********
-  if(HaveStatMechBilayer())
-  {
-    // get reference volume
-    params.set("action", "calc_struct_refvol");
-    Teuchos::RCP<Epetra_SerialDenseVector> vol_ref
-    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_->EvaluateScalars(params, vol_ref);
 
-    // get reference CG
-    params.set("action", "calc_struct_refCG");
-    Teuchos::RCP<Epetra_SerialDenseVector> CG_ref
-    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-    discret_->EvaluateScalars(params, CG_ref);
-
-    // get reference area
-    params.set("action", "calc_struct_refarea");
-    Teuchos::RCP<Epetra_SerialDenseVector> area_ref
-    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_->EvaluateScalars(params, area_ref);
-
-    // get current volume
-    discret_->SetState("displacement", disn_);
-    params.set("action", "calc_struct_currvol");
-    Teuchos::RCP<Epetra_SerialDenseVector> vol_curr
-    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_->EvaluateScalars(params, vol_curr);
-
-    // get current CG
-    params.set("action", "calc_struct_currCG");
-    Teuchos::RCP<Epetra_SerialDenseVector> CG_curr
-    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-    discret_->EvaluateScalars(params, CG_curr);
-
-    // get current area
-    params.set("action", "calc_struct_currarea");
-    Teuchos::RCP<Epetra_SerialDenseVector> area_curr
-    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_->EvaluateScalars(params, area_curr);
-    discret_->ClearState();
-
-    params.set("reference volume",double((*vol_ref)(0)));
-    params.set("current volume",double((*vol_curr)(0)));
-    params.set<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG", CG_ref);
-    params.set<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG", CG_curr);
-    params.set("reference area",double((*area_ref)(0)));
-    params.set("current area",double((*area_curr)(0)));
-   }
   // action for elements
   const std::string action = "calc_struct_nlnstiff";
   params.set("action", action);
@@ -1347,33 +1289,6 @@ void STR::TimIntImpl::LimitStepsizeBeamContact
         if(myrank_==0)
           std::cout << "      Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
 
-        disi->Scale(0.5);
-        disi->NormInf(&disi_infnorm);
-      }
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* Check residual displacement and limit it if necessary*/
-void STR::TimIntImpl::LimitStepsizeBeam (Teuchos::RCP<Epetra_Vector>& disi)
-{
-
-  Teuchos::ParameterList StatMechParams= statmechman_->GetStatMechParams();
-  double alink = StatMechParams.get<double>("ALINK", 4.751658e-06);
-  if(alink==0.0)
-  {
-    {
-      double disi_infnorm=0.0;
-      disi->NormInf(&disi_infnorm);
-      double minimal_radius = 0.00123;
-      double maxdisiscalefac = 1000;
-
-      while(disi_infnorm>maxdisiscalefac*minimal_radius)
-      {
-        std::cout << "Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
         disi->Scale(0.5);
         disi->NormInf(&disi_infnorm);
       }

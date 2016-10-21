@@ -318,6 +318,14 @@ void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::Integrator::PostOutput()
+{
+  CheckInitSetup();
+  ModelEval().PostOutput();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::Integrator::ResetStepState()
 {
   CheckInitSetup();

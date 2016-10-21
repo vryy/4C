@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------*/
+/*!
 \file discsh3_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\brief discsh3 element
 
-*----------------------------------------------------------------------*/
+\maintainer Dhrubajyoti Mukherjee
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "discsh3.H"
 #include "../drt_lib/drt_utils.H"
@@ -491,10 +491,10 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
   * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
   * the element does not attach this special vector to params the following method is just doing nothing, which means that for
   * any ordinary problem of structural mechanics it may be ignored*/
+
   // Get if normal dynamics problem or statmech problem
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
-    {
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB"))
+  {
       #ifdef INEXTENSIBLE
         dserror("INEXTENSIBLE formulation not possible for statmech so far. Adapt vector vel -> myvel like above!");
       #endif
@@ -749,7 +749,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingConstants(Teuchos::ParameterList& p
   gamma(0) = 16*params.get<double>("ETA",0.0); // Parallel to normal direction
   gamma(1) = 32/3*params.get<double>("ETA",0.0);   // Perpendicular to normal direction
 
-//  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropicconsistent || DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
+//  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropicconsistent || DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
 
 }
@@ -1578,7 +1578,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList&   param
   // Calculate surface area at reference config FAD
   CalcVolume(vol_ref, disp, true);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIAL_OUTPUT",INPAR::STATMECH::statout_none);
+  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
   if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
   {
     double time = params.get<double>("total time",0.0);
@@ -1643,7 +1643,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList&      
   double vol_ref=params.get<double>("reference volume",0.0);
   double vol_curr=params.get<double>("current volume",0.0);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIAL_OUTPUT",INPAR::STATMECH::statout_none);
+  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
   if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
   {
     double time = params.get<double>("total time",0.0);
@@ -1936,7 +1936,7 @@ void DRT::ELEMENTS::DiscSh3::CalcBehaviorFunctVol(Teuchos::ParameterList&   para
   // Calculate volume at reference config FAD
   CalcVolume(vol_ref, disp, true);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIAL_OUTPUT",INPAR::STATMECH::statout_none);
+  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
   if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
   {
     double time = params.get<double>("total time",0.0);

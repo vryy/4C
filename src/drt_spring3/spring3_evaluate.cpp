@@ -1,12 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------------------
  \file spring3_evaluate.cpp
+
  \brief three dimensional spring element (can be connected to beam3eb elements)
 
-
 \maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+
+\level 3
 
 
  *-----------------------------------------------------------------------------------------------------------*/
@@ -14,7 +13,6 @@
 #include "spring3.H"
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
-#include "../drt_statmech/statmech_manager.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"

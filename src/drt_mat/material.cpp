@@ -83,6 +83,7 @@
 #include "matlist_chemotaxis.H"
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
+#include "crosslinkermat.H"
 #include "optimization_density.H"
 #include "fluidporo.H"
 #include "fluidporo_singlephase.H"
@@ -111,6 +112,7 @@
 #include "activefiber.H"
 #include "biochemo_mechano_cell_activefiber.H"
 #include "superelastic_sma.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -814,6 +816,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ConstraintMixture(curmat));
     MAT::PAR::ConstraintMixture* params = static_cast<MAT::PAR::ConstraintMixture*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_crosslinkermat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::CrosslinkerMat(curmat));
+    MAT::PAR::CrosslinkerMat* params = static_cast<MAT::PAR::CrosslinkerMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_opti_dens:

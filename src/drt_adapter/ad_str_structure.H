@@ -63,12 +63,6 @@ namespace UTILS
   class Cardiovascular0DManager;
 }
 
-namespace STATMECH
-{
-  class StatMechManager;
-  class StatMechManagerBilayer;
-}
-
 namespace TIMINT
 {
   template <typename> class TimIntMStep;
@@ -523,12 +517,6 @@ namespace ADAPTER {
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
-
-    /// return statmech manager
-    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() = 0;
-
-    /// return statmech manager for lipid bilayer
-    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer() = 0;
 
   };
 

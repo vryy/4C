@@ -1,20 +1,22 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file drt_meshfree_multibin.H
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief element type class of meshfree multibin, creating the same
 
-*---------------------------------------------------------------------------*/
+\maintainer Georg Hammerl
+
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef DRT_MESHFREE_MESHFREEMULTIBIN_H
 #define DRT_MESHFREE_MESHFREEMULTIBIN_H
 
 #include "../drt_meshfree_discret/drt_meshfree_bin.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_inpar/inpar_binstrategy.H"
 
 namespace DRT
 {
@@ -172,149 +174,85 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return number of associated wall elements to this bin
+   * \brief Return number of associated  elements to this bin
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline int NumAssociatedWallEle() const { return associatedwalleleid_.size(); }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Return number of associated fluid elements to this bin
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  inline int NumAssociatedFluidEle() const { return associatedfluideleid_.size(); }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Return id's of associated wall elements to this bin
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  inline const int* AssociatedWallEleIds() const
+  inline int NumAssociatedEle(INPAR::BINSTRATEGY::BinContent bin_content) const
   {
-    if (associatedwalleleid_.size()) return &associatedwalleleid_[0];
+    return associatedeleid_[bin_content].size();
+  }
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Return id's of associated  elements to this bin
+   *///                                                  (public) ghamm 04/13
+  /*------------------------------------------------------------------------*/
+  inline const int* AssociatedEleIds(INPAR::BINSTRATEGY::BinContent bin_content) const
+  {
+    if (associatedeleid_[bin_content].size()) return &associatedeleid_[bin_content][0];
     else return NULL;
   }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return id's of associated fluid elements to this bin
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  inline const int* AssociatedFluidEleIds() const
-  {
-    if (associatedfluideleid_.size()) return &associatedfluideleid_[0];
-    else return NULL;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Get vector of ptrs to associated wall elements
+   * \brief Get vector of ptrs to associated  elements
    *
    * \return Ptr to pointers to nodes of the element in local nodal ordering.
    *      Returns NULL if pointers to not exist.
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline virtual Element** AssociatedWallEles()
+  inline virtual Element** AssociatedEles(INPAR::BINSTRATEGY::BinContent bin_content)
   {
-    if (associatedwalleleid_.size()) return &associatedwallele_[0];
+    if (associatedeleid_[bin_content].size()) return &associatedele_[bin_content][0];
     else return NULL;
   }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of ptrs to associated fluid elements
-   *
-   * \return Ptr to pointers to nodes of the element in local nodal ordering.
-   *      Returns NULL if pointers to not exist.
+   * \brief Add an associated element to this bin
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline virtual Element** AssociatedFluidEles()
-  {
-    if (associatedfluideleid_.size()) return &associatedfluidele_[0];
-    else return NULL;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Add an associated wall element to this bin
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  inline virtual void AddAssociatedWallEle(
-    const int gid,     //!< (in): global id of element to be added
-    DRT::Element* eleptr //!< (in): pointer to element to be added
+  inline virtual void AddAssociatedEle(
+    INPAR::BINSTRATEGY::BinContent bin_content,   //!< (in): type of element to be added
+    const int                      gid,           //!< (in): global id of element to be added
+    DRT::Element*                  eleptr         //!< (in): pointer to element to be added
   )
   {
-    associatedwalleleid_.push_back(gid);
-    associatedwallele_.push_back(eleptr);
+    associatedeleid_[bin_content].push_back(gid);
+    associatedele_[bin_content].push_back(eleptr);
   }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Add an associated fluid element to this bin
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  inline virtual void AddAssociatedFluidEle(
-    const int gid,     //!< (in): global id of element to be added
-    DRT::Element* eleptr //!< (in): pointer to element to be added
-  )
-  {
-    associatedfluideleid_.push_back(gid);
-    associatedfluidele_.push_back(eleptr);
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Delete an associated wall element from this bin
+   * \brief Delete an associated element from this bin
    *
    * Searches for position of element with specified gid and deletes entry in
-   * vectors associatedwalleleid_ and associatedwallele_
+   * vectors associatedeleid_ and associatedele_
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  virtual void DeleteAssociatedWallEle(int gid //!< (in): global id of element to be deleted
+  virtual void DeleteAssociatedEle(INPAR::BINSTRATEGY::BinContent bin_content, //!< (in): type of element to be deleteted
+                                   int                            gid          //!< (in): global id of element to be deleted
     );
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Delete all associated wall elements from this bin
+   * \brief Remove all associated elements from this bin
 
    *///                                                  (public) ghamm 09/13
   /*------------------------------------------------------------------------*/
-  void RemoveAssociatedWallEles();
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Delete an associated fluid element from this bin
-   *
-   * Searches for position of element with specified gid and deletes entry in
-   * vectors associatedfluidele_ and associatedfluideleid_
-   *///                                                  (public) ghamm 04/13
-  /*------------------------------------------------------------------------*/
-  virtual void DeleteAssociatedFluidEle(int gid //!< (in): global id of element to be deleted
-    );
+  void RemoveAssociatedEles(INPAR::BINSTRATEGY::BinContent bin_content);
 
   /*!
-  \brief Build pointer vector from vector of wall element pointers
+  \brief Build pointer vector from vector of element pointers
 
-  The method is used to build the variable associatedwallele_ in this bin.
-  It can be used to explicitly pass the wall element pointers to the bin.
+  The method is used to build the variable associatedele_ in this bin.
+  It can be used to explicitly pass the element pointers to the bin.
 
-  \param walleles (in): Pointer to array of pointers to elements. The array of pointers
-                     is implicitly expected to be of length NumAssociatedWallEle() and contain
-                     pointers to elements in the correct element local ordering scheme.
+  \param eles (in): Pointer to array of pointers to elements. The array of pointers
+                    is implicitly expected to be of length NumAssociatedEle() and contain
+                    pointers to elements in the correct element local ordering scheme.
   */
-  bool BuildWallElePointers(DRT::Element** walleles);
-
-  /*!
-  \brief Build pointer vector from vector of fluid element pointers
-
-  The method is used to build the variable associatedfluidele_ in this bin.
-  It can be used to explicitly pass the fluid element pointers to the bin.
-
-  \param fluideles (in): Pointer to array of pointers to elements. The array of pointers
-                     is implicitly expected to be of length NumAssociatedFluidlEle() and contain
-                     pointers to elements in the correct element local ordering scheme.
-  */
-  bool BuildFluidElePointers(DRT::Element** fluideles);
+  bool BuildElePointers(INPAR::BINSTRATEGY::BinContent bin_content, DRT::Element** eles);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -363,17 +301,11 @@ public:
 
 private:
 
-  //! \brief wall element ids contained in this bin
-  std::vector<int> associatedwalleleid_;
+  //! \brief element ids contained in this bin
+  std::vector<std::vector<int> > associatedeleid_;
 
-  //! \brief pointers to wall elements contained in this bin
-  std::vector<DRT::Element*> associatedwallele_;
-
-  //! \brief fluid element ids contained in this bin
-  std::vector<int> associatedfluideleid_;
-
-  //! \brief pointers to fluid elements contained in this bin
-  std::vector<DRT::Element*> associatedfluidele_;
+  //! \brief pointers to elements contained in this bin
+  std::vector<std::vector<DRT::Element*> > associatedele_;
 
 
 }; // class MeshfreeMultiBin

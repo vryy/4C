@@ -207,9 +207,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rnewmass_=rconvmass_;
 
       Qrefnew_ = Qrefconv_;
-
     }
-    break;
 
     case ELEMENTS::struct_calc_recover:
     {

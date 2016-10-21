@@ -284,13 +284,6 @@ namespace TIMINT {
     { dserror("Not yet implemented!"); return; }
     /// @}
 
-    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager()
-    { dserror("Not yet sure how to handle the statmech manager."); return Teuchos::null; };
-
-    //! return statmech managerbilayer
-    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer()
-    { dserror("Not yet sure how to handle the statmech manager."); return Teuchos::null; }
-
     /// @name Time step helpers
     ///@{
     /// Return current time \f$t_{n}\f$ (derived)
@@ -376,6 +369,7 @@ namespace TIMINT {
     /// Sets the current step number \f$n+1\f$
     virtual void SetStepNp(int step_np)
     {
+      CheckInitSetup();
       dataglobalstate_->GetMutableStepNp()=step_np;
     }
 

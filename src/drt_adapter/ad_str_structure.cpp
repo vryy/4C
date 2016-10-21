@@ -25,7 +25,6 @@
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
-#include "ad_str_statmech.H"
 #include "ad_str_invana.H"
 
 #include "../drt_timestepping/timintmstep.H"
@@ -105,7 +104,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(
   case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
-  case INPAR::STR::dyna_statmech :
     CreateTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
     break;
   default :
@@ -414,7 +412,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
     switch (probtype)
     {
       case prb_structure: // pure structural time adaptivity
-      case prb_statmech:
       case prb_crack:
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
@@ -520,11 +517,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
     case prb_struct_ale:
     {
       structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
-    }
-    break;
-    case prb_statmech:
-    {
-      structure_ = (Teuchos::rcp(new StructureStatMech(tmpstr)));
     }
     break;
     case prb_invana:

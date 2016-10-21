@@ -739,7 +739,7 @@ private:
     | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
     | rotation around filament axis                                             (private)      mukherjee   10/13|
     *----------------------------------------------------------------------------------------------------------*/
-   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma);
+   void MyDampingConstants(LINALG::Matrix<3,1>& gamma);
 
    /*computes velocity of background fluid and gradient of that velocity at a certain evaluation point in
      the physical space   */
@@ -759,18 +759,6 @@ private:
                                                  const std::vector<double>&       disp, //!< element displacement vector
                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                  Epetra_SerialDenseVector* force);        //!< element internal force vector
-
-
-   /*-----------------------------------------------------------------------------------------------------------*
-    | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
-    | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
-    | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
-    | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
-    |                                                                                  (public) mukherjee  10/13|
-    *----------------------------------------------------------------------------------------------------------*/
-   template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-                                                 std::vector<double>& disp); //!<element disp vector
 
    // don't want = operator
    //Beam3eb& operator = (const Beam3eb& old);

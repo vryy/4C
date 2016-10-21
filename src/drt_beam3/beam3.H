@@ -392,7 +392,7 @@ public:
   template<int nnode>
   void SetUpReferenceGeometry(const std::vector<double>&  xrefe,
                               const std::vector<double>&  rotrefe,
-                              const bool                  secondinit = false)
+                              const bool                  secondinit = false) // this is needed for active linker in statmech, can we do this differently?
   {
     /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
      *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -810,7 +810,6 @@ private:
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>
   void b3_nlnstiffmass( Teuchos::ParameterList&   params,
-                        std::vector<double>&      vel,
                         std::vector<double>&      disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
@@ -835,15 +834,14 @@ private:
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(Teuchos::ParameterList&    params,  //!<parameter list
-                     const std::vector<double>& vel,  //!< element velocity vector
-                     const std::vector<double>& disp, //!<element disp vector
-                     Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector*  force);//!< element internal force vector
+   void CalcBrownianForcesAndStiff(Teuchos::ParameterList&    params,  //!<parameter list
+                                   const std::vector<double>& vel,  //!< element velocity vector
+                                   const std::vector<double>& disp, //!<element disp vector
+                                   Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                                   Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(Teuchos::ParameterList& params,
-                           LINALG::Matrix<3,1>&    gamma);
+   void MyDampingConstants(LINALG::Matrix<3,1>&    gamma);
 
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes
@@ -884,10 +882,6 @@ private:
                              LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>&    velbackgroundgrad); //!<gradient of velocity of background fluid
 
-   //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-   template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-                  std::vector<double>&    disp); //!<element disp vector
 
    //@}
 

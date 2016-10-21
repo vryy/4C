@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------*/
+/*!
  \file spring3.H
 
- \brief three dimensional spring element
+\brief pseudo transient solution method
 
- <pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
- </pre>
- *----------------------------------------------------------------------*/
+\maintainer Dhrubajyoti Mukherjee
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
 //header file only included if not yet included!
 #ifndef SPRING3_H
@@ -87,12 +87,6 @@ public:
 
   //! @name Friends
   friend class Spring3Type;
-  //friend class StatMechManager;
-  //friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
-  //friend void StatMechTime::Integrate();
-  //friend void StatMechManager::PeriodicBoundarySpring3Init(DRT::Element* element);
-  //friend StatMechTime::StatMechTime(Teuchos::ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
-
   //! @name Constructors and destructors and related methods
 
   /*!

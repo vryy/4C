@@ -477,20 +477,6 @@ namespace ADAPTER
     virtual bool HaveMicroMat()
     { return structure_->HaveMicroMat(); }
 
-    /// return statmech manager
-    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager()
-    { return structure_->StatMechManager(); }
-
-    /// return statmech manager for lipid bilayer
-    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer()
-    { return structure_->StatMechManagerBilayer(); }
-
-    //! return bool indicating if statmech is defined
-    bool HaveStatMech() { return (StatMechManager() != Teuchos::null); }
-
-    //! return bool indicating if statmech for lipid bilayer  is defined
-    bool HaveStatMechBilayer() { return (StatMechManagerBilayer() != Teuchos::null); }
-
   protected:
 
     Teuchos::RCP<Structure> structure_;   ///< underlying structural time integration

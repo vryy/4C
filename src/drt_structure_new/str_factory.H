@@ -2,6 +2,8 @@
 /*!
 \file str_factory.H
 
+\brief factory for time integrator
+
 \maintainer Michael Hiermeier
 
 \date Nov 20, 2015
@@ -25,6 +27,7 @@ namespace ADAPTER {
 } // namespace ADAPTER
 namespace STR {
   class Integrator;
+  class Dbc;
 namespace TIMINT {
   class BaseDataSDyn;
 } // namespace TIMINT
@@ -43,6 +46,9 @@ namespace TIMINT {
 
     //! build the internal integrator
     Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
+
+    //! build the desired  dirichlet boundary condition object
+    Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
   protected:
     //! build the implicit integrator
     Teuchos::RCP<STR::Integrator> BuildImplicitIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
@@ -52,9 +58,13 @@ namespace TIMINT {
 
   }; // class Factory
 
-  /*! Non-member function, which relates to the STR::TIMINT::Factory
+  /*! Non-member function, which relates to the STR::Factory
    *  Please call this method from outside! */
   Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn);
+
+  /*! Non-member function, which relates to the STR::Factory class
+   *  Please call this method from outside! */
+  Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn);
 } // namespace STR
 
 

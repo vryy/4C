@@ -26,6 +26,8 @@
 
 #include <Epetra_Comm.h>
 
+#include "str_timint_databiopolynetdyn.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Data::Data()
@@ -86,6 +88,13 @@ void STR::MODELEVALUATOR::Data::Setup()
         contact_data_ptr_ = Teuchos::rcp(new ContactData());
         contact_data_ptr_->Init(Teuchos::rcp(this,false));
         contact_data_ptr_->Setup();
+        break;
+      }
+      case INPAR::STR::model_browniandyn:
+      {
+        statmech_data_ptr_ = Teuchos::rcp(new StatMechData());
+        statmech_data_ptr_->Init(Teuchos::rcp(this,false),sdyn_ptr_);
+        statmech_data_ptr_->Setup();
         break;
       }
       default:

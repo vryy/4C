@@ -78,7 +78,7 @@ namespace TIMINT {
     /*! \brief Evaluate and apply the DBC
      *
      * Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void ApplyDirichletBC(
+    virtual void ApplyDirichletBC(
         const double& time,
         Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> vel,
@@ -116,6 +116,9 @@ namespace TIMINT {
 
     //! Checks the initialization and setup status
     void CheckInitSetup() const;
+
+    //! Get discretization pointer
+    Teuchos::RCP<DRT::Discretization>& DiscretPtr();
 
     /*! Rotate the system matrix from a global to a local coordinate system,
      *  if the locsysman_ is defined.

@@ -20,6 +20,9 @@
 #include <NOX_Abstract_Vector.H>
 #include "str_elements_paramsinterface.H"   // base class of the Data class
 #include "../drt_contact/contact_paramsinterface.H" // base class of the ContactData class
+#include "../drt_lib/drt_discret.H"
+#include "str_timint_databiopolynetdyn.H"
+
 
 // forward declaration ...
 class Epetra_Comm;
@@ -27,12 +30,15 @@ namespace STR {
 namespace TIMINT {
   class BaseDataGlobalState;
   class BaseDataSDyn;
+  class DataSMDyn;
   class BaseDataIO;
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
   class BeamData;
   class ContactData;
+  class StatMechData;
+
 
   /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
    *
@@ -138,6 +144,13 @@ namespace MODELEVALUATOR {
 
     //! get the current plastic strain type [derived]
     virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const;
+
+    //! get Interface to statmech data [derived]
+    virtual inline Teuchos::RCP<STATMECH::ParamsInterface> GetStatMechParamInterface() const
+    {
+      CheckInitSetup();
+      return statmech_data_ptr_;
+    }
 
     //! get special parameter interface for beam elements [derived]
     virtual inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
@@ -329,6 +342,7 @@ namespace MODELEVALUATOR {
     //! @}
 
     //! @name accessors to the remaining data containers
+    //! you are not allowed to call these functions on element level
     //! @{
     //! access the beam data container, if applicable
     inline BeamData& GetBeamData()
@@ -356,6 +370,20 @@ namespace MODELEVALUATOR {
       if (contact_data_ptr_.is_null())
         dserror("The contact model is not active!");
       return contact_data_ptr_;
+    }
+
+    //! access the statmech data container, if the statmech model is active
+    inline StatMechData& StatMech()
+    {
+      if (statmech_data_ptr_.is_null())
+        dserror("The statmech model is not active!");
+      return *statmech_data_ptr_;
+    }
+    inline const Teuchos::RCP<StatMechData>& StatMechPtr()
+    {
+      if (statmech_data_ptr_.is_null())
+        dserror("The statmech model is not active!");
+      return statmech_data_ptr_;
     }
     //! @}
 
@@ -571,8 +599,11 @@ namespace MODELEVALUATOR {
     //! beam data container pointer
     Teuchos::RCP<BeamData> beam_data_ptr_;
 
-    //! remaining possible action types
+//! contact data container
     Teuchos::RCP<ContactData> contact_data_ptr_;
+
+    //! statmech data container
+    Teuchos::RCP<StatMechData> statmech_data_ptr_;
   };  // class Data
 
 
@@ -824,6 +855,149 @@ namespace MODELEVALUATOR {
 
 
   }; // class ContactData
+
+  /*! StatMech data container for the statistical mechanic model evaluation procedure.
+   *
+   * \author Jonas Eichinger
+   * \date 06/16 */
+  class StatMechData : public STATMECH::ParamsInterface
+  {
+  public:
+    //! constructor
+    StatMechData();
+
+    //! destructor
+    virtual ~StatMechData() {};
+
+    //! initialize the stuff coming from outside
+    void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr,
+              const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr_);
+
+    //! setup member variables
+    void Setup();
+
+    const Teuchos::RCP< Epetra_MultiVector>& GetRadomForces() const
+    {
+      CheckInitSetup();
+      return randomforces_;
+    };
+
+    /// returns type of friction model
+    const enum INPAR::STATMECH::FrictionModel& GetFrictionModel() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->FrictionModel();
+    };
+
+    /// return type of predefined dirichlet boundary condition
+    const enum INPAR::STATMECH::DBCType& GetDbcType() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->DbcType();
+    };
+
+    /// edge lengths of the cuboid simulation volume
+    const Teuchos::RCP<std::vector<double> >& GetPeriodLength() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->PeriodLength();
+    };
+
+    /// amplitude of shear in micrometers
+    const double& GetShearAmplitude() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->ShearAmplitude();
+    };
+
+    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
+    const double& GetEta() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->Eta();
+    };
+
+    /// direction of dbc displacement after starttimeact_; (x==1, y==2, z==3)
+    const int& GetDbcDispDir() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->DbcDispDir();
+    };
+
+    /// applied time curve for dbc after starttimeact_;
+    const int& GetCurveNumber() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->CurveNumber();
+    };
+
+    /// time when action is supposed to happen
+    const double& GetStartTimeAction() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_->StartTimeAction();
+    };
+    //! @}
+
+    /*! @name set routines which are used to set the parameters of the data container
+     *
+     *  These functions are not allowed to be called by the elements! */
+    //! @{
+
+    //! get specified time curve number of imposed Dirichlet BCs
+    void ResizeRandomForceMVector(Teuchos::RCP<DRT::Discretization> discret_ptr,
+                                  int                               maxrandnumelement);
+
+    //! get mutable random force vector
+    Teuchos::RCP< Epetra_MultiVector>& GetMutableRadomForces()
+    {
+      CheckInitSetup();
+      return randomforces_;
+    };
+
+    /// get statmech data container
+    const Teuchos::RCP<const STR::TIMINT::DataSMDyn>& GetDataSMDynPtr() const
+    {
+      CheckInitSetup();
+      return smdyn_ptr_;
+    };
+
+    //! @}
+
+  protected:
+    //! returns the isinit_ flag
+    inline const bool& IsInit() const
+    { return isinit_; };
+
+    //! returns the issetup_ flag
+    inline const bool& IsSetup() const
+    { return issetup_; };
+
+    //! Checks the init and setup status
+    inline void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+    //! Checks the init status
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Init() has not been called, yet!");
+    }
+
+  private:
+    bool isinit_;
+
+    bool issetup_;
+
+    //! statmech dynamics data container
+    Teuchos::RCP<const STR::TIMINT::DataSMDyn> smdyn_ptr_;
+
+    /// multiVector holding random forces
+    Teuchos::RCP<Epetra_MultiVector> randomforces_;
+  }; // class StatMechData
 } // namespace MODELEVALUATOR
 } // namespace STR
 

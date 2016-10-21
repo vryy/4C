@@ -62,7 +62,7 @@ THETA        1 //header_01 end
 ----------------------------------------------STATISTICAL MECHANICS
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform
-FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
+FRICTIONMODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
 DBCTYPE             none                   // none shearfixed sheartrans pinnodes,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
 NETWORKTYPE         std                   // specify network / simulation type
@@ -75,9 +75,9 @@ INITIALSEED         1                     // manipulate initial seed of pseudo r
 GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
-GMSHOUTINTERVALS    1                  // gmsh output interval
-OUTPUTINTERVALS     5000                  // specialoutput interval
+SPECIALOUTPUT      none                  // structanaly viscoelasticity
+GMSHOUTINTERVAL    1                  // gmsh output interval
+OUTPUTINTERVAL     5000                  // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
 ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact
@@ -104,16 +104,16 @@ NBCFORCEAMP         0.0                   // absolute value of applied constant 
 FILAMENTMODEL         std                  // select filament model: std, helical
 FILAMENTPOLARITY        No                   // toggles filament polarity
 NUM_EVAL_ELEMENTS   832                  // number of (initial) beam elements
-RISEPERBSPOT        0.015624999               // rise per monomer in the actin helix
-ROTPERBSPOT         -2.8999               // rotation per monomer in the actin helix
-BSPOTOFFSET         -1.5707963            // angular offset of binding spots per filament with respect to the nodes' material TRIADS
-PHIBSPOT            0.5234                // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
-BSPOTINTERVAL       1                     // every n-th binding spot is available for binding
+RISEPERBINSPOT        0.015624999               // rise per monomer in the actin helix
+ROTPERBINSPOT         -2.8999               // rotation per monomer in the actin helix
+BINSPOTOFFSET         -1.5707963            // angular offset of binding spots per filament with respect to the nodes' material TRIADS
+PHIBINSPOT            0.5234                // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
+BINSPOTINTERVAL       1                     // every n-th binding spot is available for binding
 //============ CROSSLINKER MODEL ============
 LINKERMODEL         stdintpol             // set linker model: none, std, bellseq, active, stdintpol
-ACTIVELINKERFRACTION        0.0                   // fraction of N_crosslink which is active
-N_crosslink         10000                  // number of crosslinkers in the simulated volume
-INITOCCUPIEDBSPOTS  0                     // number of crosslinker elements set up before the first time step
+ACTIVELINKERFRACTION        0.0                   // fraction of NUMCROSSLINK which is active
+NUMCROSSLINK         10000                  // number of crosslinkers in the simulated volume
+INITOCCUPIEDBINSPOTS  0                     // number of crosslinker elements set up before the first time step
 NUMSUBSTRATEFIL     0                     // number of substrate filaments
 R_LINK              0.1                   // distance between the two binding domains of a linker
 DeltaR_LINK         0.02                  // deviation from r_link
@@ -124,8 +124,8 @@ ELINK               2560000              // torsion stiffness from Nishizaka 200
 LINKERSCALEFACTOR   1            // length compression factor for active crosslinkers
 DELTABELLSEQ        0                   // deltaD in Bell's equation, change in reaction variable
 CORIENT             0                     // stiffness of the potential which determines probability of a certain crosslinker orientation
-PHI0                0                     // preferred binding angle betw. two filaments
-PHI0DEV             6.283185307     // deviation from phi0
+PHIZERO                0                     // preferred binding angle betw. two filaments
+PHIZERODEV             6.283185307     // deviation from phi0
 ACTIVELINKERCYCLE   0.04                  // active linker time cycle (myosin)
 ACTIVERECOVERYFRACTION   0.95             // active linker recovery time fraction (myosin)
 REDUCECROSSLINKSBY  0                     // reduce the linker number by this number at starttimeact_

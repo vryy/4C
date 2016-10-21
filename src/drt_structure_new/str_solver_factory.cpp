@@ -59,6 +59,8 @@ STR::SOLVER::Factory::BuildLinSolvers(
     {
     case INPAR::STR::model_structure:
     case INPAR::STR::model_springdashpot:
+    case INPAR::STR::model_browniandyn:
+    case INPAR::STR::model_crosslinking:
     case INPAR::STR::model_partitioned_coupling:
     case INPAR::STR::model_beam_interaction:
     {

@@ -738,8 +738,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3r::Lines()
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::ParameterList& params,
-                                                           const IntegrationPurpose      intpurpose) const
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::ParameterList&  params,
+                                                           const IntegrationPurpose intpurpose) const
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
 
@@ -884,10 +884,16 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::Parame
         case line2:
         {
           // TODO case 'frictionmodel_isotropiclumped' seems not to be tested in any nightly test case
-          if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
-            gaussrule = DRT::UTILS::intrule_line_lobatto2point;
+          if (StatMechParamsInterfacePtr() != Teuchos::null)
+            if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
+              gaussrule = DRT::UTILS::intrule_line_lobatto2point;
+            else
+              gaussrule = DRT::UTILS::intrule_line_2point;
           else
-            gaussrule = DRT::UTILS::intrule_line_2point;
+            if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
+              gaussrule = DRT::UTILS::intrule_line_lobatto2point;
+            else
+              gaussrule = DRT::UTILS::intrule_line_2point;
           break;
         }
         default:
@@ -952,8 +958,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::Parame
  *----------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xrefe,
-                                                   const std::vector<double>& rotrefe,
-                                                   const bool                 secondinit)
+                                                   const std::vector<double>& rotrefe)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -971,13 +976,12 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
    * note: the isinit_ flag is important for avoiding re-initialization upon restart. However, it should be possible to conduct a
    * second initialization in principle (e.g. for periodic boundary conditions*/
 
-  if (!isinit_ || secondinit)
+  if (!isinit_)
   {
     isinit_ = true;
 
     // set the flag needstatmech_
-    const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-    needstatmech_ = ( (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")) == INPAR::STR::dyna_statmech);
+    needstatmech_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
 
     if(needstatmech_ and (nnodetriad!=2 or nnodecl!=2) )
       dserror("beam3r: Statmech functionalities only implemented for 2-noded element, i.e. linear Lagrange interpolation");
@@ -1275,10 +1279,11 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     // if needed, compute Jacobi determinant at GPs for integration of damping/stochastic forces
     if (needstatmech_)
     {
+      // todo: this needs to be done in a nicer way (delete on MyGaussRule Function)
       const Teuchos::ParameterList& statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-      // we need this cast here because the parameter FRICTION_MODEL is not of type int yet
+      // we need this cast here because the parameter FRICTIONMODEL is not of type int yet
       Teuchos::ParameterList myparams;
-      myparams.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams,"FRICTION_MODEL"));
+      myparams.set<int>("FRICTIONMODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams,"FRICTIONMODEL"));
 
       // Get the applied integration scheme
       DRT::UTILS::GaussRule1D gaussrule_damp_stoch = MyGaussRule(myparams,res_damp_stoch);    // TODO reuse/copy quantities if same integration scheme has been applied above
@@ -1496,17 +1501,36 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*
   return;
 }
 
+/*--------------------------------------------------------------------------------------------*
+ | Get centerline position at xi                                                   grill 06/16|
+ *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
                                        const double&              xi,
                                        const std::vector<double>& disp_totlag) const
 {
-  unsigned int numnodalvalues=1;
-  this->HermiteCenterlineInterpolation() ? numnodalvalues=2 : numnodalvalues=1;
-  unsigned int nnodecl=this->NumCenterlineNodes();
+  const unsigned int numnodalvalues= this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl=this->NumCenterlineNodes();
+  const unsigned int nnodetriad=this->NumNode();
 
-  // at the moment, we assume that disp_totlag_centerline (without rotational DoFs) is passed in this function call
-  if (disp_totlag.size() != 3*numnodalvalues*nnodecl)
-    dserror("size mismatch: expected %d values for disp_totlag and got %d",3*numnodalvalues*nnodecl,disp_totlag.size());
+  std::vector<double> disp_totlag_centerline;
+
+  /* we assume that either the full disp_totlag vector of this element or
+   * disp_totlag_centerline (without rotational DoFs) is passed in this function call */
+  if (disp_totlag.size() == 3*numnodalvalues*nnodecl)
+  {
+    disp_totlag_centerline = disp_totlag;
+  }
+  else if (disp_totlag.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
+  {
+    disp_totlag_centerline.resize(3*numnodalvalues*nnodecl);
+    ExtractCenterlineDofValues(disp_totlag,disp_totlag_centerline);
+  }
+  else
+  {
+    dserror("size mismatch: expected either %d values for disp_totlag or "
+        "%d values for disp_totlag_centerline and got %d",
+        3*numnodalvalues*nnodecl,3*numnodalvalues*nnodecl+3*nnodetriad,disp_totlag.size());
+  }
 
   switch (nnodecl)
   {
@@ -1514,31 +1538,31 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     {
       if (this->HermiteCenterlineInterpolation())
       {
-        const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
+        const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
         pos = this->GetPosAtXi<2,2>(xi,disp_totlag_fixedsize);
       }
       else
       {
-        const LINALG::Matrix<6,1> disp_totlag_fixedsize(&disp_totlag[0]);
+        const LINALG::Matrix<6,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
         pos = this->GetPosAtXi<2,1>(xi,disp_totlag_fixedsize);
       }
       break;
     }
     case 3:
     {
-      const LINALG::Matrix<9,1> disp_totlag_fixedsize(&disp_totlag[0]);
+      const LINALG::Matrix<9,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
       pos = this->GetPosAtXi<3,1>(xi,disp_totlag_fixedsize);
       break;
     }
     case 4:
     {
-      const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
+      const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
       pos = this->GetPosAtXi<4,1>(xi,disp_totlag_fixedsize);
       break;
     }
     case 5:
     {
-      const LINALG::Matrix<15,1> disp_totlag_fixedsize(&disp_totlag[0]);
+      const LINALG::Matrix<15,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
       pos = this->GetPosAtXi<5,1>(xi,disp_totlag_fixedsize);
       break;
     }
@@ -1629,28 +1653,98 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,
   return;
 }
 
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>&            dofvec,
+                                                       LINALG::Matrix<3*vpernode*nnodecl,1>& dofvec_centerline) const
+{
+  // nnodecl: number of nodes used for interpolation of centerline
+  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  if (dofvec.size() != dofperclnode*nnodecl + dofpertriadnode*this->NumNode())
+    dserror("size mismatch: expected %d values for element state vector and got %d",
+        dofperclnode*nnodecl + dofpertriadnode*this->NumNode(), dofvec.size());
+
+  // get current values for DOFs relevant for centerline interpolation
+  for (unsigned int dim=0; dim<3; ++dim)
+  {
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_centerline(3*vpernode*node+dim) = dofvec[dofpercombinode*node+dim];
+
+      // have Hermite interpolation? then update tangent DOFs as well
+      if (vpernode==2)
+        dofvec_centerline(3*vpernode*node+3+dim) = dofvec[dofpercombinode*node+6+dim];
+    }
+  }
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>& dofvec,
+                                                       std::vector<double>&       dofvec_centerline) const
+{
+  // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
+
+  switch (this->NumCenterlineNodes())
+  {
+    case 2:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+        this->ExtractCenterlineDofValues<2,2>(dofvec,dofvec_centerline_fixedsize);
+      }
+      else
+      {
+        LINALG::Matrix<6,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+        this->ExtractCenterlineDofValues<2,1>(dofvec,dofvec_centerline_fixedsize);
+      }
+      break;
+    }
+    case 3:
+    {
+      LINALG::Matrix<9,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+      this->ExtractCenterlineDofValues<3,1>(dofvec,dofvec_centerline_fixedsize);
+      break;
+    }
+    case 4:
+    {
+      LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+      this->ExtractCenterlineDofValues<4,1>(dofvec,dofvec_centerline_fixedsize);
+      break;
+    }
+    case 5:
+    {
+      LINALG::Matrix<15,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+      this->ExtractCenterlineDofValues<5,1>(dofvec,dofvec_centerline_fixedsize);
+      break;
+    }
+    default:
+      dserror("no valid number for number of centerline nodes");
+  }
+
+}
+
 // explicit template instantations (some compilers do not export symboles defined above)
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,3,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,4,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,5,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
+                                                                   const std::vector<double>&);

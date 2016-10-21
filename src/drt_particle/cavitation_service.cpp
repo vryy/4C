@@ -53,10 +53,10 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
   const bool havepbc = HavePBCs();
 
   std::set<int> examinedbins;
-  int numrownodes = particledis_->NodeRowMap()->NumMyElements();
+  int numrownodes = bindis_->NodeRowMap()->NumMyElements();
   for(int i=0; i<numrownodes; ++i)
   {
-    DRT::Node *currentparticle = particledis_->lRowNode(i);
+    DRT::Node *currentparticle = bindis_->lRowNode(i);
     DRT::Element** currentbin = currentparticle->Elements();
 
     const int binId=currentbin[0]->Id();
@@ -78,7 +78,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     for(int iparticle=0; iparticle<currentbin[0]->NumNode(); ++iparticle)
     {
       DRT::Node* currparticle = particles[iparticle];
-      double r_p = (*particleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
+      double r_p = (*particleradius)[ bindis_->NodeRowMap()->LID(currparticle->Id()) ];
       maxradius = std::max(r_p, maxradius);
     }
     if(maxradius < 0.0)
@@ -113,15 +113,15 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     for(std::vector<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
     {
       // extract bins from discretization after checking on existence
-      const int lid = particledis_->ElementColMap()->LID(*i);
+      const int lid = bindis_->ElementColMap()->LID(*i);
       if(lid<0)
         continue;
       // extract bins from discretization
       DRT::MESHFREE::MeshfreeMultiBin* currbin =
-          dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->lColElement(lid) );
+          dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( bindis_->lColElement(lid) );
 
-      DRT::Element** currfluideles = currbin->AssociatedFluidEles();
-      for(int ifluidele=0; ifluidele<currbin->NumAssociatedFluidEle(); ++ifluidele)
+      DRT::Element** currfluideles = currbin->AssociatedEles(bin_volcontent_);
+      for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_volcontent_); ++ifluidele)
       {
         neighboringfluideles.insert(currfluideles[ifluidele]);
       }
@@ -134,7 +134,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
       // fill particle position
       LINALG::Matrix<3,1> particleposition(false);
-      std::vector<int> lm_b = particledis_->Dof(currparticle);
+      std::vector<int> lm_b = bindis_->Dof(currparticle);
       // convert dof of particle into correct local id in this Epetra_Vector
       int posx = bubblepos->Map().LID(lm_b[0]);
       for (int dim=0; dim<3; ++dim)
@@ -1496,8 +1496,8 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
   elecoord.Clear();
   bool insideele = false;
 
-  DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
-  int numfluidelesinbin = currbin->NumAssociatedFluidEle();
+  DRT::Element** fluidelesinbin = currbin->AssociatedEles(bin_volcontent_);
+  int numfluidelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
 
   std::set<int>::const_iterator eleiter;
   // search for underlying fluid element with fast search if desired
@@ -1550,10 +1550,10 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
 
   for(size_t b=0; b<binIds.size(); ++b)
   {
-    currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(binIds[b]));
+    currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->gElement(binIds[b]));
 
-    fluidelesinbin = currbin->AssociatedFluidEles();
-    numfluidelesinbin = currbin->NumAssociatedFluidEle();
+    fluidelesinbin = currbin->AssociatedEles(bin_volcontent_);
+    numfluidelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
 
     for(int ele=0; ele<numfluidelesinbin; ++ele)
     {

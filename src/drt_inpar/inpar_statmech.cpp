@@ -1,23 +1,19 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
 \file inpar_statmech.cpp
 
-\brief Input parameters for statmech
+\brief input parameter for statistical mechanic problem
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\maintainer Jonas Eichinger
+
+\level 2
+
 */
-
-/*----------------------------------------------------------------------*/
-
+/*-----------------------------------------------------------*/
 
 
 #include "drt_validparameters.H"
 #include "inpar_statmech.H"
-
 
 
 void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -31,32 +27,17 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
-  //Reading kind of problem to be solved with StatMech
-  setStringToIntegralParameter<int>("SIMULATION_TYPE","None","TYPE of problem to be solved with StatMech",
-                               //listing possible std::strings in input file in category THERMALBATH
-                               tuple<std::string>("None", "none", "biopolymer_network","lipid_bilayer","network_bilayer"),
-                               //translating input std::strings into BACI input parameters
-                               tuple<int>(INPAR::STATMECH::simulation_type_none,
-                                          INPAR::STATMECH::simulation_type_none,
-                                          INPAR::STATMECH::simulation_type_biopolymer_network,
-                                          INPAR::STATMECH::simulation_type_lipid_bilayer,
-                                          INPAR::STATMECH::simulation_type_network_bilayer),
-                                          &statmech);
+  setStringToIntegralParameter<int>("STATMECHPROB","No",
+                                 "Statistical mechanics problem",
+                                 yesnotuple,yesnovalue,&statmech);
 
-  //Reading kind of background fluid stream in the thermal bath
-  setStringToIntegralParameter<int>("THERMALBATH","None","Type of thermal bath applied to elements",
-                               //listing possible std::strings in input file in category THERMALBATH
-                               tuple<std::string>("None","none",
-                                                  "Uniform","uniform",
-                                                  "ShearFlow","shearflow","Shearflow"),
-                               //translating input std::strings into BACI input parameters
-                               tuple<int>(thermalbath_none,thermalbath_none,
-                                          thermalbath_uniform,thermalbath_uniform,
-                                          thermalbath_shearflow,thermalbath_shearflow,thermalbath_shearflow),
-                               &statmech);
+  setStringToIntegralParameter<int>("CROSSLINKER","No",
+                                 "Crosslinker in problem",
+                                 yesnotuple,yesnovalue,&statmech);
+
   //Reading which kind of special output should be written to files
-  setStringToIntegralParameter<int>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
-                                 //listing possible std::strings in input file in category SPECIAL_OUTPUT
+  setStringToIntegralParameter<int>("SPECIALOUTPUT","None","kind of special statistical output data written into files",
+                                 //listing possible std::strings in input file in category SPECIALOUTPUT
                                  tuple<std::string>("None","none",
                                                     "endtoend_log",
                                                     "anisotropic",
@@ -96,8 +77,8 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  &statmech);
 
   //Reading which kind of friction model should be applied
-  setStringToIntegralParameter<int>("FRICTION_MODEL","none","friction model for polymer dynamics",
-                                 //listing possible std::strings in input file in category FRICTION_MODEL
+  setStringToIntegralParameter<int>("FRICTIONMODEL","none","friction model for polymer dynamics",
+                                 //listing possible std::strings in input file in category FRICTIONMODEL
                                  tuple<std::string>("none",
                                                     "isotropiclumped",
                                                     "isotropicconsistent",
@@ -108,6 +89,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             frictionmodel_isotropicconsistent,
                                             frictionmodel_anisotropicconsistent),
                                             &statmech);
+
   //Reading which kind of Dirichlet boundary condition should be applied
   setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
                                  //listing possible std::strings in input file in category DBCTYPE
@@ -131,6 +113,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             dbctype_affinesheardel,
                                             dbctype_movablesupport1d),
                                             &statmech);
+
   //Reading which kind of Dirichlet boundary condition should be applied
   setStringToIntegralParameter<int>("NBCTYPE","std","Neumann BC type applied",
                                  //listing possible std::strings in input file in category DBCTYPE
@@ -142,6 +125,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             nbctype_constcreep,
                                             nbctype_randompointforce),
                                             &statmech);
+
   //Reading which kind of biopolymer network will be simulated
   setStringToIntegralParameter<int>("NETWORKTYPE","std","Network type simulated",
                                  //listing possible std::strings in input file in category FILAMENTMODEL
@@ -153,6 +137,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             networktype_casimir,
                                             networktype_motassay),
                                             &statmech);
+
   //Reading which kind of linker model should be applied
   setStringToIntegralParameter<int>("LINKERMODEL","none","Linker model applied in Statmech simulations",
                                  //listing possible std::strings in input file in category LINKERMODEL
@@ -174,12 +159,17 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             linkermodel_activeintpol,
                                             linkermodel_myosinthick),
                                             &statmech);
+
+  // linker are only allowed to move in 2d, third coordinate is not
   setStringToIntegralParameter<int>("PLANELINKERMOTION","No",
                                  "Plane Brownian Motion of linkers",
                                  yesnotuple,yesnovalue,&statmech);
+
+  // toggles rotation of motors in addition to contraction
   setStringToIntegralParameter<int>("CROSSBRIDGEMODEL","No",
                                  "swinging cross bridge model for active linkers",
                                  yesnotuple,yesnovalue,&statmech);
+
   //Reading which kind of filament model should be applied
   setStringToIntegralParameter<int>("FILAMENTMODEL","std","Filament model applied in Statmech simulations",
                                  //listing possible std::strings in input file in category FILAMENTMODEL
@@ -189,6 +179,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  tuple<int>(filamentmodel_std,
                                             filamentmodel_helical),
                                             &statmech);
+
   //Reading which kind of search routine is used
   setStringToIntegralParameter<int>("BINDINGSITESEARCH","volpart","binding site search method",
                                  //listing possible std::strings in input file in category DBCTYPE
@@ -201,19 +192,6 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             bsstype_octree),
                                             &statmech);
 
-  //%%%%%%%%%%%%% Bilayer Model %%%%%%%%%%%%%%%%%%%%//
-  //Reading which kind of filament model should be applied
-  setStringToIntegralParameter<int>("AREA_PENALTY_TYPE","local","Area penalty type applied in Statmech simulations",
-                                 //listing possible std::strings in input file in category AREA_PENALTY_TYPE
-                                 tuple<std::string>("local",
-                                                    "global",
-                                                    "none"),
-                                 //translating input std::strings into BACI input parameters
-                                 tuple<int>(areapenalty_local,
-                                            areapenalty_global,
-                                            areapenalty_none),
-                                            &statmech);
-
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out
@@ -222,32 +200,16 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of BC application (see ACTIONTIME)
   IntParameter("BCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of BC application. Starts counting at '1' !",&statmech);
-  // Measure the number of passes
-  IntParameter("NUMPASSES",-1," Number of passes for finding the equilibrium shapes of the lipid_bilayer membrane!",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FILAMENTPOLARITY","No","toggles filament polarity",yesnotuple,yesnovalue,&statmech);
-  //Reading whether bond-flips are activated for membranes
-  setStringToIntegralParameter<int>("BONDFLIP","No","toggles bond-flip for lipidbilayer",yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
-  setNumericStringParameter("RISEPERBSPOT","0.00277","rise per monomer in the actin one-start helix",&statmech);
+  setNumericStringParameter("RISEPERBINSPOT","0.00277","rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
-  DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("AREA_PENALTY",0.0,"Area penalty for bio-memebrane ",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("BARY_PENALTY",0.0,"Penalty of Barymeter for bio-memebrane ",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("CURV_PENALTY",0.0,"Curvature penalty for bio-memebrane ",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("CG_PENALTY",0.0,"Center of Gravity penalty for bio-memebrane ",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("LINE_PENALTY",0.0,"Line penalty for bio-memebrane ",&statmech);
-  // Value of penalty parameter
-  DoubleParameter("VOL_PENALTY",0.0,"Volume penalty for bio-memebrane ",&statmech);
+  DoubleParameter("ROTPERBINSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
   //angular offset of the binding spot orientation (constant for each filament)
-  DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
+  DoubleParameter("BINSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
   //angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume
-  DoubleParameter("PHIBSPOT",0.524,"angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume",&statmech);
+  DoubleParameter("PHIBINSPOT",0.524,"angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume",&statmech);
   //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
   //Reading double parameter for viscosity of background fluid
@@ -287,14 +249,14 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // time fraction during which no bonding is possible due to the linker being in its recovery state
   DoubleParameter("ACTIVERECOVERYFRACTION",0.95,"fraction of ACTIVELINKERCYCLE during which the linker recovers (i.e. is unbound)",&statmech);
   //number of overall crosslink molecules in the boundary volume
-  IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
+  IntParameter("NUMCROSSLINK",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number of overall crosslink molecules in the boundary volume
-  IntParameter("INITOCCUPIEDBSPOTS",0,"binding spots occupied by (singly-bound) crosslinkers before the first time step",&statmech);
+  IntParameter("INITOCCUPIEDBINSPOTS",0,"binding spots occupied by (singly-bound) crosslinkers before the first time step",&statmech);
   //number of filaments used as substrate for motility assay setups
   IntParameter("NUMSUBSTRATEFIL",0,"Number of filaments used as substrate filaments",&statmech);
   //number by which the number of crosslinkers is reduced.
   IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
-  IntParameter("BSPOTINTERVAL",1,"determines every n-th binding spot available for crosslinking",&statmech);
+  IntParameter("BINSPOTINTERVAL",1,"determines every n-th binding spot available for crosslinking",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
@@ -302,9 +264,10 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // Three values representing the size of the periodic box in each spatial direction
   setNumericStringParameter("PERIODLENGTH","0.0 0.0 0.0", "Values representing the size of the periodic box in each spatial direction",&statmech);
   //angle between filament axes at crosslinked points with zero potential energy
-  DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
-  //only angles in the range PHI0 +/- PHIODEV are admitted at all for the angle PHI between filament axes at crosslinked points; the default value for this parameter is 2*pi so that by default any value is admitted
-  DoubleParameter("PHI0DEV",6.28,"only angles in the range PHI0 +/- PHIODEV",&statmech);
+  DoubleParameter("PHIZERO",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
+  //only angles in the range PHIZERO +/- PHIODEV are admitted at all for the angle PHI between filament axes at crosslinked points;
+  //the default value for this parameter is 2*pi so that by default any value is admitted
+  DoubleParameter("PHIZERODEV",6.28,"only angles in the range PHIZERO +/- PHIODEV",&statmech);
   //stiffness of orientation potential of crosslinkers
   DoubleParameter("CORIENT",0.0,"stiffness of orientation potential of crosslinkers",&statmech);
  //Young's modulus of crosslinkers
@@ -319,18 +282,6 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("KTOR1_LINK",0.0,"Torsional stiffness at binding spots between Truss linkers and filaments",&statmech);
   //Torsional stiffness of crosslinkers
   DoubleParameter("KTOR2_LINK",0.0,"Torsional stiffness between tangents of filaments",&statmech);
-  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
-  DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
-  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
-  DoubleParameter("CROTPTC0",0.145,"PTC factor for rotational DOF in first iteration step",&statmech);
-  //Parameter for PTC (rigid spherical particle)
-  DoubleParameter("CSPHEREPTC0",0.0,"PTC factor for DOFs of rigid spherical particle in first iteration step",&statmech);
-  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
-  DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
-  //Number of iterations after which PTC is turned off
-  IntParameter("MAXITERPTC",5,"Number of iterations after which PTC is turned off! 0 entails standard Newton-Raphson.",&statmech);
-  // fraction of initial residual below which PTC is turned off
-  DoubleParameter("RESLOWPTC",0.001,"fraction of initial residual below which PTC is turned off!",&statmech);
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
   DoubleParameter("PlotFactorThick",0.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied
@@ -340,12 +291,12 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // toggling Gmsh Output for structure detection
   setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.", yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
-  IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
+  IntParameter("OUTPUTINTERVAL",1,"Number of time steps between two special outputs written",&statmech);
   //Number of interpolation points for higher order plotting of filaments, applicable only in case of Kirchchoff
   //type of beam elements reconstructed with hermite polynomials
-  IntParameter("GMSHNINTPT",10,"Number of interpolation points for higher order plotting of filaments",&statmech);
+  IntParameter("GMSHNUMINTPT",10,"Number of interpolation points for higher order plotting of filaments",&statmech);
   //Number of time steps between two gmsh outputs written
-  IntParameter("GMSHOUTINTERVALS",100,"Number of time steps between two gmsh outputs written",&statmech);
+  IntParameter("GMSHOUTINTERVAL",100,"Number of time steps between two gmsh outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
   IntParameter("DBCDISPDIR",0,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
   //Reading time curve number for Dirichlet boundary conditions
@@ -361,18 +312,12 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);
   // number of partitions along the edge length of the volume determining the resolution of the search grid
   IntParameter("SEARCHRES",1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
-  //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
-  IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
   // number of histogram bins for post-analysis
   IntParameter("HISTOGRAMBINS",1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   // number of raster point along for ddcorr output boundary box shift -> n³ points in volume
   IntParameter("NUMRASTERPOINTS",3,"number of bins for histograms showing the density-density-correlation-function",&statmech);
-  //Reading whether fixed seed for random numbers should be applied
-  setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied", yesnotuple,yesnovalue,&statmech);
   //time interval in which random numbers are constant
-  DoubleParameter("RANDNUMTIMEINT",-1.0,"Within this time interval the random numbers remain constant. -1.0 means no prescribed time interval.'",&statmech);
+  DoubleParameter("TIMEINTCONSTRANDNUMB",-1.0,"Within this time interval the random numbers remain constant. -1.0 means no prescribed time interval.'",&statmech);
   //cutoff for random forces, which determines the maximal value
   DoubleParameter("MAXRANDFORCE",-1.0,"Any random force beyond MAXRANDFORCE*(standard dev.) will be omitted and redrawn. -1.0 means no bounds.'",&statmech);
-  // vector of constant background velocity
-  setNumericStringParameter("BACKGROUNDVELOCITY","0.0 0.0 0.0", "Vector of constant background velocity (x,y,z)",&statmech);
 }

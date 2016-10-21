@@ -15,8 +15,9 @@
 
 #include "str_factory.H"
 #include "str_timint_base.H"
-
+#include "str_dbc.H"
 #include "../drt_lib/drt_dserror.H"
+#include "str_dbc_biopolynet.H"
 
 // supported implicit time integrators
 #include "str_impl_statics.H"
@@ -24,7 +25,7 @@
 #include "str_impl_genalpha.H"
 #include "str_impl_genalpha_liegroup.H"
 #include "str_impl_gemm.H"
-#include "str_impl_statmech.H"  // derived from ost
+#include "str_impl_ost.H"  // derived from ost
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -102,13 +103,6 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
       break;
     }
 
-    // Statistical Mechanics Time Integration
-    case INPAR::STR::dyna_statmech :
-    {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::StatMech());
-      break;
-    }
-
     // Everything else
     default :
     {
@@ -139,4 +133,31 @@ Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(
   STR::Factory factory;
 
   return factory.BuildIntegrator(datasdyn);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::Dbc>  STR::Factory::BuildDbc(
+    const STR::TIMINT::BaseDataSDyn& datasdyn) const
+{
+  Teuchos::RCP<STR::Dbc> dbc = Teuchos::null;
+
+  const std::set<enum INPAR::STR::ModelType>& modeltypes = datasdyn.GetModelTypes();
+
+  if(modeltypes.find(INPAR::STR::model_browniandyn) != modeltypes.end())
+    dbc = Teuchos::rcp(new STR::DbcBioPolyNet());
+  else
+    dbc = Teuchos::rcp(new STR::Dbc());
+
+  return dbc;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::Dbc> STR::BuildDbc(
+    const STR::TIMINT::BaseDataSDyn& datasdyn)
+{
+  STR::Factory factory;
+
+  return factory.BuildDbc(datasdyn);
 }

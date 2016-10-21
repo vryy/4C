@@ -60,7 +60,9 @@ namespace ELEMENTS {
     struct_calc_stifftemp,                  //!< TSI specific: mechanical-thermal stiffness
     struct_calc_global_gpstresses_map,      //!< basically calc_struct_stress but with assembly of global gpstresses map
     struct_interpolate_velocity_to_point,   //!< interpolate the structural velocity to a given point
-    struct_calc_mass_volume                 //!< calculate volume and mass
+    struct_calc_mass_volume,                //!< calculate volume and mass
+    struct_calc_brownianforce,              //!< thermal (i.e. stochastic) and damping forces according to Brownian dynamics
+    struct_calc_brownianstiff               //!< thermal (i.e. stochastic) and damping forces and stiffnes according to Brownian dynamics
   };  // enum ActionType
 
   //! Map action type enum to std::string
@@ -169,6 +171,12 @@ namespace ELEMENTS {
         break;
       case struct_interpolate_velocity_to_point:
         return "struct_interpolate_velocity_to_point";
+        break;
+      case struct_calc_brownianforce:
+        return "struct_calc_brownianforce";
+        break;
+      case struct_calc_brownianstiff:
+        return "struct_calc_brownianstiff";
         break;
       default:
         return "unknown";

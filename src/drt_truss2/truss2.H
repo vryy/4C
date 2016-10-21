@@ -1,14 +1,12 @@
 /*!----------------------------------------------------------------------
-\file truss3.H
+\file truss2.H
 
 \brief three dimensional total Lagrange truss element
 
-<pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+
+\maintainer Christian Cyron
+
+\level 2
 *----------------------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
 
@@ -76,9 +74,6 @@ public:
 
   //! @name Friends
   friend class Truss2Type;
-  //friend class StatMechManager;
-  //friend void StatMechTime::Integrate();
-
 
   //! @name Constructors and destructors and related methods
 

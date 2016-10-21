@@ -20,6 +20,7 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_binstrategy.H"
 #include "../drt_lib/drt_element.H"
 
 #include "Epetra_MpiComm.h"
@@ -494,6 +495,8 @@ namespace CAVITATION
 
     //! @name fluid related stuff
     //@{
+
+    INPAR::BINSTRATEGY::BinContent bin_volcontent_;
 
     Teuchos::RCP<DRT::Discretization> fluiddis_;     ///< underlying fluid discretization
 

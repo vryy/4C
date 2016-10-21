@@ -508,6 +508,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
   src/drt_mat/constraintmixture.cpp
+  src/drt_mat/crosslinkermat.cpp
   src/drt_mat/constraintmixture_history.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/elasthyper.cpp
@@ -644,25 +645,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
 )
-set(OBJS_DRT_STATMECH
-  src/drt_statmech/statmech_dirichlet.cpp
-  src/drt_statmech/statmech_gmsh.cpp
-  src/drt_statmech/statmech_init.cpp
-  src/drt_statmech/statmech_manager.cpp
-  src/drt_statmech/statmech_mechanaly.cpp
-  src/drt_statmech/statmech_motor.cpp
-  src/drt_statmech/statmech_neumann.cpp
-  src/drt_statmech/statmech_output.cpp
-  src/drt_statmech/statmech_search_octree.cpp
-  src/drt_statmech/statmech_search_binning.cpp
-  src/drt_statmech/statmech_structanaly.cpp
-  src/drt_statmech/statmech_utils.cpp
-)
-set(OBJS_DRT_STATMECHBILAYER
-  src/drt_statmech_bilayer/statmech_manager_bilayer.cpp
-  src/drt_statmech_bilayer/statmech_bilayer_gmsh.cpp
-  src/drt_statmech_bilayer/statmech_bilayer_output.cpp
-  src/drt_statmech_bilayer/statmech_bilayer_utils.cpp
+set(OBJS_DRT_BIOPOLYNET
+  src/drt_biopolynet/crosslinker_node.cpp
 )
 set(OBJS_DRT_PLASTIC_SSN
   src/drt_plastic_ssn/plastic_ssn_manager.cpp
@@ -718,7 +702,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/ad_str_poro_wrapper.cpp
   src/drt_adapter/ad_str_timeloop.cpp
-  src/drt_adapter/ad_str_statmech.cpp
   src/drt_adapter/ad_str_invana.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/ad_ale.cpp
@@ -1705,9 +1688,9 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_prestress.cpp
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_resulttest.cpp
-  src/drt_structure/strtimint_statmech.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
+  src/drt_structure_new/str_dbc_biopolynet.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
   src/drt_structure_new/str_impl_generic.cpp
@@ -1721,6 +1704,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_data.cpp
   src/drt_structure_new/str_model_evaluator_beamdata.cpp
   src/drt_structure_new/str_model_evaluator_contactdata.cpp
+  src/drt_structure_new/str_model_evaluator_biopolynetdata.cpp
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
@@ -1728,6 +1712,8 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_structure_new/str_model_evaluator_browniandyn.cpp
+  src/drt_structure_new/str_model_evaluator_crosslinking.cpp
   src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
@@ -1746,6 +1732,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_basedataio.cpp
   src/drt_structure_new/str_timint_basedataglobalstate.cpp
   src/drt_structure_new/str_timint_basedatasdyn.cpp
+  src/drt_structure_new/str_timint_databiopolynetdyn.cpp
   src/drt_structure_new/str_timint_explicit.cpp
   src/drt_structure_new/str_timint_implicit.cpp
   src/drt_structure_new/str_timint_implicitbase.cpp
@@ -1978,9 +1965,6 @@ set(OBJS_DRT_B3_LIB
   src/drt_beam3/beam3r.cpp
   src/drt_beam3/beam3r_evaluate.cpp
   src/drt_beam3/beam3r_input.cpp
-  src/drt_beam3/beam3cl.cpp
-  src/drt_beam3/beam3cl_evaluate.cpp
-  src/drt_beam3/beam3cl_input.cpp
   src/drt_beam3/beam3eb.cpp
   src/drt_beam3/beam3eb_evaluate.cpp
   src/drt_beam3/beam3eb_input.cpp
@@ -2551,8 +2535,7 @@ add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
-add_library(alg_statmech ${OBJS_DRT_STATMECH})
-add_library(alg_statmech_bilayer ${OBJS_DRT_STATMECHBILAYER})
+add_library(alg_biopolynet ${OBJS_DRT_BIOPOLYNET})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
@@ -2575,8 +2558,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_porofluidmultiphase
   alg_scatra
   alg_structure
-  alg_statmech
-  alg_statmech_bilayer
+  alg_biopolynet
   alg_crack
   alg_plastic_ssn
   alg_invanalysis

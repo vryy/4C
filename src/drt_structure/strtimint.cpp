@@ -49,7 +49,6 @@
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/inpar_cell.H"
 #include "../drt_constraint/constraint_manager.H"
@@ -59,8 +58,6 @@
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech_bilayer/statmech_manager_bilayer.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_stru_multi/microstatic.H"
 
@@ -151,8 +148,6 @@ STR::TimInt::TimInt
   surfstressman_(Teuchos::null),
   cmtbridge_(Teuchos::null),
   beamcman_(Teuchos::null),
-  statmechman_(Teuchos::null),
-  statmechmanBilayer_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
   propcrack_(Teuchos::null),
@@ -312,11 +307,6 @@ void STR::TimInt::Setup()
     // corresponding manager object stored via #ssnplastman_ is created and all relevant
     // stuff is initialized. Else, #ssnplastman_ remains a Teuchos::null pointer.
     PrepareSemiSmoothPlasticity();
-  }
-
-  // check for statistical mechanics
-  {
-    PrepareStatMech();
   }
 
   // check for crack propagation
@@ -1048,71 +1038,6 @@ void STR::TimInt::PrepareStepContact()
 }
 
 /*----------------------------------------------------------------------*/
-/* Check for contact or meshtying and do preparations */
-void STR::TimInt::PrepareStatMech()
-{
-  // some parameters
-  const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  INPAR::STATMECH::ThermalBathType tbtype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams,"THERMALBATH");
-  INPAR::STATMECH::SimulationType simype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::SimulationType>(statmechparams,"SIMULATION_TYPE");
-
-  if(tbtype != INPAR::STATMECH::thermalbath_none && (simype==INPAR::STATMECH::simulation_type_biopolymer_network || simype==INPAR::STATMECH::simulation_type_none ))
-  {
-    statmechman_ = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
-
-    // output
-    if (!discret_->Comm().MyPID())
-    {
-      switch(tbtype)
-      {
-        case INPAR::STATMECH::thermalbath_uniform:
-          std::cout << "========= Statistical Mechanics: Biopolymer network in uniform thermal bath ==========\n" << std::endl;
-          break;
-        case INPAR::STATMECH::thermalbath_shearflow:
-          std::cout << "======== Statistical Mechanics: Biopolymer network in thermal bath, shearflow ========\n" << std::endl;
-          break;
-        default: dserror("Undefined thermalbath type!");
-        break;
-      }
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-      if(!ioparams.get<int>("STDOUTEVRY",0))
-        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
-    }
-  }
-  else if(tbtype == INPAR::STATMECH::thermalbath_uniform && simype==INPAR::STATMECH::simulation_type_lipid_bilayer)
-  {
-    statmechmanBilayer_ = Teuchos::rcp(new STATMECH::StatMechManagerBilayer(discret_));
-
-    // output
-    if (!discret_->Comm().MyPID())
-    {
-      std::cout << "========= Statistical Mechanics: lipid bilayer in uniform thermal bath  ==========\n" << std::endl;
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-      if(!ioparams.get<int>("STDOUTEVRY",0))
-        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
-    }
-  }
-  else if(tbtype == INPAR::STATMECH::thermalbath_uniform && simype==INPAR::STATMECH::simulation_type_network_bilayer)
-  {
-    statmechman_        = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
-    statmechmanBilayer_ = Teuchos::rcp(new STATMECH::StatMechManagerBilayer(discret_));
-
-    // output
-    if (!discret_->Comm().MyPID())
-    {
-      std::cout << "========= Statistical Mechanics: lipid bilayer & network in uniform thermal bath  ==========\n" << std::endl;
-
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-      if(!ioparams.get<int>("STDOUTEVRY",0))
-        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
-    }
-  }
- // else
-   // dserror("Simulation Type not recognised!");
-  return;
-}
-
-/*----------------------------------------------------------------------*/
 /* things that should be done after the convergence of Newton method */
 void STR::TimInt::PostSolve()
 {
@@ -1181,57 +1106,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-
-    if (HaveStatMechBilayer())
-    {
-
-       // get reference volume
-      p.set("action", "calc_struct_refvol");
-       Teuchos::RCP<Epetra_SerialDenseVector> vol_ref
-         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-       discret_->EvaluateScalars(p, vol_ref);
-
-       // get reference CG
-      p.set("action", "calc_struct_refCG");
-       Teuchos::RCP<Epetra_SerialDenseVector> CG_ref
-         = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-       discret_->EvaluateScalars(p, CG_ref);
-
-       // get reference area
-      p.set("action", "calc_struct_refarea");
-       Teuchos::RCP<Epetra_SerialDenseVector> area_ref
-         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-       discret_->EvaluateScalars(p, area_ref);
-
-       discret_->SetState("displacement", disn_);
-       // get current volume
-       p.set("action", "calc_struct_currvol");
-       Teuchos::RCP<Epetra_SerialDenseVector> vol_curr
-         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-       discret_->EvaluateScalars(p, vol_curr);
-
-       // get current CG
-       p.set("action", "calc_struct_currCG");
-       Teuchos::RCP<Epetra_SerialDenseVector> CG_curr
-         = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-       discret_->EvaluateScalars(p, CG_curr);
-
-
-       // get current area
-       p.set("action", "calc_struct_currarea");
-       Teuchos::RCP<Epetra_SerialDenseVector> area_curr
-         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-       discret_->EvaluateScalars(p, area_curr);
-
-       discret_->ClearState();
-
-       p.set("reference volume",double((*vol_ref)(0)));
-       p.set("current volume",double((*vol_curr)(0)));
-       p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG", CG_ref);
-       p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG", CG_curr);
-       p.set("reference area",double((*area_ref)(0)));
-       p.set("current area",double((*area_curr)(0)));
-    }
 
     // action for elements
     if(lumpmass_ == false)
@@ -1986,7 +1860,6 @@ void STR::TimInt::ReadRestart
   ReadRestartCardiovascular0D();
   ReadRestartContactMeshtying();
   ReadRestartBeamContact();
-  ReadRestartStatMech();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
   ReadRestartCrack();
@@ -2039,10 +1912,6 @@ void STR::TimInt::SetRestart
   // beam contact
   if (HaveBeamContact())
     dserror("Set restart not implemented for beam contact");
-
-  // statistical mechanics
-  if (HaveStatMech())
-    dserror("Set restart not implemented for statistical mechanics");
 
   // biofilm growth
   if (HaveBiofilmGrowth())
@@ -2171,19 +2040,6 @@ void STR::TimInt::ReadRestartBeamContact()
     IO::DiscretizationReader reader(discret_,step_);
     beamcman_->ReadRestart(reader);
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* Read and set restart values for statmech */
-void STR::TimInt::ReadRestartStatMech()
-{
-  if (HaveStatMech())
-  {
-    IO::DiscretizationReader reader(discret_,step_);
-    statmechman_->ReadRestart(reader, (*dt_)[0]);
-  }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2447,10 +2303,6 @@ void STR::TimInt::GetRestartData
   if (HaveBeamContact())
     dserror("Get restart data not implemented for beam contact");
 
-  // statistical mechanics
-  if (HaveStatMech())
-    dserror("Get restart data not implemented for statistical mechanics");
-
   // biofilm growth
   if (HaveBiofilmGrowth())
     dserror("Get restart data not implemented for biofilm growth");
@@ -2487,11 +2339,6 @@ void STR::TimInt::OutputRestart
       output_->WriteVector("material_displacement", (*dismat_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
-    if(!HaveStatMech())
-    {
-      output_->WriteElementData(firstoutputofrun_);
-      output_->WriteNodeData(firstoutputofrun_);
-    }
     WriteRestartForce(output_);
   }
   // owner of elements is just written once because it does not change during simulation (so far)
@@ -2540,12 +2387,6 @@ void STR::TimInt::OutputRestart
   if(HaveBeamContact())
   {
     beamcman_->WriteRestart(output_);
-  }
-
-  // statistical mechanics
-  if (HaveStatMech())
-  {
-    statmechman_->WriteRestart(output_, (*dt_)[0]);
   }
 
   // biofilm growth
@@ -2693,7 +2534,7 @@ void STR::TimInt::AddRestartToOutputState()
   if(HaveContactMeshtying())
     cmtbridge_->WriteRestart(output_,true);
 
-  // TODO: add missing restart data for surface stress, contact/meshtying and StatMech here
+  // TODO: add missing restart data for surface stress and contact/meshtying here
 
   // beam contact
   if(HaveBeamContact())

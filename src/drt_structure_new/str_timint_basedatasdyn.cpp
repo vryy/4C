@@ -24,6 +24,7 @@
 #include "../linalg/linalg_solver.H"
 
 #include <Epetra_Time.h>
+#include "str_timint_databiopolynetdyn.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -295,9 +296,28 @@ void STR::TIMINT::BaseDataSDyn::Init(
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataSDyn::Setup()
 {
-  // safety check
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  CheckInit();
+
+  std::set<enum INPAR::STR::ModelType>::const_iterator it;
+  // setup model type specific data containers
+  for (it=(*modeltypes_).begin();it!=(*modeltypes_).end();++it)
+  {
+    switch (*it)
+    {
+      case INPAR::STR::model_browniandyn:
+      {
+        sm_data_ptr_ = Teuchos::rcp(new DataSMDyn());
+        sm_data_ptr_->Init(Teuchos::rcp(this,false));
+        sm_data_ptr_->Setup();
+        break;
+      }
+      default:
+      {
+        // nothing to do
+        break;
+      }
+    }
+  }
 
   issetup_ = true;
 
@@ -655,6 +675,9 @@ void STR::TIMINT::GenAlphaDataSDyn::Setup()
 {
   CheckInit();
 
+  // call base class setup
+  STR::TIMINT::BaseDataSDyn::Setup();
+
   midavg_ = DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(GetSDynParams().sublist("GENALPHA"),"GENAVG");
   beta_   = GetSDynParams().sublist("GENALPHA").get<double>("BETA");
   gamma_  = GetSDynParams().sublist("GENALPHA").get<double>("GAMMA");
@@ -678,6 +701,9 @@ STR::TIMINT::OneStepThetaDataSDyn::OneStepThetaDataSDyn()
 void STR::TIMINT::OneStepThetaDataSDyn::Setup()
 {
   CheckInit();
+
+  // call base class setup
+  STR::TIMINT::BaseDataSDyn::Setup();
 
   theta_   = GetSDynParams().sublist("ONESTEPTHETA").get<double>("THETA");
 

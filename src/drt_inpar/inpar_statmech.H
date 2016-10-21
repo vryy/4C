@@ -1,15 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
 \file inpar_statmech.H
 
-<pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
-*/
+\brief input parameter for statistical mechanic problem
 
-/*----------------------------------------------------------------------*/
+\maintainer Jonas Eichinger
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 #ifndef INPAR_STATMECH_H
 #define INPAR_STATMECH_H
 
@@ -22,23 +22,8 @@ namespace INPAR
   /// Input parameters used in statistical mechanics
   namespace STATMECH
   {
-    enum SimulationType
-    {
-      simulation_type_none, // Problems involving just biopolymer networks
-      simulation_type_biopolymer_network, // Problems involving just biopolymer networks
-      simulation_type_lipid_bilayer,       // Problems involving lipid bilayer without the networks
-      simulation_type_network_bilayer       // Problems involving lipid bilayer with the networks
-    };
-    /// Type of thermal bath affecting elements
-    /// (this enum represents the input file parameter THERMALBATH)
-    enum ThermalBathType
-    {
-      thermalbath_none,  ///< no theraml bath around structure (ordinary simulation)
-      thermalbath_uniform,  ///< uniform thermal bath around structures
-      thermalbath_shearflow  ///< structures immersed into shear flow
-    };
 
-    /// (this enum represents the input file parameter SPECIAL_OUTPUT)
+    /// (this enum represents the input file parameter SPECIALOUTPUT)
     enum StatOutput
     {
       statout_none,  ///< no special output

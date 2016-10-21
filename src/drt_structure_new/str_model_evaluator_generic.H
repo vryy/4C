@@ -107,6 +107,14 @@ namespace MODELEVALUATOR {
      *  \author hiermeier */
     virtual bool EvaluateForce() = 0;
 
+    /*! \brief Evaluate the initial right hand side (overload if needed for specific model)
+     *
+     *  \date 07/2016
+     *  \author hiermeier */
+    virtual bool EvaluateInitialForce(){
+      return EvaluateForce();
+    };
+
     /*! \brief Evaluate the current tangential stiffness matrix at \f$t_{n+1}\f$
      *
      *  \date 07/2016
@@ -202,9 +210,11 @@ namespace MODELEVALUATOR {
     //! reset routine for model evlaluator
     virtual void ResetStepState() = 0;
 
+    //! post output routine for model evlaluator
+    virtual void PostOutput() = 0;
+
     //! @name Accessors to model specific things
     //! @{
-
     //! Returns a pointer to the model specific dof row map
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const = 0;
 
@@ -214,6 +224,7 @@ namespace MODELEVALUATOR {
     //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange multiplier vector)
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
     //! @}
+
   protected:
     /*! \brief Check the evaluation procedures for possible errors.
      *

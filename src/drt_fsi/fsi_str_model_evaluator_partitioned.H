@@ -119,6 +119,10 @@ namespace MODELEVALUATOR {
     {return;};
 
     //! [derived]
+    virtual void PostOutput()
+    {return;};
+
+    //! [derived]
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
 
     //! [derived]

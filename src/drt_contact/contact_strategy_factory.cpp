@@ -544,11 +544,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types
-  if (problemtype == prb_structure or problemtype == prb_statmech)
-  {
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::structure);
-  }
-  else if (problemtype == prb_tsi)
+  if (problemtype == prb_tsi)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   }

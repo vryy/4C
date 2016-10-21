@@ -83,15 +83,6 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   fviscon_ptr_ = GlobalState().GetMutableFviscoN();
   fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
 
-  // ---------------------------------------------------------------------------
-  // initialize vectors and matrices
-  // ---------------------------------------------------------------------------
-  // set the constant parameters for the element evaluation
-  if (TimInt().GetDataSDyn().GetMassLinType()==INPAR::STR::ml_rotations)
-  {
-    dserror("INPAR::STR::ml_rotations is currently unsupported!");
-  }
-
   issetup_ = true;
 
   PostSetup();
@@ -102,7 +93,41 @@ void STR::IMPLICIT::OneStepTheta::Setup()
 void STR::IMPLICIT::OneStepTheta::PostSetup()
 {
   CheckInitSetup();
-  EquilibriateInitialState();
+
+  if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations)
+  {
+    /* we can use this method for all elements with additive DoFs,
+     * but it won't work like this for non-additive rotation vector DoFs */
+    EquilibriateInitialState();
+  }
+  else
+  {
+    /* If we are restarting the simulation, we get the acceleration state from the
+     * restart file. So we are already done at this point. */
+    if (TimInt().IsRestarting())
+      return;
+
+    // so far, we are restricted to vanishing initial accelerations
+    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+    accnp_ptr->PutScalar(0.0);
+
+    // sanity check whether assumption is fulfilled
+    /* ToDo tolerance value is experience and based on following consideration:
+     * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
+     * initial, stress free state of order 1e-8 */
+    if(not CurrentStateIsEquilibrium(1.0e-6))
+      dserror("OneStepTheta only supports initially vanishing acceleration state "
+              "in case of ml_rotation = true,\ni.e. an initial state where the system "
+              "is equilibrated");
+
+    // call update routines to copy states from t_{n+1} to t_{n}
+    // note that the time step is not incremented
+    PreUpdate();
+    UpdateStepState();
+    UpdateStepElement();
+    PostUpdate();
+  }
+
 }
 
 /*----------------------------------------------------------------------------*

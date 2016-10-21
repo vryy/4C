@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_ptc.cpp
 
+\brief pseudo transient solution method
+
 \maintainer Michael Hiermeier
 
 \date Oct 9, 2015
@@ -104,7 +106,8 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes,DataSDyn());
-    SetStatusTestParams(DataSDyn().GetMutableNoxParams(),DataSDyn(),qtypes);
+    SetStatusTestParams(DataSDyn().GetMutableNoxParams().sublist("Status Test"),
+        DataSDyn(),qtypes);
   }
 
   return;
