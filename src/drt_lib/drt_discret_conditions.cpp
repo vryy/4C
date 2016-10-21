@@ -377,7 +377,6 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   // the same discretization share a common surface. the condition surface element however,
   // is associated to only one of the two volume elements.
   // these volume elements are inserted into VolEleIDs via the method FindAssociatedEleIDs.
-  //
   std::set<int> VolEleIDs;
   if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
   {
@@ -429,9 +428,18 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   // map of surfaces in this cloud: (node_ids) -> (surface)
   std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap;
 
-  // loop these row nodes and build all surfs attached to them
+  // loop these column nodes and build all surfs attached to them.
+  // we have to loop over column nodes because it can happen that
+  // we want to create a surface on an element face which has only
+  // ghosted nodes. if the resulting condition geometry is then used for
+  // cloning a discretization from it, we copy the condition to the
+  // cloned surface discretization, and if we build the geometry of
+  // this surface discretization, this way we make sure that we do not
+  // miss a surface element. otherwise, we would miss the surface element
+  // of the face which has now only ghosted nodes because we would only
+  // look at row nodes but the considered face has no row node.
   std::map<int,DRT::Node*>::iterator fool;
-  for (fool=myrownodes.begin(); fool != myrownodes.end(); ++fool)
+  for (fool=mycolnodes.begin(); fool != mycolnodes.end(); ++fool)
   {
     // currently looking at actnode
     DRT::Node* actnode  = fool->second;
@@ -572,7 +580,8 @@ bool DRT::Discretization::BuildSurfacesinCondition(
                 {
                   Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
                   // Set owning processor of surface owner of underlying volume element.
-                  surf->SetOwner(elements[i]->Owner());
+                  //surf->SetOwner(elements[i]->Owner());
+                  surf->SetOwner(gNode(nodes[0])->Owner());
                   surfmap[nodes] = surf;
                 } // if surface not yet in map
               } // else if standard case

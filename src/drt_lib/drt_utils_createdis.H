@@ -149,15 +149,13 @@ public:
       transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
           back_inserter(nids), std::mem_fun(&DRT::Node::Id));
 
-      if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenoderowmap))==0)
-      {
-        dserror("no own node in element %d", sourceele->Id());
-      }
-
+      // check if element has nodes which are not in col map on this proc.
+      // this should not be the case since each proc should have all nodes of
+      // all owned or ghosted elements in the col map.
       if (std::count_if(nids.begin(), nids.end(),
-          DRT::UTILS::MyGID(sourcedis.NodeColMap())) < static_cast<int>(nids.size()))
+          DRT::UTILS::MyGID(sourcedis.NodeColMap())) != (int)(nids.size()))
       {
-        dserror("element %d has remote non-ghost nodes",sourceele->Id());
+        dserror("element %d owned by proc %d has remote non-ghost nodes",sourceele->Id(),sourceele->Owner());
       }
 
       copy(nids.begin(), nids.end(),
@@ -571,11 +569,6 @@ private:
         nids.reserve(actele->NumNode());
         transform(actele->Nodes(), actele->Nodes()+actele->NumNode(),
                   back_inserter(nids), std::mem_fun(&DRT::Node::Id));
-
-        if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenoderowmap))==0)
-        {
-          dserror("no own node in element %d", actele->Id());
-        }
 
         // check if element has nodes, which are not in col map on this proc.
         // this should not be, since each proc should have all nodes of all
