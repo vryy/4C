@@ -257,7 +257,10 @@ private:
       const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
       Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
-      LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
+      LINALG::Matrix<3,1>& rst,                                                 ///< local coordinates of GP for bg element
+      double& kappa_m,                                                          ///< fluid sided weighting
+      double& visc_m,                                                           ///< fluid sided weighting
+      double& visc_s                                                            ///< slave sided dynamic viscosity
   );
 
   //! get the interface jump vectors for velocity and traction at the Gaussian point for previous time step

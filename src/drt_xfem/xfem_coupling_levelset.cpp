@@ -926,6 +926,15 @@ void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
   robin_neumann_id_ = cutterele_conds_[0].second->GetInt("robin_id_neumann");
 
   has_neumann_jump_ = (robin_neumann_id_ < 0) ? false : true;
+  if (has_neumann_jump_)
+  {
+    std::cout << "#########################################################################################################\n";
+    std::cout << "#########################################################################################################\n";
+    std::cout << "### WARNING:: XFEM::LevelSetCouplingNavierSlip                              The traction jump is      ###\n";
+    std::cout << "### divided by the dynviscosity on Gausspoint Level, this might be expensed and not really necessary! ###\n";
+    std::cout << "#########################################################################################################\n";
+    std::cout << "#########################################################################################################" << std::endl;
+  }
 
   // Get the scaling factor for the slip length
   sliplength_ = cutterele_conds_[0].second->GetDouble("slipcoeff");
@@ -972,6 +981,8 @@ void XFEM::LevelSetCouplingNavierSlip::InitConfigurationMap()
     //Configuration of Consistency Terms
     configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,1.0);
 
     //Configuration of Adjount Consistency Terms
     configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
@@ -985,7 +996,6 @@ void XFEM::LevelSetCouplingNavierSlip::InitConfigurationMap()
     configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
     dserror("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
@@ -1018,16 +1028,18 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
     double stabnit = 0.0;
     double stabadj = 0.0;
     XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
     configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,sliplength);
   }
   else
   {
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,visc_stab);
-    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab;
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
     configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
   }
 

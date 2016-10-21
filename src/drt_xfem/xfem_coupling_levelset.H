@@ -325,11 +325,36 @@ public:
       int       eid,                           ///< element ID
       M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
       M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
-      M3&       normal                         ///< surface normal of cut element
+      M3&       normal,                        ///< surface normal of cut element
+      double& kappa_m,                         ///< fluid sided weighting
+      double& visc_m,                          ///< fluid sided weighting
+      double& visc_s                           ///< slave sided dynamic viscosity
   )
 {
-    EvaluateCouplingConditions(ivel,itraction,x,cond);
     EvalProjectionMatrix<DISTYPE>(itraction_jump_matrix,eid,funct,derxy,normal);
+    EvaluateCouplingConditions(ivel,itraction,x,cond);
+
+    if(has_neumann_jump_)
+    {
+      // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the sliplenght twice
+      // evaluate interface traction (given by Neumann condition)
+      // Add this to the veljump!
+      double sliplength = 0.0;
+      GetSlipCoefficient(sliplength,x,cond);
+
+      if(sliplength < 0.0)
+        dserror("The slip length can not be negative.");
+
+      if ( sliplength != 0.0)
+      {
+        double sl_visc_fac  = sliplength/(kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+        V2 tmp_itraction(true);
+        tmp_itraction.MultiplyTN(itraction_jump_matrix,itraction);
+         //Project this into tangential direction!!!
+        ivel.Update(sl_visc_fac,tmp_itraction,1.0);
+      }
+      itraction.Clear();
+    }
 
     /*Here one could do a projection of ivel to only point in the tangential direction.
       This would enforce that no spurious velocities occur in the normal direction (i.e. no-penetration always enforced).

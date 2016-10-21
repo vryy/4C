@@ -120,22 +120,16 @@ void XFEM::CouplingBase::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::FStr_Pen_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::XStr_Pen_Col] = std::pair<bool,double>(false,0.0);
   //normal terms:
   configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::FStr_Pen_n_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::XStr_Pen_n_Col] = std::pair<bool,double>(false,0.0);
   //tangential terms:
   configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::XStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
 
   //Starting from here are some special Terms
   configuration_map_[INPAR::XFEM::F_LB_Rhs] = std::pair<bool,double>(false,0.0);

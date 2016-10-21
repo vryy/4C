@@ -790,7 +790,10 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
     const LINALG::Matrix<3,1>& x,
     const LINALG::Matrix<3,1>& normal,
     const DRT::Condition* cond,
-    const bool & eval_dirich_at_gp
+    const bool & eval_dirich_at_gp,
+    double& kappa_m,                         ///< fluid sided weighting
+    double& visc_m,                          ///< fluid sided weighting
+    double& visc_s                           ///< slave sided dynamic viscosity
 )
 {
 
@@ -830,7 +833,32 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
   // evaluate interface traction (given by Neumann condition)
   robin_id_dirch = cond->GetInt("robin_id_neumann");
   if(!std::signbit(robin_id_dirch))
-    EvaluateNeumannFunction(itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second , time_);
+  {
+    // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the sliplenght twice
+    // (also done in UpdateConfigurationMap_GP ... as soon as this gets relevant we should merge this functions)
+
+    // evaluate interface traction (given by Neumann condition)
+    // Add this to the veljump!
+    double sliplength = 0.0;
+    GetSlipCoefficient(sliplength,x,cond);
+
+    if(sliplength < 0.0)
+      dserror("The slip length can not be negative.");
+
+    if ( sliplength != 0.0 )
+    {
+      EvaluateNeumannFunction(itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second , time_);
+
+      double sl_visc_fac  = sliplength/(kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+      LINALG::Matrix<3,1> tmp_itraction(true);
+      tmp_itraction.MultiplyTN(proj_matrix,itraction);
+       //Project this into tangential direction!!!
+
+      ivel.Update(sl_visc_fac,tmp_itraction,1.0);
+
+      itraction.Clear();
+    }
+  }
 
   if( force_tangvel_map_.find(cond->Id())->second ) //forcetangvel_)
   {
@@ -971,6 +999,16 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters(  const std::s
   std::vector< DRT::Condition* >  conditions_neumann;
   cutter_dis_->GetCondition("XFEMRobinNeumannSurf", conditions_neumann);
 
+  if (conditions_neumann.size())
+  {
+    std::cout << "#########################################################################################################\n";
+    std::cout << "#########################################################################################################\n";
+    std::cout << "### WARNING:: XFEM::LevelSetCouplingNavierSlip                              The traction jump is      ###\n";
+    std::cout << "### divided by the dynviscosity on Gausspoint Level, this might be expensed and not really necessary! ###\n";
+    std::cout << "#########################################################################################################\n";
+    std::cout << "#########################################################################################################" << std::endl;
+  }
+
   std::vector< DRT::Condition* >  conditions_NS;
   cutter_dis_->GetCondition(cond_name, conditions_NS);
 
@@ -1054,6 +1092,8 @@ void XFEM::MeshCouplingNavierSlip::InitConfigurationMap()
   //Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,1.0);
+  configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,1.0);
 
   //Configuration of Adjount Consistency Terms
   configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
@@ -1067,7 +1107,6 @@ void XFEM::MeshCouplingNavierSlip::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
   configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
-  configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,1.0);
   return;
 }
 
@@ -1095,16 +1134,18 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
     double stabnit = 0.0;
     double stabadj = 0.0;
     XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
     configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,sliplength);
   }
   else
   {
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,visc_stab);
-    configuration_map_[INPAR::XFEM::FStr_Pen_t_Col] = std::pair<bool,double>(false,0.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab;
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
     configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
   }
 

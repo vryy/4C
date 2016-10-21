@@ -400,7 +400,10 @@ public:
       const LINALG::Matrix<3,1>& x,
       const LINALG::Matrix<3,1>& normal,
       const DRT::Condition* cond,
-      const bool & eval_dirich_at_gp
+      const bool & eval_dirich_at_gp,
+      double& kappa_m,                         ///< fluid sided weighting
+      double& visc_m,                          ///< fluid sided weighting
+      double& visc_s                           ///< slave sided dynamic viscosity
   );
 
   /// this function has to be reviewed for usage with OST new.

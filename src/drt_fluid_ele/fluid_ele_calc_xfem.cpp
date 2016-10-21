@@ -1872,6 +1872,16 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         LINALG::Matrix<my::nsd_,my::nsd_> proj_tangential (true);
         LINALG::Matrix<my::nsd_,my::nsd_> LB_proj_matrix (true);
 
+        double kappa_m=0.0;
+        double kappa_s=0.0;
+        double visc_m=0.0;
+#ifdef DEBUG
+        // Only Navier Slip used kappa_m,kappa_s and visc_m defined just before!
+        // To use Navier Slip specify them correct!
+        if(cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP || cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+          dserror("ElementXfemInterfaceHybridLM with Navier Slip, what to do with kappa_m/kappa_s for the dyn_visc in the traction_jump?");
+#endif
+
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
@@ -1882,7 +1892,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             x_gp_lin,
             normal,
             si,
-            rst
+            rst,
+            kappa_m,
+            kappa_s,
+            visc_m
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3588,7 +3601,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             x_gp_lin_,
             normal_,
             si,
-            rst_
+            rst_,
+            kappa_m,
+            viscaf_master_,
+            viscaf_slave_
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3797,7 +3813,10 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
-    LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
+    LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
+    double& kappa_m,                                                         ///< fluid sided weighting
+    double& visc_m,                                                          ///< fluid sided weighting
+    double& visc_s                                                           ///< slave sided dynamic viscosity
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
@@ -3816,7 +3835,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     if(*evaltype == "funct_gausspoint")
     {
       // evaluate function at Gaussian point at current time
-      coupling->EvaluateCouplingConditions(ivelint_jump,itraction_jump,x,cond);
+      coupling->EvaluateCouplingConditions(ivelint_jump,itraction_jump,x,cond); //itraction_jump.Clear() called here...
     }
     else
     {
@@ -3854,7 +3873,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
 
     // The velocity is evaluated twice in this framework...
-    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,proj_tangential,x,normal,cond,eval_dirich_at_gp);
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,proj_tangential,x,normal,cond,eval_dirich_at_gp,kappa_m,visc_m,visc_s);
 
     if(!eval_dirich_at_gp)
     {
@@ -3868,7 +3887,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
 
-    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,proj_tangential,my::eid_,my::funct_,my::derxy_,normal);
+    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,proj_tangential,my::eid_,my::funct_,my::derxy_,normal,kappa_m,visc_m,visc_s);
 
     break;
   }
@@ -3945,7 +3964,6 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   switch (cond_type)
   {
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
-  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   {
     const std::string* evaltype = cond->Get<std::string>("evaltype");
 
@@ -3965,10 +3983,16 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
-  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
     // evaluate condition function at Gaussian point
     coupling->EvaluateCouplingConditionsOldState(ivelintn_jump,itractionn_jump,x,cond);
+    break;
+  }
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
+  {
+    dserror("Navier Slip Condition not implemented for NEWOst yet!");
+    //here you would need the dyn_visc for summing up vel_jump and traction_jump...
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:

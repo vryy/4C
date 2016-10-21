@@ -449,7 +449,11 @@ namespace DRT
         void NIT_visc_Consistency_MasterTerms_Projected(
           const LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master deriv
           const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
-          const LINALG::Matrix<nsd_,nsd_>&          proj_matrix                   ///< pürojection matrix
+          const LINALG::Matrix<nsd_,nsd_>&          proj_matrix,                  ///< projection matrix
+          const double &                            km_viscm_fac,                 ///< scaling factor
+          const std::pair<bool,double>&             m_row,                        ///< scaling for master row
+          const std::pair<bool,double>&             s_row,                        ///< scaling for slave row
+          const std::pair<bool,double>&             m_col                         ///< scaling for master col
         );
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
@@ -529,16 +533,6 @@ namespace DRT
             const std::pair<bool,double>& s_col ///< scaling for slave col
         );
 
-        //! evaluate viscous penalty for the Neumann terms of the Robin-condition
-        void NIT_visc_Neumann_Penalty_MasterTerms_Projected(
-          const LINALG::Matrix<nsd_,nen_> &     derxy_m,                      ///< master deriv
-          const LINALG::Matrix<nen_,1> &        funct_m,                      ///< funct_m
-          const double &                        km_viscm,                     ///< traction jump
-          const std::pair<bool,double>& m_row, ///< scaling for penalty master row
-          const std::pair<bool,double>& s_row, ///< scaling for penalty slave row
-          const std::pair<bool,double>& mstr_col ///< scaling for penalty master stress col
-        );
-
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
         void NIT_Stab_Inflow_AveragedTerm(
           const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
@@ -557,16 +551,11 @@ namespace DRT
             const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
             const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
             const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
-            const double &                                km_viscm_fac,                  ///< scaling factor
-            const LINALG::Matrix<nsd_,1>&                 itraction_jump,
-            const std::pair<bool,double>& m_row, ///< scaling for master row
-            const std::pair<bool,double>& m_col, ///< scaling for master col
-            const std::pair<bool,double>& s_col, ///< scaling for slave col
-            const std::pair<bool,double>& mstr_col, ///< scaling for master stress col
-            //these last three parameters will be removed later as the terms are just like projected consistency terms
-            const std::pair<bool,double>& m_pen_row, ///< scaling for penalty master row
-            const std::pair<bool,double>& s_pen_row, ///< scaling for penalty slave row
-            const std::pair<bool,double>& mstr_pen_col ///< scaling for penalty master stress col
+            const double &                                km_viscm_fac,                 ///< scaling factor
+            const std::pair<bool,double>&                 m_row,                        ///< scaling for master row
+            const std::pair<bool,double>&                 m_col,                        ///< scaling for master col
+            const std::pair<bool,double>&                 s_col,                        ///< scaling for slave col
+            const std::pair<bool,double>&                 mstr_col                      ///< scaling for master stress col
         );
 
 
@@ -714,9 +703,6 @@ namespace DRT
         //Help variables:
         LINALG::Matrix<nsd_,nsd_> velint_proj_norm_diff_dyad_normal_, velint_proj_norm_diff_dyad_normal_symm_;
         LINALG::Matrix<nsd_,1>    vderxy_m_normal_tang_, vderxy_m_normal_transposed_;
-
-        //  Stabilization parameters:
-        double dyn_visc_;
 
         //  projected velocity components:
         LINALG::Matrix<nsd_,1> velint_diff_proj_normal_;
