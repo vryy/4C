@@ -1064,13 +1064,13 @@ void PARTICLE::TimInt::ComputePressure(const int &lidNode, bool trg_Nplus1)
 
   // extract the material parameters
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  const double initDensity = extParticleMat->initDensity_;
+  //const double baseDensity = extParticleMat->initDensity_;
   const double specEnthalpyST = extParticleMat->SpecEnthalpyST();
   const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
   const double speedOfSoundS = extParticleMat->SpeedOfSoundS();
   const double speedOfSoundL = extParticleMat->SpeedOfSoundL();
 
-  const double densityDelta = (*density)[lidNode] - initDensity;
+  const double densityDelta = (*density)[lidNode];// - baseDensity;
   if ((*specEnthalpy)[lidNode] <= specEnthalpyST)
     (*pressure_)[lidNode] = std::pow(speedOfSoundS,2) * densityDelta;
   else if ((*specEnthalpy)[lidNode] >= specEnthalpyTL)

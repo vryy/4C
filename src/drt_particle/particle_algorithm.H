@@ -123,9 +123,15 @@ namespace PARTICLE
     /// and transferred if necessary
     virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp);
 
-    /// get bins in range and call FindNeighbors
+    /// get bins in range and call FindNeighbors (particle version)
     virtual void GetNeighbouringParticlesAndWalls(
                     DRT::Node* CurrentParticle,
+                    std::list<DRT::Node*>& neighboring_particles,
+                    std::set<DRT::Element*>& neighboring_walls);
+
+    /// get bins in range and call FindNeighbors (bin version)
+    virtual void GetNeighbouringParticlesAndWalls(
+                    const int binId,
                     std::list<DRT::Node*>& neighboring_particles,
                     std::set<DRT::Element*>& neighboring_walls);
 
@@ -287,7 +293,8 @@ namespace PARTICLE
         const int &nlist);
 
     /// small function for the dismember
-    virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep);
+    virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep)
+      {return (oldRadius-semiStep)/(2 * semiStep) + 2; }
 
     /// get particles and wall elements in given bins
     void GetBinContent(

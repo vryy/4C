@@ -71,7 +71,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVectors()
 // checks
 if (disn == Teuchos::null     ||
     veln == Teuchos::null     ||
-    mass == Teuchos::null ||
+    radiusn == Teuchos::null  ||
+    densityn == Teuchos::null ||
+    mass == Teuchos::null     ||
     pressure == Teuchos::null)
   dserror("one or more state vectors are empty");
 
@@ -154,22 +156,29 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
   // list of all particles in the neighborhood of currparticle
   std::list<DRT::Node*> neighboring_particles;
 
-  // loop over all particles
-  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+  // loop over the particles (no superpositions)
+  const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
 
-  for(int i=0; i<numcolparticles; ++i)
+  for(int i_skippingLoop=0; i_skippingLoop<numrowparticles; ++i_skippingLoop)
   {
-    DRT::Node *currparticle = discret_->lColNode(i);
+    // extract the particle
+    DRT::Node *currparticle = discret_->lRowNode(i_skippingLoop);
 
-    DRT::Element* CurrentBin = currparticle->Elements()[0];
-    const int binId = CurrentBin->Id();
+    //find the bin it belongs to
+    DRT::Element* currentBin = currparticle->Elements()[0];
 
+    // check I own the bin
+    assert(currentBin->Owner() == myrank_);
+
+    const int binId = currentBin->Id();
     // if a bin has already been examined --> continue with next particle
     if( examinedbins.find(binId) != examinedbins.end() )
       continue;
     //else: bin is examined for the first time --> new entry in examinedbins_
-    else
-      examinedbins.insert(binId);
+    examinedbins.insert(binId);
+
+    // extract the pointer to the particles
+    DRT::Node** currentBinParticles = currentBin->Nodes();
 
     // remove current content but keep memory
     neighboring_particles.clear();
@@ -177,13 +186,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
 
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
-
-    const int numparticle = CurrentBin->NumNode();
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighboring_walls);
 
     // loop over all particles in CurrentBin
-    for(int lidNodeCol_i=0; lidNodeCol_i<numparticle; ++lidNodeCol_i)
+    for(int i=0; i<currentBin->NumNode(); ++i)
     {
+      // determine the particle we are analizing
+      DRT::Node* particle_i = currentBinParticles[i];
+      const int lidNodeCol_i = particle_i->LID();
 
       // compute contact with neighboring walls
       //CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt,
@@ -227,7 +237,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
     // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
     // if you pass this checkpoint you can compute the effect of particle j on particle i
-    if(particle_i.gid >= particle_j.gid && particle_i.radius == particle_j.radius)
+    if(particle_i.gid >= particle_j.gid && particle_i.radius == particle_j.radius && particle_j.owner == myrank_)
       continue;
 
     // compute distance and relative velocities
@@ -259,7 +269,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
     // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
     // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
-    if(particle_i.gid >= particle_j.gid || particle_i.radius != particle_j.radius)
+    if(!(particle_i.gid < particle_j.gid && particle_i.radius == particle_j.radius && particle_j.owner == myrank_))
       continue;
 
     const int lidNodeRow_j = densityDotn->Map().LID(particle_j.gid);
@@ -302,6 +312,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::GradientWeightFunction_CubicB
     WFGrad.Scale(norm_const * resizer * (1.5 * std::pow(norm_dist_rel,2) - 2 * norm_dist_rel));
   else if (norm_dist_rel< 2)
     WFGrad.Scale(- 0.5 * norm_const * resizer * std::pow(norm_dist_rel - 2,2));
+  else
+    WFGrad.PutScalar(0);
+
 }
 
 

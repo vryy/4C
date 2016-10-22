@@ -444,8 +444,8 @@ void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
 
   // apply forces to particles
   particles_->WriteAccessAccnp()->Update(1.0,*accelerations,0);
-
-  return;
+  // there are no external density sources
+  particles_->WriteAccessDensityDotnp()->PutScalar(0);
 }
 
 
@@ -2206,6 +2206,7 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
   }
 }
 
+
 /*----------------------------------------------------------------------*
  | update connectivity                                     catta 06/16  |
  *----------------------------------------------------------------------*/
@@ -2216,6 +2217,49 @@ void PARTICLE::Algorithm::UpdateConnectivity()
   // update heat sources
   UpdateHeatSourcesConnectivity(false);
 }
+
+
+/*----------------------------------------------------------------------*
+<<<<<<< .mine
+ | get neighbouring particles and walls (particle version) ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
+    DRT::Node* particle,
+    std::list<DRT::Node*>& neighboring_particles,
+    std::set<DRT::Element*>& neighboring_walls)
+{
+  if (particle->NumElement() != 1)
+    dserror("More than one element for this particle");
+
+  DRT::Element** CurrentBin = particle->Elements();
+
+  GetNeighbouringParticlesAndWalls(CurrentBin[0]->Id(),neighboring_particles,neighboring_walls);
+}
+
+
+/*----------------------------------------------------------------------*
+ | get neighbouring particles and walls (bin version)      katta 10/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
+    const int binId,
+    std::list<DRT::Node*>& neighboring_particles,
+    std::set<DRT::Element*>& neighboring_walls)
+{
+
+  int ijk[3];
+  ConvertGidToijk(binId,ijk);
+
+  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
+  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
+  std::vector<int> binIds;
+  binIds.reserve(27);
+
+  // do not check on existence here -> shifted to GetBinContent
+  GidsInijkRange(ijk_range,binIds,false);
+
+  GetBinContent(neighboring_particles, neighboring_walls, binIds);
+}
+
 
 /*----------------------------------------------------------------------*
  | particleDismemberer                                     catta 07/16  |
@@ -2422,6 +2466,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   }
 }
 
+
 /*----------------------------------------------------------------------*
  | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
  *----------------------------------------------------------------------*/
@@ -2441,39 +2486,7 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
 }
 
 /*----------------------------------------------------------------------*
- | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
- *----------------------------------------------------------------------*/
-
-int PARTICLE::Algorithm::ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep)
-{
-  return (oldRadius-semiStep)/(2 * semiStep) + 2; /// +2 is just to be sure that everything is included
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
-    DRT::Node* particle,
-    std::list<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls)
-{
-  if (particle->NumElement() != 1)
-    dserror("More than one element for this particle");
-
-  DRT::Element** CurrentBin = particle->Elements();
-  const int currbinId = CurrentBin[0]->Id();
-
-  std::vector<int> neighbourbinIds;
-  neighbourbinIds.reserve(27);
-
-  // do not check on existence here -> shifted to GetBinContent
-  GetNeighbouringBinGids(currbinId,neighbourbinIds);
-
-  GetBinContent(neighboring_particles, neighboring_walls, neighbourbinIds);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
+ | get the GIDs of the neighbouring bins                   ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringBinGids(
     const int         currbinId,
@@ -2487,8 +2500,6 @@ void PARTICLE::Algorithm::GetNeighbouringBinGids(
 
   // do not check on existence here -> shifted to GetBinContent
   GidsInijkRange(ijk_range,neighbourbinIds,false);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2525,9 +2536,8 @@ void PARTICLE::Algorithm::GetBinContent(
     DRT::Node** nodes = neighboringbin->Nodes();
     particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
   }
-
-  return;
 }
+
 
 /*----------------------------------------------------------------------*
  | get elements in given bins                              ghamm 09/13  |
@@ -2563,8 +2573,6 @@ void PARTICLE::Algorithm::GetBinContent(
         continue;
       eles.insert(elements[iele]);
     }
-
   }
-
-  return;
 }
+

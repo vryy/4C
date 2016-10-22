@@ -53,6 +53,10 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntCentrDiff::Init()
 {
+
+  // call base class init
+  PARTICLE::TimIntExpl::Init();
+
   // decide whether there is particle contact
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
 
@@ -77,12 +81,9 @@ void PARTICLE::TimIntCentrDiff::Init()
   {
     if(myrank_ == 0)
       std::cout << "central difference time integrator is not combined with a collision model" << std::endl;
+    break;
   }
-  break;
   }
-
-  // call base class init
-  PARTICLE::TimIntExpl::Init();
 
   // check for validity of input data
   if(collhandler_ != Teuchos::null)
@@ -404,12 +405,16 @@ void PARTICLE::TimIntCentrDiff::ComputeDisplacements()
 
   if (interHandler_ != Teuchos::null)
   {
-    // the density update scheme is equal to the displacement update scheme. It can change at your will
-    // new densities \f$\rho_{n+1}\f$
-    densityn_->Update(dt, *densityDotn_, 1.0);
+    // the density update scheme is equal to the acceleration update scheme. It can change at your will
+    //densityn_->Update(dthalf, *(*densityDot_)(0), 1.0);
+    densityn_->Update(dt, *(*densityDot_)(0), 1.0);
+
+    SetStatesForCollision();
 
     // direct update of the accelerations
     interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_);
+
+    //densityn_->Update(dthalf, *densityDotn_, 1.0);
   }
   else
     ComputeAcc(f_contact, m_contact, accn_, angAccn_);
