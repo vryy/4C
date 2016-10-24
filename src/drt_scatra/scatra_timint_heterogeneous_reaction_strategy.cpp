@@ -151,7 +151,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     // done. Rebuild all maps and boundary condition geometries
     discret_->FillComplete(true,true,true);
 
-    if(com->MyPID() == 0)
+    if(com->MyPID() == 0 and com->NumProc()>1)
       std::cout << "parallel distribution of auxialiary discr. with standard ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*discret_);
   }
