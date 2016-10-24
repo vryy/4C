@@ -73,6 +73,10 @@ void immersed_problem_drt()
     {
     case prb_immersed_fsi:
     {
+      // fill discretizations
+      problem->GetDis("structure")->FillComplete();
+      problem->GetDis("fluid")    ->FillComplete();
+
       // SAFETY FIRST
       {
         // check if INODE is defined in input file
@@ -92,10 +96,6 @@ void immersed_problem_drt()
                   "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
                   "Structural state projected onto fluid in new time step should be the same as in previous time step.");
       }
-
-      // fill discretizations
-      problem->GetDis("structure")->FillComplete();
-      problem->GetDis("fluid")    ->FillComplete();
 
       Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
       if(scheme == INPAR::IMMERSED::dirichletneumann)
@@ -144,6 +144,11 @@ void immersed_problem_drt()
     }// case prb_immersed_fsi
     case prb_immersed_ale_fsi:
     {
+      // fill discretizations
+      problem->GetDis("structure")->FillComplete();
+      problem->GetDis("fluid")    ->FillComplete();
+      problem->GetDis("ale")      ->FillComplete();
+
       // SAFETY FIRST
       {
         // check if INODE is defined in input file
@@ -166,11 +171,6 @@ void immersed_problem_drt()
                   "Choose ConstVel as predictor in ---STRUCTURAL DYNAMIC section.\n"
                   "Structural state projected onto fluid in new time step should be the same as in previous time step.");
       }
-
-      // fill discretizations
-      problem->GetDis("structure")->FillComplete();
-      problem->GetDis("fluid")    ->FillComplete();
-      problem->GetDis("ale")      ->FillComplete();
 
       // get discretizations
       Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -283,7 +283,7 @@ void CellMigrationControlAlgorithm()
   // extract the simulation type
   int simtype = DRT::INPUT::IntegralValue<int>(cellmigrationparams,"SIMTYPE");
 
-  //use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
+  // use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
   POROELAST::UTILS::SetupPoroScatraDiscretizations
   <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
 
