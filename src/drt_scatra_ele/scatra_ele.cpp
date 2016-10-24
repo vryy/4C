@@ -794,7 +794,8 @@ int DRT::ELEMENTS::Transport::Initialize()
   Teuchos::RCP<MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions in case
   // of reactions by function)
-  if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions or
+     mat->MaterialType() == INPAR::MAT::m_matlist_chemoreac )
   {
     //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
     Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(mat);
