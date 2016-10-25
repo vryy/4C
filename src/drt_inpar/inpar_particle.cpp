@@ -119,6 +119,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("TANG_DAMP_WALL",-1.0,"damping coefficient for tangential contact force (wall)",&particledyn);
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
+   IntParameter("TRANSFER_EVERY",1,"transfer particles every TRANSFER_EVERY steps",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
    BoolParameter("RADIUS_DISTRIBUTION","no","switch on/off random normal distribution of particle radii",&particledyn);
    DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of normal distribution of particle radii",&particledyn);

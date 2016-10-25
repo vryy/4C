@@ -103,6 +103,9 @@ PARTICLE::TimInt::TimInt
   inertia_(Teuchos::null),
   pressure_(Teuchos::null),
 
+  dofmapexporter_(Teuchos::null),
+  nodemapexporter_(Teuchos::null),
+
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
   collhandler_(Teuchos::null),
   interHandler_(Teuchos::null)
@@ -519,6 +522,8 @@ void PARTICLE::TimInt::UpdateStepTime()
 
 void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 {
+  UpdateExportersIfNecessary((*radius_)(0)->Map(),(*dis_)(0)->Map());
+
   UpdateStateVectorMap(dis_);
   UpdateStateVectorMap(vel_);
   UpdateStateVectorMap(acc_);
@@ -940,6 +945,26 @@ const Epetra_Map* PARTICLE::TimInt::NodeRowMapView()
   return discret_->NodeRowMap();
 }
 
+
+/*-----------------------------------------------------------------------------*/
+/* Update exporter objects if layout has changed                               */
+void PARTICLE::TimInt::UpdateExportersIfNecessary(const Epetra_BlockMap& oldnodemap, const Epetra_BlockMap& olddofmap)
+{
+  if(nodemapexporter_ == Teuchos::null
+        or not nodemapexporter_->TargetMap().SameAs(*NodeRowMapView())
+        or not nodemapexporter_->SourceMap().SameAs(oldnodemap)
+     or dofmapexporter_ == Teuchos::null
+        or not dofmapexporter_->TargetMap().SameAs(*DofRowMapView())
+        or not dofmapexporter_->SourceMap().SameAs(olddofmap)
+     )
+  {
+    nodemapexporter_ = Teuchos::rcp(new Epetra_Export(oldnodemap, *NodeRowMapView()));
+    dofmapexporter_ = Teuchos::rcp(new Epetra_Export(olddofmap, *DofRowMapView()));
+  }
+
+  return;
+}
+
 /*-----------------------------------------------------------------------------*/
 /* Update TimIntMStep state vector with the new (appropriate) map from discret_*/
 void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType)
@@ -949,29 +974,56 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epe
     const Teuchos::RCP<Epetra_Vector> old = Teuchos::rcp(new Epetra_Vector(*(*stateVector)(0)));
 
     if (trg_nodeVectorType)
+    {
+      // create new vector
       stateVector->ReplaceMaps(NodeRowMapView());
+
+      // transfer data
+      int err = (*stateVector)(0)->Export(*old, *nodemapexporter_, Insert);
+      if (err)
+        dserror("Export using exporter returned err=%d", err);
+    }
     else
+    {
+      // create new vector
       stateVector->ReplaceMaps(DofRowMapView());
 
-    LINALG::Export(*old, *(*stateVector)(0));
+      // transfer data
+      int err = (*stateVector)(0)->Export(*old, *dofmapexporter_, Insert);
+      if (err)
+        dserror("Export using exporter returned err=%d", err);
+    }
   }
 }
 
 /*-----------------------------------------------------------------------------*/
 /* Update state vector with the new (appropriate) map from discret_*/
-void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector > &stateVector, bool trg_nodeVectorType)
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType)
 {
   if (stateVector != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> old = stateVector;
 
     if (trg_nodeVectorType)
+    {
+      // create new vector
       stateVector = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+
+      // transfer data
+      int err = stateVector->Export(*old, *nodemapexporter_, Insert);
+      if (err)
+        dserror("Export using exporter returned err=%d", err);
+    }
     else
+    {
+      // create new vector
       stateVector = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
-
-    LINALG::Export(*old, *stateVector);
+      // transfer data
+      int err = stateVector->Export(*old, *dofmapexporter_, Insert);
+      if (err)
+        dserror("Export using exporter returned err=%d", err);
+    }
   }
 }
 

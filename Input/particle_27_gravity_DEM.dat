@@ -30,6 +30,7 @@ FLUID_VIS                       No
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
+VERBOSITY                       Standard
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.025
@@ -77,6 +78,7 @@ NORMAL_DAMP_WALL                -1.0
 TANG_DAMP_WALL                  -1.0
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00 //0.01
+TRANSFER_EVERY                  2
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver
 SOLVER                          UMFPACK

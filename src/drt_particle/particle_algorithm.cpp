@@ -60,6 +60,7 @@ PARTICLE::Algorithm::Algorithm(
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
+  transfer_every_(DRT::Problem::Instance()->ParticleParams().get<int>("TRANSFER_EVERY")),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   particleMat_(NULL),
   extParticleMat_(NULL),
@@ -110,9 +111,8 @@ void PARTICLE::Algorithm::Timeloop()
   // time loop
   while (NotFinished())
   {
-    // transfer particles into their correct bins
-    if(Step()%100 == 0 and Comm().NumProc() != 1)
-      DynamicLoadBalancing();
+    // redistribute load in parallel
+    DynamicLoadBalancing();
 
     // counter and print header
     PrepareTimeStep();
@@ -574,6 +574,12 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::DynamicLoadBalancing()
 {
+  // decide whether it is time for dynamic load balancing
+  if(Step()%100 != 0 or Comm().NumProc() == 1)
+    return;
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::DynamicLoadBalancing()");
+
   const Epetra_Map* oldrowmap = bindis_->ElementRowMap();
 
   Teuchos::RCP<const Epetra_CrsGraph> constgraph = CreateGraph();
@@ -705,7 +711,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     }
     }
 
-    if(maxrad + maxvel*dt > 0.5*cutoff_radius_)
+    if(maxrad + transfer_every_*maxvel*dt > 0.5*cutoff_radius_)
     {
       int lid = -1;
       // find entry with max velocity
@@ -1401,6 +1407,9 @@ void PARTICLE::Algorithm::BuildBinColMap(
 void PARTICLE::Algorithm::TransferParticles(const bool updatestates,
                                             const bool ghosting)
 {
+  if(Step()%transfer_every_ != 0)
+    return;
+
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // leave here in case nothing to do
@@ -2220,7 +2229,6 @@ void PARTICLE::Algorithm::UpdateConnectivity()
 
 
 /*----------------------------------------------------------------------*
-<<<<<<< .mine
  | get neighbouring particles and walls (particle version) ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(

@@ -328,7 +328,7 @@ void CAVITATION::Algorithm::TimeloopIterStaggered()
     while(not converged)
     {
       // safe data in the very beginning before start of subcycling
-      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1)
+      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1 or timestepsizeratio_ == 1)
       {
         PrepareRelaxation(outeriter);
         ++outeriter;
@@ -498,7 +498,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
       //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
       int err = couplingradius_->Update(omega, *del_, 1.0);
-      if(err<0) dserror("updated failed");
+      if(err<0) dserror("update failed");
     }
   }
   // convergence check for outeriter > 1 and reset if not converged

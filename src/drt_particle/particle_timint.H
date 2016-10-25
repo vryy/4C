@@ -439,6 +439,9 @@ namespace PARTICLE
     //! @name General purpose algorithm members
     //@{
 
+    /* Update exporter objects if layout has changed*/
+    virtual void UpdateExportersIfNecessary(const Epetra_BlockMap& oldnodemap, const Epetra_BlockMap& olddofmap);
+
     /* Update TimIntMStep state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
 
@@ -573,6 +576,16 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> inertia_;
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
+
+    //@}
+
+    //! @name Global state vector transfer helpers
+    //@{
+
+    //! exporter for transferring dof based map from old to new layout
+    Teuchos::RCP<Epetra_Export> dofmapexporter_;
+    //! exporter for transferring node based map from old to new layout
+    Teuchos::RCP<Epetra_Export> nodemapexporter_;
 
     //@}
 

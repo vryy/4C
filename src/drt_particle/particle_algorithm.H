@@ -322,6 +322,7 @@ namespace PARTICLE
 
     const bool moving_walls_;   ///< flag whether walls are moving
 
+    const int transfer_every_;   ///< interval to call particle transfer
 
     std::map<int,Teuchos::RCP<HeatSource> > heatSources_; ///< heat source storing
 

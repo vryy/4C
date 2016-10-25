@@ -78,7 +78,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     for(int iparticle=0; iparticle<currentbin[0]->NumNode(); ++iparticle)
     {
       DRT::Node* currparticle = particles[iparticle];
-      double r_p = (*particleradius)[ bindis_->NodeRowMap()->LID(currparticle->Id()) ];
+      const double r_p = (*particleradius)[ bindis_->NodeRowMap()->LID(currparticle->Id()) ];
       maxradius = std::max(r_p, maxradius);
     }
     if(maxradius < 0.0)
