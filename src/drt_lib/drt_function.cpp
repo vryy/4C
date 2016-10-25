@@ -271,6 +271,10 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedDouble("VEL_THETA_I")
     .AddNamedDouble("VEL_THETA_O")
     .AddNamedDouble("SLIPLENGTH_I")
+    .AddNamedDouble("SLIPLENGTH_O")
+    .AddNamedDouble("TRACTION_THETA_I")
+    .AddNamedDouble("TRACTION_THETA_O")
+    .AddNamedDouble("VISCOSITY")
     ;
 
   DRT::INPUT::LineDefinition bubbles;
@@ -781,6 +785,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
       {
+
         double radius_i;
         function->ExtractDouble("RADIUS_I",radius_i);
         double radius_o;
@@ -793,8 +798,42 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         double sliplength_i;
         function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
+        double sliplength_o;
+        function->ExtractDouble("SLIPLENGTH_O",sliplength_o);
 
-        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i, radius_o, vel_theta_i, vel_theta_o, sliplength_i)));
+        double traction_theta_i;
+        function->ExtractDouble("TRACTION_THETA_I",traction_theta_i);
+        double traction_theta_o;
+        function->ExtractDouble("TRACTION_THETA_O",traction_theta_o);
+
+        double viscosity;
+        function->ExtractDouble("VISCOSITY",viscosity);
+
+        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i,
+                                                                 radius_o,
+                                                                 vel_theta_i,
+                                                                 vel_theta_o,
+                                                                 sliplength_i,
+                                                                 sliplength_o,
+                                                                 traction_theta_i,
+                                                                 traction_theta_o,
+                                                                 viscosity)));
+
+
+//        double radius_i;
+//        function->ExtractDouble("RADIUS_I",radius_i);
+//        double radius_o;
+//        function->ExtractDouble("RADIUS_O",radius_o);
+//
+//        double vel_theta_i;
+//        function->ExtractDouble("VEL_THETA_I",vel_theta_i);
+//        double vel_theta_o;
+//        function->ExtractDouble("VEL_THETA_O",vel_theta_o);
+//
+//        double sliplength_i;
+//        function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
+//
+//        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i, radius_o, vel_theta_i, vel_theta_o, sliplength_i)));
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {

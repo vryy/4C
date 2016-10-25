@@ -243,7 +243,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     {
 
       // check for potential L2_Projection smoothing
-      const int l2_proj_num  = cond->GetInt("l2projsolv");
+      const int l2_proj_num  = ( cond->GetInt("l2projsolv") + 1 );
+      if(l2_proj_num<1)
+        dserror("Issue with L2_PROJECTION_SOLVER, smaller than 1!!!");
 
       // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
       // This method might be a bit too complicated as we need to save modphinp (size of fluid discretization),

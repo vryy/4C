@@ -199,30 +199,41 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(
     double radius_outer,
     double vel_theta_inner,
     double vel_theta_outer,
-    double sliplength_inner) :
+    double sliplength_inner,
+    double sliplength_outer,
+    double traction_theta_inner,
+    double traction_theta_outer,
+    double viscosity) :
 Function()
 {
   radius_inner_     = radius_inner;
   radius_outer_     = radius_outer;
-//
-//  vel_theta_inner_  = vel_theta_inner;
-//  vel_theta_outer_  = vel_theta_outer;
-//
-//  sliplength_inner_ = sliplength_inner;
 
   //Assume for now always -> krylov projection!
 
-  double alpha=-1.0;
+  double alpha_i=-1.0;
+  double alpha_o= 1.0;
+  double mu = viscosity;    // For now let the viscosity be unity -> i.e. g_theta is scaled with viscosity!
 
-  double tmp = -2.0 * alpha * sliplength_inner/(radius_inner*radius_inner) +1/radius_inner;
-  //double tmp_g = alpha * slip_length/mu*g_t;
-  double tmp_g = 0.0;
+  // Don't change direction of prescribed traction-vector. Should be
+  double g_t1_scaled = mu*traction_theta_inner; //alpha_i*mu*traction_theta_inner;
+  double g_t2_scaled = mu*traction_theta_outer; //alpha_o*mu*traction_theta_outer;
 
-  //A=c1_, B=c2_
-  c1_ = (vel_theta_inner + tmp_g - vel_theta_outer*radius_outer*tmp)/(radius_inner - tmp*radius_outer*radius_outer);
-  c2_ = vel_theta_outer*radius_outer - c1_*radius_outer*radius_outer;
+  double rhs_i = mu*vel_theta_inner + sliplength_inner*g_t1_scaled;
+  double rhs_o = mu*vel_theta_outer + sliplength_outer*g_t2_scaled;
 
-//  pow(radius_outer,4.0)
+  double a_12 = alpha_i*sliplength_inner*mu*radius_inner*(-2.0*1.0/(radius_inner*radius_inner*radius_inner)) + mu/radius_inner;
+  double a_22 = alpha_o*sliplength_outer*mu*radius_outer*(-2.0*1.0/(radius_outer*radius_outer*radius_outer)) + mu/radius_outer;
+  double a_11 = mu*radius_inner;
+  double a_21 = mu*radius_outer;
+
+  //c2_ = ( rhs_o-rhs_i*a_21/a_11 ) / ( a_22-(a_21/a_11)*a_12 );
+  //c1_ = ( rhs_i - a_12*c2_ ) / a_11;
+
+  // Testing this way instead for a possible improvement (according to python this should be all right!)
+  double inv_determinant = 1.0 / (a_11*a_22 - a_12*a_21);
+  c1_ = (rhs_i*a_22 - a_12*rhs_o) * inv_determinant;
+  c2_ = (rhs_o*a_11 - a_21*rhs_i) * inv_determinant;
 
   //KRYLOV - int{\Omega} p d\Omega  = 0.0
 
@@ -236,9 +247,6 @@ Function()
 
   c3_ = (tmp_int_r1-tmp_int_r2)/(0.5*((radius_outer*radius_outer)-(radius_inner*radius_inner)));
 
-
-
-
 }
 
 /*----------------------------------------------------------------------*
@@ -248,28 +256,6 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, doub
 {
 
   double radius = sqrt(xp[0]*xp[0] + xp[1]*xp[1]);
-
-  // ISSUES WITH POINTS ON INNER CYLINDER! (Don't uncomment!)
-//  if(radius > radius_outer_ || radius < radius_inner_)
-//  {
-//    std::cout << "xp[0]: " << xp[0] << ", xp[1]: " << xp[1] << std::endl;
-//    std::cout << "radius: " << radius << ", radius_outer_: " << radius_outer_ << ", radius_inner_: " << radius_inner_  << std::endl;
-//    dserror("Illegal radius!");
-//  }
-
-// If theta is needed at some point..
-//  double theta;
-//  if(xp[0]!=0.0)
-//  {
-//    theta = atan2(xp[1],xp[0]);
-//  }
-//  else
-//  {
-//    if(xp[1]>0)
-//      theta=0.5*PI;
-//    else
-//      theta=1.5*PI; // Is this correct? Or -0.5PI?
-//  }
 
   double u_theta = c1_ * radius + c2_/radius;
 

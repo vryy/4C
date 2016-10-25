@@ -169,6 +169,8 @@ GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 GHOST_PENALTY_TRANSIENT_STAB    no
 GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
 GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           1.0
+GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

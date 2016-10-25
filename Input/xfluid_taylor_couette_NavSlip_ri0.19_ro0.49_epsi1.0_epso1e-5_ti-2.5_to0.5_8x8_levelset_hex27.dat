@@ -8,33 +8,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Taylor-Couette flow (50x50) [-0.5,0.5]x[-0.5,0.5]
-Two LevelSet-Fields are combined.
-Outer field is prescribed a Weak Dirichlet condition ( (u-u_{2,\theta})_t = 0 )
-( (u - u_{2,r})_n = 0 )
-The inner field is prescribed a Navier Slip condition : ( \eps * \sigma * n + \mu (u-u_{\theta})_t = 0 )
-( (u-u_r)_n = 0 )
-Parmeters:
-r_1 = 0.2
-r_2 = 0.45
-u_{2,\theta} = -0.45
-u_{2,r} = 0.0
-mu = 1.0
-eps = 1.0 //(slip length)
-Solution field:
-//(Full-Navier-slip)
-A = u_2/r_2
-//Pressure :
-p(r) = A^2 * r^2/2 + C
-//Velocity :
-u_{\theta}(r) = A*r
-//(Weak-Dirichlet)
-A = (u_2*r_2 -u_1*r_1) / (r_2^2 - r_1^2)
-B = u_1*r_1 - A *r_1^2
-//Pressure :
-p(r) = A^2 * r^2/2 + 2*A*B*log(r) - B^2/(2*r^2) + C
-//Velocity :
-u_{\theta}(r) = A*r + B/r
+Taylor-Couette flow (8x8) [-0.5,0.5]x[-0.5,0.5]
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      81
 //NODES                         200
@@ -43,130 +17,85 @@ DIM                             3
 PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 OUTPUT_GMSH                     No
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
+FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    zero_field                    //zero_field
-STARTFUNCNO                     -1
-TIMEINTEGR                      Stationary                    //One_Step_Theta// One_Step_Theta //Stationary
-NONLINITER                      fixed_point_like
-ITEMAX                          10
+INITIALFIELD                    field_by_function //zero_field
+STARTFUNCNO                     5
+TIMEINTEGR                      Stationary
+NONLINITER                      Newton //fixed_point_like
+ITEMAX                          20
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-13
-RESULTSEVRY                           1
+CONVTOL                         1.0E-12
+RESULTSEVRY                     1
 RESTARTEVRY                     10
-NUMSTASTEPS                     0
-THETA                           1.0
-START_THETA                     1.0
-ALPHA_F                         1.00
-ALPHA_M                         1.00
-LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
-SIMPLER                         No
 CONVFORM                        convective
-GAMMA                           1
-GRIDVEL                         BE
 PREDICTOR                       steady_state
 MAXTIME                         1
 NUMSTEP                         1
-TIMESTEP                        0.01
 GMSH_OUTPUT                     No
 GEOMETRY                        box
 CALCERROR                       byfunct
 CALCERRORFUNCNO                 5
-//                                                             // // VELGRAD_PROJ_SOLVER 1
-//                                                             // // VELGRAD_PROJ_METHOD L2_projection
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
+STABTYPE                        edge_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes                           //No //Yes
-SUPG                            Yes                           //No //Yes
-GRAD_DIV                        Yes                           //No //Yes
+PSPG                            No
+SUPG                            No
+GRAD_DIV                        No
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 CHARELELENGTH_U                 streamlength
 CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       //xfem_gp //std_eos //xfem_gp //std_eos //xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       //xfem_gp //std_eos //xfem_gp //xfem_gp //none
-EOS_CONV_CROSS                  none                          //xfem_gp, none
-EOS_DIV                         none                          //vel_jump_xfem_gp //none
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none                          //xfem_gp
+EOS_DIV                         div_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
+PRES_KRYLOV_2Dz                 yes
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No                            //Yes
+GMSH_DEBUG_OUT                  No
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    Yes
+GMSH_SOL_OUT                    No
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                No
-GMSH_CUT_OUT                    no
+GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-//XFLUID_TIMEINT                //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-VISC_ADJOINT_SYMMETRY           no
-NIT_STAB_FAC                    1e-3                          //75.0
+VISC_ADJOINT_SYMMETRY           yes
+NIT_STAB_FAC                    10.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 MASS_CONSERVATION_SCALING       only_visc
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none                          //abs_inflow //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 GHOST_PENALTY_TRANSIENT_STAB    no
 GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
 GHOST_PENALTY_2nd_STAB          yes
-GHOST_PENALTY_2nd_FAC           1.0
-GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-LINEAR_SOLVER                   1
-SOLVERTYPE                      linear_full                   //nonlinear
-FSSUGRDIFF                      No
-INITFUNCNO                      2
-INITIALFIELD                    field_by_function
-MAXTIME                         1
-NUMSTEP                         1
-RESTARTEVRY                     20
-THETA                           0.5                           //0.5
-TIMEINTEGR                      Stationary                    //One_Step_Theta //One_Step_Theta
-TIMESTEP                        0.1
-VELFUNCNO                       -1
-VELOCITYFIELD                   Navier_Stokes
-CALCFLUX_DOMAIN                 total
-RESULTSEVRY                     1
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-CALCERROR                       No
-CONVFORM                        convective
-GAMMA                           0.5
-MATID                           2
-OUTPUT_GMSH                     no
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        SUPG                          //SUPG
-DEFINITION_TAU                  Taylor_Hughes_Zarins_wo_dt
-SUGRVEL                         no
+GHOST_PENALTY_2nd_FAC           0.05
+GHOST_PENALTY_PRESSURE_2nd_FAC  0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     //Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -175,7 +104,7 @@ AZSOLVE                         GMRES                         // CG GMRES CGS Bi
 AZPREC                          ILU                           //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
 IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-13                       // tolerance in unscaled residual
+AZTOL                           1.0E-18                       // tolerance in unscaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           1000                          // size of krylov space for gmres
@@ -194,90 +123,96 @@ ML_DAMPFINE                     0.2                           // damping fine gr
 ML_DAMPMED                      0.2                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
-NAME                            Scatra_Solver
-SOLVER                          UMFPACK
+NAME                            Fluid_Solver_Large_Systems
+SOLVER                          Aztec_MSR                     //Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          MLFLUID2 //ILU                           //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+IFPACKGFILL                     4                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-18                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           1000                          // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS //ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS //ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME                            L2_Projection
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0 // Re=6.62
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
---------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
+MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 // initial G-function field
-FUNCT1 EXPR 0 0.0 0 FUNCTION -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.45)
+FUNCT1 EXPR 0 0.0 0 FUNCTION -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.49)
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.205
+FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.19
 ----------------------------------------------------------------------FUNCT3
-// initial G-function field
-FUNCT3 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)
+FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.49*(0.49)*(-1.0)
+FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.49*(0.49)*(-1.0)
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
-// initial G-function field
-FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0*y
+FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.49*(0.5)*(-1.0)
+FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.49*(0.5)*(-1.0)
+FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 TAYLORCOUETTEFLOW RADIUS_I 0.205 RADIUS_O 0.45 VEL_THETA_I 0.0 VEL_THETA_O 0.45 SLIPLENGTH_I 1.0 SLIPLENGTH_O 0.0 TRACTION_THETA_I 0.0 TRACTION_THETA_O 0.0 VISCOSITY 1.0
+FUNCT5  TAYLORCOUETTEFLOW RADIUS_I 0.19 RADIUS_O 0.49 VEL_THETA_I -0.19 VEL_THETA_O 0.49 SLIPLENGTH_I 1.0 SLIPLENGTH_O 1e-5 TRACTION_THETA_I -2.5 TRACTION_THETA_O 0.5 VISCOSITY 1.0
+----------------------------------------------------------------------FUNCT6
+FUNCT6 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.19*(-0.19)*(-1.0)
+FUNCT6 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.19*(-0.19)*(-1.0)
+FUNCT6 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT7
+FUNCT7 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.19*(-2.5)*(-1.0)
+FUNCT7 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.19*(-2.5)*(-1.0)
+FUNCT7 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //analytical solution:
-//Node 5952 Owner 0 Coords 0.22 -0.22 0.025 Dofs 71424 71425 71426 71427
-// r = 0.311126983722081
-// theta = -0.785398163397448
-// u_y = 0.215607272727273
-// u_x = 0.215607272727273
-// ans = -0.0121607976324657
-XFLUID DIS fluid NODE 5953 QUANTITY velx VALUE  2.15340569150091504e-01 TOLERANCE 1e-12
-XFLUID DIS fluid NODE 5953 QUANTITY vely VALUE  2.15341338320797548e-01 TOLERANCE 1e-12
-XFLUID DIS fluid NODE 5953 QUANTITY pressure VALUE -1.27081660478820298e-02 TOLERANCE 1e-11
+//Node 2153
+XFLUID DIS fluid NODE 573 QUANTITY velx VALUE  -5.15821274106692984e-01 TOLERANCE 1e-12
+XFLUID DIS fluid NODE 573 QUANTITY vely VALUE  1.92512597280376563e-01 TOLERANCE 1e-12
+XFLUID DIS fluid NODE 573 QUANTITY pressure VALUE 6.36514111001822147e-02 TOLERANCE 1e-10
 
 //analytical solution:
-// Node 1262 Owner 0 Coords 0.26 -0.02 -0.025 Dofs 15144 15145 15146 15147
-// r_test = 0.260768096208106
-// theta_test = -0.0767718912697780
-// u_y = 0.250596302521008
-// u_x = 0.0192766386554622
-// ans = -0.0257907011354002
-XFLUID DIS fluid NODE 1263 QUANTITY velx VALUE  1.92695537508612534e-02 TOLERANCE 1e-12
-XFLUID DIS fluid NODE 1263 QUANTITY vely VALUE  2.50031311772946852e-01 TOLERANCE 1e-12
-XFLUID DIS fluid NODE 1263 QUANTITY pressure VALUE -2.69021269370549321e-02 TOLERANCE 1e-11
+// Node 2286
+XFLUID DIS fluid NODE 208 QUANTITY velx VALUE  -2.25969564152450897e-01 TOLERANCE 1e-12
+XFLUID DIS fluid NODE 208 QUANTITY vely VALUE  -2.82497548365368778e-01 TOLERANCE 1e-12
+XFLUID DIS fluid NODE 208 QUANTITY pressure VALUE -2.19206390801168294e-03 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          8
 NDVOL                           1
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 4 //6
-// surface top
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// surface bottom
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// surface inflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// surface outflow
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// surface front
-//E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// surface back
-//E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS
 DVOL                            2
 E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_CURVE 0 SLIP_FUNCT 0
-E 1 - COUPLINGID 2 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE union COMPLEMENTARY 0 SURFACE_PROJECTION proj_normal L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 2 ROBIN_NEUMANN_ID 2 SLIPCOEFFICIENT 0.0 SLIP_CURVE 0 SLIP_FUNCT 0
+E 1 - COUPLINGID 2 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE union COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 2 ROBIN_NEUMANN_ID 2 SLIPCOEFFICIENT 1e-5 SLIP_CURVE 0 SLIP_FUNCT 0
 ------------------------------------DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS
 DVOL                            2
-E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 1 - ROBIN_NEUMANN_ID 2 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 7 7 0
+E 1 - ROBIN_NEUMANN_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 4 0
 ----------------------------------DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS
 DVOL                            2
-E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 1 - ROBIN_DIRICHLET_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 5 5 0
+E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 6 6 0
+E 1 - ROBIN_DIRICHLET_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 3 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              fluid_volume
@@ -316,10 +251,10 @@ VOLUME fluid DVOL 1
 -----------------------------------------------------------------NODE COORDS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------------------FLUID DOMAIN
-LOWER_BOUND                     -0.5 -0.5 -0.025
-UPPER_BOUND                     0.5 0.5 0.025
-INTERVALS                       25 25 1
-ELEMENTS                        FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+LOWER_BOUND                     -0.5 -0.5 -0.0625
+UPPER_BOUND                     0.5 0.5 0.0625
+INTERVALS                       8 8 1
+ELEMENTS                        FLUID HEX27 MAT 1 NA Euler GP 3 3 3
 PARTITION                       auto
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS

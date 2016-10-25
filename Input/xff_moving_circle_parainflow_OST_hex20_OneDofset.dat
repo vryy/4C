@@ -98,6 +98,8 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           1.0
+GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
 GHOST_PENALTY_FAC               0.1
 IS_PSEUDO_2D                    yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL

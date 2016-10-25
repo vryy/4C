@@ -135,6 +135,8 @@ COUPLING_METHOD                 Hybrid_LM_viscous_stress
 CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              yes                           //yes
 GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           1.0
+GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
 GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

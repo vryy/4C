@@ -103,6 +103,8 @@ MASS_CONSERVATION_SCALING       full                          // only_visc
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           1.0
+GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
 GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_FAC     0.001
 IS_PSEUDO_2D                    yes

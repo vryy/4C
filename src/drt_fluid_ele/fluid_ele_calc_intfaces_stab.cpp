@@ -14,13 +14,13 @@ Literature:
     E.Burman, M.A.Fernandez
     Comput. Methods Appl. Mech. Engrg. 198 (2009) 2508-2519
 
+\level 2
 
-<pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -486,7 +486,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   if(!GP_trans) GP_trans_fac = 0.0;
 
   const bool GP_u_p_2nd      = fldintfacepara.Face_GP_u_p_2nd();           // 2nd order ghost penalty stabilization for velocity und pressure
-
+  double GP_visc_2nd_fac     = fldintfacepara.Ghost_Penalty_visc_2nd_fac();  // 2nd order ghost penalty stabilization factor according to Nitsche's method
+  double GP_press_2nd_fac    = fldintfacepara.Ghost_Penalty_press_2nd_fac(); // 2nd order (pressure) ghost penalty stabilization factor according to Nitsche's method
+  if(!GP_u_p_2nd)
+  {
+    GP_visc_2nd_fac = 0.0;
+    GP_press_2nd_fac = 0.0;
+  }
   // flags to integrate velocity gradient jump based stabilization terms
   const bool EOS_div_div_jump= fldintfacepara.Face_EOS_Div_div_jump();     // eos/gp divergence stabilization based on divergence jump
 
@@ -1188,10 +1194,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
         // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
         // (this could be changed similar to the first order gradients!)
-        tau_u_2nd = tau_grad_*p_hk_squared_;
+        tau_u_2nd = GP_visc_2nd_fac*tau_grad_*p_hk_squared_;
 
         // for the pressure we use the pressure stabilization scaling accounting for the different flow regimes
-        tau_p_2nd = tau_p_*p_hk_squared_;
+        tau_p_2nd = GP_press_2nd_fac*tau_p_*p_hk_squared_;
       }
 
       GhostPenalty2nd(

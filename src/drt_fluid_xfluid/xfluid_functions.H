@@ -84,13 +84,17 @@ namespace DRT
     {
     public:
 
-      /// ctor
+      /// ctor (for NavSlip at both boundaries)
       TaylorCouetteFlow(
           double radius_inner,
           double radius_outer,
           double vel_theta_inner,
           double vel_theta_outer,
-          double epsilon);
+          double epsilon_inner,
+          double epsilon_outer,
+          double traction_theta_inner,
+          double traction_theta_outer,
+          double viscosity);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);

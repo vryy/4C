@@ -7,12 +7,14 @@
 This file has to contain all parameters called in fluid_ele_intfaces.cpp.
 Additional parameters required in derived classes of FluidIntFaceImpl have to
 be set in problem specific parameter lists derived from this class.
-<pre>
-Maintainers: Benedikt Schott
+
+\level 2
+
+\maintainer Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
@@ -64,7 +66,9 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::Done()
 DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
 :   set_face_general_fluid_parameter_(false),
     set_face_general_XFEM_parameter_(false),
+    physicaltype_(INPAR::FLUID::physicaltype_undefined),
     stabtype_(INPAR::FLUID::stabtype_edgebased),
+    oseenfieldfuncno_(-1),
     EOS_pres_(INPAR::FLUID::EOS_PRES_none),
     EOS_conv_stream_(INPAR::FLUID::EOS_CONV_STREAM_none),
     EOS_conv_cross_(INPAR::FLUID::EOS_CONV_CROSS_none),
@@ -77,6 +81,8 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
     ghost_penalty_visc_(false),
     ghost_penalty_trans_(false),
     ghost_penalty_u_p_2nd_(false),
+    ghost_penalty_visc_2nd_fac(0.0),
+    ghost_penalty_press_2nd_fac(0.0),
     is_face_EOS_Pres_(false),
     is_face_EOS_Conv_Stream_(false),
     is_face_EOS_Conv_Cross_(false),
@@ -215,6 +221,8 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
 
   ghost_penalty_visc_     = (bool)DRT::INPUT::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_STAB");
   ghost_penalty_trans_    = (bool)DRT::INPUT::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_TRANSIENT_STAB");
+  ghost_penalty_visc_2nd_fac = stablist_xfem.get<double>("GHOST_PENALTY_2nd_FAC", 0.0);
+  ghost_penalty_press_2nd_fac = stablist_xfem.get<double>("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.0);
 
   // safety check
   if(fldparatimint_->IsStationary() and ghost_penalty_trans_) dserror("Do not use transient ghost penalties for stationary problems");

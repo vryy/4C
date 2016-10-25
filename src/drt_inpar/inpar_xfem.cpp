@@ -237,6 +237,14 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   DoubleParameter("GHOST_PENALTY_TRANSIENT_FAC",       0.001, "define stabilization parameter ghost penalty transient interface stabilization",&xfluid_stab);
 
+//  // NOT chosen optimally!
+//  DoubleParameter("GHOST_PENALTY_2nd_FAC", 1.0,"define stabilization parameter ghost penalty 2nd order viscous interface stabilization",&xfluid_stab);
+//  DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 1.0,"define stabilization parameter ghost penalty 2nd order pressure interface stabilization",&xfluid_stab);
+
+  DoubleParameter("GHOST_PENALTY_2nd_FAC", 0.05,"define stabilization parameter ghost penalty 2nd order viscous interface stabilization",&xfluid_stab);
+  DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.05,"define stabilization parameter ghost penalty 2nd order pressure interface stabilization",&xfluid_stab);
+
+
   BoolParameter("XFF_EOS_PRES_EMB_LAYER","no","switch on/off edge-based pressure stabilization on interface-contributing elements of the embedded fluid",&xfluid_stab);
 
   BoolParameter("IS_PSEUDO_2D","no","modify viscous interface stabilization due to the vanishing polynomial in third dimension when using strong Dirichlet conditions to block polynomials in one spatial dimension",&xfluid_stab);

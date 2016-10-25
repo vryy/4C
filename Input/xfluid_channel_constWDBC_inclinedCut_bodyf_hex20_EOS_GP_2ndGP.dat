@@ -89,6 +89,8 @@ VISC_STAB_HK                    ele_vol_div_by_max_ele_surf   // vol_div_by_surf
 CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           1.0
+GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

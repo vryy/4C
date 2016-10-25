@@ -8,12 +8,13 @@ This file has to contain all parameters called in fluid_ele_intfaces.cpp.
 Additional parameters required in derived classes of FluidIntFaceImpl have to
 be set in problem specific parameter lists derived from this class.
 
-<pre>
-Maintainers: Benedikt Schott
+\level 2
+
+\maintainer Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-245
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -163,7 +164,13 @@ public:
 
   //! get the transient ghost-penalty stabilization factor
   double Ghost_Penalty_trans_fac(){return ghost_penalty_trans_fac;};
-//
+
+  //! get the viscous ghost-penalty stabilization factor
+  double Ghost_Penalty_visc_2nd_fac(){return ghost_penalty_visc_2nd_fac;};
+
+  //! get the viscous ghost-penalty stabilization factor
+  double Ghost_Penalty_press_2nd_fac(){return ghost_penalty_press_2nd_fac;};
+  //
   /*----------------------------------------------------*/
   //! @name stabilization parameters, individually set for each face
   /*----------------------------------------------------*/
@@ -267,6 +274,11 @@ protected:
   //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
   bool ghost_penalty_u_p_2nd_;
 
+  //! factor for viscous ghost penalty XFEM stabilization terms
+  double ghost_penalty_visc_2nd_fac;
+
+  //! factor for pressure ghost penalty XFEM stabilization terms
+  double ghost_penalty_press_2nd_fac;
 
   /*----------------------------------------------------*/
   //! @name EOS stabilization parameter, individually set for each face
