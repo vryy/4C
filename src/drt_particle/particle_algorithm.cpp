@@ -13,6 +13,7 @@
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
+#include "particle_utils.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure.H"
 
@@ -2419,6 +2420,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   Teuchos::RCP<Epetra_Vector> densityn = particles_->WriteAccessDensitynp();
   Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
   Teuchos::RCP<Epetra_Vector> accn = particles_->WriteAccessAccnp();
+  Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
 
   int lidNodeCounter = 0;
   for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
@@ -2445,8 +2447,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
     MassDensityUpdaterForParticleDismemberer(mass, densityn, radiusn, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
     (*radiusn)[lidNode_new] = dismemberRadius;
     (*specEnthalpyn)[lidNode_new] = (*specEnthalpyn)[lidNode_old];
-    // compute the particle inertia and fill the vector
-    particles_->ComputeInertia(lidNode_new);
+    (*inertia)[lidNode_new] = PARTICLE::Utils::ComputeInertia((*radiusn)[lidNode_new], (*mass)[lidNode_new]);
 
     for(int d=0; d<3; ++d)
     {
@@ -2469,7 +2470,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
       MassDensityUpdaterForParticleDismemberer(mass, densityn, radiusn, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
       // radius MUST be updated after MassDensityUpdaterForParticleDismemberer
       (*radiusn)[lidNode_old] = dismemberRadius;
-      particles_->ComputeInertia(lidNode_old);
+      (*inertia)[lidNode_old] = PARTICLE::Utils::ComputeInertia((*radiusn)[lidNode_old], (*mass)[lidNode_old]);
     }
   }
 }

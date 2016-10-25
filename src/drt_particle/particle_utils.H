@@ -1,0 +1,75 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file particle_utils.H
+
+\brief General functions for the Particle-MeshFree dynamics
+
+\level 3
+
+\maintainer Alessandro Cattabiani
+*/
+
+/*----------------------------------------------------------------------*/
+#ifndef SRC_DRT_PARTICLE_PARTICLE_UTILS_H_
+#define SRC_DRT_PARTICLE_PARTICLE_UTILS_H_
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_Vector.h"
+#include "Teuchos_RCP.hpp"
+#include <math.h>
+
+//! forward declarations
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMat;
+    class ExtParticleMat;
+  }
+}
+
+namespace PARTICLE
+{
+  class Utils
+  {
+  public :
+    //! Radius -> volume
+    static double Radius2Volume(double radius) { return (4.0 / 3.0) * M_PI * radius * radius * radius; }
+
+    //! Volume -> radius
+    static double Volume2Radius(double volume) { return std::pow((3.0 / 4.0) * M_1_PI * volume, 1.0 / 3.0); }
+
+    //! inertia, sphere-like particles (I = 2/5 * m * r^2)
+    static double ComputeInertia(const double &radius, const double &mass) { return 0.4 * mass * radius * radius; }
+
+    //! Compute the inertia vector
+    //! The most updated radius is used (radius_ vs radiusn_)
+    //! Inertia-vector -> sphere: I = 2/5 * m * r^2
+    static void ComputeInertia(
+      const Teuchos::RCP<const Epetra_Vector> radius,
+      const Teuchos::RCP<const Epetra_Vector> mass,
+      Teuchos::RCP<Epetra_Vector> &inertia,
+      bool trg_createInertiaVector = false);
+
+    //! Compute the pressure from the proper speed of sound and the density (small density variation hypotesis)
+    static double Density2Pressure(const double& speedOfSound, const double& deltaDensity)
+      { return speedOfSound * speedOfSound * deltaDensity; };
+
+    //! Compute pressure for the entire vector
+    static void Density2Pressure(
+        const Teuchos::RCP<const Epetra_Vector> deltaDensity,
+        const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
+        Teuchos::RCP<Epetra_Vector> &pressure,
+        const MAT::PAR::ExtParticleMat* extParticleMat,
+        bool trg_createPressureVector = false);
+
+    //! Compute the temperature from the specEnthalpy
+    static Teuchos::RCP<const Epetra_Vector> SpecEnthalpy2Temperature(
+        const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
+        const MAT::PAR::ExtParticleMat*);
+  };
+}
+
+#endif /* SRC_DRT_PARTICLE_PARTICLE_UTILS_H_ */

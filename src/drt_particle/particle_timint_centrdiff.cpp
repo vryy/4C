@@ -20,6 +20,7 @@
 #include "particle_timint_centrdiff.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
+#include "particle_utils.H"
 #include "particleMeshFree_interaction.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
@@ -132,17 +133,17 @@ void PARTICLE::TimIntCentrDiff::Init()
     }
     const double deltaSpecEnthalpy = max_QDot * (*dt_)[0]/min_density;
 
-    double volume = Radius2Volume(r_max);
+    double volume = PARTICLE::Utils::Radius2Volume(r_max);
     volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
-    double v_max_thermo = 2*(Volume2Radius(volume) - r_max);
+    double v_max_thermo = 2*(PARTICLE::Utils::Volume2Radius(volume) - r_max);
 
-    volume = Radius2Volume(r_max);
+    volume = PARTICLE::Utils::Radius2Volume(r_max);
     volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
-    v_max_thermo = std::max(v_max_thermo,2*(Volume2Radius(volume) - r_max));
+    v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
 
-    volume = Radius2Volume(r_max);
+    volume = PARTICLE::Utils::Radius2Volume(r_max);
     volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
-    v_max_thermo = std::max(v_max_thermo,2*(Volume2Radius(volume) - r_max));
+    v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
 
     if (v_max_thermo > 0.01 * v_max)
       dserror("WARNING! The expansion speed of the particle radii is bigger that 1\% of MAX_VELOCITY. Dismembered particles can explode");
@@ -247,7 +248,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
     if (newSpecEnthalpy != oldSpecEnthalpy)
     {
       // compute the current volume
-      double volume = Radius2Volume((*radiusn_)[lidNode]);
+      double volume = PARTICLE::Utils::Radius2Volume((*radiusn_)[lidNode]);
       // specEnthalpy difference
       double deltaSpecEnthalpy = newSpecEnthalpy - oldSpecEnthalpy;
 
@@ -358,7 +359,7 @@ void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
       // --- compute the new volume --- //
 
       // updates
-      (*radiusn_)[lidNode] = Volume2Radius(volume);
+      (*radiusn_)[lidNode] = PARTICLE::Utils::Volume2Radius(volume);
       (*densityn_)[lidNode] = (*mass_)[lidNode]/volume;
     }
   }

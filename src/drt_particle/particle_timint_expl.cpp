@@ -19,6 +19,7 @@
 #include "particle_timint_expl.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
+#include "particle_utils.H"
 #include "particleMeshFree_interaction.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -94,7 +95,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   // update the pressure
   // It is here because it is a slave of the density
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-    ComputePressure();
+    PARTICLE::Utils::Density2Pressure(densityn_, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
 
   if(collhandler_ != Teuchos::null)
   {

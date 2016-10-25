@@ -16,6 +16,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "particle_utils.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_inpar/inpar_cavitation.H"
@@ -29,8 +30,6 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <math.h>
-
 
 // forward declarations
 namespace DRT
@@ -279,9 +278,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() { return (*specEnthalpy_)(0); }
 
     //! Read-only temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return ComputeTemperature((*specEnthalpy_)(0)); }
-
-
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen();
 
     //! Read-only displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
@@ -311,7 +308,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() { return specEnthalpyn_; }
 
     //! Read-only temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return ComputeTemperature(specEnthalpyn_); }
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp();
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
@@ -391,19 +388,6 @@ namespace PARTICLE
 
     //@}
 
-    //! @name Compute Methods
-    //@{
-
-    //! Compute the inertia vector
-    //! The most updated radius is used (radius_ vs radiusn_)
-    //! inertia-vector -> sphere: I = 2/5 * m * r^2
-    virtual void ComputeInertia(const int &lidNode);
-
-    //! Compute inertia for the entire vector
-    virtual void ComputeInertia(bool trg_createInertiaVector = false);
-
-    //@}
-
     //! @name Time step helpers
     //@{
 
@@ -448,9 +432,6 @@ namespace PARTICLE
     /* Update state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
-    /* Compute the pressure from the density */
-
-
     //! initialization of vector for visualization of the particle orientation
     virtual void InitializeOrientVector();
 
@@ -458,21 +439,6 @@ namespace PARTICLE
 
     //! @name Protected Compute Methods
     //@{
-
-    /* Radius -> volume */
-    double Radius2Volume(double radius) { return (4.0 / 3.0) * M_PI * radius * radius * radius; };
-
-    /* Volume -> radius */
-    double Volume2Radius(double volume) { return std::pow((3.0 / 4.0) * M_1_PI * volume, 1.0 / 3.0); };
-
-    /* Compute the temperature from the specEnthalpy */
-    virtual Teuchos::RCP<const Epetra_Vector> ComputeTemperature(Teuchos::RCP<const Epetra_Vector> specEnthalpy);
-
-    //! Compute the pressure of lidNode
-    virtual void ComputePressure(const int &lidNode, bool trg_Nplus1 = false);
-
-    //! Compute pressure for the entire vector
-    virtual void ComputePressure(bool trg_createPressureVector = false, bool trg_Nplus1 = false);
 
     //@}
 

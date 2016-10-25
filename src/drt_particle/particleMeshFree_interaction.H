@@ -82,6 +82,15 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> accn,
       Teuchos::RCP<Epetra_Vector> densityDotn);
 
+    /// calculate interaction with neighboring walls
+    virtual void CalcNeighboringWallMeshFreeInteraction(
+      const int lidNodeCol_i,
+      const std::set<DRT::Element*>& neighboring_walls,
+      const Teuchos::RCP<DRT::Discretization>& walldiscret,
+      const Teuchos::RCP<const Epetra_Vector>& walldisn,
+      const Teuchos::RCP<const Epetra_Vector>& wallveln,
+      const Teuchos::RCP<Epetra_Vector>& accn);
+
     //@}
 
 
@@ -120,6 +129,18 @@ namespace PARTICLE
 
     //@}
 
+    //! @name wall interaction parameters
+    //@{
+
+
+    /// pressure divergence of the wall
+    double wallInteractionPressureDivergence_;
+
+    ///fake mass of the virtual particles on the wall
+    double wallInteractionFakeMass_;
+
+    //@}
+
   };  // class ParticleCollisionHandler
 
   //! @name Container structs for faster access
@@ -136,6 +157,16 @@ namespace PARTICLE
     int gid;
     std::vector<int> lm;
     int owner;
+  };
+
+  /// struct to store wall contact point and additional information about corresponding wall ele
+  struct WallInteractionPoint {
+   int elemId;
+   LINALG::Matrix<3,1> point;
+   double penetration;
+   std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
+   std::vector<int> lm;
+   std::vector<int> lmowner;
   };
 
   //@}

@@ -276,17 +276,6 @@ namespace ADAPTER
 
     //@}
 
-    //! @name Compute Methods
-    //@{
-
-    //! Compute the inertia vector
-    virtual void ComputeInertia(const int &lidNode) = 0;
-
-    //! Compute inertia for the entire vector
-    virtual void ComputeInertia(bool trg_createInertiaVector) = 0;
-
-    //@}
-
     //! @name Time step helpers
     //@{
 
