@@ -34,6 +34,9 @@ MAX_RADIUS                      0.1
 MAX_VELOCITY                    1.0
 RADIUS_DISTRIBUTION             no
 RADIUS_DISTRIBUTION_SIGMA       0.004
+WALL_INTERACTION_TYPE           InitParticle
+WALL_INTERACTION_PRESSDIV       -1
+WALL_INTERACTION_FAKEMASS       -1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION

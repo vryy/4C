@@ -40,31 +40,44 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   discret_(discret),
   particle_algorithm_(particlealgorithm),
   myrank_(discret->Comm().MyPID()),
-  weightFunctionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION"))
+  weightFunctionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION")),
+  wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE"))
 {
 // checks
 if (particle_algorithm_->ExtParticleMat() == NULL)
   dserror("extParticleMat_ is empty");
 // extract wall parameters
-const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-wallInteractionPressureDivergence_ = particleparams.get<double>("WALL_INTERACTION_PRESSDIV");
-wallInteractionFakeMass_ = particleparams.get<double>("WALL_INTERACTION_FAKEMASS");
-
-// temporary storage of the material parameter bundle in case it is used
-const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-
-// we autocompute the wall interaction parameters based on the particle material in case they are -1
-if (wallInteractionPressureDivergence_ == -1)
-  wallInteractionPressureDivergence_ = std::pow(extParticleMat->SpeedOfSoundS(),2) / extParticleMat->initDensity_;
-if (wallInteractionFakeMass_ == -1)
-  wallInteractionFakeMass_ = extParticleMat->initDensity_ * (4.0 / 3.0) * M_PI * std::pow(extParticleMat->initRadius_,3);
+switch(wallInteractionType_)
+{
+case INPAR::PARTICLE::InitParticle :
+  {
+    const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+    wallInteractionPressureDivergence_ = std::pow(extParticleMat->SpeedOfSoundS(),2) / extParticleMat->initDensity_;
+    wallInteractionFakeMass_ = extParticleMat->initDensity_ * (4.0 / 3.0) * M_PI * std::pow(extParticleMat->initRadius_,3);
+    break;
+  }
+case INPAR::PARTICLE::Mirror :
+  {
+    wallInteractionPressureDivergence_ = -1;
+    wallInteractionFakeMass_ = -1;
+    break;
+  }
+case INPAR::PARTICLE::Custom :
+  {
+    const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+    wallInteractionPressureDivergence_ = particleparams.get<double>("WALL_INTERACTION_PRESSDIV");
+    wallInteractionFakeMass_ = particleparams.get<double>("WALL_INTERACTION_FAKEMASS");
+  }
+}
 
 // other checks
-if (wallInteractionPressureDivergence_ < 0)
-  dserror("the value of wallInteractionPressureDivergence_ is unacceptable");
-if (wallInteractionFakeMass_ < 0)
-  dserror("the value of wallInteractionFakeMass_ is unacceptable");
-
+if (wallInteractionType_ != INPAR::PARTICLE::Mirror)
+{
+  if (wallInteractionPressureDivergence_ < 0)
+    dserror("the value of wallInteractionPressureDivergence_ is unacceptable");
+  if (wallInteractionFakeMass_ < 0)
+    dserror("the value of wallInteractionFakeMass_ is unacceptable");
+}
 // fill the col vectors with the proper particle data
 SetStateVectors();
 
@@ -504,6 +517,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
       GradientWeightFunction_CubicBSpline(WFGrad, particle_i.radius);
       break;
     }
+    }
+
+    if (wallInteractionType_ == INPAR::PARTICLE::Mirror)
+    {
+      wallInteractionPressureDivergence_ = p_over_rhoSquare_i;
+      wallInteractionFakeMass_ = particle_i.mass;
     }
 
     // p_i/\rho_i^2 + p_j/\rho_j^2

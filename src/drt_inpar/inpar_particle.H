@@ -77,6 +77,14 @@ namespace INPAR
       CubicBspline
     };
 
+    /// wall interaction type for MeshFree interactions
+    enum WallInteractionType
+    {
+      InitParticle,
+      Mirror,
+      Custom
+    };
+
     /// set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

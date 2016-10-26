@@ -127,6 +127,9 @@ namespace PARTICLE
     /// weight function type
     const INPAR::PARTICLE::WeightFunction weightFunctionType_;
 
+    /// wall interaction type
+    const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
+
     //@}
 
     //! @name wall interaction parameters
