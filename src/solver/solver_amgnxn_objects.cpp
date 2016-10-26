@@ -420,19 +420,29 @@ void LINALG::SOLVER::AMGNXN::BlockedMatrix::ParseBlocks(
       sint += ch;
   }
 
-  // Recover the local numeration
+  // Recover the local numeration and check whether each block was processed exactly once
   superblocks_to_blocks_local = superblocks_to_blocks;
+  std::vector<bool> blocks_processed(blocks.size(),false);
   for(int i=0;i<(int)superblocks_to_blocks.size();i++)
   {
     for(int j=0;j<(int)superblocks_to_blocks[i].size();j++)
     {
       if(std::find(blocks.begin(),blocks.end(),superblocks_to_blocks[i][j])==blocks.end() )
-        dserror("Something wrong. Make sure in your xml file you are counting the blocks starting with 0 or you are not given to much blocks ");
+        dserror("Something wrong. Make sure in your xml file you are counting the blocks starting with 0 and you are not specifying too many blocks!");
       int pos =  std::find(blocks.begin(),blocks.end(),superblocks_to_blocks[i][j])
         - blocks.begin();
-      superblocks_to_blocks_local[i][j] = pos;
+      if(blocks_processed[pos])
+        dserror("Matrix block %d has been specified multiple times in the *.xml file!",blocks[pos]);
+      else
+      {
+        blocks_processed[pos] = true;
+        superblocks_to_blocks_local[i][j] = pos;
+      }
     }
   }
+  for(unsigned iblock=0; iblock<blocks_processed.size(); ++iblock)
+    if(not blocks_processed[iblock])
+      dserror("Matrix block %d has not been specified in the *.xml file!",blocks[iblock]);
 
   return;
 }
