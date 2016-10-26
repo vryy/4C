@@ -1,14 +1,14 @@
-  /*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file immersed_partitioned_cellmigration.H
+\level 2
 
-\brief partitioned immersed fsi algorithm for dirichlet-neumann coupling (volume dirichlet coupling)
+\brief partitioned immersed cell migration algorithm
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_CELLMIGRATION_H
 #define IMMERSED_PARTITIONED_CELLMIGRATION_H
@@ -32,6 +32,22 @@ public:
 
   /// setup partitioned immersed cell migration algorithm
   explicit ImmersedPartitionedCellMigration(const Teuchos::ParameterList& params, const Epetra_Comm& comm);
+
+  /*! \brief Initialize this object
+
+  \warning none
+  \return int
+  \date 08/16
+  \author rauch  */
+  virtual int Init(const Teuchos::ParameterList& params);
+
+  /*! \brief Setup all class internal objects and members
+
+  \warning none
+  \return void
+  \date 08/16
+  \author rauch  */
+  virtual void Setup();
 
 private:
 

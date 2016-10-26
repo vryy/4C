@@ -15,7 +15,9 @@
 #include "../linalg/linalg_utils.H"
 
 
-IMMERSED::ImmersedBase::ImmersedBase()
+IMMERSED::ImmersedBase::ImmersedBase():
+issetup_(false),
+isinit_(false)
 {
 
 }

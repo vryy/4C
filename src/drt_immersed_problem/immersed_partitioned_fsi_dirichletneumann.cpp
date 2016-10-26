@@ -60,7 +60,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
     immersed_info_isvalid_(false),
     fluiddis_(Teuchos::null),
     structdis_(Teuchos::null),
-    immersedstructure_(Teuchos::null)
+    immersedstructure_(Teuchos::null),
+    fluid_action_(FLD::none)
 
 {
   // empty constructor
@@ -69,8 +70,33 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::ParameterList& params)
+{
+  // reset the setup flag
+  SetIsSetup(false);
+
+  // get fluid action type needed in CalcArtificialVelocity() as set in immersed_problem_dyn() in the params
+  std::string fluid_action = const_cast<Teuchos::ParameterList&>(params).get<std::string>("fluid_action","none");
+
+  if (fluid_action == "none") dserror("No fluid action type supplied");
+  else if (fluid_action=="interpolate_velocity_to_given_point_immersed")
+    fluid_action_ = FLD::interpolate_velocity_to_given_point_immersed;
+  else {dserror("Unknown type of fluid action for immersed partitioned fsi");}
+
+  // set isinit_ flag true
+  SetIsInit(true);
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 {
+  // make sure Init(...) was called first
+  CheckIsInit();
+
   // call setup of base class
   FSI::PartitionedImmersed::Setup();
 
@@ -222,6 +248,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 
   // wait for all processors to arrive here
   Comm().Barrier();
+
+  // set flag issetup true
+  SetIsSetup(true);
 }
 
 
@@ -229,6 +258,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
+  CheckIsInit();
+  CheckIsSetup();
+
   if (displacementcoupling_)
   {
     // get the current artificial velocity state
@@ -830,7 +862,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Ca
                      &curr_subset_of_fluiddis_,
                      structure_SearchTree_,
                      &currpositions_struct_,
-                     (int)FLD::interpolate_velocity_to_given_point_immersed,
+                     (int)fluid_action_,
                      false);
 
     // we just validated the artificial velocity

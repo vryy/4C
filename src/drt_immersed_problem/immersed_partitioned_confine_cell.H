@@ -43,6 +43,22 @@ public:
   /// setup partitioned immersed cell migration algorithm
   explicit ImmersedPartitionedConfineCell(const Teuchos::ParameterList& params, const Epetra_Comm& comm);
 
+  /*! \brief Initialize this object
+
+  \warning none
+  \return int
+  \date 08/16
+  \author rauch  */
+  virtual int Init(const Teuchos::ParameterList& params);
+
+  /*! \brief Setup all class internal objects and members
+
+  \warning none
+  \return void
+  \date 08/16
+  \author rauch  */
+  virtual void Setup();
+
   /// read restart
   virtual void ReadRestart(int step);
 

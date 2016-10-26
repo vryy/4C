@@ -106,6 +106,12 @@ void immersed_problem_drt()
         dserror("unknown coupling scheme");
       }
 
+      // set fluid action type needed in function CalcArtificialVelocity()
+      params.set<std::string>("fluid_action","interpolate_velocity_to_given_point_immersed");
+
+      // init algo
+      algo->Init(params);
+
       // ghost structure redundantly on all procs
       DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
@@ -203,6 +209,12 @@ void immersed_problem_drt()
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
       }
+
+      // set fluid action type needed in function CalcArtificialVelocity()
+      params.set<std::string>("fluid_action","interpolate_velocity_to_given_point_immersed");
+
+      // init algo
+      algo->Init(params);
 
       // setup algo
       algo->Setup();
@@ -501,6 +513,12 @@ void CellMigrationControlAlgorithm()
     Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedFlowCellInteraction(params,comm));
 
+    // init algo
+    algo->Init(params);
+
+    // setup algo
+    algo->Setup();
+
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
     {
@@ -532,6 +550,12 @@ void CellMigrationControlAlgorithm()
 
     Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedAdhesionTraction(params,comm));
+
+    // init algo
+    algo->Init(params);
+
+    // setup algo
+    algo->Setup();
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -565,6 +589,12 @@ void CellMigrationControlAlgorithm()
     Teuchos::RCP<IMMERSED::ImmersedPartitionedConfineCell> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedConfineCell(params,comm));
 
+    // init algo
+    algo->Init(params);
+
+    // setup algo
+    algo->Setup();
+
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
     {
@@ -596,6 +626,12 @@ void CellMigrationControlAlgorithm()
 
     Teuchos::RCP<IMMERSED::ImmersedPartitionedProtrusionFormation> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedProtrusionFormation(params,comm));
+
+    // init algo
+    algo->Init(params);
+
+    // setup algo
+    algo->Setup();
 
     // handle restart
     const int restart = DRT::Problem::Instance()->Restart();

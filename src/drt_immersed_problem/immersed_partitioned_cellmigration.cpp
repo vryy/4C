@@ -1,14 +1,14 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_cellmigration.cpp
+\level 2
 
 \brief partitioned immersed cell migration algorithm
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_cellmigration.H"
 
@@ -28,4 +28,32 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   adhesion_dynamics_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"ADHESION_DYNAMICS");
 
   exchange_manager_->SetIsFluidInteraction(fluid_interaction_);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int IMMERSED::ImmersedPartitionedCellMigration::Init(const Teuchos::ParameterList& params)
+{
+  // reset the setup flag
+  SetIsSetup(false);
+
+  // do all init stuff here
+
+  // set isinit_ flag true
+  SetIsInit(true);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::Setup()
+{
+  // make sure Init(...) was called first
+  CheckIsInit();
+
+  // do all setup stuff here
+
+  // set flag issetup true
+  SetIsSetup(true);
 }

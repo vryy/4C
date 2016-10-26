@@ -113,6 +113,34 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int IMMERSED::ImmersedPartitionedAdhesionTraction::Init(const Teuchos::ParameterList& params)
+{
+  // reset the setup flag
+  SetIsSetup(false);
+
+  // do all init stuff here
+
+  // set isinit_ flag true
+  SetIsInit(true);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::Setup()
+{
+  // make sure Init(...) was called first
+  CheckIsInit();
+
+  // do all setup stuff here
+
+  // set flag issetup true
+  SetIsSetup(true);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   ReinitTransferVectors();

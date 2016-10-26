@@ -16,6 +16,7 @@
 
 #include "immersed_base.H"
 #include "fsi_partitioned_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 
 namespace FLD
@@ -48,7 +49,20 @@ public:
   /// setup partitioned ImmersedFSI algorithm
   explicit ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm);
 
-  /// setup this object
+  /*! \brief Initialize this object
+
+  \warning none
+  \return int
+  \date 08/16
+  \author rauch  */
+  virtual int Init(const Teuchos::ParameterList& params);
+
+  /*! \brief Setup all class internal objects and members
+
+  \warning none
+  \return void
+  \date 08/16
+  \author rauch  */
   virtual void Setup();
 
   /// initialize search tree for structure discretization
@@ -202,6 +216,9 @@ protected:
 
   /// pointer to immersed structure adapter
   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> immersedstructure_;
+
+  /// action type for fluid needed in CalcArtificialVelocity()
+  FLD::Action fluid_action_;
 
 };// class ImmersedFSI
 } // namspace IMMERSED

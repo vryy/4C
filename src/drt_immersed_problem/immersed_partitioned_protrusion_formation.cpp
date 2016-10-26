@@ -94,6 +94,35 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int IMMERSED::ImmersedPartitionedProtrusionFormation::Init(const Teuchos::ParameterList& params)
+{
+  // reset the setup flag
+  SetIsSetup(false);
+
+  // do all init stuff here
+
+  // set isinit_ flag true
+  SetIsInit(true);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedProtrusionFormation::Setup()
+{
+  // make sure Init(...) was called first
+  CheckIsInit();
+
+  // do all setup stuff here
+
+  // set flag issetup true
+  SetIsSetup(true);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedProtrusionFormation::ReadRestart(int step)
 {
   cellstructure_->ReadRestart(step);
