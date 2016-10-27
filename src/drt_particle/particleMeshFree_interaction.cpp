@@ -197,16 +197,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
   // loop over the particles (no superpositions)
   const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
 
-  for(int i_skippingLoop=0; i_skippingLoop<numrowparticles; ++i_skippingLoop)
+  for(int rowPar_i=0; rowPar_i<numrowparticles; ++rowPar_i)
   {
     // extract the particle
-    DRT::Node *currparticle = discret_->lRowNode(i_skippingLoop);
+    DRT::Node *currparticle = discret_->lRowNode(rowPar_i);
 
     //find the bin it belongs to
     DRT::Element* currentBin = currparticle->Elements()[0];
-
-    // check I own the bin
-    assert(currentBin->Owner() == myrank_);
 
     const int binId = currentBin->Id();
     // if a bin has already been examined --> continue with next particle
@@ -258,7 +255,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 {
   // ids i
   const ParticleMeshFreeData &particle_i = particleMeshFreeData_[lidNodeCol_i];
-  const int lidNodeRow_i = densityDotn->Map().LID(particle_i.gid);
   const double p_over_rhoSquare_i = particle_i.pressure/std::pow(particle_i.density,2);
 
   // self-interaction
@@ -271,51 +267,78 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
   {
     const ParticleMeshFreeData &particle_j = particleMeshFreeData_[(*jj)->LID()];
 
-    // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
-    // if you pass this checkpoint you can compute the effect of particle j on particle i
-    if(particle_i.gid >= particle_j.gid && particle_i.radius == particle_j.radius && particle_j.owner == myrank_)
-      continue;
-
-    // compute distance and relative velocities
-    LINALG::Matrix<3,1> WFGrad, vRel;
-    WFGrad.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
-    vRel.Update(1.0, particle_i.vel, -1.0, particle_j.vel);
-
-    // compute the proper weight function gradient
-    switch (weightFunctionType_)
+    // evaluate contact only once in case we own particle j and the radii match. Otherwise compute everything,
+    // the assemble method does not write in case the particle is a ghost.
+    // another check on the radii is performed (later in the code) to handle the case where we want to write, we can write but accelerations are not actio<->reactio
+    if(particle_i.gid < particle_j.gid || particle_i.radius != particle_j.radius || particle_j.owner != myrank_)
     {
-    case INPAR::PARTICLE::CubicBspline :
-    {
-      GradientWeightFunction_CubicBSpline(WFGrad, particle_i.radius);
-      break;
+
+      // compute distance and relative velocities
+      LINALG::Matrix<3,1> WFGrad, vRel;
+      WFGrad.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
+      vRel.Update(1.0, particle_i.vel, -1.0, particle_j.vel);
+
+      // compute the proper weight function gradient
+      switch (weightFunctionType_)
+      {
+      case INPAR::PARTICLE::CubicBspline :
+      {
+        GradientWeightFunction_CubicBSpline(WFGrad, particle_i.radius);
+        break;
+      }
+      }
+
+      // compute WFGradVrel
+      const double WFGradDotVrel = WFGrad.Dot(vRel);
+      // p_i/\rho_i^2 + p_j/\rho_j^2
+      const double divergenceCoeff = (p_over_rhoSquare_i + particle_j.pressure/std::pow(particle_j.density,2));
+
+      static std::vector<int> nodeOwner_i(1);
+      nodeOwner_i[0] = particle_i.owner;
+      static std::vector<int> nodeGid_i(1);
+      nodeGid_i[0] = particle_i.gid;
+      static Epetra_SerialDenseVector densityDotn_i(1);
+      densityDotn_i[0] = particle_j.mass * WFGradDotVrel;
+
+      static Epetra_SerialDenseVector accn_i(3);
+      static std::vector<int> lmowner_i(3);
+      for(unsigned dim=0; dim<3; ++dim)
+      {
+        accn_i[dim] = - particle_j.mass * divergenceCoeff * WFGrad(dim);
+        lmowner_i[dim] = particle_i.owner;
+      }
+
+      // compute and add the correct densityDot_i
+      LINALG::Assemble(*densityDotn, densityDotn_i, nodeGid_i, nodeOwner_i);
+      // compute and add the correct accn_i
+      LINALG::Assemble(*accn, accn_i, particle_i.lm, lmowner_i);
+
+      // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
+      // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
+      if(particle_i.radius == particle_j.radius)
+      {
+        static std::vector<int> nodeOwner_j(1);
+        nodeOwner_j[0] = particle_j.owner;
+        static std::vector<int> nodeGid_j(1);
+        nodeGid_j[0] = particle_j.gid;
+        static Epetra_SerialDenseVector densityDotn_j(1);
+        densityDotn_j[0] = particle_i.mass * WFGradDotVrel;
+
+        static Epetra_SerialDenseVector accn_j(3);
+        static std::vector<int> lmowner_j(3);
+        for(unsigned dim=0; dim<3; ++dim)
+        {
+          accn_j[dim] = particle_i.mass * divergenceCoeff * WFGrad(dim); //there is no - because: actio = - reactio
+          lmowner_j[dim] = particle_j.owner;
+        }
+
+        // compute and add the correct densityDot_j
+        // beware! we assumed that WFGrad_ij = - WFGrad_ji and vRel_ij = - vRel_ji
+        LINALG::Assemble(*densityDotn, densityDotn_j, nodeGid_j, nodeOwner_j);
+        // compute and add the correct accn_j. action-reaction, there is += instead of -
+        LINALG::Assemble(*accn, accn_j, particle_j.lm, lmowner_j);
+      }
     }
-    }
-
-    // compute WFGradVrel
-    const double WFGradDotVrel = WFGrad.Dot(vRel);
-
-    // compute and add the correct densityDot_i
-    (*densityDotn)[lidNodeRow_i] += particle_j.mass * WFGradDotVrel;
-
-    // p_i/\rho_i^2 + p_j/\rho_j^2
-    const double divergenceCoeff = (p_over_rhoSquare_i + particle_j.pressure/std::pow(particle_j.density,2));
-    // compute and add the correct accn_i
-    for (int dim = 0; dim<3; ++dim)
-      (*accn)[3*lidNodeRow_i + dim] -= particle_j.mass * divergenceCoeff * WFGrad(dim);
-
-    // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
-    // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
-    if(!(particle_i.gid < particle_j.gid && particle_i.radius == particle_j.radius && particle_j.owner == myrank_))
-      continue;
-
-    const int lidNodeRow_j = densityDotn->Map().LID(particle_j.gid);
-
-    // compute and add the correct densityDot_j
-    // beware! we assumed that WFGrad_ij = - WFGrad_ji and vRel_ij = - vRel_ji
-    (*densityDotn)[lidNodeRow_j] += particle_i.mass * WFGradDotVrel;
-    // compute and add the correct accn_j. action-reaction, there is += instead of -
-    for (int dim = 0; dim<3; ++dim)
-      (*accn)[3*lidNodeRow_j + dim] += particle_i.mass * divergenceCoeff * WFGrad(dim);
   }
 }
 
@@ -334,7 +357,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
 
   // ids i
   const ParticleMeshFreeData &particle_i = particleMeshFreeData_[lidNodeCol_i];
-  const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid);
 
   // evaluate contact with walls first
   std::vector<WallInteractionPoint> surfaces;
@@ -527,9 +549,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
 
     // p_i/\rho_i^2 + p_j/\rho_j^2
     const double divergenceCoeff = (p_over_rhoSquare_i + wallInteractionPressureDivergence_);
+
+    static Epetra_SerialDenseVector accn_i(3);
+    static std::vector<int> lmowner_i(3);
+    for(unsigned dim=0; dim<3; ++dim)
+    {
+      accn_i[dim] = - wallInteractionFakeMass_ * divergenceCoeff * WFGrad(dim);
+      lmowner_i[dim] = particle_i.owner;
+    }
+
     // compute and add the correct accn_i
-    for (int dim = 0; dim<3; ++dim)
-      (*accn)[3*lidNodeRow_i + dim] -= wallInteractionFakeMass_ * divergenceCoeff * WFGrad(dim);
+    LINALG::Assemble(*accn, accn_i, particle_i.lm, lmowner_i);
   }
 }
 

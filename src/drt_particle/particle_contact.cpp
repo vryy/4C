@@ -481,25 +481,28 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   // list of all particles in the neighborhood of currparticle
   std::list<DRT::Node*> neighboring_particles;
 
-  // loop over all particles
-  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
-  for(int i=0; i<numcolparticles; ++i)
+  // loop over all row particles
+  const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
+  for(int rowPar_i=0; rowPar_i<numrowparticles; ++rowPar_i)
   {
-    DRT::Node *currparticle = discret_->lColNode(i);
+    // extract the particle
+    DRT::Node *currparticle = discret_->lRowNode(rowPar_i);
 
-    DRT::Element* CurrentBin = currparticle->Elements()[0];
-    const int binId = CurrentBin->Id();
+    //find the bin it belongs to
+    DRT::Element* currentBin = currparticle->Elements()[0];
 
+    // check I own the bin
+    assert(currentBin->Owner() == myrank_);
+
+    const int binId = currentBin->Id();
     // if a bin has already been examined --> continue with next particle
     if( examinedbins.find(binId) != examinedbins.end() )
-    {
       continue;
-    }
     //else: bin is examined for the first time --> new entry in examinedbins_
-    else
-    {
-      examinedbins.insert(binId);
-    }
+    examinedbins.insert(binId);
+
+    // extract the pointer to the particles
+    DRT::Node** currentBinParticles = currentBin->Nodes();
 
     // remove current content but keep memory
     neighboring_particles.clear();
@@ -507,16 +510,13 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
 
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
-
-    DRT::Node **NodesInCurrentBin = CurrentBin->Nodes();
-    const int numparticle = CurrentBin->NumNode();
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighboring_walls);
 
     // loop over all particles in CurrentBin
-    for(int i=0; i<numparticle; ++i)
+    for(int i=0; i<currentBin->NumNode(); ++i)
     {
-      DRT::Node *particle_i = NodesInCurrentBin[i];
-
+      // determine the particle we are analizing
+      DRT::Node* particle_i = currentBinParticles[i];
       // extract data
       ParticleCollData& data_i = particleData_[particle_i->LID()];
 
@@ -607,142 +607,152 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
   {
     DRT::Node* neighborparticle = (*j);
     const int gid_j = neighborparticle->Id();
-    // evaluate contact only once!
-    if(gid_i >= gid_j)
-      continue;
-
     // extract data
     const ParticleCollData& data_j = particleData_[neighborparticle->LID()];
-    static LINALG::Matrix<3,1> position_j;
-    position_j.Update(data_j.dis);
 
-    // normalized mass
-    const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
-
-    // might need to shift position of particle j in the presence of periodic boundary conditions
-    if(havepbc)
+    // evaluate contact only once in case we own particle j. Otherwise compute everything,
+    // the assemble method does not write in case the particle is a ghost
+    if(gid_i < gid_j || data_j.owner != myrank_)
     {
-      static int ijk_i[3], ijk_j[3];
-      particle_algorithm_->ConvertPosToijk(data_i.dis,ijk_i);
-      particle_algorithm_->ConvertPosToijk(position_j,ijk_j);
-      for(unsigned idim=0; idim<3; ++idim)
+      static LINALG::Matrix<3,1> position_j;
+      position_j.Update(data_j.dis);
+
+      // normalized mass
+      const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
+
+      // might need to shift position of particle j in the presence of periodic boundary conditions
+      if(havepbc)
       {
-        if(particle_algorithm_->HavePBCs(idim))
+        static int ijk_i[3], ijk_j[3];
+        particle_algorithm_->ConvertPosToijk(data_i.dis,ijk_i);
+        particle_algorithm_->ConvertPosToijk(position_j,ijk_j);
+        for(unsigned idim=0; idim<3; ++idim)
         {
-          if(ijk_i[idim] - ijk_j[idim] < -1)
-            position_j(idim) -= particle_algorithm_->PBCDelta(idim);
-          else if(ijk_i[idim] - ijk_j[idim] > 1)
-            position_j(idim) += particle_algorithm_->PBCDelta(idim);
+          if(particle_algorithm_->HavePBCs(idim))
+          {
+            if(ijk_i[idim] - ijk_j[idim] < -1)
+              position_j(idim) -= particle_algorithm_->PBCDelta(idim);
+            else if(ijk_i[idim] - ijk_j[idim] > 1)
+              position_j(idim) += particle_algorithm_->PBCDelta(idim);
+          }
         }
       }
-    }
 
-    // distance vector and distance between two particles
-    static LINALG::Matrix<3,1> r_contact;
-    for(unsigned dim=0; dim<3; ++dim)
-      r_contact(dim) = position_j(dim) - data_i.dis(dim);
-    const double norm_r_contact(r_contact.Norm2());
-
-    // penetration
-    const double g = norm_r_contact - data_i.rad - data_j.rad;
-    // in case of penetration contact forces and moments are calculated
-    if(g <= 0.0)
-    {
-      // contact forces
-      double normalcontactforce = 0.0;
-      static LINALG::Matrix<3,1> tangentcontactforce(true);
-
-      if(std::abs(g)>g_max_)
-        g_max_ = std::abs(g);
-
-      // velocity v_rel = v_i - v_j
-      static LINALG::Matrix<3,1> v_rel;
+      // distance vector and distance between two particles
+      static LINALG::Matrix<3,1> r_contact;
       for(unsigned dim=0; dim<3; ++dim)
-        v_rel(dim) = data_i.vel(dim) - data_j.vel(dim);
+        r_contact(dim) = position_j(dim) - data_i.dis(dim);
+      const double norm_r_contact(r_contact.Norm2());
 
-      // normal vector
-      static LINALG::Matrix<3,1> normal;
-      normal.Update(1.0/norm_r_contact,r_contact);
-
-      // part of v_rel in normal- irection: v_rel * n
-      const double v_rel_normal(v_rel.Dot(normal));
-
-      // calculation of normal contact force
-      CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, data_i.owner, data_j.owner);
-
-      // calculation of tangential contact force
-      if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+      // penetration
+      const double g = norm_r_contact - data_i.rad - data_j.rad;
+      // in case of penetration contact forces and moments are calculated
+      if(g <= 0.0)
       {
-        // velocity v_rel = v_i - v_j + omega_i x (r'_i n) + omega_j x (r'_j n)
-        static LINALG::Matrix<3,1> v_rel_rot;
-        v_rel_rot.CrossProduct(data_i.angvel, normal);
-        v_rel.Update(data_i.rad+g*0.5, v_rel_rot,1.);
-        v_rel_rot.CrossProduct(data_j.angvel, normal);
-        v_rel.Update(data_j.rad+g*0.5, v_rel_rot,1.);
+        // contact forces
+        double normalcontactforce = 0.0;
+        static LINALG::Matrix<3,1> tangentcontactforce(true);
 
-        // velocity v_rel_tangential
-        static LINALG::Matrix<3,1> v_rel_tangential;
-        v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
+        if(std::abs(g)>g_max_)
+          g_max_ = std::abs(g);
 
-        // if history variables does not exist -> create it
-        if(history_particle.find(gid_j) == history_particle.end())
+        // velocity v_rel = v_i - v_j
+        static LINALG::Matrix<3,1> v_rel;
+        for(unsigned dim=0; dim<3; ++dim)
+          v_rel(dim) = data_i.vel(dim) - data_j.vel(dim);
+
+        // normal vector
+        static LINALG::Matrix<3,1> normal;
+        normal.Update(1.0/norm_r_contact,r_contact);
+
+        // part of v_rel in normal- irection: v_rel * n
+        const double v_rel_normal(v_rel.Dot(normal));
+
+        // calculation of normal contact force
+        CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, data_i.owner, data_j.owner);
+
+        // calculation of tangential contact force
+        if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
         {
-          PARTICLE::Collision col;
-          // initialize with stick
-          col.stick = true;
-          //initialize g_t[3]
-          for(int dim=0; dim<3; ++dim)
+          // velocity v_rel = v_i - v_j + omega_i x (r'_i n) + omega_j x (r'_j n)
+          static LINALG::Matrix<3,1> v_rel_rot;
+          v_rel_rot.CrossProduct(data_i.angvel, normal);
+          v_rel.Update(data_i.rad+g*0.5, v_rel_rot,1.);
+          v_rel_rot.CrossProduct(data_j.angvel, normal);
+          v_rel.Update(data_j.rad+g*0.5, v_rel_rot,1.);
+
+          // velocity v_rel_tangential
+          static LINALG::Matrix<3,1> v_rel_tangential;
+          v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
+
+          // if history variables does not exist -> create it
+          if(history_particle.find(gid_j) == history_particle.end())
           {
-            col.g_t[dim] = 0.0;
+            PARTICLE::Collision col;
+            // initialize with stick
+            col.stick = true;
+            //initialize g_t[3]
+            for(int dim=0; dim<3; ++dim)
+            {
+              col.g_t[dim] = 0.0;
+            }
+
+            //insert new entry
+            history_particle.insert(std::pair<int,PARTICLE::Collision>(gid_j,col));
           }
 
-          //insert new entry
-          history_particle.insert(std::pair<int,PARTICLE::Collision>(gid_j,col));
+          CalculateTangentialContactForce(normalcontactforce, normal, tangentcontactforce,
+                    history_particle[gid_j], v_rel_tangential, m_eff, dt, data_i.owner, data_j.owner);
         }
 
-        CalculateTangentialContactForce(normalcontactforce, normal, tangentcontactforce,
-                  history_particle[gid_j], v_rel_tangential, m_eff, dt, data_i.owner, data_j.owner);
+        // calculation of overall contact force and moment
+        static LINALG::Matrix<3,1> contactforce_i, contactmoment_i;
+        const double r_i = data_i.rad + g*0.5;
+        contactforce_i.Update(normalcontactforce,normal,1.,tangentcontactforce);
+        contactmoment_i.CrossProduct(normal,tangentcontactforce);
+        contactmoment_i.Scale(r_i); // m_i = (r_i * n) x F_t
+
+        static Epetra_SerialDenseVector val_i(3),m_i(3);
+        static std::vector<int> lmowner_i(3);
+
+        for(unsigned dim=0; dim<3; ++dim)
+        {
+          val_i[dim] = contactforce_i(dim);
+          m_i[dim] = contactmoment_i(dim);
+          lmowner_i[dim] = data_i.owner;
+        }
+
+        // assembly contact forces and moments for particle i
+        LINALG::Assemble(*m_contact, m_i, data_i.lm, lmowner_i);
+        LINALG::Assemble(*f_contact, val_i, data_i.lm, lmowner_i);
+
+        static LINALG::Matrix<3,1> contactforce_j, contactmoment_j;
+        const double r_j = data_j.rad + g*0.5;
+        contactforce_j.Update(-1.,contactforce_i); // actio = reactio
+        contactmoment_j.Update(r_j/r_i,contactmoment_i); // m_j = r_j/r_i * m_i
+
+        static Epetra_SerialDenseVector val_j(3), m_j(3);
+        static std::vector<int> lmowner_j(3);
+
+        for(unsigned dim=0; dim<3; ++dim)
+        {
+          val_j[dim] = contactforce_j(dim);
+          m_j[dim] = contactmoment_j(dim);
+          lmowner_j[dim] = data_j.owner;
+        }
+
+        // assembly contact forces and moments for particle j
+        LINALG::Assemble(*f_contact, val_j, data_j.lm, lmowner_j);
+        LINALG::Assemble(*m_contact, m_j, data_j.lm, lmowner_j);
       }
-
-      // calculation of overall contact force and moment
-      static LINALG::Matrix<3,1> contactforce_i, contactforce_j, contactmoment_i, contactmoment_j;
-      const double r_i = data_i.rad + g*0.5;
-      const double r_j = data_j.rad + g*0.5;
-      contactforce_i.Update(normalcontactforce,normal,1.,tangentcontactforce);
-      contactforce_j.Update(-1.,contactforce_i); // actio = reactio
-      contactmoment_i.CrossProduct(normal,tangentcontactforce);
-      contactmoment_i.Scale(r_i); // m_i = (r_i * n) x F_t
-      contactmoment_j.Update(r_j/r_i,contactmoment_i); // m_j = r_j/r_i * m_i
-
-      static Epetra_SerialDenseVector val_i(3), val_j(3), m_i(3), m_j(3);
-      static std::vector<int> lmowner_i(3), lmowner_j(3);
-
-      for(unsigned dim=0; dim<3; ++dim)
+      else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
       {
-        val_i[dim] = contactforce_i(dim);
-        val_j[dim] = contactforce_j(dim);
-        m_i[dim] = contactmoment_i(dim);
-        m_j[dim] = contactmoment_j(dim);
-        lmowner_i[dim] = data_i.owner;
-        lmowner_j[dim] = data_j.owner;
-      }
-
-      // assembly of contact moments
-      LINALG::Assemble(*m_contact, m_i, data_i.lm, lmowner_i);
-      LINALG::Assemble(*m_contact, m_j, data_j.lm, lmowner_j);
-
-      // assembly of contact forces
-      LINALG::Assemble(*f_contact, val_i, data_i.lm, lmowner_i);
-      LINALG::Assemble(*f_contact, val_j, data_j.lm, lmowner_j);
-
-    }
-    else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
-    {
-      // erase entry in history if still existing
-      std::map<int, PARTICLE::Collision>::iterator it = history_particle.find(gid_j);
-      if(it != history_particle.end())
-      {
-        history_particle.erase(it);
+        // erase entry in history if still existing
+        std::map<int, PARTICLE::Collision>::iterator it = history_particle.find(gid_j);
+        if(it != history_particle.end())
+        {
+          history_particle.erase(it);
+        }
       }
     }
   }  // loop over neighboring particles
