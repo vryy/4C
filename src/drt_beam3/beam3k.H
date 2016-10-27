@@ -845,8 +845,7 @@ private:
   void AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
 
   //! "add" reference values to displacement state vector (multiplicative in case of rotation pseudo vectors)
-  template<typename T>
-  void AddRefValuesDisp(std::vector<T>& dofvec) const;
+  void AddRefValuesDisp(std::vector<double>& dofvec) const;
 
   //!Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
   void ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,

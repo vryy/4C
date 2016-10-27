@@ -1303,8 +1303,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpern
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
-template<typename T>
-void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(std::vector<T>& dofvec) const
+void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(std::vector<double>& dofvec) const
 {
   //For the boundary nodes we have to add the initial values. For the interior nodes we are already
   //done since the initial relative angles are zero: alpha_i(t=0)=0;
@@ -1426,8 +1425,14 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-
 // explicit template instantiations
-template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2, 2, Sacado::Fad::DFad<double> >
+template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2,2,Sacado::Fad::DFad<double> >
                                               (const std::vector<Sacado::Fad::DFad<double> >&,
-                                               LINALG::TMatrix<Sacado::Fad::DFad<double>,3*2*2,1>&) const;
+                                               LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&) const;
+template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2,2,double>
+                                              (const std::vector<double>&,
+                                               LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2,2,Sacado::Fad::DFad<double> >
+                                              (LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&) const;
+template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2,2,double>
+                                              (LINALG::TMatrix<double,12,1>&) const;
