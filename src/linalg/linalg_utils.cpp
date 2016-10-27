@@ -87,15 +87,25 @@ void LINALG::Export(const Epetra_MultiVector& source,
       Epetra_Import importer(target.Map(), source.Map());
       int err = target.Import(source, importer, Insert);
       if (err)
-        dserror("Export using exporter returned err=%d", err);
+        dserror("Export using importer returned err=%d", err);
       return;
     }
     else if (!sourceunique && targetunique)
     {
-      Epetra_Export exporter(source.Map(), target.Map());
-      int err = target.Export(source, exporter, Insert);
-      if (err)
-        dserror("Export using exporter returned err=%d", err);
+      // copy locally data from source to target
+      // do not allow for inter-processor communication to obtain source
+      // as this may give a non-unique answer depending on the proc which is asked
+      const Epetra_BlockMap& sourcemap = source.Map();
+      const Epetra_BlockMap& targetmap = target.Map();
+      for(int targetlid = 0; targetlid < targetmap.NumMyElements(); ++targetlid)
+      {
+        const int sourcelid = sourcemap.LID(targetmap.GID(targetlid));
+        if(sourcelid < 0)
+          dserror("Export of non-unique source failed. Source data not available on target proc");
+
+        for (int k = 0; k < source.NumVectors(); ++k)
+          (*target(k))[targetlid] = (*source(k))[sourcelid];
+      }
       return;
     }
     else if (!sourceunique && !targetunique)

@@ -2159,6 +2159,8 @@ protected:
 
   std::vector<std::map<std::string,Teuchos::RCP<const Epetra_Vector> > > state_; // map of references to solution states
 
+  std::vector<Teuchos::RCP<Epetra_Import> > stateimporter_; // map of import objects for states
+
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_; // some conditions e.g. BCs
 
   std::vector<Teuchos::RCP<DofSet> >             dofsets_;   // set of DofSets

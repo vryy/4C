@@ -664,7 +664,28 @@ void DRT::Discretization::SetState(unsigned nds,const std::string& name,Teuchos:
     }
 #endif
     Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
-    LINALG::Export(*state,*tmp);
+
+    // this is necessary to find out the number of nodesets in the beginning
+    if(stateimporter_.size() <= nds)
+    {
+      stateimporter_.resize(nds+1);
+      for(unsigned i=0; i<=nds; ++i)
+        stateimporter_[i] = Teuchos::null;
+    }
+    // (re)build importer if necessary
+    if(stateimporter_[nds] == Teuchos::null
+        or not stateimporter_[nds]->SourceMap().SameAs(state->Map())
+        or not stateimporter_[nds]->TargetMap().SameAs(*colmap))
+    {
+      stateimporter_[nds] = Teuchos::rcp(new Epetra_Import(*colmap, state->Map()));
+    }
+
+    // transfer data
+    int err = tmp->Import(*state, (*stateimporter_[nds]), Insert);
+    if (err)
+      dserror("Export using importer failed for Epetra_Vector: return value = %d", err);
+
+    // save state
     state_[nds][name] = tmp;
   }
   return;
