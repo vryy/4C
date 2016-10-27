@@ -112,42 +112,42 @@ namespace BEAMCONTACT
   /*!
   \brief Check, if current node belongs to a beam element
   */
-  bool BeamNode(DRT::Node& node);
+  bool BeamNode(const DRT::Node& node);
 
   /*!
   \brief Check, if current node is used for centerline interpolation of a beam element
   */
-  bool BeamCenterlineNode(DRT::Node& node);
+  bool BeamCenterlineNode(const DRT::Node& node);
 
   /*!
   \brief Check, if current node belongs to a rigid sphere element
   */
-  bool RigidsphereNode(DRT::Node& node);
+  bool RigidsphereNode(const DRT::Node& node);
 
   /*!
   \brief Check, if current node is a beam element
   */
-  bool BeamElement(DRT::Element& element);
+  bool BeamElement(const DRT::Element& element);
 
   /*!
   \brief Check, if current node is a rigid sphere element
   */
-  bool RigidsphereElement(DRT::Element& element);
+  bool RigidsphereElement(const DRT::Element& element);
 
   /*!
   \brief Check, if current node is a solid contact element
   */
-  bool SolidContactElement(DRT::Element& element);
+  bool SolidContactElement(const DRT::Element& element);
 
   /*!
   \brief Check, if current node is a solid meshtying element
   */
-  bool SolidMeshtyingElement(DRT::Element& element);
+  bool SolidMeshtyingElement(const DRT::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
   */
-  bool ElementsShareNode(DRT::Element& element1,DRT::Element& element2);
+  bool ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2);
 
   /*
   \brief Calculate beam radius

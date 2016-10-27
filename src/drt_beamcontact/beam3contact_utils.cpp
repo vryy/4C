@@ -21,7 +21,7 @@
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamNode(DRT::Node& node)
+bool BEAMCONTACT::BeamNode(const DRT::Node& node)
 {
   bool beameles = false;
   bool othereles = false;
@@ -30,13 +30,9 @@ bool BEAMCONTACT::BeamNode(DRT::Node& node)
   for (int i=0; i< (int)(node.NumElement()); i++)
   {
     if(BeamElement(*(node.Elements())[i]) )
-    {
-        beameles = true;
-    }
+      beameles = true;
     else
-    {
       othereles = true;
-    }
   }
 
   if (beameles and othereles)
@@ -49,32 +45,27 @@ bool BEAMCONTACT::BeamNode(DRT::Node& node)
  | Check, if current node is used for centerline                        |
  | interpolation of a beam element                           grill 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamCenterlineNode(DRT::Node& node)
+bool BEAMCONTACT::BeamCenterlineNode(const DRT::Node& node)
 {
-  bool beamclele = false;
+  bool beamclnode = false;
 
   //TODO: actually we would have to check all elements of all processors!!! Gather?
   for (int i=0; i< (int)(node.NumElement()); i++)
   {
-    if(BeamElement(*(node.Elements())[i]) )
-    {
-      /* TODO we not only check whether this node is a beam node but also if
-       * it is used for centerline interpolation, i.e. whether it is node 0 or 1 of the beam element*/
-      if( (node.Id() == ( (node.Elements())[i]->NodeIds() )[0]) or
-          (node.Id() == ( (node.Elements())[i]->NodeIds() )[1]) )
-      {
-        beamclele = true;
-      }
-    }
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
+
+    if (beamele!=NULL)
+      if (beamele->IsCenterlineNode(node))
+        beamclnode = true;
   }
 
-  return beamclele;
+  return beamclnode;
 }
 
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a rigid sphere element   grill 09/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::RigidsphereNode(DRT::Node& node)
+bool BEAMCONTACT::RigidsphereNode(const DRT::Node& node)
 {
   bool sphereeles = false;
   bool othereles = false;
@@ -97,15 +88,12 @@ bool BEAMCONTACT::RigidsphereNode(DRT::Node& node)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamElement(DRT::Element& element)
+bool BEAMCONTACT::BeamElement(const DRT::Element& element)
 {
-  const DRT::ElementType& ele_type = element.ElementType();
+  const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element);
 
-  if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or
-      ele_type == DRT::ELEMENTS::Beam3Type::Instance() or
-      ele_type == DRT::ELEMENTS::Beam3rType::Instance() or
-      ele_type == DRT::ELEMENTS::Beam3kType::Instance())
-    return true; //TODO: Print Warning, that only these three types of beam elements are supported!!!
+  if (beamele!=NULL)
+    return true;
   else
     return false;
 }
@@ -113,7 +101,7 @@ bool BEAMCONTACT::BeamElement(DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a rigid sphere element       grill 09/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::RigidsphereElement(DRT::Element& element)
+bool BEAMCONTACT::RigidsphereElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -126,7 +114,7 @@ bool BEAMCONTACT::RigidsphereElement(DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::SolidContactElement(DRT::Element& element)
+bool BEAMCONTACT::SolidContactElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -139,7 +127,7 @@ bool BEAMCONTACT::SolidContactElement(DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid meshtying element    popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::SolidMeshtyingElement(DRT::Element& element)
+bool BEAMCONTACT::SolidMeshtyingElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -152,7 +140,7 @@ bool BEAMCONTACT::SolidMeshtyingElement(DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if two elements share a node -> neighbor elements meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::ElementsShareNode(DRT::Element& element1,DRT::Element& element2)
+bool BEAMCONTACT::ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2)
 {
   bool sharenode = false;
 
@@ -175,40 +163,17 @@ bool BEAMCONTACT::ElementsShareNode(DRT::Element& element1,DRT::Element& element
  *----------------------------------------------------------------------*/
 double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
 {
-  // TODO create and call access method for radius in abstract Beam3Base element
   double eleradius = 0.0;
 
-  const DRT::ElementType & eot = ele->ElementType();
+  const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+  const DRT::ELEMENTS::Rigidsphere* thissphere = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
 
-  if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(ele);
-    eleradius =MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(ele);
-    eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  else if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
-    eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  else if(eot == DRT::ELEMENTS::Beam3kType::Instance())
-  {
-    const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(ele);
-    eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
-  }
-  else if(eot == DRT::ELEMENTS::RigidsphereType::Instance())
-  {
-    const DRT::ELEMENTS::Rigidsphere* thissphere = static_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
+  if (beamele != NULL)
+    eleradius = MANIPULATERADIUS*std::sqrt(std::sqrt(4 * (beamele->Iyy()) / M_PI));
+  else if(thissphere != NULL)
     eleradius = thissphere->Radius();
-  }
   else
-  {
     dserror("BEAMCONTACT::CalcEleRadius: unknown element type; cannot determine cross-section radius");
-  }
 
   return eleradius;
 }

@@ -420,6 +420,9 @@ namespace INPAR
                ml_rotations,ml_rotations),
                &sdyn);
 
+    setStringToIntegralParameter<int>("NEGLECTINERTIA","No",
+                                      "Neglect inertia",
+                                      yesnotuple,yesnovalue,&sdyn);
 
   // Since predicor "none" would be misleading, the usage of no predictor is called vague.
     setStringToIntegralParameter<int>("PREDICT","ConstDis","Type of predictor",

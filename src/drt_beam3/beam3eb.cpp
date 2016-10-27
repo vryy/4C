@@ -115,6 +115,7 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
+statmechprob_(false),
 crosssec_(0),
 Iyy_(0),
 Izz_(0),
@@ -143,6 +144,7 @@ epsilon_max_(0.0)
 DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
+ statmechprob_(old.statmechprob_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
@@ -220,6 +222,7 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,jacobi_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,isinit_);
+  AddtoPack(data,statmechprob_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -259,6 +262,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,crosssec_);
   isinit_ = ExtractInt(position,data);
+  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -311,77 +315,80 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
 
   {
     if(!isinit_ || secondinit)
+    {
+      isinit_ = true;
+
+      // set the flag statmechprob_
+      statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
+
+      //Get DiscretizationType
+      DRT::Element::DiscretizationType distype = Shape();
+
+      //Get integrationpoints for exact integration
+      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+
+      Tref_.resize(gausspoints.nquad);
+
+      //create Matrix for the derivates of the shapefunctions at the GP
+      LINALG::Matrix<1,nnode> shapefuncderiv;
+
+      //Loop through all GPs and compute jacobi at the GPs
+      for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      {
+        //Get position xi of GP
+        const double xi = gausspoints.qxg[numgp][0];
+
+        //Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
+        //Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
+        //beam element must always be a straight line there is no difference between theses to types of interpolation functions.
+        DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+        Tref_[numgp].Clear();
+
+        //calculate vector dxdxi
+        for(int node=0; node<nnode; node++)
         {
-          //isinit_ = true;
-
-          //Get DiscretizationType
-          DRT::Element::DiscretizationType distype = Shape();
-
-          //Get integrationpoints for exact integration
-          DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
-
-          Tref_.resize(gausspoints.nquad);
-
-          //create Matrix for the derivates of the shapefunctions at the GP
-          LINALG::Matrix<1,nnode> shapefuncderiv;
-
-          //Loop through all GPs and compute jacobi at the GPs
-          for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+          for(int dof=0; dof<3 ; dof++)
           {
-            //Get position xi of GP
-            const double xi = gausspoints.qxg[numgp][0];
+            Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+          }//for(int dof=0; dof<3 ; dof++)
+        }//for(int node=0; node<nnode; node++)
 
-            //Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
-            //Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
-            //beam element must always be a straight line there is no difference between theses to types of interpolation functions.
-            DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+        //Store length factor for every GP
+        //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
+        jacobi_= Tref_[numgp].Norm2();
 
-            Tref_[numgp].Clear();
+        Tref_[numgp].Scale(1/jacobi_);
+      }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
-            //calculate vector dxdxi
-            for(int node=0; node<nnode; node++)
-            {
-              for(int dof=0; dof<3 ; dof++)
-              {
-                Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-              }//for(int dof=0; dof<3 ; dof++)
-            }//for(int node=0; node<nnode; node++)
+      //compute tangent at each node
+      double norm2 = 0.0;
 
-            //Store length factor for every GP
-            //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
-            jacobi_= Tref_[numgp].Norm2();
+      Tref_.resize(nnode);
+      #if NODALDOFS == 3
+      Kref_.resize(gausspoints.nquad);
+      #endif
 
-            Tref_[numgp].Scale(1/jacobi_);
-          }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      for(int node = 0; node<nnode ; node++)
+      {
 
-          //compute tangent at each node
-          double norm2 = 0.0;
+        Tref_[node].Clear();
+        #if NODALDOFS == 3
+        Kref_[node].Clear();
+        #endif
+        for(int dof = 0; dof< 3 ; dof++ )
+        {
+          Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
+        }
+        norm2 = Tref_[node].Norm2();
+        Tref_[node].Scale(1/norm2);
 
-          Tref_.resize(nnode);
-          #if NODALDOFS == 3
-          Kref_.resize(gausspoints.nquad);
-          #endif
+        for (int i=0;i<3;i++)
+          t0_(i,node)=Tref_[node](i);
 
-          for(int node = 0; node<nnode ; node++)
-          {
+      }
 
-            Tref_[node].Clear();
-            #if NODALDOFS == 3
-            Kref_[node].Clear();
-            #endif
-            for(int dof = 0; dof< 3 ; dof++ )
-            {
-              Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
-            }
-            norm2 = Tref_[node].Norm2();
-            Tref_[node].Scale(1/norm2);
-
-            for (int i=0;i<3;i++)
-              t0_(i,node)=Tref_[node](i);
-
-          }
-
-        }//if(!isinit_)
+    }//if(!isinit_)
   }
   //end low precission
   /*//begin high precission

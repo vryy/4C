@@ -1,12 +1,15 @@
-/*!----------------------------------------------------------------------
-\file DiscreteCohesive.H
+/*----------------------------------------------------------------------------*/
+/*!
+\file dcohesive.H
 
-<pre>
-Maintainer: Sudhakar
-            sudhakar@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
-*----------------------------------------------------------------------*/
+\brief DcohesiveType
+
+\level 3
+
+\maintainer N. A.
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef DCOHESIVE_H
 #define DCOHESIVE_H
 
@@ -470,10 +473,6 @@ private:
   //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
   template<int nnode>
   void SetUpReferenceGeometry(const std::vector<double>& xrefe);
-
-
-   //!computes damping coefficients for employed friction model
-   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
 
 
   // don't want = operator

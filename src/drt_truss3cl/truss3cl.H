@@ -468,8 +468,7 @@ private:
 
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(Teuchos::ParameterList&               params,
-                           LINALG::Matrix<3,1>&                  gamma,
-                           const INPAR::STATMECH::FrictionModel& frictionmodel);
+                           LINALG::Matrix<3,1>&                  gamma);
 
    //!computes translational damping forces and stiffness
    template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node

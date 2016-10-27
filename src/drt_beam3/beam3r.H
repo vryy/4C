@@ -188,6 +188,20 @@ public:
     return centerline_hermite_ ? 2 : this->NumNode();
   }
 
+  /** \brief find out whether given node is used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 10/16 */
+  virtual inline bool IsCenterlineNode(const DRT::Node& node) const
+  {
+    if (!centerline_hermite_ or
+        node.Id() == this->Nodes()[0]->Id() or
+        node.Id() == this->Nodes()[1]->Id())
+      return true;
+    else
+      return false;
+  }
+
   /*!
   \brief Get number of degrees of freedom of a single node
   */
@@ -254,7 +268,7 @@ public:
    *  \date 06/16 */
   virtual void GetPosAtXi(LINALG::Matrix<3,1>&       pos,
                           const double&              xi,
-                          const std::vector<double>& disp_totlag) const;
+                          const std::vector<double>& disp) const;
 
   /** \brief get triad at xi \in [-1,1] (element parameter space)
    *
@@ -361,16 +375,7 @@ public:
   void SetCrossSecShear(const double& crosssecshear);
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
-  int HowManyRandomNumbersINeed();
-
-  //! \brief internal force vector
-  const Epetra_SerialDenseVector& InternalForceVector() const {return f_;}
-
-  //! \brief return material forces at Gauss point
-  const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
-
-  //! brief epsilonnormal
-  const double& EpsilonSgn() const { return eps_;}
+  virtual int HowManyRandomNumbersINeed() const;
 
   //!sets up all geometric parameters (considering current position as reference configuration)
   /* nnodetriad: number of nodes used for interpolation of triad field
@@ -545,14 +550,8 @@ private:
   bool centerline_hermite_;
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  //! variable storing whether Statmech functionalities are needed or not
-  bool needstatmech_;
-  //! storing epsilon(0)    // TODO the following three quantities seem to be solely Statmech-related; check usage and validity; if necessary, adapt corresponding access functions
-  double eps_;
-  //! vector storing the internal force vector
-  Epetra_SerialDenseVector f_;
-  //! vector storing internal forces at gauss point in material configuration
-  LINALG::Matrix<3,1> Ngp_;
+  //! flag indicating Brownian dynamics simulation -> neglect inertia
+  bool statmechprob_;
   //! norm of maximal bending curvature occurring in this element
   double Kmax_;
 
@@ -599,6 +598,11 @@ private:
   //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
   std::vector<LINALG::Matrix<3,1> > amodnewGPmass_;
   //************** end: Class variables required for element-based Lie-group time integration *******************************//
+
+  //! triads at Gauss points for integration of damping/stochastic forces in quaternion form at the end of the preceding time step (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QconvGPdampstoch_;
+  //! current triads at Gauss points for integration of damping/stochastic forces in quaternion form (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QnewGPdampstoch_;
 
   //! initial length of the element
   double reflength_;
@@ -775,114 +779,6 @@ private:
     return triad;
   }
 
-  //! evaluate shape functions at position xi in element parameter space [-1,1]
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAtXi(const double&                           xi,
-                                  LINALG::Matrix<1,vpernode*nnode>&       I_i,
-                                  const DRT::Element::DiscretizationType& distype) const
-  {
-    I_i.Clear();
-
-    switch(vpernode)
-    {
-      case 1:
-      {
-        // evaluate Lagrange shape functions at xi
-        DRT::UTILS::shape_function_1D(I_i,xi,distype);
-        break;
-      }
-      case 2:
-      {
-        // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D(I_i,xi,reflength_,line2);
-        break;
-      }
-      default:
-        dserror("invalid value for vpernode (number of values per node) specified");
-    }
-
-    return;
-  }
-
-  //! evaluate shape function derivatives at position xi in element parameter space [-1,1]
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionDerivsAtXi(const double&                           xi,
-                                       LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
-                                       const DRT::Element::DiscretizationType& distype) const
-  {
-    I_i_xi.Clear();
-
-    switch(vpernode)
-    {
-      case 1:
-      {
-        // evaluate Lagrange shape functions at xi
-        DRT::UTILS::shape_function_1D_deriv1(I_i_xi,xi,distype);
-        break;
-      }
-      case 2:
-      {
-        // evaluate Hermite shape functions at xi, for now: always 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D_deriv1(I_i_xi,xi,reflength_,line2);
-        break;
-      }
-      default:
-        dserror("invalid value for vpernode (number of values per node) specified");
-    }
-
-    return;
-  }
-
-  //! evaluate shape functions at specified Gauss points
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                    std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
-                                    const DRT::Element::DiscretizationType&         distype) const
-  {
-    if (I_i.size()!= (unsigned int) gausspoints.nquad)
-      dserror("vector for %d individual shape functions has wrong size",gausspoints.nquad);
-
-    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-    {
-      // Get location of GP in element parameter space xi \in [-1;1]
-      const double xi = gausspoints.qxg[numgp][0];
-      this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i[numgp],distype);
-    }
-
-    return;
-  }
-
-  //! evaluate shape function derivatives at specified Gauss points
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                         std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
-                                         const DRT::Element::DiscretizationType&         distype) const
-  {
-    if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
-      dserror("vector for %d individual shape function derivatives has wrong size",gausspoints.nquad);
-
-    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-    {
-      // Get location of GP in element parameter space xi \in [-1;1]
-      const double xi = gausspoints.qxg[numgp][0];
-      this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi[numgp],distype);
-    }
-
-    return;
-  }
-
-  //! evaluate shape functions and derivatives at specified Gauss points
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
-                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
-                                             const DRT::Element::DiscretizationType&         distype) const
-  {
-    EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints,I_i,distype);
-    EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,I_i_xi,distype);
-
-    return;
-  }
 
   //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic 1999
   template<typename T>
@@ -925,53 +821,6 @@ private:
     LARGEROTATIONS::quaterniontoangle<T>(Q_li,Psi_li);
 
     return;
-  }
-
-  //! compute beam centerline position at element parameter \xi \in [-1;1]
-  template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-              const LINALG::Matrix<1,vpernode*nnode>&      funct,
-              LINALG::TMatrix<T,3,1>&                      r) const
-  {
-    r.Clear();
-
-    for (unsigned int dim=0; dim<3; ++dim)
-      for (unsigned int i=0; i<vpernode*nnode; ++i)
-        r(dim) += funct(i)*disp_totlag_centerline(3*i+dim);
-
-     return;
-  }
-
-  //! compute derivative of beam centerline with respect to element parameter \xi \in [-1;1]
-  template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r_xi(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-                 const LINALG::Matrix<1,vpernode*nnode>&      deriv,
-                 LINALG::TMatrix<T,3,1>&                      r_xi) const
-  {
-    r_xi.Clear();
-
-    for (unsigned int dim=0; dim<3; ++dim)
-      for (unsigned int i=0; i<vpernode*nnode; ++i)
-        r_xi(dim) += deriv(i)*disp_totlag_centerline(3*i+dim);
-
-     return;
-  }
-
-  //! compute derivative of beam centerline with respect to arc-length parameter s
-  template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r_s(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-                const LINALG::Matrix<1, vpernode*nnode>&     deriv,
-                const double&                                jacobi,
-                LINALG::TMatrix<T,3,1>&                      r_s) const
-  {
-    Calc_r_xi<nnode,vpernode,T>(disp_totlag_centerline,deriv,r_s);
-
-    /* at this point we have computed derivative with respect to the element parameter \xi \in [-1;1];
-     * as r' in (2.12) from (3.11) are derivatives with respect to the reference arc-length parameter s,
-     * we have to divide it by the Jacobi determinant at the respective point*/
-    r_s.Scale(1.0/jacobi);
-
-     return;
   }
 
   //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
@@ -1220,7 +1069,7 @@ private:
 
     computeItilde(Psil_double,Itilde,phiIJ_double,Lambdar_double,Psili_double,funct);
 
-     return;
+    return;
   }
 
   //! compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certain Gauss point
@@ -1373,33 +1222,34 @@ private:
   //! update (total) displacement vector and set nodal triads (as quaternions)
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
   void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
+                                      LINALG::Matrix<3*vpernode*nnodecl,1>& disp_totlag_centerline,
+                                      std::vector<LINALG::Matrix<4,1> >&    Q_i);
+
+  //! update (total) displacement vector and set nodal triads (as quaternions)
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
                                       LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1>& disp_totlag_centerline,
                                       std::vector<LINALG::TMatrix<FADordouble,4,1> >&    Q_i);
 
   //! extract those Dofs relevant for centerline-interpolation from total state vector
-  template<unsigned int nnodecl, unsigned int vpernode>
-  void ExtractCenterlineDofValues(const std::vector<double>&           dofvec,
-                                 LINALG::Matrix<3*vpernode*nnodecl,1>& dofvec_centerline) const;
+  template<unsigned int nnodecl, unsigned int vpernode, typename T>
+  void ExtractCenterlineDofValues(const std::vector<double>&              dofvec,
+                                 LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
 
   //! extract those Dofs relevant for centerline-interpolation from total state vector
   void ExtractCenterlineDofValues(const std::vector<double>& dofvec,
                                   std::vector<double>&       dofvec_centerline) const;
 
+  //! add reference positions and tangents to (centerline) displacement state vector
+  template<unsigned int nnodecl, unsigned int vpernode, typename T>
+  void AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
 
   //! lump mass matrix
   template<unsigned int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //! determine Gauss rule from required type of integration and parameter list
-  DRT::UTILS::GaussRule1D MyGaussRule(const Teuchos::ParameterList&  params,
-                                      const IntegrationPurpose       intpurpose) const;
-
-  //! determine Gauss rule from required type of integration
-  inline DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const
-  {
-    Teuchos::ParameterList p;
-    return MyGaussRule(p,intpurpose);
-  };
+  DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose       intpurpose) const;
 
   //! calculates the element length in reference configuration
   template<unsigned int nnode, unsigned int vpernode>
@@ -1410,68 +1260,27 @@ private:
 
   //! @name Methods for Brownian dynamics simulations
 
-  //! compute damping matrix and statistical forces according to fluctuation dissipation theorem
-  template<unsigned int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-  void CalcBrownian(Teuchos::ParameterList&                          params,  //!<parameter list
-                   const std::vector<double>&                       vel,  //!< element velocity vector
-                   const std::vector<double>&                       disp, //!<element disp vector
-                   Epetra_SerialDenseMatrix*                        stiffmatrix,  //!< element stiffness matrix
-                   Epetra_SerialDenseVector*                        force,
-                   std::vector<LINALG::Matrix<1,nnode> >&           Imass,
-                   std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass);//!< element internal force vector
-
-  //! computes damping coefficients for employed friction model
-  void MyDampingConstants(LINALG::Matrix<3,1>&    gamma);
-
   //! computes rotational damping forces and stiffness
-  template<unsigned int nnode> //number of nodes
-  void MyRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                         const std::vector<double>&                             vel,  //!< element velocity vector
-                         const std::vector<double>&                             disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix*                              stiffmatrix,//!< element stiffness matrix
-                         Epetra_SerialDenseVector*                              force,      //!< element internal force vector
-                         const DRT::UTILS::IntegrationPoints1D&                 gausspointsdamping,
-                         const std::vector<LINALG::Matrix<1,nnode> >&           Idamping,
-                         const std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildedamping,
-                         const std::vector<LINALG::Matrix<4,1> >&               Qconvdamping,
-                         const std::vector<LINALG::Matrix<4,1> >&               Qnewdamping);
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
+  void EvaluateRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                         const std::vector<LINALG::Matrix<4,1> >& Qnode,
+                         Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
+                         Epetra_SerialDenseVector*       force);      //!< element internal force vector
 
   //! computes translational damping forces and stiffness
-  template<unsigned int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-  void MyTranslationalDamping(Teuchos::ParameterList&  params,  //!<parameter list
-                           const std::vector<double>& vel,  //!< element velocity vector
-                           const std::vector<double>& disp, //!<element disp vector
+  template<unsigned int nnodecl, unsigned int vpernode, unsigned int ndim> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+  void EvaluateTranslationalDamping(Teuchos::ParameterList&  params,  //!<parameter list
+                           const LINALG::Matrix<ndim*vpernode*nnodecl,1>& vel_centerline,
+                           const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                            Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
                            Epetra_SerialDenseVector*  force);//!< element internal force vector
 
   //! computes stochastic translational forces and resulting stiffness
-  template<unsigned int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-  void MyStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
-                       const std::vector<double>& vel,  //!< element velocity vector
-                       const std::vector<double>& disp, //!<element disp vector
+  template<unsigned int nnodecl,unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
+  void EvaluateStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
+                          const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                        Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseVector*  force);//!< element internal force vector
-
-  //! computes stochastic rotational moments and resulting stiffness
-  template<unsigned int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
-  void MyStochasticMoments(Teuchos::ParameterList&                             params,  //!<parameter list
-                       const std::vector<double>&                             vel,  //!< element velocity vector
-                       const std::vector<double>&                             disp, //!<element disp vector
-                       Epetra_SerialDenseMatrix*                              stiffmatrix,//!< element stiffness matrix
-                       Epetra_SerialDenseVector*                              force,      //!< element internal force vector
-                       const DRT::UTILS::IntegrationPoints1D&                 gausspointsdamping,
-                       const std::vector<LINALG::Matrix<1,nnode> >&           Idamping,
-                       const std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildedamping,
-                       const std::vector<LINALG::Matrix<4,1> >&               Qconvdamping,
-                       const std::vector<LINALG::Matrix<4,1> >&               Qnewdamping);
-
-  //! computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
-  template<int ndim> //number of dimensions of embedding space
-  void MyBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
-                           const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                           LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
-                           LINALG::Matrix<ndim,ndim>&    velbackgroundgrad); //!<gradient of velocity of background fluid
-
 
   //@}
 

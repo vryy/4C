@@ -28,7 +28,6 @@ STR::TIMINT::DataSMDyn::DataSMDyn()
   issetup_(false),
   smdynparams_(Teuchos::null),
   statmechprob_(false),
-  frictionmodel_(INPAR::STATMECH::frictionmodel_none),
   dbctype_(INPAR::STATMECH::dbctype_none),
   nbctype_(INPAR::STATMECH::nbctype_std),
   networktype_(INPAR::STATMECH::networktype_std),
@@ -135,32 +134,6 @@ void STR::TIMINT::DataSMDyn::Init(
   //---------------------------------------------------------------------------
   // general statmech simulation flags
   //---------------------------------------------------------------------------
-  switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(*smdynparams_, "FRICTIONMODEL"))
-  {
-    case INPAR::STATMECH::frictionmodel_isotropiclumped:
-    {
-      frictionmodel_ = INPAR::STATMECH::frictionmodel_isotropiclumped;
-      if(!myrank)
-        std::cout<<"  -- friction model: isotropic lumped"<<std::endl;
-      break;
-    }
-    case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-    {
-      frictionmodel_ = INPAR::STATMECH::frictionmodel_isotropicconsistent;
-      if(!myrank)
-        std::cout<<"  -- friction model: isotropic consistent"<<std::endl;
-      break;
-    }
-    case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-    {
-      frictionmodel_ = INPAR::STATMECH::frictionmodel_anisotropicconsistent;
-      if(!myrank)
-        std::cout<<"  -- friction model: anisotropic consistent"<<std::endl;
-      break;
-    }
-    default:
-      dserror("No friction model (i.e. FRICTIONMODEL == none) declared in your input file!");
-  }
 
   dbctype_ =
       DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(*smdynparams_,"DBCTYPE");

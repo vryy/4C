@@ -76,20 +76,6 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             statout_vesceqshapes),
                                  &statmech);
 
-  //Reading which kind of friction model should be applied
-  setStringToIntegralParameter<int>("FRICTIONMODEL","none","friction model for polymer dynamics",
-                                 //listing possible std::strings in input file in category FRICTIONMODEL
-                                 tuple<std::string>("none",
-                                                    "isotropiclumped",
-                                                    "isotropicconsistent",
-                                                    "anisotropicconsistent"),
-                                 //translating input std::strings into BACI input parameters
-                                 tuple<int>(frictionmodel_none,
-                                            frictionmodel_isotropiclumped,
-                                            frictionmodel_isotropicconsistent,
-                                            frictionmodel_anisotropicconsistent),
-                                            &statmech);
-
   //Reading which kind of Dirichlet boundary condition should be applied
   setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
                                  //listing possible std::strings in input file in category DBCTYPE

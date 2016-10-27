@@ -48,6 +48,10 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
 
+  // Set statmech params interface pointer
+  if (IsParamsInterface())
+    SetStatMechParamsInterfacePtr();
+
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
 
@@ -75,8 +79,6 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     else if (action=="calc_struct_energy")                                 act = ELEMENTS::struct_calc_energy;
     else     dserror("Unknown type of action for Beam3k");
   }
-
-  std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {
@@ -115,12 +117,23 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);     // ToDo unused?
 
+      // get element velocity vector
+      std::vector<double> myvel(lm.size());
+
+      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
+      {
+        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      }
+
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
         if(weakkirchhoff_)
-          CalculateInternalForcesWK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
+          CalculateInternalForcesWK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
         else
-          CalculateInternalForcesSK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
+          CalculateInternalForcesSK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
       }
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
@@ -129,23 +142,23 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
         if(weakkirchhoff_)
-          CalculateInternalForcesWK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
+          CalculateInternalForcesWK(params,mydisp,&elemat1,NULL,&elevec1,NULL);
         else
-          CalculateInternalForcesSK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
+          CalculateInternalForcesSK(params,mydisp,&elemat1,NULL,&elevec1,NULL);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
         if(weakkirchhoff_)
-          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
+          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,NULL);
         else
-          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
+          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,NULL);
       }
       else if (act == ELEMENTS::struct_calc_internalinertiaforce)
       {
         if(weakkirchhoff_)
-          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,&elevec2,false);
+          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,&elevec2);
         else
-          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,&elevec2,false);
+          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,&elevec2);
       }
 
       //ATTENTION: In order to perform a brief finite difference check of the nonlinear stiffness matrix the code block
@@ -156,6 +169,31 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
     }
     break;
+
+    case ELEMENTS::struct_calc_brownianforce:
+    case ELEMENTS::struct_calc_brownianstiff:
+    {
+      // get element displacements
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // get element velocity
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+      if (act == ELEMENTS::struct_calc_brownianforce)
+        CalcBrownianForcesAndStiff<2,2,3>(params,myvel,mydisp,NULL,&elevec1);
+      else if (act == ELEMENTS::struct_calc_brownianstiff)
+        CalcBrownianForcesAndStiff<2,2,3>(params,myvel,mydisp,&elemat1,&elevec1);
+      else
+        dserror("You shouldn't be here.");
+
+      break;
+    }
 
     case ELEMENTS::struct_calc_energy:
     {
@@ -216,7 +254,8 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     }
 
     default:
-      dserror("Unknown type of action for Beam3k %d", act);
+      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      dserror("This action type is not implemented for Beam3k");
      break;
 
   }//switch(act)
@@ -241,8 +280,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
                                                         Epetra_SerialDenseMatrix* stiffmatrix,
                                                         Epetra_SerialDenseMatrix* massmatrix,
                                                         Epetra_SerialDenseVector* force,
-                                                        Epetra_SerialDenseVector* inertia_force,
-                                                        bool update)
+                                                        Epetra_SerialDenseVector* inertia_force)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesWK");
   if(BEAM3K_COLLOCATION_POINTS!=2 and BEAM3K_COLLOCATION_POINTS!=3 and BEAM3K_COLLOCATION_POINTS!=4)
@@ -329,6 +367,11 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   //MISC
   double xi=0.0;  //parameter coordinated
   int ind=0; //position index where CP quantities have to be stored
+
+  // unshift node positions, i.e. manipulate element displacement vector
+  // as if there where no periodic boundary conditions
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnode);
 
   //Set current positions and orientations at all nodes:
   UpdateDispTotlag(disp, disp_totlag);
@@ -529,7 +572,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  if (massmatrix != NULL or inertia_force != NULL)
+  if ( (massmatrix != NULL or inertia_force != NULL) and !statmechprob_)
   {
     double dt = 1000.0;
     double beta = -1.0;
@@ -551,58 +594,40 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
       dt = params.get<double>("delta time",1000);
     }
 
-    if(beta < 999)
+
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
+    CalculateInertiaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
+
+
+    if(rotvec_==true)
     {
+      ApplyRotVecTrafo(disp_totlag_centerline,f_inert);
+    }
 
-      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
-      CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
-
+    //Update mass matrix and inertia force vector
+    if(massmatrix!=NULL)
+    {
+      //Calculating stiffness matrix with FAD
+      for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
+          (*massmatrix)(i,j)=f_inert(i).dx(j);
 
       if(rotvec_==true)
-      {
-        ApplyRotVecTrafo(disp_totlag_centerline,f_inert);
-      }
-
-      //Update mass matrix and inertia force vector
-      if(massmatrix!=NULL)
-      {
-        //Calculating stiffness matrix with FAD
-        for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
-        {
-          for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
-          {
-            (*massmatrix)(i,j)=f_inert(i).dx(j);
-          }
-        }
-        if(rotvec_==true)
-        {
-          TransformStiffMatrixMultipl(massmatrix,disp_totlag);
-        }
+        TransformStiffMatrixMultipl(massmatrix,disp_totlag);
 
 
-        // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
-        // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
-        massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
-      }
-
-      if(inertia_force!=NULL)
-      {
-        for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
-        {
-          (*inertia_force)(i)=f_inert(i).val();
-        }
-      }
+      // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+      // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
+      massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
     }
-    else
+
+    if(inertia_force!=NULL)
     {
-      if(massmatrix!=NULL)
-      {
-        //This is a dummy mass matrix which is necessary for statmech simulations
-        for (int i=0; i<6*nnode; i++)
-          (*massmatrix)(i,i) = 1;
-      }
-    }//if(beta < 999)
-  }//if (massmatrix != NULL or inertia_force != NULL)
+      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        (*inertia_force)(i)=f_inert(i).val();
+    }
+
+  }
 
   return;
 }
@@ -615,8 +640,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
                                                       Epetra_SerialDenseMatrix* stiffmatrix,
                                                       Epetra_SerialDenseMatrix* massmatrix,
                                                       Epetra_SerialDenseVector* force,
-                                                      Epetra_SerialDenseVector* inertia_force,
-                                                      bool update)
+                                                      Epetra_SerialDenseVector* inertia_force)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesSK");
   if(BEAM3K_COLLOCATION_POINTS!=2 and BEAM3K_COLLOCATION_POINTS!=3 and BEAM3K_COLLOCATION_POINTS!=4)
@@ -720,6 +744,11 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   //MISC
   double xi=0.0;  //parameter coordinated
   int ind=0; //position index where CP quantities have to be stored
+
+  // unshift node positions, i.e. manipulate element displacement vector
+  // as if there where no periodic boundary conditions
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnode);
 
   //Set current positions and orientations at all nodes:
   UpdateDispTotlag(disp, disp_totlag);
@@ -997,7 +1026,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
 
       // to II)  Compute v_thetapard_ of v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is required for inertia forces*******
       // II c) v_thetapard_ contribution
-      if (massmatrix != NULL and inertia_force != NULL)
+      if (massmatrix != NULL or inertia_force != NULL)
       {
 
         LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> vec3(true);
@@ -1103,7 +1132,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  if (massmatrix != NULL or inertia_force != NULL)
+  if ( (massmatrix != NULL or inertia_force != NULL) and !statmechprob_)
   {
     double dt = 1000.0;
     double beta = -1.0;
@@ -1125,63 +1154,44 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       dt = params.get<double>("delta time",1000);
     }
 
-    if(beta < 999)
-    {
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
+    CalculateInertiaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
 
-      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
-      CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
+    if(rotvec_==true)
+    {
+      ApplyRotVecTrafo(disp_totlag_centerline,f_inert);
+    }
+
+    //Update mass matrix and inertia force vector
+    if(massmatrix!=NULL)
+    {
+      //Calculating stiffness matrix with FAD
+      for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
+          (*massmatrix)(i,j)=f_inert(i).dx(j);
 
       if(rotvec_==true)
-      {
-        ApplyRotVecTrafo(disp_totlag_centerline,f_inert);
-      }
+          TransformStiffMatrixMultipl(massmatrix,disp_totlag);
 
-      //Update mass matrix and inertia force vector
-      if(massmatrix!=NULL)
-      {
-        //Calculating stiffness matrix with FAD
-        for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
-        {
-          for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
-          {
-            (*massmatrix)(i,j)=f_inert(i).dx(j);
-          }
-        }
-        if(rotvec_==true)
-        {
-            TransformStiffMatrixMultipl(massmatrix,disp_totlag);
-        }
-
-        // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
-        // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
-        massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
-      }
-      if(inertia_force!=NULL)
-      {
-        for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
-        {
-          (*inertia_force)(i)=f_inert(i).val();
-        }
-      }
+      // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+      // so we apply inverse factor here because the correct prefactors for linearization of displacement/velocity/acceleration dependent terms have been applied automatically by FAD
+      massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
     }
-    else
+    if(inertia_force!=NULL)
     {
-      if(massmatrix!=NULL)
-      {
-        //This is a dummy mass matrix which is necessary for statmech simulations
-        for (int i=0; i<6*nnode; i++)
-          (*massmatrix)(i,i) = 1;
-      }
-    }//if(beta < 999)
-  }//if (massmatrix != NULL)
+      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+        (*inertia_force)(i)=f_inert(i).val();
+    }
+
+  }
 
   return;
 }
 
 /*------------------------------------------------------------------------------------------------------------*
- | Calculate intertia forces and moments                                                           meier 02/16|
+ | Calculate inertia forces and moments                                                           meier 02/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3k::CalculateInertiaForces(Teuchos::ParameterList& params,
                                                     std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
                                                     std::vector<FAD>& disp_totlag_centerline,
                                                     std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> >& v_theta,
@@ -1690,6 +1700,454 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }  //DRT::ELEMENTS::Beam3k::EvaluateNeumann
 
+
+template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+                                              std::vector<double>&      vel,  //!< element velocity vector
+                                              std::vector<double>&      disp, //!< element displacement vector
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector* force)        //!< element internal force vector
+{
+  if (weakkirchhoff_==false)
+    dserror("calculation of viscous damping moments not implemented for"
+        "WK=0 ('strong' Kirchhoff) yet. Use BEAM3WK elements (set WK=1)!");
+
+  // unshift node positions, i.e. manipulate element displacement vector
+  // as if there where no periodic boundary conditions
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnode);
+
+  //internal force vector
+  LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int(true);
+
+  // update current total position state of element
+
+  //vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
+  //rotvec_==true:  disp_totlag=[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3]
+  //rotvec_==false: disp_totlag=[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3]
+  //! The Number of collocation points can take on the values 2, 3 and 4. 3 and 4 are interior nodes.
+  //This leads e.g. in the case rotvec_==true to the following ordering:
+  //if BEAM3K_COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
+  //if BEAM3K_COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
+  //if BEAM3K_COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
+  std::vector<FAD> disp_totlag(nnode*vpernode*ndim+BEAM3K_COLLOCATION_POINTS, 0.0);
+
+  // vector containing locally assembled nodal positions and tangents required for centerline:
+  // r(s)=N(s)*disp_totlag_centerline, with disp_totlag_centerline=[\v{d}_1, \v{t}_1, 0, \v{d}_2, \v{t}_2, 0, 0]
+  std::vector<FAD> disp_totlag_centerline(nnode*vpernode*ndim+BEAM3K_COLLOCATION_POINTS, 0.0);
+
+  // material triads at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);
+
+  // Set current positions and tangents and triads at all nodes:
+  UpdateDispTotlag(disp, disp_totlag);
+  SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
+
+  LINALG::TMatrix<FAD,nnode*vpernode*ndim,1> disp_totlag_centerlineDOFs_only(true);
+  ExtractCenterlineDofValues<nnode,vpernode,FAD>(disp_totlag_centerline,disp_totlag_centerlineDOFs_only);
+
+  // export current velocity state of element to fixed size matrix
+  LINALG::Matrix<nnode*vpernode*ndim,1> vel_centerline(true);
+
+  // update current values of centerline (i.e. translational) velocity
+  ExtractCenterlineDofValues<nnode,vpernode,double>(vel,vel_centerline);
+
+  // Evaluation of force vectors and stiffness matrices
+
+  // add stiffness and forces due to translational damping effects
+  EvaluateTranslationalDamping<nnode,vpernode,ndim>(params,vel_centerline,disp_totlag_centerlineDOFs_only,stiffmatrix,f_int);
+
+  // add stochastic forces and (if required) resulting stiffness
+  EvaluateStochasticForces<nnode,vpernode,ndim,3>(params,disp_totlag_centerlineDOFs_only,stiffmatrix,f_int);
+
+  // add stiffness and forces (i.e. moments) due to rotational damping effects
+  EvaluateRotationalDamping<nnode,vpernode,ndim>(params,disp_totlag_centerline,triad_mat_cp,stiffmatrix,f_int);
+
+
+  if (rotvec_==true)
+  {
+    ApplyRotVecTrafo(disp_totlag_centerline,f_int);
+  }
+
+  // Update stiffness matrix and force vector
+  if (stiffmatrix!=NULL)
+  {
+    // Calculating stiffness matrix with FAD
+    for (unsigned int i=0; i<ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+      for (unsigned int j=0; j<ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS; j++)
+        (*stiffmatrix)(i,j)=f_int(i).dx(j);
+
+    if(rotvec_==true)
+      TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
+
+  }
+
+  if (force!=NULL)
+  {
+    for (unsigned int i=0; i<ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS; i++)
+      (*force)(i)=f_int(i).val();
+
+  }
+
+}
+
+
+template<unsigned int nnode, unsigned int vpernode, int ndim>
+void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                                          const LINALG::TMatrix<double,ndim*vpernode*nnode,1>& vel,
+                                                          const LINALG::TMatrix<FAD,ndim*vpernode*nnode,1>& disp_totlag,
+                                                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                          LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int)//!< element internal force vector
+{
+  // get time step size
+  const double dt = ParamsInterface().GetDeltaTime();
+
+  const unsigned int dofpernode = ndim*vpernode+1;
+
+  // get damping coefficients for translational and rotational degrees of freedom (the latter is unused in this element)
+  LINALG::Matrix<ndim,1> gamma(true);
+  GetDampingCoefficients(gamma);
+
+  // velocity and gradient of background velocity field
+  LINALG::TMatrix<FAD,ndim,1> velbackground(true);
+  LINALG::TMatrix<FAD,ndim,ndim> velbackgroundgrad(true);
+
+  // evaluation point in physical space corresponding to a certain Gauss point in parameter space
+  LINALG::TMatrix<FAD,ndim,1> evaluationpoint(true);
+  // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
+  LINALG::TMatrix<FAD,ndim,1> r_s(true);
+  // velocity of beam centerline point relative to background fluid velocity
+  LINALG::TMatrix<FAD,ndim,1> vel_rel(true);
+
+  // viscous force vector per unit length at current GP
+  LINALG::TMatrix<FAD,ndim,1> f_visc(true);
+  // damping matrix
+  LINALG::TMatrix<FAD,ndim,ndim> damp_mat(true);
+
+
+  // get Gauss points and weights
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
+
+  // matrix to store individual Hermite shape functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode*vpernode> N_i(true);
+  LINALG::Matrix<1,nnode*vpernode> N_i_xi(true);
+
+
+  for(int gp=0; gp<gausspoints.nquad; gp++)
+  {
+    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
+
+    // compute position vector r of point in physical space corresponding to Gauss point
+    Calc_r<nnode,vpernode,FAD>(disp_totlag, N_i, evaluationpoint);
+
+    // compute tangent vector t_{\par}=r' at current Gauss point
+    Calc_r_s<nnode,vpernode,FAD>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
+
+    // compute velocity and gradient of background flow field at point r
+    GetBackgroundVelocity<ndim,FAD>(params,evaluationpoint,velbackground,velbackgroundgrad);
+
+    // compute velocity vector at this Gauss point via same interpolation as for centerline position vector
+    /* Todo: as long as we use FAD, we need to track the dependency of velocity vector on primary variables, i.e. we
+             must calculate it like this using the class variable rconvmass_ for position vector at GP of last converged state
+             this again is tricky in case of periodoc boundary conditions, because the position of this element (nodes)
+             might have been shifted outside; we therefore manually adapt the calculated velocity and compare it with the
+             velocity calculated in time integrator and handed in from outside for safety reasons */
+    LINALG::TMatrix<double,ndim,1> vel_rel_test;
+    CalcInterpolation<nnode,vpernode,3,double>(vel, N_i, vel_rel_test);
+
+    // ************ the following is obsolete as soon as we get rid of FAD linearization ************
+    LINALG::Matrix<3,1> diff(true);
+
+    LINALG::TMatrix<FAD,3,1> delta_r_ost(true);
+    std::vector<double> periodlength = *(StatMechParamsInterface().GetPeriodLength());
+    for (unsigned int idim=0; idim<ndim; idim++)
+    {
+      // difference in position of this GP as compared to last time step
+      delta_r_ost(idim) = evaluationpoint(idim) - rconvmass_[gp](idim);
+
+      // manually adapt this difference in case of shifting due to PBC
+      if (periodlength[idim] > 0.0 and delta_r_ost(idim) >= 0.5*periodlength[idim])
+        delta_r_ost(idim) -= periodlength[idim];
+      else if (periodlength[idim] > 0.0 and delta_r_ost(idim) <= -0.5*periodlength[idim])
+        delta_r_ost(idim) += periodlength[idim];
+
+      // velocity according to Backward Euler scheme
+      vel_rel(idim) = delta_r_ost(idim)/dt;
+
+      diff(idim)=vel_rel(idim).val()-vel_rel_test(idim);
+
+      // set class variable, such that rconvmass_ is available in next time step
+      rnewmass_[gp](idim) = evaluationpoint(idim).val();
+    }
+
+    // safety check
+    if (diff.NormInf() > 1e-10)
+    {
+      std::cout << "\nrnewmass = "; evaluationpoint.Print(std::cout);
+      std::cout << "\nrconvmass_ = "; rconvmass_[gp].Print(std::cout);
+      std::cout << "\nvel_rel = "; vel_rel.Print(std::cout);
+      std::cout << "\nvel_rel_test = "; vel_rel_test.Print(std::cout);
+      dserror("velocity vector computed locally in beam3k differs from OneStepTheta velocity vector (see values above)!");
+    }
+    // ************ end *****************************************************************************
+
+    vel_rel -= velbackground;
+
+    // loop over lines and columns of damping matrix
+    for (unsigned int idim=0; idim<ndim; idim++)
+      for (unsigned int jdim=0; jdim<ndim; jdim++)
+        damp_mat(idim,jdim) = (idim==jdim)*gamma(1) + (gamma(0) - gamma(1))*r_s(idim)*r_s(jdim);
+
+    // compute viscous force vector per unit length at current GP
+    f_visc.Multiply(damp_mat,vel_rel);
+
+
+    // loop over all nodes used for centerline interpolation
+    for (unsigned int inode=0; inode<nnode; inode++)
+      // loop over dimensions
+      for (unsigned int idim=0; idim<ndim; idim++)
+      {
+        f_int(inode*dofpernode+idim) += N_i(vpernode*inode)*jacobi_[gp]*gausspoints.qwgt[gp]*f_visc(idim);
+        f_int(inode*dofpernode+3+idim) += N_i(vpernode*inode+1)*jacobi_[gp]*gausspoints.qwgt[gp]*f_visc(idim);
+      }
+
+  }
+
+}
+
+template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
+void DRT::ELEMENTS::Beam3k::EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                              const LINALG::TMatrix<FAD,ndim*vpernode*nnode,1>& disp_totlag,
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int)//!< element internal force vector
+{
+  const unsigned int dofpernode = ndim*vpernode+1;
+
+  //damping coefficients for three translational and one rotatinal degree of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  GetDampingCoefficients(gamma);
+
+  /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
+   * and standard deviation (2*kT / dt)^0.5 */
+  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+
+  // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
+  LINALG::TMatrix<FAD,ndim,1> r_s(true);
+
+  // my random number vector at current GP
+  LINALG::Matrix<ndim,1> randnumvec(true);
+
+  // stochastic force vector per unit length at current GP
+  LINALG::TMatrix<FAD,ndim,1> f_stoch(true);
+
+
+  //get Gauss points and weights for evaluation of damping matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
+
+  //matrix to store hermite shape functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode*vpernode> N_i;
+  LINALG::Matrix<1,nnode*vpernode> N_i_xi;
+
+  for(int gp=0; gp<gausspoints.nquad; gp++)
+  {
+    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
+
+    // compute tangent vector t_{\par}=r' at current Gauss point
+    Calc_r_s<nnode,vpernode,FAD>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
+
+    // extract random numbers from global vector
+    for (unsigned int idim=0; idim<ndim; idim++)
+      randnumvec(idim) = (*randomforces)[gp*randompergauss+idim][LID()];
+
+    // compute stochastic force vector per unit length at current GP
+    f_stoch.Clear();
+    for (unsigned int idim=0; idim<ndim; idim++)
+      for (unsigned int jdim=0; jdim<ndim; jdim++)
+        f_stoch(idim) += (std::sqrt(gamma(1))*(idim==jdim) + (std::sqrt(gamma(0)) - std::sqrt(gamma(1)))*r_s(idim)*r_s(jdim))*randnumvec(jdim);
+
+    // loop over all nodes used for centerline interpolation
+    for (unsigned int inode=0; inode<nnode; inode++)
+      // loop over dimensions
+      for (unsigned int idim=0; idim<ndim; idim++)
+      {
+        f_int(inode*dofpernode+idim) -= N_i(vpernode*inode)*f_stoch(idim)*std::sqrt(jacobi_[gp]*gausspoints.qwgt[gp]);
+        f_int(inode*dofpernode+3+idim) -= N_i(vpernode*inode+1)*f_stoch(idim)*std::sqrt(jacobi_[gp]*gausspoints.qwgt[gp]);
+      }
+
+  }
+
+}
+
+template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(Teuchos::ParameterList&          params,  //!<parameter list
+                                              const std::vector<FAD>& disp_totlag_centerline,
+                                              const std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat_cp,
+                                              Epetra_SerialDenseMatrix*                stiffmatrix,  //!< element stiffness matrix
+                                              LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int)  //!< element internal force vector
+{
+  // get time step size
+  const double dt = ParamsInterface().GetDeltaTime();
+
+  // get damping coefficients for translational and rotational degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  GetDampingCoefficients(gamma);
+
+  // get Gauss points and weights for evaluation of viscous damping contributions
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
+
+  LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int_aux(true);
+
+  // CP values of strains and their variations needed for interpolation
+  std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> > v_thetapar_cp(BEAM3K_COLLOCATION_POINTS);
+
+  // interpolated values of strains and their variations evaluated at Gauss points
+  LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetapar(true);
+
+  std::vector<LINALG::TMatrix<FAD,3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);  //relative angle at collocation points
+
+  // Interpolated material triad and angle evaluated at Gauss point
+  LINALG::TMatrix<FAD,3,3> triad_mat(true);
+  LINALG::TMatrix<FAD,3,1> theta(true);
+
+
+  // matrices holding the assembled shape functions and s-derivatives
+  LINALG::TMatrix<FAD,3,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS> N_s;
+  LINALG::TMatrix<FAD,1,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS> L;
+
+  // Matrices for individual shape functions and xi-derivatives
+  LINALG::TMatrix<FAD,1,vpernode*nnode> N_i_xi;
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i;
+
+  // Additional kinematic quantities
+  LINALG::TMatrix<FAD,3,1> r_s; //Matrix to store r'
+  FAD abs_r_s; // ||r'||
+
+
+  //********begin: evaluate quantities at collocation points********************************
+  for (unsigned int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+  {
+    // calculate xi of cp
+    // node=0->xi=-1  node=1->xi=0  node=2->xi=1
+    const double xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
+
+    // get value of interpolating function of theta (Lagrange polynomials) at xi
+    L_i.Clear();
+    N_i_xi.Clear();
+    DRT::UTILS::shape_function_1D(L_i,xi,Shape());
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+
+    // Determine storage position for the node node
+    const int ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
+
+    N_s.Clear();
+    AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
+    r_s.Clear();
+    // Calculation of r' at xi
+    for (unsigned int i=0; i<3; i++)
+      for (unsigned int j=0; j<6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
+        r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
+
+    // calculate epsilon at collocation point
+    abs_r_s=FADUTILS::Norm<FAD>(r_s);
+
+    AssembleShapefunctionsL(L_i,L);
+
+    v_thetapar_cp[ind].Clear();
+    for (unsigned int i=0;i<6*nnode+BEAM3K_COLLOCATION_POINTS;i++)
+      for (unsigned int j=0;j<3;j++)
+        (v_thetapar_cp[ind])(i,j)=L(i)*r_s(j)/abs_r_s;
+  }
+
+  // calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+  for (unsigned int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+  {
+    theta_cp[node].Clear();
+    triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+  }
+
+
+  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
+  {
+    // Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[gp][0];
+    const double wgt = gausspoints.qwgt[gp];
+
+    // Evaluate shape functions
+    L_i.Clear();
+    DRT::UTILS::shape_function_1D(L_i,xi,this->Shape());
+
+    theta.Clear();
+    v_thetapar.Clear();
+    for (unsigned int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      theta.Update(L_i(node),theta_cp[node],1.0);
+      v_thetapar.Update(L_i(node),v_thetapar_cp[node],1.0);
+    }
+
+    // compute material triad at gp
+    triad_mat.Clear();
+    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+
+
+    // compute quaterion of material triad at gp
+    LINALG::TMatrix<FAD,4,1> Qnewmass(true);
+    LARGEROTATIONS::triadtoquaternion(triad_mat,Qnewmass);
+
+    for (unsigned int i=0; i<4; i++)
+      (Qnewmass_[gp])(i)=(Qnewmass(i)).val();
+
+
+    LINALG::TMatrix<FAD,4,1> Qconv(true);
+    for (unsigned int i=0; i<4; i++)
+      Qconv(i)=(Qconvmass_[gp])(i);
+
+
+    LINALG::TMatrix<FAD,4,1> deltaQ(true);
+    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconv),Qnewmass,deltaQ);
+
+    LINALG::TMatrix<FAD,3,1> deltatheta(true);
+    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
+
+
+    // angular velocity at this Gauss point according to backward Euler scheme
+    LINALG::TMatrix<FAD,3,1> omega(true);
+    omega += deltatheta;
+    omega.Scale(1/dt);
+
+    // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
+    // where g_1 is first base vector, i.e. first column of Lambda
+    LINALG::TMatrix<FAD,3,3> g1g1gamma;
+    for (unsigned int k=0; k<3; k++)
+      for (unsigned int j=0; j<3; j++)
+        g1g1gamma(k,j) = triad_mat(k,0)*triad_mat(j,0)*gamma(2);
+
+    // compute vector gamma(2) * g_1 \otimes g_1 * \omega
+    LINALG::TMatrix<FAD,3,1> g1g1gammaomega;
+    g1g1gammaomega.Multiply(g1g1gamma,omega);
+
+    // residual contribution from viscous damping moment
+    f_int_aux.Clear();
+    f_int_aux.Multiply(v_thetapar,g1g1gammaomega);
+    f_int_aux.Scale(wgt*jacobi_[gp]);
+    f_int.Update(1.0,f_int_aux,1.0);
+  }
+
+}
+
+/*----------------------------------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------------------------------*/
+int DRT::ELEMENTS::Beam3k::HowManyRandomNumbersINeed() const
+{
+  // get Gauss rule for evaluation of stochastic force contributions
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::mygaussrulebeam3k;
+  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+
+  /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
+   * random numbers for the translational degrees of freedom */
+  return (3*gausspoints.nquad);
+}
+
+
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble C shape function                                                                     meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
@@ -1722,7 +2180,7 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,BEAM3K
     }
     else
     {
-        L(i)=L_i(assembly_L[i]-1);
+      L(i)=L_i(assembly_L[i]-1);
     }
   }
 
@@ -1817,7 +2275,8 @@ dserror("BEAM3K_COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 
 /*-----------------------------------------------------------------------------------------------------------*
  |  Calculate position vectors from displacement +  initial position                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag)
+void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(const std::vector<double>& disp,
+                                            std::vector<FAD>& disp_totlag)
 {
   for (int dof=0;dof<2*6+BEAM3K_COLLOCATION_POINTS;dof++)
     disp_totlag[dof]=disp[dof];
@@ -1865,7 +2324,7 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
         else
         {
           //here we have to add the initial length of the tangents at the boundary nodes, i.e. ||r'_i(t=0)||=1:
-          disp_totlag[7*node+ndof]+=1;
+          disp_totlag[7*node+ndof]+=1.0;
         }
       }//for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
 
@@ -2052,6 +2511,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
   return;
 }
 
+
 /*-----------------------------------------------------------------------------------------------------------*
  |  Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int         meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
@@ -2184,95 +2644,6 @@ void DRT::ELEMENTS::Beam3k::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD 
   M(1)=ym*Iyy_*Omega(1);
   M(2)=ym*Izz_*Omega(2);
 
-}
-
-/*----------------------------------------------------------------------------------------------------------*
- | Get position vector at xi for given nodal displacements                                        popp 02/16|
- *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(const double& xi,
-                                                  const LINALG::Matrix<12,1>& disp_totlag_centerline) const
-{
-  // note: this method expects the absolute ("total Lagrangean") values for positions and tangents of both centerline nodes (local numbering 0 and 1)
-  LINALG::Matrix<3,1> r(true);
-  LINALG::Matrix<4,1> N_i(true);
-
-  DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
-
-  for (int n=0;n<4;n++)
-  {
-    for (int i=0;i<3;i++)
-    {
-      r(i)+=N_i(n)*disp_totlag_centerline(3*n+i);
-    }
-  }
-
-  return (r);
-}
-
-/*----------------------------------------------------------------------------------------------------------*
- | \brief Get base vectors describing the cross-section orientation and size at a given xi       meier 03/16|
- *----------------------------------------------------------------------------------------------------------*/
-std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& xi) const
-{
-  std::vector<LINALG::Matrix<3,1> > basevectors(2,LINALG::Matrix<3,1>(true));
-
-  if(weakkirchhoff_)
-  {
-    //Triads at collocation points
-    std::vector<LINALG::Matrix<3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);  //material triads at collocation points
-    std::vector<LINALG::Matrix<3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);  //relative angle at collocation points
-
-    //Interpolated material triad at xi
-    LINALG::Matrix<3,3> triad_mat(true); //vector of material triads at xi
-    LINALG::Matrix<3,1> theta(true); //vector of material triads at xi
-
-    //Matrices for individual shape functions and xi-derivatives
-    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i;
-
-    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
-    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
-    {
-      triad_mat_cp[node].Clear();
-      LARGEROTATIONS::quaterniontotriad(Qnew_[node],triad_mat_cp[node]);
-    }
-
-    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
-    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
-    {
-      theta_cp[node].Clear();
-      triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
-    }
-
-    //Evaluate shape functions
-    DRT::UTILS::shape_function_1D(L_i,xi,Shape());
-    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
-    {
-      theta.Update(L_i(node),theta_cp[node],1.0);
-    }
-
-    //compute material triad at gp
-    triad_mat.Clear();
-    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
-
-    for(int i=0;i<3;i++)
-    {
-      basevectors[0](i)=triad_mat(i,1);
-      basevectors[1](i)=triad_mat(i,2);
-    }
-
-    // ToDo careful, this is a hack for rectangular cross-sections ?!?
-    double Ly=pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
-    double Lz=12.0*Izz_/pow(Ly,3);
-
-    basevectors[0].Scale(0.5*Ly);
-    basevectors[1].Scale(0.5*Lz);
-  }
-  else
-  {
-    dserror("Method GetBaseVectors() only implemented for the case WK==1 (weak Kirchhoff constraint) so far!");
-  }
-
-  return basevectors;
 }
 
 //      //*******************************Begin: FD-CHECK************************************************************

@@ -176,6 +176,12 @@ public:
    *  \date 05/16 */
   virtual inline int NumCenterlineNodes() const { return this->NumNode(); }
 
+  /** \brief find out whether given node is used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 10/16 */
+  virtual inline bool IsCenterlineNode(const DRT::Node& node) const { return true; }
+
   virtual double GetDeltaTheta() const
   {
    return deltatheta_;
@@ -240,6 +246,24 @@ public:
     return GetJacobi();
   }
 
+  /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  virtual inline void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const
+  {
+    dserror("method not implemented because element is deprecated");
+  }
+
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 06/16 */
+  inline virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos, const double& xi, const std::vector<double>& disp) const
+  {
+    dserror("method not implemented because element is deprecated");
+  }
+
   /** \brief get access to the reference length
    *
    *  \author grill
@@ -281,7 +305,7 @@ public:
   void SetCrossSecShear(const double& crosssecshear);
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
-  int HowManyRandomNumbersINeed();
+  virtual int HowManyRandomNumbersINeed() const;
 
   //! \brief internal force vector
   const Epetra_SerialDenseVector& InternalForceVector() const {return f_;}

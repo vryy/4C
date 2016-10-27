@@ -876,17 +876,10 @@ namespace MODELEVALUATOR {
     //! setup member variables
     void Setup();
 
-    const Teuchos::RCP< Epetra_MultiVector>& GetRadomForces() const
+    const Teuchos::RCP< Epetra_MultiVector>& GetRandomForces() const
     {
       CheckInitSetup();
       return randomforces_;
-    };
-
-    /// returns type of friction model
-    const enum INPAR::STATMECH::FrictionModel& GetFrictionModel() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->FrictionModel();
     };
 
     /// return type of predefined dirichlet boundary condition

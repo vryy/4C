@@ -65,21 +65,24 @@ inline void PeriodicBoundaryConsistentDis(Teuchos::RCP<Epetra_Vector> dis,
 
     for (int j=ndim-1; j>-1; j--)
     {
-      int doflid = dis->Map().LID(dofnode[j]);
-      //current coordinate value
-      double xcurr = node->X()[j] + (*dis)[doflid];
+      if ( (*periodlength)[j] > 0.0)
+      {
+        int doflid = dis->Map().LID(dofnode[j]);
+        //current coordinate value
+        double xcurr = node->X()[j] + (*dis)[doflid];
 
-      /*if node currently has coordinate value greater than periodlength, it is
-       *shifted by -periodlength sufficiently often to lie again in the domain*/
-      if (xcurr > (*periodlength)[j])
-      {
-        (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
-      }
-      /*if node currently has coordinate value smaller than zero, it is shifted
-       * by periodlength sufficiently often to lie again in the domain*/
-      else if (xcurr < 0.0)
-      {
-        (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
+        /*if node currently has coordinate value greater than periodlength, it is
+         *shifted by -periodlength sufficiently often to lie again in the domain*/
+        if (xcurr > (*periodlength)[j])
+        {
+          (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
+        }
+        /*if node currently has coordinate value smaller than zero, it is shifted
+         * by periodlength sufficiently often to lie again in the domain*/
+        else if (xcurr < 0.0)
+        {
+          (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
+        }
       }
     }
   }

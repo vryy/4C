@@ -258,6 +258,12 @@ namespace TIMINT {
       CheckInitSetup();
       return lumpmass_;
     }
+
+    const bool& NeglectInertia() const
+    {
+      CheckInitSetup();
+      return neglectinertia_;
+    }
     ///@}
 
     /// @name Get model evaluator control parameters (read only access)
@@ -633,6 +639,9 @@ namespace TIMINT {
 
     /// lump the mass matrix?
     bool lumpmass_;
+
+    /// neglect inertia?
+    bool neglectinertia_;
     ///@}
 
     /// @name Model evaluator control parameters

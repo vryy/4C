@@ -57,7 +57,8 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
 {
   CheckInitSetup();
 
-  if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations)
+  if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations and
+      !SDyn().NeglectInertia() )
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */

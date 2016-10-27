@@ -749,7 +749,6 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingConstants(Teuchos::ParameterList& p
   gamma(0) = 16*params.get<double>("ETA",0.0); // Parallel to normal direction
   gamma(1) = 32/3*params.get<double>("ETA",0.0);   // Perpendicular to normal direction
 
-//  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropicconsistent || DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
 
 }

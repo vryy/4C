@@ -95,8 +95,8 @@ public:
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
   virtual Teuchos::RCP<STATMECH::ParamsInterface> StatMechParamsInterfacePtr() const;
 
-  //!computes the number of different random numbers required in each time step for generation of stochastic forces
-  virtual int HowManyRandomNumbersINeed() {return 0;};
+  //! computes the number of different random numbers required in each time step for generation of stochastic forces
+  virtual int HowManyRandomNumbersINeed() const = 0;
 
   /** \brief get access to the element reference length
    *        (i.e. arc-length in stress-free configuration)
@@ -116,6 +116,12 @@ public:
    *  \author grill
    *  \date 05/16 */
   virtual int NumCenterlineNodes() const = 0;
+
+  /** \brief find out whether given node is used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 10/16 */
+  virtual bool IsCenterlineNode(const DRT::Node& node) const = 0;
 
   /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
    *
@@ -193,23 +199,13 @@ public:
    *
    *  \author grill
    *  \date 06/16 */
-  virtual void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const
-  {
-    // ToDo make pure virtual and add/generalize implementations in beam eles
-    dserror("not implemented");
-  }
+  virtual void GetRefTangentAtNode(LINALG::Matrix<3,1>& Tref_i, const int& i) const = 0;
 
-  /** \brief get centerline position at xi \in [-1,1] (element parameter space)
+  /** \brief get centerline position at xi \in [-1,1] (element parameter space) from displacement state vector
    *
    *  \author grill
    *  \date 06/16 */
-  virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos,
-                          const double& xi,
-                          const std::vector<double>& disp_totlag) const
-  {
-    // ToDo make pure virtual and add/generalize implementations in beam eles
-    dserror("not implemented");
-  }
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>& pos, const double& xi, const std::vector<double>& disp) const = 0;
 
   /** \brief get triad at xi \in [-1,1] (element parameter space)
    *
@@ -224,25 +220,236 @@ public:
     dserror("not implemented");
   }
 
+  //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+  virtual void UnShiftNodePosition(std::vector<double>&       disp, //!<element disp vector
+                                   const std::vector<double>& periodlength,
+                                   const unsigned int         nnode) const;
+
+
 protected:
   /** \brief get access to the interface
    *
    *  \author hiermeier
    *  \date 04/16 */
-  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
   { if (not IsParamsInterface())
       dserror("The interface ptr is not set!");
-    return *interface_ptr_;
-  }
+    return *interface_ptr_; }
 
   inline STATMECH::ParamsInterface& StatMechParamsInterface() const
   {
     return *sm_interface_ptr_;
   }
 
+  /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionsAtXi(const double&                           xi,
+                                  LINALG::Matrix<1,vpernode*nnode>&       I_i,
+                                  const DRT::Element::DiscretizationType& distype) const
+  {
+    I_i.Clear();
+
+    switch(vpernode)
+    {
+      case 1:
+      {
+        // evaluate Lagrange shape functions at xi
+        DRT::UTILS::shape_function_1D(I_i,xi,distype);
+        break;
+      }
+      case 2:
+      {
+        // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D(I_i,xi,this->RefLength(),line2);
+        break;
+      }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
+
+  /** \brief evaluate shape function derivatives at position \xi in element parameter space [-1,1]
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionDerivsAtXi(const double&                           xi,
+                                       LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
+                                       const DRT::Element::DiscretizationType& distype) const
+  {
+    I_i_xi.Clear();
+
+    switch(vpernode)
+    {
+      case 1:
+      {
+        // evaluate Lagrange shape function derivs at xi
+        DRT::UTILS::shape_function_1D_deriv1(I_i_xi,xi,distype);
+        break;
+      }
+      case 2:
+      {
+        // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D_deriv1(I_i_xi,xi,this->RefLength(),line2);
+        break;
+      }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
+
+  /** \brief evaluate shape function derivatives at position \xi in element parameter space [-1,1]
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionsAndDerivsAtXi(const double&                           xi,
+                                           LINALG::Matrix<1,vpernode*nnode>&       I_i,
+                                           LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
+                                           const DRT::Element::DiscretizationType& distype) const
+  {
+    this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i,distype);
+    this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi,distype);
+  }
+
+  /** \brief evaluate shape functions at all specified Gauss points at once
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
+                                    std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
+                                    const DRT::Element::DiscretizationType&         distype) const
+  {
+    if (I_i.size()!= (unsigned int) gausspoints.nquad)
+      dserror("vector for individual shape functions to be evaluated at %d GPs has wrong size: %d"
+          ,gausspoints.nquad,I_i.size());
+
+    for (int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      // Get location of GP in element parameter space xi \in [-1;1]
+      const double xi = gausspoints.qxg[numgp][0];
+      this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i[numgp],distype);
+    }
+  }
+
+  /** \brief evaluate shape function derivatives at all specified Gauss points at once
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
+                                         std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
+                                         const DRT::Element::DiscretizationType&         distype) const
+  {
+    if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
+      dserror("vector for individual shape function derivatives to be evaluated at %d GPs has wrong size: %d"
+          ,gausspoints.nquad,I_i_xi.size());
+
+    for (int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      // Get location of GP in element parameter space xi \in [-1;1]
+      const double xi = gausspoints.qxg[numgp][0];
+      this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi[numgp],distype);
+    }
+  }
+
+  /** \brief evaluate shape functions and derivatives at all specified Gauss points at once
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode>
+  void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
+                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
+                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
+                                             const DRT::Element::DiscretizationType&         distype) const
+  {
+    this->EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints,I_i,distype);
+    this->EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,I_i_xi,distype);
+  }
+
+  /** \brief interpolation of nodal DoFs based on given shape function values
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T>
+  void CalcInterpolation(const LINALG::TMatrix<T,ndim*vpernode*nnode,1>& dof_vals,
+                         const LINALG::Matrix<1,vpernode*nnode>&         shapefcn_vals,
+                         LINALG::TMatrix<T,ndim,1>&                      result) const
+  {
+    result.Clear();
+
+    for (unsigned int dim=0; dim<ndim; ++dim)
+      for (unsigned int i=0; i<vpernode*nnode; ++i)
+        result(dim) += shapefcn_vals(i)*dof_vals(ndim*i+dim);
+  }
+
+  /** \brief compute beam centerline position vector at position \xi in element parameter space [-1,1]
+   *         via interpolation of nodal DoFs based on given shape function values
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode, typename T>
+  void Calc_r(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
+              const LINALG::Matrix<1,vpernode*nnode>&      funct,
+              LINALG::TMatrix<T,3,1>&                      r) const
+  {
+    CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,funct,r);
+  }
+
+  /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in
+   *         element parameter space [-1,1] with respect to \xi via interpolation of nodal DoFs
+   *         based on given shape function derivative values
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode, typename T>
+  void Calc_r_xi(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
+                 const LINALG::Matrix<1,vpernode*nnode>&      deriv,
+                 LINALG::TMatrix<T,3,1>&                      r_xi) const
+  {
+    CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,deriv,r_xi);
+  }
+
+  /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in
+   *         element parameter space [-1,1] with respect to arc-length parameter s in reference
+   *         configuration via interpolation of nodal DoFs based on given shape function derivative values
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template<unsigned int nnode, unsigned int vpernode, typename T>
+  void Calc_r_s(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
+                const LINALG::Matrix<1, vpernode*nnode>&     deriv,
+                const double&                                jacobi,
+                LINALG::TMatrix<T,3,1>&                      r_s) const
+  {
+    Calc_r_xi<nnode,vpernode,T>(disp_totlag_centerline,deriv,r_s);
+
+    /* at this point we have computed derivative with respect to the element parameter \xi \in [-1;1];
+     * as we want derivative with respect to the reference arc-length parameter s,
+     * we have to divide it by the Jacobi determinant at the respective point*/
+    r_s.Scale(1.0/jacobi);
+  }
+
+
+  //! @name Methods for Brownian dynamics simulations
+
+  //! computes damping coefficients
+  void GetDampingCoefficients(LINALG::Matrix<3,1>&    gamma) const;
+
+  //! computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
+  template<unsigned int ndim, typename T> //number of dimensions of embedding space
+  void GetBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
+                           const LINALG::TMatrix<T,ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                           LINALG::TMatrix<T,ndim,1>&       velbackground,  //!< velocity of background fluid
+                           LINALG::TMatrix<T,ndim,ndim>&    velbackgroundgrad) const; //!<gradient of velocity of background fluid
+
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
   virtual void UnShiftNodePosition(std::vector<double>& disp,
-                                   unsigned int nnode); //!<element disp vector
+                                   const unsigned int nnode) const;
 
 private:
   /** \brief interface ptr

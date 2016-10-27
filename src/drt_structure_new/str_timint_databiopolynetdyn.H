@@ -555,13 +555,6 @@ namespace TIMINT {
     };
     //! @}
 
-    /// returns type of friction model
-    const enum INPAR::STATMECH::FrictionModel& FrictionModel() const
-    {
-      CheckInitSetup();
-      return frictionmodel_;
-    };
-
     /// return type of predefined dirichlet boundary condition
     const enum INPAR::STATMECH::DBCType& DbcType() const
     {
@@ -622,8 +615,6 @@ namespace TIMINT {
     //---------------------------------------------------------------------------
     // general statmech simulation flags
     //---------------------------------------------------------------------------
-    // isotropicconsistent isotropiclumped
-    enum INPAR::STATMECH::FrictionModel frictionmodel_;
     // none shearfixed sheartrans pinnodes,  choose dbc type
     enum INPAR::STATMECH::DBCType dbctype_;
     // constcreep, choose nbc type

@@ -151,6 +151,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
   {
     masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdynparams,"MASSLIN");
     lumpmass_ = (DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS") == 1);
+    neglectinertia_ = (DRT::INPUT::IntegralValue<int>(sdynparams,"NEGLECTINERTIA") == 1);
   }
   // ---------------------------------------------------------------------------
   // initialize model evaluator control parameters

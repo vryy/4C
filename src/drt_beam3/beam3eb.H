@@ -23,7 +23,7 @@
  *
  * As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
  * vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
- * the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
+ * the last three flags refer to the tangent at the node (rotational degree of freedom). The flag of the tangent in beam centerline direction must
  * be set to 0, otherwise the axial tension at the boundary would be prescribed.
  *
  * ARBITRARY PRECISSION: This element offers the method HighPrecissionCalc() which has to be uncommented in Beam3eb::Evaluate. With this method the whole
@@ -106,7 +106,7 @@ using namespace cln;
 
 //#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for tangential DoFs
 //Default: off
-//#define CONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
+//#define BEAM3EBCONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
 //Default: off                  //(needed in order to compare with Reissner beams)
 
 //#define BEAM3EBDISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as discrete force at given element parameter position DISCRETELINENEUMANN
@@ -161,7 +161,7 @@ private:
 \brief 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
 nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
 tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
-There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is possible.
+There is no shear deformation and no torsion. Refer to 'beam3k' for a full Kirchhoff type element.
 
 author meier (meier@lnm.mw.tum.de)
 */
@@ -251,6 +251,12 @@ public:
    *  \date 05/16 */
   virtual inline int NumCenterlineNodes() const { return 2; }
 
+  /** \brief find out whether given node is used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 10/16 */
+  virtual inline bool IsCenterlineNode(const DRT::Node& node) const { return true; }
+
   /*!
    \brief Get moment of inertia of area Izz_ of this element
    */
@@ -309,13 +315,16 @@ public:
    *  \date 06/16 */
   virtual inline void GetPosAtXi(LINALG::Matrix<3,1>&      pos,
                                 const double&              xi,
-                                const std::vector<double>& disp_totlag) const
+                                const std::vector<double>& disp) const
   {
-    if (disp_totlag.size() != 12)
-      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp_totlag.size());
+    if (disp.size() != 12)
+      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp.size());
 
-    const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
-    pos = this->GetPos(xi,disp_totlag_fixedsize);
+    // add reference positions and tangents => total Lagrangean state vector
+    LINALG::Matrix<12,1> disp_totlag(true);
+    UpdateDispTotlag<2,6>(disp,disp_totlag);
+
+    pos = this->GetPos(xi,disp_totlag);
 
     return;
   }
@@ -531,7 +540,7 @@ public:
 
   /* computes the number of different random numbers required in each time step for generation of stochastic
    forces                                                                    */
-  int HowManyRandomNumbersINeed();
+  virtual int HowManyRandomNumbersINeed() const;
 
   /** \brief add indices of those DOFs of a given node that are positions
    *
@@ -589,6 +598,9 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
+
+  //! flag indicating Brownian dynamics simulation -> neglect inertia
+  bool statmechprob_;
 
   //! cross section area
   double crosssec_;
@@ -667,7 +679,7 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix
-  void eb_nlnstiffmass( Teuchos::ParameterList&   params,
+  void CalcInternalAndInertiaForcesAndStiff( Teuchos::ParameterList&   params,
                         std::vector<double>&      vel,
                         std::vector<double>&      disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
@@ -691,6 +703,9 @@ private:
   void HighPrecissionCalc();
   #endif
 
+  template<unsigned int nnode, unsigned int dofpn>
+  void UpdateDispTotlag(const std::vector<double>& disp, LINALG::Matrix<dofpn*nnode,1>& disp_totlag) const;
+
   //!check of stiffness matrix via FAD
   void FADCheckStiffMatrix(std::vector<double>& disp,
                            Epetra_SerialDenseMatrix* stiffmatrix,
@@ -707,62 +722,37 @@ private:
   //! lump mass matrix
   void lumpmass(Epetra_SerialDenseMatrix* emass);
 
-/*  float_precision power(float_precision zahl, float_precision exponent)
-  {
-    if (zahl<float_precision(0.0))
-      return pow(-zahl, exponent);
-    else
-      return pow(zahl, exponent);
-  }*/
-
-
-  // don't want = operator
-  Beam3eb& operator = (const Beam3eb& old);
   // computes translational damping forces and stiffness (private)
-  template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-  void MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                    const std::vector<double>& vel,  //!< vector containing first order time derivative of nodal positions and nodal tangents of an element
-                                                    const std::vector<double>& disp, //!< vector containing nodal positions and nodal tangents of an element
-                                                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                                    Epetra_SerialDenseVector* force);//!< element internal force vector
+  template<unsigned int nnode, unsigned int vpernode, int ndim>
+  void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                    const LINALG::Matrix<ndim*vpernode*nnode,1>& vel,
+                                    const LINALG::Matrix<ndim*vpernode*nnode,1>& disp_totlag,
+                                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                    Epetra_SerialDenseVector* force);//!< element internal force vector
+
+
   /*-----------------------------------------------------------------------------------------------------------*
    | computes stochastic forces and resulting stiffness (public)                              mukherjee   10/13|
    *----------------------------------------------------------------------------------------------------------*/
-  template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-  void MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
-                                                const std::vector<double>& vel,  //!< element velocity vector
-                                                const std::vector<double>& disp, //!<element disp vector
+  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
+  void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                                const LINALG::Matrix<ndim*vpernode*nnode,1>& disp_totlag,
                                                 Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                 Epetra_SerialDenseVector* force);//!< element internal force vector
-  /*-----------------------------------------------------------------------------------------------------------*
-    | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
-    | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
-    | rotation around filament axis                                             (private)      mukherjee   10/13|
-    *----------------------------------------------------------------------------------------------------------*/
-   void MyDampingConstants(LINALG::Matrix<3,1>& gamma);
-
-   /*computes velocity of background fluid and gradient of that velocity at a certain evaluation point in
-     the physical space   */
-   template<int ndim> //number of dimensions of embedding space
-   void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
-                                                     const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                                                     LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                                                     LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
 
    /*-----------------------------------------------------------------------------------------------------------*
     | Assemble stochastic and viscous forces and respective stiffness according to fluctuation dissipation      |
     | theorem                                                                           (public) Mukherjee 10/09|
     *----------------------------------------------------------------------------------------------------------*/
-   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(Teuchos::ParameterList& params,
-                                                 const std::vector<double>&       vel,  //!< element velocity vector
-                                                 const std::vector<double>&       disp, //!< element displacement vector
+   template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+   void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+                                                 std::vector<double>&      vel,  //!< element velocity vector
+                                                 std::vector<double>&      disp, //!< element displacement vector
                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                  Epetra_SerialDenseVector* force);        //!< element internal force vector
 
    // don't want = operator
-   //Beam3eb& operator = (const Beam3eb& old);
-
+   Beam3eb& operator = (const Beam3eb& old);
 }; // class Beam3eb
 
 

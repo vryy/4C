@@ -2407,19 +2407,13 @@ void DRT::ELEMENTS::Truss3::FADThetaLinearisation(LINALG::Matrix<1,3> & diff_dis
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Truss3::MyDampingConstants(Teuchos::ParameterList& params,
-                                                      LINALG::Matrix<3,1>& gamma,
-                                                      const INPAR::STATMECH::FrictionModel& frictionmodel)
+                                                      LINALG::Matrix<3,1>& gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
   gamma(1) = 4*PI*params.get<double>("ETA",0.0);
   //no rotational damping as no rotaional degrees of freedom
   gamma(2) = 0;
-
-
-  //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-    gamma(0) = gamma(1);
 
 }//DRT::ELEMENTS::Truss3::MyDampingConstants
 
@@ -2507,23 +2501,15 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
-
   //damping coefficients for translational and rotational degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
@@ -2608,12 +2594,9 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&   
                                                       Epetra_SerialDenseMatrix&  DummyStiffMatrix,  //!< element stiffness matrix
                                                       Epetra_SerialDenseVector&  DummyForce)//!< element internal force vector
 {
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
-
   //damping coefficients for three translational and one rotational degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
@@ -2621,11 +2604,6 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&   
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));

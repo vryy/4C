@@ -239,21 +239,9 @@ public:
    *
    *  \author grill
    *  \date 06/16 */
-  virtual inline void GetPosAtXi(LINALG::Matrix<3,1>&       pos,
-                                 const double&              xi,
-                                 const std::vector<double>& disp_totlag) const
-  {
-    // ToDo we expect absolute positions and absolute tangents at both centerline nodes here (i.e. "disp_totlag_centerline")
-    //      make this more general and accept complete DoF vector of this element (2*7+1 DoFs) and do the rest automatically here
-    if (disp_totlag.size() != 12)
-      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp_totlag.size());
-
-    // note: in case of ROTVEC=true, we need 3 positions, 3 absolute rotvec DOFs AND the length of tangent vector (7th DoF) of both centerline nodes
-    if (this->RotVec()) dserror("not implemented for case ROTVEC=true so far");
-
-    const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag[0]);
-    pos = this->GetPos(xi,disp_totlag_fixedsize);
-  }
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>&       pos,
+                          const double&              xi,
+                          const std::vector<double>& disp) const;
 
   /*!
    \brief Get base vectors describing the cross-section orientation and size at given parameter coordinate xi
@@ -286,6 +274,19 @@ public:
    *  \date 05/16 */
   virtual inline int NumCenterlineNodes() const { return 2; }
 
+  /** \brief find out whether given node is used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 10/16 */
+  virtual inline bool IsCenterlineNode(const DRT::Node& node) const
+  {
+    if (node.Id() == this->Nodes()[0]->Id() or
+        node.Id() == this->Nodes()[1]->Id())
+      return true;
+    else
+      return false;
+  }
+
   /*!
   \brief Return number of lines to this element
   */
@@ -306,19 +307,13 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
-
-    int dofpn_aux=0;
+    int dofpn=0;
 
     if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
-    {
-      dofpn_aux = 7;
-    }
+      dofpn = 7;
     else
-    {
-      dofpn_aux = 1;
-    }
+      dofpn = 1;
 
-    const int dofpn = dofpn_aux;
     return dofpn;
   }
 
@@ -487,17 +482,16 @@ public:
    *  \date 07/16 */
   virtual inline void Rotation1DDofIndices(std::vector<int>& twistdofs, const DRT::Node& node) const
   {
-    if (not rotvec_)
+    if ( (not rotvec_) and
+        ( node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()) )
     {
-      if ( node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id() )
-      {
         twistdofs.push_back(6);
-      }
-      else if (node.Id() == this->Nodes()[2]->Id())
-      {
-        twistdofs.push_back(0);
-      }
     }
+    else if (node.Id() == this->Nodes()[2]->Id())
+    {
+      twistdofs.push_back(0);
+    }
+
     return;
   }
 
@@ -514,14 +508,13 @@ public:
       {
         tangnormdofs.push_back(6);
       }
-      else if (node.Id() == this->Nodes()[2]->Id())
-      {
-        tangnormdofs.push_back(0);
-      }
     }
     return;
   }
 
+
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  virtual int HowManyRandomNumbersINeed() const;
 
 private:
 
@@ -529,6 +522,8 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
+  //! flag indicating Brownian dynamics simulation -> neglect inertia
+  bool statmechprob_;
   //! cross section area
   double crosssec_;
   //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
@@ -545,9 +540,9 @@ private:
   //Variables needed by all local triads
   //! Matrix holding pseudo rotation vectors describing the material triads in the initial configuration at each node
   std::vector<LINALG::Matrix<3,1> > theta0_;
-  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to current configuration
+  //!rotation angle displacement at the two boundary nodes; relates to current configuration
   std::vector<LINALG::Matrix<3,1> > dispthetanew_;
-  //! nodal triads in quaternion during the current iteration step (required for BEAM3K_MULTIPLICATIVEUPDATES)
+  //! nodal triads in quaternion during the current iteration step
   std::vector<LINALG::Matrix<4,1> > Qnew_;
   //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the converged configuration of the last time step
   std::vector<LINALG::Matrix<4,1> > Qrefconv_;
@@ -639,8 +634,7 @@ private:
                                 Epetra_SerialDenseMatrix* stiffmatrix,
                                 Epetra_SerialDenseMatrix* massmatrix,
                                 Epetra_SerialDenseVector* force,
-                                Epetra_SerialDenseVector* inertia_force,
-                                bool update);
+                                Epetra_SerialDenseVector* inertia_force);
 
   //! Calculate internal forces and stiffness matrix via FAD in case of a Strong Kirchhoff Constraint
   void CalculateInternalForcesSK(Teuchos::ParameterList& params,
@@ -648,19 +642,48 @@ private:
                                 Epetra_SerialDenseMatrix* stiffmatrix,
                                 Epetra_SerialDenseMatrix* massmatrix,
                                 Epetra_SerialDenseVector* force,
-                                Epetra_SerialDenseVector* inertia_force,
-                                bool update);
+                                Epetra_SerialDenseVector* inertia_force);
 
-  //! Calculate internal forces and stiffness matrix via FAD in case of a Weak Kirchhoff Constraint
-  void CalculateInteriaForces(Teuchos::ParameterList& params,
+  //! Calculate inertia forces and stiffness matrix via FAD
+  void CalculateInertiaForces(Teuchos::ParameterList& params,
                               std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
                               std::vector<FAD>& disp_totlag_centerline,
                               std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> >& v_theta,
                               LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_inert);
 
+  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+  void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+                                  std::vector<double>&       vel,  //!< element velocity vector
+                                  std::vector<double>&       disp, //!< element displacement vector
+                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                  Epetra_SerialDenseVector* force);        //!< element internal force vector
+
+  template<unsigned int nnode, unsigned int vpernode, int ndim>
+  void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                    const LINALG::TMatrix<double,ndim*vpernode*nnode,1>& vel,
+                                    const LINALG::TMatrix<FAD,ndim*vpernode*nnode,1>& disp_totlag,
+                                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                    LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int);//!< element internal force vector
+
+  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
+  void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                const LINALG::TMatrix<FAD,ndim*vpernode*nnode,1>& disp_totlag,
+                                Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int);//!< element internal force vector
+
+  //! computes rotational damping forces and stiffness
+  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+  void EvaluateRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                const std::vector<FAD>& disp_totlag_centerline,
+                                const std::vector<LINALG::TMatrix<FAD,3,3> > & triad_mat_cp,
+                                Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
+                                LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int);      //!< element internal force vector
+
+  // Todo move the following methods to LARGEROTATIONS namespace
+
    //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad_ref^T*triad -> inversion of the right translation triad=triad_ref*exp(theta)
   template<typename T>
-  void triadtoangleright(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
+  void triadtoangleright(LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,const LINALG::TMatrix<T,3,3>& triad) const
    {
      LINALG::TMatrix<T,3,3> rotation_matrix;
      LINALG::TMatrix<T,4,1> quaternion;
@@ -675,7 +698,7 @@ private:
 
   //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
   template<typename T>
-  void triadtoangleleft(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
+  void triadtoangleleft(LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,const LINALG::TMatrix<T,3,3>& triad) const
   {
     LINALG::TMatrix<T,3,3> rotation_matrix;
     LINALG::TMatrix<T,4,1> quaternion;
@@ -690,7 +713,7 @@ private:
 
    //!compute a triad with an (interpolated) relative angle between triad_ref and triad
    template<typename T>
-   void angletotriad(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
+   void angletotriad(const LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
    {
      LINALG::TMatrix<T,3,3> rotation_matrix;
      LINALG::TMatrix<T,4,1> quaternion;
@@ -805,13 +828,25 @@ private:
                                 LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N);
 
   //! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
-  void UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag);
+  void UpdateDispTotlag(const std::vector<double>& disp, std::vector<FAD>& disp_totlag);
 
   //!Set positions vectors and tangents at boundary nodes and triads at all CPs
   void SetNodalVariables(std::vector<FAD>& disp_totlag,
                          std::vector<FAD>& disp_totlag_centerline,
                          std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat_cp);
 
+  //! extract those Dofs relevant for centerline-interpolation from total state vector
+  template<unsigned int nnodecl, unsigned int vpernode, typename T>
+  void ExtractCenterlineDofValues(const std::vector<T>&           dofvec,
+                                  LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
+
+  //! add reference positions and tangents to (centerline) displacement state vector
+  template<unsigned int nnodecl, unsigned int vpernode, typename T>
+  void AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
+
+  //! "add" reference values to displacement state vector (multiplicative in case of rotation pseudo vectors)
+  template<typename T>
+  void AddRefValuesDisp(std::vector<T>& dofvec) const;
 
   //!Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
   void ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,

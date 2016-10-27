@@ -234,6 +234,8 @@ void STR::Integrator::EquilibriateInitialState()
    * below at *). */
   // ---------------------------------------------------------------------------
   // solve the linear system
+  if (stiff_ptr->NormInf() == 0.0) dserror("You are about to invert a singular matrix!");
+
   linsys_ptr->applyJacobianInverse(p_ls,*nox_rhs_ptr,*nox_soln_ptr);
   nox_soln_ptr->scale(-1.0);
 

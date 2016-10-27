@@ -20,37 +20,35 @@ NUMALEDIS              0
 NUMTHERMDIS            0
 ----------------------------------------------------------------IO
 OUTPUT_BIN             Yes                   // toggles control file and error file creation
+STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
 DYNAMICTYP             OneStepTheta
-RESULTSEVRY            100                     // write results every n-th step (Attention: problems with mem leak)
+RESULTSEVRY            1                     // write results every n-th step (Attention: problems with mem leak)
 RESTARTEVRY            1000                  // set restart points every n-th step
 RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
-DIVERCONT              adapt_step            // Continue even if results are divergent
-TIMESTEP               0.001                  // step size
-NUMSTEP                5               // total number of steps  //rumpf2.txt end
+DIVERCONT              stop            // Continue even if results are divergent
+TIMESTEP               0.0005                  // step size
+NUMSTEP                10              // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 DAMPING                No
 M_DAMP                 0
 K_DAMP                 0
 PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
-TOLDISP                8.0E-04               // 5.5e-05 1.0E-06
-TOLRES                 1.0E-01
-TOLCONSTR              1.0E-03
-ADAPTCONV              No
-ADAPTCONV_BETTER       0.1
+TOLDISP                1.0E-10               // 5.5e-05 1.0E-06
+TOLRES                 1.0E-08
 MAXITER                25
 MASSLIN                rotations
+NEGLECTINERTIA         yes
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1                     // header_01 end
 ----------------------------------------------STATISTICAL MECHANICS
 STATMECHPROB           yes
 CROSSLINKER            no
-FRICTIONMODEL          anisotropicconsistent // isotropicconsistent isotropiclumped
 //============= SIMULATION SPECS ============
 PERIODLENGTH           5 5 5                 // edge lengths of the cuboid volume
 ETA                    0.001                 // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
@@ -9781,7 +9779,7 @@ NODE 3224 COORD  -1.137862569665546e+00  5.576451946069922e+00  -1.4112700547144
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e+09 NUE 0.3 DENS 1.384e-09 THEXPANS 0.0
 MAT 2 MAT_Crosslinker  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE 4.58627268559038542e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE 7.48725846453781457e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -5.07487178276815332e+00TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE -2.17832865787900093e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE  1.96152274853332864e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -5.27102035027869142e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END

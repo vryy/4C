@@ -46,15 +46,6 @@ namespace INPAR
       statout_vesceqshapes
     };
 
-    /// (this enum represents the input file parameter STAT_OUTPUT)
-    enum FrictionModel
-    {
-      frictionmodel_none,                  ///< no friction model
-      frictionmodel_isotropiclumped,       ///< isotropic, lumped damping matrix
-      frictionmodel_isotropicconsistent,   ///< isotropic, consistent damping matrix
-      frictionmodel_anisotropicconsistent  ///< anisotropic, consistent damping matrix
-    };
-
     /// (this enum represents the input file parameter DBCTYPE)
     enum DBCType
     {

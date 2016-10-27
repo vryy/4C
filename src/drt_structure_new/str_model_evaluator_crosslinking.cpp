@@ -1736,11 +1736,8 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
       // todo: discolnp_ with correct values here?
       DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
       // get current position at binding spot xi
-      LINALG::Matrix<3,1> elerefpos;
       LINALG::Matrix<3,1> bbspotpos_j;
-      ele_i->GetRefPosAtXi(elerefpos,xi);
       ele_i->GetPosAtXi(bbspotpos_j,xi,eledisp);
-      bbspotpos_j.Update(1.0,elerefpos,1.0);
       bdata.bbspotdofs[j].push_back(bbspotpos_j);
 
     } // loop over all binding spots of current element

@@ -812,18 +812,13 @@ void DRT::ELEMENTS::Truss3CL::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)       mukherjee   01/14|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Truss3CL::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Truss3CL::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
   gamma(1) = 4*PI*params.get<double>("ETA",0.0);
   //no rotational damping as no rotaional degrees of freedom
   gamma(2) = 0;
-
-
-  //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-    gamma(0) = gamma(1);
 
 }//DRT::ELEMENTS::Truss3CL::MyDampingConstants
 
@@ -886,12 +881,9 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
-
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);
@@ -984,13 +976,9 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
                                                       Epetra_SerialDenseMatrix&  fstiffmatrix,  //!< element stiffness matrix
                                                       Epetra_SerialDenseVector&  fforce)//!< element internal force vector
 {
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL");
-
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
-
+  MyDampingConstants(params,gamma);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);

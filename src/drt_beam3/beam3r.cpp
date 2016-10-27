@@ -423,9 +423,7 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 centerline_hermite_(false),
 isinit_(false),
-needstatmech_(false),
-eps_(0.0),
-Ngp_(LINALG::Matrix<3,1>(true)),
+statmechprob_(false),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
@@ -458,10 +456,7 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  DRT::ELEMENTS::Beam3Base(old),
  centerline_hermite_(old.centerline_hermite_),
  isinit_(old.isinit_),
- needstatmech_(old.needstatmech_),
- eps_(old.eps_),
- f_(old.f_),
- Ngp_(old.Ngp_),
+ statmechprob_(old.statmechprob_),
  Kmax_(old.Kmax_),
  dispthetaconvnode_(old.dispthetaconvnode_),
  dispthetanewnode_(old.dispthetanewnode_),
@@ -483,6 +478,8 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  rnewGPmass_(old.rnewGPmass_),
  amodconvGPmass_(old.amodconvGPmass_),
  amodnewGPmass_(old.amodnewGPmass_),
+ QconvGPdampstoch_(old.QconvGPdampstoch_),
+ QnewGPdampstoch_(old.QnewGPdampstoch_),
  reflength_(old.reflength_),
  theta0node_(old.theta0node_),
  Tcurrnode_(old.Tcurrnode_),
@@ -599,7 +596,7 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,crosssecshear_);
   AddtoPack(data,centerline_hermite_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,needstatmech_);
+  AddtoPack(data,statmechprob_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -619,6 +616,8 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,dispthetanewnode_);
   AddtoPack<3,1>(data,rconvGPmass_);
   AddtoPack<3,1>(data,rnewGPmass_);
+  AddtoPack<4,1>(data,QconvGPdampstoch_);
+  AddtoPack<4,1>(data,QnewGPdampstoch_);
   AddtoPack(data,reflength_);
   AddtoPack<3,1>(data,theta0node_);
   AddtoPack<3,1>(data,Tcurrnode_);
@@ -626,9 +625,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,KrefGP_);
   AddtoPack<3,1>(data,GammarefGP_);
   AddtoPack(data,Kmax_);
-  AddtoPack<3,1>(data,Ngp_);
-  AddtoPack(data,eps_);
-  AddtoPack(data,f_);
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
   AddtoPack(data,Ekintorsion_);
@@ -675,7 +671,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,crosssecshear_);
   centerline_hermite_ = ExtractInt(position,data);
   isinit_ = ExtractInt(position,data);
-  needstatmech_ = ExtractInt(position,data);
+  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -695,6 +691,8 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,dispthetanewnode_);
   ExtractfromPack<3,1>(position,data,rconvGPmass_);
   ExtractfromPack<3,1>(position,data,rnewGPmass_);
+  ExtractfromPack<4,1>(position,data,QconvGPdampstoch_);
+  ExtractfromPack<4,1>(position,data,QnewGPdampstoch_);
   ExtractfromPack(position,data,reflength_);
   ExtractfromPack<3,1>(position,data,theta0node_);
   ExtractfromPack<3,1>(position,data,Tcurrnode_);
@@ -702,9 +700,6 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,KrefGP_);
   ExtractfromPack<3,1>(position,data,GammarefGP_);
   ExtractfromPack(position,data,Kmax_);
-  ExtractfromPack<3,1>(position,data,Ngp_);
-  ExtractfromPack(position,data,eps_);
-  ExtractfromPack(position,data,f_);
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
   ExtractfromPack(position,data,Ekintorsion_);
@@ -738,8 +733,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3r::Lines()
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::ParameterList&  params,
-                                                           const IntegrationPurpose intpurpose) const
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
+    const IntegrationPurpose      intpurpose) const
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
 
@@ -875,33 +870,10 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const Teuchos::Parame
       break;
     }
 
-    /* 'full' or reduced integration of damping and stochastic contributions
-     * depending on choice of friction model in input file*/
+    // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      switch(distype)
-      {
-        case line2:
-        {
-          // TODO case 'frictionmodel_isotropiclumped' seems not to be tested in any nightly test case
-          if (StatMechParamsInterfacePtr() != Teuchos::null)
-            if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
-              gaussrule = DRT::UTILS::intrule_line_lobatto2point;
-            else
-              gaussrule = DRT::UTILS::intrule_line_2point;
-          else
-            if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTIONMODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
-              gaussrule = DRT::UTILS::intrule_line_lobatto2point;
-            else
-              gaussrule = DRT::UTILS::intrule_line_2point;
-          break;
-        }
-        default:
-        {
-          dserror("integration scheme for Statmech application (damping and stochastic forces/moments) only set for 2-noded Reissner beam elements, i.e. linear Lagrange interpolation of centerline AND triad field!");
-          break;
-        }
-      }
+      gaussrule = DRT::UTILS::intrule_line_4point;
       break;
     }
 
@@ -980,11 +952,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
   {
     isinit_ = true;
 
-    // set the flag needstatmech_
-    needstatmech_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
-
-    if(needstatmech_ and (nnodetriad!=2 or nnodecl!=2) )
-      dserror("beam3r: Statmech functionalities only implemented for 2-noded element, i.e. linear Lagrange interpolation");
+    // set the flag statmechprob_
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
 
     // check input data
     if (xrefe.size() != 3*nnodecl)
@@ -1008,10 +977,6 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     // Therefore we have to apply the following transformation:
     nodeI_=(unsigned int) LARGEROTATIONS::NumberingTrafo(nodeI,nnodetriad);
     nodeJ_=(unsigned int) LARGEROTATIONS::NumberingTrafo(nodeJ,nnodetriad);
-
-    // resize and initialize internal force vector TODO do we need this here?
-    f_.Resize(3*nnodetriad + 3*vpernode*nnodecl);
-    f_.Scale(0.0);
 
     // Get DiscretizationType
     DRT::Element::DiscretizationType distype = Shape();
@@ -1277,25 +1242,23 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
      *****************************************************************************************************/
 
     // if needed, compute Jacobi determinant at GPs for integration of damping/stochastic forces
-    if (needstatmech_)
+    if (statmechprob_)
     {
-      // todo: this needs to be done in a nicer way (delete on MyGaussRule Function)
-      const Teuchos::ParameterList& statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-      // we need this cast here because the parameter FRICTIONMODEL is not of type int yet
-      Teuchos::ParameterList myparams;
-      myparams.set<int>("FRICTIONMODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams,"FRICTIONMODEL"));
-
       // Get the applied integration scheme
-      DRT::UTILS::GaussRule1D gaussrule_damp_stoch = MyGaussRule(myparams,res_damp_stoch);    // TODO reuse/copy quantities if same integration scheme has been applied above
+      DRT::UTILS::GaussRule1D gaussrule_damp_stoch = MyGaussRule(res_damp_stoch);    // TODO reuse/copy quantities if same integration scheme has been applied above
       DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
-      // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
+      // these quantities will later be used mainly for calculation of damping/stochastic terms -> named 'dampstoch'
+      QconvGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+      QnewGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
       jacobiGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
 
       // reuse variables for individual shape functions and resize to new numgp
+      I_i.resize(gausspoints_damp_stoch.nquad);
       H_i_xi.resize(gausspoints_damp_stoch.nquad);
 
       // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
+      EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_damp_stoch,I_i,distype);
       EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_damp_stoch,H_i_xi,distype);
 
       // Loop through all GPs
@@ -1305,6 +1268,13 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
 
         // Store Jacobi determinant at this Gauss point
         jacobiGPdampstoch_[numgp]= dr0dxi.Norm2();
+
+        // compute quaternion at this GP and store in QnewGPdampstoch_
+        Calc_Psi_l<nnodetriad,double>(Psi_li, I_i[numgp], Psi_l);
+        Calc_Qgauss<double>(Psi_l,Q_r,QnewGPdampstoch_[numgp]);
+
+        // copy QnewGPdampstoch_ to QconvGPdampstoch_
+        QconvGPdampstoch_[numgp] = QnewGPdampstoch_[numgp];
       }
     }
 
@@ -1502,35 +1472,27 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*
 }
 
 /*--------------------------------------------------------------------------------------------*
- | Get centerline position at xi                                                   grill 06/16|
  *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
                                        const double&              xi,
-                                       const std::vector<double>& disp_totlag) const
+                                       const std::vector<double>& disp) const
 {
   const unsigned int numnodalvalues= this->HermiteCenterlineInterpolation() ? 2 : 1;
   const unsigned int nnodecl=this->NumCenterlineNodes();
   const unsigned int nnodetriad=this->NumNode();
 
-  std::vector<double> disp_totlag_centerline;
+  std::vector<double> disp_totlag_centerline(3*numnodalvalues*nnodecl,0.0);
 
-  /* we assume that either the full disp_totlag vector of this element or
-   * disp_totlag_centerline (without rotational DoFs) is passed in this function call */
-  if (disp_totlag.size() == 3*numnodalvalues*nnodecl)
-  {
-    disp_totlag_centerline = disp_totlag;
-  }
-  else if (disp_totlag.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
-  {
-    disp_totlag_centerline.resize(3*numnodalvalues*nnodecl);
-    ExtractCenterlineDofValues(disp_totlag,disp_totlag_centerline);
-  }
+  /* we assume that either the full disp vector of this element or
+   * disp_centerline (without rotational DoFs) is passed in this function call */
+  if (disp.size() == 3*numnodalvalues*nnodecl)
+    disp_totlag_centerline = disp;
+  else if (disp.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
+    ExtractCenterlineDofValues(disp,disp_totlag_centerline);
   else
-  {
     dserror("size mismatch: expected either %d values for disp_totlag or "
         "%d values for disp_totlag_centerline and got %d",
-        3*numnodalvalues*nnodecl,3*numnodalvalues*nnodecl+3*nnodetriad,disp_totlag.size());
-  }
+        3*numnodalvalues*nnodecl,3*numnodalvalues*nnodecl+3*nnodetriad,disp.size());
 
   switch (nnodecl)
   {
@@ -1538,32 +1500,37 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     {
       if (this->HermiteCenterlineInterpolation())
       {
-        const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
-        pos = this->GetPosAtXi<2,2>(xi,disp_totlag_fixedsize);
+        LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+        AddRefValuesDispCenterline<2,2,double>(disp_totlag_centerline_fixedsize);
+        pos = this->GetPosAtXi<2,2>(xi,disp_totlag_centerline_fixedsize);
       }
       else
       {
-        const LINALG::Matrix<6,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
-        pos = this->GetPosAtXi<2,1>(xi,disp_totlag_fixedsize);
+        LINALG::Matrix<6,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+        AddRefValuesDispCenterline<2,1,double>(disp_totlag_centerline_fixedsize);
+        pos = this->GetPosAtXi<2,1>(xi,disp_totlag_centerline_fixedsize);
       }
       break;
     }
     case 3:
     {
-      const LINALG::Matrix<9,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
-      pos = this->GetPosAtXi<3,1>(xi,disp_totlag_fixedsize);
+      LINALG::Matrix<9,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      AddRefValuesDispCenterline<3,1,double>(disp_totlag_centerline_fixedsize);
+      pos = this->GetPosAtXi<3,1>(xi,disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
-      const LINALG::Matrix<12,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
-      pos = this->GetPosAtXi<4,1>(xi,disp_totlag_fixedsize);
+      LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      AddRefValuesDispCenterline<4,1,double>(disp_totlag_centerline_fixedsize);
+      pos = this->GetPosAtXi<4,1>(xi,disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
-      const LINALG::Matrix<15,1> disp_totlag_fixedsize(&disp_totlag_centerline[0]);
-      pos = this->GetPosAtXi<5,1>(xi,disp_totlag_fixedsize);
+      LINALG::Matrix<15,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      AddRefValuesDispCenterline<5,1,double>(disp_totlag_centerline_fixedsize);
+      pos = this->GetPosAtXi<5,1>(xi,disp_totlag_centerline_fixedsize);
       break;
     }
     default:
@@ -1655,9 +1622,9 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
-template<unsigned int nnodecl, unsigned int vpernode>
+template<unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>&            dofvec,
-                                                       LINALG::Matrix<3*vpernode*nnodecl,1>& dofvec_centerline) const
+                                                       LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
 {
   // nnodecl: number of nodes used for interpolation of centerline
   // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
@@ -1698,31 +1665,31 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>
       if (this->HermiteCenterlineInterpolation())
       {
         LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-        this->ExtractCenterlineDofValues<2,2>(dofvec,dofvec_centerline_fixedsize);
+        this->ExtractCenterlineDofValues<2,2,double>(dofvec,dofvec_centerline_fixedsize);
       }
       else
       {
         LINALG::Matrix<6,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-        this->ExtractCenterlineDofValues<2,1>(dofvec,dofvec_centerline_fixedsize);
+        this->ExtractCenterlineDofValues<2,1,double>(dofvec,dofvec_centerline_fixedsize);
       }
       break;
     }
     case 3:
     {
       LINALG::Matrix<9,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<3,1>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValues<3,1,double>(dofvec,dofvec_centerline_fixedsize);
       break;
     }
     case 4:
     {
       LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<4,1>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValues<4,1,double>(dofvec,dofvec_centerline_fixedsize);
       break;
     }
     case 5:
     {
       LINALG::Matrix<15,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<5,1>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValues<5,1,double>(dofvec,dofvec_centerline_fixedsize);
       break;
     }
     default:
@@ -1730,6 +1697,24 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>
   }
 
 }
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+{
+  for (unsigned int dim=0; dim<3; ++dim)
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_centerline(3*vpernode*node+dim) += Nodes()[node]->X()[dim];
+
+      // have Hermite interpolation? then update tangent DOFs as well
+      if(vpernode==2)
+        dofvec_centerline(3*vpernode*node+3+dim) += Trefnode_[node](dim);
+    }
+
+}
+
 
 // explicit template instantations (some compilers do not export symboles defined above)
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,1>(const std::vector<double>&,

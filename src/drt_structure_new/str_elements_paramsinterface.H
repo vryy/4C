@@ -180,9 +180,6 @@ namespace STATMECH {
     //! destructor
     virtual ~ParamsInterface() {};
 
-    //! get friction model for polymer dynamics
-    virtual const INPAR::STATMECH::FrictionModel& GetFrictionModel() const = 0;
-
     //! get dirichlet boundary condtion type
     virtual const INPAR::STATMECH::DBCType& GetDbcType() const = 0;
 
@@ -205,7 +202,7 @@ namespace STATMECH {
     virtual const double& GetStartTimeAction() const = 0;
 
     //! get the current step length
-    virtual const Teuchos::RCP< Epetra_MultiVector>& GetRadomForces() const= 0;
+    virtual const Teuchos::RCP< Epetra_MultiVector>& GetRandomForces() const= 0;
 
   };  // class ParamsInterface
 } // namespace STATMECH

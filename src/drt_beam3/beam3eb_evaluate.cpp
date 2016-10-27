@@ -30,7 +30,7 @@
 #include "../drt_beamcontact/beam3contact_utils.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -145,23 +145,48 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
-      eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+      CalcInternalAndInertiaForcesAndStiff(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
-          eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+          CalcInternalAndInertiaForcesAndStiff(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
           lumpmass(&elemat2);
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
-          eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+          CalcInternalAndInertiaForcesAndStiff(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-          eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+          CalcInternalAndInertiaForcesAndStiff(params,myvel,mydisp,NULL,NULL,&elevec1);
       }
     }
     break;
+
+    case ELEMENTS::struct_calc_brownianforce:
+    case ELEMENTS::struct_calc_brownianstiff:
+    {
+      // get element displacements
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // get element velocity
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+      if (act == ELEMENTS::struct_calc_brownianforce)
+        CalcBrownianForcesAndStiff<2,2,3>(params,myvel,mydisp,NULL,&elevec1);
+      else if (act == ELEMENTS::struct_calc_brownianstiff)
+        CalcBrownianForcesAndStiff<2,2,3>(params,myvel,mydisp,&elemat1,&elevec1);
+      else
+        dserror("You shouldn't be here.");
+
+      break;
+    }
 
     case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for beam3 elements");
@@ -194,7 +219,8 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     }
 
     default:
-      dserror("Unknown type of action for Beam3eb %d", act);
+      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      dserror("This action type is not implemented for Beam3eb");
      break;
   }//switch(act)
 
@@ -342,7 +368,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     for(int i = 3; i < 6 ; i++)
     {
       #ifndef SIMPLECALC
-        elevec1(insert*dofpn + i) -= crossproduct(i-3) / pow(abs_tangent,2.0);
+        elevec1(insert*dofpn + i) -= crossproduct(i-3) / std::pow(abs_tangent,2.0);
       #else
         elevec1(insert*dofpn + i) -= crossproduct(i-3) *ScaleFactorLine;
       #endif
@@ -378,8 +404,8 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
         for(int j = 3; j < 6 ; j++)
         {
           #ifndef SIMPLECALC
-            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0);
-            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0);
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) / std::pow(abs_tangent,4.0);
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) / std::pow(abs_tangent,2.0);
           #else
             (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3);
             (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3);
@@ -573,7 +599,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp,
                                               Epetra_SerialDenseMatrix* stiffmatrix,
@@ -742,7 +768,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
     }
-    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+    epsilon_cp(i)=std::pow(epsilon_cp(i),0.5)-1.0;
   }
 
   for (int k=0;k<3;k++)
@@ -860,7 +886,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       rxrx+=r_x(i)*r_x(i);
     }
 
-    tension = 1/jacobi_ - 1/pow(rxrx,0.5);
+    tension = 1/jacobi_ - 1/std::pow(rxrx,0.5);
 
     for (int i=0; i<3; ++i)
     {
@@ -919,7 +945,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       #ifndef ANS_BEAM3EB
       R_tension = NTildex;
       R_tension.Scale(tension);
-      R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
+      R_tension.Update(1.0 / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
       R_tension.Scale(ym * crosssec_ * wgt);
       #else
       //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
@@ -929,11 +955,11 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       #endif
 
       //assemble parts from bending
-      R_bending.Update(-rxxrxx/pow(jacobi_,2.0) ,NTildex,1.0);
+      R_bending.Update(-rxxrxx/std::pow(jacobi_,2.0) ,NTildex,1.0);
       R_bending.Update(1.0,NTildexx,1.0);
-      R_bending.UpdateT(- 2.0 / pow(jacobi_,2.0) , M2 , 1.0);
+      R_bending.UpdateT(- 2.0 / std::pow(jacobi_,2.0) , M2 , 1.0);
 
-      R_bending.Scale(ym * Izz_ * wgt / pow(jacobi_,3));
+      R_bending.Scale(ym * Izz_ * wgt / std::pow(jacobi_,3));
 
       //shifting values from fixed size matrix to epetra matrix *stiffmatrix
       for(int i = 0; i < dofpn*nnode; i++)
@@ -964,7 +990,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for (int j=0;j<2*NODALDOFS;j++)
         {
-          Res_bending(j*3 + i)+= N_i_x(j)*f1(i)/pow(jacobi_,5) + N_i_xx(j)*f2(i)/pow(jacobi_,3);
+          Res_bending(j*3 + i)+= N_i_x(j)*f1(i)/std::pow(jacobi_,5) + N_i_xx(j)*f2(i)/std::pow(jacobi_,3);
           #ifndef ANS_BEAM3EB
           Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
           #endif
@@ -1020,16 +1046,16 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 //      for (int spalte=0; spalte<12; spalte++)
 //      {
 //        (*stiffmatrix)(6*zeile,spalte)=(*stiffmatrix)(6*zeile,spalte)*length;
-//        (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*pow(length,3.0)/pow(radius,2.0);
-//        (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*pow(length,3.0)/pow(radius,2.0);
-//        (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*pow(length,2.0)/pow(radius,2.0);
-//        (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*pow(length,2.0)/pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*std::pow(length,3.0)/std::pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*std::pow(length,3.0)/std::pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*std::pow(length,2.0)/std::pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*std::pow(length,2.0)/std::pow(radius,2.0);
 //      }
 //        (*force)(6*zeile)=(*force)(6*zeile)*length;
-//        (*force)(6*zeile+1)=(*force)(6*zeile+1)*pow(length,3.0)/pow(radius,2.0);
-//        (*force)(6*zeile+2)=(*force)(6*zeile+2)*pow(length,3.0)/pow(radius,2.0);
-//        (*force)(6*zeile+4)=(*force)(6*zeile+4)*pow(length,2.0)/pow(radius,2.0);
-//        (*force)(6*zeile+5)=(*force)(6*zeile+5)*pow(length,2.0)/pow(radius,2.0);
+//        (*force)(6*zeile+1)=(*force)(6*zeile+1)*std::pow(length,3.0)/std::pow(radius,2.0);
+//        (*force)(6*zeile+2)=(*force)(6*zeile+2)*std::pow(length,3.0)/std::pow(radius,2.0);
+//        (*force)(6*zeile+4)=(*force)(6*zeile+4)*std::pow(length,2.0)/std::pow(radius,2.0);
+//        (*force)(6*zeile+5)=(*force)(6*zeile+5)*std::pow(length,2.0)/std::pow(radius,2.0);
 //    }
 //  }
 //
@@ -1062,7 +1088,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   #endif
 
   //matrix for current positions and tangents
-  std::vector<double> disp_totlag(nnode*dofpn, 0.0);
+  LINALG::Matrix<nnode*dofpn,1> disp_totlag(true);
 
   #ifdef BEAM3EBAUTOMATICDIFF
     std::vector<FAD> disp_totlag_fad(nnode*dofpn, 0.0);
@@ -1183,63 +1209,26 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
 
-#ifndef INEXTENSIBLE
-  //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
-  for (int node = 0 ; node < nnode ; node++)
-  {
-    for (int dof = 0 ; dof < dofpn ; dof++)
-    {
-      if(dof < 3)
-      {
-        //position of nodes
-        disp_totlag[node*dofpn + dof] = (Nodes()[node]->X()[dof] + disp[node*dofpn + dof]);
-      }
-      else if(dof<6)
-      {
-        //tangent at nodes
-        disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*dofpn + dof]);
-      }
-      else if(dof>=6)
-      {
-        #if NODALDOFS ==3
-        //curvatures at nodes
-        disp_totlag[node*dofpn + dof] = (Kref_[node](dof-6) + disp[node*dofpn + dof])*ScaleFactorColumn;
-        #endif
-      }
-    }
-  } //for (int node = 0 ; node < nnode ; node++)
-#else
-  //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
-  for (int node = 0 ; node < 2 ; node++)
-  {
-    for (int dof = 0 ; dof < 6 ; dof++)
-    {
-      if(dof < 3)
-      {
-        //position of nodes
-        disp_totlag[node*6 + dof] = (Nodes()[node]->X()[dof] + disp[node*7 + dof]);
-      }
-      else if(dof<6)
-      {
-        //tangent at nodes
-        disp_totlag[node*6 + dof] = (Tref_[node](dof-3) + disp[node*7 + dof]);
-      }
-    }
-  } //for (int node = 0 ; node < nnode ; node++)
-#endif
+  // unshift node positions, i.e. manipulate element displacement vector
+  // as if there where no periodic boundary conditions
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnode);
+
+  UpdateDispTotlag<nnode,dofpn>(disp,disp_totlag);
+
 
   #ifndef INEXTENSIBLE
     #ifdef BEAM3EBAUTOMATICDIFF
       for (int dof=0;dof<nnode*dofpn;dof++)
       {
-        disp_totlag_fad[dof]=disp_totlag[dof];
+        disp_totlag_fad[dof]=disp_totlag(dof);
         disp_totlag_fad[dof].diff(dof,nnode*dofpn);
       }
     #endif
   #else
     for (int dof=0;dof<nnode*dofpn;dof++)
     {
-      disp_totlag_fad[dof]=disp_totlag[dof];
+      disp_totlag_fad[dof]=disp_totlag(dof);
       disp_totlag_fad[dof].diff(dof,15);
     }
     lm_fad[0]=disp[6];
@@ -1253,12 +1242,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   //Set class variables
   for (int i=0;i<3;i++)
   {
-    t_(i,0)=disp_totlag[3+i];
-    t_(i,1)=disp_totlag[9+i];
+    t_(i,0)=disp_totlag(3+i);
+    t_(i,1)=disp_totlag(9+i);
   }
 
-  double tangentnorm1 = sqrt(disp_totlag[3]*disp_totlag[3]+disp_totlag[4]*disp_totlag[4]+disp_totlag[5]*disp_totlag[5]);
-  double tangentnorm2 = sqrt(disp_totlag[9]*disp_totlag[9]+disp_totlag[10]*disp_totlag[10]+disp_totlag[11]*disp_totlag[11]);
+  double tangentnorm1 = std::sqrt(disp_totlag(3)*disp_totlag(3)+disp_totlag(4)*disp_totlag(4)+disp_totlag(5)*disp_totlag(5));
+  double tangentnorm2 = std::sqrt(disp_totlag(9)*disp_totlag(9)+disp_totlag(10)*disp_totlag(10)+disp_totlag(11)*disp_totlag(11));
 
   if (tangentnorm1 <1.0e-12 or tangentnorm2 <1.0e-12)
     dserror("Tangent of norm zero --> deformation to large!!!");
@@ -1284,12 +1273,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   for (int i=0;i<3;i++)
   {
-    tangent_cp(i,0)=disp_totlag[i+3];
-    tangent_cp(i,1)=disp_totlag[i+9];
+    tangent_cp(i,0)=disp_totlag(i+3);
+    tangent_cp(i,1)=disp_totlag(i+9);
 
     for (int j=0;j<2*NODALDOFS;j++)
     {
-      tangent_cp(i,2)+=N_i_x(j)*disp_totlag[3*j+i];
+      tangent_cp(i,2)+=N_i_x(j)*disp_totlag(3*j+i);
     }
 
     #ifdef BEAM3EBAUTOMATICDIFF
@@ -1307,7 +1296,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
     }
-    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+    epsilon_cp(i)=std::pow(epsilon_cp(i),0.5)-1.0;
   }
 
   #ifdef BEAM3EBAUTOMATICDIFF
@@ -1317,7 +1306,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         epsilon_cp_fad(i)+=tangent_cp_fad(j,i)*tangent_cp_fad(j,i);
       }
-      epsilon_cp_fad(i)=pow(epsilon_cp_fad(i),0.5)-1.0;
+      epsilon_cp_fad(i)=std::pow(epsilon_cp_fad(i),0.5)-1.0;
     }
   #endif
 
@@ -1498,9 +1487,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int j=0; j<nnode*NODALDOFS; j++)
       {
-        r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
-        r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
-        r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
+        r_(i,0)+= N_i(j)*disp_totlag(3*j + i);
+        r_x(i,0)+= N_i_x(j) * disp_totlag(3*j + i);
+        r_xx(i,0)+= N_i_xx(j) * disp_totlag(3*j + i);
       }
     }
 
@@ -1529,7 +1518,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }
     #endif
 
-    tension = 1/jacobi_ - 1/pow(rxrx,0.5);
+    tension = 1/jacobi_ - 1/std::pow(rxrx,0.5);
 
     for (int i=0; i<3; ++i)
     {
@@ -1623,7 +1612,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
           {
             for (int k=0;k<3;k++)
             {
-              Res_tension_ANS_fad(i)+=N_x(k,i)*rx_fad(k)/pow(rxrx_fad,0.5)*ym * crosssec_ * wgt*epsilon_ANS_fad;
+              Res_tension_ANS_fad(i)+=N_x(k,i)*rx_fad(k)/std::pow(rxrx_fad,0.5)*ym * crosssec_ * wgt*epsilon_ANS_fad;
             }
           }
         #else
@@ -1651,7 +1640,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       #ifndef ANS_BEAM3EB
       R_tension = NTildex;
       R_tension.Scale(tension);
-      R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
+      R_tension.Update(1.0 / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
       R_tension.Scale(ym * crosssec_ * wgt);
       #else
         #ifndef CONSISTENTANSBEAM3EB
@@ -1661,11 +1650,11 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
           {
             for (int j=0;j<nnode*dofpn;j++)
             {
-              R_tension_ANS(i,j)+=NxTrx(i)*lin_epsilon_ANS(j)/pow(rxrx,0.5);
+              R_tension_ANS(i,j)+=NxTrx(i)*lin_epsilon_ANS(j)/std::pow(rxrx,0.5);
             }
           }
-          R_tension_ANS.Update(-epsilon_ANS / pow(rxrx,1.5),NxTrxrxTNx,1.0);
-          R_tension_ANS.Update(epsilon_ANS / pow(rxrx,0.5),NTildex,1.0);
+          R_tension_ANS.Update(-epsilon_ANS / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
+          R_tension_ANS.Update(epsilon_ANS / std::pow(rxrx,0.5),NTildex,1.0);
           R_tension_ANS.Scale(ym * crosssec_ * wgt);
         #else
           //since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, R_tension_ANS has to be replaced by R_tension_ANS_fad
@@ -1681,18 +1670,18 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
       //assemble parts from bending
       R_bending = NTildex;
-      R_bending.Scale(2.0 * pow(rxrxx,2.0) / pow(rxrx,3.0));
-      R_bending.Update(-rxxrxx/pow(rxrx,2.0),NTildex,1.0);
-      R_bending.Update(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
-      R_bending.UpdateT(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
+      R_bending.Scale(2.0 * std::pow(rxrxx,2.0) / std::pow(rxrx,3.0));
+      R_bending.Update(-rxxrxx/std::pow(rxrx,2.0),NTildex,1.0);
+      R_bending.Update(-rxrxx/std::pow(rxrx,2.0),NTilde,1.0);
+      R_bending.UpdateT(-rxrxx/std::pow(rxrx,2.0),NTilde,1.0);
       R_bending.Update(1.0/rxrx,NTildexx,1.0);
-      R_bending.Update(-12.0 * pow(rxrxx,2.0)/pow(rxrx,4.0),NxTrxrxTNx,1.0);
-      R_bending.Update(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
-      R_bending.UpdateT(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
-      R_bending.Update(4.0 * rxxrxx / pow(rxrx,3.0) , NxTrxrxTNx, 1.0);
-      R_bending.Update(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
-      R_bending.UpdateT(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
-      R_bending.Update(- 1.0 / pow(rxrx,2.0) , M3 , 1.0);
+      R_bending.Update(-12.0 * std::pow(rxrxx,2.0)/std::pow(rxrx,4.0),NxTrxrxTNx,1.0);
+      R_bending.Update(4.0 * rxrxx / std::pow(rxrx,3.0) , M1 , 1.0);
+      R_bending.UpdateT(4.0 * rxrxx / std::pow(rxrx,3.0) , M1 , 1.0);
+      R_bending.Update(4.0 * rxxrxx / std::pow(rxrx,3.0) , NxTrxrxTNx, 1.0);
+      R_bending.Update(- 2.0 / std::pow(rxrx,2.0) , M2 , 1.0);
+      R_bending.UpdateT(- 2.0 / std::pow(rxrx,2.0) , M2 , 1.0);
+      R_bending.Update(- 1.0 / std::pow(rxrx,2.0) , M3 , 1.0);
 
       R_bending.Scale(ym * Izz_ * wgt / jacobi_);
 
@@ -1740,8 +1729,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
     for (int i= 0; i<3; i++)
     {
-      f1(i)=2*r_x(i)*pow(rxrxx,2.0)/pow(rxrx,3.0)-(r_x(i)*rxxrxx+r_xx(i)*rxrxx)/pow(rxrx,2.0);
-      f2(i)=r_xx(i)/rxrx-r_x(i)*rxrxx/pow(rxrx,2.0);
+      f1(i)=2*r_x(i)*std::pow(rxrxx,2.0)/std::pow(rxrx,3.0)-(r_x(i)*rxxrxx+r_xx(i)*rxrxx)/std::pow(rxrx,2.0);
+      f2(i)=r_xx(i)/rxrx-r_x(i)*rxrxx/std::pow(rxrx,2.0);
       n1(i)=r_x(i)*tension;
     }
     //assemble internal force vector f_internal / Res in thesis Meier
@@ -1761,7 +1750,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         #ifndef CONSISTENTANSBEAM3EB
           //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
           //all the other jacobi factors due to differentiation and integration cancel out!!!
-          Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / pow(rxrx,0.5),NxTrx,0.0);
+          Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / std::pow(rxrx,0.5),NxTrx,0.0);
         #else
           //since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, Rrd_tension_ANS has to be replaced by Rrd_tension_ANS_fad
           for (int i=0;i<nnode*dofpn;i++)
@@ -1806,22 +1795,22 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
     #ifdef ANS_BEAM3EB
 
-      double kappa_quad = (rxxrxx/rxrx-pow(rxrxx,2)/pow(rxrx,2))/pow(jacobi_,2);
+      double kappa_quad = (rxxrxx/rxrx-std::pow(rxrxx,2)/std::pow(rxrx,2))/std::pow(jacobi_,2);
   //    if(kappa_quad>0)
-  //      std::cout << std::setprecision(16) << "kappa: " << sqrt(kappa_quad) << std::endl;
+  //      std::cout << std::setprecision(16) << "kappa: " << std::sqrt(kappa_quad) << std::endl;
 
       if(kappa_quad<0)
         kappa_quad=-kappa_quad;
 
-      Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
-      Eint_axial_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
+      Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * std::pow(epsilon_ANS,2);
+      Eint_axial_+=0.5*wgt*jacobi_*ym * crosssec_ * std::pow(epsilon_ANS,2);
       Eint_+=0.5*wgt*jacobi_*ym *Izz_ * kappa_quad;
 
       //determine maximal curvature
-      if(sqrt(kappa_quad)>kappa_max_)
-        kappa_max_=sqrt(kappa_quad);
+      if(std::sqrt(kappa_quad)>kappa_max_)
+        kappa_max_=std::sqrt(kappa_quad);
 
-      double epsilon_norm=sqrt(pow(epsilon_ANS,2));
+      double epsilon_norm=std::sqrt(std::pow(epsilon_ANS,2));
 
       //determine maximal axial tension
       if(epsilon_norm>epsilon_max_)
@@ -1888,12 +1877,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int j=0; j<nnode*NODALDOFS; j++)
       {
-        r(i,0)+= N_i(j)*disp_totlag[3*j + i];
+        r(i,0)+= N_i(j)*disp_totlag(3*j + i);
       }
     }
     NTilde.MultiplyTN(N_mass,N_mass);
 
-    if (massmatrix != NULL)
+    if (massmatrix != NULL and !statmechprob_)
     {
     #ifndef INEXTENSIBLE
       for (int i=0; i<6*nnode; i++)
@@ -1924,7 +1913,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     #endif
     }//if (massmatrix != NULL)
 
-    Ekin_+=0.5*wgt*jacobi_*density*crosssec_*pow(r_t.Norm2(),2.0);
+    Ekin_+=0.5*wgt*jacobi_*density*crosssec_*std::pow(r_t.Norm2(),2.0);
 
     LINALG::Matrix<3,1> dL(true);
     LINALG::Matrix<3,3> S_r(true);
@@ -1951,27 +1940,62 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 //Uncomment the next line if the implementation of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
 //FADCheckStiffMatrix(disp, stiffmatrix, force);
 
-// in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-internalforces_ = *force;
-/*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
-* it is dedicated to the application of beam3 elements in the frame of statistical mechanics problems; for these problems a
-* special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
-* the element does not attach this special vector to params the following method is just doing nothing, which means that for
-* any ordinary problem of structural mechanics it may be ignored*/
-// Get if normal dynamics problem or statmech problem
-
-if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB"))
-{
-  #ifdef INEXTENSIBLE
-    dserror("INEXTENSIBLE formulation not possible for statmech so far. Adapt vector vel -> myvel like above!");
-  #endif
-  CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
-}
-
   return;
 
-} // DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass.
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnode, unsigned int dofpn>
+void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag(const std::vector<double>& disp,
+                                              LINALG::Matrix<dofpn*nnode,1>& disp_totlag) const
+{
+#ifndef INEXTENSIBLE
+  // update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
+  for (unsigned int node=0; node<nnode; node++)
+  {
+    for (unsigned int dof=0; dof<dofpn; dof++)
+    {
+      if (dof < 3)
+      {
+        // position of nodes
+        disp_totlag(node*dofpn + dof) = (Nodes()[node]->X()[dof] + disp[node*dofpn + dof]);
+      }
+      else if(dof<6)
+      {
+        // tangent at nodes
+        disp_totlag(node*dofpn + dof) = (Tref_[node](dof-3) + disp[node*dofpn + dof]);
+      }
+      else if(dof>=6)
+      {
+        #if NODALDOFS ==3
+        // curvatures at nodes
+        disp_totlag(node*dofpn + dof) = (Kref_[node](dof-6) + disp[node*dofpn + dof])*ScaleFactorColumn;
+        #endif
+      }
+    }
+  }
+#else
+  //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
+  for (int node = 0 ; node < 2 ; node++)
+  {
+    for (int dof = 0 ; dof < 6 ; dof++)
+    {
+      if(dof < 3)
+      {
+        //position of nodes
+        disp_totlag(node*6 + dof) = (Nodes()[node]->X()[dof] + disp[node*7 + dof]);
+      }
+      else if(dof<6)
+      {
+        //tangent at nodes
+        disp_totlag(node*6 + dof) = (Tref_[node](dof-3) + disp[node*7 + dof]);
+      }
+    }
+  } //for (int node = 0 ; node < nnode ; node++)
+#endif
+
+}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | Evaluate PTC damping (public)                                                              mukherjee 12/13|
@@ -2041,396 +2065,245 @@ void DRT::ELEMENTS::Beam3eb::lumpmass(Epetra_SerialDenseMatrix* emass)
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
- | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
- | rotation around filament axis                                             (private)       Mukherjee  10/13|
- *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3eb::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
-{
-  //translational damping coefficients according to Howard, p. 107, table 6.2;
-  gamma(0) = 2*PI*StatMechParamsInterface().GetEta();
-  gamma(1) = 4*PI*StatMechParamsInterface().GetEta();
-
-  /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
-   *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
-//  double rsquare = std::pow((4*Iyy_/PI),0.5);
-//  double artificial = 4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
-//  gamma(2) = 4*PI*StatMechParamsInterface().GetEta()*rsquare*artificial;
-
-  //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropicconsistent ||
-     StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
-    gamma(0) = gamma(1);
-
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
  |computes the number of different random numbers required in each time step for generation of stochastic    |
  |forces;                                                                    (public)       Mukherjee   10/13|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed()
+int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed() const
 {
-  //get Gauss points and weights for evaluation of damping matrix
+  // get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
-  /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
-   *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
-  #ifdef CONSTSTOCHFORCE
+  /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
+   * random numbers for the translational degrees of freedom */
+  #ifdef BEAM3EBCONSTSTOCHFORCE
     return (3);
   #else
-    return (4*gausspoints.nquad);
+    return (3*gausspoints.nquad);
   #endif
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |computes velocity of background fluid and gradient of that velocity at a certain evaluation point in       |
- |the physical space                                                         (private)      Mukherjee   10/13|
- *----------------------------------------------------------------------------------------------------------*/
-template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam3eb::MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
-                                                const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                                                LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                                                LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
-{
-  /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
-   * background fluid is always directed in direction params.get<int>("DBCDISPDIR",0) and orthogonal to z-axis.
-   * In 3D the velocity increases linearly in z and equals zero for z = 0.
-   * In 2D the velocity increases linearly in y and equals zero for y = 0. */
-
-  //velocity at upper boundary of domain
-  double uppervel = 0.0;
-
-  //default values for background velocity and its gradient
-  velbackground.PutScalar(0);
-  velbackgroundgrad.PutScalar(0);
-
-  double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  double dt = params.get<double>("delta time");
-  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
-  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
-  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
-
-  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-  INPAR::STATMECH::DBCType dbctype = StatMechParamsInterface().GetDbcType();
-  bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-     dbctype==INPAR::STATMECH::dbctype_affineshear||
-     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-    shearflow = true;
-
-  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
-  if(periodlength->at(0) > 0.0)
-    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 && dbcdispdir >= 0 )
-    {
-      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
-
-      //compute background velocity
-      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
-
-      //compute gradient of background velocity
-      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
-    }
-}
-
-
-/*-----------------------------------------------------------------------------------------------------------*
  | computes translational damping forces and stiffness (private)                            Mukherjee   10/13|
  *----------------------------------------------------------------------------------------------------------*/
-template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                  const std::vector<double>& vel,  //!< vector containing first order time derivative of nodal positions and nodal tangents of an element
-                                                  const std::vector<double>& disp, //!< vector containing change in nodal positions and nodal tangents of an element w.r.t. inital config.
-                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector* force)//!< element internal force vector
+template<unsigned int nnode, unsigned int vpernode, int ndim>
+void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                                          const LINALG::Matrix<ndim*vpernode*nnode,1>& vel,
+                                                          const LINALG::Matrix<ndim*vpernode*nnode,1>& disp_totlag,
+                                                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                          Epetra_SerialDenseVector* force)//!< element internal force vector
 {
+  // get time step size
+  double dt = 1000;
+  if (IsParamsInterface())
+    dt = ParamsInterface().GetDeltaTime();
+  else
+    dt = params.get<double>("delta time",1000);
 
-  //get time step size
-  double dt = params.get<double>("delta time",0.0);
-
-  //velocity and gradient of background velocity field
-  LINALG::Matrix<ndim,1> velbackground;
-  LINALG::Matrix<ndim,ndim> velbackgroundgrad;
-
-  //evaluation point in physical space corresponding to a certain Gauss point in parameter space
-  LINALG::Matrix<ndim,1> evaluationpoint;
-
-  //damping coefficients for translational and rotational degrees of freedom
+  // get damping coefficients for translational and rotational degrees of freedom (the latter is unused in this element)
   LINALG::Matrix<ndim,1> gamma(true);
-  MyDampingConstants(gamma);
+  GetDampingCoefficients(gamma);
 
-  //Get DiscretizationType of beam element
-  const DRT::Element::DiscretizationType distype = Shape();
+  // velocity and gradient of background velocity field
+  LINALG::Matrix<ndim,1> velbackground(true);
+  LINALG::Matrix<ndim,ndim> velbackgroundgrad(true);
+
+  // evaluation point in physical space corresponding to a certain Gauss point in parameter space
+  LINALG::Matrix<ndim,1> evaluationpoint(true);
+  // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
+  LINALG::Matrix<ndim,1> r_s(true);
+  // velocity of beam centerline point relative to background fluid velocity
+  LINALG::Matrix<ndim,1> vel_rel(true);
+
+  // viscous force vector per unit length at current GP
+  LINALG::Matrix<ndim,1> f_visc(true);
+  // damping matrix
+  LINALG::Matrix<ndim,ndim> damp_mat(true);
 
   // get Gauss points and weights
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
-  //matrix to store hermite shape functions and their derivatives evaluated at a certain Gauss point
-  LINALG::Matrix<1,nnode*NODALDOFS> N_i;
-  LINALG::Matrix<1,nnode*NODALDOFS> N_i_x;
+  // matrix to store individual Hermite shape functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode*vpernode> N_i(true);
+  LINALG::Matrix<1,nnode*vpernode> N_i_xi(true);
 
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
-    //Get hermite shape functions at Gauss points in parametric space (jacobi_*2.0 is length of the element)
-    DRT::UTILS::shape_function_hermite_1D(N_i,gausspoints.qxg[gp][0],jacobi_*2.0,distype);
+    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
 
-    //Get derivatives of hermite shape functions at Gauss points in parametric space (jacobi_*2.0 is length of the element)
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,gausspoints.qxg[gp][0],jacobi_*2.0,distype);
+    // compute position vector r of point in physical space corresponding to Gauss point
+    Calc_r<nnode,vpernode,double>(disp_totlag, N_i, evaluationpoint);
 
-    //compute point in physical space corresponding to Gauss point
-    evaluationpoint.PutScalar(0);
+    // compute tangent vector t_{\par}=r' at current Gauss point
+    Calc_r_s<nnode,vpernode,double>(disp_totlag, N_i_xi, jacobi_, r_s);
 
-    //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
+    // compute velocity and gradient of background flow field at point r
+    GetBackgroundVelocity<ndim,double>(params,evaluationpoint,velbackground,velbackgroundgrad);
 
-    //matrix for current positions and tangents
-    std::vector<double> disp_totlag(nnode*dof, 0.0);
-    for (int node = 0 ; node < nnode ; node++)
+    // compute velocity vector at this Gauss point via same interpolation as for centerline position vector
+    CalcInterpolation<nnode,vpernode,3,double>(vel, N_i, vel_rel);
+    vel_rel -= velbackground;
+
+    // loop over lines and columns of damping matrix
+    for (unsigned int idim=0; idim<ndim; idim++)
+      for (unsigned int jdim=0; jdim<ndim; jdim++)
+        damp_mat(idim,jdim) = (idim==jdim)*gamma(1) + (gamma(0) - gamma(1))*r_s(idim)*r_s(jdim);
+
+    // compute viscous force vector per unit length at current GP
+    f_visc.Multiply(damp_mat,vel_rel);
+
+    // compute matrix product of damping matrix and gradient of background velocity
+    LINALG::Matrix<ndim,ndim> dampmatvelbackgroundgrad(true);
+    dampmatvelbackgroundgrad.Multiply(damp_mat,velbackgroundgrad);
+
+
+    if (force != NULL)
     {
-      for (int dof_count = 0 ; dof_count < dof ; dof_count++)
-      {
-        if(dof_count < 3)
-        {
-          //position of nodes
-          disp_totlag[node*dof + dof_count] = (Nodes()[node]->X()[dof_count] + disp[node*dof + dof_count]);
-        }
-        else if(dof_count<6)
-        {
-          //tangent at nodes
-          disp_totlag[node*dof + dof_count] = (Tref_[node](dof_count-3) + disp[node*dof + dof_count]);
-        }
-        else if(dof_count>=6)
-        {
-          #if NODALDOFS ==3
-          //curvatures at nodes
-          disp_totlag[node*dof + dof_count] = (Kref_[node](dof_count-6) + disp[node*dof + dof_count]);
-          #endif
-        }
-      }
-    } //for (int node = 0 ; node < nnode ; node++)
-
-    //loop over all line nodes
-    for(int i=0; i<nnode*NODALDOFS; i++)
-    {
-      //loop over all dimensions
-      for(int j=0; j<ndim; j++)
-         {
-           evaluationpoint(j) += N_i(i)* disp_totlag[3*i+j];
-         }
+      // loop over all shape functions
+      for (unsigned int i=0; i<nnode*vpernode; i++)
+        // loop over dimensions
+        for (unsigned int idim=0; idim<ndim; idim++)
+          (*force)(i*ndim+idim) += N_i(i)*jacobi_*gausspoints.qwgt[gp]*f_visc(idim);
     }
 
-
-    //compute velocity and gradient of background flow field at evaluation point
-    MyBackgroundVelocity<3>(params,evaluationpoint,velbackground,velbackgroundgrad);
-
-
-    //compute tangent vector t_{\par} at current Gauss point
-    LINALG::Matrix<ndim,1> r_x(true);
-    for(int i=0; i<nnode*NODALDOFS; i++)
+    if (stiffmatrix != NULL)
     {
-      for(int k=0; k<ndim; k++)
-      {
-        r_x(k) += N_i_x(i)* disp_totlag[3*i+k] / jacobi_;
-      }
-    }
-
-
-    //compute velocity vector at this Gauss point
-    LINALG::Matrix<ndim,1> velgp(true);
-    for(int i=0; i<nnode*NODALDOFS; i++)
-    {
-      for(int l=0; l<ndim; l++)
-      {
-        velgp(l) += N_i(i)*vel[3*i+l];
-      }
-    }
-
-    /* currently we are neglecting the contribution from the gradient of background velocity
-     * i.e. dv/dx. Please uncomment this part if the gradient needs to be taken in account
-      */
-    //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
-    LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
-    for(int i=0; i<ndim; i++)
-      for(int j=0; j<ndim; j++)
-        for(int k=0; k<ndim; k++)
-          tpartparvelbackgroundgrad(i,j) += r_x(i)*r_x(k)*velbackgroundgrad(k,j);
-
-
-    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3r elements.
-    // Therefore max(i && j)= 4 i.e. 2*nnode
-    for(int i=0; i<2*nnode; i++)
-    {
-      //loop over rows of matrix t_{\par} \otimes t_{\par}
-      for(int k=0; k<ndim; k++)
-      {
-        //loop over columns of matrix t_{\par} \otimes t_{\par}
-        for(int l=0; l<ndim; l++)
+      // loop over all shape functions in row dimension
+      for (unsigned int i=0; i<nnode*vpernode; i++)
+        // loop over all shape functions in column dimension
+        for (unsigned int j=0; j<nnode*vpernode; j++)
         {
-          if(force != NULL)
-            (*force)(i*3+k)+= N_i(i)*jacobi_*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*r_x(k)*r_x(l) ) *(velgp(l)- velbackground(l));
-          if(stiffmatrix != NULL)
-            //loop over all column nodes
-            for (int j=0; j<2*nnode; j++)
+          for (unsigned int idim=0; idim<ndim; idim++)
+            for (unsigned int jdim=0; jdim<ndim; jdim++)
             {
-              (*stiffmatrix)(i*3+k,j*3+l) += gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_*(  (k==l)*gamma(1) + (gamma(0) - gamma(1))*r_x(k)*r_x(l) ) / dt;
-              /* currently we are neglecting the contribution from the gradient of background velocity
-               * i.e. dv/dx. Please uncomment this part if the gradient needs to be taken in account */
-              (*stiffmatrix)(i*3+k,j*3+l) -= gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
-              (*stiffmatrix)(i*3+k,j*3+k) += gausspoints.qwgt[gp]*N_i(i)*N_i_x(j)* (gamma(0) - gamma(1))*r_x(l)*(velgp(l) - velbackground(l));
-              (*stiffmatrix)(i*3+k,j*3+l) += gausspoints.qwgt[gp]*N_i(i)*N_i_x(j)* (gamma(0) - gamma(1))*r_x(k)*(velgp(l) - velbackground(l));
+              (*stiffmatrix)(i*ndim+idim,j*ndim+jdim) += gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_* damp_mat(idim,jdim) / dt;
+              (*stiffmatrix)(i*ndim+idim,j*ndim+jdim) -= gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_* dampmatvelbackgroundgrad(idim,jdim);
+              (*stiffmatrix)(i*ndim+idim,j*ndim+idim) += gausspoints.qwgt[gp]*N_i(i)*N_i_xi(j)* (gamma(0) - gamma(1))*r_s(jdim) * vel_rel(jdim);
+              (*stiffmatrix)(i*ndim+idim,j*ndim+jdim) += gausspoints.qwgt[gp]*N_i(i)*N_i_xi(j)* (gamma(0) - gamma(1))*r_s(idim) * vel_rel(jdim);
             }
         }
-      }
     }
   }
-  return;
-}//DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(.)
+
+}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic forces and resulting stiffness (public)                              mukherjee   10/13|
  *----------------------------------------------------------------------------------------------------------*/
-template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3eb::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
-                                              const std::vector<double>& vel,  //!< element velocity vector
-                                              const std::vector<double>& disp, //!<element disp vector
+template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
+void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                              const LINALG::Matrix<ndim*vpernode*nnode,1>& disp_totlag,
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(gamma);
-
-  //Get DiscretizationType of beam element
-  const DRT::Element::DiscretizationType distype = Shape();
-
-  //get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
-
-
-  //matrix to store hermite shape functions and their derivatives evaluated at a certain Gauss point
-  LINALG::Matrix<1,nnode*NODALDOFS> N_i;
-  LINALG::Matrix<1,nnode*NODALDOFS> N_i_x;
+  GetDampingCoefficients(gamma);
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRadomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+
+  // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
+  LINALG::Matrix<ndim,1> r_s(true);
+
+  // my random number vector at current GP
+  LINALG::Matrix<ndim,1> randnumvec(true);
+
+  // stochastic force vector per unit length at current GP
+  LINALG::Matrix<ndim,1> f_stoch(true);
+
+
+  //get Gauss points and weights for evaluation of damping matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+
+  //matrix to store hermite shape functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode*vpernode> N_i;
+  LINALG::Matrix<1,nnode*vpernode> N_i_xi;
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
-    //Get hermite shape functions at Gauss points in parametric space (jacobi_*2.0 is length of the element)
-    DRT::UTILS::shape_function_hermite_1D(N_i,gausspoints.qxg[gp][0],jacobi_*2.0,distype);
+    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
 
-    //Get derivatives of hermite shape functions at Gauss points in parametric space (jacobi_*2.0 is length of the element)
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,gausspoints.qxg[gp][0],jacobi_*2.0,distype);
+    // compute tangent vector t_{\par}=r' at current Gauss point
+    Calc_r_s<nnode,vpernode,double>(disp_totlag, N_i_xi, jacobi_, r_s);
 
-    //matrix for current positions and tangents
-    std::vector<double> disp_totlag(nnode*dof, 0.0);
-    for (int node = 0 ; node < nnode ; node++)
+    // extract random numbers from global vector
+    for (unsigned int idim=0; idim<ndim; idim++)
     {
-      for (int dof_count = 0 ; dof_count < dof ; dof_count++)
-      {
-        if(dof_count < 3)
-        {
-          //position of nodes
-          disp_totlag[node*dof + dof_count] = (Nodes()[node]->X()[dof_count] + disp[node*dof + dof_count]);
-        }
-        else if(dof_count<6)
-        {
-          //tangent at nodes
-          disp_totlag[node*dof + dof_count] = (Tref_[node](dof_count-3) + disp[node*dof + dof_count]);
-        }
-        else if(dof_count>=6)
-        {
-          #if NODALDOFS ==3
-          //curvatures at nodes
-          disp_totlag[node*dof + dof_count] = (Kref_[node](dof_count-6) + disp[node*dof + dof_count]);
-          #endif
-        }
-      }
-    } //for (int node = 0 ; node < nnode ; node++)
-
-
-    //compute tangent vector t_{\par} at current Gauss point
-    LINALG::Matrix<ndim,1> r_x(true);
-    for(int i=0; i<nnode*NODALDOFS; i++)
-    {
-      for(int k=0; k<ndim; k++)
-      {
-        r_x(k) += N_i_x(i)* disp_totlag[3*i+k] / jacobi_;
-      }
+ #ifndef BEAM3EBCONSTSTOCHFORCE
+      randnumvec(idim) = (*randomforces)[gp*randompergauss+idim][LID()];
+ #else
+      randnumvec(idim) = (*randomforces)[idim][LID()];
+ #endif
     }
 
-    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3r elements.
-    // Therefore max(i && j)= 4 i.e. 2*nnode
-    for(int i=0; i<2*nnode; i++)
-    {
-      //loop dimensions with respect to lines
-      for(int k=0; k<ndim; k++)
-      {
-        //loop dimensions with respect to columns
-        for(int l=0; l<ndim; l++)
-        {
-          if(force != NULL)
-          {
-            #ifndef CONSTSTOCHFORCE
-              (*force)(i*3+k) -= N_i(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*r_x(k)*r_x(l))*(*randomforces)[gp*randompergauss+l][LID()]*sqrt(jacobi_*gausspoints.qwgt[gp]);
-            #else
-              (*force)(i*3+k) -= N_i(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*r_x(k)*r_x(l))*(*randomforces)[l][LID()]*sqrt(jacobi_*gausspoints.qwgt[gp]);
-            #endif
-          }
+    // compute stochastic force vector per unit length at current GP
+    f_stoch.Clear();
+    for (unsigned int idim=0; idim<ndim; idim++)
+      for (unsigned int jdim=0; jdim<ndim; jdim++)
+        f_stoch(idim) += (std::sqrt(gamma(1))*(idim==jdim) + (std::sqrt(gamma(0)) - std::sqrt(gamma(1)))*r_s(idim)*r_s(jdim))*randnumvec(jdim);
 
-          if(stiffmatrix != NULL)
-          {
-            //loop over all column nodes
-            for (int j=0; j<2*nnode; j++)
+
+    if (force != NULL)
+    {
+      // loop over all shape functions
+      for (unsigned int i=0; i<nnode*vpernode; i++)
+        // loop over dimensions
+        for (unsigned int idim=0; idim<ndim; idim++)
+          (*force)(i*ndim+idim) -= N_i(i)*f_stoch(idim)*std::sqrt(jacobi_*gausspoints.qwgt[gp]);
+    }
+
+    if (stiffmatrix != NULL)
+    {
+      // loop over all shape functions in row dimension
+      for (unsigned int i=0; i<nnode*vpernode; i++)
+        // loop over all shape functions in column dimension
+        for (unsigned int j=0; j<nnode*vpernode; j++)
+        {
+          for (unsigned int idim=0; idim<ndim; idim++)
+            for (unsigned int jdim=0; jdim<ndim; jdim++)
             {
-              #ifndef CONSTSTOCHFORCE
-                (*stiffmatrix)(i*3+k,j*3+k) -= N_i(i)*N_i_x(j)*r_x(l)*(*randomforces)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
-                (*stiffmatrix)(i*3+k,j*3+l) -= N_i(i)*N_i_x(j)*r_x(k)*(*randomforces)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              #else
-                            (*stiffmatrix)(i*3+k,j*3+k) -= N_i(i)*N_i_x(j)*r_x(l)*(*randomforces)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
-                (*stiffmatrix)(i*3+k,j*3+l) -= N_i(i)*N_i_x(j)*r_x(k)*(*randomforces)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              #endif
+              (*stiffmatrix)(i*ndim+idim,j*ndim+idim) -= N_i(i)*N_i_xi(j)*r_s(jdim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobi_)*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
+              (*stiffmatrix)(i*ndim+idim,j*ndim+jdim) -= N_i(i)*N_i_xi(j)*r_s(idim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobi_)*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
             }
-          }
         }
-      }
     }
   }
 
-  return;
-}//DRT::ELEMENTS::Beam3eb::MyStochasticForces(.)
-
+}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | Assemble stochastic and viscous forces and respective stiffness according to fluctuation dissipation      |
  | theorem                                                                           (public) Mukherjee 10/13|
  *----------------------------------------------------------------------------------------------------------*/
-template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3eb::CalcBrownian(Teuchos::ParameterList& params,
-                                              const std::vector<double>&       vel,  //!< element velocity vector
-                                              const std::vector<double>&       disp, //!< element displacement vector
+template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+inline void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+                                              std::vector<double>&      vel,  //!< element velocity vector
+                                              std::vector<double>&      disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
-  //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
-  if( StatMechParamsInterface().GetRadomForces() == Teuchos::null)
-    return;
+  // unshift node positions, i.e. manipulate element displacement vector
+  // as if there where no periodic boundary conditions
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnode);
+
+  // update current total position state of element
+  LINALG::Matrix<nnode*vpernode*ndim,1> disp_totlag(true);
+  UpdateDispTotlag<nnode,vpernode*ndim>(disp,disp_totlag);
+
+  // export current velocity state of element to fixed size matrix
+  const LINALG::Matrix<nnode*vpernode*ndim,1> vel_fixedsize(&vel[0]);
 
   //Evaluation of force vectors and stiffness matrices
 
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
+  EvaluateTranslationalDamping<nnode,vpernode,ndim>(params,vel_fixedsize,disp_totlag,stiffmatrix,force);
 
   //add stochastic forces and (if required) resulting stiffness
-  MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
-
-return;
-
-}//DRT::ELEMENTS::Beam3eb::CalcBrownian(.)
+  EvaluateStochasticForces<nnode,vpernode,ndim,3>(params,disp_totlag,stiffmatrix,force);
+}
 
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                       meier 02/14|
@@ -2486,7 +2359,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(double& xi, const LINALG::Matrix<1
     {
       epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
     }
-    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+    epsilon_cp(i)=std::pow(epsilon_cp(i),0.5)-1.0;
   }
 
   LINALG::Matrix<1,3> L_i(true);
@@ -2708,7 +2581,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
         {
           //include jacobi factor due to coordinate transformation from local in global system
           N_x(r,r+3*d) = N_i_x(d)/jacobi_;
-          N_xx(r,r+3*d) = N_i_xx(d)/pow(jacobi_,2.0);
+          N_xx(r,r+3*d) = N_i_xx(d)/std::pow(jacobi_,2.0);
         } //for (int d=0; d<4; ++d)
       } //for (int r=0; r<3; ++r)
 
@@ -2762,8 +2635,8 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
       //assemble parts from tension
       R_tension = NTilde_x;
-      R_tension.Scale(1.0 - 1.0/pow(dTNTilde_xd,0.5));
-      R_tension.Update(1.0 / pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
+      R_tension.Scale(1.0 - 1.0/std::pow(dTNTilde_xd,0.5));
+      R_tension.Update(1.0 / std::pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
 
       R_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
 
@@ -2777,7 +2650,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       //assemble internal force vector f_internal / Res in thesis Meier
       //assemble parts from tension
       Res_tension = NTilde_xd;
-      Res_tension.Scale(1.0 - 1.0 /pow(dTNTilde_xd,0.5));
+      Res_tension.Scale(1.0 - 1.0 /std::pow(dTNTilde_xd,0.5));
 
       Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
 
@@ -2810,7 +2683,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     {
       for(int col=0; col<12; col++)
       {
-        stiff_relerr(line,col)= fabs(  (    pow(stiffmatrix_check(line,col),2) - pow( (*stiffmatrix)(line,col),2 )    )/(  (  (*stiffmatrix)(line,col) + stiffmatrix_check(line,col)  ) * (*stiffmatrix)(line,col)  )  );
+        stiff_relerr(line,col)= fabs(  (    std::pow(stiffmatrix_check(line,col),2) - std::pow( (*stiffmatrix)(line,col),2 )    )/(  (  (*stiffmatrix)(line,col) + stiffmatrix_check(line,col)  ) * (*stiffmatrix)(line,col)  )  );
 
         //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
         //if ( fabs( stiff_relerr(line,col) ) < h_rel*50 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
@@ -3009,7 +2882,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
         {
           //include jacobi factor due to coordinate transformation from local in global system
           N_x(r,r+3*d) = N_i_x(d)/jacobi_;
-          N_xx(r,r+3*d) = N_i_xx(d)/pow(jacobi_,2.0);
+          N_xx(r,r+3*d) = N_i_xx(d)/std::pow(jacobi_,2.0);
         } //for (int d=0; d<4; ++d)
       } //for (int r=0; r<3; ++r)
 
@@ -3063,39 +2936,39 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
       //assemble parts from tension
       R_tension = NTilde_x;
-      R_tension.Scale(1.0 - 1.0/pow(dTNTilde_xd,0.5));
-      R_tension.Update(1.0 / pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
+      R_tension.Scale(1.0 - 1.0/std::pow(dTNTilde_xd,0.5));
+      R_tension.Update(1.0 / std::pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
 
       R_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
 
       //assemble parts from bending
       R_bending = NTilde_x;
-      R_bending.Scale(2.0 * pow(dTNTilded,2.0) / pow(dTNTilde_xd,3.0));
-      R_bending.Update(-dTNTilde_xxd/pow(dTNTilde_xd,2.0),NTilde_x,1.0);
-      R_bending.Update(-dTNTilded/pow(dTNTilde_xd,2.0),NTilde_aux,1.0);
+      R_bending.Scale(2.0 * std::pow(dTNTilded,2.0) / std::pow(dTNTilde_xd,3.0));
+      R_bending.Update(-dTNTilde_xxd/std::pow(dTNTilde_xd,2.0),NTilde_x,1.0);
+      R_bending.Update(-dTNTilded/std::pow(dTNTilde_xd,2.0),NTilde_aux,1.0);
       R_bending.Update(1.0/dTNTilde_xd,NTilde_xx,1.0);
-      R_bending.Update(-12.0 * pow(dTNTilded,2.0)/pow(dTNTilde_xd,4.0),NTilde_xddTNTilde_x,1.0);
-      R_bending.Update(4.0 * dTNTilded / pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_aux , 1.0);
-      R_bending.Update(4.0 * dTNTilded / pow(dTNTilde_xd,3.0) , NTilde_auxddTNTilde_x , 1.0);
-      R_bending.Update(4.0 * dTNTilde_xxd / pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_x , 1.0);
-      R_bending.Update(- 2.0 / pow(dTNTilde_xd,2.0) , NTilde_xxddTNTilde_x , 1.0);
-      R_bending.Update(- 2.0 / pow(dTNTilde_xd,2.0) , NTilde_xddTNTilde_xx , 1.0);
-      R_bending.Update(- 1.0 / pow(dTNTilde_xd,2.0) , NTilde_auxddTNTilde_aux , 1.0);
+      R_bending.Update(-12.0 * std::pow(dTNTilded,2.0)/std::pow(dTNTilde_xd,4.0),NTilde_xddTNTilde_x,1.0);
+      R_bending.Update(4.0 * dTNTilded / std::pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_aux , 1.0);
+      R_bending.Update(4.0 * dTNTilded / std::pow(dTNTilde_xd,3.0) , NTilde_auxddTNTilde_x , 1.0);
+      R_bending.Update(4.0 * dTNTilde_xxd / std::pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_x , 1.0);
+      R_bending.Update(- 2.0 / std::pow(dTNTilde_xd,2.0) , NTilde_xxddTNTilde_x , 1.0);
+      R_bending.Update(- 2.0 / std::pow(dTNTilde_xd,2.0) , NTilde_xddTNTilde_xx , 1.0);
+      R_bending.Update(- 1.0 / std::pow(dTNTilde_xd,2.0) , NTilde_auxddTNTilde_aux , 1.0);
 
       R_bending.Scale(ym * Izz_ * jacobi_ * wgt);
 
       //assemble internal force vector f_internal / Res in thesis Meier
       //assemble parts from tension
       Res_tension = NTilde_xd;
-      Res_tension.Scale(1.0 - 1.0 /pow(dTNTilde_xd,0.5));
+      Res_tension.Scale(1.0 - 1.0 /std::pow(dTNTilde_xd,0.5));
 
       Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
 
       //assemble parts from bending
       Res_bending = NTilde_xd;
-      Res_bending.Scale(2.0 * pow(dTNTilded,2.0)/pow(dTNTilde_xd,3.0));
-      Res_bending.Update(-dTNTilde_xxd / pow(dTNTilde_xd,2.0),NTilde_xd,1.0);
-      Res_bending.Update(-dTNTilded / pow(dTNTilde_xd,2.0),NTilde_auxd,1.0);
+      Res_bending.Scale(2.0 * std::pow(dTNTilded,2.0)/std::pow(dTNTilde_xd,3.0));
+      Res_bending.Update(-dTNTilde_xxd / std::pow(dTNTilde_xd,2.0),NTilde_xd,1.0);
+      Res_bending.Update(-dTNTilded / std::pow(dTNTilde_xd,2.0),NTilde_auxd,1.0);
       Res_bending.Update(1.0 / dTNTilde_xd,NTilde_xxd,1.0);
 
       Res_bending.Scale(ym * Izz_ * jacobi_ * wgt);
@@ -3127,7 +3000,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     {
       for(int col=0; col<12; col++)
       {
-        stiff_relerr(line,col)= fabs(  (    pow(stiffmatrix_check(line,col),2) - pow( (*stiffmatrix)(line,col),2 )    )/(  (  (*stiffmatrix)(line,col) + stiffmatrix_check(line,col)  ) * (*stiffmatrix)(line,col)  )  );
+        stiff_relerr(line,col)= fabs(  (    std::pow(stiffmatrix_check(line,col),2) - std::pow( (*stiffmatrix)(line,col),2 )    )/(  (  (*stiffmatrix)(line,col) + stiffmatrix_check(line,col)  ) * (*stiffmatrix)(line,col)  )  );
 
         //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
         //if ( std::abs( stiff_relerr(line,col) ) < h_rel*50 || std::isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
@@ -3289,7 +3162,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
      {
       abs_tangent += std::pow(tangent(i,0),2);
      }
-    abs_tangent=pow(abs_tangent,0.5);
+    abs_tangent=std::pow(abs_tangent,0.5);
 
     //computespin = S ( tangent ) using the spinmatrix in namespace largerotations
     LARGEROTATIONS::computespin<FAD>(spinmatrix,tangent);
@@ -3306,7 +3179,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     //add moments to Res_external according to (5.56)
     for(int i = 3; i < 6 ; i++)
     {
-      force_check(insert*(dofpn) + i) -= crossproduct(i-3,0) / pow(abs_tangent,2.0);
+      force_check(insert*(dofpn) + i) -= crossproduct(i-3,0) / std::pow(abs_tangent,2.0);
     }
 
     //assembly for stiffnessmatrix
@@ -3349,7 +3222,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   {
     for(int col=0; col<(dofpn)*nnode; col++)
     {
-      stiff_relerr(line,col)= fabs((pow(stiffmatrix_check(line,col),2) - pow((*elemat1)(line,col),2))/(((*elemat1)(line,col) + stiffmatrix_check(line,col)) * (*elemat1)(line,col)));
+      stiff_relerr(line,col)= fabs((std::pow(stiffmatrix_check(line,col),2) - std::pow((*elemat1)(line,col),2))/(((*elemat1)(line,col) + stiffmatrix_check(line,col)) * (*elemat1)(line,col)));
 
       //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
       if ( std::abs( stiff_relerr(line,col) ) < 1.0e-10 || std::isnan( stiff_relerr(line,col)) || (*elemat1)(line,col) == 0) //isnan = is not a number
@@ -3361,7 +3234,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   force_relerr.Shape((dofpn)*nnode,1);
   for (int line=0; line<(dofpn)*nnode; line++)
   {
-    force_relerr(line,0)= fabs(pow(force_check(line,0).val(),2.0) - pow((elevec1)(line),2.0 ));
+    force_relerr(line,0)= fabs(std::pow(force_check(line,0).val(),2.0) - std::pow((elevec1)(line),2.0 ));
   }
   std::cout<<"\n\n Rel error stiffness matrix Neumann: "<< stiff_relerr << std::endl;
 
@@ -3578,7 +3451,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
             rxrx+=r_x(i)*r_x(i);
           }
 
-          tension = cl_float(1.0,float_format(40))/jacobiprec_ - cl_float(1.0,float_format(40))/sqrt(rxrx);
+          tension = cl_float(1.0,float_format(40))/jacobiprec_ - cl_float(1.0,float_format(40))/std::sqrt(rxrx);
 
           for (int i=0; i<3; ++i)
           {
@@ -3615,7 +3488,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
             //assemble parts from tension
             R_tension = NTildex;
             R_tension.Scale(tension);
-            R_tension.Update(cl_float(1.0,float_format(40)) / sqrt(expt(rxrx,3.0)),NxTrxrxTNx,cl_float(1.0,float_format(40)));
+            R_tension.Update(cl_float(1.0,float_format(40)) / std::sqrt(expt(rxrx,3.0)),NxTrxrxTNx,cl_float(1.0,float_format(40)));
 
             R_tension.Scale(Eprec_ * crosssecprec_ * wgt);
 
@@ -4115,9 +3988,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
           dispnorm += deltadispglobal(i,0)*deltadispglobal(i,0);
           linsolverrornorm += disperror(i,0)*disperror(i,0);
         }
-        resnorm = sqrt(resnorm)/sqrt(cl_float(numnode*6,float_format(40)));
-        dispnorm = sqrt(dispnorm)/sqrt(cl_float(numnode*6,float_format(40)));
-        linsolverrornorm = sqrt(linsolverrornorm)/sqrt(cl_float(numnode*6,float_format(40)));
+        resnorm = std::sqrt(resnorm)/std::sqrt(cl_float(numnode*6,float_format(40)));
+        dispnorm = std::sqrt(dispnorm)/std::sqrt(cl_float(numnode*6,float_format(40)));
+        linsolverrornorm = std::sqrt(linsolverrornorm)/std::sqrt(cl_float(numnode*6,float_format(40)));
         std::cout << "iter: " << iter << "   resnorm: " << double_approx(resnorm) << "   dispnorm: " << double_approx(dispnorm) << "   linsolverrornorm: " << double_approx(linsolverrornorm) << std::endl;
         //End: Berechnung und Ausgabe der Normen
 

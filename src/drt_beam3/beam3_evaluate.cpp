@@ -1641,11 +1641,6 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
   double artificial = 4000;//1000;  //1000 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*StatMechParamsInterface().GetEta()*rsquare*artificial;
 
-  //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropicconsistent ||
-     StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
-    gamma(0) = gamma(1);
-
    /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
     * comparison of the finite element simulation with the results of that article; note that we assume that the element
     * length is equivalent to the particle length in the following when computing the length to diameter ratio p*/
@@ -1667,7 +1662,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
  |computes the number of different random numbers required in each time step for generation of stochastic    |
  |forces;                                                                    (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3::HowManyRandomNumbersINeed()
+int DRT::ELEMENTS::Beam3::HowManyRandomNumbersINeed() const
 {
   /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
    *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
@@ -1867,11 +1862,6 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList&
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
@@ -1962,11 +1952,6 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(StatMechParamsInterface().GetFrictionModel() == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
@@ -1979,7 +1964,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRadomForces();
+   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
 
 
 
@@ -2047,7 +2032,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& pa
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRadomForces();
+   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {

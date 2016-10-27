@@ -170,6 +170,7 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
+statmechprob_(false),
 crosssec_(0),
 Iyy_(0),
 Izz_(0),
@@ -218,6 +219,7 @@ inertscalerot2_(0)
 DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
+ statmechprob_(old.statmechprob_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
@@ -330,6 +332,7 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
 
   //add all class variables
   AddtoPack(data,isinit_);
+  AddtoPack(data,statmechprob_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -390,6 +393,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
 
   //extract all class variables of beam3 element
   isinit_ = ExtractInt(position,data);
+  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -485,6 +489,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
   if(!isinit_ || secondinit)
   {
     const int nnode = 2; //number of nodes
+
+    // set the flag statmechprob_
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
@@ -669,6 +676,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
   if(!isinit_ || secondinit)
   {
     const int nnode = 2; //number of nodes
+
+    // set the flag statmechprob_
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
@@ -1090,6 +1100,289 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
   return r_xi.Norm2();
 }
 
+// Todo remove this redundant method; see Beam3Base::Calc_r for general implementation
+/*----------------------------------------------------------------------------------------------------------*
+ | Get position vector at xi for given nodal displacements                                        popp 02/16|
+ *----------------------------------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(const double& xi,
+                                                  const LINALG::Matrix<12,1>& disp_totlag_centerline) const
+{
+  // note: this method expects the absolute ("total Lagrangean") values for positions and tangents of both centerline nodes (local numbering 0 and 1)
+  LINALG::Matrix<3,1> r(true);
+  LINALG::Matrix<4,1> N_i(true);
+
+  DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
+
+  for (int n=0;n<4;n++)
+  {
+    for (int i=0;i<3;i++)
+    {
+      r(i)+=N_i(n)*disp_totlag_centerline(3*n+i);
+    }
+  }
+
+  return (r);
+}
+
+/*----------------------------------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3k::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
+                                       const double&              xi,
+                                       const std::vector<double>& disp) const
+{
+  /* we expect the (centerline) displacement state vector (positions and tangents at boundary nodes) here;
+   * for flexibility, we also accept complete DoF vector of this element (2*7+1 DoFs) and do the rest automatically here
+   * NOTE: the latter option is favorable in case of rotvec_==true:
+   *       in case of ROTVEC=true, we need 3 positions, 3 absolute rotvec DOFs AND the length of tangent vector (7th DoF) */
+  LINALG::Matrix<12,1> disp_totlag_centerline(true);
+
+  if (disp.size() == 15)
+  {
+    // in this case, we need to "add" reference values first, because if rotvec_==true,
+    // we can extract tangent vectors only from total rotation vectors
+    std::vector<double> disp_totlag(disp);
+    AddRefValuesDisp(disp_totlag);
+    this->ExtractCenterlineDofValues<2,2,double>(disp_totlag,disp_totlag_centerline);
+  }
+  else if (disp.size() == 12)
+  {
+    /* in this case, we expect the position and tangent DOF values for both boundary nodes;
+     * for rotvec_==true, the tangents are NOT nodal DOFs, so they need to be pre-calculated
+     * before calling this method */
+    disp_totlag_centerline = LINALG::Matrix<12,1>(&disp[0]);
+    AddRefValuesDispCenterline<2,2,double>(disp_totlag_centerline);
+  }
+  else
+  {
+    dserror("size mismatch: expected either 12 values for disp_totlag_centerline or 15 for "
+        "disp_totlag and got %d",disp.size());
+  }
+
+  pos = this->GetPos(xi,disp_totlag_centerline);
+}
+
+/*----------------------------------------------------------------------------------------------------------*
+ | \brief Get base vectors describing the cross-section orientation and size at a given xi       meier 03/16|
+ *----------------------------------------------------------------------------------------------------------*/
+std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& xi) const
+{
+  std::vector<LINALG::Matrix<3,1> > basevectors(2,LINALG::Matrix<3,1>(true));
+
+  if(weakkirchhoff_)
+  {
+    //Triads at collocation points
+    std::vector<LINALG::Matrix<3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);  //material triads at collocation points
+    std::vector<LINALG::Matrix<3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);  //relative angle at collocation points
+
+    //Interpolated material triad at xi
+    LINALG::Matrix<3,3> triad_mat(true); //vector of material triads at xi
+    LINALG::Matrix<3,1> theta(true); //vector of material triads at xi
+
+    //Matrices for individual shape functions and xi-derivatives
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i;
+
+    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      triad_mat_cp[node].Clear();
+      LARGEROTATIONS::quaterniontotriad(Qnew_[node],triad_mat_cp[node]);
+    }
+
+    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      theta_cp[node].Clear();
+      triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+    }
+
+    //Evaluate shape functions
+    DRT::UTILS::shape_function_1D(L_i,xi,Shape());
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      theta.Update(L_i(node),theta_cp[node],1.0);
+    }
+
+    //compute material triad at gp
+    triad_mat.Clear();
+    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+
+    for(int i=0;i<3;i++)
+    {
+      basevectors[0](i)=triad_mat(i,1);
+      basevectors[1](i)=triad_mat(i,2);
+    }
+
+    // ToDo careful, this is a hack for rectangular cross-sections ?!?
+    double Ly=pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
+    double Lz=12.0*Izz_/pow(Ly,3);
+
+    basevectors[0].Scale(0.5*Ly);
+    basevectors[1].Scale(0.5*Lz);
+  }
+  else
+  {
+    dserror("Method GetBaseVectors() only implemented for the case WK==1 (weak Kirchhoff constraint) so far!");
+  }
+
+  return basevectors;
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues(const std::vector<T>&                   dofvec,
+                                                      LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+{
+  // nnodecl: number of nodes used for interpolation of centerline
+  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+
+  const int dofperboundarynode = 3*vpernode+1;
+
+  // get current values for position DOFs directly
+  for (unsigned int dim=0; dim<3; ++dim)
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_centerline(3*vpernode*node+dim) = dofvec[dofperboundarynode*node+dim];
+    }
+
+  // Hermite interpolation: get values of tangent DOFs as well
+  if(rotvec_==false)
+  {
+    for (unsigned int dim=0; dim<3; ++dim)
+      for (unsigned int node=0; node<nnodecl; ++node)
+      {
+        // in case of rotvec_==false, tangents are equivalent to nodal DOFs
+        dofvec_centerline(3*vpernode*node+3+dim) = dofvec[dofperboundarynode*node+3+dim];
+      }
+  }
+  else
+  {
+    // values for tangent DOFs must be transformed in case of rotvec_==true
+    LINALG::TMatrix<T,3,1> theta(true);
+    LINALG::TMatrix<T,3,3> unity(true);
+    LINALG::TMatrix<T,3,3> triad(true);
+
+    for (unsigned int dim=0; dim<3; ++dim)
+      unity(dim,dim)=1.0;
+
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      for (unsigned int dim=0; dim<3; ++dim)
+      {
+        // get values for rotation vector DOFs
+        theta(dim)=dofvec[dofperboundarynode*node+3+dim];
+      }
+      // transform to triad
+      angletotriad(theta,unity,triad);
+
+      // direction of tangent is equivalent to first base vector of triad; length of tangent is 7th nodal DOF
+      for (unsigned int dim=0; dim<3; ++dim)
+      {
+        dofvec_centerline(3*vpernode*node+3+dim) = triad(dim,0) * (dofvec[dofperboundarynode*node+6]);
+      }
+    }
+  }
+
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+{
+  for (unsigned int dim=0; dim<3; ++dim)
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_centerline(3*vpernode*node+dim) += Nodes()[node]->X()[dim];
+
+      // have Hermite interpolation? then update tangent DOFs as well
+      if(vpernode==2)
+        dofvec_centerline(3*vpernode*node+3+dim) += T0_[node](dim);
+    }
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<typename T>
+void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(std::vector<T>& dofvec) const
+{
+  //For the boundary nodes we have to add the initial values. For the interior nodes we are already
+  //done since the initial relative angles are zero: alpha_i(t=0)=0;
+  if(rotvec_==false)
+  {
+    //Calculate total displacements = positions vectors, tangents and relative angles
+    for (int node=0;node<2;node++)//loop over boundary nodes
+    {
+      for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
+      {
+        if(ndof<3)
+        {
+          dofvec[7*node+ndof]+=Nodes()[node]->X()[ndof];
+        }
+        else if (ndof<6)
+        {
+          dofvec[7*node+ndof]+=(Tref()[node])(ndof-3);
+        }
+        else
+        {
+          //nothing to do here: alpha_i(t=0)=0;
+        }
+      }
+    }
+  }
+  else
+  {
+    //Calculate total displacements = positions vectors, tangents and relative angles
+    for (int node=0;node<2;node++)//loop over boundary nodes
+    {
+      LINALG::Matrix<3,1> nodalangle(true);
+      for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
+      {
+        if(ndof<3)
+        {
+          dofvec[7*node+ndof]+=Nodes()[node]->X()[ndof];
+        }
+        else if (ndof<6)
+        {
+          //Nothing to do here, rotations are treated below
+        }
+        else
+        {
+          //here we have to add the initial length of the tangents at the boundary nodes, i.e. ||r'_i(t=0)||=1:
+          dofvec[7*node+ndof]+=1.0;
+        }
+      }//for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
+
+      LINALG::Matrix<3,1> disptheta(true);
+      LINALG::Matrix<3,1> thetanew(true);
+      LINALG::Matrix<4,1> deltaQ(true);
+      LINALG::Matrix<4,1> Qnew(true);
+      for(int i=0; i<3; i++)
+      {
+        disptheta(i) = dofvec[7*node+3+i];
+      }
+
+      LARGEROTATIONS::angletoquaternion(disptheta,deltaQ);
+
+      LINALG::Matrix<4,1> Q0;
+      LARGEROTATIONS::angletoquaternion(Theta0()[node],Q0);
+      LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnew);
+
+      //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+      Qnew.Scale(1.0/Qnew.Norm2());
+
+      //Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by quaterniontoangle()
+      LARGEROTATIONS::quaterniontoangle(Qnew,thetanew);
+
+      //Finally set rotation values in disp_totlag
+      for(int i=0; i<3; i++)
+      {
+        dofvec[7*node+3+i]=thetanew(i);
+      }
+    }//for (int node=0;node<2;node++)//loop over boundary nodes
+  }
+}
+
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 01/16|
  *----------------------------------------------------------------------*/
@@ -1132,3 +1425,9 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
   return 0;
 }
+
+
+// explicit template instantiations
+template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2, 2, Sacado::Fad::DFad<double> >
+                                              (const std::vector<Sacado::Fad::DFad<double> >&,
+                                               LINALG::TMatrix<Sacado::Fad::DFad<double>,3*2*2,1>&) const;
