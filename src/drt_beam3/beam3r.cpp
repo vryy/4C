@@ -1733,3 +1733,18 @@ template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,5,1>(const std::ve
                                                                    const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,2,2>(const std::vector<double>&,
                                                                    const std::vector<double>&);
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<2,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,6,1>&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<3,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,9,1>&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<4,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<5,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,15,1>&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<2,2,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2,1,double>(LINALG::TMatrix<double,6,1>&) const;
+template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<3,1,double>(LINALG::TMatrix<double,9,1>&) const;
+template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<4,1,double>(LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<5,1,double>(LINALG::TMatrix<double,15,1>&) const;
+template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2,2,double>(LINALG::TMatrix<double,12,1>&) const;
