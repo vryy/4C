@@ -170,7 +170,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
    * and multiply it with 3. Works in most cases.
    */
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp(
-      new Epetra_CrsMatrix(Copy, rowmap, 400));
+      new Epetra_CrsMatrix(Copy, rowmap, 1200));
 
   bool interfaceproc = (std::find(interfaceprocs_.begin(),
       interfaceprocs_.end(), comm.MyPID()) != interfaceprocs_.end());
