@@ -310,9 +310,6 @@ void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,(int)hasTSIdata);
   if (hasTSIdata) cTSIdata_->Pack(data);
 
-  // have gpts data
-  AddtoPack(data,(int)(cGPTSdata_!=Teuchos::null));
-
   return;
 }
 
@@ -377,11 +374,6 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   }
   else
     cTSIdata_=Teuchos::null;
-
-  // gpts data
-  bool hasGPTSdata = (bool) ExtractInt(position,data);
-  if (hasGPTSdata)
-    cGPTSdata_ = Teuchos::rcp(new CONTACT::CoNodeGPTSDataContainer());
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

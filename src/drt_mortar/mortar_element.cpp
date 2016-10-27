@@ -18,6 +18,8 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
+#include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
+
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
@@ -228,6 +230,9 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   // add physicaltype
   AddtoPack(data,static_cast<int>(physicaltype_));
 
+  // mesh size
+  AddtoPack(data,traceH_);
+
   return;
 }
 
@@ -287,6 +292,9 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
 
   // physical type
   physicaltype_ = (PhysicalType)(ExtractInt(position,data));
+
+  // mesh size
+  traceH_ = ExtractDouble(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -1826,4 +1834,27 @@ void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::paire
     for (int dim=0; dim<Dim(); ++dim)
       nodelin[in][dim][mrtrnode->Dofs()[dim]]+=1.;
   }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                           seitz 10/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalue(
+    Teuchos::RCP<DRT::FaceElement> faceele,
+    DRT::Discretization& discret)
+{
+  Teuchos::ParameterList params;
+  std::vector<int> lm(0);
+  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue =  Teuchos::rcp(new std::map<int,double> ());
+  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue);
+  Epetra_SerialDenseMatrix      elemat;
+  Epetra_SerialDenseVector      elevec;
+  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(&*faceele)->EstimateNitscheTraceMaxEigenvalue(
+      &*faceele,
+      params,
+      discret,
+      lm,
+      elemat,
+      elevec);
+  traceH_= ele_to_max_eigenvalue->at(faceele->Id());
 }

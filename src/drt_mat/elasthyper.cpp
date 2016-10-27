@@ -246,6 +246,21 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+double MAT::ElastHyper::GetYoung()
+{
+  double young, shear, bulk ;
+  young = shear = bulk = 0.;
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+   potsum_[p]->AddYoungsMod(young,shear,bulk);
+
+  if (bulk!=0. || shear!=0.)
+    young += 9.*bulk*shear/(3.*bulk+shear);
+
+  return young;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 {
   // loop map of associated potential summands

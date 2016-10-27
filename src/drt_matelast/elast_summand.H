@@ -122,6 +122,10 @@ namespace MAT
         double& shearmod  ///< variable to add upon
         ) const;
 
+      /// add young's modulus equivalent
+      virtual void AddYoungsMod(double& young, double& shear, double& bulk)
+      { dserror("Summand does not support calculation of youngs modulus"); };
+
       /// retrieve coefficients of first and second derivative
       /// of summand with respect to principal invariants
       ///

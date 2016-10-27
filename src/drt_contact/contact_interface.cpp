@@ -1212,32 +1212,6 @@ void CONTACT::CoInterface::InitializeDataContainer()
   // call base class functionality
   MORTAR::MortarInterface::InitializeDataContainer();
 
-  // intitialize GPTS container, if necessary
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(IParams(),"ALGORITHM")
-      == INPAR::MORTAR::algorithm_gpts)
-  {
-    for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
-    {
-      int gid = SlaveColNodesBound()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %i", gid);
-      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
-      if (mnode)
-        mnode->InitializeGPTSDataContainer();
-    }
-    for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
-    {
-      int gid = MasterColNodes()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %i", gid);
-      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
-      if (mnode)
-        mnode->InitializeGPTSDataContainer();
-    }
-  }
-
   // ==================
   // non-smooth contact:
   // we need this master node data container to create an averaged
@@ -1280,14 +1254,6 @@ void CONTACT::CoInterface::Initialize()
     // reset feasible projection and segmentation status
     node->HasProj()    = false;
     node->HasSegment() = false;
-
-    // reset gpts forces
-    if (node->CoGPTSData()!=Teuchos::null)
-      for (int d=0;d<Dim();++d)
-      {
-        node->CoGPTSData()->GetGPTSforce()[d]=0.;
-        node->CoGPTSData()->GetGPTSforceDeriv()[d].clear();
-      }
   }
 
   // init normal data in master node data container for cpp calculation
@@ -11453,54 +11419,6 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPT
         if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
       }
     }
-  }
-  return;
-}
-
-
-/*---------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff)
-{
-  for (int i=0;i<mnodecolmap_->NumMyElements();++i)
-  {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
-    if (!cnode) dserror("node not found;");
-    int err = feff->SumIntoGlobalValues(Dim(),cnode->Dofs(),cnode->CoGPTSData()->GetGPTSforce());
-    if (err<0)
-      dserror("stop");
-  }
-  for (int i=0;i<snodecolmap_->NumMyElements();++i)
-  {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
-    if (!cnode) dserror("node not found;");
-    int err = feff->SumIntoGlobalValues(Dim(),cnode->Dofs(),cnode->CoGPTSData()->GetGPTSforce());
-    if (err<0)
-      dserror("stop");
-  }
-  return;
-}
-
-
-/*---------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff)
-{
-  for (int i=0;i<mnodecolmap_->NumMyElements();++i)
-  {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
-    for (int d=0;d<cnode->NumDof();++d)
-      for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
-          p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
-        kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
-  }
-  for (int i=0;i<snodecolmap_->NumMyElements();++i)
-  {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
-    for (int d=0;d<cnode->NumDof();++d)
-      for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
-          p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
-        kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
   }
   return;
 }

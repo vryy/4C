@@ -62,9 +62,6 @@ public:
 
    */
   CoIntegrator(Teuchos::ParameterList& params,
-      DRT::Element::DiscretizationType eletype);
-
-  CoIntegrator(Teuchos::ParameterList& params,
       DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
 
   /*!
@@ -312,7 +309,7 @@ protected:
           This is where the distinction between methods should be,
           i.e. mortar, augmented, gpts,...
    */
-  void IntegrateGP_3D(
+  virtual void IntegrateGP_3D(
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval,
@@ -340,7 +337,7 @@ protected:
           This is where the distinction between methods should be,
           i.e. mortar, augmented, gpts,...
    */
-  void IntegrateGP_2D(
+  virtual void IntegrateGP_2D(
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval,
@@ -592,18 +589,6 @@ protected:
       GEN::pairedvector<int,double>& jacintcellmap,
       std::vector<GEN::pairedvector<int,double> >& dsxigp,
       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
-
-/*!
-\brief evaluate GPTS forces and linearization at this gp
-*/
-  template <int dim>
-  void GPTS_forces(
-      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
-      const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
-      const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
-      const double gap, const GEN::pairedvector<int,double>& dgapgp,
-      double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi);
 
   /*!
    \brief evaluate weighted Gap entries at GP (quad-pwlin)
@@ -1060,14 +1045,6 @@ protected:
     return dim_;
   }
   ;
-
-  template <DRT::Element::DiscretizationType parentdistype, int dim>
-  void inline SoEleGP(
-      MORTAR::MortarElement& sele,
-      const double wgt,
-      const double* gpcoord,
-      LINALG::Matrix<dim,1>& pxsi
-);
 
     // don't want = operator and cctor
     CoIntegrator operator = (const CoIntegrator& old);

@@ -167,14 +167,6 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                  Teuchos::RCP<Epetra_Vector>& feff)
 {
-  // if we use a GPTS-penalty method, everything has already been calculated and
-  // just needs to be added to the force vector and stiffness matrix
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(),"ALGORITHM")== INPAR::MORTAR::algorithm_gpts)
-  {
-    ApplyGPTSforces(kteff,feff);
-    return;
-  }
-
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
   // measures (gap and relative tangential velocity). Here, also active and
@@ -706,104 +698,5 @@ void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | apply GPTS forces and stiffness to the given system       seitz 11/15|
- *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::ApplyGPTSforces(
-    Teuchos::RCP<LINALG::SparseOperator> kteff,
-    Teuchos::RCP<Epetra_Vector> feff)
-{
-  Teuchos::RCP<Epetra_FEVector> fc=Teuchos::rcp(new Epetra_FEVector(feff->Map()));
-  Teuchos::RCP<LINALG::SparseMatrix> kc =
-      Teuchos::rcp(new LINALG::SparseMatrix(
-          (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->EpetraOperator())))->RowMap(),
-          100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->AddGPTSforces(fc);
-    interface_[i]->AddGPTSstiffness(kc);
-  }
-  if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
-  if (feff->Update(1.,*fc,1.)) dserror("update went wrong");
-  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
-  kteff->UnComplete();
-  kteff->Add(*kc,false,1.,1.);
-  kteff->Complete();
-  return;
-}
-
-
-//this should add the displacement of the parent element to the contact element into the datacontainer...
-//...and it should additionally add the dof IDs to its Data container
-/*------------------------------------------------------------------------*
- | Assign generell poro contact state!                          ager 10/14|
- *------------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::SetParentState(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec,
-    const Teuchos::RCP<DRT::Discretization> dis)
-{
-  if (stype_!=INPAR::CONTACT::solution_nitsche)
-    return;
-
-  if (statename == "displacement")
-  {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
-    LINALG::Export(*vec,*global);
-
-    //set state on interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      DRT::Discretization& idiscret_ = interface_[i]->Discret();
-
-      if(1) //do for the slave elements  ....
-      {
-        for (int j=0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j) //will just work for onesided poro contact as the porosity is just on slave side!!!
-        {
-          int gid = interface_[i]->SlaveColElements()->GID(j);
-
-          MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
-
-          std::vector<int> lm;
-          std::vector<int> lmowner;
-          std::vector<int> lmstride;
-
-          //this gets values in local order
-          ele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
-
-          std::vector<double> myval;
-          DRT::UTILS::ExtractMyValues(*global,myval,lm);
-
-          ele->MoData().ParentDisp() = myval;
-          ele->MoData().ParentDof() = lm;
-        }
-      }
-//      if(poromaster_)//add master parent element displacements
-//      {
-//        for (int j=0; j < interface_[i]->MasterColElements()->NumMyElements(); ++j)
-//        {
-//          int gid = interface_[i]->MasterColElements()->GID(j);
-//
-//          MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
-//
-//          std::vector<int> lm;
-//          std::vector<int> lmowner;
-//          std::vector<int> lmstride;
-//
-//          //this gets values in local order
-//          mele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
-//
-//          std::vector<double> myval;
-//          DRT::UTILS::ExtractMyValues(*global,myval,lm);
-//
-//          mele->MoData().ParentDisp() = myval;
-//          mele->MoData().ParentDof() = lm;
-//        }
-//      }
-    }
-  }
   return;
 }

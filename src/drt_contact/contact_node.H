@@ -643,44 +643,6 @@ protected:
 }; //class CoNodeTSIDataContainer
 
 /*!
-\brief A class containing gpts forces contact nodes
-
-\author seitz (seitz@lnm.mw.tum.de)
-*/
-class CoNodeGPTSDataContainer
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  CoNodeGPTSDataContainer(){};
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~CoNodeGPTSDataContainer() { return; }
-
-  double* GetGPTSforce(){return gpts_force_;};
-  std::map<int,double>* GetGPTSforceDeriv() {return deriv_gpts_force_;}
-
-protected:
-
-  // don't want = operator and cctor
-  CoNodeGPTSDataContainer operator = (const CoNodeTSIDataContainer& old);
-  CoNodeGPTSDataContainer(const CoNodeGPTSDataContainer& old);
-
-  double gpts_force_[3];                       /// discrete nodal contact force
-  std::map<int,double> deriv_gpts_force_[3];   /// derivative of nodal contact force
-
-}; //class CoNodeGPTSDataContainer
-
-
-/*!
  \brief A class for a contact node derived from MORTAR::MortarNode
 
  This class represents a finite element node capable of contact.
@@ -824,7 +786,6 @@ public:
 
   inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
   inline CONTACT::CoNodeTSIDataContainer& CoTSIData() { return *cTSIdata_; }
-  inline Teuchos::RCP<CONTACT::CoNodeGPTSDataContainer> CoGPTSData() { return cGPTSdata_; }
 
   //@}
 
@@ -957,15 +918,6 @@ public:
   virtual void InitializeTSIDataContainer(double t_ref, double t_dam);
 
   /*!
-  \brief Initializes the GPTS data container of the node
-  */
-  virtual void InitializeGPTSDataContainer()
-  {
-    if (cGPTSdata_ == Teuchos::null)
-    cGPTSdata_ = Teuchos::rcp(new CONTACT::CoNodeGPTSDataContainer());
-  }
-
-  /*!
    \brief Resets the data container of the node
 
    With this function, the container with contact specific quantities/information
@@ -1028,8 +980,6 @@ protected:
   Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;   // additional information of proc's poro contact nodes
 
   Teuchos::RCP<CONTACT::CoNodeTSIDataContainer> cTSIdata_;   // additional information of TSI contact nodes
-
-  Teuchos::RCP<CONTACT::CoNodeGPTSDataContainer> cGPTSdata_;   // additional information of GPTS contact nodes
 
 };
 // class CoNode

@@ -525,7 +525,9 @@ public:
   mortar specific quantities/information are stored.
 
   */
-  inline MORTAR::MortarEleDataContainer& MoData() { return *modata_; }
+  inline MORTAR::MortarEleDataContainer& MoData() {
+      dsassert(modata_==Teuchos::null, "Mortar data container not set");
+      return *modata_; }
 
   //@}
 
@@ -881,6 +883,20 @@ public:
   //h.Willmann return physical type of the mortar element
   PhysicalType& PhysType(){return physicaltype_;};
 
+  /*!
+  \brief Estimate mesh size parameter h via Eigenvalues of the trace inequality.
+         For Nitsche contact formulations
+    */
+  virtual void EstimateNitscheTraceMaxEigenvalue(
+      Teuchos::RCP<DRT::FaceElement> faceele,
+      DRT::Discretization& discret);
+
+  /*!
+  \brief Estimated mesh size parameter h via Eigenvalues of the trace inequality.
+         For Nitsche contact formulations
+    */
+  virtual double& TraceH() {return traceH_;}
+
   //@}
 
 protected:
@@ -902,6 +918,9 @@ protected:
 
   //h.Willmann
   PhysicalType                                  physicaltype_; //physical type
+
+  // approximation of mesh size from inverse trace inequality
+  double traceH_;
 
   /*!
   \brief Protected constructor for use in derived classes that expect standard element constructors

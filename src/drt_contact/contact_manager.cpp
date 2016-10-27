@@ -23,6 +23,7 @@
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
 #include "contact_penalty_strategy.H"
+#include "contact_nitsche_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
 
@@ -134,6 +135,8 @@ CONTACT::CoManager::CoManager(
   INPAR::CONTACT::AdhesionType ad = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
   const bool nurbs = cparams.get<bool>("NURBS");
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<
+      INPAR::MORTAR::AlgorithmType>(cparams,"ALGORITHM");
 
   bool friplus = false;
   if ((wlaw != INPAR::WEAR::wear_none)
@@ -470,18 +473,18 @@ CONTACT::CoManager::CoManager(
           std::vector<DRT::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym",contactSymconditions);
 
-          for (unsigned j=0; j<contactSymconditions.size(); j++)
-          if (contactSymconditions.at(j)->ContainsNode(node->Id()))
-          {
-            const std::vector<int>* onoff = contactSymconditions.at(j)->Get<std::vector<int> >("onoff");
-            for (unsigned k=0; k<onoff->size(); k++)
-            if (onoff->at(k)==1)
-            cnode->DbcDofs()[k]=true;
-             if (stype==INPAR::CONTACT::solution_lagmult && constr_direction!=INPAR::CONTACT::constr_xyz)
-               dserror("Contact symmetry with Lagrange multiplier method"
-                   " only with contact constraints in xyz direction.\n"
-                   "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
-          }
+            for (unsigned l=0; l<contactSymconditions.size(); l++)
+              if (contactSymconditions.at(l)->ContainsNode(node->Id()))
+              {
+                const std::vector<int>* onoff = contactSymconditions.at(l)->Get<std::vector<int> >("onoff");
+                for (unsigned k=0; k<onoff->size(); k++)
+                  if (onoff->at(k)==1)
+                    cnode->DbcDofs()[k]=true;
+                if (stype==INPAR::CONTACT::solution_lagmult && constr_direction!=INPAR::CONTACT::constr_xyz)
+                  dserror("Contact symmetry with Lagrange multiplier method"
+                      " only with contact constraints in xyz direction.\n"
+                      "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
+              }
 
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
@@ -535,21 +538,18 @@ CONTACT::CoManager::CoManager(
           std::vector<DRT::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym", contactSymconditions);
 
-          for (unsigned j = 0; j < contactSymconditions.size(); j++)
-            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
-            {
-              const std::vector<int>* onoff = contactSymconditions.at(j)->Get<
-                  std::vector<int> >("onoff");
-              for (unsigned k = 0; k < onoff->size(); k++)
-                if (onoff->at(k) == 1)
+              for (unsigned l=0; l<contactSymconditions.size(); l++)
+                if (contactSymconditions.at(l)->ContainsNode(node->Id()))
                 {
-                  cnode->DbcDofs()[k] = true;
+                  const std::vector<int>* onoff = contactSymconditions.at(l)->Get<std::vector<int> >("onoff");
+                  for (unsigned k=0; k<onoff->size(); k++)
+                    if (onoff->at(k)==1)
+                      cnode->DbcDofs()[k]=true;
                   if (stype==INPAR::CONTACT::solution_lagmult && constr_direction!=INPAR::CONTACT::constr_xyz)
                     dserror("Contact symmetry with Lagrange multiplier method"
                         " only with contact constraints in xyz direction.\n"
                         "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
                 }
-            }
 
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
@@ -599,12 +599,14 @@ CONTACT::CoManager::CoManager(
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
         if (stype==INPAR::CONTACT::solution_nitsche)
-          if (isslave[j])
-          {
-            Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
-            if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-            cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
-          }
+        {
+          Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+          if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+          if (faceele->ParentElement()==NULL) dserror("face parent does not exist");
+          if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id())==-1) dserror("vol dis does not have parent ele");
+          cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+          cele->EstimateNitscheTraceMaxEigenvalue(faceele,discret);
+        }
 
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -708,11 +710,23 @@ CONTACT::CoManager::CoManager(
           maxdof));
     }
   }
-  else if (stype == INPAR::CONTACT::solution_penalty ||
-           stype == INPAR::CONTACT::solution_nitsche ||
+  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
            stype == INPAR::CONTACT::solution_uzawa)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(
+        data_ptr,
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        cparams,
+        interfaces,
+        dim, comm_,
+        alphaf,
+        maxdof));
+  }
+  else if (algo == INPAR::MORTAR::algorithm_gpts &&
+      (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
+  {
+    strategy_ = Teuchos::rcp(new CoNitscheStrategy(
         data_ptr,
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
@@ -961,6 +975,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
       dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
 
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche
+        &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") != INPAR::MORTAR::algorithm_gpts)
+      dserror("Nitsche contact only with GPTS algorithm.");
+
+
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
@@ -1179,11 +1199,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
   {
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche)
-      dserror("Nitsche contact under construction ... If you want to use it, you're on your own.");
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_penalty)
-      dserror("ERROR: GPTS-Algorithm only with penalty strategy");
-
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
@@ -1195,12 +1210,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("GPTS algorithm only for frictionless contact");
-
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche
-        &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") != INPAR::MORTAR::inttype_elements
-        )
-      dserror("Nitsche only with Element-based integration");
 
   }// END GPTS CHECKS
 
@@ -1304,6 +1313,13 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
 {
   //If Parent Elements are required, we need to reconnect them before contact restart!
   INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GetStrategy().Params(), "STRATEGY");
+  if (stype == INPAR::CONTACT::solution_nitsche )
+    for (int i=0;i<(int)dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();++i)
+      dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->CreateVolumeGhosting(
+          dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->Discret(),false);
+
+
+  //If Parent Elements are required, we need to reconnect them before contact restart!
   if (stype == INPAR::CONTACT::solution_nitsche || GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     ReconnectParentElements();
 

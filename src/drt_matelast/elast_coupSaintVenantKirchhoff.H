@@ -116,6 +116,11 @@ namespace ELASTIC
       return;
     };
 
+
+    /// a young's modulus equivalent
+    virtual void AddYoungsMod(double& young, double& shear, double& bulk)
+    {young+=9.*params_->mue_*(3.*params_->lambda_+2.*params_->mue_)/(params_->lambda_+params_->mue_);};
+
   private:
 
     /// my material parameters

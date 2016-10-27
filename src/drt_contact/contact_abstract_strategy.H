@@ -1079,10 +1079,10 @@ public:
    direct access to the nodal quantities. Hence, all the restart action has to be
    performed on the level of the contact algorithm, for short: here's the right place.
    */
-  void DoReadRestart(IO::DiscretizationReader& reader,
+  virtual void DoReadRestart(IO::DiscretizationReader& reader,
       Teuchos::RCP<const Epetra_Vector> dis)
   { DoReadRestart(reader,dis,Teuchos::null); };
-  void DoReadRestart(IO::DiscretizationReader& reader,
+  virtual void DoReadRestart(IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 

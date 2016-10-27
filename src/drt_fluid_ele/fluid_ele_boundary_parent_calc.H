@@ -2,10 +2,12 @@
 /*!
 \file fluid_ele_boundary_parent_calc.H
 
-evaluate boundary conditions requiring parent-element evaluations
+\brief evaluate boundary conditions requiring parent-element evaluations
+
+\level 2
 
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
+\maintainer  Ursula Rasthofer & Volker Gravemeier
              {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-245
@@ -81,7 +83,7 @@ namespace DRT
         Epetra_SerialDenseVector&      elevec1) = 0;
 
       virtual void EstimateNitscheTraceMaxEigenvalue(
-        DRT::ELEMENTS::FluidBoundary*  ele1,
+        DRT::FaceElement*  ele1,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,
         std::vector<int>&              lm,
@@ -97,7 +99,7 @@ namespace DRT
         Epetra_SerialDenseVector&      elevec1) = 0;
 
       /// Internal implementation class for FluidBoundaryParent elements
-      static FluidBoundaryParentInterface* Impl(DRT::ELEMENTS::FluidBoundary* ele);
+      static FluidBoundaryParentInterface* Impl(DRT::FaceElement* ele);
 
     };
 
@@ -158,7 +160,7 @@ namespace DRT
         Epetra_SerialDenseVector&      elevec);
 
       void EstimateNitscheTraceMaxEigenvalue(
-        DRT::ELEMENTS::FluidBoundary*  surfele,
+        DRT::FaceElement*              surfele,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,
         std::vector<int>&              lm,
@@ -219,7 +221,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType bdistype,
                 DRT::Element::DiscretizationType pdistype>
       void EstimateNitscheTraceMaxEigenvalue(
-        DRT::ELEMENTS::FluidBoundary*  ele,
+        DRT::FaceElement*              ele,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,
         std::vector<int>&              lm,

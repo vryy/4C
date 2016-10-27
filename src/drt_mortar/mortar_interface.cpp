@@ -548,6 +548,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   //ghost also parent elements according to the ghosting strategy of the interface (atm just for poro)
   if (newghosting && poro_)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
+  if (imortar_.isParameter("STRATEGY"))
+    if (newghosting && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")==INPAR::CONTACT::solution_nitsche)
+      CreateVolumeGhosting(Discret(),false);
 
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily address them
@@ -873,6 +876,13 @@ void MORTAR::MortarInterface::InitializeDataContainer()
       mele->InitializeDataContainer();
     }
   }
+
+  if (IParams().isParameter("STRATEGY"))
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+        IParams(), "STRATEGY")==INPAR::CONTACT::solution_nitsche)
+      for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
+        dynamic_cast<MortarElement*>(Discret().gElement(MasterColElements()->GID(i)))
+        ->InitializeDataContainer();
 
   return;
 }

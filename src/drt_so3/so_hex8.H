@@ -373,17 +373,18 @@ public:
   }
 
   /// evaluate Cauchy stress at given point in parameter space
-  virtual void GetCauchyAtXi(
-      const LINALG::Matrix<NUMDIM_SOH8,1>& xi,
-      const std::vector<double>& disp,
-      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& cauchy,
-      Epetra_SerialDenseMatrix& dsdd);
+  virtual void GetCauchyAtXi(const LINALG::Matrix<3,1>& xi,
+      std::vector<double>& disp,
+      LINALG::Matrix<3,3>& cauchy,
+      Epetra_SerialDenseMatrix& dsdd,
+      LINALG::Matrix<6,3>& dspxi);
 
-  //! struct_ale
-  bool structale_;
   //@}
 
 protected:
+
+  //! struct_ale
+  bool structale_;
 
   //! action parameters recognized by so_hex8
   //  FixMe Deprecated: Should be replaced by the DRT::ELEMENTS::ActionType! hiermeier 04/16

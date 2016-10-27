@@ -131,6 +131,9 @@ namespace ELASTIC
       double& shearmod  ///< variable to add upon
       ) const;
 
+    /// add young's modulus equivalent
+    virtual void AddYoungsMod(double& young, double& shear, double& bulk) {young+=YOUNGS();};
+
     //@}
 
     // add strain energy

@@ -2,10 +2,12 @@
 \file fluid_ele_boundary_parent_calc.cpp
 \brief
 
-evaluate boundary conditions requiring parent-element evaluations
+\brief evaluate boundary conditions requiring parent-element evaluations
+
+\level 2
 
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
+\maintainer  Ursula Rasthofer & Volker Gravemeier
              {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-245
@@ -49,7 +51,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(DRT::ELEMENTS::FluidBoundary* ele)
+DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(DRT::FaceElement* ele)
 {
   switch (ele->Shape())
   {
@@ -472,7 +474,7 @@ template <DRT::Element::DiscretizationType distype>
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
    void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
-     DRT::ELEMENTS::FluidBoundary*  surfele,
+     DRT::FaceElement*              surfele,
      Teuchos::ParameterList&        params,
      DRT::Discretization&           discretization,
      std::vector<int>&              lm,
@@ -3807,7 +3809,7 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
 DRT::Element::DiscretizationType pdistype>
 void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
-    DRT::ELEMENTS::FluidBoundary*  surfele,
+    DRT::FaceElement*  surfele,
     Teuchos::ParameterList&        params,
     DRT::Discretization&           discretization,
     std::vector<int>&              blm,
@@ -3825,9 +3827,6 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
 
   // number of parent spatial dimensions
   static const int nsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
-
-  // check whether it is a three-dimensional problem
-  if (nsd != 3) dserror("Evaluation of Nitsche parameter only for three-dimensional problems so far!");
 
   // number of parent element nodes
   static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
@@ -3856,7 +3855,7 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
   // get boundary element data
   //---------------------------------------------------------------------
   // local surface id
-  int bid = surfele->SurfaceNumber();
+  int bid = surfele->FaceMasterNumber();
 
   // number of boundary spatial dimensions
   static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
@@ -3887,35 +3886,41 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
   }
 
   Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
-  DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,bid);
-
+  if (nsd==3)
+    DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,bid);
+  else if (nsd==2)
+    DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,bid);
+  else
+    dserror("only 2D and 3D");
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
-  // parent and boundary displacement at n+1
-  std::vector<double> mypedispnp((plm).size());
-  std::vector<double> mybedispnp((blm).size());
-  if (surfele->ParentElement()->IsAle())
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-
-    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
-    DRT::UTILS::ExtractMyValues(*dispnp,mybedispnp,blm);
-
-    // add parent and boundary displacement at n+1
-    for (int idim=0; idim<nsd ; ++idim)
+  DRT::ELEMENTS::Fluid* fele = dynamic_cast<DRT::ELEMENTS::Fluid*>(surfele->ParentElement());
+  if (fele)
+    if (fele->IsAle())
     {
-      for (int pnode=0;pnode<piel;++pnode)
+      // parent and boundary displacement at n+1
+      std::vector<double> mypedispnp((plm).size());
+      std::vector<double> mybedispnp((blm).size());
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+
+      DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
+      DRT::UTILS::ExtractMyValues(*dispnp,mybedispnp,blm);
+
+      // add parent and boundary displacement at n+1
+      for (int idim=0; idim<nsd ; ++idim)
       {
-        pxyze(idim,pnode) += mypedispnp[(nsd +1)*pnode+idim];
-      }
-      for (int bnode=0;bnode<biel;++bnode)
-      {
-        bxyze(idim,bnode) += mybedispnp[(nsd +1)*bnode+idim];
+        for (int pnode=0;pnode<piel;++pnode)
+        {
+          pxyze(idim,pnode) += mypedispnp[(nsd +1)*pnode+idim];
+        }
+        for (int bnode=0;bnode<biel;++bnode)
+        {
+          bxyze(idim,bnode) += mybedispnp[(nsd +1)*bnode+idim];
+        }
       }
     }
-  }
 
   //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
@@ -3998,29 +4003,22 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
 
     for (int vi=0; vi<piel; ++vi)
     {
-      int ivx = vi*(3) + 0;
-      int ivy = vi*(3) + 1;
-      int ivz = vi*(3) + 2;
+      int ivx = vi*(nsd) + 0;
+      int ivy = vi*(nsd) + 1;
+      int ivz = vi*(nsd) + 2;
 
       for (int ui=0; ui<piel; ++ui)
       {
-        int iux = ui*(3) + 0;
-        int iuy = ui*(3) + 1;
-        int iuz = ui*(3) + 2;
+        int iux = ui*(nsd) + 0;
+        int iuy = ui*(nsd) + 1;
+        int iuz = ui*(nsd) + 2;
 
         //(x,x)
         Amat(ivx, iux) += fac_*(
                    pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)//1
             +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)//2
-            +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//3
             +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//4
             +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//5
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//6
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//7
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//8
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//9
-            +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velx)//10
-            +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velx)//11
             );
 
 
@@ -4030,32 +4028,14 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
             +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Vely)//2
             +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)//3
             +0.5*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)//4
-            +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//5
-            +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Vely)//6
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Vely) //7
-            );
-
-
-        //(x,z)
-        Amat(ivx, iuz) += fac_*(
-             0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velz)
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velz)
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velz)
-            +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velz)
-            +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)
-            +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)
-            +0.5*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)
             );
 
         //(y,x)
         Amat(ivy, iux) += fac_*(
              0.5*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)
             +0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)
-            +0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)
             +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velx)
             +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Velx)
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velx)
-            +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velx)
             );
 
         //(y,y)
@@ -4063,76 +4043,121 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
              0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Vely)//1
             +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)//2
             +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)//3
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//4
             +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//5
             +      pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//6
-            +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//7
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//8
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//9
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//10
-            +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Vely)//11
             );
 
-        //(y,z)
-        Amat(ivy, iuz) += fac_*(
-             0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velz)//1
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velz)//2
-            +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Velz)//3
-            +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velz)//4
-            +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//5
-            +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//6
-            +0.5*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//7
-            );
+        if (nsd == 3)
+        {
 
-        //(z,x)
-        Amat(ivz, iux) += fac_*(
-             0.5*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//1
-            +0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//2
-            +0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//3
-            +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velx)//4
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velx)//5
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velx)//6
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velx)//7
-            );
+          //(x,x)
+          Amat(ivx, iux) += fac_*(
+              +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//3
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//6
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//7
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//8
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//9
+              +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velx)//10
+              +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velx)//11
+              );
 
-        //(z,y)
-        Amat(ivz, iuy) += fac_*(
-             0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Vely)//1
-            +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//2
-            +0.5*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//3
-            +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//4
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Vely)//5
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Vely)//6
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Vely)//7
-            );
 
-        //(z,z)
-        Amat(ivz, iuz) += fac_*(
-             0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velz)//1
-            +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velz)//2
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)//3
-            +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)//4
-            +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//5
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//6
-            +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//7
-            +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//8
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//9
-            +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//10
-            +      pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//11
-            );
+          //(x,y)
+          Amat(ivx, iuy) += fac_*(
+              +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//5
+              +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Vely)//6
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Vely) //7
+              );
+
+          //(y,x)
+          Amat(ivy, iux) += fac_*(
+              +0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velx)
+              +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velx)
+              );
+
+          //(y,y)
+          Amat(ivy, iuy) += fac_*(
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//4
+              +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//7
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//8
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//9
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//10
+              +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Vely)//11
+              );
+
+          //(x,z)
+          Amat(ivx, iuz) += fac_*(
+               0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velz)
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velz)
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velz)
+              +0.25*pderxy(Vely,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velz)
+              +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)
+              +0.25*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)
+              +0.5*pderxy(Velz,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)
+              );
+
+          //(y,z)
+          Amat(ivy, iuz) += fac_*(
+               0.25*pderxy(Velx,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velz)//1
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Velz)//2
+              +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Velz)//3
+              +0.25*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velz)//4
+              +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//5
+              +0.25*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//6
+              +0.5*pderxy(Velz,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//7
+              );
+
+          //(z,x)
+          Amat(ivz, iux) += fac_*(
+               0.5*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//1
+              +0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//2
+              +0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//3
+              +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velx)//4
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velx)//5
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velx)//6
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velx)//7
+              );
+
+          //(z,y)
+          Amat(ivz, iuy) += fac_*(
+               0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Vely)//1
+              +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//2
+              +0.5*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//3
+              +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//4
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Vely)//5
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Vely)//6
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Vely)//7
+              );
+
+          //(z,z)
+          Amat(ivz, iuz) += fac_*(
+               0.25*pderxy(Velx,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velz)//1
+              +0.25*pderxy(Vely,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Velz)//2
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velx,ui)*unitnormal(Velx)//3
+              +0.25*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Vely,ui)*unitnormal(Vely)//4
+              +0.5*pderxy(Velx,vi)* unitnormal(Velx)*pderxy(Velz,ui)*unitnormal(Velz)//5
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velx,ui)*unitnormal(Velx)//6
+              +0.25*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Vely,ui)*unitnormal(Vely)//7
+              +0.5*pderxy(Vely,vi)* unitnormal(Vely)*pderxy(Velz,ui)*unitnormal(Velz)//8
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velx,ui)*unitnormal(Velx)//9
+              +0.5*pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Vely,ui)*unitnormal(Vely)//10
+              +      pderxy(Velz,vi)* unitnormal(Velz)*pderxy(Velz,ui)*unitnormal(Velz)//11
+              );
+        }
 
       }
     }
   }// GP over boundary element - End of PART I
 
   // is Amat symmetric?
-  for (int vi=0; vi<piel*3; ++vi)
+  for (int vi=0; vi<piel*nsd; ++vi)
   {
-    for (int ui=0; ui<piel*3; ++ui)
+    for (int ui=0; ui<piel*nsd; ++ui)
     {
-      if (fabs(Amat(vi, ui) - Amat(ui, vi)) > 1E-14)
+      if (fabs(Amat(vi, ui) - Amat(ui, vi)) > 1e-8)
       {
-        std::cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << std::endl;
+        std::cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << " " << fabs(Amat(vi, ui) - Amat(ui, vi)) << std::endl;
         dserror("Amat is not symmetric!!!");
       }
     }
@@ -4187,56 +4212,65 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
 
     for (int vi=0; vi<piel; ++vi)
     {
-      int ivx = vi*(3) + 0;
-      int ivy = vi*(3) + 1;
-      int ivz = vi*(3) + 2;
+      int ivx = vi*(nsd) + 0;
+      int ivy = vi*(nsd) + 1;
+      int ivz = vi*(nsd) + 2;
 
       for (int ui=0; ui<piel; ++ui)
       {
-        int iux = ui*(3) + 0;
-        int iuy = ui*(3) + 1;
-        int iuz = ui*(3) + 2;
+        int iux = ui*(nsd) + 0;
+        int iuy = ui*(nsd) + 1;
+        int iuz = ui*(nsd) + 2;
 
         //(x,x)
         Bmat(ivx, iux) += fac_*(pderxy(Velx,vi)*pderxy(Velx,ui)
-            +0.5*pderxy(Vely,vi)*pderxy(Vely,ui)
-            +0.5*pderxy(Velz,vi)*pderxy(Velz,ui));
+            +0.5*pderxy(Vely,vi)*pderxy(Vely,ui));
 
         //(x,y)
         Bmat(ivx, iuy) += fac_*(0.5*pderxy(Vely,vi)*pderxy(Velx,ui));
-
-        //(x,z)
-        Bmat(ivx, iuz) += fac_*(0.5*pderxy(Velz,vi)*pderxy(Velx,ui));
 
         //(y,x)
         Bmat(ivy, iux) += fac_*(0.5*pderxy(Velx,vi)*pderxy(Vely,ui));
 
         //(y,y)
         Bmat(ivy, iuy) += fac_*(pderxy(Vely,vi)*pderxy(Vely,ui)
-            +0.5*pderxy(Velx,vi)*pderxy(Velx,ui)
-            +0.5*pderxy(Velz,vi)*pderxy(Velz,ui));
-        //(y,z)
-        Bmat(ivy, iuz) += fac_*(0.5*pderxy(Velz,vi)*pderxy(Vely,ui));
+            +0.5*pderxy(Velx,vi)*pderxy(Velx,ui));
 
-        //(z,x)
-        Bmat(ivz, iux) += fac_*(0.5*pderxy(Velx,vi)*pderxy(Velz,ui));
+        if (nsd==3)
+        {
+          //(x,x)
+          Bmat(ivx, iux) += fac_*(
+              +0.5*pderxy(Velz,vi)*pderxy(Velz,ui));
 
-        //(z,y)
-        Bmat(ivz, iuy) += fac_*(0.5*pderxy(Vely,vi)*pderxy(Velz,ui));
+          //(y,y)
+          Bmat(ivy, iuy) += fac_*(
+              +0.5*pderxy(Velz,vi)*pderxy(Velz,ui));
 
-        //(z,z)
-        Bmat(ivz, iuz) += fac_*(pderxy(Velz,vi)*pderxy(Velz,ui)
-            +0.5*pderxy(Velx,vi)*pderxy(Velx,ui)
-            +0.5*pderxy(Vely,vi)*pderxy(Vely,ui));
+          //(x,z)
+          Bmat(ivx, iuz) += fac_*(0.5*pderxy(Velz,vi)*pderxy(Velx,ui));
+          //(y,z)
+          Bmat(ivy, iuz) += fac_*(0.5*pderxy(Velz,vi)*pderxy(Vely,ui));
+
+          //(z,x)
+          Bmat(ivz, iux) += fac_*(0.5*pderxy(Velx,vi)*pderxy(Velz,ui));
+
+          //(z,y)
+          Bmat(ivz, iuy) += fac_*(0.5*pderxy(Vely,vi)*pderxy(Velz,ui));
+
+          //(z,z)
+          Bmat(ivz, iuz) += fac_*(pderxy(Velz,vi)*pderxy(Velz,ui)
+              +0.5*pderxy(Velx,vi)*pderxy(Velx,ui)
+              +0.5*pderxy(Vely,vi)*pderxy(Vely,ui));
+        }
       }
     }
 
   }// gauss loop
 
   // is Bmat symmetric?
-  for (int vi=0; vi<piel*3; ++vi)
+  for (int vi=0; vi<piel*nsd; ++vi)
   {
-    for (int ui=0; ui<piel*3; ++ui)
+    for (int ui=0; ui<piel*nsd; ++ui)
     {
       if (fabs(Bmat(vi, ui) - Bmat(ui, vi)) > 1E-14)
       {

@@ -208,6 +208,9 @@ private:
     /// a shear modulus equivalent
     virtual double ShearMod() const;
 
+    /// a young's modulus equivalent
+    virtual double GetYoung() ;
+
     /// evaluate strain energy function
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain, ///< Green-Lagrange strain
                               double& psi,                         ///< Strain energy function

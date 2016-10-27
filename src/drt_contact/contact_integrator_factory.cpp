@@ -18,6 +18,7 @@
 // supported contact integrators
 #include "contact_integrator.H"
 #include "../drt_contact_aug/contact_augmented_integrator.H"
+#include "contact_integrator_nitsche.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -41,6 +42,23 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
     {
       integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(
           p_mortar,eletype,comm));
+      break;
+    }
+    case INPAR::CONTACT::solution_nitsche:
+    {
+      integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitsche(
+          p_mortar,eletype,comm));
+      break;
+    }
+    case INPAR::CONTACT::solution_penalty:
+    {
+      if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(p_mortar, "ALGORITHM")
+          == INPAR::MORTAR::algorithm_gpts)
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitsche(
+            p_mortar,eletype,comm));
+      else
+        integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
+                  p_mortar,eletype,comm));
       break;
     }
     default:

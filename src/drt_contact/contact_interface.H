@@ -698,9 +698,6 @@ public:
   */
   virtual void FDCheckPenaltyTracFric();
 
-  void AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff);
-  void AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
-
   Teuchos::RCP<Epetra_Vector>& GetCn()
   {
     return cnValues_;

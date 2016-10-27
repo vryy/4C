@@ -43,6 +43,8 @@
 
 #include "so3_defines.H"
 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
@@ -3843,10 +3845,11 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 /*----------------------------------------------------------------------*
  |  evaluate cauchy stress tensor                           seitz 02/16|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<NUMDIM_SOH8,1>& xi,
-        const std::vector<double>& disp,
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& cauchy,
-        Epetra_SerialDenseMatrix& dsdd)
+void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3,1>& xi,
+    std::vector<double>& disp,
+    LINALG::Matrix<3,3>& cauchy,
+    Epetra_SerialDenseMatrix& dsdd,
+    LINALG::Matrix<6,3>& dspxi)
 {
 
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element
@@ -3902,5 +3905,59 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<NUMDIM_SOH8,1>& 
   }
   bop.Scale(2.);
   dsdd_linalg.Multiply(dsdb,bop);
+
+  LINALG::Matrix<6,1> cauchy_ref;
+  for (int i=0;i<3;++i)
+    cauchy_ref(i)=cauchy(i,i);
+  cauchy_ref(3)=cauchy(0,1);
+  cauchy_ref(4)=cauchy(2,1);
+  cauchy_ref(5)=cauchy(0,2);
+
+  LINALG::Matrix < DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+  NUMNOD_SOH8 > deriv2;
+  DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi,deriv2);
+
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xXF(xcurr);
+  xXF.MultiplyNT(-1.,xrefe,defgrd,1.);
+
+  LINALG::Matrix<NUMDIM_SOH8,DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2> xXFsec;
+  xXFsec.MultiplyTT(1.,xXF,deriv2,0.);
+
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jift;
+  jift.MultiplyTT(invJ,defgrd);
+
+  LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDIM_SOH8> dbdxi(true);
+
+  int VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
+
+  for (int i=0;i<3;++i)
+    for (int j=0;j<3;++j)
+    {
+      dbdxi(VOIGT3X3SYM_[i][j],0)+=
+          xXFsec(i,0)*jift(0,j)
+          +xXFsec(i,3)*jift(1,j)
+          +xXFsec(i,4)*jift(2,j)
+          +xXFsec(j,0)*jift(0,i)
+          +xXFsec(j,3)*jift(1,i)
+          +xXFsec(j,4)*jift(2,i);
+
+      dbdxi(VOIGT3X3SYM_[i][j],1)+=
+          xXFsec(i,3)*jift(0,j)
+          +xXFsec(i,1)*jift(1,j)
+          +xXFsec(i,5)*jift(2,j)
+          +xXFsec(j,3)*jift(0,i)
+          +xXFsec(j,1)*jift(1,i)
+          +xXFsec(j,5)*jift(2,i);
+
+      dbdxi(VOIGT3X3SYM_[i][j],2)+=
+          xXFsec(i,4)*jift(0,j)
+          +xXFsec(i,5)*jift(1,j)
+          +xXFsec(i,2)*jift(2,j)
+          +xXFsec(j,4)*jift(0,i)
+          +xXFsec(j,5)*jift(1,i)
+          +xXFsec(j,2)*jift(2,i);
+    }
+
+  dspxi.Multiply(dsdb,dbdxi);
 
 }
