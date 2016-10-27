@@ -181,6 +181,9 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
   //partitioning, treating the graph columns as hyperedges and the
   //graph rows as vertices.
 
+  // Set tight imbalance tolerance to foster euqally sized domains
+  paramlist.set("IMBALANCE_TOL", "1.03");
+
   // if the user wants to use less procs than available (as indicated by
   // the input flag "parts" above) then pass on this information to the
   // parameter list for Zoltan/Isorropia
