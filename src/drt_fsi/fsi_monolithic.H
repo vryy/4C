@@ -2,6 +2,8 @@
 /*!
 \file fsi_monolithic.H
 
+\level 1
+
 \maintainer Matthias Mayr
 
 \brief General framework for monolithic fsi solution schemes
@@ -1165,6 +1167,19 @@ namespace FSI
         Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
         Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights, ///< matrix with weights
         Teuchos::RCP<Epetra_Vector> vector_weights,
+        std::string partitioningMethod,                      ///< graph or hypergraph partitioning
+        int unbalance
+        );
+
+    /*! \brief Call to ZOLTAN
+     *
+     *  A manipulated graph \c initgraph_manip is passed to Zoltan, that
+     *  represents the desired domain decomposition. To make the desired
+     *  decomposition more 'attractive' for Zoltan, the weighting matrix
+     *  \c crs_ge_weights is used.
+     */
+    virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltanWithoutWeights(
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
         std::string partitioningMethod,                      ///< graph or hypergraph partitioning
         int unbalance
         );
