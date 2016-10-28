@@ -135,7 +135,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
 
   *diff1 = actmat->Parameter()->diff1;
 
-
   for (unsigned int i=0; i<this->nsd_; ++i)
     for (unsigned int j=0; j<this->nsd_; ++j)
       (*difftensor)(i,j) = diff(i,j);
@@ -158,6 +157,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
   Epetra_SerialDenseVector ivecn_gp(this->shapes_->ndofs_);
 
   const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(actmat->Parameter()->num_gp));
+
+  //Jacobian determinant
+  double jacdet = this->shapes_->xjm.Determinant();
 
     for (int q = 0; q < intpoints.IP().nquad; q++)
     {
@@ -186,20 +188,18 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
       imatgpnp = actmat->ReaCoeff(phinpgp, this->Dt(),q);
 
       // loop over shape functions
-      for (unsigned int i=0; i<this->shapes_->ndofs_; i++)
+      for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
       {
-        for (unsigned int j=0; j<this->shapes_->ndofs_; j++)
-          ivecnpderiv_gp(i,j) += imatgpnpderiv*values_mat_gp(i)*values_mat_gp(j)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
-        ivecnp_gp(i) += imatgpnp*values_mat_gp(i)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
-        ivecn_gp(i) += imatgpn*values_mat_gp(i)*this->shapes_->xji.Invert(this->shapes_->xjm) *gp_mat_alpha;
+        for (unsigned int j=0; j<this->shapes_->ndofs_; ++j)
+          ivecnpderiv_gp(i,j) += imatgpnpderiv*values_mat_gp(i)*values_mat_gp(j)*jacdet *gp_mat_alpha;
+        ivecnp_gp(i) += imatgpnp*values_mat_gp(i)*jacdet*gp_mat_alpha;
+        ivecn_gp(i) += imatgpn*values_mat_gp(i)*jacdet*gp_mat_alpha;
       }
     }
 
   *ivecnpderiv = ivecnpderiv_gp;
   *ivecnp = ivecnp_gp;
   *ivecn = ivecn_gp;
-
-
 
   return;
 } // ScaTraEleCalcHDGCardiacMonodomain<distype>::MatMyocard

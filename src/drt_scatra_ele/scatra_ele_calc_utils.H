@@ -99,8 +99,26 @@ namespace SCATRA
       case 64:
         return DRT::UTILS::intrule_hex_64point;
         break;
+      case 125:
+        return DRT::UTILS::intrule_hex_125point;
+        break;
+      case 216:
+        return DRT::UTILS::intrule_hex_216point;
+        break;
+      case 343:
+        return DRT::UTILS::intrule_hex_343point;
+        break;
+      case 512:
+        return DRT::UTILS::intrule_hex_512point;
+        break;
+      case 729:
+        return DRT::UTILS::intrule_hex_729point;
+        break;
+      case 1000:
+        return DRT::UTILS::intrule_hex_1000point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        dserror("Gauss rule only for 1, 8, 27, 64, 125, 216, 343, 512, 729, 1000 points for HEX8 elements defined. You specified %d points",gp);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
