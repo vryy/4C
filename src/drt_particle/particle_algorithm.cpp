@@ -2230,24 +2230,7 @@ void PARTICLE::Algorithm::UpdateConnectivity()
 
 
 /*----------------------------------------------------------------------*
- | get neighbouring particles and walls (particle version) ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
-    DRT::Node* particle,
-    std::list<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls)
-{
-  if (particle->NumElement() != 1)
-    dserror("More than one element for this particle");
-
-  DRT::Element** CurrentBin = particle->Elements();
-
-  GetNeighbouringParticlesAndWalls(CurrentBin[0]->Id(),neighboring_particles,neighboring_walls);
-}
-
-
-/*----------------------------------------------------------------------*
- | get neighbouring particles and walls (bin version)      katta 10/16  |
+ | get neighbouring particles and walls                    ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
     const int binId,

@@ -2166,7 +2166,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     std::set<DRT::Element*> neighbouring_walls;
 
     // gather all neighboring particles and wall elements
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighbouring_walls);
+    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighbouring_walls);
 
     DRT::Node** particles = currbin->Nodes();
     for(int iparticle=0; iparticle<currbin->NumNode(); ++iparticle)
@@ -2258,7 +2258,8 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   //
   // searching for new collisions for the first particle of the last collision
   //
-  particle_algorithm_->GetNeighbouringParticlesAndWalls(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
+  const int binId = lastevent->particle_1->Elements()[0]->Id();
+  particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighbouring_particles, neighbouring_walls);
 
   // particle-particle collision
   for (std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
@@ -2300,9 +2301,11 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
   {
     // reuse neighborhood in case both particles reside in the same bin
-    if(lastevent->particle_1->Elements()[0]->Id() != lastevent->particle_2->Elements()[0]->Id())
+    const int binId_part1 = lastevent->particle_1->Elements()[0]->Id();
+    const int binId_part2 = lastevent->particle_2->Elements()[0]->Id();
+    if( binId_part1 != binId_part2)
     {
-      particle_algorithm_->GetNeighbouringParticlesAndWalls(lastevent->particle_2, neighbouring_particles, neighbouring_walls);
+      particle_algorithm_->GetNeighbouringParticlesAndWalls(binId_part2, neighbouring_particles, neighbouring_walls);
     }
 
     // particle-particle collision

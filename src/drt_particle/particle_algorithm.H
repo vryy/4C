@@ -123,13 +123,7 @@ namespace PARTICLE
     /// and transferred if necessary
     virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp);
 
-    /// get bins in range and call FindNeighbors (particle version)
-    virtual void GetNeighbouringParticlesAndWalls(
-                    DRT::Node* CurrentParticle,
-                    std::list<DRT::Node*>& neighboring_particles,
-                    std::set<DRT::Element*>& neighboring_walls);
-
-    /// get bins in range and call FindNeighbors (bin version)
+    /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringParticlesAndWalls(
                     const int binId,
                     std::list<DRT::Node*>& neighboring_particles,
