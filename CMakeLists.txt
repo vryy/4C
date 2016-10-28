@@ -839,8 +839,9 @@ set(OBJS_DRT_XFEM
 
 set(OBJS_DRT_XFEM_MANAG_LIB
   src/drt_xfem/xfem_coupling_levelset.cpp
-  src/drt_xfem/xfem_coupling_mesh.cpp
   src/drt_xfem/xfem_coupling_base.cpp
+  src/drt_xfem/xfem_coupling_mesh.cpp
+  src/drt_xfem/xfem_coupling_fpi_mesh.cpp
   src/drt_xfem/xfem_condition_manager.cpp
 )
 
@@ -1201,6 +1202,7 @@ set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/coupling_comm_manager.cpp
   src/drt_fsi_xfem/XFScoupling_manager.cpp
   src/drt_fsi_xfem/XFAcoupling_manager.cpp
+  src/drt_fsi_xfem/XFPcoupling_manager.cpp
 )
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i.cpp

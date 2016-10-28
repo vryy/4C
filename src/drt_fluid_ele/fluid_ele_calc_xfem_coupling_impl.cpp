@@ -2450,7 +2450,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
 
         for (unsigned ir = 0; ir<slave_nen_; ++ir)
         {
-          C_usum_(sIndex(ir,ivel), col) += funct_s_(ir) * facsm * ( proj_matrix(jvel,ivel)*normal_deriv_tmp + proj_matrix_derxy_m_(ivel,ic)*half_normal_(jvel));;
+          C_usum_(sIndex(ir,ivel), col) += funct_s_(ir) * facsm * ( proj_matrix(jvel,ivel)*normal_deriv_tmp + proj_matrix_derxy_m_(ivel,ic)*half_normal_(jvel));
         }
       }
     }
@@ -2752,7 +2752,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
 
         if (s_col.first)
         {
-          const double tmps = facms *(proj_normal_(jvel,ivel)*normal_deriv_tmp + proj_matrix_derxy_m_(jvel,ir)*half_normal_(ivel));
+          const double tmps = facms *(proj_matrix_(jvel,ivel)*normal_deriv_tmp + proj_matrix_derxy_m_(jvel,ir)*half_normal_(ivel));
           for (unsigned ic = 0; ic<slave_nen_; ++ic)
           {
             C_umus_(row, sIndex(ic,jvel)) += funct_s_(ic) * tmps;

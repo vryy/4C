@@ -274,6 +274,7 @@ void FLD::XFluid::SetXFluidParams()
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
   xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
+  xfluid_timint_check_interfacetips_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_gen,"XFLUID_TIMEINT_CHECK_INTERFACETIPS");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
   permutation_map_ = Teuchos::rcp(new std::map<int,int>);
@@ -824,6 +825,18 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
           std::vector<GEO::CUT::BoundaryCell*> & bc_new = bcells[bc->first];
           bc_new.clear();
           std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
+
+          const std::vector<std::pair<int,int> > cloning_information = condition_manager_->GetBCCloneInformation(coup_sid, actele->Id(),coup_idx);
+          for (uint clone_id = 0; clone_id < cloning_information.size(); ++clone_id)
+          {
+//            std::cout << "XFluid - Cloning News: " << coup_idx << " --> " << cloning_information.first << ", " <<
+//                coup_sid << " --> " << cloning_information.second << std::endl;
+            std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells = coupling_bcells[cloning_information[clone_id].first];
+
+            std::vector<GEO::CUT::BoundaryCell*> & bc_new = bcells[cloning_information[clone_id].second];
+            bc_new.clear();
+            std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
+          }
         }
 
         // loop all the different couplings
@@ -3288,7 +3301,8 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
           xfluid_timintapproach_,            // use the chosen approach as defined in the input file
           node_to_reconstr_method,
           reconstr_method_to_node,
-          step_)
+          step_,
+          xfluid_timint_check_interfacetips_)
   );
 
   {
@@ -3515,7 +3529,8 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
           timint_method,
           node_to_reconstr_method,
           reconstr_method_to_node,
-          step_)
+          step_,
+          xfluid_timint_check_interfacetips_)
   );
 
   {

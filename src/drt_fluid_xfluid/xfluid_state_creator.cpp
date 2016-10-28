@@ -2,9 +2,11 @@
 \file xfluid_state_creator.cpp
 \brief Creates a state object for (in)stationary XFEM fluid problems
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse and Benedikt Schott
-             [kruse,schott]@lnm.mw.tum.de
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15240
 </pre>
@@ -171,6 +173,8 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   for(int mc_idx=0; mc_idx< condition_manager_->NumMeshCoupling(); mc_idx++)
   {
     Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+
+    if (!mc_coupl->CutGeometry()) continue;
 
     std::map<int, LINALG::Matrix<3,1> > tip_nodes;        ///< nodes of the crack tip when simulating FSI with crack
 

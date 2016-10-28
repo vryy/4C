@@ -4,8 +4,10 @@
 \brief manages the different types of mesh and level-set based coupling conditions and thereby builds the bridge between the
 xfluid class and the cut-library
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -79,6 +81,7 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfWeakDirichlet");
     conditions_to_check.push_back("XFEMSurfFSIPart");
     conditions_to_check.push_back("XFEMSurfFSIMono");
+    conditions_to_check.push_back("XFEMSurfFPIMono");
     conditions_to_check.push_back("XFEMSurfCrackFSIPart");
     conditions_to_check.push_back("XFEMSurfFluidFluid");
     conditions_to_check.push_back("XFEMSurfNavierSlip");
@@ -797,6 +800,37 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
 {
   int mc = GetMeshCouplingIndex(coup_sid);
   mesh_coupl_[mc]->GetInterfaceSlaveMaterial(actele,mat);
+}
+
+//Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>
+std::vector<std::pair<int,int> > XFEM::ConditionManager::GetBCCloneInformation(const int coup_sid, const int back_eid,int coup_idx)
+{
+  std::vector<std::pair<int,int> > BCCloneInformationvector;
+  if (coup_idx == -1)
+    coup_idx = GetCouplingIndex(coup_sid,back_eid);
+  Teuchos::RCP<CouplingBase> coupling = GetCouplingByIdx(coup_idx);
+  if (coupling != Teuchos::null)
+  {
+    //if there are other reasons than mcfpi ... feel free to add your case just here
+    Teuchos::RCP<MeshCouplingFPI> mcfpicoupling = Teuchos::rcp_dynamic_cast<MeshCouplingFPI>(coupling);
+    if (mcfpicoupling != Teuchos::null)
+    {
+      if (mcfpicoupling->CutGeometry()) //if this is the ps_ps_block which was loaded into the CUT --> clone from this
+      {
+        BCCloneInformationvector.push_back(std::pair<int,int>(coup_idx+1,coup_sid + mesh_coupl_start_gid_[coup_idx+1]-mesh_coupl_start_gid_[coup_idx]));
+        BCCloneInformationvector.push_back(std::pair<int,int>(coup_idx+2,coup_sid + mesh_coupl_start_gid_[coup_idx+2]-mesh_coupl_start_gid_[coup_idx]));
+        BCCloneInformationvector.push_back(std::pair<int,int>(coup_idx+3,coup_sid + mesh_coupl_start_gid_[coup_idx+3]-mesh_coupl_start_gid_[coup_idx]));
+        return BCCloneInformationvector;
+      }
+      else
+        dserror("GetBCCloneInformation: Try to clone from FPI MC != PoroStructure?");
+    }
+    else
+      return BCCloneInformationvector;
+  }
+  else
+    dserror("GetBCCloneInformation: Coupling is empty!");
+  return BCCloneInformationvector;
 }
 
 DRT::Element* XFEM::ConditionManager::GetCouplingElement(

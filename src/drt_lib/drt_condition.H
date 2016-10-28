@@ -150,6 +150,7 @@ public:
     XFEM_Levelset_Combustion,
     XFEM_Surf_FSIPart,
     XFEM_Surf_FSIMono,
+    XFEM_Surf_FPIMono,
     XFEM_Surf_CrackFSIPart,
     XFEM_Surf_FluidFluid,
     XFEM_Surf_Weak_Dirichlet,

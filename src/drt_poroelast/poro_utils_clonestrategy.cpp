@@ -2,10 +2,12 @@
 /*!
  \file poro_utils_clonestrategy.cpp
 
- \brief
+ \brief strategy to clone porofluid from porosolid
+
+ \level 2
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -69,6 +71,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
       "LineFlowRate"));
   conditions_to_copy.insert(std::pair<std::string, std::string> ("ImmersedSearchbox",
       "ImmersedSearchbox"));
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("XFEMSurfFPIMono",
+      "XFEMSurfFPIMono"));
 
   return conditions_to_copy;
 }

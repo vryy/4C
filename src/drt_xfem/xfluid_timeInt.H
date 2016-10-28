@@ -5,8 +5,10 @@
        maps vectors from old interface position to vectors at new interface position,
        determines the reconstruction method for missing and unreasonable ghost and standard values
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -83,7 +85,8 @@ public:
       const INPAR::XFEM::XFluidTimeIntScheme                                      xfluid_timintapproach,  /// xfluid_timintapproch
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > &                   node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
       std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&        reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
-      const int                                                                   step                    /// global time step
+      const int                                                                   step,                   /// global time step
+      const bool                                                                  xfluid_timint_check_interfacetips ///check interfacetips?
   );
 
   //! destructor
@@ -283,6 +286,9 @@ public:
 
   // global timestep
   int step_;
+
+  // name check interfacetips in timeintegration
+  bool xfluid_timint_check_interfacetips_;
 
   Teuchos::RCP<std::map<int, int> > permutation_map_;
 

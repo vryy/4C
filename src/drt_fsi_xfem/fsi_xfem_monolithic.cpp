@@ -44,6 +44,7 @@
 
 #include "XFScoupling_manager.H"
 #include "XFAcoupling_manager.H"
+#include "XFPcoupling_manager.H"
 
 #include  "../drt_xfem/xfem_condition_manager.H"
 
@@ -220,19 +221,18 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     coup_man_[coup_idx] = Teuchos::rcp (new XFEM::XFACoupling_Manager(FluidField(),AleField(), idx));
   }
 
-// FPI Interface will follow soon Todo: ager
-//  if (StructurePoro()->isPoro())
-//  {
-//    //Just Add coupling object in case there is an FPI Interface
-//    if (FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono") != Teuchos::null)
-//    {
-//      ++coup_idx;
-//      idx.clear();
-//      idx.push_back(structp_block_);
-//      idx.push_back(fluid_block_);
-//      coup_man_[coup_idx] = Teuchos::rcp( new XFEM::XFPCoupling_Manager(FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(),idx));
-//    }
-//  }
+  if (StructurePoro()->isPoro())
+  {
+    //Just Add coupling object in case there is an FPI Interface
+    if (FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_ps_ps") != Teuchos::null)
+    {
+      ++coup_idx;
+      idx.clear();
+      idx.push_back(structp_block_);
+      idx.push_back(fluid_block_);
+      coup_man_[coup_idx] = Teuchos::rcp( new XFEM::XFPCoupling_Manager(FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(),idx));
+    }
+  }
   return;
 }
 
@@ -814,8 +814,10 @@ void FSI::MonolithicXFEM::Output()
   }
 
     if (HaveAle())
-    AleField()->Output();
-    }
+      AleField()->Output();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | inner iteration loop (Newton-Raphson scheme)            schott 08/14 |

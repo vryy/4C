@@ -37,7 +37,8 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis, ///< discretization from which cutter discretization can be derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
-      const int                           step       ///< time step
+      const int                           step,      ///< time step
+      const std::string &                 suffix = ""///< suffix for cutterdisname
   );
 
   //! destructor
@@ -138,6 +139,48 @@ public:
   Teuchos::RCP<Epetra_Vector> IDispnp(){ return idispnp_; }
   Teuchos::RCP<Epetra_Vector> IDispn() { return idispn_;  }
 
+protected:
+
+  /*!
+   Return a (smoothed -- soon)/non-smoothed tangiential projection of the mesh surface.
+   */
+  template <DRT::Element::DiscretizationType DISTYPE, class T1, class M3>
+  void EvalProjectionMatrix(
+      T1&       projection_matrix,         ///< Projection matrix
+      M3&       normal                     ///< surface normal of cut element
+  )
+  {
+    //Properties of a projection matrix:
+    //-------------------------------------------------------------------------
+    // 1) P is singular (i.e. not of full rank, no inverse exists).
+    // 2) P*P = P
+    // 3) P^T = P
+    // 4) a*P*a \geq 0 \forall a
+    //-------------------------------------------------------------------------
+
+    // number space dimensions for element
+    const size_t nsd = projection_matrix.Rows();
+#ifdef DEBUG
+    if (projection_matrix.Rows() != projection_matrix.Cols || projection_matrix.Rows() != normal.Rows())
+      dserror("EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not fit!");
+#endif
+
+
+      //create projection matrix
+   // if(projtosurf_== INPAR::XFEM::Proj_normal)
+    {
+      for(unsigned int i =0; i<nsd; ++i)
+      {
+        for(unsigned int j =0; j<nsd; ++j)
+        {
+          projection_matrix(i,j) = (i==j) - normal(i,0) * normal(j,0);
+        }
+      }
+    }
+
+    return;
+  }
+
 private:
 
 
@@ -164,7 +207,7 @@ private:
   }
 
   //! create cutting discretization from condition
-  void CreateCutterDisFromCondition();
+  virtual void CreateCutterDisFromCondition(std::string suffix);
 
 
 

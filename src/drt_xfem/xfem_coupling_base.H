@@ -69,6 +69,9 @@ public:
     return;
   }
 
+  //! cutter dis should be loaded into the cut?
+  virtual bool CutGeometry(){return true;}
+
   void SetTimeAndStep(
       const double time,
       const int step
@@ -113,6 +116,7 @@ public:
   {
     if     (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)             return "XFSI Partitioned";
     else if(type == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)             return "XFSI Monolithic";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_FPI_MONO)             return "XFPI Monolithic";
     else if(type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)       return "XFSI Partitioned with Crack";
     else if(type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)           return "FLUID-FLUID Coupling";
     else if(type == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)   return "WEAK DIRICHLET BC / LS";
@@ -149,7 +153,7 @@ public:
     return cutterele_conds_[lid];
   }
 
-  const std::string & GetName(){return cond_name_;}
+  virtual const std::string & GetName(){return cond_name_;}
 
   Teuchos::RCP<DRT::Discretization> GetCutterDis(){return cutter_dis_;}
   Teuchos::RCP<DRT::Discretization> GetCouplingDis(){return coupl_dis_;}
@@ -277,7 +281,7 @@ protected:
   ///------------------------
 
   ///< name of the condition, by which the derived cutter discretization is identified
-  const std::string cond_name_;
+  std::string cond_name_;
 
   ///< discretization from which the cutter discretization is derived
   Teuchos::RCP<DRT::Discretization> cond_dis_;

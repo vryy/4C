@@ -173,6 +173,7 @@ namespace INPAR
     {
       CouplingCond_NONE,
       CouplingCond_SURF_FSI_MONO,
+      CouplingCond_SURF_FPI_MONO,
       CouplingCond_SURF_FLUIDFLUID,
       CouplingCond_SURF_FSI_PART,
       CouplingCond_SURF_CRACK_FSI_PART,

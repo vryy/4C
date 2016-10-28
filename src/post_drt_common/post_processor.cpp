@@ -389,101 +389,53 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     case prb_fsi_xfem:
+    case prb_fpsi_xfem:
     case prb_fsi_crack:
     {
-      std::cout << "Output FSI-XFEM Problem" << std::endl;
+      std::cout << "|=============================================================================|" << std::endl;
+      std::cout << "|==  Output FSI/FPSI-XFEM Problem" << std::endl;
 
       int numfield = problem.num_discr();
 
-      std::cout << "Number of discretizations: " << numfield << std::endl;
-      for(int i=0; i<numfield;i++)
-      {
-        std::cout << "dis-name i=" << i << ": " << problem.get_discretization(i)->name() << std::endl;
-      }
-
+      std::cout << "|==  Number of discretizations: " << numfield << std::endl;
 
       std::string basename = problem.outname();
 
-      std::cout << "\nStart postprocessing for discretizations: \n" << std::endl;
+      std::cout << "\n|==  Start postprocessing for discretizations:" << std::endl;
 
-      std::cout << "  Structural Field ( "<< problem.get_discretization(0)->name() << " )" << std::endl;
-      PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
-
-      std::cout << "  Fluid Field ( "<< problem.get_discretization(1)->name() << " )" << std::endl;
-      PostField* fluidfield = problem.get_discretization(1);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      // start index for interface discretizations
-      int idx_int = 2;
-
-      if (numfield > 2 && problem.get_discretization(2)->name()=="xfluid") // currently the name of the embedded fluid!
+      for(int idx_int=0; idx_int<numfield;idx_int++)
       {
-        std::cout << "  XFluid Field ( "<< problem.get_discretization(2)->name() << " )" << std::endl;
-        PostField* xfluidfield = problem.get_discretization(2);
-        FluidFilter xfluidwriter(xfluidfield, basename);
-        xfluidwriter.WriteFiles();
-        idx_int += 1; // increase the index
-      }
-
-      // all other fields are interface or ale fields
-      for(int i=idx_int; i<numfield;i++)
-      {
-        if (problem.get_discretization(i)->name() != "ale")
+        std::cout << "\n|=============================================================================|" << std::endl;
+        std::string disname = problem.get_discretization(idx_int)->name();
+        PostField* field = problem.get_discretization(idx_int);
+        if (disname == "structure")
         {
-          std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
-          PostField* ifacefield = problem.get_discretization(i);
-          InterfaceFilter ifacewriter(ifacefield, basename);
+          std::cout << "|==  Structural Field ( "<< disname << " )" << std::endl;
+          StructureFilter structwriter(field, basename, problem.stresstype(), problem.straintype());
+          structwriter.WriteFiles();
+        }
+        else if (disname == "fluid" or disname == "xfluid" or disname == "porofluid")
+        {
+          std::cout << "|==    Fluid Field ( "<< disname << " )" << std::endl;
+          FluidFilter fluidwriter(field, basename);
+          fluidwriter.WriteFiles();
+        }
+        else if (disname == "ale")
+        {
+          std::cout << "|==    Ale Field ( "<< disname << " )" << std::endl;
+//          AleFilter alewriter(field, basename);
+//          alewriter.WriteFiles();
+        }
+        else if (disname.compare(1,12,"boundary_of_"))
+        {
+          std::cout << "|==    Interface Field ( "<< disname << " )" << std::endl;
+          InterfaceFilter ifacewriter(field, basename);
           ifacewriter.WriteFiles();
         }
         else
-        {
-          std::cout << "  Ale Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
-          PostField* alefield = problem.get_discretization(i);
-          AleFilter alewriter(alefield, basename);
-          alewriter.WriteFiles();
-        }
+          dserror("You try to postprocess a discretization with name %s, maybe you should add it here?", disname.c_str());
       }
-
-      break;
-    }
-    case prb_fpsi_xfem:
-    {
-      int numfield = problem.num_discr();
-
-      std::string basename = problem.outname();
-
-      std::cout << "  Structural Field ( "<< problem.get_discretization(0)->name() << " )" << std::endl;
-      PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
-
-      std::cout << "  Porofluid Field ( "<< problem.get_discretization(1)->name() << " )" << std::endl;
-      PostField* porofluidfield = problem.get_discretization(1);
-      FluidFilter porofluidwriter(porofluidfield, basename);
-      porofluidwriter.WriteFiles();
-
-      std::cout << "  Ale Field ( "<< problem.get_discretization(2)->name() << " )" << std::endl;
-      PostField* alefield = problem.get_discretization(2);
-      AleFilter alewriter(alefield, basename);
-      alewriter.WriteFiles();
-
-      std::cout << "  Fluid Field ( "<< problem.get_discretization(3)->name() << " )" << std::endl;
-      PostField* fluidfield = problem.get_discretization(3);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      // all other fields are interface fields
-      for(int i=4; i<numfield;i++)
-      {
-        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
-        PostField* ifacefield = problem.get_discretization(i);
-        InterfaceFilter ifacewriter(ifacefield, basename);
-        ifacewriter.WriteFiles();
-      }
-
+      std::cout << "|=============================================================================|" << std::endl;
       break;
     }
     case prb_fluid_xfem:

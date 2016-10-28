@@ -103,6 +103,10 @@ void StructureFilter::WriteAllResults(PostField* field)
   // Lagrange multiplier at the interface in monolithic fsi
   writer_->WriteResult("fsilambda", "fsilambda", dofbased, field->problem()->num_dim());
 
+  // Lagrange multiplier at the interface in monolithic fsi
+  writer_->WriteResult("fpilambda_ps", "fpilambda_ps", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("fpilambda_pf", "fpilambda_pf", dofbased, field->problem()->num_dim());
+
   //additional output for biofilm problems
   writer_->WriteResult("str_growth_displ", "str_growth_displ", dofbased, field->problem()->num_dim());
 

@@ -141,6 +141,9 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                    ),
                                &xfluid_general);
 
+  setStringToIntegralParameter<int>("XFLUID_TIMEINT_CHECK_INTERFACETIPS","Yes","Xfluid TimeIntegration Special Check if node has changed the side!",
+                               yesnotuple,yesnovalue,&xfluid_general);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 
@@ -634,6 +637,26 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
   condlist.push_back(xfem_surf_fsi_mono);
+
+  //*----------------*/
+  // Surface monolithic XFPI coupling conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_fpi_mono =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS",
+          "XFEMSurfFPIMono",
+          "XFEM Surf FPI Mono",
+          DRT::Condition::XFEM_Surf_FPIMono,
+          true,
+          DRT::Condition::Surface));
+
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("BJ_COEFF",true)));
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("bj_coeff",1,true)));
+
+  condlist.push_back(xfem_surf_fpi_mono);
 
 
   //*----------------*/

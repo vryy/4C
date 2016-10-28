@@ -69,7 +69,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
     const INPAR::XFEM::XFluidTimeIntScheme                                      xfluid_timintapproach,  /// xfluid_timintapproch
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > &                   node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
     std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > > &       reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
-    const int                                                                   step                    /// global time step
+    const int                                                                   step,                   /// global time step
+    const bool                                                                  xfluid_timint_check_interfacetips ///check interfacetips?
 ) :
 is_newton_increment_transfer_(is_newton_increment_transfer),
 dis_(dis),
@@ -81,7 +82,8 @@ dofset_new_(dofset_new),
 timeint_scheme_ (xfluid_timintapproach),
 node_to_reconstr_method_(node_to_reconstr_method),
 reconstr_method_to_node_(reconstr_method_to_node),
-step_(step)
+step_(step),
+xfluid_timint_check_interfacetips_(xfluid_timint_check_interfacetips)
 {
 
   myrank_  = dis->Comm().MyPID();
@@ -1407,18 +1409,19 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
       return nds_old; // don't do further checks, otherwise SpaceTimeCheck can lead to segfault's as sides at t^(n+1) are not available at t^n
 
-#if(1)
-    //--------------------------------------
-    // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
-    if( (is_std_set_np and is_std_set_n) or (!is_std_set_np and !is_std_set_n))
+    if(xfluid_timint_check_interfacetips_)
     {
-      std::vector<int> & identified_sides = identified_old_sets[nds_old];
-      successful_check = SpecialCheck_InterfaceTips(did_node_change_side, identified_sides, n_old,n_new);
+      //--------------------------------------
+      // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
+      if( (is_std_set_np and is_std_set_n) or (!is_std_set_np and !is_std_set_n))
+      {
+        std::vector<int> & identified_sides = identified_old_sets[nds_old];
+        successful_check = SpecialCheck_InterfaceTips(did_node_change_side, identified_sides, n_old,n_new);
 
-      if(!successful_check or (successful_check and did_node_change_side))
-        return -1; // do not accept the old value
+        if(!successful_check or (successful_check and did_node_change_side))
+          return -1; // do not accept the old value
+      }
     }
-#endif
 
     //---------------------------------------
     // if the unique candidate passed all checks we accept the value

@@ -133,6 +133,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==XFEM_Levelset_Combustion)      os << "XFEM Levelset Combustion coupling condition: ";
   else if (Type()==XFEM_Surf_FSIPart)             os << "XFEM Surface partitioned XFSI boundary condition: ";
   else if (Type()==XFEM_Surf_FSIMono)             os << "XFEM Surface monolithic XFSI coupling condition: ";
+  else if (Type()==XFEM_Surf_FPIMono)             os << "XFEM Surface monolithic XPSI coupling condition: ";
   else if (Type()==XFEM_Surf_CrackFSIPart)        os << "XFEM Surface partitioned Crack XFSI boundary condition: ";
   else if (Type()==XFEM_Surf_FluidFluid)          os << "XFEM Surface Fluid-Fluid coupling condition: ";
   else if (Type()==XFEM_Surf_Weak_Dirichlet)      os << "XFEM Surface weak Dirichlet boundary condition: ";

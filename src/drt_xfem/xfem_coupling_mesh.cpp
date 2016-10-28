@@ -21,6 +21,7 @@ xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "xfem_discretization_utils.H"
 
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
@@ -46,7 +47,8 @@ XFEM::MeshCoupling::MeshCoupling(
     Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which the cutter discretization is derived
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
-    const int                           step       ///< time step
+    const int                           step,       ///< time step
+    const std::string &                 suffix     ///< suffix for cutterdisname
 ) : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step), firstoutputofrun_(true)
 {
 
@@ -54,7 +56,7 @@ XFEM::MeshCoupling::MeshCoupling(
   SetConditionsToCopy();
 
   // create a cutter discretization from conditioned nodes of the given coupling discretization
-  CreateCutterDisFromCondition();
+  CreateCutterDisFromCondition(suffix);
 
   // set unique element conditions
   SetElementConditions();
@@ -79,7 +81,7 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
   conditions_to_copy_.push_back(cond_name_);
 
   // additional conditions required for the new boundary conditions
-  conditions_to_copy_.push_back("FSICoupling");  // for partitioned and monolithic XFSI
+  conditions_to_copy_.push_back("FSICoupling");  // for partitioned XFSI
 
   // additional conditions required for the displacements of the cutter mesh
   conditions_to_copy_.push_back("XFEMSurfDisplacement");
@@ -99,11 +101,11 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
 /*--------------------------------------------------------------------------*
  | Create the cutter discretization                                         |
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::CreateCutterDisFromCondition()
+void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
 {
   // create name string for new cutter discretization (e.g, "boundary_of_struct_1" or "boundary_of_fluid_2")
   std::string cutterdis_name ("boundary_of_");
-  cutterdis_name += cond_dis_->Name();
+  cutterdis_name += cond_dis_->Name() + suffix;
 
   std::ostringstream temp;
   temp << coupling_id_;
@@ -1394,8 +1396,6 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &
       dserror("ID already existing! For sliplength_map_.");
 
   }
-
-
 }
 
 //----------------------------------------------------------------------

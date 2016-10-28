@@ -3866,6 +3866,11 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     // nothing to evaluate as continuity coupling conditions have to be evaluated
     break;
   }
+  case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
+  {
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(coupling)->EvaluateCouplingConditions<distype>(proj_tangential,normal);
+    break;
+  }
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   {
 
@@ -4006,6 +4011,11 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
   {
     // nothing to evaluate as continuity coupling conditions have to be evaluated
+    break;
+  }
+  case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
+  {
+    dserror("Fluid Poro Structure Interaction not implemented for NEWOst yet!");
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:

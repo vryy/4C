@@ -27,6 +27,9 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
 {
   if     (condname == "XFEMSurfFSIPart")            return INPAR::XFEM::CouplingCond_SURF_FSI_PART;
   else if(condname == "XFEMSurfFSIMono")            return INPAR::XFEM::CouplingCond_SURF_FSI_MONO;
+  else if(condname == "XFEMSurfFPIMono"      || condname == "XFEMSurfFPIMono_ps_ps"
+      || condname == "XFEMSurfFPIMono_ps_pf" || condname == "XFEMSurfFPIMono_pf_ps"
+      || condname == "XFEMSurfFPIMono_pf_pf")       return INPAR::XFEM::CouplingCond_SURF_FPI_MONO;
   else if(condname == "XFEMSurfCrackFSIPart")       return INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART;
   else if(condname == "XFEMSurfFluidFluid")         return INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID;
   else if(condname == "XFEMLevelsetWeakDirichlet")  return INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET;
@@ -264,6 +267,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
   switch(cond_type)
   {
   case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+  case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
   {
     averaging_strategy_ = INPAR::XFEM::Xfluid_Sided;
     break;
@@ -306,6 +310,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   switch(cond_type)
   {
   case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+  case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
   {
     coupl_dis_ = cutter_dis_;
     break;

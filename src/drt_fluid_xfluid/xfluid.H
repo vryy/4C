@@ -642,6 +642,9 @@ namespace FLD
 
     //! @name xfluid time integration
     enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
+
+    //! @name check interfacetips in timeintegration
+    bool xfluid_timint_check_interfacetips_;
     //@}
 
     /// initial flow field

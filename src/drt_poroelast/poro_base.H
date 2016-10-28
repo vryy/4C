@@ -171,6 +171,9 @@ namespace POROELAST
       //! Evaluate porosity at surface
       void CalculateSurfPoro(const std::string& condstring);
 
+      //! return coupling object
+      ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
+
     protected:
 
       //! @name Transfer helpers
@@ -194,10 +197,6 @@ namespace POROELAST
       void SetStructSolution();
 
       //@}
-
-
-      //! return coupling object
-      ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
 
       //! Extractor used for constraint structure
       Teuchos::RCP< LINALG::MapExtractor > consplitter_;

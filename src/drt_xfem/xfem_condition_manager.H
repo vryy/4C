@@ -1,10 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file xfem_condition_manager.H
 
-\brief
+\brief manages the different types of mesh and level-set based coupling conditions and thereby builds the bridge between the
+xfluid class and the cut-library
+
+\level 2
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -19,6 +22,7 @@ Maintainer: Benedikt Schott
 // the xfem_condition_manager.cpp file in a later stage
 #include "xfem_coupling_levelset.H"
 #include "xfem_coupling_mesh.H"
+#include "xfem_coupling_fpi_mesh.H"
 
 namespace GEO
 {
@@ -122,6 +126,13 @@ public:
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+    }
+    else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FPI_MONO)
+    {
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_,MeshCouplingFPI::ps_ps)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_,MeshCouplingFPI::ps_pf)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_,MeshCouplingFPI::pf_ps)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_,MeshCouplingFPI::pf_pf)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
     {
@@ -386,6 +397,8 @@ public:
     return coup_idx;
   }
 
+  //Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>
+  std::vector<std::pair<int,int> > GetBCCloneInformation(const int coup_sid, const int back_eid, int coup_idx = -1);
 
   int GetLevelSetCouplingGid(){return levelset_gid_;}
 
@@ -549,10 +562,8 @@ public:
   {
     switch(cond_type)
     {
-    //    case INPAR::XFEM::CouplingCond_XFEMCOUPLING:
-    //      return false;
-    //      break;
     case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+    case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
     case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
     case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
     case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
