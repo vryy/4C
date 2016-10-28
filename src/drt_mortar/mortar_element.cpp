@@ -1856,5 +1856,5 @@ void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalue(
       lm,
       elemat,
       elevec);
-  traceH_= ele_to_max_eigenvalue->at(faceele->Id());
+  traceH_= 1./ele_to_max_eigenvalue->at(faceele->Id());
 }

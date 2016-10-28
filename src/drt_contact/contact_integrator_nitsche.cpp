@@ -126,14 +126,14 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
 
   if (stype_==INPAR::CONTACT::solution_nitsche)
   {
-    pen*=std::max(dynamic_cast<CONTACT::CoElement&>(sele).TraceH(),dynamic_cast<CONTACT::CoElement&>(mele).TraceH());
+    pen/=std::min(dynamic_cast<CONTACT::CoElement&>(sele).TraceH(),dynamic_cast<CONTACT::CoElement&>(mele).TraceH());
     MAT::ElastHyper* mmat = dynamic_cast<MAT::ElastHyper*>(&*mele.ParentElement()->Material());
     MAT::ElastHyper* smat = dynamic_cast<MAT::ElastHyper*>(&*sele.ParentElement()->Material());
     if (smat==NULL || mmat==NULL)
       dserror("Nitsche contact only for elast hyper material");
-    double ws=1.*dynamic_cast<CONTACT::CoElement&>(mele).TraceH()
+    double ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceH()
         *mmat->GetYoung();
-    double wm=1.*dynamic_cast<CONTACT::CoElement&>(sele).TraceH()
+    double wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceH()
         *smat->GetYoung();
     ws/=(ws+wm);
     wm=1.-ws;
