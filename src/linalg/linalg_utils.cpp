@@ -286,7 +286,7 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
 void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  const Epetra_SerialDenseVector VeleNew(Epetra_DataAccess::View, &(Vele(0)), 3);
+  const Epetra_SerialDenseVector VeleNew(::View, &(Vele(0)), 3);
   LINALG::Assemble(V, VeleNew, lm, lmowner);
   return;
 }
@@ -308,7 +308,7 @@ void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
 void LINALG::Assemble(Epetra_Vector& V, double& Vele,
     const int& lm, const int& lmowner)
 {
-  const Epetra_SerialDenseVector VeleNew(Epetra_DataAccess::View, &Vele, 1);
+  const Epetra_SerialDenseVector VeleNew(::View, &Vele, 1);
   const std::vector<int> lmNew(1,lm);
   const std::vector<int> lmownerNew(1,lmowner);
   LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
