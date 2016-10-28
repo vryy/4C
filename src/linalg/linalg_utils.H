@@ -646,7 +646,7 @@ void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 void NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
 /*!
- \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
+ \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
 
  This is an individual call.
  Will only assemble locally and will never do any commmunication.
@@ -671,7 +671,7 @@ void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmcol);
 
 /*!
- \brief Assemble a Epetra_SerialDenseVector into a Epetra_Vector
+ \brief Assemble an Epetra_SerialDenseVector into an Epetra_Vector
 
  This is an individual call.
  Will only assemble locally and will never do any commmunication.
@@ -686,6 +686,49 @@ void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner);
 
+/*!
+ \brief Assemble a LINALG::Matrix<3,1> into an Epetra_Vector
+
+ This is a wrapper that converts LINALG::Matrix<3,1> to
+ Epetra_SerialDenseVector (view version)
+
+ \param V (out)   : Vector to be assembled on
+ \param Vele (in) : dense vector to be assembled
+ \param lm (in) : vector with gids
+ \param lmowner (in) : vector with owner procs of gids
+ */
+void Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
+    const std::vector<int>& lm, const std::vector<int>& lmowner);
+
+/*!
+ \brief Assemble a LINALG::Matrix<3,1> into an Epetra_Vector in case the
+ owner is always the same
+
+ This is a wrapper that converts LINALG::Matrix<3,1> to
+ Epetra_SerialDenseVector (view version)
+
+ \param V (out)   : Vector to be assembled on
+ \param Vele (in) : dense vector to be assembled
+ \param lm (in) : vector with gids
+ \param lmowner (in) : vector with owner procs of gids
+ */
+void Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
+    const std::vector<int>& lm, const int& lmowner);
+
+/*!
+ \brief Assemble a double into an Epetra_Vector
+
+ This is an wrapper.
+
+ \param V (out)   : Vector to be assembled on
+ \param Vele (in) : dense vector to be assembled
+ \param lm (in) : vector with gids
+ \param lmowner (in) : vector with owner procs of gids
+ */
+void Assemble(Epetra_Vector& V, double& Vele,
+    const int& lm, const int& lmowner);
+
+///////////////////////////
 /*!
  \brief Assemble a Epetra_SerialDenseVector into a Epetra_MultiVector
 
