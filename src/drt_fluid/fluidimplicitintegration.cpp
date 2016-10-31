@@ -424,9 +424,6 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
     flowvolumenpi_(true);
     flowvolumen_(true);
     flowvolumenm_(true);
-
-    if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
-      dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
   }
 
   // check number of impedance boundary conditions
@@ -1308,8 +1305,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     // conditions according to time-integration scheme and potential relaxation
     // within nonlinear iteration loop
     // (relaxation parameter 1.0, for the time being, that is, no relaxation)
-    LINALG::Matrix<4,1> flowraterel(true);
-    LINALG::Matrix<4,1> flowvolumerel(true);
+    std::vector<double> flowraterel(fdpcond.size(), 0.0);
+    std::vector<double> flowvolumerel(fdpcond.size(), 0.0);
     const double relaxpara = 1.0;
 
     double timefac = 1.0;
@@ -1408,7 +1405,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       flowratenp_(fdpcondid) = flowrate;
 
       // compute flow rate used for evaluation of boundary condition below
-      flowraterel(fdpcondid) = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
+      flowraterel[fdpcondid] = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
 
       // clear state
       discret_->ClearState();
@@ -1425,7 +1422,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (flowvolumenp_(fdpcondid) < 0.0) flowvolumenp_(fdpcondid) = 0.0;
 
       // compute flow volume used for evaluation of boundary condition below
-      flowvolumerel(fdpcondid) = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
+      flowvolumerel[fdpcondid] = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
 
       //--------------------------------------------------------------------
       // c) surface area
@@ -1531,8 +1528,9 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
       // set values for elements
-      flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow rate",flowraterel);
-      flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow volume",flowvolumerel);
+      const int fdp_cond_id = fdpcond[fdpcondid]->GetInt("ConditionID");
+      flowdeppressureparams.set<double>("flow rate",flowraterel[fdp_cond_id]);
+      flowdeppressureparams.set<double>("flow volume",flowvolumerel[fdp_cond_id]);
 
       // evaluate all flow-dependent pressure boundary conditions
       discret_->EvaluateCondition(flowdeppressureparams,sysmat_,Teuchos::null,
