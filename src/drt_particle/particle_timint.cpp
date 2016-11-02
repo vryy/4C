@@ -583,21 +583,21 @@ void PARTICLE::TimInt::ReadRestartState()
 
   UpdateStatesAfterParticleTransfer();
 
-  // start with reading mass in order to find out whether particles exist
-  reader.ReadVector(mass_, "mass");
+  // start with reading displacement in order to find out whether particles exist
+  reader.ReadVector(disn_, "displacement");
 
   // check, in case there is nothing, do not read the file
-  if(mass_->GlobalLength() == 0)
+  if(disn_->GlobalLength() == 0)
     return;
 
-  // now, the remaining state vectors an be read in
-  reader.ReadVector(disn_, "displacement");
+  // now finish the displacement and read the remaining state vectors
   dis_->UpdateSteps(*disn_);
   reader.ReadVector(veln_, "velocity");
   vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
 
+  reader.ReadVector(mass_, "mass");
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
