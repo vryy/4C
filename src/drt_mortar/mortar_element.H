@@ -526,7 +526,7 @@ public:
 
   */
   inline MORTAR::MortarEleDataContainer& MoData() {
-      dsassert(modata_==Teuchos::null, "Mortar data container not set");
+      dsassert(modata_!=Teuchos::null, "Mortar data container not set");
       return *modata_; }
 
   //@}
