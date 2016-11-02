@@ -342,6 +342,9 @@ namespace PARTICLE
     //! does interaction handler exist?
     virtual bool HaveInterHandler() {return (interHandler_!=Teuchos::null); }
 
+    //! check state vectors (debugging)
+    virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec = false);
+
     //@}
 
     //! @name Extract methods

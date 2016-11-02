@@ -233,6 +233,9 @@ namespace ADAPTER
     //! does interaction handler exist?
     virtual bool HaveInterHandler() = 0;
 
+    //! check state vector
+    virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec) = 0;
+
     //@}
 
     //! @name Extract methods

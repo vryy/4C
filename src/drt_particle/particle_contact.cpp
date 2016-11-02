@@ -512,7 +512,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     std::set<DRT::Element*> neighboring_walls;
 
     // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources;
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources;
 
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
 
@@ -595,7 +595,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringHeatSourcesContact(
   DRT::Node* particle_i,
   const ParticleCollData& data_i,
-  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources,
+  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
   const double invDt)
 {
   // extract the particle_timint

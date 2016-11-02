@@ -1089,3 +1089,21 @@ Teuchos::RCP<const Epetra_Vector> PARTICLE::TimInt::Temperaturenp()
 {
   return PARTICLE::Utils::SpecEnthalpy2Temperature(specEnthalpyn_, particle_algorithm_->ExtParticleMat());
 }
+
+/*----------------------------------------------------------------------*/
+//! Check exixstence of the state vectors
+void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec)
+{
+  if (vec == Teuchos::null)
+  {
+    std::cout << "The pointer to " << vecName << " is null\n";
+    std::cin.get();
+    return;
+  }
+
+  std::cout << "Processor " << myrank_ << " owns " << vec->MyLength() << "/" << vec->GlobalLength() << " elements of " << vecName << std::endl;
+  if (trg_showVec)
+    std::cout << *vec << std::endl;
+  std::cin.get();
+}
+

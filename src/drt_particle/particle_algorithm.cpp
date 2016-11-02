@@ -2240,7 +2240,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
     DRT::Node* particle,
     std::list<DRT::Node*>& neighboring_particles,
     std::set<DRT::Element*>& neighboring_walls,
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources)
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources)
 {
   if (particle->NumElement() != 1)
     dserror("More than one element for this particle");
@@ -2258,7 +2258,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
     std::list<DRT::Node*>& neighboring_particles,
     std::set<DRT::Element*>& neighboring_walls,
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources)
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources)
 {
 
   int ijk[3];
@@ -2523,7 +2523,7 @@ void PARTICLE::Algorithm::GetNeighbouringBinGids(
 void PARTICLE::Algorithm::GetBinContent(
   std::list<DRT::Node*> &particles,
   std::set<DRT::Element*> &walls,
-  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> heatSources,
+  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > heatSources,
   std::vector<int> &binIds)
 {
   // loop over all bins
