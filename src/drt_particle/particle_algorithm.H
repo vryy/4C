@@ -128,14 +128,14 @@ namespace PARTICLE
                     DRT::Node* particle,
                     std::list<DRT::Node*>& neighboring_particles,
                     std::set<DRT::Element*>& neighboring_walls,
-                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources = Teuchos::null);
+                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::null);
 
     /// get bins in range and call FindNeighbors (bin version)
     virtual void GetNeighbouringItems(
                     const int binId,
                     std::list<DRT::Node*>& neighboring_particles,
                     std::set<DRT::Element*>& neighboring_walls,
-                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources = Teuchos::null);
+                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::null);
 
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
 
@@ -302,7 +302,7 @@ namespace PARTICLE
     void GetBinContent(
       std::list<DRT::Node*>& particles,
       std::set<DRT::Element*>& walls,
-      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources,
+      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
       std::vector<int>& binIds);
 
     //! @name particle related stuff
