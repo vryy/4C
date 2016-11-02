@@ -22,6 +22,7 @@
 #include "particle_contact.H"
 #include "particle_utils.H"
 #include "particleMeshFree_interaction.H"
+#include "heatSource.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -124,12 +125,12 @@ void PARTICLE::TimIntCentrDiff::Init()
     const double r_max = particleparams.get<double>("MAX_RADIUS");
 
     // loop over the heat sources
-    const std::map<int,Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
+    const std::list <Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
     double max_QDot = 0;
-    for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources.begin(); iHS != heatSources.end(); ++iHS)
+    for (std::list <Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources.begin(); iHS != heatSources.end(); ++iHS)
     {
-      if (iHS->second->QDot_> max_QDot)
-        max_QDot += std::abs(iHS->second->QDot_);
+      if ((*iHS)->QDot_> max_QDot)
+        max_QDot += std::abs((*iHS)->QDot_);
     }
     const double deltaSpecEnthalpy = max_QDot * (*dt_)[0]/min_density;
 
@@ -377,6 +378,20 @@ void PARTICLE::TimIntCentrDiff::ComputeDisplacements()
 
   // new displacements \f$D_{n+1}\f$
   disn_->Update(dt, *veln_, 1.0);
+
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    radiusn_->Update(dt, *(*radiusDotn_)(0), 1.0);
+    densityn_->Update(dt, *(*densityDotn_)(0), 1.0);
+    specEnthalpyn_->Update(dt, *(*specEnthalpyDotn_)(0), 1.0);
+    break;
+  }
+  default :
+    break;
+  }
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);

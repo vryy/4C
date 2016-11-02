@@ -220,8 +220,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
 
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
+    //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighboring_walls);
+    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)
@@ -292,51 +293,28 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
       const double WFGradDotVrel = WFGrad.Dot(vRel);
       // p_i/\rho_i^2 + p_j/\rho_j^2
       const double divergenceCoeff = (p_over_rhoSquare_i + particle_j.pressure/std::pow(particle_j.density,2));
-
-      static std::vector<int> nodeOwner_i(1);
-      nodeOwner_i[0] = particle_i.owner;
-      static std::vector<int> nodeGid_i(1);
-      nodeGid_i[0] = particle_i.gid;
-      static Epetra_SerialDenseVector densityDotn_i(1);
-      densityDotn_i[0] = particle_j.mass * WFGradDotVrel;
-
-      static Epetra_SerialDenseVector accn_i(3);
-      static std::vector<int> lmowner_i(3);
-      for(unsigned dim=0; dim<3; ++dim)
-      {
-        accn_i[dim] = - particle_j.mass * divergenceCoeff * WFGrad(dim);
-        lmowner_i[dim] = particle_i.owner;
-      }
+      double densityDotn_i = particle_j.mass * WFGradDotVrel;
+      LINALG::Matrix<3,1> accn_i(WFGrad);
+      accn_i.Scale(- particle_j.mass * divergenceCoeff);
 
       // compute and add the correct densityDot_i
-      LINALG::Assemble(*densityDotn, densityDotn_i, nodeGid_i, nodeOwner_i);
+      LINALG::Assemble(*densityDotn, densityDotn_i, particle_i.gid, particle_i.owner);
       // compute and add the correct accn_i
-      LINALG::Assemble(*accn, accn_i, particle_i.lm, lmowner_i);
+      LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
 
       // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
       // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
       if(particle_i.radius == particle_j.radius)
       {
-        static std::vector<int> nodeOwner_j(1);
-        nodeOwner_j[0] = particle_j.owner;
-        static std::vector<int> nodeGid_j(1);
-        nodeGid_j[0] = particle_j.gid;
-        static Epetra_SerialDenseVector densityDotn_j(1);
-        densityDotn_j[0] = particle_i.mass * WFGradDotVrel;
-
-        static Epetra_SerialDenseVector accn_j(3);
-        static std::vector<int> lmowner_j(3);
-        for(unsigned dim=0; dim<3; ++dim)
-        {
-          accn_j[dim] = particle_i.mass * divergenceCoeff * WFGrad(dim); //there is no - because: actio = - reactio
-          lmowner_j[dim] = particle_j.owner;
-        }
+        double densityDotn_j = particle_i.mass * WFGradDotVrel; // actio = - reactio (but twice! nothing changes)
+        LINALG::Matrix<3,1> accn_j(WFGrad);
+        accn_j.Scale(particle_i.mass * divergenceCoeff); // actio = - reactio (no minus)
 
         // compute and add the correct densityDot_j
         // beware! we assumed that WFGrad_ij = - WFGrad_ji and vRel_ij = - vRel_ji
-        LINALG::Assemble(*densityDotn, densityDotn_j, nodeGid_j, nodeOwner_j);
+        LINALG::Assemble(*densityDotn, densityDotn_j, particle_j.gid, particle_j.owner);
         // compute and add the correct accn_j. action-reaction, there is += instead of -
-        LINALG::Assemble(*accn, accn_j, particle_j.lm, lmowner_j);
+        LINALG::Assemble(*accn, accn_j, particle_j.lm, particle_j.owner);
       }
     }
   }
@@ -525,10 +503,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     WallInteractionPoint wallcontact = surfaces[s];
 
     // distance-vector
-    static LINALG::Matrix<3,1> WFGrad;
-    WFGrad.Update(1.0, particle_i.dis, -1.0, wallcontact.point);
+    static LINALG::Matrix<3,1> accn_i;
+    accn_i.Update(1.0, particle_i.dis, -1.0, wallcontact.point);
 
-    if(WFGrad.Norm2() == 0.0)
+    if(accn_i.Norm2() == 0.0)
       dserror("particle center and wall are lying in the same place -> bad initialization?");
 
     // compute the proper weight function gradient
@@ -536,7 +514,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     {
     case INPAR::PARTICLE::CubicBspline :
     {
-      GradientWeightFunction_CubicBSpline(WFGrad, particle_i.radius);
+      GradientWeightFunction_CubicBSpline(accn_i, particle_i.radius);
       break;
     }
     }
@@ -550,16 +528,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     // p_i/\rho_i^2 + p_j/\rho_j^2
     const double divergenceCoeff = (p_over_rhoSquare_i + wallInteractionPressureDivergence_);
 
-    static Epetra_SerialDenseVector accn_i(3);
-    static std::vector<int> lmowner_i(3);
-    for(unsigned dim=0; dim<3; ++dim)
-    {
-      accn_i[dim] = - wallInteractionFakeMass_ * divergenceCoeff * WFGrad(dim);
-      lmowner_i[dim] = particle_i.owner;
-    }
-
+    accn_i.Scale(- wallInteractionFakeMass_ * divergenceCoeff);
     // compute and add the correct accn_i
-    LINALG::Assemble(*accn, accn_i, particle_i.lm, lmowner_i);
+    LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
   }
 }
 

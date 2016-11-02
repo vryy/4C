@@ -14,6 +14,7 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "particle_utils.H"
+#include "heatSource.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure.H"
 
@@ -420,7 +421,7 @@ void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   }
 
   // apply forces to particles
-  particles_->SetForceInterface(particleforces);
+  particles_->SetExternalDerivativeChangers(particleforces);
 
   return;
 }
@@ -2140,14 +2141,13 @@ void PARTICLE::Algorithm::SetUpHeatSources()
     }
 
     // create the heat source class
-    heatSources_.insert(std::make_pair(
-        iHS,Teuchos::rcp(new HeatSource(false,
-        iHS,
-        HSZone_minVer,
-        HSZone_maxVer,
-        HSQDot,
-        HSTstart,
-        HSTend))));
+    heatSources_.push_back(Teuchos::rcp(new HeatSource(false,
+                                                      iHS,
+                                                      HSZone_minVer,
+                                                      HSZone_maxVer,
+                                                      HSQDot,
+                                                      HSTstart,
+                                                      HSTend)));
   }
 }
 
@@ -2157,25 +2157,29 @@ void PARTICLE::Algorithm::SetUpHeatSources()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
 {
-  // clear the map
+  // clear the map in case of force restart
   if (trg_forceRestart)
     bins2heatSources_.clear();
 
   // heat source activation
-  for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
+  for (std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
   {
     // force restart heatSources status
     if (trg_forceRestart)
-      iHS->second->active_ = false;
+      (*iHS)->active_ = false;
+
+    // skip in case the heat source is active because it is already linked (and for now, it can't move)
+    if ((*iHS)->active_ == true)
+      continue;
 
     // map assignment
-    if (iHS->second->Tstart_<=Time() && iHS->second->Tend_>=Time() && iHS->second->active_ == false)
+    if ((*iHS)->Tstart_<=Time() && (*iHS)->Tend_>=Time() && (*iHS)->active_ == false)
     {
       // find the bins
       int minVerZone_ijk[3];
       int maxVerZone_ijk[3];
-      ConvertPosToijk(&(iHS->second->minVerZone_[0]), minVerZone_ijk);
-      ConvertPosToijk(&(iHS->second->maxVerZone_[0]), maxVerZone_ijk);
+      ConvertPosToijk(&((*iHS)->minVerZone_[0]), minVerZone_ijk);
+      ConvertPosToijk(&((*iHS)->maxVerZone_[0]), maxVerZone_ijk);
       const int ijk_range[] = {
           minVerZone_ijk[0],maxVerZone_ijk[0],
           minVerZone_ijk[1],maxVerZone_ijk[1],
@@ -2183,35 +2187,35 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
       std::set<int>  binIds;
       GidsInijkRange(&ijk_range[0], binIds, false);
 
-      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",iHS->second->id_);
+      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",(*iHS)->id_);
 
       // create/update the map
       for (std::set<int>::const_iterator iBin = binIds.begin(); iBin != binIds.end(); ++iBin)
           if(bindis_->ElementRowMap()->LID(*iBin) >= 0)
-            bins2heatSources_[*iBin].push_back(iHS->second);
+            bins2heatSources_[*iBin].push_back((*iHS));
 
-      iHS->second->active_ = true;
+      (*iHS)->active_ = true;
     }
   }
 
   // heat source deactivation
-  for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
+  for (std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
   {
-    if ((iHS->second->Tend_<Time() || iHS->second->Tstart_>Time()) && iHS->second->active_ == true)
+    if (((*iHS)->Tend_<Time() || (*iHS)->Tstart_>Time()) && (*iHS)->active_ == true)
     {
       // remove elements from the map
       for (std::map<int,std::list<Teuchos::RCP<HeatSource> > >::iterator iBin = bins2heatSources_.begin(); iBin != bins2heatSources_.end(); ++iBin)
       {
         for (std::list<Teuchos::RCP<HeatSource> >::iterator iHSb=iBin->second.begin(); iHSb != iBin->second.end(); ++iHSb)
         {
-          if (iHS->second == *iHSb)
+          if (*iHS == *iHSb)
           {
-            iBin->second.erase(iHSb);
+            iHSb = iBin->second.erase(iHSb);
             break;
           }
         }
       }
-      iHS->second->active_ = false;
+      (*iHS)->active_ = false;
     }
   }
 }
@@ -2232,10 +2236,29 @@ void PARTICLE::Algorithm::UpdateConnectivity()
 /*----------------------------------------------------------------------*
  | get neighbouring particles and walls                    ghamm 09/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
+void PARTICLE::Algorithm::GetNeighbouringItems(
+    DRT::Node* particle,
+    std::list<DRT::Node*>& neighboring_particles,
+    std::set<DRT::Element*>& neighboring_walls,
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources)
+{
+  if (particle->NumElement() != 1)
+    dserror("More than one element for this particle");
+
+  DRT::Element** CurrentBin = particle->Elements();
+
+  GetNeighbouringItems(CurrentBin[0]->Id(),neighboring_particles,neighboring_walls, neighboring_heatSources);
+}
+
+
+/*----------------------------------------------------------------------*
+ | get neighbouring particles and walls (bin version)      katta 10/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
     std::list<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls)
+    std::set<DRT::Element*>& neighboring_walls,
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources)
 {
 
   int ijk[3];
@@ -2249,7 +2272,7 @@ void PARTICLE::Algorithm::GetNeighbouringParticlesAndWalls(
   // do not check on existence here -> shifted to GetBinContent
   GidsInijkRange(ijk_range,binIds,false);
 
-  GetBinContent(neighboring_particles, neighboring_walls, binIds);
+  GetBinContent(neighboring_particles, neighboring_walls, neighboring_heatSources, binIds);
 }
 
 
@@ -2500,8 +2523,8 @@ void PARTICLE::Algorithm::GetNeighbouringBinGids(
 void PARTICLE::Algorithm::GetBinContent(
   std::list<DRT::Node*> &particles,
   std::set<DRT::Element*> &walls,
-  std::vector<int> &binIds
-  )
+  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> heatSources,
+  std::vector<int> &binIds)
 {
   // loop over all bins
   for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
@@ -2518,18 +2541,22 @@ void PARTICLE::Algorithm::GetBinContent(
     DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
         static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
 
+    // gather particles
+    DRT::Node** nodes = neighboringbin->Nodes();
+    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
+
     // gather wall elements
     DRT::Element** walleles = neighboringbin->AssociatedEles(bin_surfcontent_);
     const int numwalls = neighboringbin->NumAssociatedEle(bin_surfcontent_);
     for(int iwall=0;iwall<numwalls; ++iwall)
       walls.insert(walleles[iwall]);
 
-    // gather particles
-    DRT::Node** nodes = neighboringbin->Nodes();
-    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
+    // gather heat sources
+    if (heatSources != Teuchos::null)
+      for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
+        heatSources->insert(*iHS);
   }
 }
-
 
 /*----------------------------------------------------------------------*
  | get elements in given bins                              ghamm 09/13  |
@@ -2567,4 +2594,3 @@ void PARTICLE::Algorithm::GetBinContent(
     }
   }
 }
-

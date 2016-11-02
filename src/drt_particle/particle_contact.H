@@ -33,8 +33,12 @@ namespace PARTICLE
   class Algorithm;
   struct WallContactPoint;
   struct ParticleCollData;
+  struct HeatSource;
 }
-
+namespace BINSTRATEGY
+{
+  class Less;
+}
 
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
@@ -230,8 +234,7 @@ namespace PARTICLE
   virtual double EvaluateParticleContact(
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
-    Teuchos::RCP<Epetra_Vector> m_contact
-    );
+    Teuchos::RCP<Epetra_Vector> m_contact);
 
   /// calculate contact with neighboring particles
   virtual void CalcNeighboringParticlesContact(
@@ -257,6 +260,13 @@ namespace PARTICLE
     const Teuchos::RCP<Epetra_Vector>& m_contact,
     const Teuchos::RCP<Epetra_FEVector>& f_structure
     );
+
+  ///calculate contact with neighboring heat sources
+  void CalcNeighboringHeatSourcesContact(
+    DRT::Node* particle_i,
+    const ParticleCollData& data_i,
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+    const double invDt);
 
   /// calculate normal contact force for single contact pair
   virtual void CalculateNormalContactForce(

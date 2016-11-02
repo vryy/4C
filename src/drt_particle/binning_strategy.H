@@ -47,6 +47,7 @@ namespace DRT
 namespace BINSTRATEGY
 {
   // forward declaration
+  struct HeatSource;
   class Less;
 
   class BinningStrategy
@@ -337,7 +338,8 @@ namespace BINSTRATEGY
   class Less
   {
   public:
-    bool operator()(const Teuchos::RCP<const DRT::Node>& first, const Teuchos::RCP<const DRT::Node>& second) const;
+    template <typename ELEMENT>
+    bool operator()(const Teuchos::RCP<ELEMENT>& first, const Teuchos::RCP<ELEMENT>& second) const { return first->Id() < second->Id(); }
   };
 
 } // namespace BINSTRATEGY

@@ -453,12 +453,13 @@ PARTICLE::ParticleCollisionHandlerDEM::ParticleCollisionHandlerDEM(
 double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   const double dt,
   Teuchos::RCP<Epetra_Vector> f_contact,
-  Teuchos::RCP<Epetra_Vector> m_contact
-  )
+  Teuchos::RCP<Epetra_Vector> m_contact)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
   contact_energy_ = 0.0;
+
+  const double invDt = 1/dt;
 
   // get wall discretization and states for particles
   Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
@@ -510,7 +511,10 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
 
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighboring_walls);
+    // list of heat sources that border on the CurrentBin
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources;
+
+    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)
@@ -527,6 +531,9 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       // compute contact with neighboring particles
       CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
           havepbc, dt, f_contact, m_contact);
+
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+        CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, invDt);
     }
   }
 
@@ -579,6 +586,22 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 //  }
 
   return contact_energy_;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate contact with neighboring heat sources         katta 10/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringHeatSourcesContact(
+  DRT::Node* particle_i,
+  const ParticleCollData& data_i,
+  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources,
+  const double invDt)
+{
+  // extract the particle_timint
+  const Teuchos::RCP<ADAPTER::Particle> adapterParticle = particle_algorithm_->AdapterParticle();
+  // extract the interesting state vectors (yes, it is a workaround)
+  //const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn = adapterParticle->WriteAccess
 }
 
 
@@ -712,38 +735,18 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         contactmoment_i.CrossProduct(normal,tangentcontactforce);
         contactmoment_i.Scale(r_i); // m_i = (r_i * n) x F_t
 
-        static Epetra_SerialDenseVector val_i(3),m_i(3);
-        static std::vector<int> lmowner_i(3);
-
-        for(unsigned dim=0; dim<3; ++dim)
-        {
-          val_i[dim] = contactforce_i(dim);
-          m_i[dim] = contactmoment_i(dim);
-          lmowner_i[dim] = data_i.owner;
-        }
-
         // assembly contact forces and moments for particle i
-        LINALG::Assemble(*m_contact, m_i, data_i.lm, lmowner_i);
-        LINALG::Assemble(*f_contact, val_i, data_i.lm, lmowner_i);
+        LINALG::Assemble(*f_contact, contactforce_i, data_i.lm, data_i.owner);
+        LINALG::Assemble(*m_contact, contactmoment_i, data_i.lm, data_i.owner);
 
         static LINALG::Matrix<3,1> contactforce_j, contactmoment_j;
         const double r_j = data_j.rad + g*0.5;
         contactforce_j.Update(-1.,contactforce_i); // actio = reactio
         contactmoment_j.Update(r_j/r_i,contactmoment_i); // m_j = r_j/r_i * m_i
 
-        static Epetra_SerialDenseVector val_j(3), m_j(3);
-        static std::vector<int> lmowner_j(3);
-
-        for(unsigned dim=0; dim<3; ++dim)
-        {
-          val_j[dim] = contactforce_j(dim);
-          m_j[dim] = contactmoment_j(dim);
-          lmowner_j[dim] = data_j.owner;
-        }
-
         // assembly contact forces and moments for particle j
-        LINALG::Assemble(*f_contact, val_j, data_j.lm, lmowner_j);
-        LINALG::Assemble(*m_contact, m_j, data_j.lm, lmowner_j);
+        LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
+        LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
       }
       else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
       {
@@ -1064,22 +1067,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     contactmoment.CrossProduct(normal,tangentcontactforce);
     contactmoment.Scale(radius_i+g);
 
-    // assembly of contact forces and moments
-    static Epetra_SerialDenseVector val_i(3), m_i(3);
-    static std::vector<int> lmowner_i(3);
-
-    for(int n=0; n<3; ++n)
-    {
-      val_i[n] = contactforce(n);
-      m_i[n] = contactmoment(n);
-      lmowner_i[n] = owner_i;
-    }
-
-    // do assembly of contact moments
-    LINALG::Assemble(*m_contact,m_i,lm_i,lmowner_i);
-
     // do assembly of contact forces
-    LINALG::Assemble(*f_contact,val_i,lm_i,lmowner_i);
+    LINALG::Assemble(*f_contact,contactforce,lm_i,owner_i);
+    // do assembly of contact moments
+    LINALG::Assemble(*m_contact,contactmoment,lm_i,owner_i);
 
     // forces on wall elements
     double nodal_forces[numnodes * 3];
@@ -1087,7 +1078,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     {
       for(int dim=0; dim<3; ++dim)
       {
-        nodal_forces[node * 3 + dim] = funct[node] *(- val_i[dim]);
+        nodal_forces[node * 3 + dim] = funct[node] *(- contactforce(dim));
       }
     }
 
@@ -1113,7 +1104,6 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | calculate normal contact force for single contact pair  ghamm 09/13  |
@@ -1674,7 +1664,8 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     // gather all particles and walls in the vicinity of currparticle
     std::list<DRT::Node*> neighboring_particles;
     std::set<DRT::Element*> neighboring_walls;
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(currparticle, neighboring_particles, neighboring_walls);
+    std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
+    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighboring_walls, neighboring_heatSources);
 
     // loop over all neighbouring particles and check if the sum of their radii is larger than their distance
     for (std::list<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
@@ -2164,9 +2155,10 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     // remove current content but keep memory
     neighboring_particles.clear();
     std::set<DRT::Element*> neighbouring_walls;
+    //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
     // gather all neighboring particles and wall elements
-    particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighboring_particles, neighbouring_walls);
+    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighbouring_walls);
 
     DRT::Node** particles = currbin->Nodes();
     for(int iparticle=0; iparticle<currbin->NumNode(); ++iparticle)
@@ -2254,12 +2246,12 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
 
   std::list<DRT::Node*> neighbouring_particles;
   std::set<DRT::Element*> neighbouring_walls;
+  //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
   //
   // searching for new collisions for the first particle of the last collision
   //
-  const int binId = lastevent->particle_1->Elements()[0]->Id();
-  particle_algorithm_->GetNeighbouringParticlesAndWalls(binId, neighbouring_particles, neighbouring_walls);
+  particle_algorithm_->GetNeighbouringItems(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
 
   // particle-particle collision
   for (std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
@@ -2290,9 +2282,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_1, *iter, dt);
 
     if (newevent != Teuchos::null)
-    {
       eventqueue.insert(newevent);
-    }
   }
 
   //
@@ -2304,9 +2294,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     const int binId_part1 = lastevent->particle_1->Elements()[0]->Id();
     const int binId_part2 = lastevent->particle_2->Elements()[0]->Id();
     if( binId_part1 != binId_part2)
-    {
-      particle_algorithm_->GetNeighbouringParticlesAndWalls(binId_part2, neighbouring_particles, neighbouring_walls);
-    }
+      particle_algorithm_->GetNeighbouringItems(lastevent->particle_2, neighbouring_particles, neighbouring_walls);
 
     // particle-particle collision
     for(std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)

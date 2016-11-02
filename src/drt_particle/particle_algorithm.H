@@ -124,10 +124,18 @@ namespace PARTICLE
     virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp);
 
     /// get bins in range and call FindNeighbors
-    virtual void GetNeighbouringParticlesAndWalls(
+    virtual void GetNeighbouringItems(
+                    DRT::Node* particle,
+                    std::list<DRT::Node*>& neighboring_particles,
+                    std::set<DRT::Element*>& neighboring_walls,
+                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources = Teuchos::null);
+
+    /// get bins in range and call FindNeighbors (bin version)
+    virtual void GetNeighbouringItems(
                     const int binId,
                     std::list<DRT::Node*>& neighboring_particles,
-                    std::set<DRT::Element*>& neighboring_walls);
+                    std::set<DRT::Element*>& neighboring_walls,
+                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources = Teuchos::null);
 
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
 
@@ -135,7 +143,7 @@ namespace PARTICLE
     virtual std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }
 
     /// list of heat sources
-    virtual const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
+    virtual const std::list< Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
 
     /// contact type: meshfree, particle-thermo, etc.
     INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
@@ -294,8 +302,8 @@ namespace PARTICLE
     void GetBinContent(
       std::list<DRT::Node*>& particles,
       std::set<DRT::Element*>& walls,
-      std::vector<int>& binIds
-      );
+      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>> neighboring_heatSources,
+      std::vector<int>& binIds);
 
     //! @name particle related stuff
     //@{
@@ -318,9 +326,9 @@ namespace PARTICLE
 
     const int transfer_every_;   ///< interval to call particle transfer
 
-    std::map<int,Teuchos::RCP<HeatSource> > heatSources_; ///< heat source storing
+    std::list<Teuchos::RCP<HeatSource> > heatSources_; ///< heat source storing
 
-    std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< heat sources 2 bins map
+    std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< bins 2 heat sources map
 
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
 
@@ -333,36 +341,6 @@ namespace PARTICLE
     //@}
 
   }; // Algorithm
-
-  struct HeatSource
-  {
-  public:
-
-  HeatSource(
-    bool active,                            ///< flag that simplifies the connectivity algorithm
-    const int id,                           ///< unique id over all heat sources conditions
-    const std::vector<double> minVerZone,   ///< heat zone, vertex 0
-    const std::vector<double> maxVerZone,   ///< heat zone, vertex 1
-    const double QDot,                      ///< intake q/s
-    const double Tstart,                    ///< t start
-    const double Tend) :                    ///< t end
-       active_(active),
-       id_(id),
-       minVerZone_(minVerZone),
-       maxVerZone_(maxVerZone),
-       QDot_(QDot),
-       Tstart_(Tstart),
-       Tend_(Tend) {}
-
-  // internal variables
-  bool active_;                             ///< flag that simplifies the connectivity algorithm
-  const int id_;                            ///< unique id over all heat sources conditions
-  const std::vector<double> minVerZone_;    ///< heat zone, vertex 0
-  const std::vector<double> maxVerZone_;    ///< heat zone, vertex 1
-  const double QDot_;                       ///< intake heat per second per unit volume ( q/(s * V) )
-  const double Tstart_;                     ///< t start
-  const double Tend_;                       ///< t end
-  }; // HeatSource
 
   struct homelessParticleTemp
   {

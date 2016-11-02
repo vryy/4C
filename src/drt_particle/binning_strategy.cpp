@@ -1809,11 +1809,3 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- | Class for comparing Teuchos::RCP<DRT::Node> in std::set ghamm 10/12  |
- *----------------------------------------------------------------------*/
-bool BINSTRATEGY::Less::operator()(const Teuchos::RCP<const DRT::Node>& first, const Teuchos::RCP<const DRT::Node>& second) const
-{
-  return first->Id() < second->Id();
-}
