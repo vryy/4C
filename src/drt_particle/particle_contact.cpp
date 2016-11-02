@@ -596,8 +596,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
   )
 {
   std::map<int, PARTICLE::Collision>& history_particle = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
-  if(history_particle.size() > 12)
-    dserror("Contact with more than 12 particles particles. Check whether history is deleted correctly.");
+  if(history_particle.size() > 20)
+    dserror("Contact with more than 20 particles particles. Check whether history is deleted correctly.");
 
   // check whether there is contact between particle i and all other particles in the neighborhood except those which
   // have a lower or equal ID than particle i (--> ignoring self-contact)

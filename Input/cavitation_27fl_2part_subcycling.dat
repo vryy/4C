@@ -20,6 +20,7 @@ PROBLEMTYP                      Cavitation
 RESTART                         0
 //RESTART                       3
 --------------------------------------------------------------------------IO
+FILESTEPS                       2
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No

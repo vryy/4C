@@ -39,6 +39,7 @@
 
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../headers/definitions.h"
 
@@ -801,6 +802,10 @@ void CAVITATION::Algorithm::InitCavitation()
       Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(*adaptedcavitationdyn, bindis_));
   particles_ = particles->ParticleField();
 
+  // increase filesteps in outputwriter to account for subcycling
+  const int filestepsold = particles_->DiscWriter()->Output()->FileSteps();
+  particles_->DiscWriter()->Output()->SetFileSteps(filestepsold * timestepsizeratio_);
+
   // set cavitation algorithm into time integration
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   particles_->Init();
@@ -1022,8 +1027,11 @@ void CAVITATION::Algorithm::PrepareTimeStep()
     structure_->PrepareTimeStep();
 
   // do rough safety check if bin size is appropriate --> see also Timeloop()
-  const double relevant_dt = Dt() * std::max(0.1, 1.0/timestepsizeratio_);
-  BinSizeSafetyCheck(relevant_dt);
+  if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
+  {
+    const double relevant_dt = Dt() * std::max(0.1, 1.0/timestepsizeratio_);
+    BinSizeSafetyCheck(relevant_dt);
+  }
 
   return;
 }
