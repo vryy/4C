@@ -171,16 +171,16 @@ namespace PARTICLE
       bool                           roweles = false
       );
 
-    /// node is placed into the correct row bin or put into the set of homeless particles
+    /// node is placed into the correct row bin or put into the list of homeless particles
     virtual bool PlaceNodeCorrectly(
       Teuchos::RCP<DRT::Node> node,  ///< node to be placed
       const double* currpos,  ///< current position of this node
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
+      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles  ///< list of homeless particles
       );
 
     /// round robin loop to fill particles into its correct bin on according proc
     virtual void FillParticlesIntoBinsRoundRobin(
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
+      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles  ///< list of homeless particles
       );
 
     /// bins are distributed to the processors
@@ -254,7 +254,7 @@ namespace PARTICLE
 
     /// fill particles into their correct bin on according proc
     virtual void FillParticlesIntoBinsRemoteIdList(
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles   ///< set of homeless particles
+      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles   ///< set of homeless particles
       );
 
     /// particle walls are set up and assigned to bins

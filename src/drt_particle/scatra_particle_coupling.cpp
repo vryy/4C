@@ -83,7 +83,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
     // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
     bindis_->FillComplete(false,false,false);
 
-    std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
+    std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
     Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
     for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
     {
@@ -113,8 +113,8 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(scatradis_, scatraelesinbins);
 
   //--------------------------------------------------------------------
-  // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
+  // -> 1) create a list of homeless particles that are not in a bin on this proc
+  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
@@ -546,7 +546,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
       }
 
       // place particle with id and position
-      std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+      std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
       Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(currentparticleid, &position[0], myrank_));
       PlaceNodeCorrectly(newparticle, &position[0], homelessparticles);
       if (homelessparticles.size() != 0)
@@ -2220,7 +2220,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       }
 
       // place particle with id and position
-      std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+      std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
       Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(currentparticleid, &position[0], myrank_));
       PlaceNodeCorrectly(newparticle, &position[0], homelessparticles);
       if (homelessparticles.size() != 0)

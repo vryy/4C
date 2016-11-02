@@ -757,8 +757,8 @@ void CAVITATION::Algorithm::InitCavitation()
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, rowfluideles);
 
   //--------------------------------------------------------------------
-  // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+  // -> 1) create a list of homeless particles that are not in a bin on this proc
+  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
@@ -2650,7 +2650,7 @@ void CAVITATION::Algorithm::ParticleInflow()
         }
       }
 
-      std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+      std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
       const int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
       Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new PARTICLE::ParticleNode(newbubbleid, &inflow_position[0], myrank_));
       latestinflowbubbles_.insert(newbubbleid);

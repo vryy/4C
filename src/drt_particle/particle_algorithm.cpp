@@ -190,8 +190,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
     IO::cout << "\n\n\n CAREFUL: Reduction of number of bins recommended! Performance might be deteriorated. Increase cutoff radius. \n\n\n" << IO::endl;
 
   //--------------------------------------------------------------------
-  // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
+  // -> 1) create a list of homeless particles that are not in a bin on this proc
+  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
@@ -743,7 +743,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
+void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
 {
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -763,13 +763,13 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::set<Teuchos::RCP<
     // ---- pack data for sending -----
     {
       DRT::PackBuffer data;
-      for (std::set<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
+      for (std::list<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
       {
 //        cout << " Id:" << (*currparticle)->Id() << " was packed on proc: " << myrank_ << endl;
         (*currparticle)->Pack(data);
       }
       data.StartPacking();
-      for (std::set<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
+      for (std::list<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
       {
         (*currparticle)->Pack(data);
         bindis_->DeleteNode((*currparticle)->Id());
@@ -832,7 +832,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::set<Teuchos::RCP<
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
+void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList");
   const int numproc = bindis_->Comm().NumProc();
@@ -841,7 +841,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RC
     if(homelessparticles.size())
     {
       std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
-      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>::const_iterator hlp;
+      std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
       for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
       {
         bindis_->DeleteNode((*hlp)->Id());
@@ -857,7 +857,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RC
   const int fullsize = (int)homelessparticles.size();
   std::vector<int> targetbinIdlist;
   targetbinIdlist.reserve(fullsize);
-  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>::const_iterator hlp;
+  std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
   for(hlp=homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
   {
     const int binId = ConvertPosToGid((*hlp)->X());
@@ -986,7 +986,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RC
 bool PARTICLE::Algorithm::PlaceNodeCorrectly
 (Teuchos::RCP<DRT::Node> node,
   const double* currpos,
-  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles
+  std::list<Teuchos::RCP<DRT::Node> >& homelessparticles
   )
 {
 //  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
@@ -1054,14 +1054,14 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
     }
     else // ghost bin
     {
-      homelessparticles.insert(node);
+      homelessparticles.push_back(node);
 //      std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because of becoming a future ghost node" << std::endl;
       return false;
     }
   }
   else // bin not found on this proc
   {
-    homelessparticles.insert(node);
+    homelessparticles.push_back(node);
 //    std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because bin is not on this proc " << std::endl;
     return false;
   }
@@ -1457,7 +1457,7 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates,
 void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 {
   // set of homeless particles
-  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
+  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
   std::set<int> examinedbins;
   // check in each bin whether particles have moved out
@@ -2413,7 +2413,7 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   {
     ++newParticleIDcounter;
 
-    std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+    std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
     Teuchos::RCP<DRT::Node> newParticle = Teuchos::rcp(new PARTICLE::ParticleNode(
         newParticleIDcounter, &((*iNodeList).pos[0]), myrank_));
 

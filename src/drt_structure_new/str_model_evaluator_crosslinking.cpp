@@ -450,9 +450,9 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     // established in binning discretization. Therefore some nodes need to
     // change their owner according to the bins owner they are in
     // -----------------------------------------------------------------------
-    // i) create a set of homeless particles (owned by this proc) that do not
+    // i) create a list of homeless particles (owned by this proc) that do not
     //    reside in a bin owned by this proc
-    std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelesscrosslinker;
+    std::list<Teuchos::RCP<DRT::Node> > homelesscrosslinker;
     for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
     {
       DRT::Node* node = bindis_->gNode(noderowmap->GID(lid));
@@ -3042,8 +3042,8 @@ void STR::MODELEVALUATOR::Crosslinking::Logo()
 //{
 //  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferNodes");
 //
-//  // set of homeless nodes
-//  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessnodes;
+//  // list of homeless nodes
+//  std::list<Teuchos::RCP<DRT::Node> > homelessnodes;
 //
 //  // check in each bin whether nodes have moved out
 //  // first run over nodes and then process whole bin in which node is located
