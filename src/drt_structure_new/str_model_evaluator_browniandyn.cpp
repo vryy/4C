@@ -353,7 +353,6 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffExternal()
 } // ApplyForceStiffExternal()
 
 /*----------------------------------------------------------------------*
- |  Apply brownian force and stiff            (private)  eichinger 06/16|
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
 {
@@ -666,7 +665,7 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
  | seed value; note that seedparameter may be any integer, but has to be      |
  | been set in a deterministic way so that it for a certain call of this      |
  | method at a certain point in the program always the same number            |
- | whenever the program is used                           eichinger 06/16     |
+ | whenever the program is used                                               |
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
 {
@@ -696,7 +695,7 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
     // -----------------------------------------------------------------------
     double time_interv_with_const_rn =
         eval_statmech_ptr_->GetDataSMDynPtr()->TimeIntConstRandNumb_();
-    if(time_interv_with_const_rn != -1.0)
+    if(time_interv_with_const_rn == -1.0)
     {
       // new random numbers every time step (same in each program start though)
       seedvariable = (rs_ + stepn)*(DiscretPtr()->Comm().MyPID() + 1);
@@ -712,7 +711,7 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
           (rs_ + seed_differs_every_time_int)*(DiscretPtr()->Comm().MyPID() + 1);
     }
     // -----------------------------------------------------------------------
-    // seed random number generartor
+    // seed random number generator
     // -----------------------------------------------------------------------
     DRT::Problem::Instance()->Random()->SetRandSeed((unsigned int)seedvariable);
   }

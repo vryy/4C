@@ -391,7 +391,7 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  Beam3Base::Pack(data);
 
   //add all class variables
   AddtoPack(data,jacobi_);
@@ -446,8 +446,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
-
+  Beam3Base::Unpack(basedata);
 
   //extract all class variables of beam3 element
   ExtractfromPack(position,data,jacobi_);

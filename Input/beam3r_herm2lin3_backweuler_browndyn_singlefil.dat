@@ -29,7 +29,7 @@ RESTARTEVRY            1000                  // set restart points every n-th st
 RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
 DIVERCONT              stop            // Continue even if results are divergent
-TIMESTEP               0.001                  // step size
+TIMESTEP               0.00005                  // step size
 NUMSTEP                100             // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
@@ -137,7 +137,7 @@ NODE           21     COORD 1.250000000000000e+01     2.500000000000000e+00     
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e+09 NUE 0.3 DENS 1.384e-09 THEXPANS 0.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -1.22602008998981695e+01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE  2.00014619945510175e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE -1.28630619205127883e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -1.00630666398746698e+01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE  3.26243459137829928e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 7.87955731221638700e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END

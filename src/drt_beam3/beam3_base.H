@@ -71,6 +71,22 @@ public:
   //! Destructor
   virtual ~Beam3Base(){};
 
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
   /** \brief set the parameter interface ptr for the solid elements
    *
    *  \param p (in): Parameter list coming from the time integrator.
@@ -435,8 +451,8 @@ protected:
   }
 
 
-  //! @name Methods for Brownian dynamics simulations
-
+  //! @name Methods and variables for Brownian dynamics simulations
+  //! @{
   //! computes damping coefficients
   void GetDampingCoefficients(LINALG::Matrix<3,1>&    gamma) const;
 
@@ -450,6 +466,40 @@ protected:
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
   virtual void UnShiftNodePosition(std::vector<double>& disp,
                                    const unsigned int nnode) const;
+
+public:
+
+  //! get centerline pos at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
+  virtual void GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
+                                   std::vector<double>&       disp,
+                                   const int&                 bspotlocn,
+                                   const std::vector<double>& periodlength) const;
+
+  const std::map<int, int>& GetBindingSpotStatus()
+  {
+    // safety check
+    if(bspotstatus_.size()!=bspotposxi_.size())
+      dserror("size miss match regarding binding spots on this element");
+
+    return bspotstatus_;
+  };
+
+  void SetBindingSpotStatus(std::map<int, int> bspotstatus)
+  {
+    bspotstatus_ = bspotstatus;
+    return;
+  }
+
+protected:
+
+  //! position of binding spots on beam element in local coordinate system
+  //! size of vector equals number of binding spots on this element
+  std::vector<double> bspotposxi_;
+
+  //! key is locn of bspot, holds gid of crosslinker if binded, if free = -1
+  std::map<int, int> bspotstatus_;
+
+  //! @}
 
 private:
   /** \brief interface ptr

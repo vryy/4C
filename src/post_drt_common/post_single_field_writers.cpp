@@ -522,6 +522,7 @@ ParticleFilter::ParticleFilter(
 /*----------------------------------------------------------------------*/
 void ParticleFilter::WriteAllResults(PostField* field)
 {
+  // particle stuff
   writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("radius", "radius", nodebased, 1);
@@ -531,6 +532,9 @@ void ParticleFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
   writer_->WriteResult("sign", "sign", nodebased, 1);
   writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);
+
+  // crosslinker stuff
+  writer_->WriteResult("numbond", "numbond", nodebased, 1);
 }
 
 /*----------------------------------------------------------------------*/

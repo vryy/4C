@@ -1,8 +1,8 @@
-==================================================================
-              BACI Statistical Mechanics Input File
-==================================================================
+//
+// Maintainer: Maximilian Grill
+//
 -------------------------------------------------------------TITLE
-network_b3ii_c2_b3cl_lfil4_R0.0175.dat
+beam3r_lin2_backweuler_browndyn_largesys.dat
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS             3120                  // nfil=104  periodlength=[5 5 5] um  fiber_division=30  fiber_length=[4 4 4]um
 //NODES                3224                  // ca=1.9956uM  n=2.4945e-19mol  V=1.25e-13l  -->elementlength = 0.133333 um
@@ -31,9 +31,9 @@ RESULTSEVRY            1                     // write results every n-th step (A
 RESTARTEVRY            1000                  // set restart points every n-th step
 RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
-DIVERCONT              stop            // Continue even if results are divergent
-TIMESTEP               0.0005                  // step size
-NUMSTEP                10              // total number of steps  //rumpf2.txt end
+DIVERCONT              stop                  // Continue even if results are divergent
+TIMESTEP               0.00005                // step size
+NUMSTEP                10                    // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 DAMPING                No
 M_DAMP                 0
@@ -63,14 +63,14 @@ K_OFF_end              3                     // in analogy to k_on
 FILAMENTMODEL          std                   // select filament model: std, helical
 FILAMENTPOLARITY       No                    // toggles filament polarity
 NUM_EVAL_ELEMENTS      3120                  // number of (initial) beam elements
-RISEPERBINSPOT          0.00277              // rise per monomer in the actin helix
-ROTPERBINSPOT            -2.8999             // rotation per monomer in the actin helix
-PHIBINSPOT               0.841               // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
-BINSPOTINTERVAL          1                   // every n-th binding spot is available for binding
+RISEPERBINSPOT         0.00277               // rise per monomer in the actin helix
+ROTPERBINSPOT         -2.8999                // rotation per monomer in the actin helix
+PHIBINSPOT             0.841                 // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
+BINSPOTINTERVAL        1                     // every n-th binding spot is available for binding
 //============ CROSSLINKER MODEL ============
 LINKERMODEL            std                   // set linker model: none, std, bellseq, active, stdintpol
 ACTIVELINKERFRACTION   0                     // fraction of crosslinkers which is active
-NUMCROSSLINK           100000                     // number of crosslinkers in the simulated volume
+NUMCROSSLINK           0                     // number of crosslinkers in the simulated volume
 R_LINK                 0.1                   // distance between the two binding domains of a linker
 DeltaR_LINK            0.01                  // deviation from r_link
 ALINK                  4.751658e-06          // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
@@ -82,7 +82,35 @@ NAME                   Structure_Solver
 SOLVER                 Aztec_MSR             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym UMFPACK Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT               0                     // output every so often, 0 no output
 AZSOLVE                GMRES                 // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                 ILU                   // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel
+AZPREC                 ILU                   // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                0                     // how often to recompute some preconditioners
+AZDROP                 0.0                   // drop tolerance for ILUT
+AZTOL                  1.0E-3                // tolerance in unscaled residual
+AZCONV                 AZ_r0                 // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                 1000                  // max iterations
+AZSUB                  50                    // size of krylov space for gmres
+AZOMEGA                0.95                  // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                1                     // unused
+AZPOLY                 5                     // polynomial order for Neumann
+IFPACKFILL             1.0                   // fill-in for ILUT
+IFPACKGFILL            1                     // graph fill for ILU
+IFPACKOVERLAP          1                     // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKCOMBINE          Zero                  // Add, Insert
+AZSCAL                 sym                   // none sym infnorm scaling of the system
+ML_PRINT               0                     // ML print-out level (0-10)
+ML_MAXCOARSESIZE       5000                  // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL            5                     // ML max number of levels
+ML_COARSEN             UC                    // UC MIS METIS VBMETIS
+ML_AGG_SIZE            27                    // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO         0.0                   // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES       0.0                   // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE        ILU                   // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED         ILU                   // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE      Umfpack               // SGS GS DGS Jacobi Chebychev MLS KLU Superlu Umfpack
+ML_SMOTIMES            0 0 0 0 1             // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE            1.0                   // damping fine grid
+ML_DAMPMED             1.0                   // damping med grids
+ML_DAMPCOARSE          1.0                   // damping coarse grid //header_02 end (settings by M. Gee)
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
@@ -9779,7 +9807,7 @@ NODE 3224 COORD  -1.137862569665546e+00  5.576451946069922e+00  -1.4112700547144
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e+09 NUE 0.3 DENS 1.384e-09 THEXPANS 0.0
 MAT 2 MAT_Crosslinker  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE -2.17832865787900093e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE  1.96152274853332864e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -5.27102035027869142e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE 2.09976975205433819e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE  -2.20484447693091064e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -5.02449195853680664e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END

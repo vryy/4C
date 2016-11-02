@@ -28,6 +28,7 @@ STR::TIMINT::DataSMDyn::DataSMDyn()
   issetup_(false),
   smdynparams_(Teuchos::null),
   statmechprob_(false),
+  dynloadbalanceevery_(0),
   dbctype_(INPAR::STATMECH::dbctype_none),
   nbctype_(INPAR::STATMECH::nbctype_std),
   networktype_(INPAR::STATMECH::networktype_std),
@@ -130,6 +131,11 @@ void STR::TIMINT::DataSMDyn::Init(
   // flag for statistical mechanics problem
   //---------------------------------------------------------------------------
   statmechprob_ = DRT::INPUT::IntegralValue<int>(*smdynparams_, "STATMECHPROB");
+
+  // set spatial resolution for search algorithm binding spots x crosslinkers
+  dynloadbalanceevery_ = smdynparams_->get<int>("DYNLOADBALANCEEVERY");
+  if(dynloadbalanceevery_ < 0)
+    dserror("Please give a plausible value (>=0) for DYNLOADBALANCEEVERY!");
 
   //---------------------------------------------------------------------------
   // general statmech simulation flags
@@ -608,7 +614,8 @@ void STR::TIMINT::DataSMDyn::Init(
      maxrandforce_ != -1.0)
     dserror("Choose a positive value for MAXRANDFORCE! Default value: -1.0 (no threshold for random forces!)");
 
-  std::cout<<"================================================================"<<std::endl;
+  if(!myrank)
+    std::cout<<"================================================================"<<std::endl;
 
   // set flag
   isinit_ = true;

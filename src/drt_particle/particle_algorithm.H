@@ -121,7 +121,10 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp);
+    virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
+
+    /// shift current particle positions in case periodic boundary conditions are applied
+    virtual void ApplyPBCToParticles(double& currpos, int dim);
 
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(

@@ -29,6 +29,7 @@
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -39,12 +40,12 @@
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_biopolynet/crosslinker_node.H"
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Crosslinking::Crosslinking():
   eval_statmech_ptr_(Teuchos::null),
   myrank_(-1),
+  numproc_(-1),
   intactdis_(Teuchos::null),
   particlealgo_(Teuchos::null),
   bindis_(Teuchos::null),
@@ -68,13 +69,17 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // -------------------------------------------------------------------------
   myrank_ = DiscretPtr()->Comm().MyPID();
   // -------------------------------------------------------------------------
+  // get number of procs
+  // -------------------------------------------------------------------------
+  numproc_ = DiscretPtr()->Comm().NumProc();
+  // -------------------------------------------------------------------------
   // adapt displacement vector so that node positions are consistent with
   // periodic boundary condition. Note: Input file contains the unshifted
   // configuration so that we do not have to set up the elements twice.
   // Shifting to periodic boundary configuration is done here. From now on the
   // global displacement vector always contains the shifted configuration.
   // -------------------------------------------------------------------------
-  // todo: here on in brownian dyn (or both, but in wich reset??)
+  // todo: here on in brownian dyn (or both, but in which reset??)
   STATMECH::UTILS::PeriodicBoundaryConsistentDis(
       GStatePtr()->GetMutableDisN(),                            // disn
       eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
@@ -92,9 +97,9 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
-
-dserror("intactdis needs to be clone from problem dis, will be done soon");
-  // INITIALIZE ia_disnp_ AFTER PERIODIC BOUNDARY SHIFT
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discloner =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  intactdis_ = discloner->CreateMatchingDiscretization(DiscretPtr(),"intacdis");
 
   // -------------------------------------------------------------------------
   // initialize crosslinker, i.e. add nodes (according to number of crosslinker
@@ -108,8 +113,7 @@ dserror("intactdis needs to be clone from problem dis, will be done soon");
   // -------------------------------------------------------------------------
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
   /// algorithm is created here
-  particlealgo_ =
-      Teuchos::rcp(new PARTICLE::Algorithm(DiscretPtr()->Comm(),params));
+  particlealgo_ =  Teuchos::rcp(new PARTICLE::Algorithm(DiscretPtr()->Comm(),params));
 
   // -------------------------------------------------------------------------
   // build periodic boundary conditions in binning strategy
@@ -122,33 +126,20 @@ dserror("intactdis needs to be clone from problem dis, will be done soon");
   // distribution to procs as well a new distribution of the beam discret is
   // done here
   // -------------------------------------------------------------------------
+  // get initial (shifted) displacement vector, from now on this vector is based
+  // on the maps of the interaction discretization
+  ia_disnp_ = Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetMutableDisNp()));
   UpdateBinStrategy(false,true);
 
-  //--------------------------------------------------------------------------
-  // initialize displacement state vector handling crosslinker diffusion
-  // note: in the particle algorithm the displacement vector is always supposed
-  // to hold the current position, as in each TransferParticles() call their
-  // reference position X() is updated to new position. Therefore the following
-  // initialization needs to be done
-  //--------------------------------------------------------------------------
-  cl_disnp_ = LINALG::CreateVector(*bindis_->DofRowMap(),true);
-  for(int i=0;i<bindis_->NodeRowMap()->NumMyElements();++i)
-  {
-    DRT::Node* node = bindis_->lRowNode(i);
-    // std::vector holding gids of dofs
-    std::vector<int> dofnode  = bindis_->Dof(node);
+  // gather data for all column crosslinker initially
+  const int numcolcl = bindis_->NumMyColNodes();
+  crosslinker_data_.resize(numcolcl);
+  PreComputeCrosslinkerData(numcolcl);
 
-    // loop over all dofs
-    for(int dim=0;dim<3;++dim)
-    {
-      int doflid = cl_disnp_->Map().LID(dofnode[dim]);
-      (*cl_disnp_)[doflid] = node->X()[dim];
-    }
-  }
-
-  UpdateCrosslinker();
-
-//  UpdateBinStrategy(false,false,true);
+  // gather data for all column beams
+  const int numcolbeams = intactdis_->NumMyColElements();
+  beam_data_.resize(numcolbeams);
+  PreComputeBeamData(numcolbeams);
 
   // set flag
   issetup_ = true;
@@ -257,14 +248,6 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateStepState(
 {
   CheckInitSetup();
 
-//  Teuchos::RCP<Epetra_Vector> old;
-//  if (dis_ != Teuchos::null)
-//  {
-//   old = dis_;
-//   dis_ = LINALG::CreateVector(*bindis_->DofRowMap(),true);
-//   LINALG::Export(*old, *dis_);
-//  }
-
 
   return;
 } // UpdateStepState()
@@ -273,6 +256,11 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateStepState(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::UpdateStepElement()
 {
+  // -------------------------------------------------------------------------
+  // update all binding states and redistribute bindis and intactdis
+  // -------------------------------------------------------------------------
+  UpdateCrosslinking();
+
   return;
 
 } // UpdateStepElement()
@@ -302,7 +290,31 @@ void STR::MODELEVALUATOR::Crosslinking::OutputStepState(
 //  // mesh is not written to disc, only maximum node id is important for output
 //  bindis_->Writer()->ParticleOutput(GState().GetStepN(), GState().GetTimeN(), false);
 //  bindis_->Writer()->NewStep(GState().GetStepN(), GState().GetTimeN());
-//  bindis_->Writer()->WriteVector("displacement", dis_);
+//  Teuchos::RCP<Epetra_Vector> dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
+//  Teuchos::RCP<Epetra_Vector> numbond = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+//
+//  //todo: this is of course not nice, this needs to be done somewhere else
+//  for(int i=0;i<bindis_->NodeRowMap()->NumMyElements();++i)
+//  {
+//    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+//        dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lRowNode(i));
+//    // std::vector holding gids of dofs
+//    std::vector<int> dofnode  = bindis_->Dof(crosslinker_i);
+//
+//    // loop over all dofs
+//    for(int dim=0;dim<3;++dim)
+//    {
+//      int doflid = dis->Map().LID(dofnode[dim]);
+//      (*dis)[doflid] = crosslinker_i->X()[dim];
+//    }
+//
+//    (*numbond)[i] = crosslinker_i->ClData()->GetNumberOfBonds();
+//  }
+//  bindis_->Writer()->WriteVector("displacement", dis);
+//  bindis_->Writer()->WriteVector("numbond", numbond, bindis_->Writer()->nodevector);
+//  // as we know that our maps have changed every time we write output, we can empty
+//  // the map cache as we can't get any advantage saving the maps anyway
+//  bindis_->Writer()->ClearMapCache();
 
   return;
 } //OutputStepState()
@@ -339,25 +351,6 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Crosslinking::
 void STR::MODELEVALUATOR::Crosslinking::PostOutput()
 {
   CheckInitSetup();
-
-  // -------------------------------------------------------------------------
-  // compute crosslinker diffusion for this timestep
-  // -------------------------------------------------------------------------
-  double standarddev = sqrt(eval_statmech_ptr_->GetDataSMDynPtr()->KT() /
-                       (2*M_PI * eval_statmech_ptr_->GetDataSMDynPtr()->Eta()
-                       * eval_statmech_ptr_->GetDataSMDynPtr()->RLink())
-                       * (*GState().GetDeltaTime())[0]);
-  double meanvalue = 0.0;
-  // Set mean value and standard deviation of normal distribution
-  DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue,standarddev);
-
-  for (int i=0; i<bindis_->NodeRowMap()->NumMyElements(); i++)
-    (*cl_disnp_)[i] += DRT::Problem::Instance()->Random()->Normal();
-
-  // -------------------------------------------------------------------------
-  // compute crosslinker diffusion for this timestep
-  // -------------------------------------------------------------------------
-  UpdateCrosslinkerStates();
 
   return;
 } // PostOutput()
@@ -501,7 +494,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   else if (transfer)
   {
     // transfer crosslinker to their new bins
-    particlealgo_->TransferParticles(cl_disnp_);
+    particlealgo_->TransferParticles();
   }
   else
   {
@@ -525,10 +518,16 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   particlealgo_->StandardGhosting(intactdis_,rowbins_,ia_disnp_,stdelecolmap,
       stdnodecolmap,nodesinbin[0]);
 
+#ifdef DEBUG
   // print distribution after standard ghosting
   if(myrank_ == 0 && (partition || repartition))
-    std::cout << "parallel distribution with standard ghosting" << std::endl;
+  {
+    IO::cout<<"\n+--------------------------------------------------+"<<IO::endl;
+    IO::cout<<"   parallel distribution with standard ghosting   " << IO::endl;
+    IO::cout<<"+--------------------------------------------------+"<<IO::endl;
+  }
   DRT::UTILS::PrintParallelDistribution(*intactdis_);
+#endif
 
   // ----------------------------------------------------------------------
   // extended ghosting means the following here: Each proc ghosts
@@ -551,10 +550,16 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // build element to bin map according to extended ghosting
   BuildEleToBinMap();
 
+#ifdef DEBUG
   // print distribution after extended ghosting
   if(myrank_ == 0 && (partition || repartition))
-    std::cout << "parallel distribution with extended ghosting" << std::endl;
+  {
+    IO::cout<<"\n+--------------------------------------------------+"<<IO::endl;
+    IO::cout<<"   parallel distribution with extended ghosting   " << IO::endl;
+    IO::cout<<"+--------------------------------------------------+"<<IO::endl;
+  }
   DRT::UTILS::PrintParallelDistribution(*intactdis_);
+#endif
 
   // -------------------------------------------------------------------------
   // one layer ghosting of bins and particles, i.e. each proc ghosts the
@@ -563,9 +568,21 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // -------------------------------------------------------------------------
   particlealgo_->BuildBinColMap(rowbins_,extbintoelemap_);
 
+#ifdef DEBUG
+  // print distribution after extended ghosting
   if (myrank_ == 0 && (partition || repartition))
-    IO::cout << "particles after ghosting " << IO::endl;
+  {
+    IO::cout<<"\n+--------------------------------------------------+"<<IO::endl;
+    IO::cout<<"           particles after ghosting     " << IO::endl;
+    IO::cout<<"+--------------------------------------------------+"<<IO::endl;
+  }
   DRT::UTILS::PrintParallelDistribution(*bindis_);
+#endif
+
+  //--------------------------------------------------------------------------
+  // update vectors and matrices as maps have changed during redistribution
+  //--------------------------------------------------------------------------
+  UpdateMaps();
 
   //--------------------------------------------------------------------------
   // assign beam elements to bins to enable crosslinker to beam interaction
@@ -577,9 +594,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // there is no assigning to do for empty bins (not in extbintoelemap) on a proc
   // bins that just have crosslinker are contained as well but do no damage
   // loop over all bins and remove assigned wall elements
-  particlealgo_->AssignElesToBins(intactdis_,
-                                  extbintoelemap_,
-                                  bin_beamcontent_);
+  particlealgo_->AssignElesToBins(intactdis_, extbintoelemap_, bin_beamcontent_);
 
   // that's it
   return;
@@ -675,32 +690,12 @@ void STR::MODELEVALUATOR::Crosslinking::InitializeBinDiscret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinkerStates()
+void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 {
   CheckInit();
 
-  Teuchos::RCP<Epetra_Vector> old;
-  if (cl_disnp_ != Teuchos::null)
-  {
-   old = cl_disnp_;
-   cl_disnp_ = LINALG::CreateVector(*bindis_->DofRowMap(),true);
-   LINALG::Export(*old, *cl_disnp_);
-  }
-
-  // that is it
-  return;
-
-} //UpdateCrosslinkerStates()
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::CrosslinkerDiffusion()
-{
-  CheckInit();
-
-  // -------------------------------------------------------------------------
-  // compute crosslinker diffusion for this time step
-  // -------------------------------------------------------------------------
+  // get standard deviation and mean value for crosslinker that are free to
+  // diffuse
   double standarddev = sqrt(eval_statmech_ptr_->GetDataSMDynPtr()->KT() /
                        (2*M_PI * eval_statmech_ptr_->GetDataSMDynPtr()->Eta()
                        * eval_statmech_ptr_->GetDataSMDynPtr()->RLink())
@@ -709,70 +704,273 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerDiffusion()
   // Set mean value and standard deviation of normal distribution
   DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue,standarddev);
 
-  for (int i=0; i<bindis_->DofRowMap()->NumMyElements(); i++)
-    (*cl_disnp_)[i] += DRT::Problem::Instance()->Random()->Normal();
+  // transformation from row to column (after extended ghosting)
+  Teuchos::RCP<Epetra_Vector> iadiscolnp =
+      Teuchos::rcp(new Epetra_Vector(*intactdis_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *iadiscolnp);
+
+  // loop over all row crosslinker (beam binding status not touched here)
+  const int numrowcl = bindis_->NumMyRowNodes();
+  for(int rowcli=0; rowcli<numrowcl; ++rowcli)
+  {
+    // get current linker
+    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+        dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lRowNode(rowcli));
+    const int clgid = crosslinker_i->Id();
+    const int clcollid = bindis_->NodeColMap()->LID(clgid);
+    CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
+    LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
+    std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
+    int& clnumbond_i = cldata_i.clnumbond;
+
+    // different treatment according to number of bonds a crosslinker has
+    switch(clnumbond_i)
+    {
+      // crosslinker has zero bonds, i.e. is free to diffuse according to
+      // brownian dynamics
+      case 0:
+      {
+        // -----------------------------------------------------------------
+        // compute crosslinker diffusion for this time step
+        // -----------------------------------------------------------------
+        std::vector<double> randvec;
+        int count = 3;
+        DRT::Problem::Instance()->Random()->Normal(randvec,count);
+        // note: check for compliance with periodic boundary conditions is
+        // done during crosslinker transfer in UpdateBinStrategy()
+        crosslinker_i->ChangePos(randvec);
+
+        // that is it
+        break;
+      } // clnumbond_i = 0
+
+      // crosslinker has one bond (cl gets current position of filament bspot it is
+      // attached to)
+      case 1:
+      {
+        // get clbspot that is currently bonded
+        int occbspotid = 0;
+        // check, which clbspot is free
+        if(clbspots_i[0].first < 0)
+          occbspotid  = 1;
+
+#ifdef DEBUG
+          // safety check
+        if(clbspots_i[occbspotid].first < 0)
+          dserror("clnumbond_i doesn't match clbspots_i");
+#endif
+
+        // get current position of binding spot of filament partner
+        // note: we can not use our beam data container, as bspot position is not current position (as this
+        // is the result of a sum, you can not have a reference to that)
+        const int elegid = clbspots_i[occbspotid].first;
+
+#ifdef DEBUG
+        // safety check
+        const int colelelid = intactdis_->ElementColMap()->LID(elegid);
+        if(colelelid<0)
+          dserror("Crosslinker has %i bonds but his binding partner with gid %i "
+                  "is \nnot ghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
+#endif
+
+        DRT::ELEMENTS::Beam3Base* ele =
+            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+
+        LINALG::Matrix<3,1> bbspotpos;
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        // get current displacements
+        std::vector<double> eledisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
+        // extract bins from discretization after checking on existence
+
+        // get current position of filament binding spot
+        ele->GetPosOfBindingSpot(bbspotpos,eledisp,clbspots_i[occbspotid].second,
+            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
+
+        // update position of single bond crosslinker to new position
+        std::vector<double> newpos(3,0.0);
+        for(int dim=0; dim<3; ++dim)
+          newpos[dim] = bbspotpos(dim);
+        crosslinker_i->SetPos(newpos);
+
+        // that is it
+        break;
+      } // clnumbond_i = 1
+
+      // crosslinker has two bonds (cl gets current mid position between the filament
+      // binding spot it is attached to)
+      case 2:
+      {
+        // -----------------------------------------------------------------
+        // partner one
+        // -----------------------------------------------------------------
+        int elegid = clbspots_i[0].first;
+
+#ifdef DEBUG
+        // safety check
+        int colelelid = intactdis_->ElementColMap()->LID(elegid);
+        if(colelelid<0)
+          dserror("Crosslinker has %i bonds but his binding partner with gid %i "
+                  "is not \nghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
+#endif
+
+        DRT::ELEMENTS::Beam3Base* ele =
+            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+        LINALG::Matrix<3,1> bbspotposone;
+
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        // get current displacements
+        std::vector<double> eledispone(lm.size());
+        DRT::UTILS::ExtractMyValues(*iadiscolnp,eledispone,lm);
+
+        // get current position of filament binding spot
+        ele->GetPosOfBindingSpot(bbspotposone,eledispone,clbspots_i[0].second,
+            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
+
+        // -----------------------------------------------------------------
+        // partner two
+        // -----------------------------------------------------------------
+        elegid = clbspots_i[1].first;
+
+#ifdef DEBUG
+        // safety check
+        colelelid = intactdis_->ElementColMap()->LID(elegid);
+        if(colelelid<0)
+          dserror("Crosslinker has %i bonds but his binding partner with gid %i "
+                  "is \nnot ghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
+#endif
+
+        ele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+        LINALG::Matrix<3,1> bbspotpostwo;
+
+        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        // get current displacements
+        std::vector<double> eledisptwo(lm.size());
+        DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisptwo,lm);
+
+        // get current position of filament binding spot
+        ele->GetPosOfBindingSpot(bbspotpostwo,eledisptwo,clbspots_i[1].second,
+            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
+
+        //cl gets current mid position between the filament binding spot it is attached to
+        clpos_i.Update(0.5,bbspotposone,0.5,bbspotpostwo);
+
+        // update position of single bond crosslinker to new position
+        std::vector<double> newpos(3,0.0);
+        for(int dim=0; dim<3; ++dim)
+          newpos[dim] = clpos_i(dim);
+        crosslinker_i->SetPos(newpos);
+
+        // that is it
+        break;
+      }// clnumbond_i = 2
+
+      default:
+      {
+        dserror("Unrealistic number %i of bonds for a crosslinker.", clnumbond_i);
+        break;
+      }
+
+    } // switch numbonds
+  } // loop over all row linker
 
   // that is it
   return;
 
-} //CrosslinkerDiffusion()
+} //DiffuseCrosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinker()
+void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinking()
 {
   CheckInit();
 
-  // -------------------------------------------------------------------------
-  // 1) crosslinker diffuse according to brownian dynamics
-  // -------------------------------------------------------------------------
-  CrosslinkerDiffusion();
+  // measure time for linking and redistribution
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinking");
 
   // -------------------------------------------------------------------------
-  // 2) manage binding events, including search for interaction partners and
-  //    updating bonding states to single and double bonded (in latter case
-  //    adding of elements to discretization is included) once linking
-  //    conditions are met
+  // 1) crosslinker diffusion:
+  //    - according to browninan dyn for free cl
+  //    - according to beams for single and double bonded
   // -------------------------------------------------------------------------
+  DiffuseCrosslinker();
 
+  // -------------------------------------------------------------------------
+  // 2) update parallel distribution for bindis and intacdis as crosslinker
+  //    and beams have moved during the timestep. As we call export in the
+  //    following as well, ghosted crosslinker and beams get current information
+  //    regarding their binding status, position and so on.
+  // -------------------------------------------------------------------------
+  // get current beam positions based on maps of intactdis
+  UpdateDofMapOfVector(intactdis_, ia_disnp_, GState().GetMutableDisNp());
+
+  // todo: do we want this ? (how to choose between (re-) and partitioning?)
+  // do a complete new weighted partitioning every 100th step
+  int dlbevery = eval_statmech_ptr_->GetDataSMDynPtr()->DynLoadBalanceEvery();
+  if(dlbevery)
+  {
+    if(GState().GetStepN()%dlbevery == 0 and numproc_ != 1)
+      UpdateBinStrategy(false,true);
+  }
+  else
+  {
+    // transfer beams and crosslinker
+    UpdateBinStrategy();
+  }
+
+  // erase temporary data container as both distributions as well the col data
+  // might have changed
+  crosslinker_data_.clear();
+  beam_data_.clear();
+
+  // -------------------------------------------------------------------------
+  // 3) now we manage binding events, this includes:
+  //    - find potential binding events on each myrank
+  //    - make a decision by asking other procs
+  //    - set bonds and adapt states accordingly
+  // -------------------------------------------------------------------------
   // intended bonds row cl to row ele
   // note: this map is also not const, as another proc may get the permission
-  //       to set my row crosslink to a row element of his, so we need to erase
-  //       this entry out of the map
+  // to set my row crosslink to a row element of his, so we need to erase
+  // this entry out of the map
   std::map<int, BindEventData > mybonds; // key is clgid
   // intended bond col crosslinker to row element
   std::map<int, std::vector<BindEventData> > undecidedbonds; // key is owner!=myrank
 
-
   // fill binding event maps
-  InteractionSearchAndBinding(mybonds,undecidedbonds);
+  LookForBindingEvents(mybonds,undecidedbonds);
 
   // bind events where myrank only owns the elements, cl are taken care of by
   // their owner
   std::map<int, BindEventData > myelebonds; // key is clgid
+  // now each row owner of a linker gets requests, makes a random decision and
+  // informs back its requesters
+  ManageBindingInParallel(mybonds,undecidedbonds,myelebonds);
 
-  DecideBinding(mybonds,undecidedbonds,myelebonds);
-
-
-  DoBinding(mybonds,myelebonds);
-
+  // actual update of binding states is done here
+  BindCrosslinker(mybonds,myelebonds);
 
   // -------------------------------------------------------------------------
-  // 3) unbinding events if probability check is passed (includes deleting of
-  //    elements if double bonded status is lost)
+  // 4) unbinding events if probability check is passed
   // -------------------------------------------------------------------------
-  CrosslinkerUnBinding();
-
-  // add crosslinker elements to discretization
-  dserror(" where clear data container??");
+  UnBindCrosslinker();
 
   // that is it
   return;
-}
+
+} // UpdateCrosslinking()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::InteractionSearchAndBinding(
+void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
   std::map<int, BindEventData >&              mybonds,
   std::map<int, std::vector<BindEventData> >& undecidedbonds)
 {
@@ -782,7 +980,7 @@ void STR::MODELEVALUATOR::Crosslinking::InteractionSearchAndBinding(
   TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::InteractionSearchAndBinding");
 
   // gather data for all column crosslinker initially
-  const int numcolcl = bindis_->NodeColMap()->NumMyElements();
+  const int numcolcl = bindis_->NumMyColNodes();
   crosslinker_data_.resize(numcolcl);
   PreComputeCrosslinkerData(numcolcl);
 
@@ -865,7 +1063,7 @@ void STR::MODELEVALUATOR::Crosslinking::InteractionSearchAndBinding(
   // that is it
   return;
 
-} //InteractionSearchAndBinding()
+} //LoodForBindingEvents()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -890,7 +1088,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
   const int& clowner_i = cldata_i.clowner;
 
   // -------------------------------------------------------------------------
-  // 1) criterion: in case crosslinker is double bonded, we can leave here
+  // 1. criterion: in case crosslinker is double bonded, we can leave here
   // -------------------------------------------------------------------------
   if(clnumbond_i==2) return;
 
@@ -921,10 +1119,10 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
     DRT::ELEMENTS::Beam3Base* nbbeam =
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(beamvec.at(*randiter));
 
-    #ifdef DEBUG
-        if(nbbeam == NULL)
-          dserror("Dynamic cast to beam3base failed");
-    #endif
+#ifdef DEBUG
+      if(nbbeam == NULL)
+        dserror("Dynamic cast to beam3base failed");
+#endif
 
     // -----------------------------------------------------------------------
     // get pre computed data of current nbbeam
@@ -935,7 +1133,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
 //    const int& bowner_i = beamdata_i.bowner;
 
     // loop over all binding spots of current element in random order
-    std::vector<int> randbspot = STATMECH::UTILS::Permutation(bbspotdofs_i.size());
+    std::vector<int> randbspot = STATMECH::UTILS::Permutation(bbspotstatus_i.size());
     std::vector<int> ::const_iterator rbspotiter;
     for(rbspotiter=randbspot.begin(); rbspotiter!=randbspot.end(); ++rbspotiter)
     {
@@ -946,7 +1144,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
       // we are now doing some checks if a binding event could happen
       // -----------------------------------------------------------------------
       {
-        // 2) criterion:
+        // 2. criterion:
         // first check if binding spot is free, if not, check next bspot on curr ele
         // note: bspotstatus in bonded case holds cl gid, otherwise -1 (meaning free)
         if(bbspotstatus_i.at(locnbspot) != -1)
@@ -961,12 +1159,12 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
         dist_vec.Update(1.0, currbbspos, -1.0, clpos_i);
         const double distance = dist_vec.Norm2();
 
-        // 3) criterion:
+        // 3. criterion:
         // if binding spot not in binding range, continue with next binding spot
         if(distance>rmax || distance<rmin)
           continue;
 
-        // 4) criterion:
+        // 4. criterion:
         // a crosslink is set if and only if it passes a probability check
         if(DRT::Problem::Instance()->Random()->Uni() > plink)
           continue;
@@ -997,7 +1195,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
       }
 
       // as we allow only one binding event for each cl in one time step,
-      // we are done here, if we made it so far (i.e met 1),2),3) and 4) criterion)
+      // we are done here, if we made it so far (i.e met 1., 2., 3. and 4.) criterion)
       return;
 
     } // loop over all binding spots
@@ -1011,7 +1209,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::DoBinding(
+void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
   std::map<int, BindEventData >& mybonds,
   std::map<int, BindEventData >& myelebonds)
 {
@@ -1027,7 +1225,7 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
   // one entry and each "element" that is set on a proc needs to have the same
   // unique key so we can delete it on all procs in case of a crosslinker
   // unbinding event
-  std::map<int, DoubleBondedCl> mydbondcl;
+  std::map<int, DoubleBondedCl> mynewdbondcl;
 
   /* -------------------------------------------------------------------------
    now have two distinct maps of binding events on each proc, depending
@@ -1048,27 +1246,50 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
       // get binding event data
       BindEventData binevdata = cliter->second;
 
-      // ---------------------------------------------------------------------
-      // get linker data, we are now actually changing the global data
-      // ---------------------------------------------------------------------
+#ifdef DEBUG
+      // safety check
+      if(cliter->first!=binevdata.clgid)
+        dserror("Map key does not match crosslinker gid of current binding event.");
+#endif
+
+      // get current linker
       const int clcollid = bindis_->NodeColMap()->LID(cliter->first);
+      CROSSLINKING::CrosslinkerNode *crosslinker_i =
+          dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lColNode(clcollid));
+
+      // get crosslinker data
       CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
       LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
       std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
       int& clnumbond_i = cldata_i.clnumbond;
-//      const int& clowner_i = cldata_i.clowner;
 
-      // ---------------------------------------------------------------------
-      // get beam data, we are now actually changing the global data
-      // ---------------------------------------------------------------------
+#ifdef DEBUG
+      // safety check
+      const int& clowner_i = cldata_i.clowner;
+      if(clowner_i!=myrank_)
+        dserror("Only row owner of crosslinker is changing its status");
+#endif
+
+      // get beam data
       const int colelelid = intactdis_->ElementColMap()->LID(binevdata.elegid);
+
+#ifdef DEBUG
+      // safety check
+      if(colelelid<0)
+        dserror("Binding element partner of current row crosslinker is not ghosted, "
+                "this must be the case though.");
+#endif
+
+      // beam element i
+      DRT::ELEMENTS::Beam3Base* ele_i =
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
       const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
       const int& bowner_i = beamdata_i.bowner;
 
       // -------------------------------------------------------------------------
-      // different treatment according to number of bonds crosslinker has had before
+      // different treatment according to number of bonds crosslinker had before
       // this binding event
       // -------------------------------------------------------------------------
       switch(clnumbond_i)
@@ -1077,31 +1298,41 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
         case 0:
         {
           // -----------------------------------------------------------------
-          // update crosslinker data
+          // update crosslinker status
           // -----------------------------------------------------------------
           // store gid and bspot local number of this element, first binding spot
           // always bonded first
           clbspots_i[0].first  = binevdata.elegid;
           clbspots_i[0].second = binevdata.bspotlocn;
-
-          #ifdef DEBUG
-          // safety check
-          if(not (clbspots_i[1].first < 0))
-            dserror("Numbond does not fit to clbspot vector.");
-          #endif
+          crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
 
           // update number of bonds
           clnumbond_i = 1;
-          // update position of crosslinker
+          crosslinker_i->ClData()->SetNumberOfBonds(clnumbond_i);
+
+          // update position
           clpos_i = bbspotdofs_i.at(binevdata.bspotlocn)[0];
+          std::vector<double> newpos(3,0.0);
+          for(int dim=0; dim<3; ++dim)
+            newpos[dim] = clpos_i(dim);
+          crosslinker_i->SetPos(newpos);
+
+#ifdef DEBUG
+          // safety check
+          if(not (clbspots_i[1].first < 0))
+            dserror("Numbond does not fit to clbspot vector.");
+#endif
 
           // -----------------------------------------------------------------
-          // update beam data
+          // update beam status
           // -----------------------------------------------------------------
           // store crosslinker gid in status of beam binding spot if myrank
           // is owner of beam
           if(bowner_i == myrank_)
+          {
             bbspotstatus_i.at(binevdata.bspotlocn) = binevdata.clgid;
+            ele_i->SetBindingSpotStatus(bbspotstatus_i);
+          }
 
           break;
         } // numbond = 0
@@ -1120,22 +1351,46 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
             freebspotid = 0;
             occbspotid  = 1;
           }
+
+#ifdef DEBUG
+          // safety check
+          if(clbspots_i[occbspotid].first < 0)
+            dserror("clnumbond_i doesn't match clbspots_i");
+#endif
+
           // get owner of element of already existing bond (that was set before
           // this time step)
           const int oldbondpartnergid = clbspots_i[occbspotid].first;
           const int oldbondpartnerowner = intactdis_->gElement(oldbondpartnergid)->Owner();
 
+#ifdef DEBUG
+          // safety check
+          const int colelelid = intactdis_->ElementColMap()->LID(oldbondpartnergid);
+          if(colelelid<0)
+            dserror("Binding element partner of current row crosslinker is not ghosted, but this must be the case");
+#endif
+
           // -----------------------------------------------------------------
-          // update crosslinker data
+          // update crosslinker status
           // -----------------------------------------------------------------
           // store gid and bspot local number of this element
           clbspots_i[freebspotid].first = binevdata.elegid;
           clbspots_i[freebspotid].second = binevdata.bspotlocn;
+          crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+
           // update number of bonds
           clnumbond_i = 2;
-          // crosslinker position stays with postion of bspot of old binding event
-          // needs to be adapted in case this bond is dissolved
-          // todo: is this correct/reasonable?
+          crosslinker_i->ClData()->SetNumberOfBonds(clnumbond_i);
+
+          // update position
+          std::vector<double> newpos(3,0.0);
+          for(int dim=0; dim<3; ++dim)
+          {
+            // newpos = 0.5*( pos new bbspot partner + old bbspot partner position(=cl pos))
+            newpos[dim] = (bbspotdofs_i.at(clbspots_i[freebspotid].second)[0](dim) + clpos_i(dim))/2.0;
+            clpos_i(dim ) = newpos[dim];
+          }
+          crosslinker_i->SetPos(newpos);
 
           // create double bond cl data
           DoubleBondedCl dbondcl;
@@ -1152,9 +1407,10 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
             // -----------------------------------------------------------------
             // store crosslinker gid in status of beam binding spot
             bbspotstatus_i.at(binevdata.bspotlocn) = binevdata.clgid;
+            ele_i->SetBindingSpotStatus(bbspotstatus_i);
 
             // insert pair in mypairs
-            mydbondcl[dbondcl.id] = dbondcl;
+            mynewdbondcl[dbondcl.id] = dbondcl;
 
             // -----------------------------------------------------------------
             // in this case we need to communicate again, as each proc that is
@@ -1192,7 +1448,7 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
              * legend: | = beam; __= cl; 2 = owner; 1=myrank
              */
             // insert pair in mypairs
-            mydbondcl[dbondcl.id] = dbondcl;
+            mynewdbondcl[dbondcl.id] = dbondcl;
 
             // note: in this case we do not need to communicate this element, the
             // respective owner of the new bond partner will add this pair on his own
@@ -1263,23 +1519,49 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
       BindEventData binevdata = cliter->second;
 
       // ---------------------------------------------------------------------
-      // get linker data, we are now actually changing the global data
+      // get linker data
       // ---------------------------------------------------------------------
       const int clcollid = bindis_->NodeColMap()->LID(cliter->first);
+
+#ifdef DEBUG
+      // safety check
+      if(clcollid<0)
+        dserror("Crosslinker needs to be ghosted, but this isn't the case.");
+#endif
+
       CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
 //      LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
       std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
       int& clnumbond_i = cldata_i.clnumbond;
-//      const int& clowner_i = cldata_i.clowner;
 
       // ---------------------------------------------------------------------
-      // get beam data, we are now actually changing the global data
+      // get beam data
       // ---------------------------------------------------------------------
       const int colelelid = intactdis_->ElementColMap()->LID(binevdata.elegid);
+
+#ifdef DEBUG
+      // safety check
+      if(colelelid<0)
+        dserror("element with gid %i not ghosted on proc %i",binevdata.elegid,myrank_);
+#endif
+
+      // get beam element of current binding event
+      DRT::ELEMENTS::Beam3Base* ele_i =
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
 //      const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
-//      const int& bowner_i = beamdata_i.bowner;
+
+#ifdef DEBUG
+      // safety check
+      const int& bowner_i = beamdata_i.bowner;
+      if(bowner_i!=myrank_)
+        dserror("Only row owner of element is allowed to change its status");
+      // safety checks
+      const int& clowner_i = cldata_i.clowner;
+      if(clowner_i==myrank_)
+        dserror("myrank should not be owner of this crosslinker");
+#endif
 
       // different treatment according to number of bonds crosslinker has before
       // this binding event
@@ -1292,6 +1574,7 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
           // -----------------------------------------------------------------
           // store crosslinker gid in status of beam binding spot
           bbspotstatus_i.at(binevdata.bspotlocn) = binevdata.clgid;
+          ele_i->SetBindingSpotStatus(bbspotstatus_i);
 
           break;
         } // clnumbond = 0
@@ -1303,13 +1586,14 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
           // -----------------------------------------------------------------
           // store crosslinker gid in status of beam binding spot
           bbspotstatus_i.at(binevdata.bspotlocn) = binevdata.clgid;
+          ele_i->SetBindingSpotStatus(bbspotstatus_i);
 
           // create double bond cl data
           DoubleBondedCl dbondcl;
           dbondcl.id = binevdata.clgid;
           dbondcl.eleone = clbspots_i[0];
           dbondcl.eletwo = clbspots_i[1];
-          mydbondcl[dbondcl.id] = dbondcl;
+          mynewdbondcl[dbondcl.id] = dbondcl;
 
           break;
         } // clnumbond_i = 1
@@ -1328,16 +1612,18 @@ void STR::MODELEVALUATOR::Crosslinking::DoBinding(
 
   // tell each proc which of the crosslinker that are bonded to one of its row
   // elements are now double bonded without him knowing (yet)
-  CommunicateDoubleBondedCl(mydbondcl,dbondcltosend);
+  CommunicateDoubleBondedCl(mynewdbondcl,dbondcltosend);
+
+  //todo: HOW TO INSERT NEW DOUBLE BONDS IN NORMAL LIST
 
   // that is it
   return;
 
-} // Dobinding()
+} // BindCrosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
+void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 {
   CheckInit();
 
@@ -1357,7 +1643,7 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
     koff = eval_statmech_ptr_->GetDataSMDynPtr()->KOffEnd();
 
   // probability with which a crosslink breaks up in the current time step
-  double punlink = 1.0 - exp(-dt * koff);
+  double p_unlink = 1.0 - exp(-dt * koff);
 
   // --------------------------------------------------------------------------
   // vectors that need to be filled
@@ -1365,7 +1651,7 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
   // data containing information about elements that need to be updated and
   // crosslinker that are not double bonded anymore
   std::map<int, std::vector<UnBindEventData> > sendunbindevent;
-  // eles that need to be deleted on myrank
+  // crosslinker "eles" that need to be deleted on myrank
   std::vector<UnBindEventData> myrankunbindevent;
 
   // loop over all row linker (in random order) and dissolve bond if probability
@@ -1375,16 +1661,18 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
    * to col element, we potentially need to communicate if such an element
    * needs to be updated and/or if a crosslinker element needs to deleted
    */
-  const int numrowcl = bindis_->NodeRowMap()->NumMyElements();
+  const int numrowcl = bindis_->NumMyRowNodes();
   std::vector<int> rorderrowcl = STATMECH::UTILS::Permutation(numrowcl);
   std::vector<int>::const_iterator rowcli;
   for(rowcli=rorderrowcl.begin(); rowcli!=rorderrowcl.end(); ++rowcli)
   {
-    // ---------------------------------------------------------------------
+    // get current linker
+    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+        dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lRowNode(*rowcli));
+
     // get linker data
-    // ---------------------------------------------------------------------
-    const int clgid = bindis_->NodeRowMap()->GID(*rowcli);
-    const int clcollid = bindis_->NodeColMap()->LID(clgid);
+    const int clgid = crosslinker_i->Id();
+    const int clcollid = bindis_->NodeColMap()->LID(crosslinker_i->Id());
     CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
     LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
     std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
@@ -1407,7 +1695,7 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
         // -------------------------------------------------------------------
         // if probability criterion is not met, we are done here
         // -------------------------------------------------------------------
-        if (DRT::Problem::Instance()->Random()->Uni() > punlink)
+        if (DRT::Problem::Instance()->Random()->Uni() > p_unlink)
           break;
 
         // -------------------------------------------------------------------
@@ -1417,6 +1705,12 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
         int occbspotid = 0;
         if(clbspots_i[0].first < 0)
           occbspotid  = 1;
+
+#ifdef DEBUG
+        // safety check
+        if(clbspots_i[occbspotid].first < 0)
+          dserror("clnumbond_i doesn't match clbspots_i");
+#endif
 
         // store unbinding event data
         UnBindEventData unbindevent;
@@ -1436,21 +1730,33 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
         // -----------------------------------------------------------------
         // update crosslinker status
         // -----------------------------------------------------------------
-        // update number of bonds
-        clnumbond_i = 0;
         // update binding status of linker
         clbspots_i[occbspotid].first = -1;
         clbspots_i[occbspotid].second = -1;
+        crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+
+        // update number of bonds
+        clnumbond_i = 0;
+        crosslinker_i->ClData()->SetNumberOfBonds(clnumbond_i);
+
         // update position of crosslinker: generate vector in random direction
         // of length R_LINK to "reset" crosslink molecule position: it may now
         // reenter or leave the bonding proximity
         // todo: does this make sense?
-        LINALG::Matrix<3, 1> cldeltapos_i;
+        LINALG::Matrix<3,1> cldeltapos_i;
+        std::vector<double> randunivec(3);
+        int count = 3;
+        DRT::Problem::Instance()->Random()->Uni(randunivec, count);
         for (int dim=0; dim<3; ++dim)
-          cldeltapos_i(dim) = DRT::Problem::Instance()->Random()->Uni();
+          cldeltapos_i(dim) = randunivec[dim];
         cldeltapos_i.Scale(eval_statmech_ptr_->GetDataSMDynPtr()->RLink() / cldeltapos_i.Norm2());
-        // update position posnew = posold + deltapos
+        // update position in cldata
         clpos_i.Update(1.0,cldeltapos_i,1.0);
+        // real update of position
+        std::vector<double> newpos(3,0.0);
+        for(int dim=0; dim<3; ++dim)
+          newpos[dim] = clpos_i(dim);
+        crosslinker_i->SetPos(newpos);
 
         break;
       } // clnumbond_i = 1
@@ -1467,7 +1773,7 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
         for(clbspotiter=ro.begin(); clbspotiter!=ro.end(); ++clbspotiter)
         {
           // if probability criterion isn't met, go to next spot
-          if (DRT::Problem::Instance()->Random()->Uni() > punlink)
+          if (DRT::Problem::Instance()->Random()->Uni() > p_unlink)
             continue;
 
           // get id of freed and still occupied bspot
@@ -1486,9 +1792,11 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
           const int occbeamowner =
               intactdis_->gElement(clbspots_i[stayocc].first)->Owner();
           // initialize two versions of unbinding events
+          // update and deletion
           UnBindEventData unbindeventupdel;
           unbindeventupdel.id = clgid;
           unbindeventupdel.eletoupdate = clbspots_i[freedbspotid];
+          // just deletion
           UnBindEventData unbindeventdel;
           unbindeventdel.id = clgid;
           unbindeventdel.eletoupdate.first = -1;
@@ -1557,19 +1865,32 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
           // -----------------------------------------------------------------
           // update crosslinker status
           // -----------------------------------------------------------------
+          // reset binding status of freed crosslinker binding spot
+          clbspots_i[freedbspotid].first = -1;
+          clbspots_i[freedbspotid].second = -1;
+          crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+
           // update number of bonds
           clnumbond_i = 1;
-          // update position of crosslinker with position of remaining beam
-          // bspot partner
-          // todo: beam_data needs to be col format
+          crosslinker_i->ClData()->SetNumberOfBonds(clnumbond_i);
+
+          // update postion
           const int collidoccbeam =
               intactdis_->ElementColMap()->LID(clbspots_i[stayocc].first);
+
+#ifdef DEBUG
+          // safety check
+          if(collidoccbeam<0)
+            dserror("element with gid %i not ghosted on proc %i",clbspots_i[stayocc].first,myrank_);
+#endif
+
           BeamData& beamdata_i = beam_data_[collidoccbeam];
           std::map<int, std::vector<LINALG::Matrix<3,1> > > bspotdofs_i = beamdata_i.bbspotdofs;
           clpos_i = bspotdofs_i.at(clbspots_i[stayocc].second)[0];
-          // update binding status of linker
-          clbspots_i[freedbspotid].first = -1;
-          clbspots_i[freedbspotid].second = -1;
+          std::vector<double> newpos(3,0.0);
+          for(int dim=0; dim<3; ++dim)
+            newpos[dim] = clpos_i(dim);
+          crosslinker_i->SetPos(newpos);
 
           // we only want to dissolve one bond per timestep, therefore we go to
           // next crosslinker if we made it so far (i.e. a bond got dissolved)
@@ -1598,41 +1919,63 @@ void STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding()
     // get data
     const int elegidtoupdate = iter->eletoupdate.first;
     const int bspotlocn = iter->eletoupdate.second;
-//    const int idtoerase = iter->id;
+    const int idtoerase = iter->id;
 
     // update beam data
-    if(not(elegidtoupdate < 0))
+    if(elegidtoupdate > -1)
     {
-      const int rowelelid = intactdis_->ElementColMap()->LID(elegidtoupdate);
-      BeamData& beamdata_i = beam_data_[rowelelid];
-      std::map<int, int>& bspotstatus = beamdata_i.bbspotstatus;
+      const int colelelid = intactdis_->ElementColMap()->LID(elegidtoupdate);
+
+#ifdef DEBUG
+      // safety check
+      if(colelelid<0)
+        dserror("element with gid %i not ghosted on proc %i",elegidtoupdate,myrank_);
+#endif
+
+      // get beam element of current binding event
+      DRT::ELEMENTS::Beam3Base* ele_i =
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
+
+#ifdef DEBUG
+      // safety check
+      if(ele_i->Owner()!=myrank_)
+        dserror("Only row owner of elements change binding status of elements");
+#endif
+
+      BeamData& beamdata_i = beam_data_[colelelid];
+      std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
 
       // update beam data
-      bspotstatus.at(bspotlocn) = -1;
+      bbspotstatus_i.at(bspotlocn) = -1;
+      ele_i->SetBindingSpotStatus(bbspotstatus_i);
     }
 
-    // delete elements
-//    if(not(idtoerase < 0))
-//      intactdis_->DeleteElement(elegidtodelete);
+#ifdef DEBUG
+        // safety check
+        if(not doublebondcl_.count(idtoerase))
+          dserror("willing to delete not existing entry, something went wrong");
+#endif
+
+    // delete double bonded crosslinker
+    doublebondcl_.erase(idtoerase);
+
   }
 
   // that is it
   return;
 
-} //CrosslinkerUnbinding()
+} //UnbindCrosslinker()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
-  const int numcolcl
-)
+  const int numcolcl)
 {
   CheckInit();
 
-  // transformation from row to column
-  Teuchos::RCP<Epetra_Vector> cl_disnp_col =
-      Teuchos::rcp(new Epetra_Vector(*bindis_->DofColMap()));
-  LINALG::Export(*cl_disnp_, *cl_disnp_col);
+  // sanity check
+  if((int)crosslinker_data_.size()!= bindis_->NumMyColNodes())
+    dserror("temporary crosslinker data container has wrong size");
 
   // -------------------------------------------------------------------------
   // loop over all column crosslinker and pre compute their data that is needed
@@ -1647,10 +1990,10 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
     CROSSLINKING::CrosslinkerNode *crosslinker_i =
         dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lColNode(i));
 
-    #ifdef DEBUG
-        if(crosslinker_i == NULL)
-          dserror("Dynamic cast to CrosslinkerNode failed");
-    #endif
+#ifdef DEBUG
+      if(crosslinker_i == NULL)
+        dserror("Dynamic cast to CrosslinkerNode failed");
+#endif
 
     // col lid of this crosslinker
     const int collid = crosslinker_i->LID();
@@ -1658,26 +2001,21 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
     CrosslinkerData& cldata = crosslinker_data_[collid];
 
     // store positions
-    // todo: check/rethink if value in disp vector is current pos of crosslinker
-    //       (or X or X plus disp), see transfer node function
-    std::vector<int> lm_i;
-    lm_i.reserve(3);
-    bindis_->Dof(crosslinker_i, lm_i);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*cl_disnp_col,cldata.clpos,lm_i);
-
+    for(int dim=0; dim<3; ++dim)
+      cldata.clpos(dim) = crosslinker_i->X()[dim];
     // get current binding spot status of crosslinker
-    cldata.clbspots = crosslinker_i->ClData().GetClBSpotStatus();
+    cldata.clbspots = crosslinker_i->ClData()->GetClBSpotStatus();
     // get number of bonds
-    cldata.clnumbond = crosslinker_i->ClData().GetNumberOfBonds();
+    cldata.clnumbond = crosslinker_i->ClData()->GetNumberOfBonds();
     // get type of crosslinker (i.e. its material)
     cldata.clmat = crosslinker_i->GetMaterial();
     // get owner
     cldata.clowner = crosslinker_i->Owner();
 
-    #ifdef DEBUG
+#ifdef DEBUG
       if(crosslinker_i->NumElement() != 1)
         dserror("More than one element for this crosslinker");
-    #endif
+#endif
 
   } // loop over all column crosslinker
 
@@ -1689,10 +2027,13 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
-  const int numcolbeams
-)
+  const int numcolbeams)
 {
   CheckInit();
+
+  // sanity check
+  if((int)beam_data_.size()!= intactdis_->NumMyColElements())
+    dserror("temporary beam data container has wrong size");
 
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
@@ -1706,10 +2047,10 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
     DRT::ELEMENTS::Beam3Base* ele_i =
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(i));
 
-    #ifdef DEBUG
-        if(ele_i == NULL)
-          dserror("Dynamic cast to Beam3Base failed");
-    #endif
+#ifdef DEBUG
+      if(ele_i == NULL)
+        dserror("Dynamic cast to Beam3Base failed");
+#endif
 
     // get elelid
     const int elelid = ele_i->LID();
@@ -1721,32 +2062,24 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     ele_i->LocationVector(*intactdis_,lm,lmowner,lmstride);
+    // get current displacements
+    std::vector<double> eledisp(lm.size());
+    // todo: discolnp_ with correct values here?
+    DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
 
     // loop over all binding spots of current element
-    // todo: do this the correct way
-    for(int j=0; j<2; ++j)
+    const int numbbspot = (int)ele_i->GetBindingSpotStatus().size();
+    for(int j=0; j<numbbspot; ++j)
     {
-      // todo: do this the correct way
-      double xi = -1.0;
-      if(j==1)
-        xi = 1.0;
-
-      // get current displacements
-      std::vector<double> eledisp(lm.size());
-      // todo: discolnp_ with correct values here?
-      DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
       // get current position at binding spot xi
       LINALG::Matrix<3,1> bbspotpos_j;
-      ele_i->GetPosAtXi(bbspotpos_j,xi,eledisp);
+      ele_i->GetPosOfBindingSpot(bbspotpos_j,eledisp,j,
+          *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
       bdata.bbspotdofs[j].push_back(bbspotpos_j);
-
-    } // loop over all binding spots of current element
+    }
 
     // get status of beam binding spots
-    // todo: do this the correct way
-//    data.bbspotstatus = ele_i->GetBSpotStatus();
-    bdata.bbspotstatus[0] = -1;
-    bdata.bbspotstatus[1] = -1;
+    bdata.bbspotstatus = ele_i->GetBindingSpotStatus();
     // get owner
     bdata.bowner = ele_i->Owner();
 
@@ -1760,7 +2093,7 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::DecideBinding(
+void STR::MODELEVALUATOR::Crosslinking::ManageBindingInParallel(
   std::map<int, BindEventData >&              mybonds,
   std::map<int, std::vector<BindEventData> >& undecidedbonds,
   std::map<int, BindEventData >&              myelebonds)
@@ -1815,15 +2148,14 @@ void STR::MODELEVALUATOR::Crosslinking::DecideBinding(
     // -----------------------------------------------------------------------
 
     // ---- prepare receiving procs -----
-    const int numproc = bindis_->Comm().NumProc();
     // get number of procs from which myrank receives data
-    std::vector<int> targetprocs(numproc,0);
+    std::vector<int> targetprocs(numproc_,0);
     std::map<int, std::vector<BindEventData> >::iterator prociter;
     for(prociter=undecidedbonds.begin(); prociter!=undecidedbonds.end(); ++prociter)
       targetprocs[prociter->first] = 1;
     // store number of messages myrank receives
-    std::vector<int> summedtargets(numproc,0);
-    bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+    std::vector<int> summedtargets(numproc_,0);
+    bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc_);
 
     numrecrequest = summedtargets[myrank_];
     for(int rec=0; rec<numrecrequest; ++rec)
@@ -2054,12 +2386,12 @@ void STR::MODELEVALUATOR::Crosslinking::DecideBinding(
   // that is it
   return;
 
-} // DecideBinding()
+} // MakeBindingDecision()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::CommunicateDoubleBondedCl(
-  std::map<int, DoubleBondedCl>&               mydbondcl,
+  std::map<int, DoubleBondedCl>&               mynewdbondcl,
   std::map<int, std::vector<DoubleBondedCl> >& dbondcltosend)
 {
   CheckInit();
@@ -2102,15 +2434,14 @@ void STR::MODELEVALUATOR::Crosslinking::CommunicateDoubleBondedCl(
   // receive
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
-  const int numproc = bindis_->Comm().NumProc();
   // get number of procs from which myrank receives data
-  std::vector<int> targetprocs(numproc,0);
+  std::vector<int> targetprocs(numproc_,0);
   std::map<int, std::vector<DoubleBondedCl> >::iterator prociter;
   for(prociter=dbondcltosend.begin(); prociter!=dbondcltosend.end(); ++prociter)
     targetprocs[prociter->first] = 1;
   // store number of messages myrank receives
-  std::vector<int> summedtargets(numproc,0);
-  bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  std::vector<int> summedtargets(numproc_,0);
+  bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc_);
 
   // myrank receive all packs that are sent to him
   for(int rec=0; rec<summedtargets[myrank_]; ++rec)
@@ -2132,7 +2463,7 @@ void STR::MODELEVALUATOR::Crosslinking::CommunicateDoubleBondedCl(
       UnPack(position,rdata,recdata);
 
       // add received data to list of now double bonded cl on myrank
-      mydbondcl[recdata.id] = recdata;
+      mynewdbondcl[recdata.id] = recdata;
 
     } // loop over packs from one proc
 
@@ -2198,15 +2529,14 @@ void STR::MODELEVALUATOR::Crosslinking::CommunicateCrosslinkerUnbinding(
   // receive
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
-  const int numproc = bindis_->Comm().NumProc();
   // get number of procs from which myrank receives data
-  std::vector<int> targetprocs(numproc,0);
+  std::vector<int> targetprocs(numproc_,0);
   std::map<int, std::vector<UnBindEventData> >::iterator prociter;
   for(prociter=sendunbindevent.begin(); prociter!=sendunbindevent.end(); ++prociter)
     targetprocs[prociter->first] = 1;
   // store number of messages myrank receives
-  std::vector<int> summedtargets(numproc,0);
-  bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  std::vector<int> summedtargets(numproc_,0);
+  bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc_);
 
   // myrank receive all packs that are sent to him
   for(int rec=0; rec<summedtargets[myrank_]; ++rec)
@@ -2261,7 +2591,7 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
   TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TimeForBeamToBeamInteraction");
 
 #ifdef DEBUG
-  if(exteletobinmap_.size() != intactdis_->ElementColMap()->NumMyElements())
+  if((int)exteletobinmap_.size() != intactdis_->ElementColMap()->NumMyElements())
     dserror("std::map does not equal elecolmap (check e.g. if extended ghosting contains "
             " standard ghosting). Therefore not every contact can be detected");
 #endif
@@ -2302,6 +2632,55 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
   return;
 
 } //GetneighboringEles()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::UpdateMaps()
+{
+  CheckInit();
+
+  // todo: performance improvement by using the same exporter object every time
+  // and not doing the safety checks in Linalg::Export. See in particle_timint
+  // how this can be done.
+
+  // beam displacement
+  UpdateDofMapOfVector(intactdis_, ia_disnp_);
+
+  // update stiff matrix
+  // todo:
+  // COUPLING ADAPTER, drt_fsi/fsi??????????????
+
+  // that is it
+  return;
+
+} //TransformStates()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::RCP<Epetra_Vector>&      dofmapvec,
+  Teuchos::RCP<Epetra_Vector>       old)
+{
+  CheckInit();
+
+  // todo: performance improvement by using the same exporter object every time
+  // and not doing the safety checks in Linalg::Export. See in particle_timint
+  // how this can be done.
+
+
+  if (dofmapvec != Teuchos::null)
+  {
+    if(old==Teuchos::null)
+      old = dofmapvec;
+    dofmapvec = LINALG::CreateVector(*discret->DofRowMap(),true);
+    LINALG::Export(*old, *dofmapvec);
+  }
+
+  // that is it
+  return;
+
+} //UpdateVectorDofMap()
 
 ///*-----------------------------------------------------------------------------*
 // *-----------------------------------------------------------------------------*/
@@ -2350,15 +2729,14 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
 //   // receive
 //   // -----------------------------------------------------------------------
 //   // ---- prepare receiving procs -----
-//   const int numproc = bindis_->Comm().NumProc();
 //   // get number of procs from which myrank receives data
-//   std::vector<int> targetprocs(numproc,0);
+//   std::vector<int> targetprocs(numproc_,0);
 //   typename std::map<int, std::vector<T> >::iterator prociter;
 //   for(prociter=send.begin(); prociter!=send.end(); ++prociter)
 //     targetprocs[prociter->first] = 1;
 //   // store number of messages myrank receives
-//   std::vector<int> summedtargets(numproc,0);
-//   bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+//   std::vector<int> summedtargets(numproc_,0);
+//   bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc_);
 //
 //   // myrank receive all packs that are sent to him
 //   for(int rec=0; rec<summedtargets[myrank_]; ++rec)
@@ -2521,42 +2899,39 @@ void STR::MODELEVALUATOR::Crosslinking::Logo()
 {
   CheckInit();
 
-//  IO::cout << "*********************************************************************" << IO::endl;
-//  IO::cout << "*                                                                   *" << IO::endl;
-//  IO::cout << "*             Welcome to Biopolymer Network Simulation              *" << IO::endl;
-//  IO::cout << "*                                                                   *" << IO::endl;
-//  IO::cout << "=====================================================================" << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                         0=========================0                 " << IO::endl;
-//  IO::cout << "                       //|   \            /       /||                " << IO::endl;
-//  IO::cout << "                      // |    \ |       |/       //||                " << IO::endl;
-//  IO::cout << "                     //  |  /  \|       /       // ||                " << IO::endl;
-//  IO::cout << "                    //   |  \   \   /  /|\     //  ||                " << IO::endl;
-//  IO::cout << "                   //    |  /   |\ /  / | \   //   ||                " << IO::endl;
-//  IO::cout << "                  //     |  \   | \     |  \ //  / ||                " << IO::endl;
-//  IO::cout << "                 //  \  /|  /   |/      |   //  /  ||                " << IO::endl;
-//  IO::cout << "                 0=========================0 \ /   ||                " << IO::endl;
-//  IO::cout << "                ||    /\ |____          |  || \    ||                " << IO::endl;
-//  IO::cout << "                ||   /  \|    \   ------   ||/ \   ||                " << IO::endl;
-//  IO::cout << "                ||  /    |                 ||      ||                " << IO::endl;
-//  IO::cout << "                || /     0----------/------||------0-                " << IO::endl;
-//  IO::cout << "                ||      /   /       \      ||     //                 " << IO::endl;
-//  IO::cout << "                ||     /___/  \     /    / ||    //                  " << IO::endl;
-//  IO::cout << "                ||    /        \    \   /  ||   //                   " << IO::endl;
-//  IO::cout << "                ||   /  \/\/\/  \   /  /   ||  //                    " << IO::endl;
-//  IO::cout << "                ||  /      /     \  \ /    || //                     " << IO::endl;
-//  IO::cout << "                || /      /         /      ||//                      " << IO::endl;
-//  IO::cout << "                ||/                       /||/                       " << IO::endl;
-//  IO::cout << "                 0=========================0                         " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "                                                                     " << IO::endl;
-//  IO::cout << "=====================================================================" << IO::endl;
-//  IO::cout << "=====================================================================" << IO::endl;
+//  if(myrank_==0)
+//  {
+//    IO::cout << "\n****************************************************************" << IO::endl;
+//    IO::cout << "*                                                              *" << IO::endl;
+//    IO::cout << "*          Welcome to a Biopolymer Network Simulation          *" << IO::endl;
+//    IO::cout << "*                                                              *" << IO::endl;
+//    IO::cout << "****************************************************************" << IO::endl;
+//    IO::cout << "                                                                  " << IO::endl;
+//    IO::cout << "                                                                  " << IO::endl;
+//    IO::cout << "                      0=========================0                 " << IO::endl;
+//    IO::cout << "                    //|   \\            /       /||                " << IO::endl;
+//    IO::cout << "                   // |    \\ |       |/       //||                " << IO::endl;
+//    IO::cout << "                  //  |  /  \\|       /       // ||                " << IO::endl;
+//    IO::cout << "                 //   |  \\   \\   /  /|\\     //  ||                " << IO::endl;
+//    IO::cout << "                //    |  /   |\\ /  / | \\   //   ||                " << IO::endl;
+//    IO::cout << "               //     |  \\   | \\     |  \\ //  / ||                " << IO::endl;
+//    IO::cout << "              //  \\  /|  /   |/      |   //  /  ||                " << IO::endl;
+//    IO::cout << "              0=========================0 \\ /   ||                " << IO::endl;
+//    IO::cout << "             ||    /\\ |____          |  || \\    ||                " << IO::endl;
+//    IO::cout << "             ||   /  \\|    \\   ------   ||/ \\   ||                " << IO::endl;
+//    IO::cout << "             ||  /    |                 ||      ||                " << IO::endl;
+//    IO::cout << "             || /     0----------/------||------0-                " << IO::endl;
+//    IO::cout << "             ||      /   /       \\      ||     //                 " << IO::endl;
+//    IO::cout << "             ||     /___/  \\     /    / ||    //                  " << IO::endl;
+//    IO::cout << "             ||    /        \\    \\   /  ||   //                   " << IO::endl;
+//    IO::cout << "             ||   /  \\/\\/\\/  \\   /  /   ||  //                    " << IO::endl;
+//    IO::cout << "             ||  /      /     \\  \\ /    || //                     " << IO::endl;
+//    IO::cout << "             || /      /         /      ||//                      " << IO::endl;
+//    IO::cout << "             ||/                       /||/                       " << IO::endl;
+//    IO::cout << "              0=========================0                         " << IO::endl;
+//    IO::cout << "                                                                     " << IO::endl;
+//    IO::cout << "                                                                     " << IO::endl;
+//  }
 
   // that is it
   return;
@@ -2608,13 +2983,12 @@ void STR::MODELEVALUATOR::Crosslinking::Logo()
 //  // ---- prepare receiving procs -----
 //
 //  // ---- prepare receiving procs -----
-//  const int numproc = bindis_->Comm().NumProc();
-//  std::vector<int> targetprocs(numproc,0);
+//  std::vector<int> targetprocs(numproc_,0);
 //  std::map<int, std::set<Teuchos::RCP<DRT::Element>, STR::MODELEVALUATOR::Less > >::const_iterator piter;
 //  for(piter=elestosend.begin(); piter!=elestosend.end(); ++piter)
 //    targetprocs[piter->first] = 1;
-//  std::vector<int> summedtargets(numproc,0);
-//  DiscretPtr()->Comm().SumAll(targetprocs.data(),summedtargets.data(), numproc);
+//  std::vector<int> summedtargets(numproc_,0);
+//  DiscretPtr()->Comm().SumAll(targetprocs.data(),summedtargets.data(), numproc_);
 //
 //  // -----------------------------------------------------------------------
 //  // receive

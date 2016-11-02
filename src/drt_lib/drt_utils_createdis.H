@@ -62,6 +62,12 @@ public:
       DRT::Discretization& targetdis,
       const std::map<std::string,std::string>& conditions_to_copy) const;
 
+  //! generate identical clone of sourcedis (eles, nodes, dofs and conditions
+  //  are copied to returned new discretization)
+  Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretization(
+      const Teuchos::RCP<DRT::Discretization>& sourcedis,
+      const std::string&                       targetdisname) const;
+
   //! Base class version for creation of matching discretization without material
   Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
       const DRT::Discretization&      sourcedis, ///< discretization with condition

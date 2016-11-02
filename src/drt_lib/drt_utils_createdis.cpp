@@ -16,8 +16,9 @@
 /*----------------------------------------------------------------------*/
 
 #include "drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_parallel.H"
+#include "drt_utils_parallel.H"
 #include "drt_linedefinition.H"
+#include "drt_dofset_transparent_independent.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -134,6 +135,78 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
     conds.clear();
   }
 } // DRT::UTILS::DiscretizationCreatorBase::CopyConditions
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> DRT::UTILS::DiscretizationCreatorBase::
+CreateMatchingDiscretization(const Teuchos::RCP<DRT::Discretization>& sourcedis,
+                             const std::string& targetdisname) const
+{
+  // initialize identical clone discretization
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
+  Teuchos::RCP<DRT::Discretization> targetdis =
+      Teuchos::rcp(new DRT::Discretization(targetdisname,comm));
+
+  // clone nodes
+  for (int i=0;i<sourcedis->NodeColMap()->NumMyElements();++i)
+  {
+    DRT::Node* node = sourcedis->lColNode(i);
+    if (!node) dserror("Cannot find node with lid %",i);
+    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    targetdis->AddNode(newnode);
+  }
+
+  // clone elements
+  for (int i=0;i<sourcedis->ElementColMap()->NumMyElements();++i)
+  {
+    DRT::Element* ele = sourcedis->lColElement(i);
+    if (!ele) dserror("Cannot find element with lid %",i);
+    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    targetdis->AddElement(newele);
+  }
+
+  // clone conditions (prescribed in input file)
+  std::vector<std::string> allcond;
+  sourcedis->GetConditionNames(allcond);
+  //loop all conditions types
+  for (unsigned numcond=0;numcond<allcond.size();++numcond)
+  {
+    // get condition
+    std::vector<DRT::Condition*> actcond;
+    sourcedis->GetCondition(allcond[numcond],actcond);
+
+    // loop all condition of the current type
+    for (unsigned numactcond=0;numactcond<actcond.size();++numactcond)
+      targetdis->SetCondition(allcond[numcond],Teuchos::rcp(new DRT::Condition(*actcond[numactcond])));
+  }
+
+  // make auxiliary discretization have the same dofs as the coupling discretization
+  bool parallel = comm->NumProc() > 1;
+  Teuchos::RCP<DRT::DofSet> newdofset =
+      Teuchos::rcp(new DRT::TransparentIndependentDofSet(sourcedis,parallel));
+  // do not call this with true (no replacement in static dofsets intended)
+  targetdis->ReplaceDofSet(newdofset,false);
+  targetdis->FillComplete(true,false,false);
+
+  // at the end, we do several checks to ensure that we really have generated
+  // an identical discretization
+  if (not sourcedis->NodeRowMap()->SameAs(*(targetdis->NodeRowMap())))
+    dserror("NodeRowMaps of source and target discretization are different!");
+  if (not sourcedis->NodeColMap()->SameAs(*(targetdis->NodeColMap())))
+    dserror("NodeColMaps of source and target discretization are different!");
+  if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
+    dserror("ElementRowMaps of source and target discretization are different!");
+  if (not sourcedis->ElementColMap()->SameAs(*(targetdis->ElementColMap())))
+    dserror("ElementColMaps of source and target discretization are different!");
+  if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
+    dserror("ElementRowMaps of source and target discretization are different!");
+  if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
+    dserror("ElementColMaps of source and target discretization are different!");
+
+  // return identical dis
+  return targetdis;
+
+} // DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

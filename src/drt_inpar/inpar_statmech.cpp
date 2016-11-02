@@ -35,6 +35,8 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  "Crosslinker in problem",
                                  yesnotuple,yesnovalue,&statmech);
 
+  IntParameter("DYNLOADBALANCEEVERY",0,"do a dynamic load balancing (partition/repartition) every x step",&statmech);
+
   //Reading which kind of special output should be written to files
   setStringToIntegralParameter<int>("SPECIALOUTPUT","None","kind of special statistical output data written into files",
                                  //listing possible std::strings in input file in category SPECIALOUTPUT

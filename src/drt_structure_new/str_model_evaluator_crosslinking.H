@@ -145,8 +145,8 @@ namespace MODELEVALUATOR{
 
     //! struct to store beam data for faster access
     struct BeamData {
-      std::map<int, std::vector<LINALG::Matrix<3,1> > > bbspotdofs;    // currrent values of dofs at bindingspots (xi)
-      std::map<int, int> bbspotstatus;                                 // holds gid of crosslinker if binded, if free = -1
+      std::map<int, std::vector<LINALG::Matrix<3,1> > > bbspotdofs;    // currrent values of dofs at bindingspots (xi) (key is local number of binding spot)
+      std::map<int, int> bbspotstatus;                                 // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
 //      int type;
 //      int filnumber;
       int bowner;                                                      // owner of current beam
@@ -219,13 +219,13 @@ namespace MODELEVALUATOR{
     virtual void InitializeBinDiscret();
 
     /// update states based on bindis after its redistribution
-    virtual void UpdateCrosslinkerStates();
+    virtual void UpdateMaps();
 
     /// build ele to bin map
     virtual void BuildEleToBinMap();
 
     /// update states based on bindis after its redistribution
-    virtual void CrosslinkerDiffusion();
+    virtual void DiffuseCrosslinker();
 
     /// update bin, crosslinker and beam distribution
     virtual void UpdateBinStrategy(
@@ -237,19 +237,16 @@ namespace MODELEVALUATOR{
     );
 
     /// search and set crosslinker
-    virtual void UpdateCrosslinker();
+    virtual void UpdateCrosslinking();
 
     /// search and set crosslinker
-    virtual void InteractionSearchAndBinding(
+    virtual void LookForBindingEvents(
         std::map<int, BindEventData >&              mybonds,
         std::map<int, std::vector<BindEventData> >& undecidedbonds
     );
 
-    /// search and set crosslinker
-    virtual void CrosslinkerUnBinding();
-
     /// search for binding events on each proc separately (i.e. pretending myran is alone)
-    //  communication to ensure correct binding over all procs is done afterwards
+    /// communication to ensure correct binding over all procs is done afterwards
     virtual void PrepareBinding(
       DRT::Node*                                  crosslinker_i,
       const std::set<DRT::Element*>&              neighboring_beams,
@@ -257,19 +254,32 @@ namespace MODELEVALUATOR{
       std::map<int, std::vector<BindEventData> >& undecidedbonds
     );
 
+    /// decide by asking other procs who is allowed to set specific crosslinker,
+    /// this is necessary to avoid setting crosslinker more than once per time step
+    virtual void ManageBindingInParallel(
+      std::map<int, BindEventData>&               mysetbonds,        // clgid to cldata
+      std::map<int, std::vector<BindEventData> >& undecidedbonds,    // owner of cldatas in vector to be requested
+      std::map<int, BindEventData >&              myelebonds
+    );
+
     /// search for binding events on each proc separately (i.e. pretending myran is alone)
-    //  communication to ensure correct binding over all procs is done afterwards
-    virtual void DoBinding(
+    /// communication to ensure correct binding over all procs is done afterwards
+    virtual void BindCrosslinker(
         std::map<int, BindEventData >& mybonds,
         std::map<int, BindEventData >& myelbonds
     );
 
-    /// decide by asking other procs who is allowed to set specific crosslinker,
-    //  this is necessary to avoid setting crosslinker more than once per time step
-    virtual void DecideBinding(
-      std::map<int, BindEventData>&               mysetbonds,        // clgid to cldata
-      std::map<int, std::vector<BindEventData> >& undecidedbonds,    // owner of cldatas in vector to be requested
-      std::map<int, BindEventData >&              myelebonds
+    /// search and set crosslinker
+    virtual void UnBindCrosslinker();
+
+    /// get crosslink data before evaluation
+    virtual void PreComputeCrosslinkerData(
+      const int numcolcl
+    );
+
+    /// get crosslink data before evaluation
+    virtual void PreComputeBeamData(
+      const int numcolbeams
     );
 
     virtual void CommunicateDoubleBondedCl(
@@ -283,14 +293,11 @@ namespace MODELEVALUATOR{
       std::vector<UnBindEventData>&                 myrankunbindevent
     );
 
-    /// get crosslink data before evaluation
-    virtual void PreComputeCrosslinkerData(
-      const int numcolcl
-    );
-
-    /// get crosslink data before evaluation
-    virtual void PreComputeBeamData(
-      const int numcolbeams
+    /// update map of vector (based on dof map) after redistribution
+    virtual void UpdateDofMapOfVector(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<Epetra_Vector>&      dofmapvec,
+      Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
 
     /// get neighbouring eles in discret
@@ -355,8 +362,11 @@ namespace MODELEVALUATOR{
     //! myrank
     int myrank_;
 
+    //! number of procs
+    int numproc_;
+
     //! interaction discretization handling all interactions (e.g. crosslinker to beam,
-    //  beam to beam, potential ...)
+    //! beam to beam, potential ...)
     Teuchos::RCP<DRT::Discretization> intactdis_;
 
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$ based on maps of interaction discretization
@@ -364,9 +374,6 @@ namespace MODELEVALUATOR{
 
     //! crosslinker management
     Teuchos::RCP<PARTICLE::Algorithm> particlealgo_;
-
-    //! global crosslinker displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> cl_disnp_;
 
     //! crosslinker and bin discretization
     Teuchos::RCP<DRT::Discretization> bindis_;
@@ -380,15 +387,19 @@ namespace MODELEVALUATOR{
     //! extended ele to bin map
     std::map<int, std::set<int> > exteletobinmap_;
 
+    //! type of eles in bins
     INPAR::BINSTRATEGY::BinContent bin_beamcontent_;
 
     //! temporary storage for all relevant crosslinker data
-    //  (vector key is col lid of crosslinker)
+    //! (vector key is col lid of crosslinker)
     std::vector<CrosslinkerData> crosslinker_data_;
 
     //! temporary storage for all relevant beam data during crosslinking
     //  (vector key is col lid of beamele)
     std::vector<BeamData> beam_data_;
+
+    //! double bonded crosslinker that exert forces on network
+    std::map<int, DoubleBondedCl> doublebondcl_;
 
   }; // class Crosslink
 

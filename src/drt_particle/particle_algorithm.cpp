@@ -1126,7 +1126,7 @@ void PARTICLE::Algorithm::ExtendBinGhosting(
   discret->ExportColumnNodes(*nodecolmap);
 
   // fillcomplete discret with extended ghosting
-  discret->FillComplete();
+  discret->FillComplete(true,false,false);
 
   return;
 }
@@ -1375,7 +1375,7 @@ void PARTICLE::Algorithm::BuildBinColMap(
   bindis_->CheckFilledGlobally();
 
   // create ghosting for bins (each knowing its particle ids)
-  bindis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
+  bindis_->ExtendedGhosting(*bincolmap_,true,false,false,false);
 
 #ifdef DEBUG
     // check whether each proc has only particles that are within bins on this proc
@@ -1459,22 +1459,6 @@ void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
   // set of homeless particles
   std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
 
-  // apply periodic boundary conditions for particles
-  if(havepbc_)
-  {
-    for(int i=0; i<disnp->MyLength(); i++)
-    {
-      const int dim = i%3;
-      if(pbconoff_[dim])
-      {
-        if((*disnp)[i] < XAABB_(dim,0))
-          (*disnp)[i] += pbcdeltas_[dim];
-        else if((*disnp)[i] > XAABB_(dim,1))
-          (*disnp)[i] -= pbcdeltas_[dim];
-      }
-    }
-  }
-
   std::set<int> examinedbins;
   // check in each bin whether particles have moved out
   // first run over particles and then process whole bin in which particle is located
@@ -1514,27 +1498,45 @@ void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
     std::vector<int> tobemoved(0);
     for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
     {
+      // get current node
       DRT::Node* currnode = particles[iparticle];
-      // get the first gid of a node and convert it into a LID
-      const int gid = bindis_->Dof(currnode, 0);
-      const int lid = disnp->Map().LID(gid);
 
-      double currpos[3];
-      for(int dim=0; dim<3; ++dim)
-        currpos[dim] = (*disnp)[lid+dim];
-
-      // update reference configuration of particle for correct output and correct placement via MPI
+      // get current position
+      std::vector<double> pos(3,0.0);
+      if(disnp!=Teuchos::null)
       {
-        std::vector<double> update(3,0.0);
-        const double* refposparticle = currnode->X();
-        for(int dim=0; dim<3; ++dim)
+        // get the first gid of a node and convert it into a LID
+        const int gid = bindis_->Dof(currnode, 0);
+        const int lid = disnp->Map().LID(gid);
+
+        // we need to adapt the state vector consistent with periodic boundary conditions
+        if(havepbc_)
         {
-          update[dim] = currpos[dim] - refposparticle[dim];
+          for(int dim=0; dim<3; dim++)
+            ApplyPBCToParticles((*disnp)[lid+dim],dim);
         }
-        // change X() of current particle
-        currnode->ChangePos(update);
-//        std::cout << "particle (Id: " << currnode->Id() << " ) position is updated to" << currnode->X()[0] << "  "<< currnode->X()[1] << "  "<< currnode->X()[2] << "  " << std::endl;
+
+        for(int dim=0; dim<3; ++dim)
+          pos[dim] = (*disnp)[lid+dim];
       }
+      else
+      {
+        for(int dim=0; dim<3; ++dim)
+          pos[dim] = currnode->X()[dim];
+
+        // apply periodic boundary conditions for particles
+        if(havepbc_)
+        {
+          for(int dim=0; dim<3; dim++)
+            ApplyPBCToParticles(pos[dim],dim);
+        }
+      }
+
+      // change X() of current particle
+      currnode->SetPos(pos);
+
+      // transform to array
+      double* currpos = &pos[0];
 
       const int gidofbin = ConvertPosToGid(currpos);
       if(gidofbin != binId) // particle has left current bin
@@ -1563,6 +1565,22 @@ void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
   FillParticlesIntoBinsRemoteIdList(homelessparticles);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | apply periodic boundary conditions to particles          ghamm 10/12 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::ApplyPBCToParticles(double& currpos, int dim)
+{
+  if(pbconoff_[dim])
+  {
+    if(currpos < XAABB_(dim,0))
+      currpos += pbcdeltas_[dim];
+    else if(currpos > XAABB_(dim,1))
+      currpos -= pbcdeltas_[dim];
+  }
 
   return;
 }

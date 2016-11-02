@@ -107,15 +107,37 @@ public:
   //! @name Access methods
 
   /*!
+   \brief Get current binding spot status of linker
+   */
+  const std::vector<std::pair<int, int> >& GetClBSpotStatus()
+  {
+    return clbspots_;
+  }
+
+  /*!
    \brief Get
    */
-  std::vector<std::pair<int, int> >& GetClBSpotStatus(){ return clbspots_; }
+  void SetClBSpotStatus(std::vector<std::pair<int, int> > clbspots)
+  {
+    clbspots_ = clbspots;
+    return;
+  }
 
   /*!
   \brief Get current number of bonds of crosslinker
 
   */
-  int& GetNumberOfBonds() { return numbond_; }
+  const int& GetNumberOfBonds() { return numbond_; }
+
+  /*!
+  \brief Set current number of bonds of crosslinker
+
+  */
+  void SetNumberOfBonds(int numbond)
+  {
+    numbond_ = numbond;
+    return;
+  }
 
   //@}
 
@@ -125,7 +147,7 @@ protected:
   CrosslinkerNodeDataContainer operator =(const CrosslinkerNodeDataContainer& old);
   CrosslinkerNodeDataContainer(const CrosslinkerNodeDataContainer& old);
 
-  std::vector<std::pair<int, int> > clbspots_;   // gid of element to local number of bspot, [0] and [1] first and second bspot
+  std::vector<std::pair<int, int> > clbspots_;   // gid of element to local number of bspot, [0] and [1] first and second bspot of cl
   int numbond_;                                  // number of active bonds
 
 };
@@ -232,11 +254,11 @@ public:
    binding status specific quantities/information are stored.
 
    */
-  inline CROSSLINKING::CrosslinkerNodeDataContainer& ClData() const
+  inline Teuchos::RCP<CROSSLINKING::CrosslinkerNodeDataContainer> ClData() const
   {
     if (cldata_ == Teuchos::null)
       dserror("No crosslinker data attached.");
-    return *cldata_;
+    return cldata_;
   }
 
   /*!

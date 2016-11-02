@@ -91,6 +91,13 @@ namespace TIMINT {
       return statmechprob_;
     };
 
+    /// return flag for statmech model
+    const int& DynLoadBalanceEvery() const
+    {
+      CheckInitSetup();
+      return dynloadbalanceevery_;
+    };
+
     /// return type of predefined neumann boundary condition
     const enum INPAR::STATMECH::NBCType& NbcType() const
     {
@@ -612,6 +619,10 @@ namespace TIMINT {
     // setup statmech model
     //---------------------------------------------------------------------------
     bool statmechprob_;
+    //---------------------------------------------------------------------------
+    // setup statmech model
+    //---------------------------------------------------------------------------
+    int dynloadbalanceevery_;
     //---------------------------------------------------------------------------
     // general statmech simulation flags
     //---------------------------------------------------------------------------

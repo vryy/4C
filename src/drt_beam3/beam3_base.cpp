@@ -27,6 +27,12 @@ interface_ptr_(Teuchos::null),
 sm_interface_ptr_(Teuchos::null)
 
 {
+  // todo: this is a temporary hack, should of course be set from outside
+  bspotposxi_.push_back(-1.0);
+  bspotposxi_.push_back(1.0);
+  bspotstatus_[0] = -1;
+  bspotstatus_[1] = -1;
+
   // empty
 }
 
@@ -35,7 +41,55 @@ sm_interface_ptr_(Teuchos::null)
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
  DRT::Element(old)
 {
-  // empty
+  // todo: this is a temporary hack, should of course be set from outside
+  bspotposxi_.push_back(-1.0);
+  bspotposxi_.push_back(1.0);
+  bspotstatus_[0] = -1;
+  bspotstatus_[1] = -1;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class Element
+  Element::Pack(data);
+
+  // bspotposxi_
+  AddtoPack(data,bspotposxi_);
+  // bspotstatus_
+  AddtoPack(data,bspotstatus_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class Element
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  Element::Unpack(basedata);
+
+  // bspotposxi_
+  ExtractfromPack(position,data,bspotposxi_);
+  // bspotstatus_
+  ExtractfromPack(position,data,bspotstatus_);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -230,7 +284,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
   const int ndim = 3;
 
   // do nothing in case periodic boundary conditions are inactive
-  if(periodlength.at(0) <= 0.0)
+  if(periodlength[0] <= 0.0)
     return;
 
   /* get number of degrees of freedom per node; note:
@@ -250,20 +304,20 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
        * matrices and vectors; this way of detecting shifted nodes works as long
        * as the element length is smaller than half the periodic length*/
       if(std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) +
-                   periodlength.at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
+                   periodlength[dof] - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
          std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
                    (Nodes()[0]->X()[dof] + disp[numdof*0+dof]))
       )
       {
-        disp[numdof*i+dof] += periodlength.at(dof);
+        disp[numdof*i+dof] += periodlength[dof];
       }
       else if(std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
-                        periodlength.at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
+                        periodlength[dof] - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
               std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
                         (Nodes()[0]->X()[dof] + disp[numdof*0+dof]))
       )
       {
-        disp[numdof*i+dof] -= periodlength.at(dof);
+        disp[numdof*i+dof] -= periodlength[dof];
       }
     }
 
@@ -277,6 +331,36 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
                                         const unsigned int nnode) const
 {
   this->UnShiftNodePosition(disp,*(StatMechParamsInterface().GetPeriodLength()),nnode);
+}
+/*--------------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
+                                                   std::vector<double>&       disp,
+                                                   const int&                 bspotlocn,
+                                                   const std::vector<double>& periodlength) const
+{
+  // unshift node position to get correct postion at xi
+  UnShiftNodePosition(disp,periodlength,NumCenterlineNodes());
+
+  const double xi = bspotposxi_[bspotlocn];
+  // get position
+  GetPosAtXi(pos,xi,disp);
+
+  // check if xi lies outside the periodic box, if it does, shift it back in
+  for(int dim=0; dim<3; ++dim)
+  {
+    if(periodlength[dim]>0)
+    {
+      if(pos(dim) < 0)
+        pos(dim) += periodlength[dim];
+      else if(pos(dim) > periodlength[dim])
+        pos(dim) -= periodlength[dim];
+    }
+  }
+
+  // that is it
+  return;
+
 }
 
 // explicit template instantiations
