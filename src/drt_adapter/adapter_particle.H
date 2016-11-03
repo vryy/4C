@@ -157,9 +157,6 @@ namespace ADAPTER
     //! Read-only radii \f$R_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusn() = 0;
 
-    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> RadiusDotn() = 0;
-
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
 
@@ -195,9 +192,6 @@ namespace ADAPTER
     //! Read-only radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() = 0;
 
-    //! Read-only time derivative of radii \f$\dot{R}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> RadiusDotnp() = 0;
-
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
 
@@ -215,6 +209,9 @@ namespace ADAPTER
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
+
+    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() = 0;
 
     //! Read-only masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Mass() = 0;
@@ -262,9 +259,6 @@ namespace ADAPTER
     //! Extract radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() = 0;
 
-    //! Extract time derivative radii \f$\dot{R}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDotnp() = 0;
-
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
 
@@ -279,6 +273,9 @@ namespace ADAPTER
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
+
+    //! Extract time derivative radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() = 0;
 
     //! Extract masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() = 0;

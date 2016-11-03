@@ -80,13 +80,16 @@ namespace PARTICLE
         Teuchos::RCP<Epetra_Vector> veln,
         Teuchos::RCP<Epetra_Vector> angVeln,
         Teuchos::RCP<Epetra_Vector> radiusn,
-        Teuchos::RCP<Epetra_Vector> mass);
+        Teuchos::RCP<Epetra_Vector> mass,
+        Teuchos::RCP<Epetra_Vector> densityn = Teuchos::null,
+        Teuchos::RCP<Epetra_Vector> specEnthalpyn = Teuchos::null);
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual double EvaluateParticleContact(
       double dt,
       Teuchos::RCP<Epetra_Vector> sysvec1,
-      Teuchos::RCP<Epetra_Vector> sysvec2
+      Teuchos::RCP<Epetra_Vector> sysvec2,
+      Teuchos::RCP<Epetra_Vector> sysvec3 = Teuchos::null
       ) = 0;
 
     /// assemble energies of particles
@@ -234,7 +237,8 @@ namespace PARTICLE
   virtual double EvaluateParticleContact(
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
-    Teuchos::RCP<Epetra_Vector> m_contact);
+    Teuchos::RCP<Epetra_Vector> m_contact,
+    Teuchos::RCP<Epetra_Vector> specEnthalpyDotn = Teuchos::null);
 
   /// calculate contact with neighboring particles
   virtual void CalcNeighboringParticlesContact(
@@ -266,7 +270,7 @@ namespace PARTICLE
     DRT::Node* particle_i,
     const ParticleCollData& data_i,
     const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
-    const double invDt);
+    const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
 
   /// calculate normal contact force for single contact pair
   virtual void CalculateNormalContactForce(
@@ -389,8 +393,8 @@ namespace PARTICLE
     virtual double EvaluateParticleContact(
       double dt,
       Teuchos::RCP<Epetra_Vector> disn,
-      Teuchos::RCP<Epetra_Vector> veln
-      );
+      Teuchos::RCP<Epetra_Vector> veln,
+      Teuchos::RCP<Epetra_Vector> specEnthalpyn = Teuchos::null);
 
     /// contact for one event is evaluated
     void HandleCollision(
@@ -578,6 +582,8 @@ namespace PARTICLE
     double ddt;
     double rad;
     double mass;
+    double density;
+    double specEnthalpy;
     std::vector<int> lm;
     int owner;
   };

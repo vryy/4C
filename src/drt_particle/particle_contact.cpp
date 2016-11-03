@@ -17,6 +17,7 @@
 #include "particle_contact.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
+#include "heatSource.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -331,7 +332,9 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> angVeln,
     Teuchos::RCP<Epetra_Vector> radiusn,
-    Teuchos::RCP<Epetra_Vector> mass)
+    Teuchos::RCP<Epetra_Vector> mass,
+    Teuchos::RCP<Epetra_Vector> densityn,
+    Teuchos::RCP<Epetra_Vector> specEnthalpyn)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::ContactInit");
   // export everything in col layout
@@ -358,6 +361,16 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   Epetra_Import nodeimporter(*discret_->NodeColMap(), *discret_->NodeRowMap());
   err += radiusnCol->Import(*radiusn, nodeimporter, Insert);
   err += massCol->Import(*mass, nodeimporter, Insert);
+
+  Teuchos::RCP<Epetra_Vector> densityCol, specEnthalpyCol;
+  if (densityn != Teuchos::null)
+  {
+    densityCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+    specEnthalpyCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+    err += densityCol->Import(*densityn, nodeimporter, Insert);
+    err += specEnthalpyCol->Import(*specEnthalpyn, nodeimporter, Insert);
+  }
+
   if (err)
     dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
 
@@ -387,6 +400,12 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     // radius and mass of particle
     data.rad = (*radiusnCol)[lid];
     data.mass = (*massCol)[lid];
+    if (densityn != Teuchos::null)
+    {
+      data.density = (*densityCol)[lid];
+      data.specEnthalpy = (*specEnthalpyCol)[lid];
+    }
+
     // set ddt
     data.ddt = 0;
 
@@ -453,13 +472,12 @@ PARTICLE::ParticleCollisionHandlerDEM::ParticleCollisionHandlerDEM(
 double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   const double dt,
   Teuchos::RCP<Epetra_Vector> f_contact,
-  Teuchos::RCP<Epetra_Vector> m_contact)
+  Teuchos::RCP<Epetra_Vector> m_contact,
+  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
   contact_energy_ = 0.0;
-
-  const double invDt = 1/dt;
 
   // get wall discretization and states for particles
   Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
@@ -512,7 +530,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     std::set<DRT::Element*> neighboring_walls;
 
     // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources;
+    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::rcp(new std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>);
 
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
 
@@ -532,8 +550,8 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
           havepbc, dt, f_contact, m_contact);
 
-      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-        CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, invDt);
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+        CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, specEnthalpyDotn);
     }
   }
 
@@ -596,12 +614,24 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringHeatSourcesContact(
   DRT::Node* particle_i,
   const ParticleCollData& data_i,
   const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
-  const double invDt)
+  const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn)
 {
-  // extract the particle_timint
-  const Teuchos::RCP<ADAPTER::Particle> adapterParticle = particle_algorithm_->AdapterParticle();
-  // extract the interesting state vectors (yes, it is a workaround)
-  //const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn = adapterParticle->WriteAccess
+  double specEnthalpyDot_i = 0.0;
+  std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>::const_iterator hs;
+  for(hs = neighboring_heatSources->begin(); hs != neighboring_heatSources->end();  ++hs)
+  {
+    if ((*hs)->minVerZone_[0]<=data_i.dis(0) &&
+        (*hs)->minVerZone_[1]<=data_i.dis(1) &&
+        (*hs)->minVerZone_[2]<=data_i.dis(2) &&
+        (*hs)->maxVerZone_[0]>=data_i.dis(0) &&
+        (*hs)->maxVerZone_[1]>=data_i.dis(1) &&
+        (*hs)->maxVerZone_[2]>=data_i.dis(2))
+    {
+      specEnthalpyDot_i += ((*hs)->QDot_)/data_i.density;
+    }
+  }
+
+  LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDot_i, particle_i->Id(), particle_i->Owner());
 }
 
 
@@ -1461,8 +1491,8 @@ PARTICLE::ParticleCollisionHandlerMD::ParticleCollisionHandlerMD(
 double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
   double dt,
   Teuchos::RCP<Epetra_Vector> disn,
-  Teuchos::RCP<Epetra_Vector> veln
-  )
+  Teuchos::RCP<Epetra_Vector> veln,
+  Teuchos::RCP<Epetra_Vector> specEnthalpyn)
 {
 
   // ddt is the most advanced collision time (between [0,dt))

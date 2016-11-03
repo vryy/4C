@@ -127,6 +127,7 @@ void PARTICLE::Algorithm::Timeloop()
     {
     case INPAR::PARTICLE::MeshFree :
     case INPAR::PARTICLE::Normal_DEM_thermo :
+      ThermicExpansion();
       ParticleDismemberer();
       break;
     default : //do nothing
@@ -2295,6 +2296,102 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 
 
 /*----------------------------------------------------------------------*
+ | get the GIDs of the neighbouring bins                   ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetNeighbouringBinGids(
+    const int         currbinId,
+    std::vector<int>& neighbourbinIds)
+{
+  int ijk[3];
+  ConvertGidToijk(currbinId,ijk);
+
+  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
+  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
+
+  // do not check on existence here -> shifted to GetBinContent
+  GidsInijkRange(ijk_range,neighbourbinIds,false);
+}
+
+/*----------------------------------------------------------------------*
+ | get particles and wall elements in given bins           ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetBinContent(
+  std::list<DRT::Node*> &particles,
+  std::set<DRT::Element*> &walls,
+  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > heatSources,
+  std::vector<int> &binIds)
+{
+  // loop over all bins
+  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  {
+    // extract bins from discretization after checking on existence
+    const int lid = bindis_->ElementColMap()->LID(*bin);
+    if(lid<0)
+      continue;
+
+#ifdef DEBUG
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+
+    // gather particles
+    DRT::Node** nodes = neighboringbin->Nodes();
+    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
+
+    // gather wall elements
+    DRT::Element** walleles = neighboringbin->AssociatedEles(bin_surfcontent_);
+    const int numwalls = neighboringbin->NumAssociatedEle(bin_surfcontent_);
+    for(int iwall=0;iwall<numwalls; ++iwall)
+      walls.insert(walleles[iwall]);
+
+    // gather heat sources
+    if (heatSources != Teuchos::null)
+      for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
+        heatSources->insert(*iHS);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | get elements in given bins                              ghamm 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetBinContent(
+  std::set<DRT::Element*>        &eles,
+  INPAR::BINSTRATEGY::BinContent bincontent,
+  std::vector<int>&              binIds,
+  bool                           roweles
+  )
+{
+  // loop over all bins
+  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  {
+    // extract bins from discretization after checking on existence
+    const int lid = bindis_->ElementColMap()->LID(*bin);
+    if(lid<0)
+      continue;
+
+#ifdef DEBUG
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+
+    // gather wall elements
+    DRT::Element** elements = neighboringbin->AssociatedEles(bincontent);
+    const int numeles = neighboringbin->NumAssociatedEle(bincontent);
+    for(int iele=0;iele<numeles; ++iele)
+    {
+      if(roweles && elements[iele]->Owner() != myrank_)
+        continue;
+      eles.insert(elements[iele]);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  | particleDismemberer                                     catta 07/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ParticleDismemberer()
@@ -2503,7 +2600,6 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 /*----------------------------------------------------------------------*
  | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
  *----------------------------------------------------------------------*/
-
 void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
     Teuchos::RCP<Epetra_Vector> &mass,
     Teuchos::RCP<Epetra_Vector> &densitynp,
@@ -2518,97 +2614,166 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
   (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius,3));
 }
 
-/*----------------------------------------------------------------------*
- | get the GIDs of the neighbouring bins                   ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetNeighbouringBinGids(
-    const int         currbinId,
-    std::vector<int>& neighbourbinIds)
+
+/*------------------------------------------------------------------------*
+ | compute thermodynamic expansion - new densities and radii catta 06/16  |
+ *------------------------------------------------------------------------*/
+void PARTICLE::Algorithm::ThermicExpansion()
 {
-  int ijk[3];
-  ConvertGidToijk(currbinId,ijk);
+  // extract the interesting state vectors
+  Teuchos::RCP<const Epetra_Vector> mass = particles_->Mass();
+  Teuchos::RCP<const Epetra_Vector> specEnthalpy = particles_->SpecEnthalpyn();
+  Teuchos::RCP<const Epetra_Vector> specEnthalpyn = particles_->SpecEnthalpynp();
+  Teuchos::RCP<Epetra_Vector> densityn = particles_->WriteAccessDensitynp();
+  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusnp();
 
-  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
-  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
+  // extract the material parameters for easy access
+  const double specEnthalpyST = extParticleMat_->SpecEnthalpyST();
+  const double specEnthalpyTL = extParticleMat_->SpecEnthalpyTL();
+  const double CPS = extParticleMat_->CPS_;
+  const double inv_CPS = 1/CPS;
+  const double CPL = extParticleMat_->CPL_;
+  const double inv_CPL = 1/CPL;
+  const double latentHeat = extParticleMat_->latentHeat_;
+  const double thermalExpansionS = extParticleMat_->thermalExpansionS_;
+  const double thermalExpansionL = extParticleMat_->thermalExpansionL_;
+  const double thermalExpansionT = extParticleMat_->thermalExpansionT_;
 
-  // do not check on existence here -> shifted to GetBinContent
-  GidsInijkRange(ijk_range,neighbourbinIds,false);
-}
-
-/*----------------------------------------------------------------------*
- | get particles and wall elements in given bins           ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetBinContent(
-  std::list<DRT::Node*> &particles,
-  std::set<DRT::Element*> &walls,
-  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > heatSources,
-  std::vector<int> &binIds)
-{
-  // loop over all bins
-  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  // update the other state vectors (\rho and R)
+  for (int lidNode = 0; lidNode < mass->MyLength(); ++lidNode)
   {
-    // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(*bin);
-    if(lid<0)
-      continue;
-
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-
-    // gather particles
-    DRT::Node** nodes = neighboringbin->Nodes();
-    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
-
-    // gather wall elements
-    DRT::Element** walleles = neighboringbin->AssociatedEles(bin_surfcontent_);
-    const int numwalls = neighboringbin->NumAssociatedEle(bin_surfcontent_);
-    for(int iwall=0;iwall<numwalls; ++iwall)
-      walls.insert(walleles[iwall]);
-
-    // gather heat sources
-    if (heatSources != Teuchos::null)
-      for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
-        heatSources->insert(*iHS);
-  }
-}
-
-/*----------------------------------------------------------------------*
- | get elements in given bins                              ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetBinContent(
-  std::set<DRT::Element*>        &eles,
-  INPAR::BINSTRATEGY::BinContent bincontent,
-  std::vector<int>&              binIds,
-  bool                           roweles
-  )
-{
-  // loop over all bins
-  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
-  {
-    // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(*bin);
-    if(lid<0)
-      continue;
-
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-
-    // gather wall elements
-    DRT::Element** elements = neighboringbin->AssociatedEles(bincontent);
-    const int numeles = neighboringbin->NumAssociatedEle(bincontent);
-    for(int iele=0;iele<numeles; ++iele)
+    const double oldSpecEnthalpy = (*specEnthalpy)[lidNode];
+    const double newSpecEnthalpy = (*specEnthalpyn)[lidNode];
+    // skip in case the specEnthalpy did not change
+    if (newSpecEnthalpy != oldSpecEnthalpy)
     {
-      if(roweles && elements[iele]->Owner() != myrank_)
-        continue;
-      eles.insert(elements[iele]);
+      // compute the current volume
+      double volume = PARTICLE::Utils::Radius2Volume((*radiusn)[lidNode]);
+      // specEnthalpy difference
+      double deltaSpecEnthalpy = newSpecEnthalpy - oldSpecEnthalpy;
+
+      // --- compute the new volume --- //
+
+      // WAS it solid?
+      if (oldSpecEnthalpy <= specEnthalpyST)
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+        {
+          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
+        }
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in solid state
+          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= thermalExpansionT * latentHeat + 1;
+          deltaSpecEnthalpy -= latentHeat;
+
+          // expansion in liquid state
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
+        }
+        // it IS transition state
+        else
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in solid state
+          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
+        }
+      }
+      // WAS it liquid?
+      else if (oldSpecEnthalpy >= specEnthalpyTL)
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in liquid state
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in the transition state
+          volume *= thermalExpansionT *(- latentHeat) + 1;
+          deltaSpecEnthalpy -= -latentHeat;
+
+          // expansion in liquid state
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
+        }
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
+        // it IS transition state
+        else
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in liquid state
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in transition state
+          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
+        }
+      }
+      // it WAS in transition state
+      else
+      {
+        // IS it solid?
+        if (newSpecEnthalpy <= specEnthalpyST)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
+
+          // expansion in transition state
+          volume *= thermalExpansionT * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in liquid state
+          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
+        }
+        // IS it liquid?
+        else if (newSpecEnthalpy >= specEnthalpyTL)
+        {
+          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
+
+          // expansion in transition state
+          volume *= thermalExpansionT * deltaSpecEnthalpyUpToTransition + 1;
+          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
+
+          // expansion in liquid state
+          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
+        }
+        // it IS transition state
+        else
+          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
+      }
+
+      // --- compute the new volume --- //
+
+      // updates
+      (*radiusn)[lidNode] = PARTICLE::Utils::Volume2Radius(volume);
+      (*densityn)[lidNode] = (*mass)[lidNode]/volume;
     }
   }
 }
+/*
+//! small support function for ComputeThermodynamics - update density
+void DensityUpdater(const double &thermalExpansion, const double &delta, double &density) {density /= (EffExpCoeff(thermalExpansion, delta)); }
+
+//! small support function for ComputeThermodynamics - update radius
+void RadiusUpdater(const double &thermalExpansion, const double &delta, double &radius) {radius *= std::pow(EffExpCoeff(thermalExpansion, delta), 1/3.0); }
+
+//! expansion coefficient for radius and density (in case of thermodinamics)
+virtual double EffExpCoeff(const double &thermalExpansion, const double &delta) {return thermalExpansion * delta + 1; }
+
+*/

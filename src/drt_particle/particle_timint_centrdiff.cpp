@@ -135,15 +135,15 @@ void PARTICLE::TimIntCentrDiff::Init()
     const double deltaSpecEnthalpy = max_QDot * (*dt_)[0]/min_density;
 
     double volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
+    volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
     double v_max_thermo = 2*(PARTICLE::Utils::Volume2Radius(volume) - r_max);
 
     volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
+    volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
     v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
 
     volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
+    volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
     v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
 
     if (v_max_thermo > 0.01 * v_max)
@@ -155,299 +155,84 @@ void PARTICLE::TimIntCentrDiff::Init()
 /* Integrate step */
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
-  // Temperatures are slaves of displacements meaning that there is a time-lag
-  // of one time step because ComputeTemperatures is based on disn_ {n+1}.
-  // It can change in the future, just invert their order here
-  ComputeDisplacements();
-
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo ||
-      particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-    ComputeThermodynamics();
-
-  return 0;
-}
-
-/*----------------------------------------------------------------------*/
-/* integrate step - thermodynamics*/
-void PARTICLE::TimIntCentrDiff::ComputeThermodynamics()
-{
   const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+    const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
-  // extract the material properties
-  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  const double specEnthalpyST = extParticleMat->SpecEnthalpyST();
-  const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
-  const double CPS = extParticleMat->CPS_;
-  const double inv_CPS = 1/CPS;
-  const double CPL = extParticleMat->CPL_;
-  const double inv_CPL = 1/CPL;
-  const double latentHeatT = extParticleMat->latentHeat_;
-  const double thermalExpansionS = extParticleMat->thermalExpansionS_;
-  const double thermalExpansionL = extParticleMat->thermalExpansionL_;
-  const double thermalExpansionT = extParticleMat->thermalExpansionT_;
+    // new velocities \f$V_{n+1/2}\f$
+    veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
-  // extract the map
-  const std::map<int, std::list<Teuchos::RCP<HeatSource> > >& bins2heatSources = particle_algorithm_->Bins2HeatSources();
+    // new displacements \f$D_{n+1}\f$
+    disn_->Update(dt, *veln_, 1.0);
 
-  // cycle over the map
-  std::map<int, std::list<Teuchos::RCP<HeatSource> > >::const_iterator i_bin;
-  for (i_bin = bins2heatSources.begin(); i_bin != bins2heatSources.end(); ++i_bin)
-  {
-    // extract the current bin
-    DRT::Element* currbin = discret_->gElement(i_bin->first);
+    // apply Dirichlet BCs
+    ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
+    ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
-    if(currbin->Owner() != myrank_)
-      dserror("trying to eval a ghost bin :-(");
+    // define vector for contact force and moment
+    Teuchos::RCP<Epetra_Vector> f_contact = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> m_contact = Teuchos::null;
 
-    // find the nodes of the bin
-    DRT::Node** particles = currbin->Nodes();
-
-    // cycle over the heat sources
-    std::list<Teuchos::RCP<HeatSource> >::const_iterator i_HS;
-    for (i_HS = i_bin->second.begin(); i_HS != i_bin->second.end(); i_HS++)
+    // total internal energy (elastic spring and potential energy)
+    intergy_ = 0.0;
+    //---------------------Compute Collisions-----------------------
+    if(collhandler_ != Teuchos::null)
     {
-      // extract vertexes
-      const double* minVerZone = &(*i_HS)->minVerZone_[0];
-      const double* maxVerZone = &(*i_HS)->maxVerZone_[0];
-      const double QDot = (*i_HS)->QDot_;
+      // new angular-velocities \f$ang_V_{n+1/2}\f$
+      angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
 
-      // cycle over the nodes of the bin
-      const int numNode = currbin->NumNode();
-      for(int i_particle=0; i_particle < numNode; i_particle++)
-      {
-        // position of the current particle
-        DRT::Node* activeNode = particles[i_particle];
+      // initialize vectors for contact force and moment
+      f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+      m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-        int gidDof = discret_->Dof(activeNode,0);
-        int lidDof = disn_->Map().LID(gidDof);
+      SetStatesForCollision();
 
-        if (minVerZone[0]<=(*disn_)[lidDof  ] &&
-            minVerZone[1]<=(*disn_)[lidDof+1] &&
-            minVerZone[2]<=(*disn_)[lidDof+2] &&
-            maxVerZone[0]>=(*disn_)[lidDof  ] &&
-            maxVerZone[1]>=(*disn_)[lidDof+1] &&
-            maxVerZone[2]>=(*disn_)[lidDof+2])
-        {
-          // find the node position
-          const int gidNode = activeNode->Id();
-          const int lidNode = discret_->NodeRowMap()->LID(gidNode);
-          if(lidNode < 0)
-            dserror("lidNode is not on this proc ");
-          // update specEnthalpy
-          (*specEnthalpyn_)[lidNode] += (QDot * dt)/(*densityn_)[lidNode];
-        }
-      }
+      intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
     }
-  }
+    //--------------------------------------------------------------
 
-  // update the other state vectors (\rho and R)
-  for (int lidNode = 0; lidNode < discret_->NumMyRowNodes(); ++lidNode)
-  {
-    const double oldSpecEnthalpy = (*(*specEnthalpy_)(0))[lidNode];
-    const double newSpecEnthalpy = (*specEnthalpyn_)[lidNode];
-    // skip in case the specEnthalpy did not change
-    if (newSpecEnthalpy != oldSpecEnthalpy)
+    if (interHandler_ != Teuchos::null)
     {
-      // compute the current volume
-      double volume = PARTICLE::Utils::Radius2Volume((*radiusn_)[lidNode]);
-      // specEnthalpy difference
-      double deltaSpecEnthalpy = newSpecEnthalpy - oldSpecEnthalpy;
+      // the density update scheme is equal to the acceleration update scheme. It can change at your will
 
-      // --- compute the new volume --- //
+      SetStatesForCollision();
 
-      // WAS it solid?
-      if (oldSpecEnthalpy <= specEnthalpyST)
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in solid state
-          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionT,latentHeatT);
-          deltaSpecEnthalpy -= latentHeatT;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
-        }
-        // it IS transition state
-        else
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in solid state
-          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
-        }
-      }
-      // WAS it liquid?
-      else if (oldSpecEnthalpy >= specEnthalpyTL)
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in the transition state
-          volume *= EffExpCoeff(thermalExpansionT,-latentHeatT);
-          deltaSpecEnthalpy -= -latentHeatT;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
-        }
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
-        // it IS transition state
-        else
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
-        }
-      }
-      // it WAS in transition state
-      else
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPS * thermalExpansionS,deltaSpecEnthalpy);
-        }
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in transition state
-          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpyUpToTransition);
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in liquid state
-          volume *= EffExpCoeff(inv_CPL * thermalExpansionL,deltaSpecEnthalpy);
-        }
-        // it IS transition state
-        else
-          volume *= EffExpCoeff(thermalExpansionT,deltaSpecEnthalpy);
-      }
-
-      // --- compute the new volume --- //
-
-      // updates
-      (*radiusn_)[lidNode] = PARTICLE::Utils::Volume2Radius(volume);
-      (*densityn_)[lidNode] = (*mass_)[lidNode]/volume;
+      // direct update of the accelerations
+      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_);
     }
-  }
+    else
+      ComputeAcc(f_contact, m_contact, accn_, angAccn_);
+
+    //--- update with the new accelerations ---//
+
+    // update of end-velocities \f$V_{n+1}\f$
+    veln_->Update(dthalf, *accn_, 1.0);
+
+    switch (particle_algorithm_->ParticleInteractionType())
+    {
+    case INPAR::PARTICLE::MeshFree :
+    {
+      densityn_->Update(dt, *densityDotn_, 1.0);
+    }// no break
+    case INPAR::PARTICLE::Normal_DEM_thermo :
+    {
+      specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
+      break;
+    }
+    default :
+      break;
+    }
+
+
+    if(collhandler_ != Teuchos::null)
+    {
+      angVeln_->Update(dthalf,*angAccn_,1.0);
+      // for visualization of orientation vector
+      if(writeorientation_)
+        RotateOrientVector(dt);
+    }
+
+    // apply Dirichlet BCs
+    ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
+
+    return 0;
 }
-
-/*----------------------------------------------------------------------*/
-/* integrate step - displacement related physics*/
-void PARTICLE::TimIntCentrDiff::ComputeDisplacements()
-{
-  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
-  const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
-
-  // new velocities \f$V_{n+1/2}\f$
-  veln_->Update(dthalf, *(*acc_)(0), 1.0);
-
-  // new displacements \f$D_{n+1}\f$
-  disn_->Update(dt, *veln_, 1.0);
-
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    radiusn_->Update(dt, *(*radiusDotn_)(0), 1.0);
-    densityn_->Update(dt, *(*densityDotn_)(0), 1.0);
-    specEnthalpyn_->Update(dt, *(*specEnthalpyDotn_)(0), 1.0);
-    break;
-  }
-  default :
-    break;
-  }
-
-  // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
-  ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
-
-  // define vector for contact force and moment
-  Teuchos::RCP<Epetra_Vector> f_contact = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> m_contact = Teuchos::null;
-
-  // total internal energy (elastic spring and potential energy)
-  intergy_ = 0.0;
-  //---------------------Compute Collisions-----------------------
-  if(collhandler_ != Teuchos::null)
-  {
-    // new angular-velocities \f$ang_V_{n+1/2}\f$
-    angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
-
-    // initialize vectors for contact force and moment
-    f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-
-    SetStatesForCollision();
-
-    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact);
-  }
-  //--------------------------------------------------------------
-
-  if (interHandler_ != Teuchos::null)
-  {
-    // the density update scheme is equal to the acceleration update scheme. It can change at your will
-    //densityn_->Update(dthalf, *(*densityDot_)(0), 1.0);
-    densityn_->Update(dt, *(*densityDot_)(0), 1.0);
-
-    SetStatesForCollision();
-
-    // direct update of the accelerations
-    interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_);
-
-    //densityn_->Update(dthalf, *densityDotn_, 1.0);
-  }
-  else
-    ComputeAcc(f_contact, m_contact, accn_, angAccn_);
-
-  // update of end-velocities \f$V_{n+1}\f$
-  veln_->Update(dthalf, *accn_, 1.0);
-  if(collhandler_ != Teuchos::null)
-  {
-    angVeln_->Update(dthalf,*angAccn_,1.0);
-    // for visualization of orientation vector
-    if(writeorientation_)
-      RotateOrientVector(dt);
-  }
-
-  // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
-}
-
-
-

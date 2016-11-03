@@ -74,16 +74,16 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    //    \dot{\rho}_{n} := \dot{\rho}_{n+1}, \dot{\rho}_{n-1} := \dot{\rho}_{n}
+    densityDot_->UpdateSteps(*densityDotn_);
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     //    R_{n} := R_{n+1}, R_{n-1} := R_{n}
     radius_->UpdateSteps(*radiusn_);
-    //    \dot{R}_{n} := \dot{R}_{n+1}, \dot{R}_{n-1} := \dot{R}_{n}
-    radiusDot_->UpdateSteps(*radiusDotn_);
     //    \rho_{n} := \rho_{n+1}, \rho_{n-1} := \rho_{n}
     density_->UpdateSteps(*densityn_);
-    //    \dot{\rho}_{n} := \dot{\rho}_{n+1}, \dot{\rho}_{n-1} := \dot{\rho}_{n}
-    densityDot_->UpdateSteps(*densityDotn_);
     //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
     //    \dot{H}_{n} := \dot{H}_{n+1}, \dot{H}_{n-1} := \dot{H}_{n}
@@ -126,7 +126,7 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   }
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
-    collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_);
+    collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
     break;
   }
   default :

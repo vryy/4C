@@ -668,7 +668,7 @@ void CAVITATION::Algorithm::SaveParticleData()
 
   if(computeradiusRPbased_)
   {
-    storeraddot_ = Teuchos::rcp(new Epetra_Vector(*particles_->RadiusDotnp()));
+    storeraddot_ = Teuchos::rcp(new Epetra_Vector(*particles_->RadiusDot()));
     storedtsub_ = Teuchos::rcp(new Epetra_Vector(*dtsub_));
   }
 
@@ -712,7 +712,7 @@ void CAVITATION::Algorithm::ResetParticleData()
 
   if(computeradiusRPbased_)
   {
-    particles_->WriteAccessRadiusDotnp()->Update(1.0, *storeraddot_, 0.0);
+    particles_->WriteAccessRadiusDot()->Update(1.0, *storeraddot_, 0.0);
     dtsub_->Update(1.0, *storedtsub_, 0.0);
     // export pg0_ as this vector is not stored
     Teuchos::RCP<Epetra_Vector> old = pg0_;
@@ -894,7 +894,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   // extract variables
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
-  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDotnp();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
   Teuchos::RCP<const Epetra_Vector> bubbleradiusn = particles_->Radiusn();
   Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
 
@@ -2187,7 +2187,7 @@ void CAVITATION::Algorithm::ComputeRadius()
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
   Teuchos::RCP<const Epetra_Vector> bubbleradius0 = particles_->Radius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusn = particles_->WriteAccessRadiusn();
-  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDotnp();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
   Teuchos::RCP<const Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
   Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
@@ -2713,7 +2713,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> massn = particles_->WriteAccessMass();
   Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
-  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDotnp();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
   const double initDensity = particleMat_->initDensity_;
 

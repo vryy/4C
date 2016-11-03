@@ -69,24 +69,7 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep();
 
-    //! small support function for ComputeThermodynamics - update density
-    void DensityUpdater(const double &thermalExpansion, const double &delta, double &density) {density /= (EffExpCoeff(thermalExpansion, delta)); }
-
-    //! small support function for ComputeThermodynamics - update radius
-    void RadiusUpdater(const double &thermalExpansion, const double &delta, double &radius) {radius *= std::pow(EffExpCoeff(thermalExpansion, delta), 1/3.0); }
-
     //@}
-
-  protected:
-
-    //! integrate step - displacement-related physics
-    virtual void ComputeDisplacements();
-
-    //! integrate step - thermodynamic-related physics
-    virtual void ComputeThermodynamics();
-
-    //! expansion coefficient for radius and density (in case of thermodinamics)
-    virtual double EffExpCoeff(const double &thermalExpansion, const double &delta) {return thermalExpansion * delta + 1; }
 
   };  // class TimIntCentrDiff
 

@@ -285,11 +285,18 @@ namespace PARTICLE
     /// update connectivity: mask to sort various connectivity updates
     virtual void UpdateConnectivity();
 
+    /// get particles and wall elements in given bins
+    void GetBinContent(
+      std::list<DRT::Node*>& particles,
+      std::set<DRT::Element*>& walls,
+      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+      std::vector<int>& binIds);
+
     /// dismember particle using the dismembering radius (it shall be smaller than the oldParticleRadius)
     virtual void ParticleDismemberer();
 
     /// mass and density updater for particle dismemberer
-    void MassDensityUpdaterForParticleDismemberer(
+    virtual void MassDensityUpdaterForParticleDismemberer(
         Teuchos::RCP<Epetra_Vector> &mass,
         Teuchos::RCP<Epetra_Vector> &density,
         Teuchos::RCP<Epetra_Vector> &radius,
@@ -301,12 +308,8 @@ namespace PARTICLE
     virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep)
       {return (oldRadius-semiStep)/(2 * semiStep) + 2; }
 
-    /// get particles and wall elements in given bins
-    void GetBinContent(
-      std::list<DRT::Node*>& particles,
-      std::set<DRT::Element*>& walls,
-      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
-      std::vector<int>& binIds);
+    /// compute thermodynamic expansion - new densities and radii
+    virtual void ThermicExpansion();
 
     //! @name particle related stuff
     //@{

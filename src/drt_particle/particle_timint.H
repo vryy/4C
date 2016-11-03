@@ -268,9 +268,6 @@ namespace PARTICLE
     //! Read-only radii \f$R_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return (*radius_)(0); }
 
-    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> RadiusDotn() { return (*radiusDot_)(0); }
-
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
 
@@ -304,9 +301,6 @@ namespace PARTICLE
     //! Read-only radii \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() { return radiusn_; }
 
-    //! Read-only time derivative of radii \f$\dot{R}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> RadiusDotnp() { return radiusDotn_; }
-
     //! Read-only densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
 
@@ -324,6 +318,9 @@ namespace PARTICLE
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
+
+    //! Read-only time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusDot_; }
 
     //! Read-only masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
@@ -371,9 +368,6 @@ namespace PARTICLE
     //! Extract radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() { return radiusn_; }
 
-    //! Extract time derivative radii \f$\dot{R}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDotnp() { return radiusDotn_; }
-
     //! Extract densities \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
 
@@ -388,6 +382,9 @@ namespace PARTICLE
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
+
+    //! Extract time derivative radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusDot_; }
 
     //! Extract masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
@@ -515,8 +512,6 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angAcc_;
     //! Radii \f$R_{n}, R_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
-    //! Time derivative of radii \f$\dot{R}_{n}, \dot{R}_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radiusDot_;
     //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
     //! Time derivative of densities \f$\dot{\rho}_{n}, \dot{\rho}_{n-1}, ...\f$
@@ -538,8 +533,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> angAccn_;
     //! Radii \f$R_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> radiusn_;
-    //! Time derivative of radii \f$\dot{R}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> radiusDotn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
     //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
@@ -556,6 +549,8 @@ namespace PARTICLE
 
     //! Radii \f$R_{0}\f$
     Teuchos::RCP<Epetra_Vector> radius0_;
+    //! Time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> radiusDot_;
     //! Masses \f$M_{n}\f$ or \f$M_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
