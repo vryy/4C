@@ -1694,8 +1694,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     // gather all particles and walls in the vicinity of currparticle
     std::list<DRT::Node*> neighboring_particles;
     std::set<DRT::Element*> neighboring_walls;
-    std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
-    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighboring_walls, neighboring_heatSources);
+    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighboring_walls);
 
     // loop over all neighbouring particles and check if the sum of their radii is larger than their distance
     for (std::list<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
