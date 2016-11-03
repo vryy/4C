@@ -161,7 +161,7 @@ protected:
     // number space dimensions for element
     const size_t nsd = projection_matrix.Rows();
 #ifdef DEBUG
-    if (projection_matrix.Rows() != projection_matrix.Cols || projection_matrix.Rows() != normal.Rows())
+    if (projection_matrix.Rows() != projection_matrix.Cols() || projection_matrix.Rows() != normal.Rows())
       dserror("EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not fit!");
 #endif
 
