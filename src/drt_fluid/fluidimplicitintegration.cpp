@@ -414,16 +414,27 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
   // check number of flow-rate and flow-volume boundary conditions
   if (flowdeppressureline.size() > 0 or flowdeppressuresurf.size() > 0)
   {
-    // initialize vectors for flow rate and volume
-    flowratenp_(true);
-    flowratenpi_(true);
-    flowraten_(true);
-    flowratenm_(true);
+    // get the number of flow dependent line or surface conditions
+    std::string fdpcondname;
+    if (flowdeppressureline.size() != 0)      fdpcondname = "LineFlowDepPressure";
+    else if (flowdeppressuresurf.size() != 0) fdpcondname = "SurfaceFlowDepPressure";
+    else dserror("Line and surface flow-dependent pressure boundary conditions simultaneously prescribed!");
 
-    flowvolumenp_(true);
-    flowvolumenpi_(true);
-    flowvolumen_(true);
-    flowvolumenm_(true);
+    // get condition vector
+    std::vector<DRT::Condition*> fdpcond;
+    discret_->GetCondition(fdpcondname,fdpcond);
+
+    // initialize vectors for flow rate and volume
+    size_t numcond = (int) fdpcond.size();
+    flowratenp_.resize(numcond, 0.0);
+    flowratenpi_.resize(numcond, 0.0);
+    flowraten_.resize(numcond, 0.0);
+    flowratenm_.resize(numcond, 0.0);
+
+    flowvolumenp_.resize(numcond, 0.0);
+    flowvolumenpi_.resize(numcond, 0.0);
+    flowvolumen_.resize(numcond, 0.0);
+    flowvolumenm_.resize(numcond, 0.0);
   }
 
   // check number of impedance boundary conditions
@@ -1366,10 +1377,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // initialization of values at first time step
       if (step_ <= 1)
       {
-        flowraten_(fdpcondid) = 0.0;
-        flowratenm_(fdpcondid) = 0.0;
-        flowvolumen_(fdpcondid) = 0.0;
-        flowvolumenm_(fdpcondid) = 0.0;
+        flowraten_[fdpcondid] = 0.0;
+        flowratenm_[fdpcondid] = 0.0;
+        flowvolumen_[fdpcondid] = 0.0;
+        flowvolumenm_[fdpcondid] = 0.0;
       }
 
       //--------------------------------------------------------------------
@@ -1402,10 +1413,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
       // set current flow rate
-      flowratenp_(fdpcondid) = flowrate;
+      flowratenp_[fdpcondid] = flowrate;
 
       // compute flow rate used for evaluation of boundary condition below
-      flowraterel[fdpcondid] = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
+      flowraterel[fdpcondid] = (1.0-timefac)*flowraten_[fdpcondid] + timefac*((1.0-relaxpara)*flowratenpi_[fdpcondid] + relaxpara*flowratenp_[fdpcondid]);
 
       // clear state
       discret_->ClearState();
@@ -1415,14 +1426,14 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       //--------------------------------------------------------------------
       // compute current flow volume as integral of flow rate according to
       // trapezoidal rule
-      flowvolumenp_(fdpcondid) = flowvolumen_(fdpcondid) + 0.5*dta_*(flowratenp_(fdpcondid)+flowraten_(fdpcondid));
+      flowvolumenp_[fdpcondid] = flowvolumen_[fdpcondid] + 0.5*dta_*(flowratenp_[fdpcondid]+flowraten_[fdpcondid]);
 
       // set current flow volume to zero if value smaller than zero,
       // meaning that no flow volume may be sucked in from outside
-      if (flowvolumenp_(fdpcondid) < 0.0) flowvolumenp_(fdpcondid) = 0.0;
+      if (flowvolumenp_[fdpcondid] < 0.0) flowvolumenp_[fdpcondid] = 0.0;
 
       // compute flow volume used for evaluation of boundary condition below
-      flowvolumerel[fdpcondid] = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
+      flowvolumerel[fdpcondid] = (1.0-timefac)*flowvolumen_[fdpcondid] + timefac*((1.0-relaxpara)*flowvolumenpi_[fdpcondid] + relaxpara*flowvolumenp_[fdpcondid]);
 
       //--------------------------------------------------------------------
       // c) surface area
@@ -1486,7 +1497,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
         std::ofstream f1;
         f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
 
-        f1 << flowratenp_(fdpcondid) << " " << flowvolumenp_(fdpcondid) << " " << meanpressure << "   ";
+        f1 << flowratenp_[fdpcondid] << " " << flowvolumenp_[fdpcondid] << " " << meanpressure << "   ";
       }
     }
 
@@ -1541,8 +1552,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->ClearState();
 
       // update iteration values
-      flowratenpi_(fdpcondid)   = flowratenp_(fdpcondid);
-      flowvolumenpi_(fdpcondid) = flowvolumenp_(fdpcondid);
+      flowratenpi_[fdpcondid]   = flowratenp_[fdpcondid];
+      flowvolumenpi_[fdpcondid] = flowvolumenp_[fdpcondid];
     }
   }
 
@@ -3042,13 +3053,13 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
 
   if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
   {
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < flowratenp_.size(); ++i)
     {
-      flowratenm_(i) = flowraten_(i);
-      flowraten_(i)  = flowratenp_(i);
+      flowratenm_[i] = flowraten_[i];
+      flowraten_[i]  = flowratenp_[i];
 
-      flowvolumenm_(i) = flowvolumen_(i);
-      flowvolumen_(i)  = flowvolumenp_(i);
+      flowvolumenm_[i] = flowvolumen_[i];
+      flowvolumen_[i]  = flowvolumenp_[i];
     }
 
     // close this time step also in output file
@@ -3555,31 +3566,32 @@ void FLD::FluidImplicitTimeInt::OutputNonlinearBC()
 
   if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
   {
-    output_->WriteDouble("flowratenp0",flowratenp_(0));
-    output_->WriteDouble("flowratenp1",flowratenp_(1));
-    output_->WriteDouble("flowratenp2",flowratenp_(2));
-    output_->WriteDouble("flowratenp3",flowratenp_(3));
-    output_->WriteDouble("flowraten0", flowraten_(0));
-    output_->WriteDouble("flowraten1", flowraten_(1));
-    output_->WriteDouble("flowraten2", flowraten_(2));
-    output_->WriteDouble("flowraten3", flowraten_(3));
-    output_->WriteDouble("flowratenm0",flowratenm_(0));
-    output_->WriteDouble("flowratenm1",flowratenm_(1));
-    output_->WriteDouble("flowratenm2",flowratenm_(2));
-    output_->WriteDouble("flowratenm3",flowratenm_(3));
+    for (size_t i=0; i<flowratenp_.size(); ++i)
+    {
+      std::ostringstream ss;
+      ss << "flowratenp" << i;
+      output_->WriteDouble(ss.str(),flowratenp_[i]);
 
-    output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
-    output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
-    output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
-    output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
-    output_->WriteDouble("flowvolumen0", flowvolumen_(0));
-    output_->WriteDouble("flowvolumen1", flowvolumen_(1));
-    output_->WriteDouble("flowvolumen2", flowvolumen_(2));
-    output_->WriteDouble("flowvolumen3", flowvolumen_(3));
-    output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
-    output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
-    output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
-    output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
+      ss.str("");
+      ss << "flowraten" << i;
+      output_->WriteDouble(ss.str(),flowraten_[i]);
+
+      ss.str("");
+      ss << "flowratenm" << i;
+      output_->WriteDouble(ss.str(),flowratenm_[i]);
+
+      ss.str("");
+      ss << "flowvolumenp" << i;
+      output_->WriteDouble(ss.str(),flowvolumenp_[i]);
+
+      ss.str("");
+      ss << "flowvolumen" << i;
+      output_->WriteDouble(ss.str(),flowvolumen_[i]);
+
+      ss.str("");
+      ss << "flowvolumenm" << i;
+      output_->WriteDouble(ss.str(),flowvolumenm_[i]);
+    }
   }
   if (isimpedancebc_)
   {
@@ -3708,31 +3720,32 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
     if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
     {
-      flowratenp_(0) = reader.ReadDouble("flowratenp0");
-      flowratenp_(1) = reader.ReadDouble("flowratenp1");
-      flowratenp_(2) = reader.ReadDouble("flowratenp2");
-      flowratenp_(3) = reader.ReadDouble("flowratenp3");
-      flowraten_(0)  = reader.ReadDouble("flowraten0");
-      flowraten_(1)  = reader.ReadDouble("flowraten1");
-      flowraten_(2)  = reader.ReadDouble("flowraten2");
-      flowraten_(3)  = reader.ReadDouble("flowraten3");
-      flowratenm_(0) = reader.ReadDouble("flowratenm0");
-      flowratenm_(1) = reader.ReadDouble("flowratenm1");
-      flowratenm_(2) = reader.ReadDouble("flowratenm2");
-      flowratenm_(3) = reader.ReadDouble("flowratenm3");
+      for (size_t i=0; i<flowratenp_.size(); ++i)
+      {
+        std::ostringstream ss;
+        ss << "flowratenp" << i;
+        flowratenp_[i] = reader.ReadDouble(ss.str());
 
-      flowvolumenp_(0) = reader.ReadDouble("flowvolumenp0");
-      flowvolumenp_(1) = reader.ReadDouble("flowvolumenp1");
-      flowvolumenp_(2) = reader.ReadDouble("flowvolumenp2");
-      flowvolumenp_(3) = reader.ReadDouble("flowvolumenp3");
-      flowvolumen_(0)  = reader.ReadDouble("flowvolumen0");
-      flowvolumen_(1)  = reader.ReadDouble("flowvolumen1");
-      flowvolumen_(2)  = reader.ReadDouble("flowvolumen2");
-      flowvolumen_(3)  = reader.ReadDouble("flowvolumen3");
-      flowvolumenm_(0) = reader.ReadDouble("flowvolumenm0");
-      flowvolumenm_(1) = reader.ReadDouble("flowvolumenm1");
-      flowvolumenm_(2) = reader.ReadDouble("flowvolumenm2");
-      flowvolumenm_(3) = reader.ReadDouble("flowvolumenm3");
+        ss.str("");
+        ss << "flowraten" << i;
+        flowraten_[i] = reader.ReadDouble(ss.str());
+
+        ss.str("");
+        ss << "flowratenm" << i;
+        flowratenm_[i] = reader.ReadDouble(ss.str());
+
+        ss.str("");
+        ss << "flowvolumenp" << i;
+        flowvolumenp_[i] = reader.ReadDouble(ss.str());
+
+        ss.str("");
+        ss << "flowvolumen" << i;
+        flowvolumen_[i] = reader.ReadDouble(ss.str());
+
+        ss.str("");
+        ss << "flowvolumenm" << i;
+        flowvolumenm_[i] = reader.ReadDouble(ss.str());
+      }
     }
 
     if (isimpedancebc_)

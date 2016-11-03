@@ -1208,15 +1208,15 @@ protected:
   //@}
 
   //! @name flow rate and volume at time n+1 (i+1), n+1 (i), n and n-1 for flow-dependent pressure boundary conditions
-  LINALG::Matrix<4,1> flowratenp_;
-  LINALG::Matrix<4,1> flowratenpi_;
-  LINALG::Matrix<4,1> flowraten_;
-  LINALG::Matrix<4,1> flowratenm_;
+  std::vector<double> flowratenp_;
+  std::vector<double> flowratenpi_;
+  std::vector<double> flowraten_;
+  std::vector<double> flowratenm_;
 
-  LINALG::Matrix<4,1> flowvolumenp_;
-  LINALG::Matrix<4,1> flowvolumenpi_;
-  LINALG::Matrix<4,1> flowvolumen_;
-  LINALG::Matrix<4,1> flowvolumenm_;
+  std::vector<double> flowvolumenp_;
+  std::vector<double> flowvolumenpi_;
+  std::vector<double> flowvolumen_;
+  std::vector<double> flowvolumenm_;
 
   //! @name optimization data and cavitation
   /// density in topology optimization and void fraction in cavitation
