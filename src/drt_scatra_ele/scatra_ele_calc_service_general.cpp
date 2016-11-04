@@ -2178,16 +2178,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
       for (int dim=0; dim<nsd_; ++dim)
         position[dim] = xyzint(dim);
 
-      for(int k=0;k<numscal_;k++)
+      for(int k=0;k<numdofpernode_;++k)
       {
         // scalar at integration point at time step n+1
         const double phinp = funct_.Dot(ephinp_[k]);
         // spatial gradient of current scalar value
         gradphi.Multiply(derxy_,ephinp_[k]);
 
-        phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t,NULL);
+        phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(k,position,t,NULL);
 
-        std::vector<double> gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+        std::vector<double> gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(k,position,t,NULL);
 
         if(gradphi_exact_vec.size())
         {
@@ -2218,18 +2218,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
         // the error for the L2 and H1 norms are evaluated at the Gauss point
 
         // integrate delta scalar for L2-error norm
-        errors(k*numscal_+0) += deltaphi*deltaphi*fac;
+        errors(k*4+0) += deltaphi*deltaphi*fac;
         // integrate delta scalar for H1-error norm
-        errors(k*numscal_+1) += deltaphi*deltaphi*fac;
+        errors(k*4+1) += deltaphi*deltaphi*fac;
         // integrate analytical scalar for L2 norm
-        errors(k*numscal_+2) += phi_exact*phi_exact*fac;
+        errors(k*4+2) += phi_exact*phi_exact*fac;
         // integrate analytical scalar for H1 norm
-        errors(k*numscal_+3) += phi_exact*phi_exact*fac;
+        errors(k*4+3) += phi_exact*phi_exact*fac;
 
         // integrate delta scalar derivative for H1-error norm
-        errors(k*numscal_+1) += deltagradphi.Dot(deltagradphi)*fac;
+        errors(k*4+1) += deltagradphi.Dot(deltagradphi)*fac;
         // integrate analytical scalar derivative for H1 norm
-        errors(k*numscal_+3) += gradphi_exact.Dot(gradphi_exact)*fac;
+        errors(k*4+3) += gradphi_exact.Dot(gradphi_exact)*fac;
       }
     } // loop over integration points
 

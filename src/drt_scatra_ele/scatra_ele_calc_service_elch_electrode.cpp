@@ -251,6 +251,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux(
 } // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux
 
 
+/*----------------------------------------------------------------------------------------*
+ | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
+ *----------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalErrorComparedToAnalytSolution(
+    const DRT::Element*         ele,      //!< element
+    Teuchos::ParameterList&     params,   //!< parameter list
+    Epetra_SerialDenseVector&   errors    //!< vector containing L2 and H1 error norms
+    )
+{
+  // call base class routine
+  myelch::CalErrorComparedToAnalytSolution(ele,params,errors);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalErrorComparedToAnalytSolution
+
+
 /*------------------------------------------------------------------------------*
  | set internal variables for electrodes                             fang 02/15 |
  *------------------------------------------------------------------------------*/

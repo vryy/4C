@@ -194,11 +194,11 @@ namespace DRT
         );
 
         //! calculate error of numerical solution with respect to analytical solution
-        void CalErrorComparedToAnalytSolution(
-          const DRT::Element*                   ele,        //!< the element we are dealing with
-          Teuchos::ParameterList&               params,     //!< parameter list
-          Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
-        ){return;};
+        virtual void CalErrorComparedToAnalytSolution(
+            const DRT::Element*         ele,      //!< element
+            Teuchos::ParameterList&     params,   //!< parameter list
+            Epetra_SerialDenseVector&   errors    //!< vector containing L2 and H1 error norms
+            );
 
         //! set internal variables for electrodes
         virtual void SetInternalVariablesForMatAndRHS();

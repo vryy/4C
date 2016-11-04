@@ -2168,33 +2168,30 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   discret_->SetState("phinp",phinp_);
 
   // get (squared) error values
-  Teuchos::RCP<Epetra_SerialDenseVector> errors
-    = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumScal()));
-  discret_->EvaluateScalars(eleparams, errors);
+  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumDofPerNode()));
+  discret_->EvaluateScalars(eleparams,errors);
   discret_->ClearState();
 
   // std::vector containing
   // [0]: relative L2 scalar error
   // [1]: relative H1 scalar error
-  Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*NumScal()));
+  Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()));
 
-  for(int k=0;k<NumScal();k++)
+  for(int k=0; k<NumDofPerNode(); ++k)
   {
-    if( std::abs((*errors)[k*NumScal()+2])>1e-14 )
-      (*relerror)[k*NumScal()+0] = sqrt((*errors)[k*NumScal()+0])/sqrt((*errors)[k*NumScal()+2]);
+    if( std::abs((*errors)[k*4+2])>1e-14 )
+      (*relerror)[k*2] = sqrt((*errors)[k*4])/sqrt((*errors)[k*4+2]);
     else
-      (*relerror)[k*NumScal()+0] = sqrt((*errors)[k*NumScal()+0]);
-    if( std::abs((*errors)[k*NumScal()+2])>1e-14 )
-      (*relerror)[k*NumScal()+1] = sqrt((*errors)[k*NumScal()+1])/sqrt((*errors)[k*NumScal()+3]);
+      dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
+    if( std::abs((*errors)[k*4+3])>1e-14 )
+      (*relerror)[k*2+1] = sqrt((*errors)[k*4+1])/sqrt((*errors)[k*4+3]);
     else
-      (*relerror)[k*NumScal()+1] = sqrt((*errors)[k*NumScal()+1]);
+      dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
 
     if (myrank_ == 0)
     {
 
       // print last error in a separate file
-
-      // append error of the last time step to the error file
 //        if ((step_==stepmax_) or (time_==maxtime_))// write results to file
 //        {
 //          std::ostringstream temp;
@@ -2206,48 +2203,38 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 //          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 //          f << "#| " << simulation << "\n";
 //          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
-//          f << step_ << " " << time_ << " " << (*relerror)[k*NumScal()+0] << " " << (*relerror)[k*NumScal()+1] << "\n";
+//          f << step_ << " " << time_ << " " << (*relerror)[k*2] << " " << (*relerror)[k*2+1] << "\n";
 //          f.flush();
 //          f.close();
 //        }
-
 
       std::ostringstream temp;
       temp << k;
       const std::string simulation = problem_->OutputControlFile()->FileName();
       const std::string fname = simulation+"_c"+temp.str()+"_time.relerror";
+      std::ofstream f;
 
-      if(step_==0)
+      // create new error file and write initial error
+      if(step_ == 0)
       {
-        std::ofstream f;
         f.open(fname.c_str());
         f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
-        f << std::setprecision(10) << step_ << " " << std::setw(1)<< std::setprecision(5)
-          << time_ << std::setw(1) << std::setprecision(6) << " "
-          << (*relerror)[k*NumScal()+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*NumScal()+1] << "\n";
-
-        f.flush();
-        f.close();
       }
+
+      // append error of the last time step to the error file
       else
-      {
-        std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << std::setprecision(10) << step_ << " " << std::setw(3)<< std::setprecision(5)
-        << time_ << std::setw(1) << std::setprecision(6) << " "
-        << (*relerror)[k*NumScal()+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*NumScal()+1] <<"\n";
 
-        f.flush();
-        f.close();
-      }
+      f << step_ << " " << time_ << " " << std::setprecision(6) << (*relerror)[k*2] << " " << (*relerror)[k*2+1] << std::endl;
+
+      f.flush();
+      f.close();
     }
   }
 
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Prepare evaluation of mean scalars                      vuong   04/16|

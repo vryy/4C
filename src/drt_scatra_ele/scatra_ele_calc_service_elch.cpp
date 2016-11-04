@@ -267,6 +267,23 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
 }
 
 
+/*----------------------------------------------------------------------------------------*
+ | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
+ *----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution(
+    const DRT::Element*         ele,      //!< element
+    Teuchos::ParameterList&     params,   //!< parameter list
+    Epetra_SerialDenseVector&   errors    //!< vector containing L2 and H1 error norms
+    )
+{
+  // call base class routine
+  my::CalErrorComparedToAnalytSolution(ele,params,errors);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
+
+
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
   *----------------------------------------------------------------------*/

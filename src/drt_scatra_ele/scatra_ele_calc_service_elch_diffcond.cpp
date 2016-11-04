@@ -972,7 +972,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
     } // end of loop over integration points
   } // Kwok and Wu
   break;
-  default: dserror("Unknown analytical solution!"); break;
+  default:
+  {
+    my::CalErrorComparedToAnalytSolution(ele,params,errors);
+    break;
+  }
   } //switch(errortype)
 
   return;

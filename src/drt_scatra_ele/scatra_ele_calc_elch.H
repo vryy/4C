@@ -244,10 +244,10 @@ protected:
 
   //! calculate error of numerical solution with respect to analytical solution
   virtual void CalErrorComparedToAnalytSolution(
-    const DRT::Element*                   ele,        //!< the element we are dealing with
-    Teuchos::ParameterList&               params,     //!< parameter list
-    Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
-  )=0;
+      const DRT::Element*         ele,      //!< element
+      Teuchos::ParameterList&     params,   //!< parameter list
+      Epetra_SerialDenseVector&   errors    //!< vector containing L2 and H1 error norms
+      );
 
   //! calculate conductivity of electrolyte solution
   void CalculateConductivity(
