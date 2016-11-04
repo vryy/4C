@@ -4,7 +4,7 @@
 
 \brief Helper class for everything that deals with communication
 
-\level 0
+\level 2
 
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
