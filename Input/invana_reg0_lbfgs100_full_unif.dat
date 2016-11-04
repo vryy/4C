@@ -32,7 +32,7 @@ WRITE_TO_SCREEN                 no
 STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
-RESTARTEVRY                     1
+RESTARTEVRY                     10
 ITERTOPC                        100
 MONITORFILE                     invana_full.monitor
 PARAMLIST                       1 YOUNG BETA 2 YOUNG BETA

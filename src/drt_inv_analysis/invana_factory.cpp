@@ -19,12 +19,14 @@
 #include "matpar_manager.H"
 #include "matpar_manager_uniform.H"
 #include "matpar_manager_elementwise.H"
+#include "matpar_manager_patchwise.H"
 #include "objective_funct.H"
 #include "objective_funct_disp.H"
 #include "objective_funct_surfcurr.H"
 #include "regularization_base.H"
 #include "regularization_tikhonov.H"
 #include "regularization_totalvariation.H"
+#include "initial_guess.H"
 
 // Input
 #include "../drt_inpar/inpar_statinvanalysis.H"
@@ -33,6 +35,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
@@ -94,12 +97,36 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
       matman = Teuchos::rcp(new INVANA::MatParManagerUniform(actdis));
     }
     break;
+    case INPAR::INVANA::stat_inv_mp_patchwise:
+    {
+      matman = Teuchos::rcp(new INVANA::MatParManagerPerPatch(actdis));
+    }
+    break;
     default:
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
   }
   matman->Init(invp);
   matman->Setup();
+
+  // initial guess
+  Teuchos::RCP<InitialGuess> guess = Teuchos::rcp(new InitialGuess(invp));
+  guess->Compute(actdis,matman,objfunct);
+
+
+//  // a convenience pointer
+//  DRT::Problem* problem = DRT::Problem::Instance();
+//
+//  for (int i=0; i<problem->GetNPGroup()->NumGroups(); i++)
+//  {
+//    if (problem->GetNPGroup()->GroupId() == i)
+//      guess->Compute(actdis,matman,objfunct);
+//
+//    // wait for all
+//    problem->GetNPGroup()->GlobalComm()->Barrier();
+//  }
+//  // wait for all
+//  problem->GetNPGroup()->GlobalComm()->Barrier();
 
   // regularization!
   Teuchos::RCP<INVANA::RegularizationBase> regman = Teuchos::null;
@@ -121,7 +148,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
   }
   if (regman!=Teuchos::null)
   {
-    regman->Init(matman->GetConnectivityData());
+    regman->Init(invp,matman->GetConnectivityData(),guess);
     regman->Setup(invp);
   }
 
@@ -133,7 +160,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
   // parametrizations and regularizations should come here.
 
   // initialize optimization problem
-  optprob->Init(actdis,objfunct,matman,regman);
+  optprob->Init(actdis,objfunct,matman,regman,guess);
   optprob->Setup();
 
   return optprob;

@@ -4,7 +4,7 @@
 
 \brief Helper class for everything that deals with communication
 
-\level 2
+\level 0
 
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
@@ -302,6 +302,25 @@ COMM_UTILS::NestedParGroup::NestedParGroup(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | copy constructor nested parallelism group                 kehl 08/16 |
+ *----------------------------------------------------------------------*/
+COMM_UTILS::NestedParGroup::NestedParGroup(NestedParGroup& npgroup)
+{
+  groupId_= npgroup.GroupId();
+  ngroup_ = npgroup.NumGroups();
+  lcomm_ = npgroup.LocalComm();
+  gcomm_ = npgroup.GlobalComm();
+  subcomm_ = Teuchos::null;
+  npType_ = npgroup.NpType();
+
+  int size = npgroup.GroupSize();
+  for (int i=0; i<size; i++)
+    lpidgpid_[i] = npgroup.GPID(i);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | local proc id  of global proc id is returned             ghamm 03/12 |
@@ -457,14 +476,14 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
  | broadcast all discretizations from group 0 to all other groups using
  | a ponzi scheme                                          biehler 05/13 |
  *----------------------------------------------------------------------*/
-void COMM_UTILS::BroadcastDiscretizations()
+void COMM_UTILS::BroadcastDiscretizations(int instance)
 {
    // source of all discretizations is always group 0
    int bgroup =0 ;
    // group to which discretizations are sent
    int tgroup= -1;
 
-   DRT::Problem* problem = DRT::Problem::Instance();
+   DRT::Problem* problem = DRT::Problem::Instance(instance);
    Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
    Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
    Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
@@ -487,7 +506,7 @@ void COMM_UTILS::BroadcastDiscretizations()
   gcomm->MaxAll(&sbcaster,&bcaster,1); // communicate proc null of bgroup
   gcomm->Broadcast(&numfield,1,bcaster);
 
-  const std::vector<std::string> disnames = DRT::Problem::Instance()->GetDisNames();
+  const std::vector<std::string> disnames = problem->GetDisNames();
 
   for (int i=0; i<numfield; ++i)
   {

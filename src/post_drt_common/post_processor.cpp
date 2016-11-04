@@ -130,7 +130,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     case prb_structure:
-    case prb_invana:
     {
         PostField* field = problem.get_discretization(0);
         StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
@@ -855,6 +854,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
            dserror("Unknown discretization type for problem type UQ");
         }
       } break;
+    }
+    case prb_invana:
+    {
+      PostField* field = problem.get_discretization(0);
+      InvanaFilter writer(field, problem.outname());
+      writer.WriteFiles();
+      break;
     }
     case prb_none:
     {

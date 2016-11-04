@@ -98,7 +98,7 @@ void INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVec
 void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> source,
     Teuchos::RCP<Epetra_MultiVector> target)
 {
-  // some across processor
+  // sum across processor
   std::vector<double> val(source->MyLength(),0.0);
   Discret()->Comm().SumAll((*source)(0)->Values(),&val[0],source->MyLength());
 
@@ -106,6 +106,19 @@ void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> sou
   // the gid dont get contributions
   for (int i=0; i<NumParams(); i++)
     target->SumIntoGlobalValue(i,0,val[i]);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerUniform::FillAdjacencyMatrix(const Epetra_Map& paramrowmap,
+    Teuchos::RCP<Epetra_CrsMatrix> graph)
+{
+  /* there is no particular connectivity for uniform distributions.
+   if you want a connectivity between the different patches, do it.
+   But for the moment the graph has just a diagonal with a value which is
+   zeroed out in the calling routine anyways. So the graph will be left
+   just empty here. */
 
   return;
 }

@@ -15,6 +15,7 @@
 #include "optimizer_base.H"
 
 #include "invana_base.H"
+#include "initial_guess.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -61,29 +62,41 @@ void INVANA::OptimizerBase::Init(Teuchos::RCP<InvanaBase> optprob)
 
   optprob_=optprob;
 
-  // output for the optimizer: outputcontrol is "copied"/reproduced to "steal" it from the discretization
-  // and give it to the inverse analysis algorithm
-  if (DRT::Problem::Instance()->Restart())
-    inputfile_ = Teuchos::rcp(new IO::InputControl(DRT::Problem::Instance()->InputControlFile()->FileName(), optprob_->Comm()));
+  // for convenience
+  DRT::Problem* problem = DRT::Problem::Instance();
 
-  // setup output
+  // restart from this
+  if (DRT::Problem::Instance()->Restart())
+    inputfile_ = Teuchos::rcp(new IO::InputControl(
+        problem->InputControlFile()->FileName(), optprob_->Comm()));
+
+  // setup output to the control file (ignoring the IO section's bin io flag)
+  int binio = 1;
+  // the restart counter was already increased upon setting the initial control
+  // file in the problem! Therefore dont increase counter again here!
+  bool adaptname = false;
+  Teuchos::RCP<IO::OutputControl> controlfile =
+    Teuchos::rcp(new IO::OutputControl(
+      OptProb()->Comm(), problem->ProblemName(), problem->SpatialApproximation(),
+      problem->OutputControlFile()->InputFileName(),problem->OutputControlFile()->RestartName(),
+      problem->OutputControlFile()->FileName(), problem->NDim(),problem->Restart(),
+      problem->OutputControlFile()->FileSteps(),binio, adaptname)
+    );
+
+
   output_ = Teuchos::rcp(new IO::DiscretizationWriter(optprob_->Discret()));
-  output_->SetOutput(DRT::Problem::Instance()->OutputControlFile());
+  output_->SetOutput(controlfile);
 
   // wrap output
   writer_ = Teuchos::rcp(new InvanaWriter());
   writer_->Init(output_);
+  // give a mesh to the output
+  writer_->WriteMesh(0,0.0);
 
-  SetInitialGuess();
+  sol_->Scale(1.0,*optprob_->InitialGuess()->Mean());
 
   isinit_=true;
 
-}
-
-/*----------------------------------------------------------------------*/
-void INVANA::OptimizerBase::SetInitialGuess()
-{
-  sol_->Scale(1.0,optprob_->InitialGuess());
 }
 
 /*----------------------------------------------------------------------*/

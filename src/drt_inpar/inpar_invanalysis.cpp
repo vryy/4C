@@ -117,14 +117,18 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                     "types of statistical inverse analysis and on/off switch",
                                     tuple<std::string>(
                                       "none",
-                                      "GradientDescent",
-                                      "MonteCarlo",
-                                      "LBFGS"),
+                                      "MonteCarloSMC",
+                                      "MonteCarloMH",
+                                      "LBFGS",
+                                      "BruteForce",
+                                      "ParticlePrediction"),
                                     tuple<int>(
                                       stat_inv_none,
-                                      stat_inv_graddesc,
-                                      stat_inv_mc,
-                                      stat_inv_lbfgs),
+                                      stat_inv_smc,
+                                      stat_inv_mh,
+                                      stat_inv_lbfgs,
+                                      stat_inv_bruteforce,
+                                      stat_inv_prediction),
                                     &statinvp);
 
   // initial scaling for the LBFGS algorithm
@@ -132,6 +136,10 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // step to restart from
   IntParameter("FPRESTART",0,"forward problem restart",&statinvp);
+
+  StringParameter("FPOUTPUTFILENAME","none",
+                  "controlfilename (without .control) which to use as forward problem output and restartfrom",
+                  &statinvp);
 
   // write restart info every so often
   IntParameter("RESTARTEVRY",1,"write restart information every x-th step",&statinvp);
@@ -141,15 +149,18 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                       "how to parametrize the parameter field",
                                     tuple<std::string>(
                                       "none",
-                                      "kernelsmoothing",
+                                      "patchwise",
                                       "elementwise",
                                       "uniform"),
                                     tuple<int>(
                                       stat_inv_mp_none,
-                                      stat_inv_mp_smoothkernel,
+                                      stat_inv_mp_patchwise,
                                       stat_inv_mp_elementwise,
                                       stat_inv_mp_uniform),
                                     &statinvp);
+
+  // number of levels for the patch creation
+  IntParameter("NUM_PATCH_LEVELS",4,"number of levels for the patch creation",&statinvp);
 
   // want some regularization
   setStringToIntegralParameter<int>("REGULARIZATION","none",
@@ -219,33 +230,84 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);
 
   // weight of the Tikhonov regularization
-  DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization functional",&statinvp);
-
-  // mean value of the Tikhonov regularization
-  DoubleParameter("REG_MEAN",0.0,"mean value for tikhonov regularization",&statinvp);
+  DoubleParameter("REG_WEIGHT",1.0,"weight of the regularization functional",&statinvp);
 
   // regularization of the totalvariation functional
-  DoubleParameter("TVD_EPS",0.001,"differentiation epsilon for total variation",&statinvp);
+  DoubleParameter("TVD_EPS",0.01,"differentiation epsilon for total variation",&statinvp);
 
   // number of optimization steps
   IntParameter("SIZESTORAGE",20,"number of vectors to keep in storage; defaults to 20 (lbfgs usage only)",&statinvp);
 
+  // number of SMC particles
+  IntParameter("NUM_PARTICLES",1,"number of particles for the sequential monte carlo.",&statinvp);
+
   // meta parametrization of material parameters
   setStringToIntegralParameter<int>("METAPARAMS","none",
-                                    "choose type of metaparametrization (none/quad/arctan)",
+                                    "choose type of metaparametrization (none/quad/exp/arctan)",
                                     tuple<std::string>(
                                       "none",
                                       "quad",
+                                      "exp",
                                       "arctan"),
                                     tuple<int>(
                                       stat_inv_meta_none,
                                       stat_inv_meta_quad,
+                                      stat_inv_meta_exp,
                                       stat_inv_meta_arctan),
                                     &statinvp);
 
 
   // scale of the kernel functions used in surface currents
   DoubleParameter("KERNELSCALE", -1.0, "scale of the kernel function", &statinvp);
+
+  // estimation of the variance of the measurement noise
+  DoubleParameter("MEASVARESTIM", 1.0, "variance of the measurement noise", &statinvp);
+
+  // add synthetic noise to the measurements (e.g. in case of synthetic data)
+  BoolParameter("SYNTHNOISE","No","want noise on your synthetic measurements?", &statinvp);
+
+  // seed used for synthetic noise geenration
+  IntParameter("SYNTHNOISESEED",1,"seed to be used for synthetic noise generation",&statinvp);
+
+  // scale the covariance matrix for monte carlo algorithms using it
+  DoubleParameter("MAP_COV_SCALE", 1.0, "scaling for the covariance in the smc algorithm", &statinvp);
+
+  // level of fill for the incomplete factorization of the covariance matrix
+  DoubleParameter("MAP_COV_FILL", 0.1, "level of fill for the incomplete factorization of the covariance matrix", &statinvp);
+
+  // file to read MAP approximation from
+  StringParameter("MAP_RESTARTFILE","none",
+                  "control file to read the maximum a posterior approximation from",
+                  &statinvp);
+
+  // step from which to read the MAP approximation
+  IntParameter("MAP_RESTART",0,"step to read the maximum a posterior approximation from",&statinvp);
+
+  // target effective sample size reduction per time step
+  DoubleParameter("SMC_ESS_REDUCTION", 0.05, "targeted effective sample size reduction per step", &statinvp);
+
+  // iterations used to adapt the acceptance ratio
+  IntParameter("MH_ACCADAPT_ITER",0,"iterations used to adapt the acceptance ratio",&statinvp);
+
+  // adapt the acceptance ratio every x iterations
+  IntParameter("MH_ACCADAPT_EVRY",0,"adapt the acceptance ratio every x iterations",&statinvp);
+
+  // use only every thin-th sample for the statistic
+  IntParameter("MH_THIN",0,"use only every thin-th sample for the statistic",&statinvp);\
+
+  // use samples in the statistic only after burnin
+  IntParameter("MH_BURNIN",0,"use samples in the statistic only after burnin",&statinvp);
+
+  // decide how the initialize the optimization
+  setStringToIntegralParameter<int>("INIT_TYPE","dat",
+                                      "how to initialize the optimization",
+                                    tuple<std::string>(
+                                      "dat",
+                                      "map"),
+                                    tuple<int>(
+                                      stat_inv_init_dat,
+                                      stat_inv_init_map),
+                                    &statinvp);
 
 }
 

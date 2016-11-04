@@ -72,6 +72,11 @@ protected:
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
       double val, int elepos, int paraposglobal, int paraposlocal);
 
+private:
+
+  //! build a graph of elements in the optimization parameter vector
+  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
+
 };
 }  // namespace INVANA
 

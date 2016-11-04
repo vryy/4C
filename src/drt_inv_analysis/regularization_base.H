@@ -41,6 +41,7 @@ namespace INVANA
 {
 
   class ConnectivityData;
+  class InitialGuess;
 
 /*! \class RegularizationBase
  * \brief A class for regularization on a vector 'theta' of parameters
@@ -68,7 +69,9 @@ public:
 
   //! Set member variables after construction.
   virtual void Init(
-      Teuchos::RCP<ConnectivityData> connectivity /// [in] connectivity between the parameters
+      const Teuchos::ParameterList& invp, /// [in] parameters
+      Teuchos::RCP<ConnectivityData> connectivity, /// [in] connectivity between the parameters
+      Teuchos::RCP<InitialGuess> initguess /// [in] initial guess data
       );
 
   //! Setup
@@ -95,6 +98,9 @@ protected:
 
   //! layout of the parameters
   Teuchos::RCP<ConnectivityData> connectivity_;
+
+  //! get mean from some initial guess in case
+  Teuchos::RCP<InitialGuess> initguess_;
 
   //! weight of the regularization
   double weight_;

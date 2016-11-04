@@ -37,6 +37,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_timestepping/timintmstep.H"
 
+
 /*----------------------------------------------------------------------------*/
 INVANA::InvanaControl::InvanaControl() :
 invprob_(Teuchos::null),
@@ -57,29 +58,11 @@ void INVANA::InvanaControl::Init(const Teuchos::ParameterList& invp)
   invprob_ = invfac.Create(invp);
 
   // optimization algorithm
-  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS"))
-  {
-  case INPAR::INVANA::stat_inv_graddesc:
-  case INPAR::INVANA::stat_inv_lbfgs:
-  {
-    // optimization algorithm
-    INVANA::OptimizerFactory optimizerfac;
-    invanaopt_ = optimizerfac.Create(invp);
+  INVANA::OptimizerFactory optimizerfac;
+  invanaopt_ = optimizerfac.Create(invp);
 
-    invanaopt_->Init(invprob_);
-    invanaopt_->Setup();
-
-  }
-  break;
-  case INPAR::INVANA::stat_inv_mc:
-  {
-    dserror("MC Sampling is not supported anylonger");
-  }
-  break;
-  default:
-    dserror("Unknown type of statistical inverse analysis");
-    break;
-  }
+  invanaopt_->Init(invprob_);
+  invanaopt_->Setup();
 
   return;
 }

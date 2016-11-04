@@ -39,16 +39,19 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-8
 PARAMETRIZATION                 elementwise
 REGULARIZATION                  totalvariation
-REG_WEIGHT                      0.0001
+REG_WEIGHT                      0.001
 TVD_EPS                         1.0e-3
 OBJECTIVEFUNCT                  surfcurr
 OBJECTIVEFUNCTSCAL              yes
 TARGETDISCRETIZATION            invana_arch_surfcurr_volgrowth_target.dat
 SIZESTORAGE                     100
-METAPARAMS                      quad
+METAPARAMS                      none
 KERNELSCALE                     1.0
 PRESTRESS                       none
 FPRESTART                       0
+SYNTHNOISE                      yes
+SYNTHNOISESEED                  1274
+MEASVARESTIM                    0.005
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
@@ -786,7 +789,7 @@ NODE 204      COORD    1.8500000000000000e+01    0.0000000000000000e+00    5.000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-INVANA SPECIAL QUANTITY gradient VALUE 5.42001856704740314e-04 TOLERANCE 1e-10
-INVANA SPECIAL QUANTITY error VALUE 5.68221776387469119e-04 TOLERANCE 1e-11
+INVANA SPECIAL QUANTITY gradient VALUE 4.79758368919344628e-05 TOLERANCE 1e-10
+INVANA SPECIAL QUANTITY error VALUE 1.69395622304257081e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

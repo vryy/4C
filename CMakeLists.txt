@@ -1577,23 +1577,34 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/matpar_manager.cpp
   src/drt_inv_analysis/matpar_manager_uniform.cpp
   src/drt_inv_analysis/matpar_manager_elementwise.cpp
+  src/drt_inv_analysis/matpar_manager_patchwise.cpp
   src/drt_inv_analysis/regularization_base.cpp
   src/drt_inv_analysis/regularization_totalvariation.cpp
   src/drt_inv_analysis/regularization_tikhonov.cpp
-  src/drt_inv_analysis/smc_particle_list.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
   src/drt_inv_analysis/invana_utils.cpp
   src/drt_inv_analysis/invana_factory.cpp
   src/drt_inv_analysis/invana_base.cpp
   src/drt_inv_analysis/invana_auglagr.cpp
+  src/drt_inv_analysis/initial_guess.cpp
   src/drt_inv_analysis/optimizer_factory.cpp
   src/drt_inv_analysis/optimizer_base.cpp
   src/drt_inv_analysis/optimizer_lbfgs.cpp
-  src/drt_inv_analysis/optimizer_graddesc.cpp
-  src/drt_inv_analysis/optimizer_mc.cpp
+  src/drt_inv_analysis/optimizer_smc.cpp
+  src/drt_inv_analysis/optimizer_smc_predict.cpp
+  src/drt_inv_analysis/optimizer_mh.cpp
+  src/drt_inv_analysis/optimizer_bruteforce.cpp
+  src/drt_inv_analysis/particle_group.cpp
+  src/drt_inv_analysis/particle_data.cpp
+  src/drt_inv_analysis/particle_comm.cpp
+  src/drt_inv_analysis/likelihood_evaluation.cpp
+  src/drt_inv_analysis/DcsMatrix.cpp
+  src/drt_inv_analysis/chol_factory.cpp
+  src/drt_inv_analysis/chol_factor.cpp
+  src/drt_inv_analysis/metropolis_kernel.cpp
 )
 set(OBJS_STATINV_ANALYSIS_LIB
-  src/drt_inv_analysis/smc_particle.cpp
+  src/drt_inv_analysis/particle_data.cpp
 )
 set(OBJS_MLMC
 	src/drt_mlmc/drt_uq_redairways.cpp
@@ -2614,7 +2625,7 @@ add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
 add_library(drt_lib_crack ${OBJS_DRT_CRACK_LIB})
-add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
+add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 
@@ -2637,7 +2648,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_io
   drt_lib_nurbs
   drt_lib_meshfree
-  drt_lib_statinv_anal
+  drt_lib_statinv_ana
   drt_lib_immersed
   )
 

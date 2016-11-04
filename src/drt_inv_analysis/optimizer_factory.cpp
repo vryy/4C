@@ -1,27 +1,27 @@
 /*----------------------------------------------------------------------*/
 /*!
  * \file optimizer_factory.cpp
+ * \brief Factory for optimzation algorithm within the inverse analysis
 
-<pre>
-Maintainer: Sebastian Kehl
+\level 3
+
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "optimizer_factory.H"
 #include "optimizer_lbfgs.H"
-#include "optimizer_graddesc.H"
-#include "optimizer_mc.H"
+#include "optimizer_smc.H"
+#include "optimizer_bruteforce.H"
+#include "optimizer_mh.H"
+#include "optimizer_smc_predict.H"
 #include "invana_base.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 
 #include "Teuchos_ParameterList.hpp"
 
-
-/*----------------------------------------------------------------------*/
-/* standard constructor                                      keh 08/14  */
 /*----------------------------------------------------------------------*/
 INVANA::OptimizerFactory::OptimizerFactory()
 {;}
@@ -34,25 +34,40 @@ Teuchos::RCP<INVANA::OptimizerBase> INVANA::OptimizerFactory::Create(const Teuch
   switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS"))
   {
 
-    case INPAR::INVANA::stat_inv_graddesc:
-    {
-      opti = Teuchos::rcp(new INVANA::OptimizerGradDesc(invp));
-    }
-    break;
-
     case INPAR::INVANA::stat_inv_lbfgs:
     {
       opti = Teuchos::rcp(new INVANA::OptimizerLBFGS(invp));
     }
     break;
-    case INPAR::INVANA::stat_inv_mc:
+    case INPAR::INVANA::stat_inv_bruteforce:
     {
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-{
-        opti = Teuchos::rcp(new INVANA::OptimizerMC(invp));
-}
+        opti = Teuchos::rcp(new INVANA::OptimizerBruteForce(invp));
+    }
+    break;
+    case INPAR::INVANA::stat_inv_smc:
+    {
+#if __cplusplus >= 201103L
+        opti = Teuchos::rcp(new INVANA::OptimizerSMC(invp));
 #else
-        dserror("Install new Boost version");
+        dserror("Compile with >=C++11.");
+#endif
+    }
+    break;
+    case INPAR::INVANA::stat_inv_mh:
+    {
+#if __cplusplus >= 201103L
+        opti = Teuchos::rcp(new INVANA::OptimizerMH(invp));
+#else
+        dserror("Compile with >=C++11.");
+#endif
+    }
+    break;
+    case INPAR::INVANA::stat_inv_prediction:
+    {
+#if __cplusplus >= 201103L
+        opti = Teuchos::rcp(new INVANA::PredictionSMC(invp));
+#else
+        dserror("Compile with >=C++11.");
 #endif
     }
     break;

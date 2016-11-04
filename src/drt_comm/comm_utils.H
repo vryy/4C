@@ -6,7 +6,7 @@
        MPI, Epetra_Comm and further communicators
 
 <pre>
-\level 2
+\level 0
 \maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -36,6 +36,7 @@
 namespace DRT
 {
   class Discretization;
+  class Problem;
 }
 
 /*----------------------------------------------------------------------*
@@ -56,7 +57,8 @@ namespace COMM_UTILS
 #endif
 
   //! distribute discretizations from one group to the others with ponzi scheme
-  void BroadcastDiscretizations();
+  void BroadcastDiscretizations(int instance=0);
+
   //! distribute a discretization from one group to one other
   void NPDuplicateDiscretization(const int sgroup,
                                  const int rgroup,
@@ -109,6 +111,8 @@ namespace COMM_UTILS
       Teuchos::RCP<Epetra_Comm> gcomm,
       NP_TYPE npType
       );
+
+    NestedParGroup(NestedParGroup& npgroup);
 
     virtual ~NestedParGroup(){};
 

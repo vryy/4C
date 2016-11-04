@@ -1,12 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file objective_funct.cpp
+\file objective_funct_disp.cpp
 
-<pre>
-Maintainer: Sebastian Kehl
+\brief Displacement based objective function
+
+\level 3
+
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -22,7 +24,8 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 INVANA::ObjectiveFunctDisp::ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
-dofrowmap_(discret->DofRowMap())
+dofrowmap_(discret->DofRowMap()),
+scalefac_(1.0)
 {
   const Teuchos::ParameterList& invap = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
@@ -32,6 +35,9 @@ dofrowmap_(discret->DofRowMap())
   ReadMonitor(invap.get<std::string>("MONITORFILE"));
 
   scaling_ = DRT::INPUT::IntegralValue<bool>(invap, "OBJECTIVEFUNCTSCAL");
+
+  if (scaling_)
+    scalefac_ = sqrt(mstate_->GlobalLength());
 }
 
 /*----------------------------------------------------------------------*/
@@ -205,8 +211,8 @@ void INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state,
 
   val = 0.5*norm*norm;
 
-  if (scaling_)
-    val=val/sqrt(mstate_->GlobalLength());
+//  if (scaling_)
+//    val=val/sqrt(mstate_->GlobalLength());
 }
 
 /*----------------------------------------------------------------------*/
@@ -227,11 +233,12 @@ void INVANA::ObjectiveFunctDisp::EvaluateGradient(Teuchos::RCP<Epetra_Vector> st
   sim->Update(-1.0,*(*mstate_)(step),1.0);
 
   // insert into gradient
-  double fac=1.0;
-  if (scaling_)
-    fac=1.0/sqrt(mstate_->GlobalLength());
-
-  gradient->Update(fac,*mextractor_->InsertCondVector(sim),0.0);
+//  double fac=1.0;
+//  if (scaling_)
+//    fac=1.0/sqrt(mstate_->GlobalLength());
+//
+//  gradient->Update(fac,*mextractor_->InsertCondVector(sim),0.0);
+  gradient->Update(1.0,*mextractor_->InsertCondVector(sim),0.0);
 
   return;
 }

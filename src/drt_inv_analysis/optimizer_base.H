@@ -126,10 +126,10 @@ public:
   //! get reference to the old gradient vector
   const Epetra_MultiVector& GetGradientOldView() {return *objgrad_o_;}
 
-  //! get "reference" to objective function value
+  //! get the objective function value
   double GetObjFunctValView() {return objval_;}
 
-  //! get "reference" to old objective function value
+  //! get the old objective function value
   double GetObjFunctValOldView() {return objval_o_;}
 
   //! return the unique map of the vector layout
@@ -145,9 +145,6 @@ protected:
 
   //! @name General purpose functions for nonlinear solution
   //@{
-
-  //! get inital guess using the optimization problem
-  void SetInitialGuess();
 
   //! evaluate the objective function
   void Evaluate(double* val, /// [out] value of the objective function
@@ -172,7 +169,7 @@ protected:
   //! @name General query
   //@{
 
-  //! question if base class is initialized
+  //! query if base class is initialized
   bool IsInit(){return isinit_;}
 
   //! a reference to the underlying optimization problem

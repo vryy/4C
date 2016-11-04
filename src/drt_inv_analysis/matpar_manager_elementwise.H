@@ -72,6 +72,10 @@ protected:
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
       double val, int elepos, int paraposglobal, int paraposlocal);
 
+  std::vector<int>& ParamsLIDtoeleGID() {return paramsLIDtoeleGID_;}
+
+  std::map< int, std::vector<int> >& EleGIDtoparamsLID() {return eleGIDtoparamsLID_;}
+
 private:
 
   //! build a graph of elements in the optimization parameter vector

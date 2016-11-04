@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file aaaneohooke.cpp
-\brief
+\brief NeoHooke-like material for AAA
 This file contains the routines required for aneurysmatic artery wall following
 Raghavan and Vorp [2000]
 
@@ -10,7 +10,8 @@ the input line should read
   MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0
 
 <pre>
-Maintainer: Jonas Biehler
+\level 3
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -221,9 +222,9 @@ void MAT::AAAneohooke::Evaluate(
         - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinante
 
   double detf = 0.0;
-  if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
-  else
+//  if (iiinv < 0.0)
+//    dserror("fatal failure in aneurysmatic artery wall material");
+//  else
     detf = sqrt(iiinv);              // determinate of deformation gradient
 
   //--------------------------------------------------------------------------------------

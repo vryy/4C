@@ -59,7 +59,6 @@ timestep_(0.0),
 msteps_(0),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
-fprestart_(0),
 itertopc_(10)
 {
   const Teuchos::ParameterList& sdyn  = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -82,7 +81,6 @@ itertopc_(10)
   for (int i=0; i< msteps_; i++)
     time_[i] = (i+1)*timestep_;
 
-  fprestart_ = invp.get<int>("FPRESTART");
   itertopc_ = invp.get<int>("ITERTOPC");
 
   fpcounter_=0;
@@ -101,33 +99,6 @@ void INVANA::InvanaAugLagr::Setup()
   dis_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
   disdualp_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
-
-  //output for the forward problem
-  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  std::string prefix = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
-  size_t pos = filename.rfind('/');
-  size_t pos2 = prefix.rfind('-');
-  std::string filenameout = filename.substr(0,pos+1) + prefix.substr(0,pos2) + "_forward" + filename.substr(pos+1+prefix.length());
-
-  Teuchos::RCP<IO::OutputControl> controlfile =
-    Teuchos::rcp(new IO::OutputControl(
-      Discret()->Comm(),
-      DRT::Problem::Instance()->ProblemName(),
-      DRT::Problem::Instance()->SpatialApproximation(),
-      DRT::Problem::Instance()->OutputControlFile()->InputFileName(),
-      filenameout,
-      DRT::Problem::Instance()->NDim(),
-      fprestart_,
-      DRT::Problem::Instance()->OutputControlFile()->FileSteps(),
-      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
-    )
-  );
-  // give the discretization another controlfile for output
-  Discret()->Writer()->SetOutput(controlfile);
-
-  // tweak new input control file for the forward problem. Due to how the restart
-  // works in the field it must be set to the globalproblem
- inputfile_ = Teuchos::rcp(new IO::InputControl(filenameout,Discret()->Comm()));
 
   return;
 }
@@ -160,8 +131,10 @@ void INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<std::map<int, double> >
 /*----------------------------------------------------------------------*/
 /* solve primal problem                                      keh 10/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::InvanaAugLagr::SolveForwardProblem()
+int INVANA::InvanaAugLagr::SolveForwardProblem()
 {
+  int err=0;
+
   // use the same control file for every run since usually the last one is of interest
   Discret()->Writer()->OverwriteResultFile();
 
@@ -174,17 +147,17 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
     case INPAR::STR::dyna_statics:
     {
 
-      ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), Discret());
+      ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,sdyn, Discret());
       Teuchos::RCP<ADAPTER::StructureInvana> structadaptor =
           Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
       structadaptor->Setup();
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       // and only if we are not in parameter continuation mode
-      if (fprestart_ and fpcounter_<=itertopc_)
+      if (FPRestart() and fpcounter_<=itertopc_)
       {
-        DRT::Problem::Instance()->SetInputControlFile(inputfile_);
-        structadaptor->ReadRestart(fprestart_);
+        DRT::Problem::Instance()->SetInputControlFile(InputControl());
+        structadaptor->ReadRestart(FPRestart());
       }
 
       if (fpcounter_>itertopc_)
@@ -201,13 +174,13 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
                 Teuchos::rcp((*dis_)(i),false),
                 Teuchos::rcp((*dis_)(i),false));  // veln is not used so far so just put disn
 
-            structadaptor->Integrate();
+            err = structadaptor->Integrate();
           }
         }
       }
       else
       {
-        structadaptor->Integrate();
+        err = structadaptor->Integrate();
       }
 
       // get displacement and time
@@ -232,7 +205,7 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
   }
 
   fpcounter_+=1;
-  return;
+  return err;
 }
 
 
@@ -284,8 +257,10 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
 /*----------------------------------------------------------------------*/
 /* evaluate the value and/or gradient of the problem        keh 10/13   */
 /*----------------------------------------------------------------------*/
-void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
+int INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
+  int err=0;
+
   //if (Optimizer()->Runc()<=itertopc_)
   Matman()->ReplaceParams(sol);
 
@@ -294,19 +269,24 @@ void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val,
 
   if ( gradient != Teuchos::null or val!=NULL )
   {
-    SolveForwardProblem();
+    err = SolveForwardProblem();
     EvaluateError(sol,val);
 
     if (gradient != Teuchos::null)
     {
       SolveAdjointProblem();
       EvaluateGradient(sol,gradient);
-//      gradient->Print(std::cout);
-//      EvaluateGradientFD(sol,gradient);
-//      gradient->Print(std::cout);
-//      exit(0);
     }
   }
+
+  // do scaling
+  double fac=ObjectiveFunct()->GetScaleFac();
+  if (gradient!=Teuchos::null)
+    gradient->Scale(fac);
+  if (val!=NULL)
+    *val*=fac;
+
+  return err;
 }
 
 /*----------------------------------------------------------------------*/
@@ -350,7 +330,6 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
 
   if (Regman() != Teuchos::null)
     Regman()->EvaluateGradient(sol,gradient);
-
 }
 
 /*----------------------------------------------------------------------*/

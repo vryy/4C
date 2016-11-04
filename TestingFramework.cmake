@@ -57,6 +57,42 @@ macro (baci_test_Nested_Par_CopyDat arg1 arg2 arg3)
     endif ()
 endmacro (baci_test_Nested_Par_CopyDat)
 
+# Run test case for nested parallelism with copydatfile
+# + precursor simulation + (optional) "postprocesssing" simulation)
+# arg1 is the inputfile of a precursor simulation
+# arg2 is an inputfile relying on the output of arg1
+# arg3 is the inputfile of a "postprocessing simulation" restarted from arg2 (optional)
+# arg4 is the number of procs
+# arg5 is the number of groups
+# restart is a restart for arg2 to read from arg1-output
+macro (baci_test_Nested_Par_CopyDat_prepost arg1 arg2 arg3 arg4 arg5 restart)
+  # precursor simulation
+  add_test(NAME ${arg2}_precursor-p${arg4}
+    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx)
+  # restart from precursor output
+  add_test(NAME ${arg2}-p${arg4}
+    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx)
+
+  # add postprocessing simulation in case
+  if (NOT ${arg3} STREQUAL "")
+    add_test(NAME ${arg2}_postprocess-p${arg4}
+      COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
+  endif(NOT ${arg3} STREQUAL "")
+  if( "${ARGN}" STREQUAL "minimal")
+    set_tests_properties ( ${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
+    set_tests_properties ( ${arg2}-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
+    if (NOT ${arg3} STREQUAL "")
+      set_tests_properties ( ${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
+    endif(NOT ${arg3} STREQUAL "")
+  else ()
+    set_tests_properties ( ${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT 200)
+    set_tests_properties ( ${arg2}-p${arg4} PROPERTIES TIMEOUT 200)
+    if (NOT ${arg3} STREQUAL "")
+      set_tests_properties ( ${arg2}_postprocess-p${arg4} PROPERTIES TIMEOUT 200)
+    endif(NOT ${arg3} STREQUAL "")
+  endif ()
+endmacro (baci_test_Nested_Par_CopyDat_prepost)
+
 
 # FRAMEWORK TESTS
 macro (baci_framework_test arg nproc)
@@ -757,16 +793,17 @@ baci_test(invaaa 2 "")
 baci_test(invana_reg001_lbfgs100_full 1 "")
 baci_test(invana_reg001_lbfgs100_full 2 "50")
 baci_test(invana_reg0_lbfgs100_full_unif 3 "")
-baci_test(invana_reg001_graddesc_full 1 "")
-baci_test(invana_reg001_graddesc_full 3 "8")
 baci_test(invana_cube2by2_displ 2 " " minimal)
 baci_test(invana_cube2by2_unif_displ 3 "")
 baci_test(invana_cube2by2_unif_displ 1 " ")
 # Surface Current Evaluation needs Kokkos
+# Statistical stuff neeeds C++11
 if (HAVE_Kokkos)
 baci_test(invana_arch_surfcurr 2 "")
 baci_test(invana_arch_surfcurr_prestress_pc 2 "")
 baci_test(invana_arch_surfcurr_volgrowth_pc 2 "")
+baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_smc_estim invana_arch_stat_smcprediction 6 3 5)
+baci_test_Nested_Par_CopyDat_prepost(invana_arch_stat_vb_precursor invana_arch_stat_mh_estim "" 4 2 "")
 endif (HAVE_Kokkos)
 baci_test(inversedesign 2 "")
 baci_test(inversedesign_tet4 2 "")

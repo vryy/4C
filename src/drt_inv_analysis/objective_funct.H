@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
  * \file objective_funct.H
+ * \brief Objective function interface
  *
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            089 - 289-10361
-</pre>
+\level 3
+\maintainer Sebastian Kehl
+             kehl@mhpc.mw.tum.de
+             089 - 289-10361
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -55,6 +56,11 @@ public:
   */
   //! returns step of corresponding measurements; otherwise returns -1
   virtual int FindStep(double time) = 0;
+
+  /*! Get scaling factor
+   *
+   */
+  virtual double GetScaleFac() = 0;
 
 }; // class ObjectiveFunct
 }  // namespace INVANA

@@ -19,10 +19,13 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "regularization_base.H"
+#include "Teuchos_ParameterList.hpp"
 
 namespace INVANA
-
 {
+
+class CholFactorBase;
+
 
 /*! \class RegularizationTikhonov
  * \brief Tikhonov regularization
@@ -60,12 +63,15 @@ public:
   virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
       Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
       );
-
   //@}
+
 private:
 
-  //! mean value
-  double mean_;
+  //! factorization of the covariance matrix
+  Teuchos::RCP<CholFactorBase> cov_factor_;
+
+  //! Parameter list with inverse analysis paremeters
+  Teuchos::ParameterList params_;
 };
 
 }

@@ -21,13 +21,11 @@
 /* headers */
 #include <Teuchos_RCP.hpp>
 #include "Epetra_MultiVector.h"
+
+#include "../drt_io/io.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
 
 /*----------------------------------------------------------------------------*/
 namespace INVANA
@@ -72,7 +70,8 @@ namespace INVANA
     //@{
 
     //! Write a new step
-    virtual void WriteNewStep(const int step /// [in] new step to be written
+    virtual void WriteNewStep(const int step, /// [in] new step to be written
+        const double time /// [in] time for this step
         );
 
     //! Write named int
@@ -80,10 +79,25 @@ namespace INVANA
         const int aint ///[int] integer to write
         );
 
+    //! Write named int
+    virtual void WriteNamedDouble(const std::string name, /// [in] an name for the d
+        const double adouble ///[int] double to write
+        );
+
     //! Write named vector
     virtual void WriteNamedVector(const std::string name, ///< [in] a name for the vector
-        Teuchos::RCP<const Epetra_MultiVector> vector ///< [in] the vector to write
+        Teuchos::RCP<const Epetra_MultiVector> vector, ///< [in] the vector to write
+        IO::DiscretizationWriter::VectorType type = IO::DiscretizationWriter::elementvector ///<[in] vector type
         ) const;
+
+    //! Write named vectors (each vector in MV with a number)
+    virtual void WriteNamedVectors(const std::string name, ///< [in] a name for the vector
+        Teuchos::RCP<const Epetra_MultiVector> vector, ///< [in] the vector to write
+        IO::DiscretizationWriter::VectorType type = IO::DiscretizationWriter::elementvector ///<[in] vector type
+        ) const;
+
+    //! Write mesh
+    virtual void WriteMesh(int step, double time);
 
   private:
 

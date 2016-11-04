@@ -36,8 +36,8 @@ namespace INPAR
     enum StatInvMatParametrization
     {
       stat_inv_mp_none,                  // nothing defined
-      stat_inv_mp_smoothkernel,          // smooth kernel approximation
-      stat_inv_mp_elementwise,            // parameters per element
+      stat_inv_mp_patchwise,             // patchwise parameter approximation
+      stat_inv_mp_elementwise,           // parameters per element
       stat_inv_mp_uniform                // uniform i.e spatially constant parameters
     };
 
@@ -45,9 +45,11 @@ namespace INPAR
     enum StatInvAnalysisType
     {
       stat_inv_none,          // no
-      stat_inv_mc,            // statistical inverse analysis using montecarlo
-      stat_inv_graddesc,      // deterministic inverse analysis using gradient descent
-      stat_inv_lbfgs          // deterministic inverse analysis using limited memory bfgs
+      stat_inv_smc,           // sequential monte carlo
+      stat_inv_mh,            // metropolis hastings
+      stat_inv_lbfgs,         // deterministic inverse analysis using limited memory bfgs
+      stat_inv_bruteforce,    // brute force sampling
+      stat_inv_prediction     // particle based prediction
     };
 
     /// Type of the objective function
@@ -63,7 +65,15 @@ namespace INPAR
     {
       stat_inv_meta_none,        // no meta parameterization
       stat_inv_meta_quad,        // parabolic meta parametrization
+      stat_inv_meta_exp,         // log-normal distribution of material parameters
       stat_inv_meta_arctan       // arcus tangens meta parametrization
+    };
+
+    /// Type of the initial guess
+    enum StatInvInitType
+    {
+      stat_inv_init_dat,         // initialization from the datfile
+      stat_inv_init_map          // initialization from some MAP approximation
     };
 
   }  // namespace INVANA

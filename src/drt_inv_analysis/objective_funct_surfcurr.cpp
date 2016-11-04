@@ -1,13 +1,12 @@
-#if defined( HAVE_Kokkos )
+#ifdef HAVE_Kokkos
 /*----------------------------------------------------------------------*/
 /*!
- * \file objective_funct_surfcurr.cpp
-
-<pre>
-Maintainer: Sebastian Kehl
+\file objective_funct_surfcurr.cpp
+\brief Surface current based objective function
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -15,15 +14,21 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_inputreader.H"
+#include "../drt_lib/drt_nodereader.H"
+#include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_comm/comm_utils.H"
+
+#include "Epetra_SerialSpdDenseSolver.h"
+#include "Epetra_SerialSymDenseMatrix.h"
 
 #include <sys/time.h>
+#include <random>
 
-
-/*----------------------------------------------------------------------*/
-/* standard constructor of current representation                       */
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret):
 sourcedis_(discret),
@@ -33,11 +38,14 @@ targetdis_(Teuchos::null)
 
   // set up source discretization
   if (not sourcedis_->Filled() || not sourcedis_->HaveDofs())
-    dserror("Discretisation is not complete or has no dofs!");
+    dserror("Such a discretization should not end up here!");
 
-  // set up target discretization we don't need dofmaps for the target
-  targetdis_ = DRT::Problem::Instance(1)->GetDis("structure");
-  if (not targetdis_->Filled()) targetdis_->FillComplete();
+  // set up target discretization
+  DRT::Problem* reference_problem = ReadReferenceDiscretization();
+
+  targetdis_ = reference_problem->GetDis("structure");
+  if (not targetdis_->Filled() || not targetdis_->HaveDofs())
+    targetdis_->FillComplete();
 
   // get the conditions for the current evaluation
   std::vector<DRT::Condition* > scc_source;
@@ -91,8 +99,71 @@ targetdis_(Teuchos::null)
 
 }
 
-/*----------------------------------------------------------------------*/
-/* find step of measurement according to given time          keh 10/14  */
+DRT::Problem* INVANA::SurfCurrentGroup::ReadReferenceDiscretization()
+{
+  // groups stuff in case
+  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = DRT::Problem::Instance()->GetNPGroup()->LocalComm();
+  int ngroups = DRT::Problem::Instance()->GetNPGroup()->NumGroups();
+  int groupid = DRT::Problem::Instance()->GetNPGroup()->GroupId();
+
+  // get target discretization from the input file
+  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  std::string reference_input_file = statinvp.get<std::string>("TARGETDISCRETIZATION");
+  if (reference_input_file.compare("none.dat"))
+  {
+    // check wether absolut path is given and prepend if not
+    if (reference_input_file[0]!='/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string path = filename.substr(0,pos+1);
+        reference_input_file.insert(reference_input_file.begin(), path.begin(), path.end());
+      }
+    }
+  }
+  else
+    dserror("You forgot to specifiy the filename for the target discretization");
+
+  // a new problem instance with npgroup
+  int newinstance = DRT::Problem::NumInstances();
+  DRT::Problem* reference_problem = DRT::Problem::Instance(newinstance);
+  reference_problem->NPGroup(*(DRT::Problem::Instance()->GetNPGroup()) );
+
+  // a reader
+  DRT::INPUT::DatFileReader refreader(reference_input_file, lcomm, 1);
+
+  // read parameter, materials, functions
+  reference_problem->ReadParameter(refreader);
+
+  DRT::Problem::Instance()->Materials()->SetReadFromProblem(1);
+  reference_problem->ReadMaterials(refreader);
+
+  reference_problem->ReadTimeFunctionResult(refreader);
+
+  if (groupid==0)
+  {
+    // read nodes, elements and conditions
+    reference_problem->ReadFields(refreader);
+
+    // read conditions
+    reference_problem->ReadConditions(refreader);
+  }
+
+  // Broadcast to all groups
+  gcomm->Barrier();
+  if (ngroups > 1)
+    COMM_UTILS::BroadcastDiscretizations(newinstance);
+  gcomm->Barrier();
+
+  // reset were materials are read from
+  DRT::Problem::Instance()->Materials()->ResetReadFromProblem();
+
+  return reference_problem;
+}
+
 /*----------------------------------------------------------------------*/
 int INVANA::SurfCurrentGroup::FindStep(double time)
 {
@@ -108,8 +179,6 @@ int INVANA::SurfCurrentGroup::FindStep(double time)
   return step;
 }
 
-/*----------------------------------------------------------------------*/
-/* Evaluate value of the objective function                  keh 11/13  */
 /*----------------------------------------------------------------------*/
 void INVANA::SurfCurrentGroup::Evaluate(Teuchos::RCP<Epetra_Vector> state,
     double time,
@@ -140,9 +209,6 @@ void INVANA::SurfCurrentGroup::Evaluate(Teuchos::RCP<Epetra_Vector> state,
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate the gradient of the objective function                      */
-/* w.r.t the displacements                                   keh 11/13  */
-/*----------------------------------------------------------------------*/
 void INVANA::SurfCurrentGroup::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
     double time,
     Teuchos::RCP<Epetra_Vector> gradient)
@@ -170,35 +236,43 @@ void INVANA::SurfCurrentGroup::EvaluateGradient(Teuchos::RCP<Epetra_Vector> stat
     IO::cout << "SURFACE CURRENT gradient evaluation took: " << dtime << " seconds" << IO::endl;
 }
 
-void INVANA::SurfCurrentGroup::SetScale(double sigmaW)
+double INVANA::SurfCurrentGroup::GetScaleFac()
 {
+  double fac=0.0;
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
-    currents_[0][i]->SetScale(sigmaW);
+    fac += currents_[0][i]->GetScaleFac();
   }
+
+  return fac;
 }
 
 
-/*----------------------------------------------------------------------*/
-/* standard constructor for a surface current                keh 11/13  */
 /*----------------------------------------------------------------------*/
 INVANA::SurfCurrentPair::SurfCurrentPair(
     Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis,
     DRT::Condition* sourcecond,
-    DRT::Condition* targetcond)
+    DRT::Condition* targetcond):
+scalefac_(1.0)
 {
-  // get the scale of the kernel
+  // get the scale of the covariance kernel
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-  double sigmaW = statinvp.get<double>("KERNELSCALE");
-  if (sigmaW<0.0) dserror("you need to choose a proper scale (KERNELSCALE) at which to evaluate the current");
-  sigmaW2_=sigmaW*sigmaW;
+  sigmaW_ = statinvp.get<double>("KERNELSCALE");
+  sigmaW_ = 2*(sigmaW_*sigmaW_);
+  if (sigmaW_<1.0e-6) dserror("supposedly the kernelscale is a little too small!");
 
-  scaling_ = DRT::INPUT::IntegralValue<bool>(statinvp, "OBJECTIVEFUNCTSCAL");
+  // estimation of the variance of the measurement noise
+  var_estim_ = statinvp.get<double>("MEASVARESTIM");
 
   // Setup the triangulations
   tri_target_ = Teuchos::rcp(new INVANA::Triangulation(targetdis,Teuchos::rcp(targetcond,false)));
   tri_source_ = Teuchos::rcp(new INVANA::Triangulation(sourcedis,Teuchos::rcp(sourcecond,false)));
+
+  // want to scale the objective function eventually?
+  scaling_ = DRT::INPUT::IntegralValue<bool>(statinvp, "OBJECTIVEFUNCTSCAL");
+  if (scaling_)
+    scalefac_=1.0/(double)tri_target_->NumTris();
 
   extract_type x_target = tri_target_->Points();
   int xsize=x_target.size();
@@ -219,12 +293,43 @@ INVANA::SurfCurrentPair::SurfCurrentPair(
   Kokkos::parallel_for(xsize,Centers(c_target, x_target_view));
   c_target_=c_target;
 
+  //TODO: Move this to the objective function base class
+  bool noise = DRT::INPUT::IntegralValue<bool>(statinvp, "SYNTHNOISE");
+  int seed = statinvp.get<int>("SYNTHNOISESEED");
+  if (noise)
+    ApplyNoise(seed);
+
   double sum=0.0;
-  Kokkos::parallel_reduce(xsize,Convolute<currents_type>(c_target,n_target,c_target,n_target,sigmaW2_),sum);
+  Kokkos::parallel_reduce(xsize,Convolute<currents_type>(
+      c_target,n_target,c_target,n_target,sigmaW_,var_estim_),sum);
 
   // since the work was done redundantly by all mpi-ranks
   // this value should be the same for all
   preconvtarget_ = sum;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::SurfCurrentPair::ApplyNoise(int seed)
+{
+  // Bring normals and centers to host
+  currents_host_type centers = Kokkos::create_mirror_view(c_target_);
+  Kokkos::deep_copy(centers,c_target_);
+  currents_host_type normals = Kokkos::create_mirror_view(n_target_);
+  Kokkos::deep_copy(normals,n_target_);
+
+  // restore in extract_type format to blurr it
+  extract_type extract_centers;
+  HViewToExtract(centers,extract_centers);
+  extract_type extract_normals;
+  HViewToExtract(normals,extract_normals);
+
+  extract_type blurred;
+  tri_target_->ApplyNoise(extract_normals,extract_centers,blurred,var_estim_,sigmaW_,seed);
+
+  ExtractToHView(blurred,normals);
+  Kokkos::deep_copy(n_target_,normals);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -281,23 +386,20 @@ double INVANA::SurfCurrentPair::WSpaceNorm()
   //-------------------------------------------------
   // Do the convolutions
   double sum=0.0;
-  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(my_c_source,my_n_source,c_source,n_source,sigmaW2_),sum);
+  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(
+      my_c_source,my_n_source,c_source,n_source,sigmaW_,var_estim_),sum);
   double gsum=0.0;
   tri_source_->Comm()->SumAll(&sum,&gsum,1);
   val+=gsum;
 
   sum=0.0;
-  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(my_c_source,my_n_source,c_target_,n_target_,sigmaW2_),sum);
+  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(
+      my_c_source,my_n_source,c_target_,n_target_,sigmaW_,var_estim_),sum);
   gsum=0.0;
   tri_source_->Comm()->SumAll(&sum,&gsum,1);
   val-=2*gsum;
 
-  //scaling by number of surface elements in source and target
-  if (scaling_)
-  {
-    double fac = xsize+c_target_.dimension_0();
-    val=val/fac;
-  }
+  val = val/(2.0*var_estim_);
 
   return val;
 }
@@ -361,10 +463,14 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
   int my_xsize = my_c_source.dimension_0();
 
   int off = mychunk.first;
-  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(my_c_source,my_dn_source,c_source,n_source,grad,off,sigmaW2_,2.0));
-  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(my_c_source,my_dn_source,c_target_,n_target_,grad,off,sigmaW2_,-2.0));
-  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(my_c_source,my_n_source,c_source,n_source,grad,off,sigmaW2_,1.0,true));
-  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(my_c_source,my_n_source,c_target_,n_target_,grad,off,sigmaW2_,-2.0,false));
+  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(
+      my_c_source,my_dn_source,c_source,n_source,grad,off,sigmaW_,var_estim_,2.0));
+  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(
+      my_c_source,my_dn_source,c_target_,n_target_,grad,off,sigmaW_,var_estim_,-2.0));
+  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(
+      my_c_source,my_n_source,c_source,n_source,grad,off,sigmaW_,var_estim_,1.0,true));
+  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(
+      my_c_source,my_n_source,c_target_,n_target_,grad,off,sigmaW_,var_estim_,-2.0,false));
 
   // Bring back to host
   trimesh_host_type h_grad = Kokkos::create_mirror_view(grad);
@@ -378,15 +484,7 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
   Teuchos::RCP<Epetra_MultiVector> lgradient = Teuchos::rcp(new Epetra_MultiVector(gradient->Map(),true));
   tri_source_->SetDataGlobally(grad_data,*trimap,lgradient);
 
-  //scaling by number of surface elements in source and target
-  if (scaling_)
-  {
-    double fac = xsize+c_target_.dimension_0();
-    tri_source_->Comm()->Broadcast(&fac,1,0);
-    gradient->Update(1.0/fac,*lgradient,1.0);
-  }
-  else
-    gradient->Update(1.0,*lgradient,1.0);
+  gradient->Update(1.0/(2.0*var_estim_),*lgradient,1.0);
 }
 
 /*----------------------------------------------------------------------*/
@@ -406,9 +504,9 @@ std::pair<int,int> INVANA::SurfCurrentPair::MyIndices(int nrnk, int myrnk, int s
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::SurfCurrentPair::ExtractToHView(
+template <typename host_data_type> void INVANA::SurfCurrentPair::ExtractToHView(
     const extract_type& in,
-    trimesh_host_type& out)
+    host_data_type& out)
 {
   dsassert(in.size()!=out.dimension_0(),"dimension mismatch");
 
@@ -416,23 +514,16 @@ void INVANA::SurfCurrentPair::ExtractToHView(
   int i=0;
   for (auto it=in.begin(); it!=in.end(); it++)
   {
-    out(i,0) = it->second[0];
-    out(i,1) = it->second[1];
-    out(i,2) = it->second[2];
-    out(i,3) = it->second[3];
-    out(i,4) = it->second[4];
-    out(i,5) = it->second[5];
-    out(i,6) = it->second[6];
-    out(i,7) = it->second[7];
-    out(i,8) = it->second[8];
+    for (int j=0; j<(int)it->second.size(); j++)
+      out(i,j) = it->second[j];
     i++;
   }
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::SurfCurrentPair::ExtractToHView(
+template <typename host_data_type> void INVANA::SurfCurrentPair::ExtractToHView(
     const extract_type& in,
-    trimesh_host_type& out,
+    host_data_type& out,
     Teuchos::RCP<Epetra_Map> map)
 {
   dsassert(in.size()!=out.dimension_0(),"dimension mismatch");
@@ -444,22 +535,17 @@ void INVANA::SurfCurrentPair::ExtractToHView(
   for (auto it=in.begin(); it!=in.end(); it++)
   {
     gids.push_back(it->first);
-    out(i,0) = it->second[0];
-    out(i,1) = it->second[1];
-    out(i,2) = it->second[2];
-    out(i,3) = it->second[3];
-    out(i,4) = it->second[4];
-    out(i,5) = it->second[5];
-    out(i,6) = it->second[6];
-    out(i,7) = it->second[7];
-    out(i,8) = it->second[8];
+    for (int j=0; j<(int)it->second.size(); j++)
+      out(i,j) = it->second[j];
     i++;
   }
 
   *map=Epetra_Map(-1,(int)gids.size(),gids.data(),0,map->Comm());
 }
 
-void INVANA::SurfCurrentPair::HViewToExtract(const trimesh_host_type& in, const Epetra_Map& inmap, extract_type& out)
+/*----------------------------------------------------------------------*/
+template <typename host_data_type>
+void INVANA::SurfCurrentPair::HViewToExtract(const host_data_type& in, const Epetra_Map& inmap, extract_type& out)
 {
   int size0=in.dimension_0();
   std::vector<double> dum;
@@ -469,6 +555,22 @@ void INVANA::SurfCurrentPair::HViewToExtract(const trimesh_host_type& in, const 
       dum.push_back(in(i,j));
 
     out.insert(std::pair<int, std::vector<double> >(inmap.GID(i),dum));
+    dum.clear();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+template <typename host_data_type>
+void INVANA::SurfCurrentPair::HViewToExtract(const host_data_type& in, extract_type& out)
+{
+  int size0=in.dimension_0();
+  std::vector<double> dum;
+  for (int i=0; i<size0; i++)
+  {
+    for(unsigned j=0; j<in.dimension_1(); j++)
+      dum.push_back(in(i,j));
+
+    out.insert(std::pair<int, std::vector<double> >(i,dum));
     dum.clear();
   }
 }
@@ -742,7 +844,86 @@ void INVANA::Triangulation::SetDataGlobally(const extract_type& data,const Epetr
   Epetra_Export ex2(dofmap_red,vector->Map());
   int err2 = vector->Export(vector_red, ex2, Add);
   if (err2)
-    dserror("export into global gradien layout failed with code: %d",err2);
+    dserror("export into global gradient layout failed with code: %d",err2);
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::ApplyNoise(const extract_type& normals, const extract_type& centers,
+    extract_type& blurred, double variance, double lengthscale, int seed) const
+{
+  int size=normals.size();
+
+  // random number generator
+  std::mt19937 generator(seed);
+  std::normal_distribution<double> distribution(0.0,1.0);
+
+  Epetra_SerialDenseMatrix n_blur(size,3);
+  int k=0;
+  for (auto it=normals.begin(); it!=normals.end(); it++)
+  {
+    n_blur(k,0) = distribution(generator);
+    n_blur(k,1) = distribution(generator);
+    n_blur(k,2) = distribution(generator);
+    k++;
+  }
+
+  // set up Covariance Matrix
+  Epetra_SerialSymDenseMatrix C;
+  C.Shape(size);
+  C.SetLower();
+  int i=0;
+  int j=0;
+  double x1,x2,x3,y1,y2,y3;
+  // loop columns
+  for (auto it=centers.begin(); it!=centers.end(); it++)
+  {
+    x1 = it->second[0];
+    x2 = it->second[1];
+    x3 = it->second[2];
+    // loop rows
+    j=0;
+    for (auto jt=centers.begin(); jt!=centers.end(); jt++)
+    {
+      if (j>i)
+        break;
+
+      y1 = jt->second[0];
+      y2 = jt->second[1];
+      y3 = jt->second[2];
+      C(i,j) = kernel(x1,x2,x3,y1,y2,y3,lengthscale,variance);
+      j++;
+    }
+    i++;
+  }
+
+  // Factorize
+  Epetra_SerialSpdDenseSolver solver;
+  solver.SetMatrix(C);
+  int err = solver.Factor();
+
+  if (err)
+    dserror("Covariance matrix factorization failed!");
+
+  Epetra_SerialSymDenseMatrix* L = solver.SymFactoredMatrix();
+
+  Epetra_SerialDenseMatrix n_blurred(size,3);
+  L->Multiply(false,n_blur,n_blurred);
+
+  //n_blurred.Print(std::cout);
+
+  // add noise to normals and put back to extract type format
+  std::vector<double> n(3);
+  k=0;
+  for (auto it=normals.begin(); it!=normals.end(); it++)
+  {
+    n[0] = it->second[0]+n_blurred(k,0);
+    n[1] = it->second[1]+n_blurred(k,1);
+    n[2] = it->second[2]+n_blurred(k,2);
+    blurred.insert(std::pair<int, std::vector<double> >(it->first,n));
+    k++;
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -838,5 +1019,18 @@ void INVANA::Triangulation::CommunicateData(extract_type& data)
 }
 
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Comm> INVANA::Triangulation::Comm() {return surface_->Comm();}
+const Teuchos::RCP<Epetra_Comm> INVANA::Triangulation::Comm()
+{
+  return surface_->Comm();
+}
+
+/*----------------------------------------------------------------------*/
+int INVANA::Triangulation::NumTris()
+{
+  if (not haspoints_)
+    dserror("Points were not evaluated so far!");
+
+  return trimap_->NumGlobalElements();
+
+}
 #endif

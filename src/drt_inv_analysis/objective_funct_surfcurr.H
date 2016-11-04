@@ -1,13 +1,12 @@
-#if defined( HAVE_Kokkos )
+#ifdef HAVE_Kokkos
 /*----------------------------------------------------------------------*/
 /*!
- * \file objective_funct_surfcurr.H
- *
-<pre>
-Maintainer: Sebastian Kehl
+\file objective_funct_surfcurr.H
+\brief Surface current based objective function
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -15,6 +14,7 @@ Maintainer: Sebastian Kehl
 #define OBJECTIVE_FUNCT_SURFCURR_H
 
 #include "objective_funct.H"
+//#include "../drt_lib/drt_globalproblem.H"
 
 #include "Epetra_Map.h"
 
@@ -25,6 +25,12 @@ namespace DRT
 {
   class Discretization;
   class Condition;
+  class Problem;
+
+  namespace INPUT
+  {
+    class DatFileReader;
+  }
 }
 
 namespace LINALG
@@ -37,6 +43,13 @@ namespace INVANA
 
 class SurfCurrentPair;
 class Triangulation;
+
+// the kernel
+inline double kernel(double x1, double x2, double x3,
+                     double y1, double y2, double y3,
+                     double lscale, double vscale) {
+  return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/lscale)*vscale;}
+
 
 /*!
   \brief An objective function comparing sets of surfaces
@@ -86,8 +99,10 @@ public:
   //! Standard destructor
   virtual ~SurfCurrentGroup(){Kokkos::finalize();}
 
-  //! Set global scale
-  void SetScale(double sigmaW);
+  //! read target discretization
+  DRT::Problem* ReadReferenceDiscretization();
+
+  virtual double GetScaleFac();
 
   //! Evaluate value of the objective function
   virtual void Evaluate(Teuchos::RCP<Epetra_Vector> state, double time, double& val);
@@ -109,11 +124,13 @@ public:
 
 //! Kokkos::View to hold data of type centers and normals
 typedef Kokkos::View<double*[3]> currents_type;
+typedef currents_type::HostMirror currents_host_type;
 
 //! Kokkos::View to hold data of type points (and associated data) of a triangulation
 typedef Kokkos::View<double*[9]> trimesh_type;
 typedef trimesh_type::HostMirror trimesh_host_type;
 typedef Kokkos::View<double*[9],Kokkos::MemoryTraits<Kokkos::Atomic>> trimesh_atomic_type;
+
 //! Kokkos::View to hold data of type derivative of currents_type wrt nodal dofs
 typedef Kokkos::View<double*[27]> trimesh_vecdata_type;
 
@@ -235,20 +252,21 @@ struct Convolute {
   ViewType n1;
   currents_type c2;
   currents_type n2;
-  double scale;
+  double lscale;
+  double vscale;
 
   // Constructor takes View by "value"; this does a shallow copy.
-  Convolute (ViewType c1_, ViewType n1_, currents_type c2_, currents_type n2_, double scale_)
-  : c1 (c1_),n1 (n1_),c2 (c2_),n2 (n2_),scale (scale_) {}
-
-  inline double kernel(double x1, double x2, double x3, double y1, double y2, double y3, double scale) const {
-    return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/scale);}
+  Convolute (ViewType c1_, ViewType n1_,
+             currents_type c2_, currents_type n2_,
+             double lscale_, double vscale_)
+  : c1(c1_), n1(n1_) ,c2(c2_), n2(n2_), lscale(lscale_) , vscale(vscale_)  {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType::size_type i,double& sum) const {
     for (currents_type::size_type j=0; j<c2.dimension_0(); j++)
     {
-      sum += (n1(i,0)*n2(j,0)+n1(i,1)*n2(j,1)+n1(i,2)*n2(j,2))*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),scale);
+      sum += (n1(i,0)*n2(j,0)+n1(i,1)*n2(j,1)+n1(i,2)*n2(j,2))*
+          kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale,vscale);
     }
   }
 };
@@ -297,22 +315,22 @@ struct ConvoluteDN {
   currents_type n2;
   trimesh_atomic_type g;
   int offset;
-  double scale;
+  double lscale;
+  double vscale;
   double fac;
 
   // Constructor takes View by "value"; this does a shallow copy.
-  ConvoluteDN (ViewType1 c1_, ViewType2 dn1_, currents_type c2_, currents_type n2_, trimesh_atomic_type g_,
-      int offset_, double scale_,double fac_)
-  : c1 (c1_),dn1 (dn1_),c2 (c2_),n2 (n2_),g (g_), offset (offset_), scale (scale_),fac (fac_) {}
-
-  inline double kernel(double x1, double x2, double x3, double y1, double y2, double y3, double scale) const {
-    return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/scale);}
+  ConvoluteDN (ViewType1 c1_, ViewType2 dn1_,
+               currents_type c2_, currents_type n2_, trimesh_atomic_type g_,
+               int offset_, double lscale_,double vscale_,double fac_)
+  : c1(c1_), dn1(dn1_), c2(c2_), n2(n2_), g(g_), offset(offset_),
+    lscale(lscale_), vscale(vscale_), fac (fac_) {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType1::size_type i) const {
     for (currents_type::size_type j=0; j<c2.dimension_0(); j++)
     {
-      double ker = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),scale);
+      double ker = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale,vscale);
 
       int ii=i+offset; // the global row to assemble
       g(ii,0) += (dn1(i,0)*n2(j,0)+dn1(i,1)*n2(j,1)+dn1(i,2)*n2(j,2))*ker;
@@ -337,23 +355,25 @@ struct ConvoluteDk {
   currents_type n2;
   trimesh_atomic_type g;
   int of;
-  double scale;
+  double lscale;
+  double vscale;
   double fac;
   bool sym;
 
   // Constructor takes View by "value"; this does a shallow copy.
-  ConvoluteDk (ViewType c1_, ViewType n1_, currents_type c2_, currents_type n2_, trimesh_atomic_type g_, int of_, double scale_,double fac_,bool sym_)
-  : c1 (c1_),n1 (n1_),c2 (c2_),n2 (n2_),g (g_), of (of_), scale (scale_),fac (fac_),sym (sym_) {}
-
-  inline double kernel(double x1, double x2, double x3, double y1, double y2, double y3, double scale) const {
-    return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/scale);}
+  ConvoluteDk (ViewType c1_, ViewType n1_,
+      currents_type c2_, currents_type n2_, trimesh_atomic_type g_,
+      int of_, double lscale_, double vscale_, double fac_, bool sym_)
+  : c1(c1_), n1(n1_), c2(c2_), n2(n2_), g(g_),
+    of(of_), lscale(lscale_), vscale(vscale_), fac(fac_), sym(sym_) {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType::size_type i) const {
     for(currents_type::size_type j=0;j<c2.dimension_0();j++)
     {
       double ker[3];
-      double arg = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),scale)*(-2.0/3.0)/scale;
+      double arg = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),
+          lscale,vscale)*(-2.0/3.0)/lscale;
       ker[0] =  arg*(c1(i,0)-c2(j,0));
       ker[1] =  arg*(c1(i,1)-c2(j,1));
       ker[2] =  arg*(c1(i,2)-c2(j,2));
@@ -418,24 +438,47 @@ private:
   //! Kokkos view on the target normals
   currents_type n_target_;
 
-  //! squared scale of the kernel
-  double sigmaW2_;
+  //! spatial scale of the kernel
+  double sigmaW_;
 
-  //! scaling of the objective function?
+  //! estimation of the measurement noise
+  double var_estim_;
+
+  //! want scaling of the optimization problem?
   bool scaling_;
+
+  //! scale factor
+  double scalefac_;
 
   //! pre computed convolution of target with itself; constant since construction
   double preconvtarget_;
 
   //! extract_type to h_view_type conversion
-  void ExtractToHView(const extract_type& in, trimesh_host_type& out, Teuchos::RCP<Epetra_Map> map);
-  void ExtractToHView(const extract_type& in, trimesh_host_type& out);
+  template <typename host_data_type>
+  void ExtractToHView(const extract_type& in, host_data_type& out, Teuchos::RCP<Epetra_Map> map);
+  template <typename host_data_type>
+  void ExtractToHView(const extract_type& in, host_data_type& out);
 
   //! trimesh_host_type to extract_type conversion
-  void HViewToExtract(const trimesh_host_type& in, const Epetra_Map& inmap, extract_type& out);
+  template <typename host_data_type>
+  void HViewToExtract(const host_data_type& in, const Epetra_Map& inmap, extract_type& out);
+  template <typename host_data_type>
+  void HViewToExtract(const host_data_type& in, extract_type& out);
 
   //! subdivide a range of indices (magnitude "size") into nrnk number of chunks
   std::pair<int, int> MyIndices(int nrnk, int myrnk, int size);
+
+  /*! \brief Apply noise for testing
+   *
+   *  Apply normally distributed noise in the space of currents.
+   *
+   *  Dont use this function on large meshes! The purpose is set up
+   *  proper measurement noise fitting in the framework to avoid the
+   *  inverse crime and have a well-posed problem.
+   *
+   *  \author kehl \date 06/2016
+   */
+  void ApplyNoise(int seed);
 
 public:
 
@@ -448,8 +491,7 @@ public:
   //! standard destructor
   ~SurfCurrentPair(){}
 
-  //! set scale
-  void SetScale(double sigmaW){sigmaW2_=sigmaW*sigmaW;}
+  double GetScaleFac() {return scalefac_;}
 
   //! Compute Norm on current difference in W-space
   double WSpaceNorm();
@@ -457,6 +499,7 @@ public:
   //! Compute gradient of Norm on current difference in W-space
   void GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient);
 }; // class SurfCurrentPair
+
 
 /*!
 \brief A triangulation object
@@ -512,6 +555,13 @@ public:
   extract_type MyData();
   //@}
 
+  //! @name Query
+  //@{
+
+  //! global number of tris in this triangulation
+  int NumTris();
+  //@}
+
   //! Evaluate the warp of the triangulation according to a state being set in the discretization
   void EvaluateWarp();
 
@@ -520,6 +570,10 @@ public:
 
   //! The Triangulations Communicator to query
   const Teuchos::RCP<Epetra_Comm> Comm();
+
+  //! Apply noise to the triangulation
+  void ApplyNoise(const extract_type& normals, const extract_type& centers,
+      extract_type& blurred, double variance, double lengthscale, int seed) const;
 
 private:
 

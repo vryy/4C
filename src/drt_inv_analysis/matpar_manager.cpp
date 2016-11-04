@@ -75,34 +75,13 @@ void INVANA::MatParManager::InitParams()
     case INPAR::MAT::m_aaaneohooke:
     case INPAR::MAT::m_scatra:
     case INPAR::MAT::m_growth_const:
+//    case INPAR::MAT::m_growth_linsimple:
     case INPAR::MAT::m_acousticmat:
     {
       std::vector<int>::const_iterator jt;
       for (jt = it->second.begin(); jt != it->second.end(); jt++)
       {
         double val = metaparams_.Material2Meta( actmat->Parameter()->GetParameter(*jt,0) );
-//        switch(metaparams_)
-//        {
-//        case INPAR::INVANA::stat_inv_meta_none:
-//        {
-//          val = actmat->Parameter()->GetParameter(*jt,0);
-//          break;
-//        }
-//        case INPAR::INVANA::stat_inv_meta_quad:
-//        {
-//          val = sqrt(2*((actmat->Parameter()->GetParameter(*jt,0))-0.1));
-//          break;
-//        }
-//        case INPAR::INVANA::stat_inv_meta_arctan:
-//        {
-//          val = tan(PI*(actmat->Parameter()->GetParameter(*jt,0)-0.5));
-//          break;
-//        }
-//        default:
-//          dserror("metaparams only implemented for none/quad/arctan");
-//          break;
-//        }
-
         InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
       }
       break;
@@ -198,30 +177,6 @@ void INVANA::MatParManager::PushParamsToElements()
   Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
 
   metaparams_.Meta2Material(params_,tmp);
-/*  switch(metaparams_)
-  {
-  case INPAR::INVANA::stat_inv_meta_quad:
-  {
-    tmp->PutScalar(0.1);
-    tmp->Multiply(0.5,*params_,*params_,1.0);
-    break;
-  }
-  case INPAR::INVANA::stat_inv_meta_arctan:
-  {
-    tmp->PutScalar(0.5);
-    for(int n=0; n<params_->NumVectors(); ++n)
-      for(int i=0; i<params_->MyLength(); ++i)
-      {
-        tmp->operator ()(n)->operator [](i) += 1./PI*atan(params_->operator ()(n)->operator [](i));
-      }
-    break;
-  }
-  case INPAR::INVANA::stat_inv_meta_none:
-    break;
-  default:
-    dserror("metaparams only implemented for none/quad/arctan");
-    break;
-  }*/
 
   //loop materials to be optimized
   std::map<int,std::vector<int> >::const_iterator curr;
@@ -240,11 +195,23 @@ void INVANA::MatParManager::PushParamsToElements()
 }
 
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetRawParams()
+{
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new
+      Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
+
+  // get the actual set of elementwise parameters
+  // from the optimization parameter layout
+  FillParameters(getparams);
+
+  return getparams;
+}
+
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetMatParams()
 {
-  // get the actual set of elementwise material parameters from the derived classes
-  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
-  FillParameters(getparams);
+  // get parameters mapped to the element row layout
+  Teuchos::RCP<Epetra_MultiVector> getparams = GetRawParams();
 
   // export to column layout to be able to run column elements
   LINALG::Export(*getparams,*params_);
@@ -262,6 +229,12 @@ void INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& toreplace)
 
   // bring updated parameters to the elements
   SetParams();
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManager::ReplaceParamsShallow(const Epetra_MultiVector& toreplace)
+{
+  optparams_->Update(1.0,toreplace,0.0);
 }
 
 /*----------------------------------------------------------------------*/
@@ -323,25 +296,6 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
       // dont forget product rule in case of parametrized material parameters!
       double metaval = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
       double val1 = metaparams_.DMaterialDMeta(metaval);
-//      switch(metaparams_)
-//      {
-//      case INPAR::INVANA::stat_inv_meta_quad:
-//      {
-//        val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-//        break;
-//      }
-//      case INPAR::INVANA::stat_inv_meta_arctan:
-//      {
-//        val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-//        val1 = 1./PI/(val1*val1+1.);
-//        break;
-//      }
-//      case INPAR::INVANA::stat_inv_meta_none:
-//        break;
-//      default:
-//        dserror("metaparams only implemented for none/quad/arctan");
-//        break;
-//      }
       elevector1.Scale(val1);
 
       // dualstate^T*(dR/dp_m)
@@ -357,7 +311,8 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint_tmp,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
+      ContractGradient(dfint_tmp, val2, actele->Id(),
+          parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
@@ -543,12 +498,12 @@ Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityDat
 
   // Finalize the graph ...
   graph->FillComplete();
-  graph->OptimizeStorage();
 
   // put zeros one the diagonal; the diagonal is the "self weight" and it should never
   // be used somewhere since its meaningless but its better to have 0.0 than some
   // random value resulting from redundant inserting during FillAdjacencyMatrix
   Teuchos::RCP<Epetra_Vector> diagonal=Teuchos::rcp(new Epetra_Vector(*(paramapextractor_->FullMap()), true));
+  diagonal->PutScalar(0.0);
   graph->ReplaceDiagonalValues(*diagonal);
 
   // store maps and graph in a container
@@ -559,8 +514,7 @@ Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityDat
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
-  // if not implemented for the specific parameterizations no graph exists
-  //graph=Teuchos::null;
+  dserror("dont query this from here!");
   return;
 }
 
@@ -579,6 +533,11 @@ double INVANA::MetaParametrization::Material2Meta(double matval)
   case INPAR::INVANA::stat_inv_meta_quad:
   {
     val = sqrt(2*(matval-0.1));
+    break;
+  }
+  case INPAR::INVANA::stat_inv_meta_exp:
+  {
+    val = log(matval);
     break;
   }
   case INPAR::INVANA::stat_inv_meta_arctan:
@@ -611,6 +570,11 @@ double INVANA::MetaParametrization::DMaterialDMeta(double metaval)
     val = metaval;
     break;
   }
+  case INPAR::INVANA::stat_inv_meta_exp:
+  {
+    val = exp(metaval);
+    break;
+  }
   case INPAR::INVANA::stat_inv_meta_arctan:
   {
     val = metaval;
@@ -638,6 +602,23 @@ void INVANA::MetaParametrization::Meta2Material(Teuchos::RCP<Epetra_MultiVector>
   {
     material->PutScalar(0.1);
     material->Multiply(0.5,*meta,*meta,1.0);
+    break;
+  }
+  case INPAR::INVANA::stat_inv_meta_exp:
+  {
+    int numvecs = meta->NumVectors();
+
+    double* metaval;
+    double* matval;
+
+    for (int i=0; i<numvecs; i++)
+    {
+      (*meta)(i)->ExtractView(&metaval);
+      (*material)(i)->ExtractView(&matval);
+
+      for (int j=0; j<material->MyLength(); j++)
+        matval[j] = exp(metaval[j]);
+    }
     break;
   }
   case INPAR::INVANA::stat_inv_meta_arctan:

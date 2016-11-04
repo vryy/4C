@@ -566,6 +566,32 @@ void AcouFilter::WriteAllResults(PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void InvanaFilter::WriteAllResults(PostField* field)
+{
+  // see comments in the INVANA::Writer::WriteNamedVectors function
+  const char* init[] = {"01","02","03","04","05","05","07","08","09","10"};
+  std::vector<std::string> numbers(init,init+10);
+
+  // these can be as many as there are groups of optimization parameters
+  for (unsigned int i=0; i<numbers.size(); i++)
+   writer_->WriteResult("mean_vb"+numbers[i], "mean_vb"+numbers[i], elementbased,1);
+
+  for (unsigned int i=0; i<numbers.size(); i++)
+     writer_->WriteResult("mean_smc"+numbers[i], "mean_smc"+numbers[i], elementbased,1);
+
+  for (unsigned int i=0; i<numbers.size(); i++)
+    writer_->WriteResult("stdev_smc"+numbers[i], "stdev_smc"+numbers[i], elementbased,1);
+
+  for (unsigned int i=0; i<numbers.size(); i++)
+    writer_->WriteResult("stdev_vb"+numbers[i], "stdev_vb"+numbers[i], elementbased,1);
+
+  // these are just one vector each
+  writer_->WriteResult("solution_mean", "solution_mean",dofbased,3);
+  writer_->WriteResult("solution_std", "solution_std",dofbased,3);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void AnyFilter::WriteAllResults(PostField* field)
 {
   WriteDofResults(field);

@@ -16,6 +16,7 @@
 
 #include "optimizer_lbfgs.H"
 #include "invana_base.H"
+#include "matpar_manager.H"
 
 #include "../linalg/linalg_utils.H"
 #include "invana_utils.H"
@@ -26,12 +27,16 @@
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+#include <stdlib.h>
+#include <stdio.h>
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 INVANA::OptimizerLBFGS::OptimizerLBFGS(const Teuchos::ParameterList& invp):
   OptimizerBase(invp),
 initscal_(DRT::INPUT::IntegralValue<bool>(invp, "LBFGSINITSCAL")),
 ssize_(invp.get<int>("SIZESTORAGE")),
+actsize_(0),
 sstore_(Teuchos::null),
 ystore_(Teuchos::null),
 p_(Teuchos::null),
@@ -123,6 +128,19 @@ void INVANA::OptimizerLBFGS::Integrate()
 
     if (restartevry_ and (runc_%restartevry_ == 0) and runc_)
       WriteRestart();
+  }
+
+  // write final state if not yet written
+  if ( (restartevry_ == 0) or (runc_%restartevry_ != 0))
+  {
+    WriteRestart();
+  }
+
+  // append solution to the last output (only if a step was made)
+  if (runc_)
+  {
+    Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams();
+    Writer()->WriteNamedVectors("mean_vb", result);
   }
 
   Evaluate(NULL,Teuchos::null); // set optimization parameters to the optproblem
@@ -429,10 +447,10 @@ void INVANA::OptimizerLBFGS::ReadRestart(int run)
 void INVANA::OptimizerLBFGS::WriteRestart()
 {
   if (not OptProb()->Comm().MyPID())
-    std::cout << "Writing invana restart for step " << runc_ <<  std::endl;
+    std::cout << "Writing OptimizerLBFGS restart for step " << runc_ <<  std::endl;
 
   // initialize a new step
-  Writer()->WriteNewStep(runc_);
+  Writer()->WriteNewStep(runc_,double(runc_));
 
   // write current solution
   Writer()->WriteNamedVector("solution", GetSolution());

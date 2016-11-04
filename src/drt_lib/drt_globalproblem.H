@@ -182,9 +182,6 @@ public:
   /// set up supporting processors for micro-scale discretizations
   void ReadMicrofields_NPsupport();
 
-  /// read target discretization for surface current based inverse analysis
-  void ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader);
-
   /// input of materials
   void ReadMaterials(DRT::INPUT::DatFileReader& reader);
 
@@ -277,6 +274,10 @@ public:
     Teuchos::RCP<Epetra_Comm> gcomm,  //!< global communicator
     NP_TYPE npType  //!< nested parallelism type
     );
+
+  /// nested parallelism group initialized from an existing NPgroup
+  void NPGroup(COMM_UTILS::NestedParGroup& npgroup //!< copy from npgroup
+      );
 
   /// return nested parallelism group
   Teuchos::RCP<COMM_UTILS::NestedParGroup> GetNPGroup();

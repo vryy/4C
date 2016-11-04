@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
  * \file objective_funct_disp.H
+ * \brief Displacement based objective function
  *
-<pre>
-Maintainer: Sebastian Kehl
+ *
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -78,6 +79,9 @@ private:
   //! scaling of the objective function?
   bool scaling_;
 
+  //! scale factor
+  double scalefac_;
+
 
 public:
 
@@ -98,6 +102,8 @@ public:
 
   //! query for step of measurements of this time step
   int FindStep(double time);
+
+  virtual double GetScaleFac(){return scalefac_;}
 
 }; // class ObjectiveFunctDisp
 }  // namespace INVANA

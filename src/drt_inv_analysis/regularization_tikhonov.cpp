@@ -18,23 +18,20 @@
 #include "regularization_tikhonov.H"
 
 #include "invana_utils.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "matpar_manager.H" //for ConnectivityData
-#include "../drt_lib/drt_dserror.H"
-
+#include "initial_guess.H"
 #include "Teuchos_ParameterList.hpp"
 
 /*----------------------------------------------------------------------*/
 INVANA::RegularizationTikhonov::RegularizationTikhonov() :
-  RegularizationBase(),
-mean_(0.0)
+  RegularizationBase()
 {}
 
 /*----------------------------------------------------------------------*/
 void INVANA::RegularizationTikhonov::Setup(const Teuchos::ParameterList& invp)
 {
-  weight_ = invp.get<double>("REG_WEIGHT");
-  mean_ = invp.get<double>("REG_MEAN");
+  params_ = invp;
+  cov_factor_ = INVANA::CreateICT_lowmem(initguess_->Covariance(),params_);
+
   return;
 }
 
@@ -43,12 +40,14 @@ void INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, d
 {
   double val = 0.0;
 
-  Epetra_MultiVector meanvaluevector(*connectivity_->MapExtractor()->FullMap(),theta.NumVectors());
-  meanvaluevector.PutScalar(mean_);
-  meanvaluevector.Update(1.0,theta,-1.0);
+  Epetra_MultiVector factorr(*initguess_->Mean());
+  Epetra_MultiVector factorl(factorr.Map(),1,true);
 
-  INVANA::MVNorm(meanvaluevector, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
-  *value += 0.5 * weight_ * val * val;
+  factorr.Update(1.0,theta,-1.0);
+  cov_factor_->ApplyInverse(factorr,factorl);
+
+  factorr.Dot(factorl,&val);
+  *value += 0.5 * weight_ * val;
 
   return;
 }
@@ -57,11 +56,15 @@ void INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, d
 void INVANA::RegularizationTikhonov::EvaluateGradient(const Epetra_MultiVector& theta,
     Teuchos::RCP<Epetra_MultiVector> gradient)
 {
-  Epetra_MultiVector meanvaluevector(*connectivity_->MapExtractor()->FullMap(),theta.NumVectors());
-  meanvaluevector.PutScalar(mean_);
-  meanvaluevector.Update(1.0,theta,-1.0);
+  // the gradient of the regularization functional only
+  Epetra_MultiVector tmp(*gradient);
 
-  gradient->Update(weight_, meanvaluevector, 1.0);
+  Epetra_MultiVector factorr(*initguess_->Mean());
+  factorr.Update(1.0,theta,-1.0);
+
+  cov_factor_->ApplyInverse(factorr,tmp);
+
+  gradient->Update(weight_,tmp,1.0);
 
   return;
 }

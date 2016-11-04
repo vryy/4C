@@ -167,10 +167,10 @@ void INVANA::MatParManagerPerElement::Finalize(Teuchos::RCP<Epetra_MultiVector> 
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
-  /*------------------------------------------------------------------- */
-  // STEP 1: loop elements in elerowmap and store map of faces(vector
-  // of NodeIds in sorted order) with corresponding gids of the elements
-
+  /*-------------------------------------------------------------------
+   * STEP 1: loop elements in elerowmap and store map of faces(vector
+   * of NodeIds in sorted order) with corresponding gids of the elements
+   */
   std::map< std::vector<int>, std::vector<int> > facemap; //map faces to corresponding elements/parameters
   std::map< std::vector<int>, double > faceweight;        //map of faces to its area
   for (int i=0; i<paramrowmap.NumMyElements(); i++)
@@ -250,13 +250,31 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   } //loop local elements
 
 
-  /*------------------------------------------------------------------- */
-  // STEP 2: gather for each face on each proc the same set of corresponding
-  // elements; ntargetprocs is equal to the total number of processors to make
-  // data redundant on all procs
-  // the face weight dont need to be communicated since they should be the
-  // same on every proc having a face
+  /*-------------------------------------------------------------------
+   *  STEP 2: Compute weight with respect to the average area of all
+   *  faces. Make faceweight redundant all an procs to be able to
+   *  compute the correct average face area on all procs
+   */
+  LINALG::GatherAll<std::vector<int>,double>(faceweight,paramrowmap.Comm());
+  std::map<std::vector<int>, double>::iterator weightsit;
 
+  double avgarea = 0.0;
+  for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
+    avgarea+=weightsit->second;
+
+  avgarea = avgarea/faceweight.size();
+
+  for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
+    weightsit->second=avgarea/weightsit->second;
+
+
+  /*-------------------------------------------------------------------
+   * STEP 3: gather for each face on each proc the same set of corresponding
+   * elements; ntargetprocs is equal to the total number of processors to make
+   * data redundant on all procs the face weights don't need to be communicated
+   * since they are locally available anyways and have furthemore already been
+   * made redundant.
+   */
   const int numprocs = Discret()->Comm().NumProc();
   int allproc[numprocs];
   for (int i = 0; i < numprocs; ++i)
@@ -324,28 +342,10 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
     } // faces on each proc
   } // procs
 
-//  //Debug print out
-//  std::map<std::vector<int>, std::vector<int> >::iterator tmp;
-//  for( tmp=facemap.begin(); tmp!=facemap.end(); tmp++)
-//  {
-//    std::cout << "Proc : " << Discret()->Comm().MyPID() << " FACE: ";
-//    for (int i=0; i<(int)tmp->first.size(); i++)
-//      std::cout << tmp->first[i] << " ";
-//
-//    std::cout << "PARAMS: ";
-//    for (int i=0; i<(int)tmp->second.size(); i++)
-//      std::cout << tmp->second[i] << " ";
-//
-//    std::cout << " " << std::endl;
-//  }
-//
-//  Discret()->Comm().Barrier();
-//  if( Discret()->Comm().MyPID()==0 )std::cout << " " << std::endl;
-//  if( Discret()->Comm().MyPID()==0 )std::cout << " " << std::endl;
-
-  /*------------------------------------------------------------------- */
-  // STEP 3: sort elements into graph according to neighbour information
-  // in facemap
+  /*-------------------------------------------------------------------
+   * STEP 4: sort elements into graph according to neighbour information
+   * in facemap
+   */
   std::map<std::vector<int>, std::vector<int> >::iterator faces;
   for( faces=facemap.begin(); faces!=facemap.end(); faces++)
   {

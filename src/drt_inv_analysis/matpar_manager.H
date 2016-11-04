@@ -206,27 +206,32 @@ public:
   //! Update optimization parameters
   void ReplaceParams(const Epetra_MultiVector& toreplace);
 
+  //! Update optimization parameters shallow (don't push to discretization)
+  void ReplaceParamsShallow(const Epetra_MultiVector& toreplace);
+
   //! Return initial optimization parameters
   const Epetra_MultiVector& InitialParams(){return *optparams_initial_;}
 
   //@}
 
 
-  //! return the unique map of the optimization parameter layout
+  //! return the unique map of the optimization parameters layout
   Teuchos::RCP<Epetra_Map> ParamLayoutMapUnique(){return paramlayoutmapunique_;}
 
   //! return connectivity object with mapextractor and adjacency matrix
   Teuchos::RCP<ConnectivityData> GetConnectivityData();
 
-  //! @name Queries used for result testing
+  //! @name Queries for result testing, output, etc.
   //@{
 
-  //! Return material parameters
+  //! Get material parameters from the parametrization
   Teuchos::RCP<Epetra_MultiVector> GetMatParams();
+
+  //! Get 'raw' optimization parameters mapped to the elements
+  Teuchos::RCP<Epetra_MultiVector> GetRawParams();
 
   //! Return vector index of a given material parameter <string> into loc
   int GetParameterLocation(int eleid, std::string name);
-
   //@}
 
 
@@ -237,26 +242,25 @@ protected:
 
   /*! \brief Initialize optimization parameters
    *
-   * Initialize optimization parameters from the input file
+   * Initialize optimization parameters as the actual
+   * parametrization suggests.
    *
    * \author kehl
-   *
    */
   virtual void InitParameters(int parapos, double val) = 0;
 
   /*! \brief Get current material parameters
    *
-   * Let the vector of material parameters be filled according
-   * to the current set of optimization parameters
+   * Let a vector of element-wise row-layout be filled
+   * according to the actual parameterization.
    */
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
 
-  //! Call INVANA::FillParameters
+  //! Set material parameters to the discretization
   void SetParams();
 
-  //! Call INVANA::InitParameters
+  //! Initialize optimization parameters
   void InitParams();
-
   //@}
 
   //! @name Help to evaluate the gradient

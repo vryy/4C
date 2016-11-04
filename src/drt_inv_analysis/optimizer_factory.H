@@ -3,11 +3,11 @@
  \file optimizer_factory.H
  \brief factory for optimization algorithms
 
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            089 - 289-10361
-</pre>
+\level 3
+
+\maintainer Sebastian Kehl
+             kehl@mhpc.mw.tum.de
+             089 - 289-10361
 */
 /*----------------------------------------------------------------------*/
 #ifndef OPTIMIZER_FACTORY_H
@@ -31,7 +31,7 @@ class InvanaBase;
   /*!
   \brief A factory for the inverse analysis optimzation algorithm
 
-  \author kehl
+  \author kehl \date 08/2014
  */
 
 class OptimizerFactory {

@@ -40,7 +40,7 @@ void INVANA::RegularizationTotalVariation::Setup(const Teuchos::ParameterList& i
 {
   adjacency_ = connectivity_->AdjacencyMatrix();
   eps_ = invp.get<double>("TVD_EPS");
-  weight_ = invp.get<double>("REG_WEIGHT");
+
   return;
 }
 
@@ -70,11 +70,14 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
     std::vector<double> weights(lenindices,0);
     adjacency_->ExtractMyRowCopy(i,lenindices,numindex,&weights[0],&indices[0]);
 
+    // row in local index space of the collayout
+    int rowi = thetacol.Map().LID(theta.Map().GID(i));
+
     double rowsum=0.0;
     double rowval=(*theta(0))[i];
     for (int j=0; j<lenindices; j++)
     {
-      if (indices[j]!=i) // skip substracting from itself
+      if (indices[j]!=rowi) // skip substracting from itself
       {
         double colval=(*thetacol(0))[indices[j]];
         rowsum += weights[j]*(colval-rowval)*(colval-rowval);
@@ -125,14 +128,20 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
     std::vector<double> weights(lenindices,0);
     adjacency_->ExtractMyRowCopy(i,lenindices,numindex,&weights[0],&indices[0]);
 
+    if (numindex!=lenindices)
+      dserror("bla");
+
     // value of the parameter in this row
     double rowval=(*theta(0))[i];
+
+    // row in local index space of the collayout
+    int rowi = thetacol.Map().LID(theta.Map().GID(i));
 
     // denominator
     double denom=0.0;
     for (int j=0; j<lenindices; j++)
     {
-      if (indices[j]!=i) // skip substracting from itself
+      if (indices[j]!=rowi) // skip substracting from itself
       {
         double colval=(*thetacol(0))[indices[j]];
         denom += weights[j]*(colval-rowval)*(colval-rowval);
@@ -144,7 +153,7 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
     double nomi=0.0;
     for (int j=0; j<lenindices; j++)
     {
-      if (indices[j]!=i) // skip substracting from itself
+      if (indices[j]!=rowi) // skip substracting from itself
       {
         double colval=(*thetacol(0))[indices[j]];
         nomi += weights[j]*(colval-rowval);
@@ -152,14 +161,14 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
     }
     nomi=nomi*(-1);
 
-    // insert contributions into dof i of the gradient
-    gradientcol.SumIntoMyValue(i,0,nomi/denom);
+    // insert contributions into dof rowi of the gradient
+    gradientcol.SumIntoMyValue(rowi,0,nomi/denom);
 
     // nominator j
     double nomj=0.0;
     for (int j=0; j<lenindices; j++)
     {
-      if (indices[j]!=i) // skip substracting from itself
+      if (indices[j]!=rowi) // skip substracting from itself
       {
         double colval=(*thetacol(0))[indices[j]];
         nomj = weights[j]*(colval-rowval);

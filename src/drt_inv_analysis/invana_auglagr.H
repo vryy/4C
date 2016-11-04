@@ -70,12 +70,15 @@ public:
   virtual void Setup();
 
   //! Evaluate the objective function
-  virtual void Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
+  virtual int Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
+
+  //! get access to the forward problem solution
+  const Epetra_MultiVector& GetPrimalVariables() const {return *dis_;}
 
 protected:
 
   //! Solve the forward problem
-  void SolveForwardProblem();
+  int SolveForwardProblem();
 
   //! Solve the adjoint problem
   void SolveAdjointProblem();
@@ -141,9 +144,6 @@ private:
 
   //! prestress time
   double pstime_;
-
-  //! restart of the forward problem
-  int fprestart_;
 
   int fpcounter_;
 

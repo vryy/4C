@@ -309,6 +309,23 @@ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
+/*!
+ \brief Writer for inverse analysis
+
+ \author ghamm
+ \date 06/16
+ */
+class InvanaFilter : public PostFilterBase
+{
+public:
+  InvanaFilter(PostField* field, std::string name) :
+    PostFilterBase (field, name){}
+
+protected:
+
+  virtual void WriteAllResults(PostField* field);
+};
+
 /// Writer for undefined problem types
 /*
   Just write all the vectors we have.
