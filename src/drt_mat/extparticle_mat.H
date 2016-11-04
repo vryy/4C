@@ -80,6 +80,8 @@ namespace MAT
       const double thermalExpansionT_;
       /// compressibility modulus for the liquid phase
       const double compressibilityModulus_;
+      /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
+      const double thermalConductivity_;
 
 
     };  // class MAT::PAR::ExtParticleMat

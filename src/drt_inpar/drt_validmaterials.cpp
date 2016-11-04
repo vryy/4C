@@ -2602,6 +2602,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"THERMAL_EXPANSION_L","volumetric thermal expansion coefficient - liquid state");
     AddNamedReal(m,"THERMAL_EXPANSION_T","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!");
     AddNamedReal(m,"COMPRESSIBILITY","compressibility modulus for the liquid phase");
+    AddNamedReal(m,"THERMAL_CONDUCTIVITY","thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)");
 
     AppendMaterialDefinition(matlist,m);
   }

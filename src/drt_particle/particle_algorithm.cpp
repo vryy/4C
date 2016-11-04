@@ -127,7 +127,7 @@ void PARTICLE::Algorithm::Timeloop()
     {
     case INPAR::PARTICLE::MeshFree :
     case INPAR::PARTICLE::Normal_DEM_thermo :
-      ThermicExpansion();
+      ThermalExpansion();
       ParticleDismemberer();
       break;
     default : //do nothing
@@ -2618,7 +2618,7 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
 /*------------------------------------------------------------------------*
  | compute thermodynamic expansion - new densities and radii catta 06/16  |
  *------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::ThermicExpansion()
+void PARTICLE::Algorithm::ThermalExpansion()
 {
   // extract the interesting state vectors
   Teuchos::RCP<const Epetra_Vector> mass = particles_->Mass();

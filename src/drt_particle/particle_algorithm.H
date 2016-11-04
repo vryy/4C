@@ -309,7 +309,7 @@ namespace PARTICLE
       {return (oldRadius-semiStep)/(2 * semiStep) + 2; }
 
     /// compute thermodynamic expansion - new densities and radii
-    virtual void ThermicExpansion();
+    virtual void ThermalExpansion();
 
     //! @name particle related stuff
     //@{

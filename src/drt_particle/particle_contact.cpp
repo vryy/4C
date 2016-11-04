@@ -548,7 +548,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
       // compute contact with neighboring particles
       CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-          havepbc, dt, f_contact, m_contact);
+          havepbc, dt, f_contact, m_contact, specEnthalpyDotn);
 
       if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
         CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, specEnthalpyDotn);
@@ -645,8 +645,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
   const bool havepbc,
   const double dt,
   const Teuchos::RCP<Epetra_Vector>& f_contact,
-  const Teuchos::RCP<Epetra_Vector>& m_contact
-  )
+  const Teuchos::RCP<Epetra_Vector>& m_contact,
+  const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn)
 {
   std::map<int, PARTICLE::Collision>& history_particle = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
   if(history_particle.size() > 20)
@@ -693,8 +693,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
 
       // distance vector and distance between two particles
       static LINALG::Matrix<3,1> r_contact;
-      for(unsigned dim=0; dim<3; ++dim)
-        r_contact(dim) = position_j(dim) - data_i.dis(dim);
+      r_contact.Update(1.0, position_j, -1.0, data_i.dis);
+
       const double norm_r_contact(r_contact.Norm2());
 
       // penetration
@@ -777,6 +777,25 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         // assembly contact forces and moments for particle j
         LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
         LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
+
+        // --- calculate thermodinamic exchange ---//
+        if (specEnthalpyDotn != Teuchos::null)
+        {
+          // extract the material
+          const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+          // find the interesting quantities
+          const double intersectionArea = PARTICLE::Utils::IntersectionAreaPvsP(data_i.rad,data_j.rad,norm_r_contact);
+          const double temperature_i = PARTICLE::Utils::SpecEnthalpy2Temperature(data_i.specEnthalpy,extParticleMat);
+          const double temperature_j = PARTICLE::Utils::SpecEnthalpy2Temperature(data_j.specEnthalpy,extParticleMat);
+
+          const double enthalpyDotn2i = extParticleMat->thermalConductivity_ * intersectionArea * (temperature_j - temperature_i);
+
+          double specEnthalpyDotn2i = enthalpyDotn2i/data_i.mass;
+          double specEnthalpyDotn2j = -enthalpyDotn2i/data_j.mass; // actio = - reactio
+
+          LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn2i, gid_i, data_i.owner);
+          LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn2j, gid_j, data_j.owner);
+        }
       }
       else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
       {

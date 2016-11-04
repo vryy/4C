@@ -248,8 +248,8 @@ namespace PARTICLE
     const bool havepbc,
     const double dt,
     const Teuchos::RCP<Epetra_Vector>& f_contact,
-    const Teuchos::RCP<Epetra_Vector>& m_contact
-    );
+    const Teuchos::RCP<Epetra_Vector>& m_contact,
+    const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
 
   /// calculate contact with neighboring walls
   virtual void CalcNeighboringWallsContact(

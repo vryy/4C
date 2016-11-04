@@ -66,9 +66,17 @@ namespace PARTICLE
         bool trg_createPressureVector = false);
 
     //! Compute the temperature from the specEnthalpy
+    static double SpecEnthalpy2Temperature(
+        const double& specEnthalpy,
+        const MAT::PAR::ExtParticleMat* extParticleMat);
+
+    //! Compute the temperature from the specEnthalpy (vector version)
     static Teuchos::RCP<const Epetra_Vector> SpecEnthalpy2Temperature(
-        const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
+        const Teuchos::RCP<const Epetra_Vector>& specEnthalpy,
         const MAT::PAR::ExtParticleMat*);
+
+    //! compute the intersection area of two particles that are in contact. It returns 0 if there is no contact
+    static double IntersectionAreaPvsP(const double& radius1, const double& radius2, const double& dis);
   };
 }
 
