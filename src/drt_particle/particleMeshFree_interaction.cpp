@@ -15,6 +15,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particleMeshFree_interaction.H"
+#include "particleMeshFree_weightFunction.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
 #include "../drt_adapter/ad_str_structure.H"
@@ -275,8 +276,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
     {
 
       // compute distance and relative velocities
-      LINALG::Matrix<3,1> WFGrad, vRel;
-      WFGrad.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
+      LINALG::Matrix<3,1> rRel, vRel, WFGrad;
+      rRel.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
       vRel.Update(1.0, particle_i.vel, -1.0, particle_j.vel);
 
       // compute the proper weight function gradient
@@ -284,7 +285,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
       {
       case INPAR::PARTICLE::CubicBspline :
       {
-        GradientWeightFunction_CubicBSpline(WFGrad, particle_i.radius);
+        WFGrad = PARTICLE::WeightFunction_CubicBspline::GradientWeight(rRel, particle_i.radius);
         break;
       }
       }
@@ -503,10 +504,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     WallInteractionPoint wallcontact = surfaces[s];
 
     // distance-vector
-    static LINALG::Matrix<3,1> accn_i;
-    accn_i.Update(1.0, particle_i.dis, -1.0, wallcontact.point);
+    LINALG::Matrix<3,1> rRel, WFGrad;
+    rRel.Update(1.0, particle_i.dis, -1.0, wallcontact.point);
 
-    if(accn_i.Norm2() == 0.0)
+    if(rRel.Norm2() == 0.0)
       dserror("particle center and wall are lying in the same place -> bad initialization?");
 
     // compute the proper weight function gradient
@@ -514,7 +515,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     {
     case INPAR::PARTICLE::CubicBspline :
     {
-      GradientWeightFunction_CubicBSpline(accn_i, particle_i.radius);
+      WFGrad = PARTICLE::WeightFunction_CubicBspline::GradientWeight(rRel, particle_i.radius);
       break;
     }
     }
@@ -528,42 +529,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     // p_i/\rho_i^2 + p_j/\rho_j^2
     const double divergenceCoeff = (p_over_rhoSquare_i + wallInteractionPressureDivergence_);
 
-    accn_i.Scale(- wallInteractionFakeMass_ * divergenceCoeff);
+    LINALG::Matrix<3,1> accn_i;
+    accn_i.Update(- wallInteractionFakeMass_ * divergenceCoeff, WFGrad, 0);
     // compute and add the correct accn_i
     LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
   }
-}
-
-/*-------------------------------------------------------------------------------*
- | compute the weight function gradient (cubicBspline type)         katta 10/16  |
- *-------------------------------------------------------------------------------*/
-
-void PARTICLE::ParticleMeshFreeInteractionHandler::GradientWeightFunction_CubicBSpline(LINALG::Matrix<3,1> &WFGrad, const double &radius)
-{
-  // safety checks
-  assert(radius > 0);
-
-  const double norm_const = 1.5 * M_1_PI;
-  const double WFGradNorm = WFGrad.Norm2();
-
-  // solving the particular case in which two particles perfectly overlap
-  if (WFGradNorm <= 1e-16)
-  {
-    dserror("Warning! particles are overlapping! Right now, it is not allowed");
-    std::cout << "Warning! particles are overlapping!\n";
-    WFGrad.PutScalar(0);
-    return;
-  }
-
-  const double resizer_temp = 2 / radius;
-  const double norm_dist_rel = resizer_temp * WFGradNorm;
-  const double resizer = resizer_temp / WFGradNorm;
-
-  if (norm_dist_rel< 1)
-    WFGrad.Scale(norm_const * resizer * (1.5 * std::pow(norm_dist_rel,2) - 2 * norm_dist_rel));
-  else if (norm_dist_rel< 2)
-    WFGrad.Scale(- 0.5 * norm_const * resizer * std::pow(norm_dist_rel - 2,2));
-  else
-    WFGrad.PutScalar(0);
-
 }

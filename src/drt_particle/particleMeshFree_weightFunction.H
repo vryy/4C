@@ -22,56 +22,18 @@
 namespace PARTICLE
 {
 
-  class WeightFunctionBase
+  class WeightFunction_CubicBspline
   {
   public :
-
-    //! @name Life
-     //@{
-
-     //! Constructor
-     WeightFunctionBase(){ ; }
-
-     //! Destructor
-     virtual ~WeightFunctionBase(){ ; }
-
-     //@}
 
      //! @name Actions
      //@{
 
      //!
-     virtual double ComputeWeight(const double distRel, const double radius) = 0;
+     static double Weight(const double distRel, const double radius);
 
      //!
-     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& posRel, const double radius) = 0;
-
-     //@}
-
-  };
-
-  class WeightFunction_CubicBspline : public PARTICLE::WeightFunctionBase
-  {
-  public :
-    //! @name Life
-     //@{
-
-     //! Constructor
-     WeightFunction_CubicBspline(){ ; }
-
-     //! Destructor
-     virtual ~WeightFunction_CubicBspline(){ ; }
-
-     //@}
-
-     //! @name Actions
-     //@{
-
-     //!
-     virtual double ComputeWeight(const double distRel, const double radius);
-
-     //!
-     virtual LINALG::Matrix<3,1>  ComputeGradientWeight(const LINALG::Matrix<3,1>& posRel, const double radius);
+     static LINALG::Matrix<3,1> GradientWeight(LINALG::Matrix<3,1> &WFGrad, const double &radius);
 
      //@}
 

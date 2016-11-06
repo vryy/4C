@@ -96,14 +96,6 @@ namespace PARTICLE
 
   protected:
 
-    //! @name weight functions
-    //@{
-
-    /// compute the weight function gradient (cubicBspline type)
-    virtual void GradientWeightFunction_CubicBSpline(LINALG::Matrix<3,1> &WFGrad, const double &radius);
-
-    //@}
-
     //! @name helper classes
     //@{
 
