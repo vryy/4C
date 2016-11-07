@@ -1702,6 +1702,11 @@ void shape_function_3D_deriv2(
     deriv2(dsdt, 26) = 4 * s * t * r00;
     break;
   }
+  case DRT::Element::tet4:
+  {
+    deriv2.Clear();
+    break;
+  }
   case DRT::Element::tet10:
   {
     deriv2(drdr, 0) = 4.0;

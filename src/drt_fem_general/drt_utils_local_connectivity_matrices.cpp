@@ -2151,3 +2151,30 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
   }
   return DRT::Element::dis_none;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    const DRT::Element::DiscretizationType parent_distype,
+    const int faceId, const int faceNodeId)
+{
+  switch (parent_distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex16:
+  case DRT::Element::hex18:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    return eleNodeNumbering_hex27_surfaces[faceId][faceNodeId]; break;
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    return eleNodeNumbering_tet10_surfaces[faceId][faceNodeId]; break;
+  case DRT::Element::quad4:
+  case DRT::Element::quad6:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+    return eleNodeNumbering_quad9_lines[faceId][faceNodeId]; break;
+  default: dserror("not implemented for this distype");
+  }
+  return -1;
+}

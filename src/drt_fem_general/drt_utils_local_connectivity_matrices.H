@@ -962,6 +962,14 @@ namespace UTILS
   );
 
   /*!
+    \brief    returns local node number in the parent element
+              from a given face number and local node number in the face element
+   */
+  int getParentNodeNumberFromFaceNodeNumber(
+      const DRT::Element::DiscretizationType parent_distype,
+      const int faceId, const int faceNodeId);
+
+  /*!
    * Returns the geometric center of the element in local coordinates
    *
    * \tparam   dim  dimension of the element space (e.g. dim=2 for quad4)
