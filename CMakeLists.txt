@@ -616,6 +616,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_iso2pow.cpp
   src/drt_matelast/elast_coup1pow.cpp
   src/drt_matelast/elast_coup2pow.cpp
+  src/drt_matelast/elast_coup13apow.cpp
   src/drt_matelast/elast_isovarga.cpp
   src/drt_matelast/elast_isoyeoh.cpp
   src/drt_matelast/elast_remodelfiber.cpp

@@ -33,6 +33,7 @@
 #include "../drt_mat/neohooke.H"
 #include "../drt_matelast/elast_coup1pow.H"
 #include "../drt_matelast/elast_coup2pow.H"
+#include "../drt_matelast/elast_coup13apow.H"
 #include "../drt_mat/viscoelasthyper.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
@@ -1340,6 +1341,15 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_[j]   = params2->c_;
               break;
             }
+            case INPAR::MAT::mes_coup13apow:
+            {
+              filename_=filename_+"_coup13apow";
+              const MAT::ELASTIC::PAR::Coup13aPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_[j]   = params2->c_;
+              break;
+            }
             case INPAR::MAT::mes_coupmooneyrivlin:
             {
               filename_=filename_+"_coupmooneyrivlin";
@@ -1547,6 +1557,15 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_[j]   = params2->c_;
               break;
             }
+            case INPAR::MAT::mes_coup13apow:
+            {
+              filename_=filename_+"_coup13apow";
+              const MAT::ELASTIC::PAR::Coup13aPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_[j]   = params2->c_;
+              break;
+            }
             case INPAR::MAT::mes_coupmooneyrivlin:
             {
               filename_=filename_+"_coupmooneyrivlin";
@@ -1684,6 +1703,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_iso2pow:
       case INPAR::MAT::mes_coup1pow:
       case INPAR::MAT::mes_coup2pow:
+      case INPAR::MAT::mes_coup13apow:
       case INPAR::MAT::mes_isoexpopow:
       case INPAR::MAT::mes_isomooneyrivlin:
       case INPAR::MAT::mes_coupmooneyrivlin:
@@ -2010,6 +2030,14 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             j = j+1;
             break;
           }
+          case INPAR::MAT::mes_coup13apow:
+          {
+            MAT::ELASTIC::PAR::Coup13aPow* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
+            params2->SetC(abs(p_cur(j)));
+            j = j+1;
+            break;
+          }
           case INPAR::MAT::mes_coupmooneyrivlin:
           {
             MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
@@ -2093,6 +2121,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     case INPAR::MAT::mes_iso2pow:
     case INPAR::MAT::mes_coup1pow:
     case INPAR::MAT::mes_coup2pow:
+    case INPAR::MAT::mes_coup13apow:
     case INPAR::MAT::mes_isoexpopow:
     case INPAR::MAT::mes_isomooneyrivlin:
     case INPAR::MAT::mes_coupmooneyrivlin:
@@ -2265,6 +2294,14 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           {
             MAT::ELASTIC::PAR::Coup2Pow* params2 =
               dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+            params2->SetC(abs(p_cur(j)));
+            j = j+1;
+            break;
+          }
+          case INPAR::MAT::mes_coup13apow:
+          {
+            MAT::ELASTIC::PAR::Coup13aPow* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;

@@ -1434,7 +1434,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*--------------------------------------------------------------------*/
 
+  // contribution of coup13apow
+  {
+    Teuchos::RCP<MaterialDefinition> m
+    = Teuchos::rcp(new MaterialDefinition("ELAST_Coup13aPow",
+        "hyperelastic potential summand for multiplicative coupled invariants I1 and I3",
+        INPAR::MAT::mes_coup13apow));
 
+    AddNamedReal(m,"C","material parameter");
+    AddNamedInt(m,"D","exponent of all");
+    AddNamedReal(m,"A","negative exponent of I3");
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
 
   // isochoric contribution of expo
   {

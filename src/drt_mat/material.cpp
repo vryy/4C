@@ -691,6 +691,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_iso2pow:
   case INPAR::MAT::mes_coup1pow:
   case INPAR::MAT::mes_coup2pow:
+  case INPAR::MAT::mes_coup13apow:
   case INPAR::MAT::mes_coupmooneyrivlin:
   case INPAR::MAT::mes_coupsimopister:
   case INPAR::MAT::mes_isoexpopow:
