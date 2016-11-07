@@ -61,6 +61,7 @@ PARTICLE::Algorithm::Algorithm(
   writeresultsevery_(0),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
+  particlewallelecolmap_standardghosting_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
   transfer_every_(DRT::Problem::Instance()->ParticleParams().get<int>("TRANSFER_EVERY")),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
@@ -97,9 +98,6 @@ PARTICLE::Algorithm::Algorithm(
   // new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
   Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
   bindis_->ReplaceDofSet(independentdofset);
-
-  if(sparse_binning_ && DRT::Problem::Instance()->ProblemType() == prb_particle)
-    dserror("sparse bin scheme cannot be used for pure particle problems");
 
   return;
 }
@@ -509,9 +507,33 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
 {
-  // initial dummy distribution
+  // initial dummy distribution using a linear map
+  const int numproc = Comm().NumProc();
   const int numbin = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
-  Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(numbin,0,Comm()));
+  const int start = numbin / numproc * myrank_;
+  int end;
+  // special treatment for last proc
+  if(myrank_ != numproc-1)
+    end = (int)(numbin / numproc * (myrank_+1));
+  else
+    end = numbin;
+
+  std::vector<int> linearmap;
+  linearmap.reserve(end-start);
+  for(int k=0; k<bin_per_dir_[2]; ++k)
+  {
+    for(int j=0; j<bin_per_dir_[1]; ++j)
+    {
+      for(int i=0; i<bin_per_dir_[0]; ++i)
+      {
+        int curr = i + j*bin_per_dir_[0] + k*bin_per_dir_[0]*bin_per_dir_[1];
+        if(start <= curr and curr < end)
+          linearmap.push_back(i + j*id_calc_bin_per_dir_[0] + k*id_calc_bin_per_dir_[0]*id_calc_bin_per_dir_[1]);
+      }
+    }
+  }
+
+  Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(),&linearmap[0],0,Comm()));
 
   const int maxband = 26;
   Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*roweles,maxband,false));
@@ -643,7 +665,14 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // ghost bins and particles according to the bins --> final FillComplete() call included
   SetupGhosting(newelerowmap);
 
-  BuildElementToBinPointers(true);
+  // update walls and connectivity
+  if(particlewalldis_ != Teuchos::null)
+  {
+    if( not moving_walls_)
+      ExtendGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, bincolmap_, true, false, false, false);
+
+    BuildElementToBinPointers(true);
+  }
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
@@ -1278,7 +1307,6 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     } // end for lid
 
     // remove non-existing ghost bins from original bin set
-    if(sparse_binning_)
     {
       // create copy of column bins
       std::set<int> ghostbins(bins);
@@ -1625,24 +1653,26 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   // loop over all particle wall nodes and elements and fill new discretization
   for(std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit=structgelements.begin(); meit!=structgelements.end(); ++meit)
   {
-    // care about particle wall nodes (only row nodes in case of moving walls, otherwise everything)
+    // care about particle wall nodes:
+    // fill everything in case of static walls and only row nodes in case of moving walls
     std::map<int, DRT::Node*> wallgnodes = structgnodes[meit->first];
     for (std::map<int, DRT::Node* >::iterator nit=wallgnodes.begin(); nit != wallgnodes.end(); ++nit)
     {
       DRT::Node* currnode = (*nit).second;
-      if ( currnode->Owner() == myrank_ || sparse_binning_ )
+      if ( not moving_walls_ || ((currnode->Owner() == myrank_) && moving_walls_) )
       {
         nodeids.push_back(currnode->Id());
         particlewalldis->AddNode(Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
       }
     }
 
-    // care about particle wall eles (only row elements in case of moving walls, otherwise everything)
+    // care about particle wall eles:
+    // fill everything in case of static walls and only row elements in case of moving walls
     std::map<int, Teuchos::RCP<DRT::Element> > structelementsinterf = structgelements[meit->first];
     for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit=structelementsinterf.begin(); eit != structelementsinterf.end(); ++eit)
     {
       Teuchos::RCP<DRT::Element> currele = eit->second;
-      if ( currele->Owner() == myrank_ || sparse_binning_ )
+      if ( not moving_walls_ || ((currele->Owner() == myrank_) && moving_walls_) )
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
@@ -1653,22 +1683,16 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     }
   }
 
-  // extended ghosting of wall elements for sparse bin scheme
-  if(sparse_binning_)
+  // extended ghosting of wall elements for static walls
+  if(not moving_walls_)
   {
     // fill complete in order to obtain element col map
     particlewalldis->FillComplete(false, false, false);
 
-    std::map<int, std::set<int> > rowelesinbin;
-    DistributeElesToBins(particlewalldis, rowelesinbin);
+    particlewallelecolmap_standardghosting_ = Teuchos::rcp(new Epetra_Map(*particlewalldis->ElementColMap()));
 
-    // get extended column map for wall elements
-    std::map<int, std::set<int> > dummy;
-     Teuchos::RCP<Epetra_Map> wallelecolmap =
-         ExtendGhosting(particlewalldis->ElementColMap(), rowelesinbin, dummy, Teuchos::null, bincolmap_);
-
-     // extend ghosting (add nodes/elements) according to the new column layout
-     particlewalldis->ExtendedGhosting(*wallelecolmap,false, false, false, false);
+    // extend ghosting to the bin col map
+    ExtendGhosting(particlewalldis, particlewallelecolmap_standardghosting_, bincolmap_, false, false, false, false);
   }
   else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
   {
@@ -1936,58 +1960,86 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderl
 
   std::vector<int> rowbins;
   {
-    // NOTE: This part of the setup can be the bottleneck because vectors of all bins
-    // are needed on each proc (memory issue!!); std::map could perhaps help when gathering
-    // num fluid nodes in each bin, then block wise communication after copying data to vector
+    // fill all bins which contain row elements to a vector on each proc
+    const int numbin = rowelesinbin.size();
+    std::vector<int> mybinswithroweles;
+    mybinswithroweles.reserve(numbin);
+    for(std::map<int, std::set<int> >::const_iterator it=rowelesinbin.begin(); it != rowelesinbin.end(); ++it)
+      mybinswithroweles.push_back(it->first);
 
-    const int numbins = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
-    std::vector<int> mynumeles_per_bin(numbins,0);
+    std::vector<int> maxrank_per_bin;
 
-    std::map<int, std::set<int> >::const_iterator iter;
-    for(iter=rowelesinbin.begin(); iter!=rowelesinbin.end(); ++iter)
+    // loop over all procs in which proc i determines which bins it will own finally
+    for(int iproc=0; iproc<underlyingdis->Comm().NumProc() ; ++iproc)
     {
-      mynumeles_per_bin[iter->first] = iter->second.size();
-    }
+      // proc i determines number of bins with row elements and broadcasts
+      int numbin_proc = 0;
+      if(iproc == myrank_)
+        numbin_proc = numbin;
+      underlyingdis->Comm().Broadcast(&numbin_proc, 1, iproc);
 
-    // find maximum number of eles in each bin over all procs (init with -1)
-    std::vector<int> maxnumeles_per_bin(numbins,-1);
-    underlyingdis->Comm().MaxAll(&mynumeles_per_bin[0], &maxnumeles_per_bin[0], numbins);
+      // allocate vector on each proc with number of row bins on proc i
+      std::vector<int> binswithroweles_proci;
 
-    // it is possible that several procs have the same number of eles in a bin
-    // only proc which has maximum number of eles in a bin writes its rank
-    std::vector<int> myrank_per_bin(numbins,-1);
-    for(int i=0; i<numbins; ++i)
-    {
-      if(mynumeles_per_bin[i] == maxnumeles_per_bin[i])
-        myrank_per_bin[i] = myrank_;
-    }
+      // proc i broadcasts its bin ids
+      if(iproc == myrank_)
+        binswithroweles_proci = mybinswithroweles;
+      else
+        binswithroweles_proci.resize(numbin_proc, 0);
+      underlyingdis->Comm().Broadcast(&binswithroweles_proci[0], numbin_proc, iproc);
 
-    mynumeles_per_bin.clear();
-    if(sparse_binning_ == false)
-      maxnumeles_per_bin.clear();
-
-    // find maximum myrank for each bin over all procs (init with -1)
-    std::vector<int> maxmyrank_per_bin(numbins,-1);
-    underlyingdis->Comm().MaxAll(&myrank_per_bin[0], &maxmyrank_per_bin[0], numbins);
-
-    // distribute bins to proc with highest rank
-    for(int gid=0; gid<numbins; ++gid)
-    {
-      if(myrank_ == maxmyrank_per_bin[gid])
+      // each proc feeds its number of eles for the requested bin ids
+      std::vector<int> numeles_per_bin(numbin_proc, 0);
+      for(int i=0; i<numbin_proc; ++i)
       {
-        // do not add empty bins in case of sparse bin distribution
-        if(sparse_binning_ && maxnumeles_per_bin[gid] == 0)
-          continue;
+        std::map<int, std::set<int> >::const_iterator it = rowelesinbin.find(binswithroweles_proci[i]);
+        if(it != rowelesinbin.end())
+          numeles_per_bin[i] = (int)it->second.size();
+      }
 
+      // find maximum number of eles in each bin over all procs (init with -1)
+      std::vector<int> maxnumeles_per_bin(numbin_proc,-1);
+      underlyingdis->Comm().MaxAll(&numeles_per_bin[0], &maxnumeles_per_bin[0], numbin_proc);
+
+
+#ifdef DEBUG
+      // safety check - there is no empty bin allowed
+      for(int i=0; i<numbin_proc; ++i)
+      {
+        if(maxnumeles_per_bin[i] < 1)
+          dserror("empty bin found on proc %d which should not be possible here", myrank_);
+      }
+#endif
+
+      // it is possible that several procs have the same number of eles in a bin
+      // therefore, only proc which has maximum number of eles in a bin writes its rank
+      std::vector<int> myrank_per_bin(numbin_proc,-1);
+      for(int i=0; i<numbin_proc; ++i)
+      {
+        if(numeles_per_bin[i] == maxnumeles_per_bin[i])
+          myrank_per_bin[i] = myrank_;
+      }
+
+      // find maximum myrank for each bin over all procs (init with -1)
+      std::vector<int> maxrank_per_bin_tmp(numbin_proc,-1);
+      underlyingdis->Comm().MaxAll(&myrank_per_bin[0], &maxrank_per_bin_tmp[0], numbin_proc);
+
+      // store max rank on proc i
+      if(iproc == myrank_)
+        maxrank_per_bin = maxrank_per_bin_tmp;
+    }
+
+    // assign bins to proc if it has the highest rank
+    for(int i=0; i<numbin; ++i)
+    {
+      if(myrank_ == maxrank_per_bin[i])
+      {
+        const int gid = mybinswithroweles[i];
         Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
         bindis_->AddElement(bin);
         rowbins.push_back(gid);
-      }
+       }
     }
-
-    maxnumeles_per_bin.clear();
-    myrank_per_bin.clear();
-    maxmyrank_per_bin.clear();
   }
 
   // return binrowmap (without having called FillComplete on bindis_ so far)

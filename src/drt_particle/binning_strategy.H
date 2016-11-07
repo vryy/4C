@@ -154,16 +154,27 @@ namespace BINSTRATEGY
       );
 
     virtual void StandardGhosting(
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<Epetra_Map>          rowbins,
-        Teuchos::RCP<Epetra_Vector>&      disnp,
-        Teuchos::RCP<Epetra_Map>&         stdelecolmap,
-        Teuchos::RCP<Epetra_Map>&         stdnodecolmap,
-        std::map<int, std::vector<int> >  nodesinbin
-        );
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<Epetra_Map>          rowbins,
+      Teuchos::RCP<Epetra_Vector>&      disnp,
+      Teuchos::RCP<Epetra_Map>&         stdelecolmap,
+      Teuchos::RCP<Epetra_Map>&         stdnodecolmap,
+      std::map<int, std::vector<int> >  nodesinbin
+      );
 
     virtual void ExtendGhosting(
-        std::vector<Teuchos::RCP<DRT::Discretization> > dis
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis
+      );
+
+    /// extend ghosting according to bin distribution
+    virtual void ExtendGhosting(
+      Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_Map>          initial_elecolmap,
+      Teuchos::RCP<Epetra_Map>          bincolmap,
+      bool                              assigndegreesoffreedom,
+      bool                              initelements,
+      bool                              doboundaryconditions,
+      bool                              checkghosting
       );
 
     /// collect information of content in bins from other procs via Round Robin loop
@@ -313,7 +324,9 @@ namespace BINSTRATEGY
 
     int bin_per_dir_[3];    ///< number of bins per direction
 
-    double inv_bin_per_dir_[3];    ///< inverse of number of bins per direction
+    int id_calc_bin_per_dir_[3];    ///< number of bins per direction for bin id calculation
+
+    int id_calc_exp_bin_per_dir_[3];    ///< exponent 2^x = number of bins per direction for bin id calculation
 
     bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
 
@@ -322,8 +335,6 @@ namespace BINSTRATEGY
     double pbcdeltas_[3];   ///< deltas for pbcs in x, y, z direction
 
     const INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
-
-    const bool sparse_binning_;   ///< flag whether bin scheme is sparse
 
     //! @name miscellaneous stuff
     //@{

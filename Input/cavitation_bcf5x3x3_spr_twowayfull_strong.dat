@@ -32,6 +32,7 @@ FLUID_VIS                       No
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
+VERBOSITY                       Standard
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   5.0
@@ -61,7 +62,6 @@ TIME_STEP_SIZE_RATIO            3
 NUMSTEP                         3
 MAXTIME                         5.0
 SIMPLIFIED_BUBBLE_FORCES        No
-SPARSE_BIN_DISTRIBUTION         Yes
 FLUIDFRAC_PROJ_METHOD           superconvergent_patch_recovery
 VOID_FRACTION_CALC              analytical_constpoly
 ---------------------------------------------------------------FLUID DYNAMIC

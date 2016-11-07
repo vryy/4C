@@ -326,6 +326,8 @@ namespace PARTICLE
 
     Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
 
+    Teuchos::RCP<Epetra_Map> particlewallelecolmap_standardghosting_;     ///< wall ele col map containing standard ghosting
+
     Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
 
     const bool moving_walls_;   ///< flag whether walls are moving

@@ -238,8 +238,8 @@ CAVITATION::Algorithm::Algorithm(
   if(computeradiusRPbased_ && myrank_ == 0)
     IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
-  if(moving_walls_ && sparse_binning_)
-    dserror("moving walls and sparse bin scheme cannot be combined (yet)");
+  if(moving_walls_)
+    dserror("moving walls do not (yet) work for cavitation problems");
 
   return;
 }
@@ -1667,6 +1667,24 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   // 5th step: apply forces to bubbles and fluid field
   //--------------------------------------------------------------------
 
+  // enforce 2D bubble forces for pseudo-2D problem
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  {
+    const int numnodes = bubbleforces->MyLength()/dim_;
+    for(int i=0; i<numnodes; ++i)
+      (*bubbleforces)[i*dim_+2] = 0.0;
+  }
+
+  particles_->SetExternalDerivativeChangers(bubbleforces);
+
+  if(coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  {
+    // clear cache with underlying fluid element data
+    underlyingelecache_.clear();
+
+    return; // leave here because nothing to add to fluid
+  }
+
   // add fluid force contributions to the global vector
   {
     std::vector<int> gids;
@@ -1683,19 +1701,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     if (err<0)
       dserror("summing into Epetra_FEVector failed");
   }
-
-  // enforce 2D bubble forces for pseudo-2D problem
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
-  {
-    const int numnodes = bubbleforces->MyLength()/dim_;
-    for(int i=0; i<numnodes; ++i)
-      (*bubbleforces)[i*dim_+2] = 0.0;
-  }
-
-  particles_->SetExternalDerivativeChangers(bubbleforces);
-
-  if(coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
-    return; // leave here because nothing to add to fluid
 
   // call global assemble
   int err = fluidforces->GlobalAssemble(Add, false);

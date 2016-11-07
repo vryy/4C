@@ -50,7 +50,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   XAABB_(XAABB),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
 {
   if( XAABB_(0,0) >= XAABB_(0,1) or XAABB_(1,0) >= XAABB_(1,1) or XAABB_(2,0) >= XAABB_(2,1))
@@ -65,7 +64,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     bin_per_dir_[idim] = 0;
-    inv_bin_per_dir_[idim] = 0.0;
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
@@ -86,7 +84,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   bindis_(Teuchos::null),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -123,7 +120,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   // initialize arrays
   for(int idim=0; idim<3; ++idim)
   {
-    inv_bin_per_dir_[idim] = 1.0 / bin_per_dir_[idim];
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     pbconoff_[idim] = false;
@@ -146,7 +142,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   cutoff_radius_(0.0),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(dis[0]->Comm().MyPID())
 {
   // initialize arrays
@@ -155,7 +150,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     bin_per_dir_[idim] = 0;
-    inv_bin_per_dir_[idim] = 0.0;
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
@@ -561,7 +555,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   )
 {
   // calculate total number of bins
-  int numbin = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
+  const int numbin = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
 
   // some safety checks to ensure efficiency
   if(numbin<discret[0]->Comm().NumProc() && myrank_ == 0)
@@ -854,7 +848,6 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
   return Teuchos::rcp(new Epetra_Map(-1,(int)mastercolgids.size(),&mastercolgids[0],0,mortardis.Comm()));
 }
 
-
 /*-------------------------------------------------------------------*
 | extend ghosting according to bin distribution          ghamm 02/14 |
  *-------------------------------------------------------------------*/
@@ -901,7 +894,6 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
 
   return;
 }
-
 
 /*-------------------------------------------------------------------*
 | extend ghosting according to bin distribution          ghamm 06/14 |
@@ -1042,6 +1034,31 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
   return;
 }
 
+/*-------------------------------------------------------------------*
+| extend ghosting according to bin distribution          ghamm 11/16 |
+ *-------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::ExtendGhosting(
+    Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<Epetra_Map> initial_elecolmap,
+    Teuchos::RCP<Epetra_Map> bincolmap,
+    bool assigndegreesoffreedom,
+    bool initelements,
+    bool doboundaryconditions,
+    bool checkghosting)
+{
+  std::map<int, std::set<int> > rowelesinbin;
+  DistributeElesToBins(dis, rowelesinbin);
+
+  // get extended column map elements
+  std::map<int, std::set<int> > dummy;
+   Teuchos::RCP<Epetra_Map> elecolmapextended =
+       ExtendGhosting(&*initial_elecolmap, rowelesinbin, dummy, Teuchos::null, bincolmap);
+
+  // extend ghosting (add nodes/elements) according to the new column layout
+  dis->ExtendedGhosting(*elecolmapextended, assigndegreesoffreedom, initelements, doboundaryconditions, checkghosting);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1124,7 +1141,6 @@ void BINSTRATEGY::BinningStrategy::CollectInformation(
   return;
 }
 
-
 /*----------------------------------------------------------------------*
 | find XAABB and divide into bins                           ghamm 09/12 |
  *----------------------------------------------------------------------*/
@@ -1144,13 +1160,24 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
     else
       dserror("cutoff_radius <= zero");
 
-    // calculate inverse number of bins per direction
-    inv_bin_per_dir_[dim] = 1.0/bin_per_dir_[dim];
+    // for detailed description of the difference between bin_per_dir
+    // and id_calc_bin_per_dir_ see BinningStrategy::ConvertGidToijk;
+    int n=0;
+    do
+    {
+      id_calc_bin_per_dir_[dim] = std::pow(2,n);
+      id_calc_exp_bin_per_dir_[dim] = n;
+      ++n;
+    } while (id_calc_bin_per_dir_[dim] < bin_per_dir_[dim]);
+
     // calculate size of bins in each direction
-    bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0)) * inv_bin_per_dir_[dim];
+    bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0)) / bin_per_dir_[dim];
     // calculate inverse of size of bins in each direction
     inv_bin_size_[dim] = 1.0/bin_size_[dim];
   }
+
+  if(id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] > std::numeric_limits<int>::max())
+    dserror("number of bins is larger than an integer can hold! Reduce number of bins by increasing the cutoff radius");
 
   // determine cutoff radius for prescribed number of bins per direction
   // fixme: this cannot be reached
@@ -1188,8 +1215,9 @@ void BINSTRATEGY::BinningStrategy::CreateBins2D()
 
   // one bin in pseudo direction is enough
   bin_per_dir_[entry] = 1;
-  inv_bin_per_dir_[entry] = 1.0 / bin_per_dir_[entry];
-  bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0)) * inv_bin_per_dir_[entry];
+  id_calc_bin_per_dir_[entry] = 1;
+  id_calc_exp_bin_per_dir_[entry] = 0;
+  bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0));
   inv_bin_size_[entry] = 1.0/bin_size_[entry];
 
   return;
@@ -1605,7 +1633,7 @@ int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )
     return -1;
 
-  return ijk[0] + ijk[1]*bin_per_dir_[0] + ijk[2]*bin_per_dir_[0]*bin_per_dir_[1];
+  return ijk[0] + ijk[1]*id_calc_bin_per_dir_[0] + ijk[2]*id_calc_bin_per_dir_[0]*id_calc_bin_per_dir_[1];
 }
 
 
@@ -1614,17 +1642,40 @@ int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk)
 {
-  ijk[2] = gid * (inv_bin_per_dir_[0] * inv_bin_per_dir_[1]);
+  // in order to efficiently compute the ijk triple from a given bin id,
+  // use of the shift operator is made (right shift by one equals division by two)
+  // therefore it is necessary that the number of bins per direction is
+  // divisible by 2
+  // (shift operation costs one cycle vs division (or modulo) costs 20--40 cycles on cpu)
+  // Hence, two different number of bins per direction are needed
+  // one for the used domain and the other one for converting gid <-> ijk
 
-  const int tmp = gid - ijk[2]*bin_per_dir_[0]*bin_per_dir_[1];
+  // example: 2^n = bin_per_dir
+  // example: gid >> n = (int)gid/bin_per_dir
 
-  ijk[1] = tmp * inv_bin_per_dir_[0];
+  ijk[2] = gid >> (id_calc_exp_bin_per_dir_[0] + id_calc_exp_bin_per_dir_[1]);
 
-  ijk[0] = tmp - ijk[1]*bin_per_dir_[0];
+  const int tmp = gid - ijk[2]*id_calc_bin_per_dir_[0]*id_calc_bin_per_dir_[1];
+
+  ijk[1] = tmp >> id_calc_exp_bin_per_dir_[0];
+
+  ijk[0] = tmp - ijk[1]*id_calc_bin_per_dir_[0];
+
+  // alternative method - more expensive but only based on integer operations:
+//  {
+//    const int tmp1 = gid % (id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1]);
+//    // compute i
+//    ijk[0] = tmp1 % id_calc_bin_per_dir_[0];
+//    // compute j
+//    ijk[1] = (tmp1 - ijk[0]) / id_calc_bin_per_dir_[0];
+//    // compute k
+//    ijk[2] = (gid - ijk[0] - ijk[1]*id_calc_bin_per_dir_[0]) / (id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1]);
+//  }
 
   // found ijk is outside of XAABB
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )
-    ijk[0] = -1;
+    dserror("ijk (%d %d %d) for given gid: %d is outside of range (bin per dir: %d %d %d)",
+        ijk[0], ijk[1], ijk[2], gid, bin_per_dir_[0], bin_per_dir_[1], bin_per_dir_[2]);
 
   return;
 }

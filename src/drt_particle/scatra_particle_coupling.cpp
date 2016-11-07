@@ -3390,7 +3390,20 @@ void PARTICLE::ScatraParticleCoupling::CreateBins(Teuchos::RCP<DRT::Discretizati
 
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
     inv_bin_size_[dim] = 1.0/bin_size_[dim];
+
+    // for detailed description of the difference between bin_per_dir
+    // and id_calc_bin_per_dir_ see BinningStrategy::ConvertGidToijk;
+    int n=0;
+    do
+    {
+      id_calc_bin_per_dir_[dim] = std::pow(2,n);
+      id_calc_exp_bin_per_dir_[dim] = n;
+      ++n;
+    } while (id_calc_bin_per_dir_[dim] < bin_per_dir_[dim]);
   }
+
+  if(id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] > std::numeric_limits<int>::max())
+    dserror("number of bins is larger than an integer can hold! Reduce number of bins by increasing the cutoff radius");
 
   if(myrank_ == 0)
   {
