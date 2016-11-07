@@ -209,14 +209,45 @@ public:
   {
     UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab, full_stab,x,cond);
     #ifdef DEBUG
-    //Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
+    // Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
+    // As this check is done for every Gausspoint, just do this in DEBUG Version ...
+    // Feel free the add more checks ...
+
+    //In Case we do just use Penalty or Adjoint we should still set the scaling on both, to guarantee we the the correct constraint!
+    if (((configuration_map_.at(INPAR::XFEM::F_Adj_Col).first && !configuration_map_.at(INPAR::XFEM::F_Pen_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::F_Adj_Col).first && configuration_map_.at(INPAR::XFEM::F_Pen_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_Col).second) > 1e-16)
+       dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
+    if (((configuration_map_.at(INPAR::XFEM::X_Adj_Col).first && !configuration_map_.at(INPAR::XFEM::X_Pen_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::X_Adj_Col).first && configuration_map_.at(INPAR::XFEM::X_Pen_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16)
+      dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
+    if (((configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).first && !configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).first && configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second) > 1e-16)
+      dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
+    if (((configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).first && !configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).first && configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16)
+      dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
+    if (((configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).first && !configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).first && configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second) > 1e-16)
+      dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
+    if (((configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).first && !configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).first) ||
+        (!configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).first && configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).first)) &&
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+      dserror("%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, as we support at the moment just equal penalty and adjoint consistent constraints!",cond_name_.c_str());
 
     // At the moment you cannot use different consistent constraints between Adjoint and Penalty terms
     //Check if we need a more general implementation (If constraints between Adjoint and Penalty are not the same!)
-    if(fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16 ||
-       fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16 ||
-       fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
-      dserror("Your consistent constraint for Penalty and Adjoint term is not equal, go to element level and split up velint_diff_ for penalty and adjoint!");
+    if(fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16 ||
+        fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+      dserror("%s: Your consistent constraint for Penalty and Adjoint term is not equal, go to element level and split up velint_diff_ for penalty and adjoint!",cond_name_.c_str());
 
     #endif
     return configuration_map_;

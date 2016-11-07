@@ -194,6 +194,10 @@ switch(coupled_field_)
     configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
     configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1-porosity);
+
+    //does nothing but should just be done in case we don't use the adjoint
+    configuration_map_[INPAR::XFEM::F_Adj_n_Col].second = configuration_map_[INPAR::XFEM::F_Pen_n_Col].second;
+    configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
     break;
   }
   case MeshCouplingFPI::pf_pf:
@@ -201,6 +205,9 @@ switch(coupled_field_)
     //Configuration of Penalty Terms
      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,porosity);
+
+     //does nothing but should just be done in case we don't use the adjoint
+     configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
     break;
   }
 }
