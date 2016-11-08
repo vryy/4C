@@ -26,6 +26,27 @@
 #include <MueLu_DirectSolver.hpp>
 #include <MueLu_HierarchyHelpers.hpp>
 #include <MueLu_VerboseObject.hpp>
+
+// header files for default types, must be included after all other MueLu/Xpetra headers
+#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+
+typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
+typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
+typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
+typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrixWrap;
+typedef Xpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal, Node> Vector;
+typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
+typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactory;
+typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
+typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
+
+typedef MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node> FactoryManager;
+typedef MueLu::FactoryBase FactoryBase;
+
+typedef Scalar SC;
+typedef LocalOrdinal LO;
+typedef GlobalOrdinal GO;
+typedef Node NO;
 #endif // HAVE_MueLu
 
 #include <Epetra_Comm.h>
@@ -74,7 +95,7 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
 #endif
 {
 #ifdef HAVE_MueLu
-  data_ = Teuchos::rcp(new Level());
+  data_ = Teuchos::rcp(new MueLu::Level());
 #endif
 }
 
@@ -328,8 +349,8 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
-  Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
-  Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
+  Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LO,GO,Node> > xCrsOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LO,GO,Node>(xCrsA));
+  Teuchos::RCP<Xpetra::Matrix<Scalar,LO,GO,Node> > xOp = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar,LO,GO,Node> >(xCrsOp);
   xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
@@ -346,14 +367,14 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
     // define permutation factory for permuting the full matrix A
-    PermFact_ = Teuchos::rcp(new PermutationFactory());
+    PermFact_ = Teuchos::rcp(new MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
     PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
     PermFact_->SetFactory("PermutationRowMapFactory", MueLu::NoFactory::getRCP());
     PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));
   }
   else {
     // permute full matrix
-    PermFact_ = Teuchos::rcp(new PermutationFactory());
+    PermFact_ = Teuchos::rcp(new MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
     PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
     PermFact_->SetFactory("PermutationRowMapFactory", Teuchos::null);
     PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));

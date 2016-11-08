@@ -49,7 +49,13 @@ namespace LINALG
       virtual const std::string getParameterListName() const { return "MueLu Parameters"; }
     private:
 
-      void registerEpetraMapinMueLuLevel(Teuchos::ParameterList& paramList, std::string name, Hierarchy& H) {
+      // some typedefs
+      typedef Scalar SC;
+      typedef LocalOrdinal LO;
+      typedef GlobalOrdinal GO;
+      typedef Node NO;
+
+      void registerEpetraMapinMueLuLevel(Teuchos::ParameterList& paramList, std::string name, MueLu::Hierarchy<SC,LO,GO,NO>& H) {
 
         Teuchos::RCP<Epetra_Map> myMap = Teuchos::null;
         if(paramList.isSublist("Linear System properties")) {
@@ -69,13 +75,13 @@ namespace LINALG
         return;
       }
 
-      void registerMapinMueLuLevel(Teuchos::ParameterList& paramList, std::string name, Hierarchy& H) {
-        Teuchos::RCP<Map> myMap = Teuchos::null;
+      void registerMapinMueLuLevel(Teuchos::ParameterList& paramList, std::string name, MueLu::Hierarchy<SC,LO,GO,NO>& H) {
+        Teuchos::RCP<Xpetra::Map<LO,GO,NO> > myMap = Teuchos::null;
         if(paramList.isSublist("Linear System properties")) {
           const Teuchos::ParameterList & linSystemProps = paramList.sublist("Linear System properties");
           // extract information provided by solver (e.g. PermutedAztecSolver)
           if(linSystemProps.isParameter(name))
-            myMap = linSystemProps.get<Teuchos::RCP<Map> > (name);
+            myMap = linSystemProps.get<Teuchos::RCP<Xpetra::Map<LO,GO,NO> > > (name);
         }
         H.GetLevel(0)->Set(name, Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(myMap));
         return;

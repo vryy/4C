@@ -4,22 +4,10 @@
 
 \brief Interface class for MueLu preconditioner
 
-<pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
-
-/*
- * solver_muelupreconditioner.cpp
- *
- *  Created on: Dec 1, 2011
- *      Author: wiesner
- */
-
 #ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
@@ -62,7 +50,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 #include "solver_muelupreconditioner.H"
 
@@ -210,7 +197,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
       Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
 
-      Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+      Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
       Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
       for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -224,9 +211,9 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       mueluOp->SetFixedBlockSize(numdf);
 
       Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node> > myFactFact = Teuchos::rcp(new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());
-      ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()),myFactFact);
+      MueLu::ParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()),myFactFact);
 
-      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = mueLuFactory.CreateHierarchy();
       H->SetDefaultVerbLevel(MueLu::Extreme);
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->Set("Nullspace", nspVector);
@@ -256,8 +243,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       // Standard case: use ML parameters from dat file
 
       // Setup MueLu Hierarchy
-      MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
-      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      MueLu::MLParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(mllist_/*, vec*/);
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = mueLuFactory.CreateHierarchy();
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
       H->setlib(Xpetra::UseEpetra);

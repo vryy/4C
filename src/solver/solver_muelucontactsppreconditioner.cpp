@@ -1,9 +1,12 @@
-/*
- * solver_muelucontactsppreconditioner.cpp
- *
- *  Created on: Sep 23, 2012
- *      Author: tobias
- */
+/*!----------------------------------------------------------------------
+\file solver_muelucontactsppreconditioner.cpp
+
+\brief Implementation
+
+\level 2
+
+\maintainer Tobias Wiesner
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
@@ -79,8 +82,6 @@
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#include <MueLu_UseShortNames.hpp>
-
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
@@ -92,6 +93,61 @@
 #include "muelu/MueLu_ContactSPRepartitionInterface_decl.hpp"
 
 #include "solver_muelucontactsppreconditioner.H"
+
+typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
+typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
+typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
+typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrixWrap;
+typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
+typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
+typedef Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVectorFactory;
+typedef Xpetra::StridedMap<LocalOrdinal, GlobalOrdinal, Node> StridedMap;
+typedef Xpetra::StridedMapFactory<LocalOrdinal, GlobalOrdinal, Node> StridedMapFactory;
+typedef Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> BlockedCrsMatrix;
+
+typedef MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> Hierarchy;
+typedef MueLu::Factory Factory;
+typedef MueLu::CoalesceDropFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> CoalesceDropFactory;
+typedef MueLu::UncoupledAggregationFactory<LocalOrdinal,GlobalOrdinal,Node> UncoupledAggregationFactory;
+typedef MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> SmootherFactory;
+typedef MueLu::TentativePFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> TentativePFactory;
+typedef MueLu::TransPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> TransPFactory;
+typedef MueLu::NullspaceFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> NullspaceFactory;
+typedef MueLu::GenericRFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> GenericRFactory;
+typedef MueLu::MapTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> MapTransferFactory;
+typedef MueLu::RebalanceAcFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceAcFactory;
+typedef MueLu::AmalgamationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> AmalgamationFactory;
+typedef MueLu::PgPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> PgPFactory;
+typedef MueLu::RAPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RAPFactory;
+typedef MueLu::RepartitionFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RepartitionFactory;
+typedef MueLu::RebalanceTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceTransferFactory;
+typedef MueLu::RebalanceMapFactory<LocalOrdinal,GlobalOrdinal,Node> RebalanceMapFactory;
+typedef MueLu::SubBlockAFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> SubBlockAFactory;
+typedef MueLu::PFactory PFactory;
+typedef MueLu::TwoLevelFactoryBase TwoLevelFactoryBase;
+typedef MueLu::CoarseMapFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> CoarseMapFactory;
+typedef MueLu::BlockedCoarseMapFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> BlockedCoarseMapFactory;
+typedef MueLu::RebalanceBlockRestrictionFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceBlockRestrictionFactory;
+typedef MueLu::UzawaSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> UzawaSmoother;
+typedef MueLu::IndefBlockedDiagonalSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> IndefBlockedDiagonalSmoother;
+typedef MueLu::SmootherPrototype<Scalar,LocalOrdinal,GlobalOrdinal,Node> SmootherPrototype;
+typedef MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> PermutationFactory;
+typedef MueLu::SchurComplementFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> SchurComplementFactory;
+typedef MueLu::DirectSolver<Scalar,LocalOrdinal,GlobalOrdinal,Node> DirectSolver;
+typedef MueLu::BlockedPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> BlockedPFactory;
+typedef MueLu::BlockedRAPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> BlockedRAPFactory;
+typedef MueLu::RebalanceBlockAcFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceBlockAcFactory;
+typedef MueLu::SimpleSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> SimpleSmoother;
+typedef MueLu::BraessSarazinSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> BraessSarazinSmoother;
+typedef MueLu::TrilinosSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> TrilinosSmoother;
+typedef MueLu::RebalanceBlockInterpolationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceBlockInterpolationFactory;
+typedef MueLu::PermutingSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node> PermutingSmoother;
+typedef MueLu::Utils<Scalar,LocalOrdinal,GlobalOrdinal,Node> Utils;
+
+typedef Scalar SC;
+typedef LocalOrdinal LO;
+typedef GlobalOrdinal GO;
+typedef Node NO;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

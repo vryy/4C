@@ -70,8 +70,6 @@ Author: wiesner
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#include <MueLu_UseShortNames.hpp>
-
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "muelu/muelu_ContactAFilterFactory_decl.hpp"
@@ -81,6 +79,34 @@ Author: wiesner
 #include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
 
 #include "solver_muelucontactpreconditioner2.H"
+
+typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
+typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
+typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
+typedef Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVectorFactory;
+
+typedef MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> Hierarchy;
+typedef MueLu::Factory Factory;
+typedef MueLu::CoalesceDropFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> CoalesceDropFactory;
+typedef MueLu::UncoupledAggregationFactory<LocalOrdinal,GlobalOrdinal,Node> UncoupledAggregationFactory;
+typedef MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> SmootherFactory;
+typedef MueLu::TentativePFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> TentativePFactory;
+typedef MueLu::TransPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> TransPFactory;
+typedef MueLu::NullspaceFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> NullspaceFactory;
+typedef MueLu::GenericRFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> GenericRFactory;
+typedef MueLu::MapTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> MapTransferFactory;
+typedef MueLu::RebalanceAcFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceAcFactory;
+typedef MueLu::AmalgamationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> AmalgamationFactory;
+typedef MueLu::PgPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> PgPFactory;
+typedef MueLu::RAPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RAPFactory;
+typedef MueLu::RepartitionFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RepartitionFactory;
+typedef MueLu::RebalanceTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> RebalanceTransferFactory;
+typedef MueLu::RebalanceMapFactory<LocalOrdinal,GlobalOrdinal,Node> RebalanceMapFactory;
+
+typedef Scalar SC;
+typedef LocalOrdinal LO;
+typedef GlobalOrdinal GO;
+typedef Node NO;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -208,11 +234,11 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::InitializeHierarchy(
-    const Teuchos::RCP<Hierarchy> & h,
+Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > LINALG::SOLVER::MueLuContactPreconditioner2::InitializeHierarchy(
+    const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h,
     const Teuchos::ParameterList & params,
-    const Teuchos::RCP<Matrix> & A,
-    const Teuchos::RCP<MultiVector> nsp)
+    const Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > & A,
+    const Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nsp)
 {
   int verbosityLevel = 10;  // verbosity level
   int nDofsPerNode = 1;         // coalesce and drop parameters
@@ -355,7 +381,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::InitializeH
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactories(
+Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactories(
     const Teuchos::RCP<Hierarchy> & h,
     const Teuchos::ParameterList & params)
 {
@@ -461,10 +487,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
     UCAggFact->SetParameter("OnePt aggregate map factory", Teuchos::ParameterEntry(std::string("NoFactory")));
   }
 
-  Teuchos::RCP<PFactory> PFact;
-  Teuchos::RCP<TwoLevelFactoryBase> RFact;
+  Teuchos::RCP<MueLu::PFactory> PFact;
+  Teuchos::RCP<MueLu::TwoLevelFactoryBase> RFact;
 
-  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
+  Teuchos::RCP<MueLu::PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
 
   if(reuseStrategy == "Ptent")
     h->Keep("P",           PtentFact.get()); // keep tentative P factory!!!!
@@ -696,8 +722,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmoothers(
-    const Teuchos::RCP<Hierarchy> & h,
+Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmoothers(
+    const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h,
     const Teuchos::ParameterList & params)
 {
   // extract additional maps from parameter list
@@ -752,11 +778,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmooth
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
-    const Teuchos::RCP<Hierarchy> & h,
+Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
+    const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h,
     const Teuchos::ParameterList & params,
-    const Teuchos::RCP<Matrix> & A,
-    const Teuchos::RCP<MultiVector> nsp)
+    const Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > & A,
+    const Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nsp)
 {
   bool bIsLastLevel = false;
   int maxLevels = 10;
@@ -800,10 +826,10 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
-  Teuchos::RCP<SmootherPrototype> smooProto;
+  Teuchos::RCP<MueLu::SmootherPrototype<SC,LO,GO,NO> > smooProto;
   std::string ifpackType;
   Teuchos::ParameterList ifpackList;
-  Teuchos::RCP<SmootherFactory> SmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO> > SmooFact;
 
   if(type == "Jacobi") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
@@ -857,7 +883,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   }
 
   // create smoother factory
-  SmooFact = Teuchos::rcp( new SmootherFactory(smooProto) );
+  SmooFact = Teuchos::rcp( new MueLu::SmootherFactory<SC,LO,GO,NO>(smooProto) );
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";
@@ -880,10 +906,10 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
   if(paramList.isParameter("coarse: type")) type = paramList.get<std::string>("coarse: type");
 
-  Teuchos::RCP<SmootherPrototype> smooProto;
+  Teuchos::RCP<MueLu::SmootherPrototype<SC,LO,GO,NO> > smooProto;
   std::string ifpackType;
   Teuchos::ParameterList ifpackList;
-  Teuchos::RCP<SmootherFactory> SmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO>> SmooFact;
 
   if(type == "Jacobi") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -894,7 +920,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -905,7 +931,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if (type == "symmetric Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -916,7 +942,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
@@ -924,7 +950,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
       ifpackList.set("chebyshev: degree", paramList.get<int>("coarse: sweeps"));
     if(paramList.isParameter("coarse: Chebyshev alpha"))
       ifpackList.set("chebyshev: alpha", paramList.get<double>("coarse: Chebyshev alpha"));
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
@@ -953,19 +979,19 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
 #endif // HAVE_MUELU_IFPACK
   } else if(type == "Amesos-Superlu") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Superlu",Teuchos::ParameterList()) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-Superludist") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Superludist",Teuchos::ParameterList()) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-KLU") {
-    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Klu",Teuchos::ParameterList()) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-UMFPACK") {
-    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Umfpack",Teuchos::ParameterList()) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "") {
-    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("",Teuchos::ParameterList()) );
     smooProto->SetFactory("A", AFact);
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown coarsest solver type. '" << type << "' not supported by MueLu.");
@@ -973,7 +999,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
   // create smoother factory
   TEUCHOS_TEST_FOR_EXCEPTION(smooProto == Teuchos::null, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no smoother prototype. fatal error.");
-  SmooFact = rcp( new SmootherFactory(smooProto) );
+  SmooFact = rcp( new MueLu::SmootherFactory<SC,LO,GO,NO>(smooProto) );
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";

@@ -23,7 +23,6 @@ Created on: Feb 27, 2014
 #include <MueLu_BaseClass.hpp>
 #include <MueLu_Utilities.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_UseShortNames.hpp>
 
 // Baci includes
 #include "../linalg/linalg_solver.H"
@@ -242,26 +241,26 @@ namespace LINALG
       class MueluSmootherWrapper : public SingleFieldSmoother
       {
         public:
-          MueluSmootherWrapper(Teuchos::RCP<SmootherBase> S): S_(S){}
+          MueluSmootherWrapper(Teuchos::RCP<MueLu::SmootherBase<Scalar,LocalOrdinal,GlobalOrdinal,Node> > S): S_(S){}
           virtual void Apply(
               const Epetra_MultiVector& X,
               Epetra_MultiVector& Y,
               bool InitialGuessIsZero=false) const;
         private:
-          Teuchos::RCP<SmootherBase> S_;
+          Teuchos::RCP<MueLu::SmootherBase<Scalar,LocalOrdinal,GlobalOrdinal,Node> > S_;
       };
 
 
       class MueluHierarchyWrapper : public  SingleFieldSmoother// Not used
       {
         public:
-          MueluHierarchyWrapper(Teuchos::RCP<Hierarchy> H);
+          MueluHierarchyWrapper(Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node>> H);
           virtual void Apply(
               const Epetra_MultiVector& X,
               Epetra_MultiVector& Y,
               bool InitialGuessIsZero=false) const;
         private:
-          Teuchos::RCP<Hierarchy> H_;
+          Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node>> H_;
           Teuchos::RCP<Epetra_Operator> P_;
       };
 
@@ -285,7 +284,7 @@ namespace LINALG
           int null_space_dim_;
           Teuchos::RCP<std::vector<double> > null_space_data_;
           Teuchos::ParameterList muelu_list_;
-          Teuchos::RCP<Hierarchy> H_;
+          Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node>> H_;
           void BuildHierarchy();
         private:
           Teuchos::RCP<Epetra_Operator> P_;

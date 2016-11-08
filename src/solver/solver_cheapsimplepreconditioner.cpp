@@ -29,8 +29,13 @@
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
+
+// some typedefs
+typedef Scalar SC;
+typedef LocalOrdinal LO;
+typedef GlobalOrdinal GO;
+typedef Node NO;
 #endif
 
 // BACI headers
@@ -206,16 +211,16 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A00));
 
       // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO> > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO> > mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
       // Create MueLu preconditioner:  using ML like input or xml files
-      Teuchos::RCP<Hierarchy> H = Teuchos::null;
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = Teuchos::null;
       Teuchos::ParameterList& MueLuList = predictSolver_list_.sublist("MueLu Parameters");
       std::string xmlFileName = MueLuList.get<std::string>("xml file","none");
       if (xmlFileName == "none")
       {
-        MLParameterListInterpreter mueLuFactory(MueLuList);
+        MueLu::MLParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(MueLuList);
         H = mueLuFactory.CreateHierarchy();
         H->GetLevel(0)->Set("A", mueluOp);
         mueLuFactory.SetupHierarchy(*H);
@@ -233,7 +238,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
           dserror("Error: null space data is empty");
         // Convert null space to muelu format
         Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-        Teuchos::RCP< MultiVector > nspVector =
+        Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector =
           Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build
           (rowMap,dimns,true);
         for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -245,7 +250,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         }
         // Create Hierarchy
         mueluOp->SetFixedBlockSize(numdf);
-        ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
+        MueLu::ParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
         H = mueLuFactory.CreateHierarchy();
         H->SetDefaultVerbLevel(MueLu::Extreme);
         H->GetLevel(0)->Set("A", mueluOp);
@@ -287,15 +292,15 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
 
       // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
       Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
       // Create MueLu preconditioner:  using ML like input or xml files
-      Teuchos::RCP<Hierarchy> H = Teuchos::null;
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = Teuchos::null;
       Teuchos::ParameterList& MueLuList = schurSolver_list_.sublist("MueLu Parameters");
       std::string xmlFileName = MueLuList.get<std::string>("xml file","none");
       if (xmlFileName == "none")
       {
-        MLParameterListInterpreter mueLuFactory(MueLuList);
+        MueLu::MLParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(MueLuList);
         H = mueLuFactory.CreateHierarchy();
         H->GetLevel(0)->Set("A", mueluOp);
         mueLuFactory.SetupHierarchy(*H);
@@ -313,7 +318,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
           dserror("Error: null space data is empty");
         // Convert null space to muelu format
         Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-        Teuchos::RCP< MultiVector > nspVector =
+        Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector =
           Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build
           (rowMap,dimns,true);
         for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -325,7 +330,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         }
         // Create Hierarchy
         mueluOp->SetFixedBlockSize(numdf);
-        ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
+        MueLu::ParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
         H = mueLuFactory.CreateHierarchy();
         H->SetDefaultVerbLevel(MueLu::Extreme);
         H->GetLevel(0)->Set("A", mueluOp);

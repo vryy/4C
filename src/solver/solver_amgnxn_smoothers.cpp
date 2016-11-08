@@ -407,13 +407,13 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply
     Teuchos::rcp(new Epetra_MultiVector(X));
   Teuchos::RCP<Xpetra::EpetraMultiVector> Xex =
     Teuchos::rcp(new Xpetra::EpetraMultiVector(X_rcp));
-  Teuchos::RCP<MultiVector> Xx =
-    Teuchos::rcp_dynamic_cast<MultiVector>(Xex);
+  Teuchos::RCP<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> > Xx =
+    Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> >(Xex);
   Teuchos::RCP<Epetra_MultiVector> Y_rcp =
     Teuchos::rcp(new Epetra_MultiVector(Y));
   Teuchos::RCP<Xpetra::EpetraMultiVector> Yex =
     Teuchos::rcp(new Xpetra::EpetraMultiVector(Y_rcp));
-  Teuchos::RCP<MultiVector> Yx = Teuchos::rcp_dynamic_cast<MultiVector>(Yex);
+  Teuchos::RCP<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> > Yx = Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> >(Yex);
 
   // Apply underlying smoother
   S_->Apply(*Yx,*Xx,InitialGuessIsZero);
@@ -430,7 +430,7 @@ void LINALG::SOLVER::AMGNXN::MueluSmootherWrapper::Apply
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 LINALG::SOLVER::AMGNXN::MueluHierarchyWrapper::MueluHierarchyWrapper
-(Teuchos::RCP<Hierarchy> H): H_(H)
+(Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > H): H_(H)
 {
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 }
@@ -475,16 +475,16 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
     = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_->EpetraOperator());
   if(A_crs==Teuchos::null)
     dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
-  Teuchos::RCP<CrsMatrix> mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
-  Teuchos::RCP<CrsMatrixWrap> mueluA_wrap = Teuchos::rcp(new CrsMatrixWrap(mueluA));
-  Teuchos::RCP<Matrix> mueluOp = Teuchos::rcp_dynamic_cast<Matrix>(mueluA_wrap);
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
+  Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal,GlobalOrdinal,Node>> mueluA_wrap = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal,GlobalOrdinal,Node>(mueluA));
+  Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node>> mueluOp = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> >(mueluA_wrap);
 
   // Prepare null space vector for MueLu
   // safety check
   if(mueluA->getNodeNumRows()*null_space_dim_ != null_space_data_->size())
     dserror("Matrix size is inconsistent with length of nullspace vector!");
-  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-  Teuchos::RCP<MultiVector> nspVector =
+  Teuchos::RCP<const Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > rowMap = mueluA->getRowMap();
+  Teuchos::RCP<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> > nspVector =
     Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
         rowMap,null_space_dim_,true);
   for ( size_t i=0; i < Teuchos::as<size_t>(null_space_dim_); i++) {
@@ -510,7 +510,7 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 
 
   // Build up hierarchy
-  ParameterListInterpreter mueLuFactory(muelu_list_);
+  MueLu::ParameterListInterpreter<Scalar,LocalOrdinal,GlobalOrdinal,Node> mueLuFactory(muelu_list_);
   H_ = mueLuFactory.CreateHierarchy();
   H_->SetDefaultVerbLevel(MueLu::Extreme); // TODO sure?
   H_->GetLevel(0)->Set("A", mueluOp);
@@ -594,10 +594,10 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
   bool explicitdirichlet = A_->ExplicitDirichlet();
   bool savegraph         = A_->SaveGraph();
 
-  Teuchos::RCP<Matrix>              myA = Teuchos::null;
+  Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > myA = Teuchos::null;
   Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
   Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
-  Teuchos::RCP<SmootherBase>        myS = Teuchos::null;
+  Teuchos::RCP<MueLu::SmootherBase<Scalar,LocalOrdinal,GlobalOrdinal,Node> >        myS = Teuchos::null;
   Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
 
   std::vector< Teuchos::RCP<SparseMatrix> > Avec(NumLevels,Teuchos::null);
@@ -611,12 +611,12 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
   for(int level=0;level<NumLevels;level++)
   {
 
-    Teuchos::RCP<Level> this_level = H_->GetLevel(level);
+    Teuchos::RCP<MueLu::Level> this_level = H_->GetLevel(level);
 
 
     if (this_level->IsAvailable("A"))
     {
-      myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
+      myA    = this_level->Get< Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > >("A");
       myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
       myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
       Avec[level] = myAspa;
@@ -628,7 +628,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
     {
       if (this_level->IsAvailable("P"))
       {
-        myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
+        myA    = this_level->Get< Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > >("P");
         myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
         myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
         Pvec[level-1]=myAspa;
@@ -638,7 +638,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
       if (this_level->IsAvailable("R"))
       {
-        myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
+        myA = this_level->Get< Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > >("R");
         myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
         myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
         Rvec[level-1]=myAspa;
@@ -653,7 +653,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
       if (this_level->IsAvailable("PreSmoother"))
       {
-        myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PreSmoother");
+        myS     = this_level->Get< Teuchos::RCP<MueLu::SmootherBase<Scalar,LocalOrdinal,GlobalOrdinal,Node> > >("PreSmoother");
         mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
         SvecPre[level]=mySWrap;
       }

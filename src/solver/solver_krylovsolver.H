@@ -27,7 +27,6 @@ Created on: Jul 4, 2011
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 #endif // HAVE_MueLu
 
 #include "solver_solvertype.H"
@@ -156,8 +155,8 @@ class KrylovSolver : public SolverType
   void PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A);
 
   /*! @brief Internal helper functions to access operators from internal data structure */
-  Teuchos::RCP<const Epetra_CrsMatrix> GetOperator(const std::string name, const Teuchos::RCP<FactoryBase> & fact);
-  Teuchos::RCP<Epetra_CrsMatrix>       GetOperatorNonConst(const std::string name, const Teuchos::RCP<FactoryBase> & fact);
+  Teuchos::RCP<const Epetra_CrsMatrix> GetOperator(const std::string name, const Teuchos::RCP<MueLu::FactoryBase> & fact);
+  Teuchos::RCP<Epetra_CrsMatrix>       GetOperatorNonConst(const std::string name, const Teuchos::RCP<MueLu::FactoryBase> & fact);
 
   /*! @brief Count number of zeros on diagonal of input matrix */
   int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
@@ -165,9 +164,9 @@ class KrylovSolver : public SolverType
   int CountZerosOnDiagonal(const Teuchos::RCP<const Xpetra::Matrix<double, int, int> >& xOp);
 
   /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the diagonal of matrix A */
-  Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance = 1e-5);
+  Teuchos::RCP<Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > FindZeroDiagonalEntries(const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance = 1e-5);
   /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the diagonal of matrix A */
-  Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double tolerance = 1e-5);
+  Teuchos::RCP<Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > FindZeroDiagonalEntries(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double tolerance = 1e-5);
 
   /*! @brief Returns map with non-diagonal dominant rows of matrix A.
    *
@@ -179,8 +178,8 @@ class KrylovSolver : public SolverType
    *  - if the row has a zero on the diagonal the ratio is zero
    *  - if the row is a zero row (-> singular matrix) we divide zero by zero
    * */
-  Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio = 1.0);
-  Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double diagDominanceRatio = 1.0);
+  Teuchos::RCP<Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > FindNonDiagonalDominantRows(const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio = 1.0);
+  Teuchos::RCP<Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > FindNonDiagonalDominantRows(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double diagDominanceRatio = 1.0);
 
   /*! @brief if true, the linear solver is allowed to decide to solve a permuted linear system (default: false)*/
   bool bAllowPermutation_;
@@ -198,7 +197,7 @@ class KrylovSolver : public SolverType
   Teuchos::RCP<MueLu::Level> data_; // data container
 
   /*! @brief factory class which generates permutation data using input matrix A */
-  Teuchos::RCP<PermutationFactory> PermFact_; // permutation factory
+  Teuchos::RCP<MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > PermFact_; // permutation factory
   //@}
 #endif // HAVE_MueLu
 

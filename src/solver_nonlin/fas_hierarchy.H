@@ -2,13 +2,11 @@
 /*!
 \file fas_hierarchy.H
 
-\brief Hierarchy of multigrid levels based on MueLu
+\level 2
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Declaration of hierarchy of multigrid levels based on MueLu
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/
@@ -39,7 +37,6 @@ Maintainer: Matthias Mayr
 /* MueLu typedefs: header files for default types, must be included after all
  * other MueLu/Xpetra headers */
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
-#include <MueLu_UseShortNames.hpp>
 
 #endif
 
@@ -358,10 +355,10 @@ namespace NLNSOL
 
 #ifdef HAVE_MueLu
       //! MueLu Hierarchy Factory to create #mueLuHierarchy_
-      Teuchos::RCP<HierarchyManager> mueLuFactory_;
+      Teuchos::RCP<MueLu::HierarchyManager<double,int,int,Node> > mueLuFactory_;
 
       //! MueLu Hierarchy
-      Teuchos::RCP<Hierarchy> mueLuHierarchy_;
+      Teuchos::RCP<MueLu::Hierarchy<double,int,int,Node> > mueLuHierarchy_;
 #endif
 
     }; // class AMGHierarchy

@@ -1,11 +1,12 @@
-/*
- * solver_muelucontactpreconditioner.cpp
- *
- *  Created on: Jan 11, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_muelucontactpreconditioner_old.cpp
 
+\brief Implementation
 
+\level 1
+
+\maintainer Tobias Wiesner
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
@@ -50,8 +51,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-#include <MueLu_UseShortNames.hpp>
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
@@ -120,8 +119,8 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
 
     // Setup MueLu Hierarchy
     //Teuchos::RCP<Hierarchy> H = MLInterpreter::Setup(mllist_, mueluOp, nspVector);
-    Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
-    
+    Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > H = SetupHierarchy(mllist_, mueluOp, nspVector);
+
     // set preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
@@ -164,7 +163,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
-  
+
   // translate verbosity parameter
   Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
   if(verbosityLevel == 0)  eVerbLevel = Teuchos::VERB_NONE;
@@ -182,7 +181,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // build map extractor from different maps
   // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm
-  Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
+  Teuchos::RCP<const Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
   Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
@@ -197,7 +196,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // create factories
 
   // prepare (filtered) A Factory
-  Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
+  Teuchos::RCP<MueLu::SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
 
   // nullspace factory
   Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory());
@@ -205,9 +204,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // Coalesce and drop factory with constant number of Dofs per freedom
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(segAFact,nspFact));
   //dropFact->SetFixedBlockSize(nDofsPerNode);
-  
+
   // aggregation factory
-  Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
+  Teuchos::RCP<MueLu::UCAggregationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > UCAggFact = Teuchos::rcp(new MueLu::UCAggregationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>(dropFact));
   // note: this class does not derive from VerboseObject. Therefore we cannot use GetOStream
   if(verbosityLevel > 3) {
   *out << "========================= Aggregate option summary  =========================" << std::endl;
@@ -225,11 +224,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   /*Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));
   Teuchos::RCP<PFactory> PFact  = Teuchos::rcp( new PgPFactory(PtentFact,segAFact) );
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );*/
-  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));
-  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
+  Teuchos::RCP<MueLu::PFactory> PFact = Teuchos::rcp(new TentativePFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>(UCAggFact,nspFact,segAFact));
+  Teuchos::RCP<MueLu::RFactory> RFact  = Teuchos::rcp( new TransPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>(PFact) );
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(PFact, RFact) );
+  Teuchos::RCP<MueLu::RAPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > AcFact = Teuchos::rcp( new MueLu::RAPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>(PFact, RFact) );
 
   // write out aggregates
   Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),segAFact.get()));
@@ -239,13 +238,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   AcFact->AddTransferFactory(cTransFact);
 
   // setup smoothers
-  Teuchos::RCP<SmootherFactory> coarsestSmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > coarsestSmooFact;
   coarsestSmooFact = MLParameterListInterpreter::GetCoarsestSolverFactory(params);
 
   ///////////////////////////////////////////////////
 
   // fill hierarchy
-  Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
+  Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > hierarchy = Teuchos::rcp(new MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node>(A));
   hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
   hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize));
 
@@ -290,11 +289,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // prepare factory managers
 
   bool bIsLastLevel = false;
-  std::vector<Teuchos::RCP<FactoryManager> > vecManager(maxLevels);
+  std::vector<Teuchos::RCP<MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node> > > vecManager(maxLevels);
   for(int i=0; i < maxLevels; i++) {
-    Teuchos::RCP<SmootherFactory> SmooFactFine = MLParameterListInterpreter::GetSmootherFactory(params, i);
+    Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > SmooFactFine = MLParameterListInterpreter::GetSmootherFactory(params, i);
 
-    vecManager[i] = Teuchos::rcp(new FactoryManager());
+    vecManager[i] = Teuchos::rcp(new MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
     if(SmooFactFine != Teuchos::null)
         vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
     vecManager[i]->SetFactory("CoarseSolver", coarsestSmooFact);

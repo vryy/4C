@@ -24,7 +24,6 @@ Created on: Jan 11, 2012
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 /*class HHierarchy;
 class OOperator;
@@ -62,7 +61,7 @@ namespace LINALG
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Operator> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Xpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node> > & A, const Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> > nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 

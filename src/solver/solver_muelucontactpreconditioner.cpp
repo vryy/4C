@@ -58,8 +58,6 @@ Author: wiesner
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#include <MueLu_UseShortNames.hpp>
-
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
@@ -68,6 +66,10 @@ Author: wiesner
 
 #include "solver_muelucontactpreconditioner.H"
 
+typedef Scalar SC;
+typedef LocalOrdinal LO;
+typedef GlobalOrdinal GO;
+typedef Node NO;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -113,7 +115,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
     if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
     Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
 
-    Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+    Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
     Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
     for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -128,7 +130,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
     // Setup MueLu Hierarchy
-    Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
+    Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = SetupHierarchy(mllist_, mueluOp, nspVector);
 
     // set preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
@@ -138,10 +140,10 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarchy(
+Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarchy(
     const Teuchos::ParameterList & params,
-    const Teuchos::RCP<Matrix> & A,
-    const Teuchos::RCP<MultiVector> nsp)
+    const Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > & A,
+    const Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nsp)
 {
   //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 
@@ -198,7 +200,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // build map extractor from different maps
   // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm
-  Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
+  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
 
   ///////////////////////////////////////////////////////////
@@ -209,7 +211,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   ///////////////////////////////////////////////////////////
 
   // fill hierarchy
-  Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
+  Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > hierarchy = Teuchos::rcp(new MueLu::Hierarchy<SC,LO,GO,NO>(A));
   hierarchy->setlib(Xpetra::UseEpetra);
   hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
   hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)+nSlaveDofs);
@@ -238,8 +240,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
     if(params.isParameter("null space: dimension")) dimns = params.get<int>("null space: dimension");
     if(dimns == -1) dserror( "MueLu::Interpreter: no valid nullspace (nullspace dim = -1). error.");
 
-    const Teuchos::RCP<const Map> rowMap = A->getRowMap();
-    Teuchos::RCP<MultiVector> nspVector = MultiVectorFactory::Build(rowMap,dimns,true);
+    const Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = A->getRowMap();
+    Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector = Xpetra::MultiVectorFactory<SC,LO,GO,NO>::Build(rowMap,dimns,true);
     double* nsdata = NULL;
     if(params.isParameter("null space: vectors")) nsdata = params.get<double*>("null space: vectors");
     if(nsdata == NULL) dserror("MueLu::Interpreter: no valid nullspace (nsdata = NULL). error.");
@@ -263,15 +265,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   ///////////////////////////////////////////////////////////////////////
 
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
-  Teuchos::RCP<FactoryBase> slaveDcAFact = Teuchos::rcp(new MueLu::ContactASlaveDofFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>());
+  Teuchos::RCP<MueLu::FactoryBase> slaveDcAFact = Teuchos::rcp(new MueLu::ContactASlaveDofFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>());
   Finest->Keep("A",slaveDcAFact.get()); // do not forget to keep A for level smoothers!
 
   // Coalesce and drop factory with constant number of Dofs per freedom
   // note: coalescing based on original matrix A
-  Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory());
+  Teuchos::RCP<MueLu::CoalesceDropFactory<SC,LO,GO,NO> > dropFact = Teuchos::rcp(new MueLu::CoalesceDropFactory<SC,LO,GO,NO>());
 
   // aggregation factory
-  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory());
+  Teuchos::RCP<MueLu::UncoupledAggregationFactory<LO,GO,NO>> UCAggFact = Teuchos::rcp(new MueLu::UncoupledAggregationFactory<LO,GO,NO>());
   UCAggFact->SetFactory("Graph", dropFact);
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("aggregation: max selected neighbors",Teuchos::ParameterEntry(maxNbrAlreadySelected));
@@ -283,10 +285,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetParameter("OnePt aggregate map factory", Teuchos::ParameterEntry(std::string("NoFactory")));
 
 
-  Teuchos::RCP<PFactory> PFact;
-  Teuchos::RCP<TwoLevelFactoryBase> RFact;
+  Teuchos::RCP<MueLu::PFactory> PFact;
+  Teuchos::RCP<MueLu::TwoLevelFactoryBase> RFact;
 
-  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
+  Teuchos::RCP<MueLu::PFactory> PtentFact = Teuchos::rcp(new MueLu::TentativePFactory<SC,LO,GO,NO>());
 
   // choose either nonsmoothed transfer operators or
   // PG-AMG smoothed aggregation transfer operators
@@ -299,24 +301,24 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   if (agg_damping == 0.0) {
     // tentative prolongation operator (PA-AMG)
     PFact = PtentFact;
-    RFact = Teuchos::rcp( new TransPFactory() );
+    RFact = Teuchos::rcp( new MueLu::TransPFactory<SC,LO,GO,NO>() );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
-    PFact  = Teuchos::rcp( new PgPFactory() );
+    PFact  = Teuchos::rcp( new MueLu::PgPFactory<SC,LO,GO,NO>() );
     PFact->SetFactory("P",PtentFact);
     PFact->SetFactory("A",slaveDcAFact); // use slaveDcAFact for prolongator smoothing
-    RFact  = Teuchos::rcp( new GenericRFactory() );
+    RFact  = Teuchos::rcp( new MueLu::GenericRFactory<SC,LO,GO,NO>() );
   }
 
   // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)
   // use same nullspace factory for all multigrid levels
   // therefor we have to create one instance of NullspaceFactory and use it
   // for all FactoryManager objects (note: here, we have one FactoryManager object per level)
-  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace"));
+  Teuchos::RCP<MueLu::NullspaceFactory<SC,LO,GO,NO> > nspFact = Teuchos::rcp(new MueLu::NullspaceFactory<SC,LO,GO,NO>("Nullspace"));
   nspFact->SetFactory("Nullspace", PtentFact);
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
+  Teuchos::RCP<MueLu::RAPFactory<SC,LO,GO,NO> > AcFact = Teuchos::rcp( new MueLu::RAPFactory<SC,LO,GO,NO>() );
   AcFact->SetFactory("P",PFact);
   AcFact->SetFactory("R",RFact);
   AcFact->SetParameter("RepairMainDiagonal", Teuchos::ParameterEntry(true));
@@ -337,7 +339,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // transfer maps to coarser grids
   //Teuchos::RCP<MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node> > cmTransFact3 = Teuchos::rcp(new MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory(/*"SlaveDofMap", MueLu::NoFactory::getRCP()*/));
+  Teuchos::RCP<MueLu::MapTransferFactory<SC,LO,GO,NO> > cmTransFact3 = Teuchos::rcp(new MueLu::MapTransferFactory<SC,LO,GO,NO>(/*"SlaveDofMap", MueLu::NoFactory::getRCP()*/));
   cmTransFact3->SetParameter("map: name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
   cmTransFact3->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
   cmTransFact3->SetFactory("P", PtentFact);
@@ -350,7 +352,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // coarse level smoother/solver
   //Teuchos::RCP<SmootherFactory> coarsestSmooFact;
   //coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node>::GetSmootherFactory(params, "coarse");
-  Teuchos::RCP<SmootherFactory> coarsestSmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO> > coarsestSmooFact;
   coarsestSmooFact = GetContactCoarsestSolverFactory(params);
 
   ///////////////////////////////////////////////////////////////////////
@@ -358,16 +360,16 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   ///////////////////////////////////////////////////////////////////////
 
   bool bIsLastLevel = false;
-  std::vector<Teuchos::RCP<FactoryManager> > vecManager(maxLevels);
+  std::vector<Teuchos::RCP<MueLu::FactoryManager<SC,LO,GO,NO> > > vecManager(maxLevels);
   for(int i=0; i < maxLevels; i++) {
     //params.set("smoother: pre or post","pre"); // only pre-smoothing
     Teuchos::ParameterList pp(params);
     //pp.set("smoother: pre or post","pre");
 
-    vecManager[i] = Teuchos::rcp(new FactoryManager());
+    vecManager[i] = Teuchos::rcp(new MueLu::FactoryManager<SC,LO,GO,NO>());
 
     // fine/intermedium level smoother
-    Teuchos::RCP<SmootherFactory> SmooFactFine = GetContactSmootherFactory(pp, i, slaveDcAFact);
+    Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO> > SmooFactFine = GetContactSmootherFactory(pp, i, slaveDcAFact);
 
     if(SmooFactFine != Teuchos::null)
       vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
@@ -403,7 +405,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<MueLu::FactoryBase> & AFact) {
 
   char levelchar[11];
   sprintf(levelchar,"(level %d)",level);
@@ -418,10 +420,10 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
-  Teuchos::RCP<SmootherPrototype> smooProto;
+  Teuchos::RCP<MueLu::SmootherPrototype<SC,LO,GO,NO> > smooProto;
   std::string ifpackType;
   Teuchos::ParameterList ifpackList;
-  Teuchos::RCP<SmootherFactory> SmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO> > SmooFact;
 
   if(type == "Jacobi") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
@@ -475,7 +477,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   }
 
   // create smoother factory
-  SmooFact = Teuchos::rcp( new SmootherFactory(smooProto) );
+  SmooFact = Teuchos::rcp( new MueLu::SmootherFactory<SC,LO,GO,NO>(smooProto) );
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";
@@ -492,16 +494,16 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<MueLu::FactoryBase> & AFact) {
 
   std::string type = ""; // use default defined by AmesosSmoother or Amesos2Smoother
 
   if(paramList.isParameter("coarse: type")) type = paramList.get<std::string>("coarse: type");
 
-  Teuchos::RCP<SmootherPrototype> smooProto;
+  Teuchos::RCP<MueLu::SmootherPrototype<SC,LO,GO,NO> > smooProto;
   std::string ifpackType;
   Teuchos::ParameterList ifpackList;
-  Teuchos::RCP<SmootherFactory> SmooFact;
+  Teuchos::RCP<MueLu::SmootherFactory<SC,LO,GO,NO> > SmooFact;
 
   if(type == "Jacobi") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -512,7 +514,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -523,7 +525,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if (type == "symmetric Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
@@ -534,7 +536,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
@@ -542,7 +544,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
       ifpackList.set("chebyshev: degree", paramList.get<int>("coarse: sweeps"));
     if(paramList.isParameter("coarse: Chebyshev alpha"))
       ifpackList.set("chebyshev: alpha", paramList.get<double>("coarse: Chebyshev alpha"));
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto = rcp( new MueLu::TrilinosSmoother<SC,LO,GO,NO>(ifpackType, ifpackList, 0) );
     smooProto->SetFactory("A", AFact);
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
@@ -559,15 +561,15 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
 #endif // HAVE_MUELU_IFPACK
   } else if(type == "Amesos-Superlu") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Superlu",Teuchos::ParameterList()) );
   } else if(type == "Amesos-Superludist") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Superludist",Teuchos::ParameterList()) );
   } else if(type == "Amesos-KLU") {
-    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Klu",Teuchos::ParameterList()) );
   } else if(type == "Amesos-UMFPACK") {
-    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("Umfpack",Teuchos::ParameterList()) );
   } else if(type == "") {
-    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList()) );
+    smooProto = Teuchos::rcp( new MueLu::DirectSolver<SC,LO,GO,NO>("",Teuchos::ParameterList()) );
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown coarsest solver type. '" << type << "' not supported by MueLu.");
   }
@@ -577,7 +579,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 
   // create smoother factory
   TEUCHOS_TEST_FOR_EXCEPTION(smooProto == Teuchos::null, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no smoother prototype. fatal error.");
-  SmooFact = rcp( new SmootherFactory(smooProto) );
+  SmooFact = Teuchos::rcp( new MueLu::SmootherFactory<SC,LO,GO,NO>(smooProto) );
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";

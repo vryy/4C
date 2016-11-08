@@ -21,7 +21,6 @@ Created on: Jul 4, 2011
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 #endif // HAVE_MueLu
 

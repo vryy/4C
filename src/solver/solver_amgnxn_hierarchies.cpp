@@ -238,6 +238,10 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
       std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPre_level(NumLevel_this_block,Teuchos::null);
       std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPos_level(NumLevel_this_block,Teuchos::null);
 
+      // some local typedefs
+      typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
+      typedef MueLu::SmootherBase<Scalar,LocalOrdinal,GlobalOrdinal,Node> SmootherBase;
+
       Teuchos::RCP<Matrix>              myA = Teuchos::null;
       Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
       Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
@@ -249,7 +253,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
 
       for(int level=0;level<NumLevel_this_block;level++)
       {
-        Teuchos::RCP<Level> this_level = H_block_[block]->GetLevel(level);
+        Teuchos::RCP<MueLu::Level> this_level = H_block_[block]->GetLevel(level);
         if (this_level->IsAvailable("A"))
         {
           myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
@@ -324,7 +328,7 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
+Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
     Teuchos::ParameterList paramListFromXml,
     int numdf,
     int dimns,
@@ -341,7 +345,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
   Epetra_Time timer(A_eop->Comm());
   timer.ResetStartTime();
 
-  Teuchos::RCP<Hierarchy> H = Teuchos::null;
+  Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > H = Teuchos::null;
   bool create_uncoarsened_hierarchy = paramListFromXml.get<bool>("create un-coarsened hierarchy",false);
   bool fix_coarse_maps = paramListFromXml.get<bool>("fix coarse maps",false); // this is required in all the fields if we want to merge and solve a coarse level block matrix
 
@@ -362,14 +366,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
     if(A_crs==Teuchos::null)
       dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
-    Teuchos::RCP<CrsMatrix> mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
-    Teuchos::RCP<CrsMatrixWrap> mueluA_wrap = Teuchos::rcp(new CrsMatrixWrap(mueluA));
-    Teuchos::RCP<Matrix> mueluOp = Teuchos::rcp_dynamic_cast<Matrix>(mueluA_wrap);
+    Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
+    Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal,GlobalOrdinal,Node> > mueluA_wrap = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal,GlobalOrdinal,Node>(mueluA));
+    Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > mueluOp = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> >(mueluA_wrap);
     mueluOp->SetFixedBlockSize(numdf,offsetFineLevel);
 
     // Prepare null space vector for MueLu
-    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-    Teuchos::RCP<MultiVector> nspVector =
+    Teuchos::RCP<const Xpetra::Map<LocalOrdinal,GlobalOrdinal,Node> > rowMap = mueluA->getRowMap();
+    Teuchos::RCP<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> > nspVector =
       Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
     for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
       Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
@@ -420,7 +424,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
     }
 
     // Build up hierarchy
-    ParameterListInterpreter mueLuFactory(paramListFromXml);
+    MueLu::ParameterListInterpreter<Scalar,LocalOrdinal,GlobalOrdinal,Node> mueLuFactory(paramListFromXml);
     H = mueLuFactory.CreateHierarchy();
     H->SetDefaultVerbLevel(MueLu::Extreme); // TODO sure?
     H->GetLevel(0)->Set("A", mueluOp);
@@ -433,15 +437,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
     if (fix_coarse_maps)
     {
       int NumLevel_block = H->GetNumLevels();
-      Teuchos::RCP<Level>        this_level = Teuchos::null;
-      Teuchos::RCP<Matrix>              myA = Teuchos::null;
+      Teuchos::RCP<MueLu::Level> this_level = Teuchos::null;
+      Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > myA = Teuchos::null;
       Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
       for(int level=1;(level<NumLevel_block) and (level<(int)offsets.size()+1);level++)
       {
         this_level=H->GetLevel(level);
         if (this_level->IsAvailable("A"))
         {
-          myA    = this_level->Get< Teuchos::RCP<Matrix> >("A"); //Matrix
+          myA    = this_level->Get<Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > >("A"); //Matrix
           myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
         }
         else
@@ -499,9 +503,9 @@ LINALG::SOLVER::AMGNXN::Hierarchies::GetBlockMatrix()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::GetH(int block)
+Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::AMGNXN::Hierarchies::GetH(int block)
 {
-  Teuchos::RCP<Hierarchy> H = H_block_[block];
+  Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > H = H_block_[block];
   if(H == Teuchos::null)
     dserror("No data");
   return H;

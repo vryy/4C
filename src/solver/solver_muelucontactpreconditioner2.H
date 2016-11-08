@@ -25,7 +25,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 #include "muelu/muelu_ContactAFilterFactory_fwd.hpp"
 
@@ -41,6 +40,14 @@ namespace LINALG
     class MueLuContactPreconditioner2 : public PreconditionerType
     {
     public:
+
+      // some typedefs
+      typedef MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node> FactoryManager;
+      typedef MueLu::FactoryBase FactoryBase;
+      typedef Scalar SC;
+      typedef LocalOrdinal LO;
+      typedef GlobalOrdinal GO;
+      typedef Node NO;
 
       MueLuContactPreconditioner2( FILE * outfile, Teuchos::ParameterList & mllist );
 
@@ -69,16 +76,16 @@ namespace LINALG
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
       // private Initialization routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> InitializeHierarchy(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > InitializeHierarchy(const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > & A, const Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nsp = Teuchos::null);
 
       // private Setup routine for MueLu Multigrid factories
-      Teuchos::RCP<Hierarchy> SetupFactories(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params);
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > SetupFactories(const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h, const Teuchos::ParameterList & params);
 
       // private Setup routine for smoothers
-      Teuchos::RCP<Hierarchy> SetupSmoothers(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params);
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > SetupSmoothers(const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h, const Teuchos::ParameterList & params);
 
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > SetupHierarchy(const Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> > & A, const Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 
@@ -89,13 +96,13 @@ namespace LINALG
       Teuchos::RCP<Epetra_Operator>                  P_;
 
       /// hierarchy object
-      Teuchos::RCP<Hierarchy> H_;
+      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H_;
 
       /// multigrid levels
       Teuchos::Array<Teuchos::RCP<FactoryManager> > vecManager_;
 
       /// A Factory which shall be reused by MyTrilinosSmoother
-      Teuchos::RCP<Factory> singleNodeAFact_;
+      Teuchos::RCP<MueLu::Factory> singleNodeAFact_;
     };
   }
 }

@@ -23,7 +23,6 @@ Created on: Aug 11, 2014
 #include <MueLu_BaseClass.hpp>
 #include <MueLu_Utilities.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_UseShortNames.hpp>
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -54,7 +53,7 @@ namespace LINALG
           int GetNumLevels(int block);
 
           Teuchos::RCP<AMGNXN::BlockedMatrix> GetBlockMatrix();
-          Teuchos::RCP<Hierarchy> GetH(int block);
+          Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetH(int block);
 
           Teuchos::RCP<SparseMatrix> GetA(int block, int level);
           Teuchos::RCP<SparseMatrix> GetP(int block, int level);
@@ -82,7 +81,7 @@ namespace LINALG
           int NumLevelMax_;
           int NumLevelMin_;
           int NumLevelAMG_;
-          std::vector<Teuchos::RCP<Hierarchy> > H_block_;
+          std::vector<Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node>> > H_block_;
           std::vector<std::vector<Teuchos::RCP<SparseMatrix> > > A_block_level_;
           std::vector<std::vector<Teuchos::RCP<SparseMatrix> > > P_block_level_;
           std::vector<std::vector<Teuchos::RCP<SparseMatrix> > > R_block_level_;
@@ -92,7 +91,7 @@ namespace LINALG
 
           void Setup();
 
-          Teuchos::RCP<Hierarchy> BuildMueLuHierarchy(
+          Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > BuildMueLuHierarchy(
               Teuchos::ParameterList paramListFromXml,
               int num_pde,
               int null_space_dim,

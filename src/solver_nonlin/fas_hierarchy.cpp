@@ -2,11 +2,11 @@
 /*!
 \file fas_hierarchy.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Implementation of hierarchy of multigrid levels based on MueLu
+
+\level 2
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/
@@ -30,7 +30,6 @@ Maintainer: Matthias Mayr
 /* MueLu typedefs: header files for default types, must be included after all
  * other MueLu/Xpetra headers */
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
-#include <MueLu_UseShortNames.hpp>
 
 #endif
 
@@ -183,7 +182,7 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
               "AMG Hierarchy: MueLu verbosity"));
 
   // create the MueLu Factory via a MueLu ParameterList interpreter
-  mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(multigridparams));
+  mueLuFactory_ = Teuchos::rcp(new MueLu::ParameterListInterpreter<double,int,int,Node>(multigridparams));
 
   // create MueLu Hierarchy
   mueLuHierarchy_ = mueLuFactory_->CreateHierarchy();
@@ -228,7 +227,7 @@ bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
   for (int level = 0; level < mueLuHierarchy_->GetNumLevels(); ++level)
   {
     // get the MueLu level
-    const Teuchos::RCP<Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
+    const Teuchos::RCP<MueLu::Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
 
     // print the MueLu level
     if (Configuration()->GetParameter<bool>(MyListName(), "AMG Hierarchy: print MueLu levels"))
@@ -241,7 +240,7 @@ bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     Teuchos::RCP<const Epetra_MultiVector> myNsp = Teuchos::null;
 
     // extract matrix
-    Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
+    Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > myMatrix = muelulevel->Get<Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > >("A");
     myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myMatrix);
     myA = Teuchos::rcp(new LINALG::SparseMatrix(myAcrs, LINALG::Copy, false, true, LINALG::SparseMatrix::CRS_MATRIX));
 
@@ -249,16 +248,16 @@ bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     if (level > 0) // defined only on coarse grids
     {
       // restriction operator
-      Teuchos::RCP<Matrix> myRestrictor = muelulevel->Get<Teuchos::RCP<Matrix> >("R");
+      Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > myRestrictor = muelulevel->Get<Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > >("R");
       myR = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myRestrictor);
 
       // prolongation operator
-      Teuchos::RCP<Matrix> myProlongator = muelulevel->Get<Teuchos::RCP<Matrix> >("P");
+      Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > myProlongator = muelulevel->Get<Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > >("P");
       myP = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myProlongator);
 
       // nullspace
-      Teuchos::RCP<MultiVector> myNullspace = muelulevel->Get<
-          Teuchos::RCP<MultiVector> >("Nullspace",
+      Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> > myNullspace = muelulevel->Get<
+          Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> > >("Nullspace",
               mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get());
       myNsp = MueLu::Utils<double,int,int,Node>::MV2EpetraMV(myNullspace);
     }
@@ -357,10 +356,10 @@ void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
   for (int level = 0; level < mueLuHierarchy_->GetNumLevels(); ++level)
   {
     // get the MueLu level
-    Teuchos::RCP<Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
+    Teuchos::RCP<MueLu::Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
 
     // extract matrix
-    Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
+    Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > myMatrix = muelulevel->Get<Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > >("A");
     Teuchos::RCP<Epetra_CrsMatrix> myAcrs =
         MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myMatrix);
 
@@ -617,7 +616,7 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
 Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
 NLNSOL::FAS::AMGHierarchy::GetXpetraNullSpaceFromBaci() const
 {
-  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowmap =
+  Teuchos::RCP<const Xpetra::Map<int,int,Node> > rowmap =
     GetXpetraFineLevelMatrix()->getRowMap();
 
   return NLNSOL::UTILS::GetXpetraNullSpaceFromBaci(*mlparams_, rowmap);

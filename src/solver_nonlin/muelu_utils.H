@@ -4,11 +4,9 @@
 
 \brief Collection of utilities for MueLu
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/
@@ -33,7 +31,6 @@ Maintainer: Matthias Mayr
 /* MueLu typedefs: header files for default types, must be included after all
  * other MueLu/Xpetra headers */
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
-//#include <MueLu_UseShortNames.hpp>
 
 // Teuchos
 #include <Teuchos_RCP.hpp>

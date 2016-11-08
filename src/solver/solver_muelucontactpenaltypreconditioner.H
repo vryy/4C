@@ -26,7 +26,6 @@ Created on: Jan 11, 2012
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 namespace LINALG
 {
@@ -64,13 +63,13 @@ namespace LINALG
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Xpetra::Matrix<Scalar,LocalOrdinal,GlobalOrdinal,Node> > & A, const Teuchos::RCP<Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node> > nsp = Teuchos::null);
 
       //! function interprets ML parameter lists for creating contact level smoothers
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<MueLu::FactoryBase> & AFact);
 
       //! function interprets ML parameter lists for creating contact coarse solver
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<MueLu::FactoryBase> & AFact = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 

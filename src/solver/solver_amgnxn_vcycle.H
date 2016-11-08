@@ -23,7 +23,6 @@ Created on: Feb 27, 2014
 #include <MueLu_BaseClass.hpp>
 #include <MueLu_Utilities.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_UseShortNames.hpp>
 
 // Baci includes
 #include "../linalg/linalg_solver.H"

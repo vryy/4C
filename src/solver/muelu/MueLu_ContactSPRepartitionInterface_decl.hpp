@@ -1,10 +1,13 @@
-/*
- * MueLu_ContactSPRepartitionInterface_decl.hpp
- *
- *  Created on: 11 Sep 2013
- *      Author: wiesner
- */
+/*----------------------------------------------------------------------------*/
+/*!
+\file MueLu_ContactSPRepartitionInterface_decl.hpp
 
+\level 2
+
+\brief Declaration
+
+\maintainer Tobias Wiesner
+*/
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 
@@ -27,7 +30,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 #include "MueLu_NodeDefinition.hpp"
 

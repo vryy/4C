@@ -26,7 +26,6 @@
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-#include <MueLu_UseShortNames.hpp>
 
 #include "muelu/muelu_ContactSPAggregationFactory_fwd.hpp"
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
@@ -48,6 +47,14 @@ namespace LINALG
     {
     public:
 
+      // some typedefs
+      typedef MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node> FactoryManager;
+      typedef MueLu::FactoryBase FactoryBase;
+      typedef Scalar SC;
+      typedef LocalOrdinal LO;
+      typedef GlobalOrdinal GO;
+      typedef Node NO;
+
       MueLuContactSpPreconditioner( FILE * outfile, Teuchos::ParameterList & mllist );
 
       virtual void Setup( bool create,
@@ -66,7 +73,7 @@ namespace LINALG
       virtual const std::string getParameterListName() const { return "MueLu (Contact) Parameters"; } // TODO check me
     private:
 
-      void Write(const Teuchos::RCP<Hierarchy> & H);
+      void Write(const Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > & H);
 
       //! function interprets ML parameter lists
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level);
@@ -100,7 +107,7 @@ namespace LINALG
       Teuchos::RCP<Epetra_Operator>                  P_;
 
       /// hierarchy
-      Teuchos::RCP<Hierarchy>                        H_;
+      Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > H_;
 
     };
   }
