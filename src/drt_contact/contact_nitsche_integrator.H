@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_integrator_nitsche.H
+\file contact_nitsche_integrator.H
 
 \brief A class to perform integrations of nitsche related terms
 
@@ -51,7 +51,8 @@ public:
       DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm):
         CoIntegrator(params,eletype,comm),
         fc_(params.get<Teuchos::RCP<Epetra_FEVector> >("GLOBAL_CONTACT_FORCE",Teuchos::null)),
-        kc_(params.get<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",Teuchos::null)){}
+        kc_(params.get<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",Teuchos::null)),
+        theta_(params.get<double>("NITSCHE_THETA")){}
 
   /*!
    \brief Destructor
@@ -130,6 +131,41 @@ public:
         const double gap, const GEN::pairedvector<int,double>& dgapgp,
         double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi, double* mxi);
 
+    template <int dim>
+    void IntegrateNormalTest(
+        const double fac,
+        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
+        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
+        const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
+        const double gap, const GEN::pairedvector<int,double>& dgapgp,
+        double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit);
+
+    template<int dim>
+        void BuildNormalAdjointTest(
+        MORTAR::MortarElement& moEle,
+        const double fac,
+        const Epetra_SerialDenseMatrix& dsnndd,
+        const Epetra_SerialDenseMatrix& d2snndd2,
+        const Epetra_SerialDenseMatrix& d2snnDdDn,
+        const Epetra_SerialDenseMatrix& d2snnDdDpxi,
+        const std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
+        LINALG::Matrix<dim,dim> derivtravo_slave,
+        const std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
+        LINALG::SerialDenseVector& adjoint_test,
+        GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
+
+    template<int dim>
+    void IntegrateNormalAdjointTest(
+        const double fac,
+        const double jac, const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
+        const double test, const GEN::pairedvector<int,double>& deriv_test,
+        MORTAR::MortarElement& moEle,
+        LINALG::SerialDenseVector& adjoint_test,
+        GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
+        );
+
+
 
     template <DRT::Element::DiscretizationType parentdistype, int dim>
     void inline SoEleGP(
@@ -148,15 +184,18 @@ public:
         const double gp_wgt,
         const double* contactN,
         std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
-        const bool eleN,
+        const bool useEleN,
         const double w,
         double& cauchy_nn,
-        std::map<int,double>& deriv_sigma_nn);
+        GEN::pairedvector<int,double>& deriv_sigma_nn,
+        LINALG::SerialDenseVector& adjoint_test,
+        GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 
 protected:
 
     Teuchos::RCP<Epetra_FEVector> fc_;
     Teuchos::RCP<LINALG::SparseMatrix> kc_;
+    double theta_;
 };
 }
 #endif // CONTACT_INTEGRATOR_NITSCHE_H

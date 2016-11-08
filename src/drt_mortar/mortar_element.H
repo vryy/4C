@@ -25,6 +25,7 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }
+namespace MORTAR{class MortarElementNitscheContainer;};
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -897,6 +898,10 @@ public:
     */
   virtual double& TraceH() {return traceH_;}
 
+  /*!
+  \brief Get Nitsche data container
+    */
+  virtual MORTAR::MortarElementNitscheContainer& GetNitscheContainer();
   //@}
 
 protected:
@@ -921,6 +926,9 @@ protected:
 
   // approximation of mesh size from inverse trace inequality
   double traceH_;
+
+  // data container for element matrices in Nitsche contact
+  Teuchos::RCP<MORTAR::MortarElementNitscheContainer> nitsche_container_;
 
   /*!
   \brief Protected constructor for use in derived classes that expect standard element constructors

@@ -598,7 +598,7 @@ CONTACT::CoManager::CoManager(
         if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
-        if (stype==INPAR::CONTACT::solution_nitsche)
+        if (algo == INPAR::MORTAR::algorithm_gpts)
         {
           Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
           if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
@@ -1312,15 +1312,15 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   //If Parent Elements are required, we need to reconnect them before contact restart!
-  INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GetStrategy().Params(), "STRATEGY");
-  if (stype == INPAR::CONTACT::solution_nitsche )
+  INPAR::MORTAR::AlgorithmType atype = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
+  if (atype == INPAR::MORTAR::algorithm_gpts )
     for (int i=0;i<(int)dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();++i)
       dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->CreateVolumeGhosting(
           dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->Discret(),false);
 
 
   //If Parent Elements are required, we need to reconnect them before contact restart!
-  if (stype == INPAR::CONTACT::solution_nitsche || GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+  if (atype == INPAR::MORTAR::algorithm_gpts || GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     ReconnectParentElements();
 
   // this is contact, thus we need the displacement state for restart

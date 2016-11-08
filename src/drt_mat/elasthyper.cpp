@@ -25,6 +25,8 @@ MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 
+#include "../drt_matelast/elast_coupneohooke.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(
@@ -690,6 +692,84 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   return ;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateCauchy(
+    const LINALG::Matrix<3,3>& b,
+    const LINALG::Matrix<3,1>& n,
+    double& snn,
+    LINALG::Matrix<6,1>& dsnndb,
+    LINALG::Matrix<6,6>& d2snndb2,
+    LINALG::Matrix<6,3>& d2snnDbDn,
+    LINALG::Matrix<3,1>& dsnndn,
+    const int eleGID)
+{
+  snn=0.;
+  dsnndb.Clear();
+  d2snndb2.Clear();
+  d2snnDbDn.Clear();
+
+  if (potsum_.size()!=1)
+    dserror("only one summand allowed");
+  MAT::ELASTIC::CoupNeoHooke* nh =dynamic_cast<MAT::ELASTIC::CoupNeoHooke*>(potsum_[0].getRawPtr());
+  if (nh==NULL)
+    dserror("only neo-hooke allowed");
+  const double beta=nh->BETA();
+  const double c = nh->C();
+  const double i3 = b.Determinant();
+
+  LINALG::Matrix<6,1> id2; for (int i=0;i<3;++i) id2(i)=1.;
+
+  LINALG::Matrix<3,3> nn;
+  nn.MultiplyNT(n,n);
+  LINALG::Matrix<6,1> nn_v;
+  for (int i=0;i<3;++i) nn_v(i)=nn(i,i);
+  nn_v(3)=nn(0,1);
+  nn_v(4)=nn(1,2);
+  nn_v(5)=nn(0,2);
+
+  LINALG::Matrix<3,3> ib(b);
+  ib.Invert();
+  LINALG::Matrix<6,1> ib_v;
+  for (int i=0;i<3;++i) ib_v(i)=ib(i,i);
+  ib_v(3)=ib(0,1);
+  ib_v(4)=ib(1,2);
+  ib_v(5)=ib(0,2);
+
+  LINALG::Matrix<3,1> bn;
+  bn.Multiply(b,n);
+  const double nbn=bn.Dot(n);
+
+  snn=-2.*c*std::pow(i3,-beta-.5)+2.*c*std::pow(i3,-.5)*nbn;
+
+  dsnndn.Clear();
+  dsnndn.Update(4.*c*std::pow(i3,-.5),bn,1.);
+
+  int VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
+  for (int i=0;i<3;++i)
+    for (int j=0;j<3;++j)
+      for (int k=0;k<3;++k)
+        {
+        d2snnDbDn(VOIGT3X3SYM_[i][j],k)+=2.*c*std::pow(i3,-.5)*(i==k)*n(j)/(1.+(i!=j));
+        d2snnDbDn(VOIGT3X3SYM_[i][j],k)+=2.*c*std::pow(i3,-.5)*(j==k)*n(i)/(1.+(i!=j));
+        }
+  d2snnDbDn.MultiplyNT(-2.*c*std::pow(i3,-.5),ib_v,bn,1.);
+
+
+  dsnndb.Update(+2.*c*(beta+.5)*std::pow(i3,-beta-.5),ib_v,1.);
+  dsnndb.Update(-1.*c*std::pow(i3,-.5)*nbn           ,ib_v,1.);
+  dsnndb.Update(+2.*c*std::pow(i3,-.5)               ,nn_v,1.);
+
+  AddtoCmatHolzapfelProduct(d2snndb2,ib_v,-(2*c*(beta+.5)*std::pow(i3,-beta-.5)-c*std::pow(i3,-.5)*nbn));
+  d2snndb2.MultiplyNT(-2.*c*(beta+.5)*(beta+.5)*std::pow(i3,-beta-.5)+.5*c*std::pow(i3,-.5)*nbn,ib_v,ib_v,1.);
+  d2snndb2.MultiplyNT(-c*std::pow(i3,-.5),nn_v,ib_v,1.);
+  d2snndb2.MultiplyNT(-c*std::pow(i3,-.5),ib_v,nn_v,1.);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

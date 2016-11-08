@@ -549,7 +549,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   if (newghosting && poro_)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
   if (imortar_.isParameter("STRATEGY"))
-    if (newghosting && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")==INPAR::CONTACT::solution_nitsche)
+    if (newghosting && DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")==INPAR::MORTAR::algorithm_gpts)
       CreateVolumeGhosting(Discret(),false);
 
   // need row and column maps of slave and master nodes / elements / dofs
@@ -877,9 +877,9 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     }
   }
 
-  if (IParams().isParameter("STRATEGY"))
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        IParams(), "STRATEGY")==INPAR::CONTACT::solution_nitsche)
+  if (IParams().isParameter("ALGORITHM"))
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+        IParams(), "ALGORITHM")==INPAR::MORTAR::algorithm_gpts)
       for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
         dynamic_cast<MortarElement*>(Discret().gElement(MasterColElements()->GID(i)))
         ->InitializeDataContainer();

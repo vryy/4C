@@ -19,6 +19,7 @@
 #include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
+#include "../drt_contact/contact_nitsche_utils.H"
 
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
@@ -1857,4 +1858,22 @@ void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalue(
       elemat,
       elevec);
   traceH_= 1./ele_to_max_eigenvalue->at(faceele->Id());
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                           seitz 10/16|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarElementNitscheContainer& MORTAR::MortarElement::GetNitscheContainer()
+{
+  if (nitsche_container_==Teuchos::null)
+    switch (MoData().ParentDof().size())
+    {
+    case 0: dserror("parent dofs not set"); break;
+    case  8: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData< 8>()); break;
+    case 12: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<12>()); break;
+    case 24: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<24>()); break;
+    default: dserror("this size of Nitsche data container not ready. Just add it here...");
+    }
+  return *nitsche_container_;
 }

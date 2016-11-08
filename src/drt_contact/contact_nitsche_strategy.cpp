@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mortar/mortar_element.H"
+#include "contact_nitsche_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,11 +46,14 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
     interface_[i]->Initialize();
-    interface_[i]->IParams().set<Teuchos::RCP<Epetra_FEVector     > >("GLOBAL_CONTACT_FORCE",fc);
-    interface_[i]->IParams().set<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",kc);
     interface_[i]->Evaluate(0,step_,iter_);
-    interface_[i]->IParams().remove("GLOBAL_CONTACT_FORCE",true);
-    interface_[i]->IParams().remove("GLOBAL_CONTACT_STIFF",true);
+    for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
+    {
+      MORTAR::MortarElement* mele =dynamic_cast<MORTAR::MortarElement*>(interface_[i]->Discret().gElement(
+          interface_[i]->Discret().ElementColMap()->GID(e)));
+      mele->GetNitscheContainer().Assemble(mele,fc,kc);
+      mele->GetNitscheContainer().Clear();
+    }
   }
   if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
   if (f->Update(1.,*fc,1.)) dserror("update went wrong");
@@ -97,9 +101,6 @@ void CONTACT::CoNitscheStrategy::SetParentState(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec,
     const Teuchos::RCP<DRT::Discretization> dis)
 {
-  if (stype_!=INPAR::CONTACT::solution_nitsche)
-    return;
-
   if (statename == "displacement")
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));

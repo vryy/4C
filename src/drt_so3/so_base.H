@@ -122,6 +122,34 @@ public:
       LINALG::Matrix<3,2>& dsdpxi)
   { dserror("not implemented for chosen solid element"); }
 
+  /// evaluate Cauchy stress for any given point in parametric domain (3D version)
+  virtual void GetCauchyAtXi(
+      const LINALG::Matrix<3,1>& xi,
+      std::vector<double>& disp,
+      LINALG::Matrix<3,1> n,
+      double& sigma_nn,
+      Epetra_SerialDenseMatrix& dsnndd,
+      Epetra_SerialDenseMatrix& d2snndd2,
+      Epetra_SerialDenseMatrix& d2snnDdDn,
+      Epetra_SerialDenseMatrix& d2snnDdDpxi,
+      LINALG::Matrix<3,1>& dsnndn,
+      LINALG::Matrix<3,1>& dsnndpxi)
+  { dserror("not implemented for chosen solid element"); }
+
+  /// evaluate Cauchy stress for any given point in parametric domain (2D version)
+  virtual void GetCauchyAtXi(
+      const LINALG::Matrix<2,1>& xi,
+      std::vector<double>& disp,
+      LINALG::Matrix<2,1> n,
+      double& sigma_nn,
+      Epetra_SerialDenseMatrix& dsnndd,
+      Epetra_SerialDenseMatrix& d2snndd2,
+      Epetra_SerialDenseMatrix& d2snnDdDn,
+      Epetra_SerialDenseMatrix& d2snnDdDpxi,
+      LINALG::Matrix<2,1>& dsnndn,
+      LINALG::Matrix<2,1>& dsnndpxi)
+  { dserror("not implemented for chosen solid element"); }
+
   /** \brief set the parameter interface ptr for the solid elements
    *
    *  \param p (in): Parameter list coming from the time integrator.

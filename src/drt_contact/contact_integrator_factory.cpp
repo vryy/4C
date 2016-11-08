@@ -18,7 +18,7 @@
 // supported contact integrators
 #include "contact_integrator.H"
 #include "../drt_contact_aug/contact_augmented_integrator.H"
-#include "contact_integrator_nitsche.H"
+#include "contact_nitsche_integrator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

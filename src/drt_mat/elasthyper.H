@@ -243,6 +243,17 @@ private:
                                 LINALG::Matrix<6,6>& dsdb,
                                 const int eleGID);
 
+    /// evaluate Cauchy stress with given left Cauchy--Green tensor
+    virtual void EvaluateCauchy(
+        const LINALG::Matrix<3,3>& b,
+        const LINALG::Matrix<3,1>& n,
+        double& snn,
+        LINALG::Matrix<6,1>& dsnndb,
+        LINALG::Matrix<6,6>& d2snndb2,
+        LINALG::Matrix<6,3>& d2snnDbDn,
+        LINALG::Matrix<3,1>& dsnndn,
+        const int eleGID);
+
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 

@@ -1,0 +1,63 @@
+Index: src/drt_contact/contact_abstract_strategy.cpp
+===================================================================
+--- src/drt_contact/contact_abstract_strategy.cpp	(revision 22451)
++++ src/drt_contact/contact_abstract_strategy.cpp	(working copy)
+@@ -746,7 +746,8 @@
+   // update active set
+   Comm().Barrier();
+   const double t_start6 = Teuchos::Time::wallTime();
+-  if (!predictor) UpdateActiveSetSemiSmooth();
++  if (!predictor)
++ UpdateActiveSetSemiSmooth();
+   Comm().Barrier();
+   const double t_end6 = Teuchos::Time::wallTime()-t_start6;
+   if (Comm().MyPID()==0) std::cout << "    -->ActivSet:\t" << t_end6 << " seconds\n";
+@@ -801,14 +802,14 @@
+     AssembleMortar();    // assemble mortar terms into global matrices
+   }
+ 
+-  // evaluate relative movement for friction
+-  if (predictor)
+-    EvaluateRelMovPredict();
+-  else
++//   // evaluate relative movement for friction
++//   if (predictor)
++//     EvaluateRelMovPredict();
++//   else
+     EvaluateRelMov();
+ 
+   // update active set
+-  if (!predictor)
++//   if (!predictor)
+     UpdateActiveSetSemiSmooth();
+ 
+   // apply contact forces and stiffness
+Index: src/drt_structure/strtimint_statics.cpp
+===================================================================
+--- src/drt_structure/strtimint_statics.cpp	(revision 22451)
++++ src/drt_structure/strtimint_statics.cpp	(working copy)
+@@ -139,13 +139,18 @@
+ {
+   // for the first step we don't have any history to do
+   // an extrapolation. Hence, we do TangDis
+-  if (step_==0)
++   if (step_==0 || step_==20)
++   {
++ std::cout << __FILE__<<__LINE__<<std::endl;
++     PredictTangDisConsistVelAcc();
++     return;
++   }
++   else
+   {
+-    PredictTangDisConsistVelAcc();
+-    return;
+-  }
+-  else
+-  {
++
++
++std::cout << __FILE__<<__LINE__<<std::endl;
++
+     // Displacement increment over last time step
+     Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
+     disp_inc->Update((*dt_)[0],*(*vel_)(0),0.);

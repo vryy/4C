@@ -223,6 +223,9 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("PRINT_ANGULAR_CONSERVATION","No",
       "Do and print the angular momentum conservation check.",
       yesnotuple,yesnovalue,&augcontact);
+
+  DoubleParameter("NITSCHE_THETA",0.0,"+1: symmetric, 0: non-symmetric, -1: skew-symmetric",&scontact);
+
 }
 
 
