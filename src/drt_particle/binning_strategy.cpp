@@ -595,9 +595,9 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   {
     // dummy row bin distribution (equally distributed over all procs as no
     // weighting done so far)
-    rowbins = Teuchos::rcp(new Epetra_Map(numbin,0,discret[0]->Comm()));
+    rowbins = CreateLinearMapForNumbin(discret[0]->Comm());
     // create nodal graph
-     bingraph = Teuchos::rcp( new Epetra_CrsGraph(Copy,*rowbins,108,false));
+    bingraph = Teuchos::rcp( new Epetra_CrsGraph(Copy,*rowbins,108,false));
   }
 
    // Now we're going to create a Epetra_Vector with vertex/node weights to be
@@ -1859,4 +1859,41 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+| create linear map with bin ids                            ghamm 11/16 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::CreateLinearMapForNumbin(
+  const Epetra_Comm& comm
+  )
+{
+  // initial dummy distribution using a linear map
+  const int numproc = comm.NumProc();
+  const int numbin = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
+  const int start = numbin / numproc * myrank_;
+  int end;
+  // special treatment for last proc
+  if(myrank_ != numproc-1)
+    end = (int)(numbin / numproc * (myrank_+1));
+  else
+    end = numbin;
+
+  std::vector<int> linearmap;
+  linearmap.reserve(end-start);
+  for(int k=0; k<bin_per_dir_[2]; ++k)
+  {
+    for(int j=0; j<bin_per_dir_[1]; ++j)
+    {
+      for(int i=0; i<bin_per_dir_[0]; ++i)
+      {
+        int curr = i + j*bin_per_dir_[0] + k*bin_per_dir_[0]*bin_per_dir_[1];
+        if(start <= curr and curr < end)
+          linearmap.push_back(i + j*id_calc_bin_per_dir_[0] + k*id_calc_bin_per_dir_[0]*id_calc_bin_per_dir_[1]);
+      }
+    }
+  }
+
+  return Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(), &linearmap[0], 0, comm));
 }

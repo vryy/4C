@@ -507,42 +507,17 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
 {
-  // initial dummy distribution using a linear map
-  const int numproc = Comm().NumProc();
-  const int numbin = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
-  const int start = numbin / numproc * myrank_;
-  int end;
-  // special treatment for last proc
-  if(myrank_ != numproc-1)
-    end = (int)(numbin / numproc * (myrank_+1));
-  else
-    end = numbin;
-
-  std::vector<int> linearmap;
-  linearmap.reserve(end-start);
-  for(int k=0; k<bin_per_dir_[2]; ++k)
-  {
-    for(int j=0; j<bin_per_dir_[1]; ++j)
-    {
-      for(int i=0; i<bin_per_dir_[0]; ++i)
-      {
-        int curr = i + j*bin_per_dir_[0] + k*bin_per_dir_[0]*bin_per_dir_[1];
-        if(start <= curr and curr < end)
-          linearmap.push_back(i + j*id_calc_bin_per_dir_[0] + k*id_calc_bin_per_dir_[0]*id_calc_bin_per_dir_[1]);
-      }
-    }
-  }
-
-  Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(),&linearmap[0],0,Comm()));
+  // create an initial equal distribution of row bins
+  Teuchos::RCP<Epetra_Map> rowbins = CreateLinearMapForNumbin(Comm());
 
   const int maxband = 26;
-  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*roweles,maxband,false));
+  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rowbins,maxband,false));
 
   // fill all local entries into the graph
   {
-    for (int lid=0; lid<roweles->NumMyElements(); ++lid)
+    for (int lid=0; lid<rowbins->NumMyElements(); ++lid)
     {
-      const int binId = roweles->GID(lid);
+      const int binId = rowbins->GID(lid);
 
       std::vector<int> neighbors;
       GetBinConnectivity(binId,neighbors);
@@ -574,23 +549,23 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
   }
 
   // obtain the row map
-    Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(balanced_graph);
+  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(balanced_graph);
   rcp_balanced_graph->FillComplete();
   rcp_balanced_graph->OptimizeStorage();
-  roweles = Teuchos::rcp(new Epetra_Map(-1,
+  rowbins = Teuchos::rcp(new Epetra_Map(-1,
       rcp_balanced_graph->RowMap().NumMyElements(),
       rcp_balanced_graph->RowMap().MyGlobalElements(),0,Comm()));
 
   // fill bins into discret
-  for(int i=0; i<roweles->NumMyElements(); i++)
+  for(int i=0; i<rowbins->NumMyElements(); ++i)
   {
-    const int gid = roweles->GID(i);
+    const int gid = rowbins->GID(i);
     Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
     bindis_->AddElement(bin);
   }
 
   // return binrowmap
-  return roweles;
+  return rowbins;
 }
 
 

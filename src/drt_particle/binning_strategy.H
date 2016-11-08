@@ -312,6 +312,11 @@ namespace BINSTRATEGY
     /// build periodic boundary conditions
     virtual void BuildPeriodicBC();
 
+    /// create linear map with bin ids
+    Teuchos::RCP<Epetra_Map> CreateLinearMapForNumbin(
+      const Epetra_Comm& comm
+      );
+
     Teuchos::RCP<DRT::Discretization> bindis_;     ///< particle discretization with bins
 
     double cutoff_radius_;    ///< maximum influence radius

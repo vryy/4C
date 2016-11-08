@@ -1264,10 +1264,17 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radiusn();
   Teuchos::RCP<const Epetra_Vector> bubblemass = particles_->Mass();
 
+  // only evaluate fluid forces when necessary:
+  // either right at the beginning in step 0 or in the last step of subcycling
+  // without subcycling the latter coincides with a computation in each step
+  const bool timeforcalcfluidforces = (Step() == 0 or ((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0));
+
   // vectors to be filled with forces,
   // note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
   Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*bindis_->DofRowMap(),true);
-  Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
+  Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::null;
+  if(timeforcalcfluidforces)
+    fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
 
   // fluid density and dynamic viscosity
   double rho_l;
@@ -1677,12 +1684,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
   particles_->SetExternalDerivativeChangers(bubbleforces);
 
-  if(coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  // leave here because nothing to add to fluid in certain cases
+  if( not timeforcalcfluidforces || coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
   {
     // clear cache with underlying fluid element data
     underlyingelecache_.clear();
 
-    return; // leave here because nothing to add to fluid
+    return;
   }
 
   // add fluid force contributions to the global vector
