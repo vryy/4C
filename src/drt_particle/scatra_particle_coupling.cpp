@@ -2810,9 +2810,7 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
 
     // possibly position have been reverted and particles changed the bin or even the processor
     // therefore, we have to recall the following steps
-    TransferParticles(false);
-    // update of state vectors to the new maps
-    particles_->UpdateStatesAfterParticleTransfer();
+    TransferParticles(true,false);
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;
     old = lambda;
