@@ -62,8 +62,8 @@ namespace ELASTIC
   /// The material strain energy density function is
   ///\f[
   /// \Psi = \Big(\frac{1}{4}\mu + \frac{1}{8}\lambda \Big) \, I_{1}^2
-  ///       - \big( 0.75\lambda + 0.5\mu \big)  \, I_{1} - 0.5\mu \, I_{2}
-  ///      + \frac{9}{8}\lambda + 0.75\mu
+  ///       - \big( \frac{3}{4}\lambda + \frac{1}{2}\mu \big)  \, I_{1} - \frac{1}{2}\mu \, I_{2}
+  ///      + \frac{9}{8}\lambda + \frac{3}{4}\mu
   ///\f]
   /// More details at #AddCoefficientsPrincipal()
   ///

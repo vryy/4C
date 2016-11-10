@@ -86,6 +86,9 @@ void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(
   // Material not implemented for negative exponents a
   if (a<0)
     dserror("Use positive values for the exponent a.");
+  // Restriction for a (due to polyconvexity)
+  if (a>(1./3. - 1./(2.*d)))
+    std::cout<<"\nWARNING: A should be smaller then 1./3.- 1/(2*D). And D should be odd."<<std::endl;
 
   const double I1I3a3 = prinv(0)*pow(prinv(2),-a)-3.;
 
