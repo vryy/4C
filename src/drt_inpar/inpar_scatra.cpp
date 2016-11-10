@@ -135,6 +135,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "ConcentricCylinders",
                                  "Electroneutrality",
                                  "error_by_function",
+                                 "error_by_condition",
                                  "SphereDiffusion"
                                  ),
                                tuple<int>(
@@ -143,6 +144,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                    calcerror_cylinder,
                                    calcerror_electroneutrality,
                                    calcerror_byfunction,
+                                   calcerror_bycondition,
                                    calcerror_spherediffusion
                                    ),
                                &scatradyn);
@@ -577,6 +579,53 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
   condlist.push_back(totalandmeanscalarline);
   condlist.push_back(totalandmeanscalarsurf);
   condlist.push_back(totalandmeanscalarvol);
+
+  /*--------------------------------------------------------------------*/
+  // conditions for calculation of relative error with reference to analytical solution
+  Teuchos::RCP<ConditionDefinition> relerrorline =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR LINE CONDITIONS",
+                                           "ScatraRelError",
+                                           "calculation of relative error with reference to analytical solution",
+                                           DRT::Condition::ScatraRelError,
+                                           true,
+                                           DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> relerrorsurf =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR SURF CONDITIONS",
+                                           "ScatraRelError",
+                                           "calculation of relative error with reference to analytical solution",
+                                           DRT::Condition::ScatraRelError,
+                                           true,
+                                           DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> relerrorvol =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR VOL CONDITIONS",
+                                           "ScatraRelError",
+                                           "calculation of relative error with reference to analytical solution",
+                                           DRT::Condition::ScatraRelError,
+                                           true,
+                                           DRT::Condition::Volume));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent> > relerrorcomponents;
+
+  {
+    relerrorcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+    relerrorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    relerrorcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Function")));
+    relerrorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("FunctionID")));
+  }
+
+  // insert input file line components into condition definitions
+  for (unsigned i=0; i<relerrorcomponents.size(); ++i)
+  {
+    relerrorline->AddComponent(relerrorcomponents[i]);
+    relerrorsurf->AddComponent(relerrorcomponents[i]);
+    relerrorvol->AddComponent(relerrorcomponents[i]);
+  }
+
+  // insert condition definitions into global list of valid condition definitions
+  condlist.push_back(relerrorline);
+  condlist.push_back(relerrorsurf);
+  condlist.push_back(relerrorvol);
 
   /*--------------------------------------------------------------------*/
   // Coupling of different scalar transport fields

@@ -88,6 +88,7 @@ namespace INPAR
       calcerror_cylinder,
       calcerror_electroneutrality,
       calcerror_byfunction,
+      calcerror_bycondition,
       calcerror_spherediffusion
     };
 

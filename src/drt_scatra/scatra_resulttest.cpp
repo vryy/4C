@@ -219,15 +219,15 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   if(quantity == "numiterlastnewton")
     result = (double) scatratimint_->IterNum();
 
-  // total or mean value of transported scalar in subdomain or entire domain
-  else if(!quantity.compare(0,8,"totalphi") or !quantity.compare(0,7,"meanphi"))
+  // total values, mean values, relative L2 errors, or relative H1 errors of scalar fields in subdomain or entire domain
+  else if(!quantity.compare(0,8,"totalphi") or !quantity.compare(0,7,"meanphi") or !quantity.compare(0,7,"L2error") or !quantity.compare(0,7,"H1error"))
   {
     // examples of possible specifications:
-    // 1.) quantity == "{total,mean}phi", suffix == "": total or mean value of transported scalar with ID 0 in entire domain (with ID -1)
-    // 2.) quantity == "{total,mean}phia", suffix == "a": total or mean value of transported scalar with ID a in entire domain (with ID -1)
-    // 3.) quantity == "{total,mean}phi_b", suffix == "_b": total or mean value of transported scalar with ID 0 in subdomain with ID b
-    // 4.) quantity == "{total,mean}phia_b", suffix == "a_b": total or mean value of transported scalar with ID a in subdomain with ID b
-    // other specifications are invalid and result in an dserror
+    // 1.) quantity == "{{total,mean}phi,{L2,H1}error}", suffix == "": total value, mean value, relative L2 error, or relative H1 error of scalar with ID 0 in entire domain (with ID -1)
+    // 2.) quantity == "{{total,mean}phi,{L2,H1}error}a", suffix == "a": total value, mean value, relative L2 error, or relative H1 error of scalar with ID a in entire domain (with ID -1)
+    // 3.) quantity == "{{total,mean}phi,{L2,H1}error}_b", suffix == "_b": total value, mean value, relative L2 error, or relative H1 error of scalar with ID 0 in subdomain with ID b
+    // 4.) quantity == "{{total,mean}phi,{L2,H1}error}a_b", suffix == "a_b": total value, mean value, relative L2 error, or relative H1 error of scalar with ID a in subdomain with ID b
+    // other specifications are invalid and result in a dserror
     std::string suffix;
     if(!quantity.compare(0,8,"totalphi"))
       suffix = quantity.substr(8);
@@ -279,18 +279,44 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
         dserror("Wrong syntax!");
     }
 
-    // extract map with relevant result from scalar transport time integrator
-    const std::map<const int,std::vector<double> >* map(NULL);
-    if(!quantity.compare(0,8,"totalphi"))
-      map = &scatratimint_->TotalScalars();
-    else
-      map = &scatratimint_->MeanScalars();
+    // total or mean value
+    if(!quantity.compare(0,8,"totalphi") or !quantity.compare(0,7,"meanphi"))
+    {
+      // extract map with relevant result from scalar transport time integrator
+      const std::map<const int,std::vector<double> >* map(NULL);
+      if(!quantity.compare(0,8,"totalphi"))
+        map = &scatratimint_->TotalScalars();
+      else
+        map = &scatratimint_->MeanScalars();
 
-    // extract relevant result from map
-    std::map<const int,std::vector<double> >::const_iterator iterator = map->find(domain);
-    if(iterator == map->end() or species < 0 or species >= (int) iterator->second.size())
-      dserror("Couldn't extract total or mean value of transported scalar with ID %d inside domain with ID %d from time integrator!",species,domain);
-    result = iterator->second[species];
+      // extract relevant result from map
+      std::map<const int,std::vector<double> >::const_iterator iterator = map->find(domain);
+      if(iterator == map->end() or species < 0 or species >= (int) iterator->second.size())
+        dserror("Couldn't extract total or mean value of transported scalar with ID %d inside domain with ID %d from time integrator!",species,domain);
+      result = iterator->second[species];
+    }
+
+    // relative L2 or H1 error
+    else
+    {
+      // global error
+      if(domain == -1)
+      {
+        if(!quantity.compare(0,7,"L2error"))
+          result = (*scatratimint_->RelErrors())[species*2];
+        else
+          result = (*scatratimint_->RelErrors())[species*2+1];
+      }
+
+      // error inside subdomain
+      else
+      {
+        if(!quantity.compare(0,7,"L2error"))
+          result = (*scatratimint_->RelErrors())[domain*scatratimint_->NumDofPerNode()*2+species*2];
+        else
+          result = (*scatratimint_->RelErrors())[domain*scatratimint_->NumDofPerNode()*2+species*2+1];
+      }
+    }
   }
 
   // catch unknown quantity strings

@@ -851,38 +851,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
   Epetra_SerialDenseVector&             errors
   )
 {
-  //at the moment, there is only one analytical test problem available!
-  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
-    dserror("How did you get here?");
-
-  // -------------- prepare common things first ! -----------------------
-  // in the ALE case add nodal displacements
-  if (my::scatrapara_->IsAle()) dserror("No ALE for Kwok & Wu error calculation allowed.");
-
-  // set constants for analytical solution
-  const double t = my::scatraparatimint_->Time() + (1- my::scatraparatimint_->AlphaF())* my::scatraparatimint_->Dt(); //-(1-alphaF_)*dta_
-  const double frt = VarManager()->FRT();
-
-  // density at t_(n)
-  std::vector<double> densn(my::numscal_,1.0);
-  // density at t_(n+1) or t_(n+alpha_F)
-  std::vector<double> densnp(my::numscal_,1.0);
-  // density at t_(n+alpha_M)
-  std::vector<double> densam(my::numscal_,1.0);
-
-  // fluid viscosity
-  double visc(0.0);
-
-  // get material parameter (constants values)
-  SetInternalVariablesForMatAndRHS();
-  GetMaterialParams(ele,densn,densnp,densam,visc);
-
-  // integration points and weights
-  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
-  switch(errortype)
+  switch(DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
   {
   case INPAR::SCATRA::calcerror_Kwok_Wu:
   {
@@ -896,8 +865,21 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
     //   A 3D finite element approach for the coupled numerical simulation of
     //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
+    // safety checks
+    if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+      dserror("How did you get here?");
+    if (my::scatrapara_->IsAle())
+      dserror("No ALE for Kwok & Wu error calculation allowed.");
     if (my::numscal_ != 1)
       dserror("Numscal_ != 1 for desired error calculation.");
+
+    // set constants for analytical solution
+    const double t = my::scatraparatimint_->Time() + (1- my::scatraparatimint_->AlphaF())* my::scatraparatimint_->Dt(); //-(1-alphaF_)*dta_
+    const double frt = VarManager()->FRT();
+
+    // integration points and weights
+    // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
     // working arrays
     double                      potint(0.0);
@@ -911,6 +893,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
     for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
     {
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // density at t_(n)
+      std::vector<double> densn(my::numscal_,1.0);
+      // density at t_(n+1) or t_(n+alpha_F)
+      std::vector<double> densnp(my::numscal_,1.0);
+      // density at t_(n+alpha_M)
+      std::vector<double> densam(my::numscal_,1.0);
+
+      // fluid viscosity
+      double visc(0.0);
+
+      // get material parameter (constants values)
+      SetInternalVariablesForMatAndRHS();
+      GetMaterialParams(ele,densn,densnp,densam,visc);
 
       // get values of all transported scalars at integration point
       conint(0) = my::funct_.Dot(my::ephinp_[0]);
@@ -974,7 +970,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
   break;
   default:
   {
-    my::CalErrorComparedToAnalytSolution(ele,params,errors);
+    myelectrode::CalErrorComparedToAnalytSolution(ele,params,errors);
     break;
   }
   } //switch(errortype)

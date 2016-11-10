@@ -2125,110 +2125,229 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  calculate error compared to analytical solution            gjb 10/08|
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------*
+ | calculation of relative error with reference to analytical solution   fang 11/16 |
+ *----------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 {
-  const INPAR::SCATRA::CalcError calcerr
-    = DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(*params_,"CALCERROR");
-
-  if(calcerr == INPAR::SCATRA::calcerror_no) // do nothing (the usual case))
-    return;
-
-  // create the parameters for the error calculation
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_error);
-  eleparams.set("total time",time_);
-  eleparams.set<int>("calcerrorflag",calcerr);
-
-  switch (calcerr)
+  switch(calcerror_)
   {
-  case INPAR::SCATRA::calcerror_byfunction:
-  {
-    const int errorfunctnumber = params_->get<int>("CALCERRORNO");
-    if(errorfunctnumber<1)
-      dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
-
-    eleparams.set<int>("error function number",errorfunctnumber);
-  break;
-  }
-  case INPAR::SCATRA::calcerror_spherediffusion:
-    break;
-  default:
-    dserror("Cannot calculate error. Unknown type of analytical test problem"); break;
-  }
-
-  //provide displacement field in case of ALE
-  if (isale_)
-    eleparams.set<int>("ndsdisp",nds_disp_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-
-  // get (squared) error values
-  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumDofPerNode()));
-  discret_->EvaluateScalars(eleparams,errors);
-  discret_->ClearState();
-
-  // std::vector containing
-  // [0]: relative L2 scalar error
-  // [1]: relative H1 scalar error
-  Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()));
-
-  for(int k=0; k<NumDofPerNode(); ++k)
-  {
-    if( std::abs((*errors)[k*4+2])>1e-14 )
-      (*relerror)[k*2] = sqrt((*errors)[k*4])/sqrt((*errors)[k*4+2]);
-    else
-      dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
-    if( std::abs((*errors)[k*4+3])>1e-14 )
-      (*relerror)[k*2+1] = sqrt((*errors)[k*4+1])/sqrt((*errors)[k*4+3]);
-    else
-      dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
-
-    if (myrank_ == 0)
+    case INPAR::SCATRA::calcerror_byfunction:
+    case INPAR::SCATRA::calcerror_spherediffusion:
     {
+      // create the parameters for the error calculation
+      Teuchos::ParameterList eleparams;
+      eleparams.set<int>("action",SCATRA::calc_error);
+      eleparams.set<int>("calcerrorflag",calcerror_);
 
-      // print last error in a separate file
-//        if ((step_==stepmax_) or (time_==maxtime_))// write results to file
-//        {
-//          std::ostringstream temp;
-//          temp << k;
-//          const std::string simulation = problem_->OutputControlFile()->FileName();
-//          const std::string fname = simulation+"_c"+temp.str()+".relerror";
-//
-//          std::ofstream f;
-//          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-//          f << "#| " << simulation << "\n";
-//          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
-//          f << step_ << " " << time_ << " " << (*relerror)[k*2] << " " << (*relerror)[k*2+1] << "\n";
-//          f.flush();
-//          f.close();
-//        }
-
-      std::ostringstream temp;
-      temp << k;
-      const std::string simulation = problem_->OutputControlFile()->FileName();
-      const std::string fname = simulation+"_c"+temp.str()+"_time.relerror";
-      std::ofstream f;
-
-      // create new error file and write initial error
-      if(step_ == 0)
+      if(calcerror_ == INPAR::SCATRA::calcerror_byfunction)
       {
-        f.open(fname.c_str());
-        f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
+        const int errorfunctnumber = params_->get<int>("CALCERRORNO");
+        if(errorfunctnumber<1)
+          dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+
+        eleparams.set<int>("error function number",errorfunctnumber);
       }
 
-      // append error of the last time step to the error file
-      else
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      //provide displacement field in case of ALE
+      if (isale_)
+        eleparams.set<int>("ndsdisp",nds_disp_);
 
-      f << step_ << " " << time_ << " " << std::setprecision(6) << (*relerror)[k*2] << " " << (*relerror)[k*2+1] << std::endl;
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
 
-      f.flush();
-      f.close();
+      // get (squared) error values
+      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumDofPerNode()));
+      discret_->EvaluateScalars(eleparams,errors);
+      discret_->ClearState();
+
+      for(int k=0; k<NumDofPerNode(); ++k)
+      {
+        if( std::abs((*errors)[k*4+2])>1e-14 )
+          (*relerrors_)[k*2] = sqrt((*errors)[k*4])/sqrt((*errors)[k*4+2]);
+        else
+          dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
+        if( std::abs((*errors)[k*4+3])>1e-14 )
+          (*relerrors_)[k*2+1] = sqrt((*errors)[k*4+1])/sqrt((*errors)[k*4+3]);
+        else
+          dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
+
+        if (myrank_ == 0)
+        {
+
+          // print last error in a separate file
+    //        if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+    //        {
+    //          std::ostringstream temp;
+    //          temp << k;
+    //          const std::string simulation = problem_->OutputControlFile()->FileName();
+    //          const std::string fname = simulation+"_c"+temp.str()+".relerror";
+    //
+    //          std::ofstream f;
+    //          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    //          f << "#| " << simulation << "\n";
+    //          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
+    //          f << step_ << " " << time_ << " " << (*relerrors_)[k*2] << " " << (*relerrors_)[k*2+1] << "\n";
+    //          f.flush();
+    //          f.close();
+    //        }
+
+          std::ostringstream temp;
+          temp << k;
+          const std::string simulation = problem_->OutputControlFile()->FileName();
+          const std::string fname = simulation+"_c"+temp.str()+"_time.relerror";
+          std::ofstream f;
+
+          // create new error file and write initial error
+          if(step_ == 0)
+          {
+            f.open(fname.c_str());
+            f << "| Step | Time | rel. L2-error | rel. H1-error |" << std::endl;
+          }
+
+          // append error of the last time step to the error file
+          else
+            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+          f << step_ << " " << time_ << " " << std::setprecision(6) << (*relerrors_)[k*2] << " " << (*relerrors_)[k*2+1] << std::endl;
+
+          f.flush();
+          f.close();
+        }
+      }
+
+      break;
+    }
+
+    case INPAR::SCATRA::calcerror_bycondition:
+    {
+      // extract conditions from discretization
+      std::vector<DRT::Condition*> relerrorconditions;
+      discret_->GetCondition("ScatraRelError",relerrorconditions);
+      const unsigned ncond = relerrorconditions.size();
+
+      // loop over all conditions
+      for(unsigned icond=0; icond<ncond; ++icond)
+      {
+        // extract condition ID
+        const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+
+        // create element parameter list for error calculation
+        Teuchos::ParameterList eleparams;
+        eleparams.set<int>("action",SCATRA::calc_error);
+        eleparams.set<int>("calcerrorflag",INPAR::SCATRA::calcerror_byfunction);
+        const int errorfunctnumber = relerrorconditions[icond]->GetInt("FunctionID");
+        if(errorfunctnumber < 1)
+          dserror("Invalid function number for error calculation!");
+        eleparams.set<int>("error function number",errorfunctnumber);
+
+        // provide displacement field in case of ALE
+        if(isale_)
+          eleparams.set<int>("ndsdisp",nds_disp_);
+
+        // set state vector needed by elements
+        discret_->ClearState();
+        discret_->SetState("phinp",phinp_);
+
+        // get (squared) error values
+        Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumDofPerNode()));
+        discret_->EvaluateScalars(eleparams,errors,"ScatraRelError",condid);
+
+        // remove state vector from discretization
+        discret_->ClearState();
+
+        // compute index offset
+        const int offset = condid*NumDofPerNode()*2;
+
+        // loop over all degrees of freedom
+        for(int k=0; k<NumDofPerNode(); ++k)
+        {
+          // compute relative L2 error
+          if(std::abs((*errors)[k*4+2])>1e-14)
+            (*relerrors_)[offset+k*2] = sqrt((*errors)[k*4])/sqrt((*errors)[k*4+2]);
+          else
+            dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
+
+          // compute relative H1 error
+          if( std::abs((*errors)[k*4+3])>1e-14 )
+            (*relerrors_)[offset+k*2+1] = sqrt((*errors)[k*4+1])/sqrt((*errors)[k*4+3]);
+          else
+            dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
+        }
+      }
+
+      // print errors to files
+      if(myrank_ == 0)
+      {
+        // loop over all degrees of freedom
+        for(int k=0; k<NumDofPerNode(); ++k)
+        {
+          // determine name of file associated with current degree of freedom
+          std::ostringstream temp;
+          temp << k;
+          const std::string fname = problem_->OutputControlFile()->FileName()+"_dof_"+temp.str()+".relerror";
+
+          // initialize output file stream
+          std::ofstream f;
+
+          // create new error file and write initial error
+          if(step_ == 0)
+          {
+            f.open(fname.c_str());
+            f << "| Step | Time |";
+
+            // loop over all conditions
+            for(unsigned icond=0; icond<ncond; ++icond)
+            {
+              // extract condition ID
+              const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+
+              // extend headline
+              f << " rel. L2-error in domain " << condid << " | rel. H1-error in domain " << condid << " |";
+            }
+
+            // break line
+            f << std::endl;
+          }
+
+          // append error of the last time step to the error file
+          else
+            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+          // write error
+          f << step_ << " " << time_ << std::scientific << std::setprecision(6);
+
+          // loop over all conditions
+          for(unsigned icond=0; icond<ncond; ++icond)
+          {
+            // extract condition ID
+            const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+
+            // extend error line
+            f << " "  << (*relerrors_)[condid*NumDofPerNode()*2+k*2] << " " << (*relerrors_)[condid*NumDofPerNode()*2+k*2+1];
+          }
+
+          // finalize
+          f << std::endl;
+          f.flush();
+          f.close();
+        }
+      }
+
+      break;
+    }
+
+    case INPAR::SCATRA::calcerror_no:
+    {
+      // do nothing
+      break;
+    }
+
+    default:
+    {
+      dserror("Cannot calculate error. Unknown type of analytical test problem!");
+      break;
     }
   }
 
@@ -2539,9 +2658,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
   for(unsigned icond=0; icond<conditions_.size(); ++icond)
   {
     // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
-    int domainid_int(-1);
-    if(icond < conditions_.size())
-      domainid_int = conditions_[icond]->GetInt("ConditionID");
+    int domainid_int(conditions_[icond]->GetInt("ConditionID"));
 
     // determine the number of dofs on the current condition
     const int numscal = numscalpercondition_[icond];
@@ -2572,8 +2689,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
     {
       // screen output
       std::ostringstream domainid_string;
-      if(icond < conditions_.size())
-        domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
+      domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
       for(int k=0; k<numscal; ++k)
         std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
 
@@ -2586,7 +2702,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
       f.flush();
       f.close();
     }
-  } // for(unsigned icond=0; icond<=conditions.size(); ++icond)
+  } // for(unsigned icond=0; icond<conditions.size(); ++icond)
 
   return;
 } // SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults

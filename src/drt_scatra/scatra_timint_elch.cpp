@@ -293,10 +293,7 @@ void SCATRA::ScaTraTimIntElch::CreateScalarHandler()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 {
-  const INPAR::SCATRA::CalcError calcerr
-    = DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(*params_,"CALCERROR");
-
-  switch (calcerr)
+  switch(calcerror_)
   {
   case INPAR::SCATRA::calcerror_no: // do nothing (the usual case)
     break;
@@ -319,7 +316,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
     eleparams.set("total time",time_);
-    eleparams.set<int>("calcerrorflag",calcerr);
+    eleparams.set<int>("calcerrorflag",calcerror_);
     //provide displacement field in case of ALE
     if (isale_)
       eleparams.set<int>("ndsdisp",nds_disp_);
@@ -410,7 +407,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
     eleparams.set("total time",time_);
-    eleparams.set<int>("calcerrorflag",calcerr);
+    eleparams.set<int>("calcerrorflag",calcerror_);
     //provide displacement field in case of ALE
     if (isale_)
       eleparams.set<int>("ndsdisp",nds_disp_);
@@ -446,7 +443,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
     eleparams.set("total time",time_);
-    eleparams.set<int>("calcerrorflag",calcerr);
+    eleparams.set<int>("calcerrorflag",calcerror_);
     //provide displacement field in case of ALE
     if (isale_)
       eleparams.set<int>("ndsdisp",nds_disp_);

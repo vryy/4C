@@ -31,6 +31,7 @@ CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   1
 RESULTSEVRY                     2
 RESTARTEVRY                     5
+CALCERROR                       error_by_condition
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -87,9 +88,17 @@ SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.99999999931311478e+00 TOLERA
 SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -7.49449618915409843e+00 TOLERANCE 1.e-09      // cathode C rate
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77032702189777291e+00 TOLERANCE 1.e-09   // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra SPECIAL QUANTITY L2error_0 VALUE 6.54406415065387641e-05 TOLERANCE 1.0e-14
+SCATRA DIS scatra SPECIAL QUANTITY L2error2_0 VALUE 2.33251046773584603e-01 TOLERANCE 1.0e-10
+SCATRA DIS scatra SPECIAL QUANTITY H1error_0 VALUE 4.00719268165139128e-02 TOLERANCE 1.0e-11
+SCATRA DIS scatra SPECIAL QUANTITY H1error2_0 VALUE 2.34445433237327888e-01 TOLERANCE 1.0e-10
+SCATRA DIS scatra SPECIAL QUANTITY L2error_1 VALUE 8.21239773633101466e-02 TOLERANCE 1.0e-11
+SCATRA DIS scatra SPECIAL QUANTITY L2error2_1 VALUE 3.13597000383803864e-02 TOLERANCE 1.0e-11
+SCATRA DIS scatra SPECIAL QUANTITY H1error_1 VALUE 7.28616576162150523e+02 TOLERANCE 1.0e-07
+SCATRA DIS scatra SPECIAL QUANTITY H1error2_1 VALUE 3.13599100060702116e-02 TOLERANCE 1.0e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          14
-NDVOL                           5
+NDVOL                           7
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.278302597e-4 CURVE 0 0 FUNCT 0 0 Live Mid
@@ -133,6 +142,10 @@ E 3 -
 E 4 -
 E 5 -
 E 6 -
+---------------------------------DESIGN SCATRA RELATIVE ERROR VOL CONDITIONS
+DVOL                            2
+E 2 - ID 0 Function 2
+E 3 - ID 1 Function 3
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1

@@ -289,6 +289,7 @@ public:
     TransportRobin,
     ThermoRobin,
     ScatraMultiScaleCoupling,
+    ScatraRelError,
     CellFocalAdhesion,
     ScatraHeteroReactionCondMaster,
     ScatraHeteroReactionCondSlave

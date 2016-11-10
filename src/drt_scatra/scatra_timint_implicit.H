@@ -294,7 +294,7 @@ public:
       const int                   num=0          //!< field number
       );
 
-  //! calculate error compared to analytical solution
+  //! calculation of relative error with reference to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
     //! Calculate the reconstructed nodal gradient of phi
@@ -413,6 +413,9 @@ public:
 
   //! return flag for scatra-scatra interface coupling
   const bool& S2ICoupling() const {return s2icoupling_;};
+
+  //! return relative errors of scalar fields in L2 and H1 norms
+  const Teuchos::RCP<std::vector<double> >& RelErrors() const {return relerrors_;};
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -994,6 +997,9 @@ protected:
   //! flag for computation of domain and boundary integrals, i.e., of surface areas and volumes associated with specified nodesets
   const INPAR::SCATRA::ComputeIntegrals computeintegrals_;
 
+  //! flag for calculation of relative error with reference to analytical solution
+  const INPAR::SCATRA::CalcError calcerror_;
+
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables
   /*========================================================================*/
@@ -1056,6 +1062,9 @@ protected:
 
   //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
   Teuchos::RCP<Epetra_Vector> densafnp_;
+
+  //! relative errors of scalar fields in L2 and H1 norms
+  Teuchos::RCP<std::vector<double> > relerrors_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related

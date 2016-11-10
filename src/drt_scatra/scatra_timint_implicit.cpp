@@ -129,6 +129,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fdcheckeps_(params->get<double>("FDCHECKEPS")),
   fdchecktol_(params->get<double>("FDCHECKTOL")),
   computeintegrals_(DRT::INPUT::IntegralValue<INPAR::SCATRA::ComputeIntegrals>(*params,"COMPUTEINTEGRALS")),
+  calcerror_(DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(*params,"CALCERROR")),
   time_(0.0),
   maxtime_(params->get<double>("MAXTIME")),
   step_(0),
@@ -538,6 +539,25 @@ void SCATRA::ScaTraTimIntImpl::Setup()
       dserror("Found 'DESIGN TOTAL AND MEAN SCALAR' condition on ScaTra discretization, but 'OUTPUTSCALAR' \n"
           "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of mean and total scalars\n"
           "or remove the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
+  }
+
+  // -------------------------------------------------------------------
+  // preparations for error evaluation
+  // -------------------------------------------------------------------
+  if(calcerror_ != INPAR::SCATRA::calcerror_no)
+  {
+    if(calcerror_ == INPAR::SCATRA::calcerror_bycondition)
+    {
+      std::vector<DRT::Condition*> relerrorconditions;
+      discret_->GetCondition("ScatraRelError",relerrorconditions);
+      const unsigned ncond = relerrorconditions.size();
+      if(!ncond)
+        dserror("Calculation of relative error based on conditions desired, but no conditions specified!");
+      relerrors_ = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()*relerrorconditions.size()));
+    }
+
+    else
+      relerrors_ = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()));
   }
 
   // we have successfully set up this class
