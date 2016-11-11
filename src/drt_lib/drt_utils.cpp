@@ -155,6 +155,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
     {
       const int nodegid = (ele->Nodes()[j])->Id();
       const int lid = global->Map().LID(nodegid);
+      if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_MultiVector",global->Comm().MyPID(),nodegid);
       local(i+(nsd*j))=globalcolumn[lid];
     }
   }
