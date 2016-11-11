@@ -10,7 +10,7 @@
 -------------------------------------------------------------TITLE
 created by pre_exodus
 // - first-order interpolation (hex8 elements)
-// - non-symmetric Nitsche contact method
+// - skew-symmetric Nitsche contact method
 // - two-sided weighting
 // - segment-based integration
 ------------------------------------------------------PROBLEM SIZE
@@ -35,15 +35,15 @@ DYNAMICTYP   Statics
 RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.3
+TIMESTEP     0.2
 NUMSTEP      2
-MAXTIME      0.6
+MAXTIME      1.0
 TOLRES       1.0E-6
 TOLDISP      1.0E-8
 NORM_RESF    Abs
 NORM_DISP    Abs
 NORMCOMBI_RESFDISP And
-MAXITER      7
+MAXITER      6
 MINITER      0
 PREDICT     TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
@@ -66,10 +66,8 @@ SOLVER                          UMFPACK
 AZPREC   ML
 AZSOLVE  CG
 ---------------------------------------------------------MATERIALS
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
-MAT 10   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
-MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 20 DENS 0.1
-MAT 20   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
+MAT 1  MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
+MAT 10 ELAST_CoupBlatzKo MUE 1.0 NUE 0.3 F 0.5
 ------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x*cos(0.5236*2*(t-0.5))+y*sin(0.5236*2*(-t+0.5))-x
 FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y
@@ -427,8 +425,8 @@ NODE       150 COORD  5.0000000000000000e+00  5.0000000000000000e+00 -1.40000000
 ---------------------------------------------------CELLSCATRA ELEMENTS
 
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 2.79626993837813658e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -7.75309690228319012e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -2.14799443455024663e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 8.76428073667576135e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -8.97888263707042125e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -1.05223641185109976e-01 TOLERANCE 1e-12
 ---------------------------------------------------------------END
 // END

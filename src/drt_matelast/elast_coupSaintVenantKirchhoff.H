@@ -103,6 +103,10 @@ namespace ELASTIC
         const int eleGID                  ///< element GID
         );
 
+    virtual void AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,       ///< third derivative with respect to invariants
+                                                 const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
+                                                 const int eleGID);                       ///< element GID
+
     /// Indicator for formulation
     virtual void SpecifyFormulation(
         bool& isoprinc, ///< global indicator for isotropic principal formulation

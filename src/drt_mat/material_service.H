@@ -4,8 +4,10 @@
 
 \brief Various service routines related to materials
 
+\level 1
+
 <pre>
-Maintainer: Lena Wiechert
+\maintainer Lena Wiechert
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -331,7 +333,7 @@ namespace MAT
    * tensor w.r.t. to the tensor add the result to
    * a 4th order tensor (in Voigt matrix notation!) using the
    * symmetry-conditions inherent to elasticity tensors.
-   * 
+   *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarDX2 (in): Scalar to multiply with dX^2/dX
    * \param X (in)        : Dense matrix (3 by 3)
@@ -339,6 +341,15 @@ namespace MAT
    */
   void AddToCmatDerivTensorSquare(LINALG::Matrix<6,6>& C, double ScalarDX2, LINALG::Matrix<3,3> X, double ScalarThis);
 
+  /// in index notation this does:
+  /// X_abcd += fac*( A_ca*B_db + A_da*B_cb + A_db*B_ca + A_cb*B_da )
+  /// result has minor symmetries but no major symmetry
+  /// Symmetric w.r.t. A,B
+  void AddSymmetricHolzapfelProduct(
+      LINALG::Matrix<6,6>& X,
+      const LINALG::Matrix<3,3>& A,
+      const LINALG::Matrix<3,3>& B,
+      double fac);
 }
 
 #endif

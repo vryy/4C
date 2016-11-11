@@ -25,8 +25,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 
-#include "../drt_matelast/elast_coupneohooke.H"
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(
@@ -711,16 +709,10 @@ void MAT::ElastHyper::EvaluateCauchy(
   d2snndb2.Clear();
   d2snnDbDn.Clear();
 
-  if (potsum_.size()!=1)
-    dserror("only one summand allowed");
-  MAT::ELASTIC::CoupNeoHooke* nh =dynamic_cast<MAT::ELASTIC::CoupNeoHooke*>(potsum_[0].getRawPtr());
-  if (nh==NULL)
-    dserror("only neo-hooke allowed");
-  const double beta=nh->BETA();
-  const double c = nh->C();
-  const double i3 = b.Determinant();
-
+  LINALG::Matrix<3,3> id2m;for (int i=0;i<3;++i) id2m(i,i)=1.;
   LINALG::Matrix<6,1> id2; for (int i=0;i<3;++i) id2(i)=1.;
+
+  const int VOIGT3X3SYM_[3][3] = {{0,3,5}, {3,1,4}, {5,4,2}};
 
   LINALG::Matrix<3,3> nn;
   nn.MultiplyNT(n,n);
@@ -742,30 +734,247 @@ void MAT::ElastHyper::EvaluateCauchy(
   bn.Multiply(b,n);
   const double nbn=bn.Dot(n);
 
-  snn=-2.*c*std::pow(i3,-beta-.5)+2.*c*std::pow(i3,-.5)*nbn;
+  LINALG::Matrix<3,1> ibn;
+  ibn.Multiply(ib,n);
+  double nibn=ibn.Dot(n);
+
+  LINALG::Matrix<3,3> ibninb;
+  ibninb.MultiplyNT(-1.,ibn,ibn,0.);
+  LINALG::Matrix<6,1> dnibndb;
+  for (int i=0;i<3;++i) dnibndb(i)=ibninb(i,i);
+  dnibndb(3)=ibninb(0,1);
+  dnibndb(4)=ibninb(2,1);
+  dnibndb(5)=ibninb(0,2);
+
+  LINALG::Matrix<6,1> b_v;
+  for (int i=0;i<3;++i) b_v(i)=b(i,i);
+  b_v(3)=2.*b(0,1);
+  b_v(4)=2.*b(2,1);
+  b_v(5)=2.*b(0,2);
+  LINALG::Matrix<3,1> prinv;
+  InvariantsPrincipal(prinv,b_v);
+  for (int i=3;i<6;++i)
+    b_v(i)*=.5;
+
+  LINALG::Matrix<3,1> dPI;
+  LINALG::Matrix<6,1> ddPII_ordered;
+  LINALG::Matrix<10,1> dddPIII;
+  for (unsigned i=0;i<potsum_.size();++i)
+  {
+    if (isoprinc_)
+    {
+      potsum_[i]->AddDerivativesPrincipal(dPI,ddPII_ordered,prinv,eleGID);
+      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII,prinv,eleGID);
+    }
+    if (isomod_ || anisomod_ || anisoprinc_)
+      dserror("not implemented for this form of strain energy function");
+  }
+
+  LINALG::Matrix<6,1> ddPII;
+  ddPII(0)=ddPII_ordered(0);
+  ddPII(1)=ddPII_ordered(1);
+  ddPII(2)=ddPII_ordered(2);
+  ddPII(3)=ddPII_ordered(5);
+  ddPII(4)=ddPII_ordered(3);
+  ddPII(5)=ddPII_ordered(4);
+  const double sqI3 = sqrt(prinv(2));
+
+  snn=
+      2./sqI3*prinv(1)*dPI(1)
+      +2.*sqI3*dPI(2)
+      +2./sqI3*dPI(0)*nbn
+      -2.*sqI3*dPI(1)*nibn
+      ;
 
   dsnndn.Clear();
-  dsnndn.Update(4.*c*std::pow(i3,-.5),bn,1.);
+  dsnndn.Update(4./sqI3*dPI(0),bn,1.);
+  dsnndn.Update(-4.*sqI3*dPI(1),ibn,1.);
 
-  int VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
-  for (int i=0;i<3;++i)
-    for (int j=0;j<3;++j)
-      for (int k=0;k<3;++k)
-        {
-        d2snnDbDn(VOIGT3X3SYM_[i][j],k)+=2.*c*std::pow(i3,-.5)*(i==k)*n(j)/(1.+(i!=j));
-        d2snnDbDn(VOIGT3X3SYM_[i][j],k)+=2.*c*std::pow(i3,-.5)*(j==k)*n(i)/(1.+(i!=j));
-        }
-  d2snnDbDn.MultiplyNT(-2.*c*std::pow(i3,-.5),ib_v,bn,1.);
+  LINALG::Matrix<6,1> dI1db(id2);
+  LINALG::Matrix<6,1> dI2db(id2);
+  dI2db.Update(-1.,b_v,prinv(0));
+  LINALG::Matrix<6,1> dI3db(ib_v);
+  dI3db.Scale(prinv(2));
 
+  dsnndb.Clear();
 
-  dsnndb.Update(+2.*c*(beta+.5)*std::pow(i3,-beta-.5),ib_v,1.);
-  dsnndb.Update(-1.*c*std::pow(i3,-.5)*nbn           ,ib_v,1.);
-  dsnndb.Update(+2.*c*std::pow(i3,-.5)               ,nn_v,1.);
+  dsnndb.Update(
+      2./sqI3*(
+       prinv(1)*ddPII(3)
+      +prinv(2)*ddPII(5)
+      +ddPII(0)*nbn
+      -prinv(2)*ddPII(3)* nibn
+      ),
+      dI1db,1.);
+  dsnndb.Update(2./sqI3*(
+      dPI(1)
+      +prinv(1)*ddPII(1)
+      +prinv(2)*ddPII(4)
+      +ddPII(3)*nbn
+      -prinv(2)*ddPII(1)*nibn
+      ),
+      dI2db,1.);
+  dsnndb.Update((
+      -2.*prinv(2)*prinv(2)*ddPII(4)*nibn
+      +2.*prinv(1)*prinv(2)*ddPII(4)
+      +2.*prinv(2)*prinv(2)*ddPII(2)
+      -prinv(2)*dPI(1)*nibn
+      +2.*prinv(2)*ddPII(5)*nbn
+      +prinv(2)*dPI(2)
+      -prinv(1)*dPI(1)
+      -dPI(0)*nbn
+      )/(sqI3*sqI3*sqI3),
+          dI3db,1.);
+  dsnndb.Update(2./sqI3*dPI(0),nn_v,1.);
+  dsnndb.Update(-2.*sqI3*dPI(1),dnibndb,1.);
 
-  AddtoCmatHolzapfelProduct(d2snndb2,ib_v,-(2*c*(beta+.5)*std::pow(i3,-beta-.5)-c*std::pow(i3,-.5)*nbn));
-  d2snndb2.MultiplyNT(-2.*c*(beta+.5)*(beta+.5)*std::pow(i3,-beta-.5)+.5*c*std::pow(i3,-.5)*nbn,ib_v,ib_v,1.);
-  d2snndb2.MultiplyNT(-c*std::pow(i3,-.5),nn_v,ib_v,1.);
-  d2snndb2.MultiplyNT(-c*std::pow(i3,-.5),ib_v,nn_v,1.);
+  double fac=0.;
+
+  d2snndb2.MultiplyNT(
+      2./sqI3*
+      (prinv(1)*
+      ddPII(3)+prinv(2)*
+      ddPII(5)+
+      dddPIII(0)*nbn-prinv(2)*
+      ddPII(3)*nibn),
+      dI1db,dI1db,1.);
+
+  d2snndb2.MultiplyNT(
+      2./sqI3*
+      (2.*ddPII(1)+
+      prinv(1)*dddPIII(1)+prinv(2)*
+      dddPIII(7)+
+      dddPIII(3)*nbn
+      -prinv(2)*
+      dddPIII(1)*nibn),
+      dI2db,dI2db,1.);
+
+  d2snndb2.MultiplyNT(
+      (
+          -4. * pow(prinv(2),3) * dddPIII(8) * nibn + 4. *prinv(1)* dddPIII(8) *prinv(2)*prinv(2)
+          + 4. * pow(prinv(2),3) * dddPIII(2)
+          - 4. *prinv(2)*prinv(2)* ddPII(4) * nibn
+          + 4. * dddPIII(4) *prinv(2)*prinv(2)* nbn
+          - 4. *prinv(1)*prinv(2)* ddPII(4)
+          + 4. *prinv(2)*prinv(2)* ddPII(2)
+          - 4. *prinv(2)* ddPII(5) * nbn
+          +prinv(2)* dPI(1) * nibn
+          + 3. *prinv(1)* dPI(1)
+          -prinv(2)* dPI(2)
+          + 3. * dPI(0) * nbn
+          ) / (2.*sqI3*sqI3*sqI3*sqI3*sqI3),
+      dI3db,dI3db,1.);
+
+  fac = 2. /sqI3 * (ddPII(3) +prinv(1)* dddPIII(3)
+      +prinv(2)* dddPIII(9) + dddPIII(5) * nbn -prinv(2)* dddPIII(3) * nibn);
+  d2snndb2.MultiplyNT(fac,dI1db,dI2db,1.);
+  d2snndb2.MultiplyNT(fac,dI2db,dI1db,1.);
+
+  fac=(-2. *prinv(2)*prinv(2)* dddPIII(7) * nibn + 2. *prinv(1)* dddPIII(7) *prinv(2)
+      + 2. *prinv(2)*prinv(2)* dddPIII(8) -prinv(2)* ddPII(1) * nibn
+      + 2. *prinv(2)* dddPIII(9) * nbn -prinv(1)* ddPII(1) + 3 *prinv(2)* ddPII(4)
+      - ddPII(3) * nbn - dPI(1))/(sqI3*sqI3*sqI3);
+  d2snndb2.MultiplyNT(fac,dI2db,dI3db,1.);
+  d2snndb2.MultiplyNT(fac,dI3db,dI2db,1.);
+
+  fac=(-2. *prinv(2)*prinv(2)* dddPIII(9) * nibn + 2. *prinv(1)*prinv(2)* dddPIII(9)
+      + 2. *prinv(2)*prinv(2)* dddPIII(4) + 2. * dddPIII(6) *prinv(2)* nbn
+      -prinv(2)* ddPII(3) * nibn +prinv(2)* ddPII(5) -prinv(1)* ddPII(3)
+      - ddPII(0) * nbn)/(sqI3*sqI3*sqI3);
+  d2snndb2.MultiplyNT(fac,dI1db,dI3db,1.);
+  d2snndb2.MultiplyNT(fac,dI3db,dI1db,1.);
+
+  fac=2./sqI3*ddPII(0);
+  d2snndb2.MultiplyNT(fac,nn_v,dI1db,1.);
+  d2snndb2.MultiplyNT(fac,dI1db,nn_v,1.);
+
+  fac=2./sqI3*(-prinv(2)*ddPII(3));
+  d2snndb2.MultiplyNT(fac,dnibndb,dI1db,1.);
+  d2snndb2.MultiplyNT(fac,dI1db,dnibndb,1.);
+
+  fac=2./sqI3*ddPII(3);
+  d2snndb2.MultiplyNT(fac,nn_v,dI2db,1.);
+  d2snndb2.MultiplyNT(fac,dI2db,nn_v,1.);
+
+  fac=-2./sqI3*prinv(2)*ddPII(1);
+  d2snndb2.MultiplyNT(fac,dnibndb,dI2db,1.);
+  d2snndb2.MultiplyNT(fac,dI2db,dnibndb,1.);
+
+  fac=(
+      +2.*prinv(2)*ddPII(5)
+      -dPI(0))/(sqI3*sqI3*sqI3);
+  d2snndb2.MultiplyNT(fac,nn_v,dI3db,1.);
+  d2snndb2.MultiplyNT(fac,dI3db,nn_v,1.);
+
+  fac=(-2.*prinv(2)*prinv(2)*ddPII(4)
+      -prinv(2)*dPI(1)
+      )/(sqI3*sqI3*sqI3);
+  d2snndb2.MultiplyNT(fac,dnibndb,dI3db,1.);
+  d2snndb2.MultiplyNT(fac,dI3db,dnibndb,1.);
+
+  fac=2./sqI3*(
+      dPI(1)
+      +prinv(1)*ddPII(1)
+      +prinv(2)*ddPII(4)
+      +ddPII(3)*nbn
+      -prinv(2)*ddPII(1)*nibn
+      );
+  AddtoCmatHolzapfelProduct(d2snndb2,id2,-fac);
+  d2snndb2.MultiplyNT(fac,id2,id2,1.);
+
+  fac=(-2.*prinv(2)*prinv(2)*ddPII(4)*nibn
+      +2.*prinv(1)*prinv(2)*ddPII(4)
+      +2.*prinv(2)*prinv(2)*ddPII(2)
+      +2.*prinv(2)*ddPII(5)*nbn
+      -prinv(2)*dPI(1)*nibn
+      +prinv(2)*dPI(2)
+      -prinv(1)*dPI(1)
+      -dPI(0)*nbn)/(sqI3);
+  AddtoCmatHolzapfelProduct(d2snndb2,ib_v,-fac);
+
+  fac=(
+      -2.*prinv(2)*prinv(2)*ddPII(4)*nibn
+      +2.*prinv(1)*prinv(2)*ddPII(4)
+      +2.*prinv(2)*prinv(2)*ddPII(2)
+      +2.*prinv(2)*ddPII(5)*nbn
+      -prinv(2)*dPI(1)*nibn
+      +prinv(2)*dPI(2)
+      -prinv(1)*dPI(1)
+      -dPI(0)*nbn
+      )/(sqI3*sqI3*sqI3*sqI3*sqI3);
+  d2snndb2.MultiplyNT(fac,dI3db,dI3db,1.);
+
+  fac=-2.*sqI3*dPI(1);
+  AddSymmetricHolzapfelProduct(d2snndb2,ib,ibninb,-.5*fac);
+
+  d2snnDbDn.Clear();
+  d2snnDbDn.MultiplyNT(4./sqI3*ddPII(0),
+      dI1db,bn,1.);
+  d2snnDbDn.MultiplyNT(
+      -4.*sqI3*ddPII(3),
+      dI1db,ibn,1.);
+  d2snnDbDn.MultiplyNT(
+      4./sqI3*ddPII(3),
+      dI2db,bn,1.);
+  d2snnDbDn.MultiplyNT(
+      -4.*sqI3*ddPII(1),
+      dI2db,ibn,1.);
+  d2snnDbDn.MultiplyNT(
+      4./sqI3*ddPII(5)
+     -2./(sqI3*sqI3*sqI3)*dPI(0)
+     ,
+          dI3db,bn,1.);
+  d2snnDbDn.MultiplyNT(
+      -4.*sqI3*ddPII(4)
+      -2./(sqI3)*dPI(1)
+      ,
+          dI3db,ibn,1.);
+  fac=2./sqI3*dPI(0);
+  for (int i=0;i<3;++i) for (int j=0;j<3;++j) for (int a=0;a<3;++a)
+    d2snnDbDn(VOIGT3X3SYM_[i][j],a)+=fac*((i==a)*n(j)+(j==a)*n(i))/(1.+(i!=j));
+  fac=2.*sqI3*dPI(1);
+  for (int i=0;i<3;++i) for (int j=0;j<3;++j) for (int a=0;a<3;++a)
+    d2snnDbDn(VOIGT3X3SYM_[i][j],a)+=fac*(ib(a,i)*ibn(j)+ib(a,j)*ibn(i))/(1.+(i!=j));
 
   return;
 }

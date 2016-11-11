@@ -107,5 +107,31 @@ void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,
+                                                                 const LINALG::Matrix<3,1>& prinv,
+                                                                 const int eleGID)
+{
+  // material parameters for isochoric part
+  const double mu  = params_->mue_;  // Shear modulus
+  const double nue  = params_->nue_;  // Poisson's ratio
+  const double f    = params_->f_;    // interpolation parameter
+
+  // introducing beta for consistency with Holzapfel and simplification
+  const double beta = nue/(1. - 2.*nue);
+
+  dddPIII_iso(2)+=-f*mu*pow(prinv(2),-beta-3.)*beta*beta*.5
+      -1.5*f*mu*pow(prinv(2),-beta-3.)*beta
+      -f*mu*pow(prinv(2),-beta-3.)
+      +(1.-f)*mu*(-6.*prinv(1)*pow(prinv(2),-4.)
+          + pow(prinv(2),beta-3.)*beta*beta
+          -3.*pow(prinv(2),beta-3.)*beta
+          +2.*pow(prinv(2),beta-3.))*.5;
+
+  dddPIII_iso(8)+=-(-1.+f)*mu*pow(prinv(2),-3.);
+
+
+}
 
 /*----------------------------------------------------------------------*/

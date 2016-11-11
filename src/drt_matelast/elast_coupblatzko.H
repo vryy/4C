@@ -123,13 +123,22 @@ namespace ELASTIC
         const int eleGID                   ///< element GID
         );
 
-
+    // add first and second derivative w.r.t. principal invariants
     virtual void AddDerivativesPrincipal(
         LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
         LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const int eleGID                  ///< element GID
         );
+
+    // add third derivative w.r.t. principal invariants
+    virtual void AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,       ///< third derivative with respect to invariants
+                                                 const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
+                                                 const int eleGID);                       ///< element GID
+
+
+    /// add young's modulus equivalent
+    virtual void AddYoungsMod(double& young, double& shear, double& bulk) {young+=2.*Mue()*(1.+Nue());};
 
     /// @name Access methods
     //@{

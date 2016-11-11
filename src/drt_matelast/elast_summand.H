@@ -175,6 +175,60 @@ namespace MAT
         return;  // do nothing
       };
 
+      /// retrieve coefficients of third derivative
+      /// of summand with respect to principal isotropic invariants
+      ///
+      /// The derivatives of the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
+      /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
+      /// are the arguments are defined as following:
+      ///
+      /// Third derivatives:
+      ///
+      ///\f[
+      /// dddPIII_0 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}^3} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_1 = \frac{\partial^3 \Psi}{\partial II_{\boldsymbol{C}}^3} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_2 = \frac{\partial^3 \Psi}{\partial III_{\boldsymbol{C}}^3} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_3 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}
+      /// \partial II_{\boldsymbol{C}}^2} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_4 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}
+      /// \partial III_{\boldsymbol{C}}^2} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_5 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}^2
+      /// \partial II_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_6 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}^2
+      /// \partial III_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_7 = \frac{\partial^3 \Psi}{\partial II_{\boldsymbol{C}}^2
+      /// \partial III_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_8 = \frac{\partial^3 \Psi}{\partial III_{\boldsymbol{C}}^2
+      /// \partial II_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dddPIII_9 = \frac{\partial^3 \Psi}{\partial I_{\boldsymbol{C}}
+      /// \partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} ;
+      ///\f]
+      virtual void AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,       ///< third derivative with respect to invariants
+                                                   const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
+                                                   const int eleGID)                        ///< element GID
+      {
+        dserror("not implemented");
+        return; // do nothing
+      }
+
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
       ///

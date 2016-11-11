@@ -90,5 +90,14 @@ void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupSVK::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,
+                                                                 const LINALG::Matrix<3,1>& prinv_iso,
+                                                                 const int eleGID)
+{
+// do nothing
+}
+
 
 /*----------------------------------------------------------------------*/

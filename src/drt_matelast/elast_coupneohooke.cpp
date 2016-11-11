@@ -113,5 +113,17 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,
+                                                                 const LINALG::Matrix<3,1>& prinv_iso,
+                                                                 const int eleGID)
+{
+  const double beta  = params_->beta_;
+  const double c     = params_->c_;
+
+  dddPIII_iso(2) -= c*(beta + 1.0)*(beta + 2.0)*std::pow(prinv_iso(2),-beta-3.0);
+  return;
+}
 
 /*----------------------------------------------------------------------*/
