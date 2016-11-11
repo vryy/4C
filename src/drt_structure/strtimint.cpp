@@ -2364,16 +2364,15 @@ void STR::TimInt::OutputRestart
   // 0D cardiovascular models
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("cv0ddof",
-                          cardvasc0dman_->Get0DDofVector());
-    output_->WriteVector("refvolval",
-                          cardvasc0dman_->GetRefVolValue());
-    output_->WriteVector("reffluxval",
-                          cardvasc0dman_->GetRefFluxValue());
-    output_->WriteVector("refdfluxval",
-                          cardvasc0dman_->GetRefDFluxValue());
-    output_->WriteVector("refddfluxval",
-                          cardvasc0dman_->GetRefDDFluxValue());
+    output_->WriteVector("cv0d_df_np",
+                          cardvasc0dman_->Get0D_df_np());
+    output_->WriteVector("cv0d_f_np",
+                          cardvasc0dman_->Get0D_f_np());
+
+    output_->WriteVector("cv0d_dof_np",
+                          cardvasc0dman_->Get0D_dof_np());
+    output_->WriteVector("vol_np",
+                          cardvasc0dman_->Get0D_vol_np());
   }
 
   // contact and meshtying
@@ -2514,16 +2513,15 @@ void STR::TimInt::AddRestartToOutputState()
   // 0D cardiovascular models
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("cv0ddof",
-                          cardvasc0dman_->Get0DDofVector());
-    output_->WriteVector("refvolval",
-                          cardvasc0dman_->GetRefVolValue());
-    output_->WriteVector("reffluxval",
-                          cardvasc0dman_->GetRefFluxValue());
-    output_->WriteVector("refdfluxval",
-                          cardvasc0dman_->GetRefDFluxValue());
-    output_->WriteVector("refddfluxval",
-                          cardvasc0dman_->GetRefDDFluxValue());
+    output_->WriteVector("cv0d_df_np",
+                          cardvasc0dman_->Get0D_df_np());
+    output_->WriteVector("cv0d_f_np",
+                          cardvasc0dman_->Get0D_f_np());
+
+    output_->WriteVector("cv0d_dof_np",
+                          cardvasc0dman_->Get0D_dof_np());
+    output_->WriteVector("vol_np",
+                          cardvasc0dman_->Get0D_vol_np());
   }
 
   // springdashpot output

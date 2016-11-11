@@ -127,10 +127,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> sysvec3,
       Teuchos::RCP<Epetra_Vector> sysvec4,
       Teuchos::RCP<Epetra_Vector> sysvec5,
-      Teuchos::RCP<Epetra_Vector> sysvec6,
-      Teuchos::RCP<Epetra_Vector> sysvec7,
-      Teuchos::RCP<Epetra_Vector> sysvec8,
-      Teuchos::RCP<Epetra_Vector> sysvec9
+      Teuchos::RCP<Epetra_Vector> sysvec6
     );
 
     ///Return type of Cardiovascular0D function
@@ -175,8 +172,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
       Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6,
-      Teuchos::RCP<Epetra_Vector>    sysvec7
+      Teuchos::RCP<Epetra_Vector>    sysvec6
     );
 
     //! Evaluate Cardiovascular0D conditions and assemble the results
@@ -191,9 +187,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
       Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6,
-      Teuchos::RCP<Epetra_Vector>    sysvec7,
-      Teuchos::RCP<Epetra_Vector>    sysvec8
+      Teuchos::RCP<Epetra_Vector>    sysvec6
     );
 
     //! Evaluate Cardiovascular0D conditions and assemble the results
@@ -215,10 +209,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
       Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6,
-      Teuchos::RCP<Epetra_Vector>    sysvec7,
-      Teuchos::RCP<Epetra_Vector>    sysvec8,
-      Teuchos::RCP<Epetra_Vector>    sysvec9
+      Teuchos::RCP<Epetra_Vector>    sysvec6
     );
 
     //! Compute and assemble initial values

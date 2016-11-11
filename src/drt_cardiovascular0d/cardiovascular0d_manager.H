@@ -12,6 +12,48 @@
             089 - 289-10363
 </pre>
 
+************************************************************************************************************************************
+A) a four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS):
+orig. equation is C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
+
+-> we reformulate the ODE to three first-order ODEs with variables p, q, s:
+
+      [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s - L C * ds/dt]   [ 0 ]
+Res = [dV/dt - q                                                                           ]   [ 0 ]
+      [dq/dt - s                                                                           ] = [ 0 ]
+
+The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
+
+B) an arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
+arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
+
+-> variables are p_v, p_arp, q_arp, p_ard
+
+      [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_arp)/R_arv(p_v,p_arp)]   [ 0 ]
+Res = [C_arp * d(p_arp)/dt + q_arp - (p_v - p_arp)/R_arv                      ]   [ 0 ]
+      [(L_arp/R_arp) * d(q_arp)/dt + q_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
+      [C_ard * d(p_ard)/dt + (p_ard - p_ref)/R_ard - q_arp                    ]   [ 0 ]
+
+with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
+by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
+
+C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
+(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS)
+(detailed fully in Hirschvogel, Bassilious, Jagschies, Wildhirt, Gee, "A monolithic 3D-0D coupled closed-loop model of the heart and
+the vascular system: Experiment-based parameter estimation for patient-specific cardiac mechanics", IJNMBE, 2016)
+
+for one half of the circulation, the residual vector reads:
+
+      [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
+      [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
+      [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
+Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
+      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
+      [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
+      [C_ven * d(p_ven)/dt - q_ar + q_ven              ]   [ 0 ]
+      [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
+************************************************************************************************************************************
+
 *----------------------------------------------------------------------*/
 
 #ifndef CARDIOVASCULAR0D_MANAGER_H
@@ -99,7 +141,7 @@ namespace UTILS
     double GetCardiovascular0DRHSNorm() const
     {
       double foo;
-      cardiovascular0drhsm_->Norm2(&foo);
+      cardvasc0d_res_m_->Norm2(&foo);
       return foo;
     };
 
@@ -110,16 +152,6 @@ namespace UTILS
     {
       double foo;
       cv0ddofincrement_->Norm2(&foo);
-      return foo;
-    };
-
-    /*!
-     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
-    */
-    double GetStructuralDisplIncrNorm() const
-    {
-      double foo;
-      strdisplincrement_->Norm2(&foo);
       return foo;
     };
 
@@ -161,7 +193,7 @@ namespace UTILS
     */
     Teuchos::RCP<Epetra_Vector> GetCardiovascular0DRHS() const
     {
-      return cardiovascular0drhsm_;
+      return cardvasc0d_res_m_;
     }
 
     /*!
@@ -193,17 +225,51 @@ namespace UTILS
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Epetra_Vector> Get0DDofVector() const
+    Teuchos::RCP<Epetra_Vector> Get0D_dof_np() const
     {
-      return cv0ddofn_;
+      return cv0ddof_np_;
+    };
+
+    /*!
+      \brief Return vol vector
+    */
+    Teuchos::RCP<Epetra_Vector> Get0D_vol_np() const
+    {
+      return v_np_;
     };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> Get0DDofVectorOld() const
+    Teuchos::RCP<Epetra_Vector> Get0D_dof_n() const
     {
-      return cv0ddof_;
+      return cv0ddof_n_;
+    };
+
+    Teuchos::RCP<Epetra_Vector> Get0D_df_np() const
+    {
+      return cardvasc0d_df_np_;
+    };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Epetra_Vector> Get0D_df_n() const
+    {
+      return cardvasc0d_df_n_;
+    };
+
+    Teuchos::RCP<Epetra_Vector> Get0D_f_np() const
+    {
+      return cardvasc0d_f_np_;
+    };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Epetra_Vector> Get0D_f_n() const
+    {
+      return cardvasc0d_f_n_;
     };
 
     /*!
@@ -234,53 +300,46 @@ namespace UTILS
     Teuchos::RCP<LINALG::Solver>& GetSolver() { return solver_; }
 
     /// Reset reference base values for restart computations
-    void SetRefVolValue
+    void Set0D_v_n
     (
-      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
-    );
-    void SetRefFluxValue
+      Teuchos::RCP<Epetra_Vector> newval  ///< new reference base values
+    )
+    {
+      v_n_->Update(1.0,*newval,0.0);
+    }
+
+    /// set df_n, f_n
+    void Set0D_df_n
     (
-      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
-    );
-    void SetRefDFluxValue
+      Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
+    )
+    {
+      cardvasc0d_df_n_->Update(1.0,*newval,0.0);
+      return;
+    }
+    void Set0D_f_n
     (
-      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
-    );
-    void SetRefDDFluxValue
-    (
-      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
-    );
+      Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
+    )
+    {
+      cardvasc0d_f_n_->Update(1.0,*newval,0.0);
+      return;
+    }
 
     /// Reset dofs
-    void SetCv0DDofVector
+    void Set0D_dof_n
     (
       Teuchos::RCP<Epetra_Vector> newdof  ///< new Cardiovascular0D dofs
     )
     {
-      cv0ddofn_->Update(1.0,*newdof,0.0);
-      cv0ddof_->Update(1.0,*newdof,0.0);
+      cv0ddof_np_->Update(1.0,*newdof,0.0);
+      cv0ddof_n_->Update(1.0,*newdof,0.0);
       return;
     }
 
     void PrintPresFlux(bool init) const;
 
-    /// Return Reference base values to write restart
-    Teuchos::RCP<Epetra_Vector> GetRefVolValue() const
-    {
-      return v_;
-    }
-    Teuchos::RCP<Epetra_Vector> GetRefFluxValue() const
-    {
-      return Q_;
-    }
-    Teuchos::RCP<Epetra_Vector> GetRefDFluxValue() const
-    {
-      return dQ_;
-    }
-    Teuchos::RCP<Epetra_Vector> GetRefDDFluxValue() const
-    {
-      return ddQ_;
-    }
+
 
     //! switch Cardiovascular0D matrix to block matrix
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
@@ -315,33 +374,27 @@ namespace UTILS
     Teuchos::RCP<Epetra_Map> redcardiovascular0dmap_;   ///< fully redundant map of Cardiovascular0D values
     Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D vector into distributed one
     Teuchos::RCP<Epetra_Vector> actpres_;
-    Teuchos::RCP<Epetra_Vector> cv0ddof_; ///< cvdof vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> cv0ddofn_; ///< cvdof vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> cv0ddofm_; ///< cvdof vector at mid-point
-    Teuchos::RCP<Epetra_Vector> dcv0ddofm_; ///< cvdof rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> cv0ddof_n_; ///< cvdof vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> cv0ddof_np_; ///< cvdof vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> cv0ddof_m_; ///< cvdof vector at mid-point
+    Teuchos::RCP<Epetra_Vector> dcv0ddof_m_; ///< cvdof rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
-    Teuchos::RCP<Epetra_Vector> strdisplincrement_; ///< increment of struct displacements
-    Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point
-    Teuchos::RCP<Epetra_Vector> Q_; ///< flux vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> Qn_; ///< flux vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> Qm_; ///< flux vector at mid-point
-    Teuchos::RCP<Epetra_Vector> dQ_; ///< flux rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> dQn_; ///< flux rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> dQm_; ///< flux rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> ddQ_; ///< time deriv of flux rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> ddQn_; ///< time deriv of flux rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> ddQm_; ///< time deriv of flux rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> cardiovascular0drhsm_; ///< Cardiovascular0D rhs vector at mid-point
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_cv0ddof_; ///< Cardiovascular0D rhs associated with p
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_dcv0ddof_; ///< Cardiovascular0D rhs associated with pressure rate dp/dt
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_Q_; ///< Cardiovascular0D rhs associated with q
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_dQ_; ///< Cardiovascular0D rhs associated with s
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_ddQ_; ///< Cardiovascular0D rhs associated with ds/dt
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_1_; ///< Cardiovascular0D rhs associated with 1
-    Teuchos::RCP<Epetra_Vector> compvolm_; ///< compartment volume vector (V_at, V_ar, V_ven) at mid-point
-    Teuchos::RCP<Epetra_Vector> compvol_; ///< compartment volume vector (V_at, V_ar, V_ven) at t_n
+    Teuchos::RCP<Epetra_Vector> v_n_; ///< vol vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> v_np_; ///< vol vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> v_m_; ///< vol vector at mid-point
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_res_m_; ///< Cardiovascular0D full rhs vector, at t_{n+theta}
+
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_df_np_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_df_m_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+theta}
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_f_np_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_f_m_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+theta}
+
+    Teuchos::RCP<Epetra_Vector> compvol_n_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n}
+    Teuchos::RCP<Epetra_Vector> compvol_np_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> compvol_m_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n+theta}
+
     int Cardiovascular0DID_;  ///< smallest Cardiovascular0D bc id
     int offsetID_;  ///< smallest Cardiovascular0D bc id
     int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs

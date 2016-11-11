@@ -3,36 +3,6 @@
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 
-************************************************************************************************************************************
-A) a four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS):
-Res = C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
-The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
-
-B) an arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
-arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
-      [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_arp)/R_arv(p_v,p_arp)]   [ 0 ]
-      [C_arp * d(p_arp)/dt + y_arp - (p_v - p_arp)/R_arv                      ]   [ 0 ]
-Res = [(L_arp/R_arp) * d(y_arp)/dt + y_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
-      [C_ard * d(p_ard)/dt + y_ard - y_arp                                    ]   [ 0 ]
-      [R_ard * y_ard - p_ard + p_ref                                          ]   [ 0 ]
-
-with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
-by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
-
-C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
-(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS)
-(based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
-Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1)
-      [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
-      [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
-      [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
-Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
-      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
-      [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
-      [C_ven * d(p_ven)/dt - q_ar + q_ven              ]   [ 0 ]
-      [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
-************************************************************************************************************************************
-
 \level 2
 
 <pre>
@@ -221,10 +191,7 @@ void UTILS::Cardiovascular0D::Evaluate(
     Teuchos::RCP<Epetra_Vector>    sysvec3,
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
-    Teuchos::RCP<Epetra_Vector>    sysvec6,
-    Teuchos::RCP<Epetra_Vector>    sysvec7,
-    Teuchos::RCP<Epetra_Vector>    sysvec8,
-    Teuchos::RCP<Epetra_Vector>    sysvec9
+    Teuchos::RCP<Epetra_Vector>    sysvec6
     )
 {
 
@@ -233,15 +200,15 @@ void UTILS::Cardiovascular0D::Evaluate(
   {
   case cardvasc0d_windkesselonly:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateCardiovascular0DWindkesselOnly(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7);
+    EvaluateCardiovascular0DWindkesselOnly(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
     break;
   case cardvasc0d_arterialproxdist:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateCardiovascular0DArterialProxDist(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8);
+    EvaluateCardiovascular0DArterialProxDist(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
     break;
   case cardvasc0d_arterialvenoussyspulcoupled:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateCardiovascular0DArterialVenousSysPulCoupled(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9);
+    EvaluateCardiovascular0DArterialVenousSysPulCoupled(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
     break;
   case none:
     return;
@@ -269,8 +236,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
     Teuchos::RCP<Epetra_Vector>    sysvec3,
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
-    Teuchos::RCP<Epetra_Vector>    sysvec6,
-    Teuchos::RCP<Epetra_Vector>    sysvec7)
+    Teuchos::RCP<Epetra_Vector>    sysvec6)
 {
 
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
@@ -280,7 +246,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
   double theta = params.get("scale_theta",1.0);
   double ts_size = params.get("time_step_size",1.0);
 
-  int numdof_per_cond = 1;
+  int numdof_per_cond = 3;
 
   std::vector<bool> havegid(numdof_per_cond);
   for (int j = 0; j < numdof_per_cond; j++)
@@ -296,13 +262,10 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
   const bool assvec3 = sysvec3!=Teuchos::null;
   const bool assvec4 = sysvec4!=Teuchos::null;
   const bool assvec5 = sysvec5!=Teuchos::null;
-  const bool assvec6 = sysvec6!=Teuchos::null;
-  const bool assvec7 = sysvec7!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  // loop over cardiovascular0d conditions
   for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
     DRT::Condition& cond = *(cardiovascular0dcond_[i]);
@@ -320,38 +283,66 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
     // Cardiovascular0D stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
 
-    // Cardiovascular0D rhs contributions
-    std::vector<double> factor_cvdof(numdof_per_cond);
-    std::vector<double> factor_dcvdof(numdof_per_cond);
-    std::vector<double> factor_Q(numdof_per_cond);
-    std::vector<double> factor_dQ(numdof_per_cond);
-    std::vector<double> factor_ddQ(numdof_per_cond);
-    std::vector<double> factor_1(numdof_per_cond);
+    // contributions to total residuals r:
+    // r_m = df_m              - f_m
+    //     = (df_np - df_n)/dt - theta f_np - (1-theta) f_n
+    // here we ONLY evaluate df_np, f_np
+    std::vector<double> df_np(numdof_per_cond);
+    std::vector<double> f_np(numdof_per_cond);
 
-    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec6)
+    // end-point values at t_{n+1}
+    double p_np = 0.;
+    double q_np = 0.;
+    double s_np = 0.;
+    // volume at t_{n+1}
+    double V_np = 0.;
+
+    if (assvec1 or assvec2 or assvec4 or assvec5)
     {
-      factor_cvdof[0] = 1./R_p;
-      factor_dcvdof[0] = C;
-      factor_Q[0] = -(1. + Z_c/R_p);
-      factor_dQ[0] = -(Z_c*C + L/R_p);
-      factor_ddQ[0] = -L*C;
-      factor_1[0] = -p_ref/R_p;
+      //extract values of dof vector at t_{n+1}
+      p_np = (*sysvec4)[numdof_per_cond*condID+0];
+      q_np = (*sysvec4)[numdof_per_cond*condID+1];
+      s_np = (*sysvec4)[numdof_per_cond*condID+2];
+
+      // volume at t_{n+1}
+      V_np = (*sysvec5)[numdof_per_cond*condID];
+
+      df_np[0] = C * p_np + L*C * s_np;
+      df_np[1] = V_np;
+      df_np[2] = q_np;
+
+      f_np[0] = (p_np-p_ref)/R_p + (1.+Z_c/R_p) * q_np + (C*Z_c + L/R_p) * s_np;
+      f_np[1] = -q_np;
+      f_np[2] = -s_np;
+
     }
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     std::vector<int> gindex(numdof_per_cond);
     gindex[0] = numdof_per_cond*condID-offsetID;
-    //for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
+    for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
 
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble the Cardiovascular0D stiffness matrix and scale with time-integrator dependent value
+    // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
+      wkstiff(0,0) = C/ts_size + theta/R_p;
+      wkstiff(0,1) = theta * (1.+Z_c/R_p);
+      wkstiff(0,2) = L*C/ts_size + theta * (C*Z_c + L/R_p);
+
+      wkstiff(1,0) = 0.;
+      wkstiff(1,1) = -theta;
+      wkstiff(1,2) = 0.;
+
+      wkstiff(2,0) = 0.;
+      wkstiff(2,1) = 1./ts_size;
+      wkstiff(2,2) = -theta;
+
+
       sysmat1->UnComplete();
-      wkstiff(0,0) = theta * (factor_dcvdof[0]/(theta*ts_size) + factor_cvdof[0]);
 
       // assemble into cardiovascular0d system matrix - wkstiff contribution
       for (int j = 0; j < numdof_per_cond; j++)
@@ -362,58 +353,24 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
           if(havegid[k]) sysmat1->Assemble(wkstiff(k,j),gindex[k],gindex[j]);
         }
       }
+
     }
-    // rhs part associated with cvdof
+
+    // rhs part df_np
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&df_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dcvdof/dt
+    // rhs part f_np
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with Q
-    if (assvec3)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec3->SumIntoGlobalValues(1,&factor_Q[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with dQ/dt
-    if (assvec4)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec4->SumIntoGlobalValues(1,&factor_dQ[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with d2Q/dt2
-    if (assvec5)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec5->SumIntoGlobalValues(1,&factor_ddQ[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with 1
-    if (assvec6)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec6->SumIntoGlobalValues(1,&factor_1[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&f_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -447,14 +404,12 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
       elevector2.Size(eledim);
       elevector3.Size(numdof_per_cond);
 
-      //dummies
-      Epetra_SerialDenseMatrix dummat(0,0);
-      Epetra_SerialDenseVector dumvec(0);
-
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
       if (err) dserror("error while evaluating elements");
 
+
+      // assembly
       int eid = curr->second->Id();
 
       if (assmat2)
@@ -462,18 +417,26 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
         // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
-        colvec[0]=gindex[0];
-        elevector2.Scale(factor_Q[0]/ts_size + factor_dQ[0]/(theta*ts_size*ts_size) + factor_ddQ[0]/(theta*theta*ts_size*ts_size*ts_size));
+        colvec[0]=gindex[1];
+        elevector2.Scale(-1./ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
+
       }
-      if (assvec7)
+
+      if (assvec3)
       {
         // assemble the current volume of the enclosed surface of the cardiovascular0d condition
+        for (int j = 1; j < numdof_per_cond; j++)
+          elevector3[j]=elevector3[0];
+
         std::vector<int> cardiovascular0dlm;
         std::vector<int> cardiovascular0downer;
-        cardiovascular0dlm.push_back(gindex[0]);
-        cardiovascular0downer.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec7,elevector3,cardiovascular0dlm,cardiovascular0downer);
+        for (int j = 0; j < numdof_per_cond; j++)
+        {
+          cardiovascular0dlm.push_back(gindex[j]);
+          cardiovascular0downer.push_back(curr->second->Owner());
+        }
+        LINALG::Assemble(*sysvec3,elevector3,cardiovascular0dlm,cardiovascular0downer);
       }
 
     }
@@ -510,9 +473,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
     Teuchos::RCP<Epetra_Vector>    sysvec3,
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
-    Teuchos::RCP<Epetra_Vector>    sysvec6,
-    Teuchos::RCP<Epetra_Vector>    sysvec7,
-    Teuchos::RCP<Epetra_Vector>    sysvec8)
+    Teuchos::RCP<Epetra_Vector>    sysvec6)
 {
 
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
@@ -542,9 +503,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
   const bool assvec3 = sysvec3!=Teuchos::null;
   const bool assvec4 = sysvec4!=Teuchos::null;
   const bool assvec5 = sysvec5!=Teuchos::null;
-  const bool assvec6 = sysvec6!=Teuchos::null;
-  const bool assvec7 = sysvec7!=Teuchos::null;
-  const bool assvec8 = sysvec8!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -577,93 +535,73 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
     const std::vector<int>* curve  = cardiovascular0dcond_[condID]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
-    double curvefac_ = 1.0;
-    double curvefac_n = 1.0;
+    double curvefac_np = 1.0;
+
     if (curvenum>=0 && usetime)
     {
-      curvefac_ = DRT::Problem::Instance()->Curve(curvenum).f(tim-ts_size);
-      curvefac_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
+      curvefac_np = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
     // Cardiovascular0D stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
 
-    // Cardiovascular0D rhs contributions
-    std::vector<double> factor_cvdof(numdof_per_cond);
-    std::vector<double> factor_dcvdof(numdof_per_cond);
-    std::vector<double> factor_Q(numdof_per_cond);
-    std::vector<double> factor_1(numdof_per_cond);
+    // contributions to total residuals r:
+    // r_m = df_m              - f_m
+    //     = (df_np - df_n)/dt - theta f_np - (1-theta) f_n
+    // here we ONLY evaluate df_np, f_np
+    std::vector<double> df_np(numdof_per_cond);
+    std::vector<double> f_np(numdof_per_cond);
 
-    double p_v_n = 0.;
-    double p_v_ = 0.;
+    // end-point values at t_{n+1}
+    double p_v_np = 0.;
+    double p_arp_np = 0.;
+    double q_arp_np = 0.;
+    double p_ard_np = 0.;
+    // ventricular volume at t_{n+1}
+    double V_v_np = 0.;
 
-    double p_arp_m = 0.;
-    double p_arp_n = 0.;
-    double p_arp_ = 0.;
+    double p_at_np = 0.;
 
-    double y_arp_m = 0.;
-    double p_ard_m = 0.;
 
-    double p_at_n = 0.;
-    double p_at_ = 0.;
-
-    double Rarvlv_n = 0.;
-    double Rarvlv_ = 0.;
-    double Ratvlv_n = 0.;
-    double Ratvlv_ = 0.;
+    double Rarvlv_np = 0.;
+    double Ratvlv_np = 0.;
 
     double dRarvlvdpv = 0.;
     double dRatvlvdpv = 0.;
     double dRarvlvdparp = 0.;
 
-    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6 or assvec7 or assvec8)
+    if (assvec1 or assvec2 or assvec4 or assvec5)
     {
-      //extract values of dof vector cvdofm
-      p_arp_m = (*sysvec6)[numdof_per_cond*condID+1];
-      y_arp_m = (*sysvec6)[numdof_per_cond*condID+2];
-      p_ard_m = (*sysvec6)[numdof_per_cond*condID+3];
-      //extract values of dof vector cvdofn
-      p_v_n = (*sysvec7)[numdof_per_cond*condID];
-      p_arp_n = (*sysvec7)[numdof_per_cond*condID+1];
-      //extract values of dof vector cvdof
-      p_v_ = (*sysvec8)[numdof_per_cond*condID];
-      p_arp_ = (*sysvec8)[numdof_per_cond*condID+1];
+      //extract values of dof vector at t_{n+1}
+      p_v_np = (*sysvec4)[numdof_per_cond*condID+0];
+      p_arp_np = (*sysvec4)[numdof_per_cond*condID+1];
+      q_arp_np = (*sysvec4)[numdof_per_cond*condID+2];
+      p_ard_np = (*sysvec4)[numdof_per_cond*condID+3];
 
-      //atrial pressure
-      p_at_n = p_at_fac * curvefac_n;
-      p_at_ = p_at_fac * curvefac_;
+      // ventricular volume at t_{n+1}
+      V_v_np = (*sysvec5)[numdof_per_cond*condID];
+
+      //atrial pressure at t_{n+1}
+      p_at_np = p_at_fac * curvefac_np;
 
       //nonlinear aortic and mitral valve resistances - at t_{n+1}
-      Rarvlv_n = 0.5*(R_arvalve_max - R_arvalve_min)*(tanh((p_arp_n-p_v_n)/k_p) + 1.) + R_arvalve_min;
-      Ratvlv_n = 0.5*(R_atvalve_max - R_atvalve_min)*(tanh((p_v_n-p_at_n)/k_p) + 1.) + R_atvalve_min;
-      //nonlinear aortic and mitral valve resistances - at t_{n}
-      Rarvlv_ = 0.5*(R_arvalve_max - R_arvalve_min)*(tanh((p_arp_-p_v_)/k_p) + 1.) + R_arvalve_min;
-      Ratvlv_ = 0.5*(R_atvalve_max - R_atvalve_min)*(tanh((p_v_-p_at_)/k_p) + 1.) + R_atvalve_min;
+      Rarvlv_np = 0.5*(R_arvalve_max - R_arvalve_min)*(tanh((p_arp_np-p_v_np)/k_p) + 1.) + R_arvalve_min;
+      Ratvlv_np = 0.5*(R_atvalve_max - R_atvalve_min)*(tanh((p_v_np-p_at_np)/k_p) + 1.) + R_atvalve_min;
+
       //derivatives of valves w.r.t. values at t_{n+1}
-      dRarvlvdpv = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp_n-p_v_n)/k_p)*tanh((p_arp_n-p_v_n)/k_p)) / (-2.*k_p);
-      dRatvlvdpv = (R_atvalve_max - R_atvalve_min)*(1.-tanh((p_v_n-p_at_n)/k_p)*tanh((p_v_n-p_at_n)/k_p)) / (2.*k_p);
-      dRarvlvdparp = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp_n-p_v_n)/k_p)*tanh((p_arp_n-p_v_n)/k_p)) / (2.*k_p);
+      dRarvlvdpv = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp_np-p_v_np)/k_p)*tanh((p_arp_np-p_v_np)/k_p)) / (-2.*k_p);
+      dRatvlvdpv = (R_atvalve_max - R_atvalve_min)*(1.-tanh((p_v_np-p_at_np)/k_p)*tanh((p_v_np-p_at_np)/k_p)) / (2.*k_p);
+      dRarvlvdparp = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp_np-p_v_np)/k_p)*tanh((p_arp_np-p_v_np)/k_p)) / (2.*k_p);
 
-      // fill multipliers for rhs vector
-      factor_cvdof[0] = 0.;
-      factor_dcvdof[0] = 0.;
-      factor_Q[0] = -1.;
-      factor_1[0] = theta * ((p_v_n-p_at_n)/Ratvlv_n + (p_v_n-p_arp_n)/Rarvlv_n) + (1.-theta) * ((p_v_-p_at_)/Ratvlv_ + (p_v_-p_arp_)/Rarvlv_);
+      df_np[0] = V_v_np;
+      df_np[1] = C_arp * p_arp_np;
+      df_np[2] = (L_arp/R_arp) * q_arp_np;
+      df_np[3] = C_ard * p_ard_np;
 
-      factor_cvdof[1] = 0.;
-      factor_dcvdof[1] = C_arp;
-      factor_Q[1] = 0.;
-      factor_1[1] = theta * (p_arp_n-p_v_n)/Rarvlv_n + (1.-theta) * (p_arp_-p_v_)/Rarvlv_ + y_arp_m;
-
-      factor_cvdof[2] = 1.;
-      factor_dcvdof[2] = L_arp/R_arp;
-      factor_Q[2] = 0.;
-      factor_1[2] = (-p_arp_m + p_ard_m)/R_arp;
-
-      factor_cvdof[3] = 1./R_ard;
-      factor_dcvdof[3] = C_ard;
-      factor_Q[3] = 0.;
-      factor_1[3] = -p_ref/R_ard - y_arp_m;
+      f_np[0] = (p_v_np - p_at_np)/Ratvlv_np + (p_v_np - p_arp_np)/Rarvlv_np;
+      f_np[1] = q_arp_np - (p_v_np - p_arp_np)/Rarvlv_np;
+      f_np[2] = q_arp_np + (p_ard_np - p_arp_np)/R_arp;
+      f_np[3] = (p_ard_np - p_ref)/R_ard - q_arp_np;
 
     }
 
@@ -679,14 +617,13 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
     // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
-
-      wkstiff(0,0) = theta * ((p_v_n-p_at_n)*dRatvlvdpv/(-Ratvlv_n*Ratvlv_n) + 1./Ratvlv_n + (p_v_n-p_arp_n)*dRarvlvdpv/(-Rarvlv_n*Rarvlv_n) + 1./Rarvlv_n);
-      wkstiff(0,1) = theta * ((p_v_n-p_arp_n)*dRarvlvdparp/(-Rarvlv_n*Rarvlv_n) - 1./Rarvlv_n);
+      wkstiff(0,0) = theta * ((p_v_np-p_at_np)*dRatvlvdpv/(-Ratvlv_np*Ratvlv_np) + 1./Ratvlv_np + (p_v_np-p_arp_np)*dRarvlvdpv/(-Rarvlv_np*Rarvlv_np) + 1./Rarvlv_np);
+      wkstiff(0,1) = theta * ((p_v_np-p_arp_np)*dRarvlvdparp/(-Rarvlv_np*Rarvlv_np) - 1./Rarvlv_np);
       wkstiff(0,2) = 0.;
       wkstiff(0,3) = 0.;
 
-      wkstiff(1,0) = theta * (-(p_v_n-p_arp_n)*dRarvlvdpv/(-Rarvlv_n*Rarvlv_n) - 1./Rarvlv_n);
-      wkstiff(1,1) = theta * (C_arp/(theta*ts_size) - (p_v_n-p_arp_n)*dRarvlvdparp/(-Rarvlv_n*Rarvlv_n) + 1./Rarvlv_n);
+      wkstiff(1,0) = theta * (-(p_v_np-p_arp_np)*dRarvlvdpv/(-Rarvlv_np*Rarvlv_np) - 1./Rarvlv_np);
+      wkstiff(1,1) = theta * (C_arp/(theta*ts_size) - (p_v_np-p_arp_np)*dRarvlvdparp/(-Rarvlv_np*Rarvlv_np) + 1./Rarvlv_np);
       wkstiff(1,2) = theta * (1.);
       wkstiff(1,3) = 0.;
 
@@ -713,39 +650,22 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
       }
 
     }
-    // rhs part associated with cvdof
+
+    // rhs part df_np
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&df_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dcvdof/dt
+    // rhs part f_np
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with Q
-    if (assvec3)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec3->SumIntoGlobalValues(1,&factor_Q[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with 1
-    if (assvec4)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec4->SumIntoGlobalValues(1,&factor_1[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&f_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -779,10 +699,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
       elevector2.Size(eledim);
       elevector3.Size(numdof_per_cond);
 
-
-      Epetra_SerialDenseMatrix dummat(0,0);
-      Epetra_SerialDenseVector dumvec(0);
-
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
       if (err) dserror("error while evaluating elements");
@@ -797,28 +713,25 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex[0];
-        elevector2.Scale(factor_Q[0]/ts_size);
+        elevector2.Scale(-1./ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
 
       }
 
-      if (assvec5)
+      if (assvec3)
       {
         // assemble the current volume of the enclosed surface of the cardiovascular0d condition
-        elevector3[1]=elevector3[0];
-        elevector3[2]=elevector3[0];
-        elevector3[3]=elevector3[0];
+        for (int j = 1; j < numdof_per_cond; j++)
+          elevector3[j]=elevector3[0];
+
         std::vector<int> cardiovascular0dlm;
         std::vector<int> cardiovascular0downer;
-        cardiovascular0dlm.push_back(gindex[0]);
-        cardiovascular0dlm.push_back(gindex[1]);
-        cardiovascular0dlm.push_back(gindex[2]);
-        cardiovascular0dlm.push_back(gindex[3]);
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec5,elevector3,cardiovascular0dlm,cardiovascular0downer);
+        for (int j = 0; j < numdof_per_cond; j++)
+        {
+          cardiovascular0dlm.push_back(gindex[j]);
+          cardiovascular0downer.push_back(curr->second->Owner());
+        }
+        LINALG::Assemble(*sysvec3,elevector3,cardiovascular0dlm,cardiovascular0downer);
       }
 
     }
@@ -833,6 +746,9 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
 
   return;
 } // end of EvaluateCondition
+
+
+
 
 
 
@@ -854,10 +770,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     Teuchos::RCP<Epetra_Vector>    sysvec3,
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
-    Teuchos::RCP<Epetra_Vector>    sysvec6,
-    Teuchos::RCP<Epetra_Vector>    sysvec7,
-    Teuchos::RCP<Epetra_Vector>    sysvec8,
-    Teuchos::RCP<Epetra_Vector>    sysvec9)
+    Teuchos::RCP<Epetra_Vector>    sysvec6)
 {
 
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
@@ -888,9 +801,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   const bool assvec4 = sysvec4!=Teuchos::null;
   const bool assvec5 = sysvec5!=Teuchos::null;
   const bool assvec6 = sysvec6!=Teuchos::null;
-  const bool assvec7 = sysvec7!=Teuchos::null;
-  const bool assvec8 = sysvec8!=Teuchos::null;
-  const bool assvec9 = sysvec9!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -907,12 +817,10 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     const std::vector<int>* curve  = cardiovascular0dcond_[i]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
-    double y_at_ = 0.0;
-    double y_at_n = 0.0;
+    double y_at_np = 0.0;
     if (curvenum>=0 && usetime)
     {
-      y_at_ = DRT::Problem::Instance()->Curve(curvenum).f(tim-ts_size);
-      y_at_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
+      y_at_np = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
     double R_arvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_max");
@@ -923,8 +831,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     double E_at_max = cardiovascular0dcond_[condID]->GetDouble("E_at_max");
     double E_at_min = cardiovascular0dcond_[condID]->GetDouble("E_at_min");
 
-    double E_at_ = (E_at_max-E_at_min)*y_at_ + E_at_min;
-    double E_at_n = (E_at_max-E_at_min)*y_at_n + E_at_min;
+    double E_at_np = (E_at_max-E_at_min)*y_at_np + E_at_min;
 
     double C_ar = cardiovascular0dcond_[condID]->GetDouble("C_ar");
     double R_ar = cardiovascular0dcond_[condID]->GetDouble("R_ar");
@@ -943,129 +850,75 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
     Epetra_SerialDenseMatrix wkstiff_other(numdof_per_cond,numdof_per_cond);
 
-    // Cardiovascular0D rhs contributions
-    std::vector<double> factor_cvdof(numdof_per_cond);
-    std::vector<double> factor_dcvdof(numdof_per_cond);
-    std::vector<double> factor_Q(numdof_per_cond);
-    std::vector<double> factor_1(numdof_per_cond);
+    // contributions to total residuals r:
+    // r_m = df_m              - f_m
+    //     = (df_np - df_n)/dt - theta f_np - (1-theta) f_n
+    // here we ONLY evaluate df_np, f_np
+    std::vector<double> df_np(numdof_per_cond);
+    std::vector<double> f_np(numdof_per_cond);
 
     // end-point values at t_{n+1}
-    double p_at_n = 0.;
-    double q_vout_n = 0.;
-    double p_v_n = 0.;
-    double p_ar_n = 0.;
-    // values at t_{n}
-    double p_at_ = 0.;
-    double q_vout_ = 0.;
-    double p_v_ = 0.;
-    double p_ar_ = 0.;
-    // mid-point values at t_{n+theta}
-    double p_ar_m = 0.;
-    double p_ven_m = 0.;
-    double q_vin_m = 0.;
-    double q_vout_m = 0.;
-    double q_ar_m = 0.;
-    double q_ven_m = 0.;
+    double p_at_np = 0.;
+    double q_vin_np = 0.;
+    double q_vout_np = 0.;
+    double p_v_np = 0.;
+    double p_ar_np = 0.;
+    double q_ar_np = 0.;
+    double p_ven_np = 0.;
+    double q_ven_np = 0.;
+    // end-point values at t_{n+1} - from the complementary circulation!
+    double p_at_other_np = 0.;
+    double q_ven_other_np = 0.;
+    // ventricular volume at t_{n+1}
+    double V_v_np = 0.;
 
-    double p_at_other_m = 0.;
-    double q_ven_other_m = 0.;
-
-    double atv_n = 0.;
-    double atv_ = 0.;
-    double arv_n = 0.;
-    double arv_ = 0.;
-
-    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6 or assvec7 or assvec8)
+    if (assvec1 or assvec2 or assvec4 or assvec5)
     {
-
-      //extract values of dof vector cvdofn
-      p_at_n = (*sysvec7)[numdof_per_cond*condID+0];
-      q_vout_n = (*sysvec7)[numdof_per_cond*condID+2];
-      p_v_n = (*sysvec7)[numdof_per_cond*condID+3];
-      p_ar_n = (*sysvec7)[numdof_per_cond*condID+4];
-      //extract values of dof vector cvdof
-      p_at_ = (*sysvec8)[numdof_per_cond*condID+0];
-      q_vout_ = (*sysvec8)[numdof_per_cond*condID+2];
-      p_v_ = (*sysvec8)[numdof_per_cond*condID+3];
-      p_ar_ = (*sysvec8)[numdof_per_cond*condID+4];
-      //extract values of dof vector cvdofm
-      q_vin_m = (*sysvec6)[numdof_per_cond*condID+1];
-      q_vout_m = (*sysvec6)[numdof_per_cond*condID+2];
-      p_ar_m = (*sysvec6)[numdof_per_cond*condID+4];
-      q_ar_m = (*sysvec6)[numdof_per_cond*condID+5];
-      p_ven_m = (*sysvec6)[numdof_per_cond*condID+6];
-      q_ven_m = (*sysvec6)[numdof_per_cond*condID+7];
-
+      //extract values of dof vector at t_{n+1}
+      p_at_np = (*sysvec4)[numdof_per_cond*condID+0];
+      q_vin_np = (*sysvec4)[numdof_per_cond*condID+1];
+      q_vout_np = (*sysvec4)[numdof_per_cond*condID+2];
+      p_v_np = (*sysvec4)[numdof_per_cond*condID+3];
+      p_ar_np = (*sysvec4)[numdof_per_cond*condID+4];
+      q_ar_np = (*sysvec4)[numdof_per_cond*condID+5];
+      p_ven_np = (*sysvec4)[numdof_per_cond*condID+6];
+      q_ven_np = (*sysvec4)[numdof_per_cond*condID+7];
+      //extract values of dof vector at t_{n+1} - from the complementary circulation!
       if (condID == 0)
       {
-        p_at_other_m = (*sysvec6)[numdof_per_cond*1+0];
-        q_ven_other_m = (*sysvec6)[numdof_per_cond*1+7];
+        p_at_other_np = (*sysvec4)[numdof_per_cond*1+0];
+        q_ven_other_np = (*sysvec4)[numdof_per_cond*1+7];
       }
       else if (condID == 1)
       {
-        p_at_other_m = (*sysvec6)[numdof_per_cond*0+0];
-        q_ven_other_m = (*sysvec6)[numdof_per_cond*0+7];
+        p_at_other_np = (*sysvec4)[numdof_per_cond*0+0];
+        q_ven_other_np = (*sysvec4)[numdof_per_cond*0+7];
       }
       else dserror("Do not choose more than 2 conditions / do not id them different than 0 and 1!");
+      // ventricular volume at t_{n+1}
+      V_v_np = (*sysvec5)[numdof_per_cond*condID];
 
-      // fill multipliers for rhs vector
-      // atrium
-      factor_cvdof[0] = 0.;
-      factor_dcvdof[0] = 0.;
-      factor_Q[0] = 0.;
-      factor_1[0] = (p_at_n/E_at_n - p_at_/E_at_)/ts_size - q_ven_other_m + q_vin_m;
+      df_np[0] = p_at_np/E_at_np;
+      df_np[1] = 0.;
+      df_np[2] = V_v_np;
+      df_np[3] = 0.;
+      df_np[4] = C_ar * p_ar_np - Z_ar * q_vout_np;
+      df_np[5] = (L_ar/R_ar) * q_ar_np;
+      df_np[6] = C_ven * p_ven_np;
+      df_np[7] = (L_ven/R_ven) * q_ven_np;
 
+      f_np[0] = -q_ven_other_np + q_vin_np;
       //atrioventricular valve
-      // theta * valve-law evaluated at t_{n+1} + (1.-theta) * valve-law evaluated at t_{n} <--- One-Step-Theta consistent way to do it
-      factor_cvdof[1] = -1.;
-      factor_dcvdof[1] = 0.;
-      factor_Q[1] = 0.;
-      if (p_v_n < p_at_n) atv_n = (p_at_n-p_v_n)/R_atvalve_min;
-      if (p_v_n >= p_at_n) atv_n = (p_at_n-p_v_n)/R_atvalve_max;
-      if (p_v_ < p_at_) atv_ = (p_at_-p_v_)/R_atvalve_min;
-      if (p_v_ >= p_at_) atv_ = (p_at_-p_v_)/R_atvalve_max;
-      factor_1[1] = theta * atv_n + (1.-theta)*atv_;
-
-      //ventricular mass balance
-      factor_cvdof[2] = 1.;
-      factor_dcvdof[2] = 0.;
-      factor_Q[2] = -1.;
-      factor_1[2] = -q_vin_m;
-
+      if (p_v_np < p_at_np) f_np[1] = (p_at_np-p_v_np)/R_atvalve_min - q_vin_np;
+      if (p_v_np >= p_at_np) f_np[1] = (p_at_np-p_v_np)/R_atvalve_max - q_vin_np;
+      f_np[2] = -q_vin_np + q_vout_np;
       //semilunar valve
-      // theta * valve-law evaluated at t_{n+1} + (1.-theta) * valve-law evaluated at t_{n} <--- One-Step-Theta consistent way to do it
-      factor_cvdof[3] = 0.;
-      factor_dcvdof[3] = 0.;
-      factor_Q[3] = 0.;
-      if (p_v_n < p_ar_n) arv_n = (p_v_n-p_ar_n)/R_arvalve_max;
-      if (p_v_n >= p_ar_n) arv_n = (p_v_n-p_ar_n)/R_arvalve_min;
-      if (p_v_ < p_ar_) arv_ = (p_v_-p_ar_)/R_arvalve_max;
-      if (p_v_ >= p_ar_) arv_ = (p_v_-p_ar_)/R_arvalve_min;
-      factor_1[3] = theta * arv_n + (1.-theta)*arv_ - q_vout_m;
-
-      //arterial mass balance
-      factor_cvdof[4] = 0.;
-      factor_dcvdof[4] = C_ar;
-      factor_Q[4] = 0.;
-      factor_1[4] = -q_vout_m + q_ar_m - C_ar*Z_ar * (q_vout_n - q_vout_)/ts_size;
-
-      //arterial linear momentum balance
-      factor_cvdof[5] = 1.;
-      factor_dcvdof[5] = L_ar/R_ar;
-      factor_Q[5] = 0.;
-      factor_1[5] = (p_ven_m-p_ar_m + Z_ar*q_vout_m)/R_ar;
-
-      //venous mass balance
-      factor_cvdof[6] = 0.;
-      factor_dcvdof[6] = C_ven;
-      factor_Q[6] = 0.;
-      factor_1[6] = -q_ar_m + q_ven_m;
-
-      //venous linear momentum balance
-      factor_cvdof[7] = 1.;
-      factor_dcvdof[7] = L_ven/R_ven;
-      factor_Q[7] = 0.;
-      factor_1[7] = (p_at_other_m-p_ven_m)/R_ven;
+      if (p_v_np < p_ar_np) f_np[3] = (p_v_np-p_ar_np)/R_arvalve_max - q_vout_np;
+      if (p_v_np >= p_ar_np) f_np[3] = (p_v_np-p_ar_np)/R_arvalve_min - q_vout_np;
+      f_np[4] = -q_vout_np + q_ar_np;
+      f_np[5] = (p_ven_np - p_ar_np + Z_ar * q_vout_np)/R_ar + q_ar_np;
+      f_np[6] = -q_ar_np + q_ven_np;
+      f_np[7] = (p_at_other_np - p_ven_np)/R_ven + q_ven_np;
 
     }
 
@@ -1096,25 +949,25 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     if (assmat1)
     {
       //atrium
-      wkstiff(0,0) = 1./(E_at_n*ts_size);
+      wkstiff(0,0) = 1./(E_at_np*ts_size);
       wkstiff(0,1) = theta;
 
       //atrioventricular valve
       wkstiff(1,1) = -theta;
-      if (p_v_n < p_at_n) wkstiff(1,0) = theta/R_atvalve_min;
-      if (p_v_n >= p_at_n) wkstiff(1,0) = theta/R_atvalve_max;
-      if (p_v_n < p_at_n) wkstiff(1,3) = -theta/R_atvalve_min;
-      if (p_v_n >= p_at_n) wkstiff(1,3) = -theta/R_atvalve_max;
+      if (p_v_np < p_at_np) wkstiff(1,0) = theta/R_atvalve_min;
+      if (p_v_np >= p_at_np) wkstiff(1,0) = theta/R_atvalve_max;
+      if (p_v_np < p_at_np) wkstiff(1,3) = -theta/R_atvalve_min;
+      if (p_v_np >= p_at_np) wkstiff(1,3) = -theta/R_atvalve_max;
 
       //ventricular mass balance
       wkstiff(2,2) = theta;
       wkstiff(2,1) = -theta;
 
       //semilunar valve
-      if (p_v_n < p_ar_n) wkstiff(3,3) = theta/R_arvalve_max;
-      if (p_v_n >= p_ar_n) wkstiff(3,3) = theta/R_arvalve_min;
-      if (p_v_n < p_ar_n) wkstiff(3,4) = -theta/R_arvalve_max;
-      if (p_v_n >= p_ar_n) wkstiff(3,4) = -theta/R_arvalve_min;
+      if (p_v_np < p_ar_np) wkstiff(3,3) = theta/R_arvalve_max;
+      if (p_v_np >= p_ar_np) wkstiff(3,3) = theta/R_arvalve_min;
+      if (p_v_np < p_ar_np) wkstiff(3,4) = -theta/R_arvalve_max;
+      if (p_v_np >= p_ar_np) wkstiff(3,4) = -theta/R_arvalve_min;
       wkstiff(3,2) = -theta;
 
       //arterial mass balance
@@ -1155,41 +1008,23 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
           }
         }
       }
-
     }
-    // rhs part associated with cvdof
+
+    // rhs part df_np
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&df_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dcvdof/dt
+    // rhs part f_np
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with Q
-    if (assvec3)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec3->SumIntoGlobalValues(1,&factor_Q[j],&gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
-      }
-    }
-    // rhs part associated with 1
-    if (assvec4)
-    {
-      for (int j = 0; j < numdof_per_cond; j++)
-      {
-        int err = sysvec4->SumIntoGlobalValues(1,&factor_1[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&f_np[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -1202,20 +1037,19 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     Epetra_SerialDenseVector elevector3;
 
     // set vector of compartment volumes (does not hold volume stemming from FE (ventricles) - assembled later!)
-    if (assvec6 and assvec9)
+    if (assvec4 and assvec6)
     {
-      p_at_n = (*sysvec7)[numdof_per_cond*condID+0];
-      p_at_ = (*sysvec8)[numdof_per_cond*condID+0];
-      q_vout_m = (*sysvec6)[numdof_per_cond*condID+2];
-      p_ar_m = (*sysvec6)[numdof_per_cond*condID+4];
-      p_ven_m = (*sysvec6)[numdof_per_cond*condID+6];
+      p_at_np = (*sysvec4)[numdof_per_cond*condID+0];
+      q_vout_np = (*sysvec4)[numdof_per_cond*condID+2];
+      p_ar_np = (*sysvec4)[numdof_per_cond*condID+4];
+      p_ven_np = (*sysvec4)[numdof_per_cond*condID+6];
 
       // atrial volume
-      (*sysvec9)[numdof_per_cond*condID + 0] = theta * p_at_n/E_at_n + (1.-theta) * p_at_/E_at_ + V_at_0;
+      (*sysvec6)[numdof_per_cond*condID + 0] = p_at_np/E_at_np + V_at_0;
       // arterial compartment volume
-      (*sysvec9)[numdof_per_cond*condID + 1] = C_ar * (p_ar_m - Z_ar * q_vout_m) + V_ar_0;
+      (*sysvec6)[numdof_per_cond*condID + 1] = C_ar * (p_ar_np - Z_ar * q_vout_np) + V_ar_0;
       // venous compartment volume
-      (*sysvec9)[numdof_per_cond*condID + 2] = C_ven * p_ven_m + V_ven_0;
+      (*sysvec6)[numdof_per_cond*condID + 2] = C_ven * p_ven_np + V_ven_0;
 
     }
 
@@ -1241,14 +1075,9 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
       elevector2.Size(eledim);
       elevector3.Size(numdof_per_cond);
 
-
-      Epetra_SerialDenseMatrix dummat(0,0);
-      Epetra_SerialDenseVector dumvec(0);
-
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
       if (err) dserror("error while evaluating elements");
-
 
       // assembly
       int eid = curr->second->Id();
@@ -1259,40 +1088,24 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex[2];
-        elevector2.Scale(factor_Q[2]/ts_size);
+        elevector2.Scale(-1./ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
 
-      if (assvec5)
+      if (assvec3)
       {
         // assemble the current volume of the enclosed surface of the cardiovascular0d condition
-        elevector3[1]=elevector3[0];
-        elevector3[2]=elevector3[0];
-        elevector3[3]=elevector3[0];
-        elevector3[4]=elevector3[0];
-        elevector3[5]=elevector3[0];
-        elevector3[6]=elevector3[0];
-        elevector3[7]=elevector3[0];
+        for (int j = 1; j < numdof_per_cond; j++)
+          elevector3[j]=elevector3[0];
+
         std::vector<int> cardiovascular0dlm;
         std::vector<int> cardiovascular0downer;
-        cardiovascular0dlm.push_back(gindex[0]);
-        cardiovascular0dlm.push_back(gindex[1]);
-        cardiovascular0dlm.push_back(gindex[2]);
-        cardiovascular0dlm.push_back(gindex[3]);
-        cardiovascular0dlm.push_back(gindex[4]);
-        cardiovascular0dlm.push_back(gindex[5]);
-        cardiovascular0dlm.push_back(gindex[6]);
-        cardiovascular0dlm.push_back(gindex[7]);
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        cardiovascular0downer.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec5,elevector3,cardiovascular0dlm,cardiovascular0downer);
-
+        for (int j = 0; j < numdof_per_cond; j++)
+        {
+          cardiovascular0dlm.push_back(gindex[j]);
+          cardiovascular0downer.push_back(curr->second->Owner());
+        }
+        LINALG::Assemble(*sysvec3,elevector3,cardiovascular0dlm,cardiovascular0downer);
       }
 
     }
@@ -1307,6 +1120,13 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
 
   return;
 } // end of EvaluateCondition
+
+
+
+
+
+
+
 
 
 void UTILS::Cardiovascular0D::EvaluateDStructDp(
@@ -1325,7 +1145,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
   switch (cardiovascular0dtype_)
   {
   case cardvasc0d_windkesselonly:
-    numdof_per_cond = 1;
+    numdof_per_cond = 3;
     pres_coup_index = 0;
     break;
   case cardvasc0d_arterialproxdist:
@@ -1498,7 +1318,7 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DWindkesselOnly(
   // get the current time
   //const double time = params.get("total time",-1.0);
 
-  int numdof_per_cond = 1;
+  int numdof_per_cond = 3;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -1518,9 +1338,13 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DWindkesselOnly(
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
 
     double p_0=cardiovascular0dcond_[condID]->GetDouble("p_0");
+    double q_0=0.;
+    double s_0=0.;
 
     int err1 = sysvec2->SumIntoGlobalValues(1,&p_0,&gindex[0]);
-    if (err1) dserror("SumIntoGlobalValues failed!");
+    int err2 = sysvec2->SumIntoGlobalValues(1,&q_0,&gindex[1]);
+    int err3 = sysvec2->SumIntoGlobalValues(1,&s_0,&gindex[2]);
+    if (err1 or err2 or err3) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
@@ -1554,12 +1378,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DWindkesselOnly(
       if (err) dserror("error while evaluating elements");
 
       // assembly
+      for (int j = 1; j < numdof_per_cond; j++)
+        elevector3[j]=elevector3[0];
 
       std::vector<int> cardiovascular0dlm;
       std::vector<int> cardiovascular0downer;
-
-      cardiovascular0dlm.push_back(gindex[0]);
-      cardiovascular0downer.push_back(curr->second->Owner());
+      for (int j = 0; j < numdof_per_cond; j++)
+      {
+        cardiovascular0dlm.push_back(gindex[j]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+      }
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
 
@@ -1608,12 +1436,12 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialProxDist(
 
     double p_v_0=cardiovascular0dcond_[condID]->GetDouble("p_v_0");
     double p_arp_0=cardiovascular0dcond_[condID]->GetDouble("p_arp_0");
-    double y_arp_0=cardiovascular0dcond_[condID]->GetDouble("y_arp_0");
+    double q_arp_0=cardiovascular0dcond_[condID]->GetDouble("y_arp_0");
     double p_ard_0=cardiovascular0dcond_[condID]->GetDouble("p_ard_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1,&p_v_0,&gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1,&p_arp_0,&gindex[1]);
-    int err3 = sysvec2->SumIntoGlobalValues(1,&y_arp_0,&gindex[2]);
+    int err3 = sysvec2->SumIntoGlobalValues(1,&q_arp_0,&gindex[2]);
     int err4 = sysvec2->SumIntoGlobalValues(1,&p_ard_0,&gindex[3]);
     if (err1 or err2 or err3 or err4) dserror("SumIntoGlobalValues failed!");
 
@@ -1650,20 +1478,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialProxDist(
 
       // assembly
 
-      elevector3[1]=elevector3[0];
-      elevector3[2]=elevector3[0];
-      elevector3[3]=elevector3[0];
+      for (int j = 1; j < numdof_per_cond; j++)
+        elevector3[j]=elevector3[0];
+
       std::vector<int> cardiovascular0dlm;
       std::vector<int> cardiovascular0downer;
-
-      cardiovascular0dlm.push_back(gindex[0]);
-      cardiovascular0dlm.push_back(gindex[1]);
-      cardiovascular0dlm.push_back(gindex[2]);
-      cardiovascular0dlm.push_back(gindex[3]);
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
+      for (int j = 0; j < numdof_per_cond; j++)
+      {
+        cardiovascular0dlm.push_back(gindex[j]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+      }
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
 
@@ -1779,32 +1603,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
 
       // assembly
 
-      elevector3[1]=elevector3[0];
-      elevector3[2]=elevector3[0];
-      elevector3[3]=elevector3[0];
-      elevector3[4]=elevector3[0];
-      elevector3[5]=elevector3[0];
-      elevector3[6]=elevector3[0];
-      elevector3[7]=elevector3[0];
+      for (int j = 1; j < numdof_per_cond; j++)
+        elevector3[j]=elevector3[0];
+
       std::vector<int> cardiovascular0dlm;
       std::vector<int> cardiovascular0downer;
-
-      cardiovascular0dlm.push_back(gindex[0]);
-      cardiovascular0dlm.push_back(gindex[1]);
-      cardiovascular0dlm.push_back(gindex[2]);
-      cardiovascular0dlm.push_back(gindex[3]);
-      cardiovascular0dlm.push_back(gindex[4]);
-      cardiovascular0dlm.push_back(gindex[5]);
-      cardiovascular0dlm.push_back(gindex[6]);
-      cardiovascular0dlm.push_back(gindex[7]);
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
-      cardiovascular0downer.push_back(curr->second->Owner());
+      for (int j = 0; j < numdof_per_cond; j++)
+      {
+        cardiovascular0dlm.push_back(gindex[j]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+      }
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
 

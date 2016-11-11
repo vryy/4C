@@ -224,16 +224,16 @@ void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const
 {
-  iowriter.WriteVector("cv0ddof",
-                        cardvasc0dman_->Get0DDofVector());
-  iowriter.WriteVector("refvolval",
-                        cardvasc0dman_->GetRefVolValue());
-  iowriter.WriteVector("reffluxval",
-                        cardvasc0dman_->GetRefFluxValue());
-  iowriter.WriteVector("refdfluxval",
-                        cardvasc0dman_->GetRefDFluxValue());
-  iowriter.WriteVector("refddfluxval",
-                        cardvasc0dman_->GetRefDDFluxValue());
+
+  iowriter.WriteVector("cv0d_df_np",
+                        cardvasc0dman_->Get0D_df_np());
+  iowriter.WriteVector("cv0d_f_np",
+                        cardvasc0dman_->Get0D_f_np());
+
+  iowriter.WriteVector("cv0d_dof_np",
+                        cardvasc0dman_->Get0D_dof_np());
+  iowriter.WriteVector("vol_np",
+                        cardvasc0dman_->Get0D_vol_np());
 
   return;
 }
