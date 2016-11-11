@@ -1058,7 +1058,8 @@ void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool in
           FLD::UTILS::ProjectGradient(fluiddis_, fluid_->Velnp(), false);
 
 #ifdef INLINED_ELE_EVAL
-      velgradcol_interpol_ = projected_velgrad;
+      velgradcol_interpol_ = Teuchos::rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),dim_*dim_));
+      LINALG::Export(*projected_velgrad,*velgradcol_interpol_);
 #else
       fluiddis_->AddMultiVectorToParameterList(p,"velgradient",projected_velgrad);
 #endif
