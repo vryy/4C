@@ -391,13 +391,16 @@ void CONTACT::CoIntegratorNitsche::BuildNormalAdjointTest(
         at(i)+=fac*d2snnDdDn(i,d)*p->second;
     }
 
+  Epetra_SerialDenseMatrix tmp(moEle.ParentElement()->NumNode()*dim,dim,false);
+  Epetra_SerialDenseMatrix deriv_trafo(::View,derivtravo_slave.A(),
+      derivtravo_slave.Rows(),derivtravo_slave.Rows(),derivtravo_slave.Columns());
+  if (tmp.Multiply('N','N',1.,d2snnDdDpxi,deriv_trafo,0.)) dserror("multiply failed");
   for (int d=0;d<dim-1;++d)
     for (GEN::pairedvector<int,double>::const_iterator p=boundary_gpcoord_lin[d].begin();p!=boundary_gpcoord_lin[d].end();++p)
     {
       LINALG::SerialDenseVector& at=deriv_adjoint_test[p->first];
-      for (int k=0;k<dim;++k)
         for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-          at(i)+=fac*d2snnDdDpxi(i,k)*derivtravo_slave(k,d)*p->second;
+          at(i)+=fac*tmp(i,d)*p->second;
     }
   return;
 }
