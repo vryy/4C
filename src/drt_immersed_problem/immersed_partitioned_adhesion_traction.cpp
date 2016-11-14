@@ -98,7 +98,8 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // set pointer to adhesion force vector in immersed exchange manager
   exchange_manager_->SetPointerECMAdhesionForce(ecm_adhesion_forces_);
-  //curr_subset_of_backgrounddis_=exchange_manager_->GetPointerToCurrentSubsetOfBackgrdDis(); todo build in global control algo and hand pointer into ParameterList
+  // todo build in global control algo and hand pointer into ParameterList
+  //curr_subset_of_backgrounddis_=exchange_manager_->GetPointerToCurrentSubsetOfBackgrdDis();
 
   // PSEUDO2D switch
   isPseudo2D_ = DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"PSEUDO2D");
@@ -323,7 +324,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareBackgroundOp()
     std::vector<double> mydisp(3);
 
     // get the current displacement
-    immerseddis_->Dof(node,0,dofstoextract);
+    immerseddis_->Dof(0,node,0,dofstoextract);
     DRT::UTILS::ExtractMyValues(*celldisplacements,mydisp,dofstoextract);
 
     currpos(0) = node->X()[0]+mydisp.at(0);
