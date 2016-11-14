@@ -287,6 +287,394 @@ void XFEM::MeshCoupling::GetCouplingEleLocationVector(
   return coupl_dis_->gElement(sid)->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+XFEM::MeshVolCoupling::MeshVolCoupling(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,               ///< background discretization
+    const std::string &                 cond_name,            ///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,             ///< discretization from which cutter discretization can be derived
+    const int                           coupling_id,          ///< id of composite of coupling conditions
+    const double                        time,                 ///< time
+    const int                           step,                 ///< time step
+    const std::string &                 suffix               ///< suffix for cutterdisname
+) : MeshCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step, suffix),
+    init_volcoupling_(false)
+{
+  if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+  {
+    //Initialize Volume Coupling
+    Init_VolCoupling();
+
+    // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
+    CreateAuxiliaryDiscretization();
+  }
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::Init_VolCoupling()
+{
+  if (!init_volcoupling_)
+  {
+    // ghost coupling elements, that contribute to the cutting discretization
+    RedistributeEmbeddedDiscretization();
+    // create map from side to embedded element ID
+    CreateCuttingToEmbeddedElementMap();
+
+    init_volcoupling_ = true;
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(
+  const int sid,
+  std::vector<int> & patchlm)
+{
+  std::vector<int> patchlmstride, patchlmowner; // dummy
+  DRT::Element * coupl_ele = GetCouplingElement(sid);
+  return coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::CreateCuttingToEmbeddedElementMap()
+{
+  // fill map between boundary (cutting) element id and its corresponding embedded (coupling) element id
+  for (int ibele=0; ibele< cutter_dis_->NumMyColElements(); ++ ibele)
+  {
+    // boundary element and its nodes
+    DRT::Element* bele = cutter_dis_->lColElement(ibele);
+    const int * bele_node_ids = bele->NodeIds();
+
+    bool bele_found = false;
+
+    // ask all conditioned embedded elements for this boundary element
+    for(int iele = 0; iele< cond_dis_->NumMyColElements(); ++iele)
+    {
+      DRT::Element* ele = cond_dis_->lColElement(iele);
+      const int * ele_node_ids = ele->NodeIds();
+
+      // get nodes for every face of the embedded element
+      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
+
+      // loop the faces of the element and check node equality for every boundary element
+      // Todo: Efficiency?
+      for (int f = 0; f < ele->NumFace(); f++)
+      {
+        bele_found = true;
+
+        const int face_numnode = face_node_map[f].size();
+
+        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
+
+        // check all nodes of the boundary element
+        for(int inode=0; inode<bele->NumNode();  ++inode)
+        {
+          // boundary node
+          const int belenodeId = bele_node_ids[inode];
+
+          bool node_found = false;
+          for (int fnode=0; fnode<face_numnode; ++fnode)
+          {
+            const int facenodeId = ele_node_ids[face_node_map[f][fnode]];
+
+            if(facenodeId == belenodeId)
+            {
+              // nodes are the same
+              node_found = true;
+              break;
+            }
+          } // loop nodes of element's face
+          if (node_found==false) // this node is not contained in this face
+          {
+            bele_found = false; // element not the right one, if at least one boundary node is not found
+            break; // node not found
+          }
+        } // loop nodes of boundary element
+
+
+        if (bele_found)
+        {
+          cutting_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
+          cutting_emb_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
+          break;
+        }
+      } // loop element faces
+      if (bele_found) break; // do not continue the search
+
+    }
+
+    if(bele_found == false)
+      dserror("Corresponding embedded element for boundary element id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!",
+        bele->Id(), cond_dis_->Comm().MyPID());
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
+{
+//#ifdef DEBUG
+//  // collect conditioned nodes and compare to the overall number of nodes in
+//  // the surface discretization
+//  std::vector<DRT::Condition*> cnd;
+//  cond_dis_->GetCondition(cond_name_,cnd);
+//
+//  // get the set of ids of all xfem nodes
+//  std::set<int> cond_nodeset;
+//  {
+//    for (size_t cond = 0; cond< cnd.size(); ++ cond)
+//    {
+//      // conditioned node ids
+//      const std::vector<int>* nodeids_cnd = cnd[cond]->Nodes();
+//      for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
+//           c != nodeids_cnd->end(); ++c)
+//        cond_nodeset.insert(*c);
+//    }
+//  }
+//
+//  if (cond_nodeset.size() != static_cast<size_t>(cutter_dis_->NumGlobalNodes()))
+//    dserror("Got %d %s nodes but have % dnodes in the boundary discretization created from the condition",
+//        cond_nodeset.size(), cond_name_.c_str(), cutter_dis_->NumGlobalNodes());
+//#endif
+
+  // get gids of elements (and associated notes), that contribute to the fluid-fluid interface
+  std::set<int> adj_eles_row;
+  std::set<int> adj_ele_nodes_row;
+
+  const int mypid = cond_dis_->Comm().MyPID();
+
+  // STEP 1: Query
+  // loop over nodes of cutter discretization (conditioned nodes)
+  for (int icondn = 0; icondn != cutter_dis_->NodeRowMap()->NumMyElements(); ++icondn)
+  {
+    // get node GID
+    const int cond_node_gid = cutter_dis_->NodeRowMap()->GID(icondn);
+
+    // node from coupling discretization (is on this proc, as cutter_dis nodes are
+    // a subset!)
+    const DRT::Node* cond_node = cond_dis_->gNode(cond_node_gid);
+
+    // get associated elements
+    const DRT::Element*const* cond_eles = cond_node->Elements();
+    const int num_cond_ele = cond_node->NumElement();
+
+    // loop over associated elements
+    for (int ie = 0; ie < num_cond_ele; ++ ie)
+    {
+      if (cond_eles[ie]->Owner() == mypid)
+        adj_eles_row.insert(cond_eles[ie]->Id());
+
+      const int * node_ids = cond_eles[ie]->NodeIds();
+      for (int in = 0; in < cond_eles[ie]->NumNode(); ++ in)
+      {
+        if (cond_dis_->gNode(node_ids[in])->Owner() == mypid)
+          adj_ele_nodes_row.insert(node_ids[in]);
+      }
+    }
+  }
+
+  // STEP 2 : ghost interface-contributing elements from coupl_dis on all proc
+
+  // collect node & element gids from the auxiliary discetization and
+  // store in vector full_{nodes;eles}, which will be appended by the standard
+  // column elements/nodes of the discretization we couple with
+
+  std::set<int> full_ele_nodes_col(adj_ele_nodes_row);
+  std::set<int> full_eles_col(adj_eles_row);
+
+  for (int in = 0; in < cond_dis_->NumMyColNodes(); in++)
+  {
+    full_ele_nodes_col.insert(cond_dis_->lColNode(in)->Id());
+  }
+  for (int ie=0; ie < cond_dis_->NumMyColElements(); ie++)
+  {
+    full_eles_col.insert(cond_dis_->lColElement(ie)->Id());
+  }
+
+  // create the final column maps
+  {
+    LINALG::GatherAll(full_ele_nodes_col,cond_dis_->Comm());
+    LINALG::GatherAll(full_eles_col,cond_dis_->Comm());
+
+    std::vector<int> full_nodes(full_ele_nodes_col.begin(),full_ele_nodes_col.end());
+    std::vector<int> full_eles(full_eles_col.begin(),full_eles_col.end());
+
+    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, cond_dis_->Comm()));
+    Teuchos::RCP<const Epetra_Map> full_elecolmap  = Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, cond_dis_->Comm()));
+
+    // redistribute nodes and elements to column (ghost) map
+    cond_dis_->ExportColumnNodes(*full_nodecolmap);
+    cond_dis_->ExportColumnElements(*full_elecolmap);
+
+    cond_dis_->FillComplete(true,true,true);
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
+{
+  std::string aux_coup_disname("auxiliary_coupling_");
+  aux_coup_disname += cond_dis_->Name();
+  aux_coup_dis_ = Teuchos::rcp(new DRT::Discretization(aux_coup_disname,
+      Teuchos::rcp(cond_dis_->Comm().Clone())));
+
+  // make the condition known to the auxiliary discretization
+  // we use the same nodal ids and therefore we can just copy the conditions
+  // get the set of ids of all xfem nodes
+  std::vector<DRT::Condition*> xfemcnd;
+  cond_dis_->GetCondition(cond_name_,xfemcnd);
+
+  std::set<int> xfemnodeset;
+
+  for (size_t cond = 0; cond < xfemcnd.size(); ++ cond)
+  {
+    aux_coup_dis_->SetCondition(cond_name_,Teuchos::rcp(new DRT::Condition(*xfemcnd[cond])));
+    const std::vector<int>* nodeids_cnd = xfemcnd[cond]->Nodes();
+    for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
+         c != nodeids_cnd->end(); ++c)
+      xfemnodeset.insert(*c);
+  }
+
+  // determine sets of nodes next to xfem nodes
+  std::set<int> adjacent_row;
+  std::set<int> adjacent_col;
+
+  // loop all column elements and label all row nodes next to a xfem node
+  for (int i=0; i<cond_dis_->NumMyColElements(); ++i)
+  {
+    DRT::Element* actele = cond_dis_->lColElement(i);
+
+    // get the node ids of this element
+    const int  numnode = actele->NumNode();
+    const int* nodeids = actele->NodeIds();
+
+    bool found=false;
+
+    // loop the element's nodes, check if a xfem condition is active
+    for (int n=0; n<numnode; ++n)
+    {
+      const int node_gid(nodeids[n]);
+      std::set<int>::iterator curr = xfemnodeset.find(node_gid);
+      found = (curr!=xfemnodeset.end());
+      if (found) break;
+    }
+
+    if (!found) continue;
+
+    // if at least one of the element's nodes holds a xfem condition,
+    // add all node gids to the adjecent node sets
+    for (int n=0; n<numnode; ++n)
+    {
+      const int node_gid(nodeids[n]);
+      // yes, we have a xfem condition:
+      // node stored on this proc? add to the set of row nodes!
+      if (coupl_dis_->NodeRowMap()->MyGID(node_gid))
+        adjacent_row.insert(node_gid);
+
+      // always add to set of col nodes
+      adjacent_col.insert(node_gid);
+    }
+
+    // add the element to the discretization
+    if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
+    {
+      Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
+      aux_coup_dis_->AddElement(bndele);
+    }
+  } // end loop over column elements
+
+  // all row nodes next to a xfem node are now added to the auxiliary discretization
+  for (std::set<int>::iterator id=adjacent_row.begin();
+       id!=adjacent_row.end(); ++id)
+  {
+    DRT::Node* actnode = cond_dis_->gNode(*id);
+    Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
+    aux_coup_dis_->AddNode(bndnode);
+  }
+
+  // build nodal row & col maps to redistribute the discretization
+  Teuchos::RCP<Epetra_Map> newnoderowmap;
+  Teuchos::RCP<Epetra_Map> newnodecolmap;
+
+  {
+    // copy row/col node gids to std::vector
+    // (expected by Epetra_Map ctor)
+    std::vector<int> rownodes(adjacent_row.begin(),adjacent_row.end());
+    // build noderowmap for new distribution of nodes
+    newnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
+                                                rownodes.size(),
+                                                &rownodes[0],
+                                                0,
+                                                aux_coup_dis_->Comm()));
+
+    std::vector<int> colnodes(adjacent_col.begin(),adjacent_col.end());
+
+    // build nodecolmap for new distribution of nodes
+    newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
+                                                colnodes.size(),
+                                                &colnodes[0],
+                                                0,
+                                                aux_coup_dis_->Comm()));
+
+    aux_coup_dis_->Redistribute(*newnoderowmap,*newnodecolmap,false,false,false);
+
+    // make auxiliary discretization have the same dofs as the coupling discretization
+    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(cond_dis_,true));
+    aux_coup_dis_->ReplaceDofSet(newdofset,false); // do not call this with true (no replacement in static dofsets intended)
+    aux_coup_dis_->FillComplete(true,true,true);
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::EstimateNitscheTraceMaxEigenvalue(
+    const Teuchos::RCP<const Epetra_Vector> & dispnp) //const
+{
+  Teuchos::ParameterList params;
+
+  // set action for elements
+  params.set<int>("action",FLD::estimate_Nitsche_trace_maxeigenvalue_);
+
+  Teuchos::RCP<Epetra_Vector> aux_coup_dispnp = LINALG::CreateVector(*GetAuxiliaryDiscretization()->DofRowMap(),true);
+  LINALG::Export(*dispnp,*aux_coup_dispnp);
+
+  GetAuxiliaryDiscretization()->SetState("dispnp", aux_coup_dispnp);
+
+  /// map of embedded element ID to the value of it's Nitsche parameter
+  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue =  Teuchos::rcp(new std::map<int,double> ());
+  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue);
+
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
+
+  // Evaluate the general eigenvalue problem Ax = lambda Bx for local for the elements of aux_coup_dis_
+  GetAuxiliaryDiscretization()->EvaluateCondition(  params,
+                                     systemmatrixA,
+                                     systemmatrixB,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     "XFEMSurfFluidFluid");
+
+  // gather the information form all processors
+  Teuchos::RCP<std::map<int,double> > tmp_map = params.get<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map");
+
+  // information how many processors work at all
+  std::vector<int> allproc(GetAuxiliaryDiscretization()->Comm().NumProc());
+
+  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i = 0; i < GetAuxiliaryDiscretization()->Comm().NumProc(); ++ i) allproc[i] = i;
+
+  // gather the information from all procs
+  LINALG::Gather<int,double>(*tmp_map,*ele_to_max_eigenvalue,(int)GetAuxiliaryDiscretization()->Comm().NumProc(),&allproc[0], GetAuxiliaryDiscretization()->Comm());
+
+  // update the estimate of the maximal eigenvalues in the parameter list to access on element level
+  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Update_TraceEstimate_MaxEigenvalue(ele_to_max_eigenvalue);
+}
 
 //! constructor
 XFEM::MeshCouplingBC::MeshCouplingBC(
@@ -1165,7 +1553,7 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step       ///< time step
-) : MeshCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
+) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
 {
   SetConditionSpecificParameters(cond_name);
   InitStateVectors_FSI();
@@ -1654,37 +2042,14 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step       ///< time step
-) : MeshCoupling(bg_dis,cond_name,cond_dis,coupling_id,time,step),
+) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id,time,step),
     moving_interface_(false)
 {
-  if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
-      GetAveragingStrategy() == INPAR::XFEM::Mean)
-  {
-    // ghost coupling elements, that contribute to the cutting discretization
-    RedistributeEmbeddedDiscretization();
-    // create map from side to embedded element ID
-    CreateCuttingToEmbeddedElementMap();
-
-    // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
-    CreateAuxiliaryDiscretization();
-  }
-
   DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->CheckParameterConsistencyForAveragingStrategy(bg_dis->Comm().MyPID(),
     GetAveragingStrategy());
 
   // initialize the configuration map
   InitConfigurationMap();
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::GetCouplingEleLocationVector(
-  const int sid,
-  std::vector<int> & patchlm)
-{
-  std::vector<int> patchlmstride, patchlmowner; // dummy
-  DRT::Element * coupl_ele = GetCouplingElement(sid);
-  return coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
 }
 
 /*--------------------------------------------------------------------------*
@@ -1704,349 +2069,9 @@ void XFEM::MeshCouplingFluidFluid::RedistributeForErrorCalculation()
   if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
       GetAveragingStrategy() == INPAR::XFEM::Mean)
     return;
-  // ghost coupling elements, that contribute to the cutting discretization
-  RedistributeEmbeddedDiscretization();
-  // create map from side to embedded element ID
-  CreateCuttingToEmbeddedElementMap();
-}
 
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::RedistributeEmbeddedDiscretization()
-{
-//#ifdef DEBUG
-//  // collect conditioned nodes and compare to the overall number of nodes in
-//  // the surface discretization
-//  std::vector<DRT::Condition*> cnd;
-//  cond_dis_->GetCondition(cond_name_,cnd);
-//
-//  // get the set of ids of all xfem nodes
-//  std::set<int> cond_nodeset;
-//  {
-//    for (size_t cond = 0; cond< cnd.size(); ++ cond)
-//    {
-//      // conditioned node ids
-//      const std::vector<int>* nodeids_cnd = cnd[cond]->Nodes();
-//      for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
-//           c != nodeids_cnd->end(); ++c)
-//        cond_nodeset.insert(*c);
-//    }
-//  }
-//
-//  if (cond_nodeset.size() != static_cast<size_t>(cutter_dis_->NumGlobalNodes()))
-//    dserror("Got %d %s nodes but have % dnodes in the boundary discretization created from the condition",
-//        cond_nodeset.size(), cond_name_.c_str(), cutter_dis_->NumGlobalNodes());
-//#endif
-
-  // get gids of elements (and associated notes), that contribute to the fluid-fluid interface
-  std::set<int> adj_eles_row;
-  std::set<int> adj_ele_nodes_row;
-
-  const int mypid = cond_dis_->Comm().MyPID();
-
-  // STEP 1: Query
-  // loop over nodes of cutter discretization (conditioned nodes)
-  for (int icondn = 0; icondn != cutter_dis_->NodeRowMap()->NumMyElements(); ++icondn)
-  {
-    // get node GID
-    const int cond_node_gid = cutter_dis_->NodeRowMap()->GID(icondn);
-
-    // node from coupling discretization (is on this proc, as cutter_dis nodes are
-    // a subset!)
-    const DRT::Node* cond_node = cond_dis_->gNode(cond_node_gid);
-
-    // get associated elements
-    const DRT::Element*const* cond_eles = cond_node->Elements();
-    const int num_cond_ele = cond_node->NumElement();
-
-    // loop over associated elements
-    for (int ie = 0; ie < num_cond_ele; ++ ie)
-    {
-      if (cond_eles[ie]->Owner() == mypid)
-        adj_eles_row.insert(cond_eles[ie]->Id());
-
-      const int * node_ids = cond_eles[ie]->NodeIds();
-      for (int in = 0; in < cond_eles[ie]->NumNode(); ++ in)
-      {
-        if (cond_dis_->gNode(node_ids[in])->Owner() == mypid)
-          adj_ele_nodes_row.insert(node_ids[in]);
-      }
-    }
-  }
-
-  // STEP 2 : ghost interface-contributing elements from coupl_dis on all proc
-
-  // collect node & element gids from the auxiliary discetization and
-  // store in vector full_{nodes;eles}, which will be appended by the standard
-  // column elements/nodes of the discretization we couple with
-
-  std::set<int> full_ele_nodes_col(adj_ele_nodes_row);
-  std::set<int> full_eles_col(adj_eles_row);
-
-  for (int in = 0; in < cond_dis_->NumMyColNodes(); in++)
-  {
-    full_ele_nodes_col.insert(cond_dis_->lColNode(in)->Id());
-  }
-  for (int ie=0; ie < cond_dis_->NumMyColElements(); ie++)
-  {
-    full_eles_col.insert(cond_dis_->lColElement(ie)->Id());
-  }
-
-  // create the final column maps
-  {
-    LINALG::GatherAll(full_ele_nodes_col,cond_dis_->Comm());
-    LINALG::GatherAll(full_eles_col,cond_dis_->Comm());
-
-    std::vector<int> full_nodes(full_ele_nodes_col.begin(),full_ele_nodes_col.end());
-    std::vector<int> full_eles(full_eles_col.begin(),full_eles_col.end());
-
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, cond_dis_->Comm()));
-    Teuchos::RCP<const Epetra_Map> full_elecolmap  = Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, cond_dis_->Comm()));
-
-    // redistribute nodes and elements to column (ghost) map
-    cond_dis_->ExportColumnNodes(*full_nodecolmap);
-    cond_dis_->ExportColumnElements(*full_elecolmap);
-
-    cond_dis_->FillComplete(true,true,true);
-  }
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryDiscretization()
-{
-  std::string aux_coup_disname("auxiliary_coupling_");
-  aux_coup_disname += cond_dis_->Name();
-  aux_coup_dis_ = Teuchos::rcp(new DRT::Discretization(aux_coup_disname,
-      Teuchos::rcp(cond_dis_->Comm().Clone())));
-
-  // make the condition known to the auxiliary discretization
-  // we use the same nodal ids and therefore we can just copy the conditions
-  // get the set of ids of all xfem nodes
-  std::vector<DRT::Condition*> xfemcnd;
-  cond_dis_->GetCondition(cond_name_,xfemcnd);
-
-  std::set<int> xfemnodeset;
-
-  for (size_t cond = 0; cond < xfemcnd.size(); ++ cond)
-  {
-    aux_coup_dis_->SetCondition(cond_name_,Teuchos::rcp(new DRT::Condition(*xfemcnd[cond])));
-    const std::vector<int>* nodeids_cnd = xfemcnd[cond]->Nodes();
-    for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
-         c != nodeids_cnd->end(); ++c)
-      xfemnodeset.insert(*c);
-  }
-
-  // determine sets of nodes next to xfem nodes
-  std::set<int> adjacent_row;
-  std::set<int> adjacent_col;
-
-  // loop all column elements and label all row nodes next to a xfem node
-  for (int i=0; i<cond_dis_->NumMyColElements(); ++i)
-  {
-    DRT::Element* actele = cond_dis_->lColElement(i);
-
-    // get the node ids of this element
-    const int  numnode = actele->NumNode();
-    const int* nodeids = actele->NodeIds();
-
-    bool found=false;
-
-    // loop the element's nodes, check if a xfem condition is active
-    for (int n=0; n<numnode; ++n)
-    {
-      const int node_gid(nodeids[n]);
-      std::set<int>::iterator curr = xfemnodeset.find(node_gid);
-      found = (curr!=xfemnodeset.end());
-      if (found) break;
-    }
-
-    if (!found) continue;
-
-    // if at least one of the element's nodes holds a xfem condition,
-    // add all node gids to the adjecent node sets
-    for (int n=0; n<numnode; ++n)
-    {
-      const int node_gid(nodeids[n]);
-      // yes, we have a xfem condition:
-      // node stored on this proc? add to the set of row nodes!
-      if (coupl_dis_->NodeRowMap()->MyGID(node_gid))
-        adjacent_row.insert(node_gid);
-
-      // always add to set of col nodes
-      adjacent_col.insert(node_gid);
-    }
-
-    // add the element to the discretization
-    if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
-    {
-      Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
-      aux_coup_dis_->AddElement(bndele);
-    }
-  } // end loop over column elements
-
-  // all row nodes next to a xfem node are now added to the auxiliary discretization
-  for (std::set<int>::iterator id=adjacent_row.begin();
-       id!=adjacent_row.end(); ++id)
-  {
-    DRT::Node* actnode = cond_dis_->gNode(*id);
-    Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
-    aux_coup_dis_->AddNode(bndnode);
-  }
-
-  // build nodal row & col maps to redistribute the discretization
-  Teuchos::RCP<Epetra_Map> newnoderowmap;
-  Teuchos::RCP<Epetra_Map> newnodecolmap;
-
-  {
-    // copy row/col node gids to std::vector
-    // (expected by Epetra_Map ctor)
-    std::vector<int> rownodes(adjacent_row.begin(),adjacent_row.end());
-    // build noderowmap for new distribution of nodes
-    newnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
-                                                rownodes.size(),
-                                                &rownodes[0],
-                                                0,
-                                                aux_coup_dis_->Comm()));
-
-    std::vector<int> colnodes(adjacent_col.begin(),adjacent_col.end());
-
-    // build nodecolmap for new distribution of nodes
-    newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
-                                                colnodes.size(),
-                                                &colnodes[0],
-                                                0,
-                                                aux_coup_dis_->Comm()));
-
-    aux_coup_dis_->Redistribute(*newnoderowmap,*newnodecolmap,false,false,false);
-
-    // make auxiliary discretization have the same dofs as the coupling discretization
-    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(cond_dis_,true));
-    aux_coup_dis_->ReplaceDofSet(newdofset,false); // do not call this with true (no replacement in static dofsets intended)
-    aux_coup_dis_->FillComplete(true,true,true);
-  }
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::CreateCuttingToEmbeddedElementMap()
-{
-  // fill map between boundary (cutting) element id and its corresponding embedded (coupling) element id
-  for (int ibele=0; ibele< cutter_dis_->NumMyColElements(); ++ ibele)
-  {
-    // boundary element and its nodes
-    DRT::Element* bele = cutter_dis_->lColElement(ibele);
-    const int * bele_node_ids = bele->NodeIds();
-
-    bool bele_found = false;
-
-    // ask all conditioned embedded elements for this boundary element
-    for(int iele = 0; iele< cond_dis_->NumMyColElements(); ++iele)
-    {
-      DRT::Element* ele = cond_dis_->lColElement(iele);
-      const int * ele_node_ids = ele->NodeIds();
-
-      // get nodes for every face of the embedded element
-      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
-
-      // loop the faces of the element and check node equality for every boundary element
-      // Todo: Efficiency?
-      for (int f = 0; f < ele->NumFace(); f++)
-      {
-        bele_found = true;
-
-        const int face_numnode = face_node_map[f].size();
-
-        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
-
-        // check all nodes of the boundary element
-        for(int inode=0; inode<bele->NumNode();  ++inode)
-        {
-          // boundary node
-          const int belenodeId = bele_node_ids[inode];
-
-          bool node_found = false;
-          for (int fnode=0; fnode<face_numnode; ++fnode)
-          {
-            const int facenodeId = ele_node_ids[face_node_map[f][fnode]];
-
-            if(facenodeId == belenodeId)
-            {
-              // nodes are the same
-              node_found = true;
-              break;
-            }
-          } // loop nodes of element's face
-          if (node_found==false) // this node is not contained in this face
-          {
-            bele_found = false; // element not the right one, if at least one boundary node is not found
-            break; // node not found
-          }
-        } // loop nodes of boundary element
-
-
-        if (bele_found)
-        {
-          cutting_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-          cutting_emb_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
-          break;
-        }
-      } // loop element faces
-      if (bele_found) break; // do not continue the search
-
-    }
-
-    if(bele_found == false)
-      dserror("Corresponding embedded element for boundary element id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!",
-        bele->Id(), cond_dis_->Comm().MyPID());
-  }
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(
-    const Teuchos::RCP<const Epetra_Vector> & dispnp) const
-{
-  Teuchos::ParameterList params;
-
-  // set action for elements
-  params.set<int>("action",FLD::estimate_Nitsche_trace_maxeigenvalue_);
-
-  Teuchos::RCP<Epetra_Vector> aux_coup_dispnp = LINALG::CreateVector(*aux_coup_dis_->DofRowMap(),true);
-  LINALG::Export(*dispnp,*aux_coup_dispnp);
-
-  aux_coup_dis_->SetState("dispnp", aux_coup_dispnp);
-
-  /// map of embedded element ID to the value of it's Nitsche parameter
-  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue =  Teuchos::rcp(new std::map<int,double> ());
-  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue);
-
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
-
-  // Evaluate the general eigenvalue problem Ax = lambda Bx for local for the elements of aux_coup_dis_
-  aux_coup_dis_->EvaluateCondition(  params,
-                                     systemmatrixA,
-                                     systemmatrixB,
-                                     Teuchos::null,
-                                     Teuchos::null,
-                                     Teuchos::null,
-                                     "XFEMSurfFluidFluid");
-
-  // gather the information form all processors
-  Teuchos::RCP<std::map<int,double> > tmp_map = params.get<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map");
-
-  // information how many processors work at all
-  std::vector<int> allproc(aux_coup_dis_->Comm().NumProc());
-
-  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i = 0; i < aux_coup_dis_->Comm().NumProc(); ++ i) allproc[i] = i;
-
-  // gather the information from all procs
-  LINALG::Gather<int,double>(*tmp_map,*ele_to_max_eigenvalue,(int)aux_coup_dis_->Comm().NumProc(),&allproc[0], aux_coup_dis_->Comm());
-
-  // update the estimate of the maximal eigenvalues in the parameter list to access on element level
-  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Update_TraceEstimate_MaxEigenvalue(ele_to_max_eigenvalue);
+  //Initialize Volume Coupling
+  Init_VolCoupling();
 }
 
 /*--------------------------------------------------------------------------*

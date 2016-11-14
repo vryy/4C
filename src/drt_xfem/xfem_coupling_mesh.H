@@ -160,10 +160,11 @@ protected:
 
     // number space dimensions for element
     const size_t nsd = projection_matrix.Rows();
-#ifdef DEBUG
-    if (projection_matrix.Rows() != projection_matrix.Cols() || projection_matrix.Rows() != normal.Rows())
-      dserror("EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not fit!");
-#endif
+
+    #ifdef DEBUG
+        if (projection_matrix.Rows() != projection_matrix.Cols() || projection_matrix.Rows() != normal.Rows())
+          dserror("EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not fit!");
+    #endif
 
 
       //create projection matrix
@@ -237,8 +238,120 @@ protected:
 
 };
 
+/*!
+\brief Mesh Coupling Class which handles all the communication between interface discretization and volume discretization.
+This class can be used for all mesh coupling objects as base class if the interface requires volume discretization information
+(e.g. FluidFluid, SlaveSided FSI, FPI,...) - (orig. from FluidFluid(Kruse))
+\author ager
+\date 10/16
+ */
+class MeshVolCoupling : public MeshCoupling
+{
+public:
 
+  //! constructor
+  explicit MeshVolCoupling(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,                      ///< background discretization
+      const std::string &                 cond_name,                   ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,                    ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,                 ///< id of composite of coupling conditions
+      const double                        time,                        ///< time
+      const int                           step,                        ///< time step
+      const std::string &                 suffix = ""                  ///< suffix for cutterdisname
+  );
 
+  //! destructor
+  virtual ~MeshVolCoupling()
+  {    return;  }
+
+  //! Initialize Volume Coupling
+  void Init_VolCoupling();
+
+  void GetCouplingEleLocationVector(
+    const int sid,
+    std::vector<int> & patchlm);
+
+  //! get the coupling element for a local coupling side element id
+  DRT::Element* GetCouplingElement(
+    const int sid ///< global side element id w.r.t cutter discretization
+  )
+  {
+    if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+    {
+      return MeshCoupling::GetCouplingElement(sid);
+    }
+    //else
+    return coupl_dis_->gElement(GetEmbeddedElementId(sid));
+  }
+
+  //! get the element from the conditioned dis for a local coupling side element id
+  DRT::Element* GetCondElement(
+    const int sid ///< global side element id w.r.t cutter discretization
+  )
+  {
+    return cond_dis_->gElement(GetEmbeddedElementId(sid));
+  }
+
+  //! Access to map from cutting surface element id to coupling element's face lid
+  int GetFaceLidOfEmbeddedElement(int face_id)
+  {
+    dsassert(init_volcoupling_,"MeshVolCoupling::GetFaceLidOfEmbeddedElement: Volume Coupling not initialized!");
+    std::map<int,int>::iterator it = cutting_emb_face_lid_map_.find(face_id);
+
+    if (it == cutting_emb_face_lid_map_.end())
+      dserror("No local id of the face-element % d w.r.t embedded element stored!", face_id);
+
+    return it->second;
+  }
+
+  //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface discretization)
+  Teuchos::RCP<DRT::Discretization> GetAuxiliaryDiscretization()
+  {
+    dsassert(init_volcoupling_,"MeshVolCoupling::GetAuxiliaryDiscretization: Volume Coupling not initialized!");
+    return aux_coup_dis_;
+  }
+
+  //! estimate the penalty scaling in Nitsche's method from the trace inequality
+  //! via solving a local eigenvalue problem
+  void EstimateNitscheTraceMaxEigenvalue(const Teuchos::RCP<const Epetra_Vector> & dispnp); //const;
+
+protected:
+  //! create map from cutting surface element id to embedded element id
+  void CreateCuttingToEmbeddedElementMap();
+
+  //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
+  void RedistributeEmbeddedDiscretization();
+
+  //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
+  void CreateAuxiliaryDiscretization();
+
+private:
+  //! Access to map from cutting surface element id to embedded element id
+  int GetEmbeddedElementId(int sid)
+
+  {
+    dsassert(init_volcoupling_,"MeshVolCoupling::GetEmbeddedElementId: Volume Coupling not initialized!");
+    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(sid);
+
+    if (it == cutting_emb_gid_map_.end())
+      dserror("Could not find parent element ID for side %d.", sid);
+
+    return it->second;
+  }
+
+  //! auxiliary discretization, based on the elements of cond_dis, that contribute to
+  //! the elements of cutter_dis_ with at least one edge
+  Teuchos::RCP<DRT::Discretization> aux_coup_dis_;
+
+  //! map from cutting surface element id to embedded element id
+  std::map<int,int> cutting_emb_gid_map_;
+
+  //! map from cutting surface element id to embedded element's face lid
+  std::map<int,int> cutting_emb_face_lid_map_;
+
+  //! bool to indicate if volume coupling is initialized
+  bool init_volcoupling_;
+};
 
 /*!
 \brief
@@ -512,7 +625,7 @@ private:
 /*!
 \brief
  */
-class MeshCouplingFSI : public MeshCoupling
+class MeshCouplingFSI : public MeshVolCoupling
 {
 public:
 
@@ -664,7 +777,7 @@ private:
   \author kruse
   \date 01/15
  */
-class MeshCouplingFluidFluid : public MeshCoupling
+class MeshCouplingFluidFluid : public MeshVolCoupling
 {
 public:
 
@@ -677,41 +790,6 @@ public:
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
-
-  void GetCouplingEleLocationVector(
-    const int sid,
-    std::vector<int> & patchlm);
-
-  //! estimate the penalty scaling in Nitsche's method from the trace inequality
-  //! via solving a local eigenvalue problem
-  void EstimateNitscheTraceMaxEigenvalue(const Teuchos::RCP<const Epetra_Vector> & dispnp) const;
-
-  //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface discretization)
-  Teuchos::RCP<DRT::Discretization> GetAuxiliaryDiscretization()
-  {
-    return aux_coup_dis_;
-  }
-
-  //! get the coupling element for a local coupling side element id
-  DRT::Element* GetCouplingElement(
-    const int sid ///< global side element id w.r.t cutter discretization
-  )
-  {
-    if (averaging_strategy_ == INPAR::XFEM::Xfluid_Sided)
-    {
-      return MeshCoupling::GetCouplingElement(sid);
-    }
-
-    return coupl_dis_->gElement(GetEmbeddedElementId(sid));
-  }
-
-  //! get the element from the conditioned dis for a local coupling side element id
-  DRT::Element* GetCondElement(
-    const int sid ///< global side element id w.r.t cutter discretization
-  )
-  {
-    return cond_dis_->gElement(GetEmbeddedElementId(sid));
-  }
 
   /// set material pointer for coupling slave side
   void GetInterfaceSlaveMaterial(
@@ -730,17 +808,6 @@ public:
   void SetInterfaceFree()
   {
     moving_interface_ = true;
-  }
-
-  //! Access to map from cutting surface element id to coupling element's face lid
-  int GetFaceLidOfEmbeddedElement(int face_id)
-  {
-    std::map<int,int>::iterator it = cutting_emb_face_lid_map_.find(face_id);
-
-    if (it == cutting_emb_face_lid_map_.end())
-      dserror("No local id of the face-element % d w.r.t embedded element stored!", face_id);
-
-    return it->second;
   }
 
   //! ghost interface-contributing embedded elements (required for error calculation in case
@@ -763,36 +830,6 @@ protected:
       double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
 private:
-
-  //! Access to map from cutting surface element id to embedded element id
-  int GetEmbeddedElementId(int sid)
-  {
-    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(sid);
-
-    if (it == cutting_emb_gid_map_.end())
-      dserror("Could not find parent element ID for side %d.", sid);
-
-    return it->second;
-  }
-
-  //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
-  void RedistributeEmbeddedDiscretization();
-
-  //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
-  void CreateAuxiliaryDiscretization();
-
-  //! create map from cutting surface element id to embedded element id
-  void CreateCuttingToEmbeddedElementMap();
-
-  //! auxiliary discretization, based on the elements of cond_dis, that contribute to
-  //! the elements of cutter_dis_ with at least one edge
-  Teuchos::RCP<DRT::Discretization> aux_coup_dis_;
-
-  //! map from cutting surface element id to embedded element id
-  std::map<int,int> cutting_emb_gid_map_;
-
-  //! map from cutting surface element id to embedded element's face lid
-  std::map<int,int> cutting_emb_face_lid_map_;
 
   //! whether the embedded fluid interface is moving
   bool moving_interface_;
