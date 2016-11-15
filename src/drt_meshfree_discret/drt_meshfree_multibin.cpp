@@ -56,9 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create( const in
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
-:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner),
-    associatedeleid_(INPAR::BINSTRATEGY::enumsize),
-    associatedele_(INPAR::BINSTRATEGY::enumsize)
+:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner)
 {
   return;
 }
@@ -207,8 +205,10 @@ void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   DRT::Element::Unpack(basedata);
   // extract associatedeleid_
   for(int i=0;i<INPAR::BINSTRATEGY::enumsize;++i)
+  {
     ExtractfromPack(position,data,associatedeleid_[i]);
-  // associatedele_ is NOT communicated
-  associatedele_.clear();
+    // associatedele_ is NOT communicated
+    associatedele_[i].clear();
+  }
   return;
 }

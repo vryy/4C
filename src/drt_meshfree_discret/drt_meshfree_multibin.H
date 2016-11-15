@@ -302,10 +302,10 @@ public:
 private:
 
   //! \brief element ids contained in this bin
-  std::vector<std::vector<int> > associatedeleid_;
+  std::vector<int> associatedeleid_[INPAR::BINSTRATEGY::enumsize];
 
   //! \brief pointers to elements contained in this bin
-  std::vector<std::vector<DRT::Element*> > associatedele_;
+  std::vector<DRT::Element*> associatedele_[INPAR::BINSTRATEGY::enumsize];
 
 
 }; // class MeshfreeMultiBin
