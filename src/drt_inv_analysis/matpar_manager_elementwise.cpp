@@ -253,20 +253,42 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   /*-------------------------------------------------------------------
    *  STEP 2: Compute weight with respect to the average area of all
    *  faces. Make faceweight redundant all an procs to be able to
-   *  compute the correct average face area on all procs
+   *  compute the correct average face area on all procs; alternatively
+   *  just put weight of one between all elements
    */
-  LINALG::GatherAll<std::vector<int>,double>(faceweight,paramrowmap.Comm());
-  std::map<std::vector<int>, double>::iterator weightsit;
+  INPAR::INVANA::StatInvGraphWeight weighttype;
+  weighttype = DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvGraphWeight>(Inpar(),"GRAPHWEIGHTS");
 
-  double avgarea = 0.0;
-  for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
-    avgarea+=weightsit->second;
+  switch(weighttype)
+  {
+  case INPAR::INVANA::stat_inv_graph_area:
+  {
+    std::cout << "Computing Graph Weights from area" << std::endl;
+    LINALG::GatherAll<std::vector<int>,double>(faceweight,paramrowmap.Comm());
+    std::map<std::vector<int>, double>::iterator weightsit;
 
-  avgarea = avgarea/faceweight.size();
+    double avgarea = 0.0;
+    for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
+      avgarea+=weightsit->second;
 
-  for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
-    weightsit->second=avgarea/weightsit->second;
+    avgarea = avgarea/faceweight.size();
 
+    for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
+      weightsit->second=avgarea/weightsit->second;
+  }
+  break;
+  case INPAR::INVANA::stat_inv_graph_unity:
+  {
+    std::cout << "Computing Graph Weights to 1" << std::endl;
+    std::map<std::vector<int>, double>::iterator weightsit;
+    for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
+      weightsit->second=1.0;
+  }
+  break;
+  default:
+    dserror("no proper method to specify adjacency matrix specidied");
+  break;
+  }
 
   /*-------------------------------------------------------------------
    * STEP 3: gather for each face on each proc the same set of corresponding

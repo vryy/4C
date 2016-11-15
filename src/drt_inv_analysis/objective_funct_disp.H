@@ -82,6 +82,9 @@ private:
   //! scale factor
   double scalefac_;
 
+  //! measurement variance estimation
+  double var_estim_;
+
 
 public:
 

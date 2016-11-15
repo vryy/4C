@@ -162,6 +162,17 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // number of levels for the patch creation
   IntParameter("NUM_PATCH_LEVELS",4,"number of levels for the patch creation",&statinvp);
 
+  // decide which weights to use for the graph of the elementwise parametrization
+  setStringToIntegralParameter<int>("GRAPHWEIGHTS","area",
+                                      "weights for the elementwise graph creation",
+                                    tuple<std::string>(
+                                      "area",
+                                      "unity"),
+                                    tuple<int>(
+                                      stat_inv_graph_area,
+                                      stat_inv_graph_unity),
+                                    &statinvp);
+
   // want some regularization
   setStringToIntegralParameter<int>("REGULARIZATION","none",
                                     "want regularization? ('tikhonov', 'totalvariation', 'none')",

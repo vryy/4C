@@ -76,6 +76,13 @@ namespace INPAR
       stat_inv_init_map          // initialization from some MAP approximation
     };
 
+    /// Type of graph weights in the elementwise parametrization
+    enum StatInvGraphWeight
+    {
+      stat_inv_graph_area,         // weights from area of faces dividing elements
+      stat_inv_graph_unity          // unit weights between nodes of the graph
+    };
+
   }  // namespace INVANA
 
 }  // namespace INPAR

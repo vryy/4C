@@ -48,12 +48,15 @@ discret_(discret)
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManager::Init(const Teuchos::ParameterList& invp)
 {
+  inpar_invana_ = invp;
+
   // want metaparametrization
-  metaparams_.SetParametrization(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMetaParamsType>(invp,"METAPARAMS"));
+  metaparams_.SetParametrization(
+      DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMetaParamsType>(inpar_invana_,"METAPARAMS"));
 
   // set up maps to link materials their respective parameters
   // and the set of final optimization parameters
-  SetupMatOptMap(invp);
+  SetupMatOptMap(inpar_invana_);
 
   // parameter initialization
   params_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,true));

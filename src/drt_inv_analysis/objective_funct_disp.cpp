@@ -38,6 +38,9 @@ scalefac_(1.0)
 
   if (scaling_)
     scalefac_ = sqrt(mstate_->GlobalLength());
+
+  // estimation of the variance of the measurement noise
+  var_estim_ = invap.get<double>("MEASVARESTIM");
 }
 
 /*----------------------------------------------------------------------*/
@@ -209,10 +212,8 @@ void INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state,
   double norm;
   sim->Norm2(&norm);
 
-  val = 0.5*norm*norm;
+  val = norm*norm/(2.0*var_estim_);
 
-//  if (scaling_)
-//    val=val/sqrt(mstate_->GlobalLength());
 }
 
 /*----------------------------------------------------------------------*/
@@ -232,13 +233,7 @@ void INVANA::ObjectiveFunctDisp::EvaluateGradient(Teuchos::RCP<Epetra_Vector> st
   // u_sim - u_meas;
   sim->Update(-1.0,*(*mstate_)(step),1.0);
 
-  // insert into gradient
-//  double fac=1.0;
-//  if (scaling_)
-//    fac=1.0/sqrt(mstate_->GlobalLength());
-//
-//  gradient->Update(fac,*mextractor_->InsertCondVector(sim),0.0);
-  gradient->Update(1.0,*mextractor_->InsertCondVector(sim),0.0);
+  gradient->Update(1.0/var_estim_,*mextractor_->InsertCondVector(sim),0.0);
 
   return;
 }

@@ -310,7 +310,12 @@ protected:
 
   //! Return the material to be optimized for this element, -1 otherwise
   int ElementOptMat(DRT::Element* ele);
+  //@}
 
+  //! @name Access
+  //@{
+
+  const Teuchos::ParameterList& Inpar() {return inpar_invana_;}
   //@}
 
   //! actual set of material parameters in some parametrization layout
@@ -414,6 +419,9 @@ private:
 
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
+
+  // Input file parameters
+  Teuchos::ParameterList inpar_invana_;
 
 };
 }  // namespace INVANA
