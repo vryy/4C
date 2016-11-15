@@ -539,6 +539,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     {
       // determine the particle we are analizing
       DRT::Node* particle_i = currentBinParticles[i];
+
       // extract data
       ParticleCollData& data_i = particleData_[particle_i->LID()];
 
@@ -788,7 +789,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           const double temperature_i = PARTICLE::Utils::SpecEnthalpy2Temperature(data_i.specEnthalpy,extParticleMat);
           const double temperature_j = PARTICLE::Utils::SpecEnthalpy2Temperature(data_j.specEnthalpy,extParticleMat);
 
-          const double enthalpyDotn2i = extParticleMat->thermalConductivity_ * intersectionArea * (temperature_j - temperature_i)/norm_r_contact;
+          const double enthalpyDotn2i = extParticleMat->thermalConductivity_ * intersectionArea  * (temperature_j - temperature_i)/norm_r_contact;
 
           double specEnthalpyDotn2i = enthalpyDotn2i/data_i.mass;
           double specEnthalpyDotn2j = -enthalpyDotn2i/data_j.mass; // actio = - reactio

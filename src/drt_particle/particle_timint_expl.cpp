@@ -26,7 +26,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_timestepping/timintmstep.H"
 
-
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntExpl::TimIntExpl(
@@ -88,6 +87,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
     //    \dot{H}_{n} := \dot{H}_{n+1}, \dot{H}_{n-1} := \dot{H}_{n}
     specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+
     break;
   }
   default : // do nothing
@@ -97,7 +97,9 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   // update the pressure
   // It is here because it is a slave of the density
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
     PARTICLE::Utils::Density2Pressure(densityn_, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
+  }
 
   if(collhandler_ != Teuchos::null)
   {
@@ -121,7 +123,7 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   {
   case INPAR::PARTICLE::MeshFree :
   {
-    interHandler_->SetStateVectors();
+    interHandler_->SetStateVectors(disn_,veln_,radiusn_,densityn_,specEnthalpyn_,mass_,pressure_);
     break;
   }
   case INPAR::PARTICLE::Normal_DEM_thermo :

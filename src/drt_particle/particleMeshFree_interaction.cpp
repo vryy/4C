@@ -79,27 +79,22 @@ if (wallInteractionType_ != INPAR::PARTICLE::Mirror)
   if (wallInteractionFakeMass_ < 0)
     dserror("the value of wallInteractionFakeMass_ is unacceptable");
 }
-// fill the col vectors with the proper particle data
-SetStateVectors();
 
 }
 
 /*----------------------------------------------------------------------*
- | set colVectors                                          katta 10/16  |
+ | set colVectors in the local data structs                katta 10/16  |
  *----------------------------------------------------------------------*/
 
-void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVectors()
+void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVectors(
+    Teuchos::RCP<const Epetra_Vector> disn,
+    Teuchos::RCP<const Epetra_Vector> veln,
+    Teuchos::RCP<const Epetra_Vector> radiusn,
+    Teuchos::RCP<const Epetra_Vector> densityn,
+    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+    Teuchos::RCP<const Epetra_Vector> mass,
+    Teuchos::RCP<const Epetra_Vector> pressure)
 {
-  // extract the timint object
-  const Teuchos::RCP<ADAPTER::Particle> adapterParticle = particle_algorithm_->AdapterParticle();
-
-  Teuchos::RCP<const Epetra_Vector> disn = adapterParticle->Dispnp();
-  Teuchos::RCP<const Epetra_Vector> veln = adapterParticle->Velnp();
-  Teuchos::RCP<const Epetra_Vector> radiusn = adapterParticle->Radiusnp();
-  Teuchos::RCP<const Epetra_Vector> densityn = adapterParticle->Densitynp();
-  Teuchos::RCP<const Epetra_Vector> mass = adapterParticle->Mass();
-  Teuchos::RCP<const Epetra_Vector> pressure = adapterParticle->Pressure();
-
 // checks
 if (disn == Teuchos::null     ||
     veln == Teuchos::null     ||
@@ -121,10 +116,16 @@ Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeCol
 LINALG::Export(*radiusn,*radiusnCol);
 Teuchos::RCP<Epetra_Vector> densitynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 LINALG::Export(*densityn,*densitynCol);
+Teuchos::RCP<Epetra_Vector> specEnthalpynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+LINALG::Export(*specEnthalpyn,*specEnthalpynCol);
 Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 LINALG::Export(*mass,*massCol);
 Teuchos::RCP<Epetra_Vector> pressureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 LINALG::Export(*pressure,*pressureCol);
+// create the temperature row vector
+Teuchos::RCP<const Epetra_Vector> temperature = PARTICLE::Utils::SpecEnthalpy2Temperature(specEnthalpyn,particle_algorithm_->ExtParticleMat());
+Teuchos::RCP<Epetra_Vector> temperatureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+LINALG::Export(*temperature,*temperatureCol);
 
 // fill particleData_
 const int numcolparticles = discret_->NodeColMap()->NumMyElements();
@@ -152,8 +153,11 @@ for (int i=0; i<numcolparticles; ++i)
   data.gid = particle->Id();
   data.radius = (*radiusnCol)[lid];
   data.density = (*densitynCol)[lid];
+  data.specEnthalpy = (*specEnthalpynCol)[lid];
   data.mass = (*massCol)[lid];
   data.pressure = (*pressureCol)[lid];
+  data.temperature = (*temperatureCol)[lid];
+
 
   // lm vector and owner
   data.lm.swap(lm);
@@ -168,12 +172,46 @@ if(particle->NumElement() != 1)
 }
 
 /*----------------------------------------------------------------------*
+ | set colVectors in the local data structs                katta 10/16  |
+ *----------------------------------------------------------------------*/
+
+void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVectors_SecondRound(
+    Teuchos::RCP<const Epetra_Vector> gradT_over_rho)
+{
+// checks
+if (gradT_over_rho == Teuchos::null)
+  dserror("one or more state vectors are empty");
+
+/// miraculous transformation into column vectors... ///
+
+// dof based vectors
+Teuchos::RCP<Epetra_Vector> gradT_over_rhoCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+LINALG::Export(*gradT_over_rho,*gradT_over_rhoCol);
+
+// fill particleData_
+const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+
+  for (int i=0; i<numcolparticles; ++i)
+  {
+    // particle for which data will be collected
+    DRT::Node *particle = discret_->lColNode(i);
+
+    ParticleMeshFreeData& data = particleMeshFreeData_[particle->LID()];
+
+    //gradT_over_rhoCol of particle
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*gradT_over_rhoCol,data.gradT_over_rho,data.lm);
+
+  }
+}
+
+/*----------------------------------------------------------------------*
  | evaluate interactions                                   katta 10/16  |
  *----------------------------------------------------------------------*/
 
 void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInteractions(
   Teuchos::RCP<Epetra_Vector> accn,
-  Teuchos::RCP<Epetra_Vector> densityDotn)
+  Teuchos::RCP<Epetra_Vector> densityDotn,
+  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
 {
   //checks
   if (accn == Teuchos::null || densityDotn == Teuchos::null)
@@ -192,8 +230,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
   // store bins, which have already been examined
   std::set<int> examinedbins;
 
-  // list of all particles in the neighborhood of currparticle
-  std::list<DRT::Node*> neighboring_particles;
+  // vector to collect the first part of the specEnthalpy computations
+  Teuchos::RCP<Epetra_Vector> gradT_over_rho = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+  // list of the list of all particles in the neighborhood of currparticle and bins for multiple iterations
+  std::list<DRT::Element*> binList;
+  std::list<std::list<DRT::Node*> > neighboring_particlesList;
 
   // loop over the particles (no superpositions)
   const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
@@ -212,18 +254,20 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
       continue;
     //else: bin is examined for the first time --> new entry in examinedbins_
     examinedbins.insert(binId);
+    binList.push_back(currentBin);
 
     // extract the pointer to the particles
     DRT::Node** currentBinParticles = currentBin->Nodes();
 
-    // remove current content but keep memory
-    neighboring_particles.clear();
-
     // list of walls that border on the CurrentBin
     std::set<DRT::Element*> neighboring_walls;
-    //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
+
+    std::list<DRT::Node*> neighboring_particles;
 
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls);
+
+    // store for future use
+    neighboring_particlesList.push_back(neighboring_particles);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)
@@ -236,9 +280,33 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
       CalcNeighboringWallMeshFreeInteraction(lidNodeCol_i, neighboring_walls, walldiscret, walldisn, wallveln, accn);
 
       // compute interactions with neighboring particles
-      CalcNeighboringParticleMeshFreeInteraction(lidNodeCol_i, neighboring_particles, accn, densityDotn);
+      CalcNeighboringParticleMeshFreeInteraction(lidNodeCol_i, neighboring_particles, accn, densityDotn,gradT_over_rho);
 
     }
+  }
+
+  // reorder the interesting vectors for the second round
+  SetStateVectors_SecondRound(gradT_over_rho);
+
+  std::list<std::list<DRT::Node*> >::const_iterator currNeighboring_particles = neighboring_particlesList.begin();
+  for (std::list<DRT::Element*>::const_iterator currBin = binList.begin(); currBin != binList.end(); ++currBin)
+  {
+    // extract the pointer to the particles
+    DRT::Node** currentBinParticles = (*currBin)->Nodes();
+
+    // loop over all particles in CurrentBin
+    for(int i=0; i<(*currBin)->NumNode(); ++i)
+    {
+      // determine the particle we are analizing
+      DRT::Node* particle_i = currentBinParticles[i];
+      const int lidNodeCol_i = particle_i->LID();
+
+      // compute interactions with neighboring particles - second round
+      CalcNeighboringParticleMeshFreeInteraction_SecondRound(lidNodeCol_i, (*currNeighboring_particles), specEnthalpyDotn);
+
+    }
+
+    ++currNeighboring_particles;
   }
   // erase temporary storage for interaction data. keep the memory
   particleMeshFreeData_.clear();
@@ -253,11 +321,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
   const int lidNodeCol_i,
   const std::list<DRT::Node*> neighboring_particles,
   Teuchos::RCP<Epetra_Vector> accn,
-  Teuchos::RCP<Epetra_Vector> densityDotn)
+  Teuchos::RCP<Epetra_Vector> densityDotn,
+  Teuchos::RCP<Epetra_Vector> gradT_over_rho)
 {
   // ids i
   const ParticleMeshFreeData &particle_i = particleMeshFreeData_[lidNodeCol_i];
-  const double p_over_rhoSquare_i = particle_i.pressure/std::pow(particle_i.density,2);
+  const double rhoSquare_i = std::pow(particle_i.density,2);
+  const double p_over_rhoSquare_i = particle_i.pressure/rhoSquare_i;
+  const double T_over_rhoSquare_i = particle_i.temperature/rhoSquare_i;
 
   // self-interaction
   // densityDot -> the weightFunction gradient is null (or ill-posed in case of a strange weightFunction)
@@ -292,30 +363,42 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
       // compute WFGradVrel
       const double WFGradDotVrel = WFGrad.Dot(vRel);
+      const double rhoSquare_j = std::pow(particle_j.density,2);
       // p_i/\rho_i^2 + p_j/\rho_j^2
-      const double divergenceCoeff = (p_over_rhoSquare_i + particle_j.pressure/std::pow(particle_j.density,2));
+      const double gradP_over_rho_coeff = (p_over_rhoSquare_i + particle_j.pressure/rhoSquare_j);
+      // T_i/\rho_i^2 - T_j/\rho_j^2
+      const double gradT_over_rho_coeff = (particle_j.temperature/rhoSquare_j - T_over_rhoSquare_i);
+
       double densityDotn_i = particle_j.mass * WFGradDotVrel;
-      LINALG::Matrix<3,1> accn_i(WFGrad);
-      accn_i.Scale(- particle_j.mass * divergenceCoeff);
+      LINALG::Matrix<3,1> accn_i(WFGrad), gradT_over_rho_i(WFGrad);
+      accn_i.Scale(- particle_j.mass * gradP_over_rho_coeff);
+      gradT_over_rho_i.Scale(particle_j.mass * gradT_over_rho_coeff);
 
       // compute and add the correct densityDot_i
       LINALG::Assemble(*densityDotn, densityDotn_i, particle_i.gid, particle_i.owner);
       // compute and add the correct accn_i
       LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
+      // compute and add the correct gradT_over_rho_i
+      LINALG::Assemble(*gradT_over_rho, gradT_over_rho_i, particle_i.lm, particle_i.owner);
+
 
       // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
       // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
       if(particle_i.radius == particle_j.radius)
       {
         double densityDotn_j = particle_i.mass * WFGradDotVrel; // actio = - reactio (but twice! nothing changes)
-        LINALG::Matrix<3,1> accn_j(WFGrad);
-        accn_j.Scale(particle_i.mass * divergenceCoeff); // actio = - reactio (no minus)
+        LINALG::Matrix<3,1> accn_j(WFGrad), gradT_over_rho_j(WFGrad);
+        accn_j.Scale(particle_i.mass * gradP_over_rho_coeff); // actio = - reactio (no minus)
+        gradT_over_rho_j.Scale(particle_i.mass * gradT_over_rho_coeff); // actio = - reactio (but twice! nothing changes)
 
         // compute and add the correct densityDot_j
         // beware! we assumed that WFGrad_ij = - WFGrad_ji and vRel_ij = - vRel_ji
         LINALG::Assemble(*densityDotn, densityDotn_j, particle_j.gid, particle_j.owner);
         // compute and add the correct accn_j. action-reaction, there is += instead of -
         LINALG::Assemble(*accn, accn_j, particle_j.lm, particle_j.owner);
+        // compute and add the correct gradT_over_rho_i
+        LINALG::Assemble(*gradT_over_rho, gradT_over_rho_j, particle_j.lm, particle_j.owner);
+
       }
     }
   }
@@ -533,5 +616,68 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     accn_i.Update(- wallInteractionFakeMass_ * divergenceCoeff, WFGrad, 0);
     // compute and add the correct accn_i
     LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | calc neighbouring particleMeshFree interactions         katta 10/16  |
+ *----------------------------------------------------------------------*/
+
+void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFreeInteraction_SecondRound(
+  const int lidNodeCol_i,
+  const std::list<DRT::Node*> neighboring_particles,
+  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
+{
+  // ids i
+  const ParticleMeshFreeData &particle_i = particleMeshFreeData_[lidNodeCol_i];
+
+  // extract the interesting material properties
+  const double thermalConductivity = particle_algorithm_->ExtParticleMat()->thermalConductivity_;
+
+  // loop over the neighbouring particles
+  // avoid to recompute forces (self-interaction are not allowed in this part of the code)
+  for(std::list<DRT::Node*>::const_iterator jj=neighboring_particles.begin(); jj!=neighboring_particles.end(); ++jj)
+  {
+    const ParticleMeshFreeData &particle_j = particleMeshFreeData_[(*jj)->LID()];
+
+    // evaluate contact only once in case we own particle j and the radii match. Otherwise compute everything,
+    // the assemble method does not write in case the particle is a ghost.
+    // another check on the radii is performed (later in the code) to handle the case where we want to write, we can write but accelerations are not actio<->reactio
+    if(particle_i.gid < particle_j.gid || particle_i.radius != particle_j.radius || particle_j.owner != myrank_)
+    {
+
+      // compute distance and relative velocities
+      LINALG::Matrix<3,1> rRel, gradT_over_rhoRel, WFGrad;
+      rRel.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
+      gradT_over_rhoRel.Update(1.0, particle_i.gradT_over_rho, 1.0, particle_j.gradT_over_rho); // divergence = sum
+
+      // compute the proper weight function gradient
+      switch (weightFunctionType_)
+      {
+      case INPAR::PARTICLE::CubicBspline :
+      {
+        WFGrad = PARTICLE::WeightFunction_CubicBspline::GradientWeight(rRel, particle_i.radius);
+        break;
+      }
+      }
+      // compute WFGradDotGradT_over_rhoRel
+      const double WFGradDotGradT_over_rhoRel = WFGrad.Dot(gradT_over_rhoRel);
+
+      double specEnthalpyDotn_i = thermalConductivity * particle_j.mass * WFGradDotGradT_over_rhoRel / particle_j.density;
+
+      // compute and add the correct densityDot_i
+      LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn_i, particle_i.gid, particle_i.owner);
+
+      // evaluate contact only once if possible! (the logic table has been double-checked, trust me)
+      // if you are here and you pass this checkpoint you can compute the effect of particle i on particle j
+      if(particle_i.radius == particle_j.radius)
+      {
+        double specEnthalpyDotn_j = - thermalConductivity * particle_i.mass * WFGradDotGradT_over_rhoRel / particle_i.density; // actio = - reactio
+
+        // compute and add the correct densityDot_j
+        // beware! we assumed that WFGrad_ij = - WFGrad_ji and vRel_ij = - vRel_ji
+        LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn_j, particle_j.gid, particle_j.owner);
+      }
+    }
   }
 }

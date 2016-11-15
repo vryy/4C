@@ -109,6 +109,7 @@ void PARTICLE::Utils::Density2Pressure(
   const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
   const double speedOfSoundS = extParticleMat->SpeedOfSoundS();
   const double speedOfSoundL = extParticleMat->SpeedOfSoundL();
+  //const double baseDensity = 0;//extParticleMat->initDensity_;
 
   // rebuild the pressure vector
   if (trg_createPressureVector || pressure == Teuchos::null)
@@ -141,5 +142,9 @@ double PARTICLE::Utils::IntersectionAreaPvsP(const double& radius1, const double
   if (dis >= radius1 + radius2)
     return 0;
 
-  return M_PI * radius1 * radius1 - (std::pow(radius1 * radius1 - radius2 * radius2 + dis * dis,2) / (4 * dis * dis));
+  return M_PI * (- 0.25 * dis * dis
+                 - radius1 * radius1 * radius1 * radius1 / (4 * dis * dis)
+                 - radius2 * radius2 * radius2 * radius2 / (4 * dis * dis)
+                 + 0.5 * ( radius1 * radius1 + radius2 * radius2 + radius1 * radius1 * radius2 * radius2));
+
 }

@@ -123,7 +123,6 @@ void PARTICLE::Algorithm::Timeloop()
     // dismembering if necessary
     switch (particleInteractionType_)
     {
-    case INPAR::PARTICLE::MeshFree :
     case INPAR::PARTICLE::Normal_DEM_thermo :
       ThermalExpansion();
       ParticleDismemberer();
@@ -447,6 +446,7 @@ void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
   particles_->WriteAccessAccnp()->Update(1.0,*accelerations,0);
   // there are no external density sources
   particles_->WriteAccessDensityDotnp()->PutScalar(0);
+  particles_->WriteAccessSpecEnthalpyDotnp()->PutScalar(0);
 }
 
 
@@ -2638,7 +2638,8 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
   const double dismemberRadius = extParticleMat_->dismemberRadius_;
   // new masses and densities (to conserve the overall mass)
   (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
-  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius,3));
+  const double radiusOld = (*radius)[lidNode_old];
+  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * radiusOld * radiusOld * radiusOld /((nlist + 1) * dismemberRadius * dismemberRadius * dismemberRadius);
 }
 
 
@@ -2665,6 +2666,8 @@ void PARTICLE::Algorithm::ThermalExpansion()
   const double thermalExpansionS = extParticleMat_->thermalExpansionS_;
   const double thermalExpansionL = extParticleMat_->thermalExpansionL_;
   const double thermalExpansionT = extParticleMat_->thermalExpansionT_;
+
+
 
   // update the other state vectors (\rho and R)
   for (int lidNode = 0; lidNode < mass->MyLength(); ++lidNode)
@@ -2739,7 +2742,9 @@ void PARTICLE::Algorithm::ThermalExpansion()
         }
         // IS it liquid?
         else if (newSpecEnthalpy >= specEnthalpyTL)
+        {
           volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
+        }
         // it IS transition state
         else
         {
@@ -2782,7 +2787,9 @@ void PARTICLE::Algorithm::ThermalExpansion()
         }
         // it IS transition state
         else
+        {
           volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
+        }
       }
 
       // --- compute the new volume --- //
@@ -2793,14 +2800,3 @@ void PARTICLE::Algorithm::ThermalExpansion()
     }
   }
 }
-/*
-//! small support function for ComputeThermodynamics - update density
-void DensityUpdater(const double &thermalExpansion, const double &delta, double &density) {density /= (EffExpCoeff(thermalExpansion, delta)); }
-
-//! small support function for ComputeThermodynamics - update radius
-void RadiusUpdater(const double &thermalExpansion, const double &delta, double &radius) {radius *= std::pow(EffExpCoeff(thermalExpansion, delta), 1/3.0); }
-
-//! expansion coefficient for radius and density (in case of thermodinamics)
-virtual double EffExpCoeff(const double &thermalExpansion, const double &delta) {return thermalExpansion * delta + 1; }
-
-*/

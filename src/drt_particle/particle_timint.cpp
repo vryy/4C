@@ -395,7 +395,9 @@ void PARTICLE::TimInt::SetInitialFields()
 
   // It is here because it is a slave of the density
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
     PARTICLE::Utils::Density2Pressure((*density_)(0), (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -640,7 +642,9 @@ void PARTICLE::TimInt::ReadRestartState()
   }
 
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
     PARTICLE::Utils::Density2Pressure(densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+  }
 
   // read in particle collision relevant data
   if(collhandler_ != Teuchos::null)

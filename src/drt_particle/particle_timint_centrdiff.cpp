@@ -149,13 +149,22 @@ void PARTICLE::TimIntCentrDiff::Init()
     if (v_max_thermo > 0.01 * v_max)
       dserror("WARNING! The expansion speed of the particle radii is bigger that 1\% of MAX_VELOCITY. Dismembered particles can explode");
   }
+
+  /////////////
+  // fast check of the thermodinamic heat exchange
+  //    std::cout << "cheap temperature change to test\n";
+  //    (*specEnthalpyn_)[0] += 1e3;
+  //    (*(*specEnthalpy_)(0))[0] += 1e3;
+  //    std::cout << *specEnthalpyn_ << std::endl;
+  //    std::cin.get();
+  /////////////
 }
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
-  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+    const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
     const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
     // new velocities \f$V_{n+1/2}\f$
@@ -197,7 +206,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
       SetStatesForCollision();
 
       // direct update of the accelerations
-      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_);
+      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_,specEnthalpyDotn_);
     }
     else
       ComputeAcc(f_contact, m_contact, accn_, angAccn_);

@@ -69,18 +69,32 @@ namespace PARTICLE
     //@{
 
     //! set state vectors (col type)
-    virtual void SetStateVectors();
+    virtual void SetStateVectors(
+        Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+        Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> pressure);
+
+    //! set state vectors (col type) - second round
+    virtual void SetStateVectors_SecondRound(
+        Teuchos::RCP<const Epetra_Vector> gradT_over_rho);
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual void EvaluateParticleMeshFreeInteractions(
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<Epetra_Vector> densityDotn);
+      Teuchos::RCP<Epetra_Vector> densityDotn,
+      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
+    /// calculate interaction with neighboring particles
     virtual void CalcNeighboringParticleMeshFreeInteraction(
       const int lidNodeCol_i,
       const std::list<DRT::Node*> neighboring_particles,
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<Epetra_Vector> densityDotn);
+      Teuchos::RCP<Epetra_Vector> densityDotn,
+      Teuchos::RCP<Epetra_Vector> gradT_over_rho);
 
     /// calculate interaction with neighboring walls
     virtual void CalcNeighboringWallMeshFreeInteraction(
@@ -90,6 +104,12 @@ namespace PARTICLE
       const Teuchos::RCP<const Epetra_Vector>& walldisn,
       const Teuchos::RCP<const Epetra_Vector>& wallveln,
       const Teuchos::RCP<Epetra_Vector>& accn);
+
+    /// calculate interaction with neighboring particles - second round
+    virtual void CalcNeighboringParticleMeshFreeInteraction_SecondRound(
+      const int lidNodeCol_i,
+      const std::list<DRT::Node*> neighboring_particles,
+      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
     //@}
 
@@ -145,10 +165,13 @@ namespace PARTICLE
   struct ParticleMeshFreeData {
     LINALG::Matrix<3,1> dis;
     LINALG::Matrix<3,1> vel;
+    LINALG::Matrix<3,1> gradT_over_rho;
     double radius;
     double density;
+    double specEnthalpy;
     double mass;
     double pressure;
+    double temperature;
     int gid;
     std::vector<int> lm;
     int owner;
