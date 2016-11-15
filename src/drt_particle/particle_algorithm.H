@@ -157,12 +157,6 @@ namespace PARTICLE
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
 
-    /// get neighbouring bin gids
-    void GetNeighbouringBinGids(
-      const int currbinId,
-      std::vector<int>& binIds
-      );
-
     /// get particles and wall elements in given bins
     void GetBinContent(
       std::set<DRT::Element*>        &eles,

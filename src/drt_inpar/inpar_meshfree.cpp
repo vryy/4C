@@ -1,16 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
 \file inpar_meshfree.cpp
 
-<pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
-*/
+\brief inpar meshfree
 
-/*----------------------------------------------------------------------*/
+\maintainer Keijo Nissen
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 
 
@@ -51,6 +50,13 @@ void INPAR::MESHFREE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);
+  setStringToIntegralParameter<int>("WRITEBINS","none","Visualize none, row or column bins",
+                                    tuple<std::string>("none","rows","cols"),
+                                    tuple<int>(
+                                      none,
+                                      rows,
+                                      cols),
+                                    &meshfree);
   setStringToIntegralParameter<int>("PRIOR","Gauss","Defines the prior type of the basis solution function.",
                                     tuple<std::string>("Gauss"),
                                     tuple<int>(p_gauss),

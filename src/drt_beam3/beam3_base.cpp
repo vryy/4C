@@ -29,9 +29,9 @@ sm_interface_ptr_(Teuchos::null)
 {
   // todo: this is a temporary hack, should of course be set from outside
   bspotposxi_.push_back(-1.0);
-  bspotposxi_.push_back(1.0);
+//  bspotposxi_.push_back(1.0);
   bspotstatus_[0] = -1;
-  bspotstatus_[1] = -1;
+//  bspotstatus_[1] = -1;
 
   // empty
 }
@@ -43,9 +43,9 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
 {
   // todo: this is a temporary hack, should of course be set from outside
   bspotposxi_.push_back(-1.0);
-  bspotposxi_.push_back(1.0);
+//  bspotposxi_.push_back(1.0);
   bspotstatus_[0] = -1;
-  bspotstatus_[1] = -1;
+//  bspotstatus_[1] = -1;
 }
 
 /*----------------------------------------------------------------------*

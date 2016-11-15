@@ -35,22 +35,33 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_fsi/fsi_matrixtransform.H"
+#include "../drt_adapter/adapter_coupling.H"
+
 #include "../drt_particle/particle_algorithm.H"
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_biopolynet/crosslinker_node.H"
 
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Crosslinking::Crosslinking():
-  eval_statmech_ptr_(Teuchos::null),
-  myrank_(-1),
-  numproc_(-1),
-  intactdis_(Teuchos::null),
-  particlealgo_(Teuchos::null),
-  bindis_(Teuchos::null),
-  rowbins_(Teuchos::null),
-  bin_beamcontent_(INPAR::BINSTRATEGY::Beam)
+    eval_statmech_ptr_(Teuchos::null),
+    myrank_(-1),
+    numproc_(-1),
+    ia_discret_(Teuchos::null),
+    coupsia_(Teuchos::null),
+    siatransform_(Teuchos::null),
+    force_(Teuchos::null),
+    stiff_(Teuchos::null),
+    ia_force_(Teuchos::null),
+    ia_stiff_(Teuchos::null),
+    ia_disnp_(Teuchos::null),
+    binning_(Teuchos::null),
+    bindis_(Teuchos::null),
+    rowbins_(Teuchos::null),
+    bin_beamcontent_(INPAR::BINSTRATEGY::Beam)
 {
   // empty
 }
@@ -60,46 +71,44 @@ STR::MODELEVALUATOR::Crosslinking::Crosslinking():
 void STR::MODELEVALUATOR::Crosslinking::Setup()
 {
   CheckInit();
+
   // -------------------------------------------------------------------------
-  // get pointer to statmech data
+  // setup variables
   // -------------------------------------------------------------------------
+  // data
+  // todo: this container belongs to browndyn
   eval_statmech_ptr_ = EvalData().StatMechPtr();
-  // -------------------------------------------------------------------------
+  // stiff
+  stiff_ = Teuchos::rcp(new
+      LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+  // force
+  force_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
   // get myrank
-  // -------------------------------------------------------------------------
   myrank_ = DiscretPtr()->Comm().MyPID();
-  // -------------------------------------------------------------------------
   // get number of procs
-  // -------------------------------------------------------------------------
   numproc_ = DiscretPtr()->Comm().NumProc();
-  // -------------------------------------------------------------------------
-  // adapt displacement vector so that node positions are consistent with
-  // periodic boundary condition. Note: Input file contains the unshifted
-  // configuration so that we do not have to set up the elements twice.
-  // Shifting to periodic boundary configuration is done here. From now on the
-  // global displacement vector always contains the shifted configuration.
-  // -------------------------------------------------------------------------
-  // todo: here on in brownian dyn (or both, but in which reset??)
-  STATMECH::UTILS::PeriodicBoundaryConsistentDis(
-      GStatePtr()->GetMutableDisN(),                            // disn
-      eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
-      DiscretPtr());
-  STATMECH::UTILS::PeriodicBoundaryConsistentDis(
-      GStatePtr()->GetMutableDisNp(),                           // disnp
-      eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
-      DiscretPtr());
 
   // -------------------------------------------------------------------------
   // clone problem discretization, the idea is simple: we redistribute only
   // the new discretiztion to enable all interactions (including the required
-  // search), calculate the resulting force and stiffnes contributions, export
+  // search), calculate the resulting force and stiffness contributions, export
   // them no our initial discretization where all evaluation, assembly and
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  intactdis_ = discloner->CreateMatchingDiscretization(DiscretPtr(),"intacdis");
+  ia_discret_ = discloner->CreateMatchingDiscretization(DiscretPtr(),"intacdis");
+
+  // get initial (shifted) displacement vector, from now on this vector is based
+  // on the maps of the interaction discretization
+  ia_disnp_ = Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetMutableDisNp()));
+
+  // initialize coupling adapter to transform vectors and matrix transform to
+  // transform matrices between the two discrets (with distinct parallel
+  // distribution)
+  coupsia_ = Teuchos::rcp(new ADAPTER::Coupling());
+  siatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
   // initialize crosslinker, i.e. add nodes (according to number of crosslinker
@@ -113,23 +122,26 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // -------------------------------------------------------------------------
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
   /// algorithm is created here
-  particlealgo_ =  Teuchos::rcp(new PARTICLE::Algorithm(DiscretPtr()->Comm(),params));
+  binning_ = Teuchos::rcp(new PARTICLE::Algorithm(DiscretPtr()->Comm(),params));
 
   // -------------------------------------------------------------------------
   // build periodic boundary conditions in binning strategy
   // -------------------------------------------------------------------------
   if(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()->at(0)>0.0)
-    particlealgo_->BuildPeriodicBC(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength());
+    binning_->BuildPeriodicBC(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength());
 
   // -------------------------------------------------------------------------
   // a complete partitioning including the creation of bins, their weighted
   // distribution to procs as well a new distribution of the beam discret is
   // done here
   // -------------------------------------------------------------------------
-  // get initial (shifted) displacement vector, from now on this vector is based
-  // on the maps of the interaction discretization
-  ia_disnp_ = Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetMutableDisNp()));
   UpdateBinStrategy(false,true);
+
+  // init force vector and stiffness matrix
+  ia_stiff_ = Teuchos::rcp(new
+      LINALG::SparseMatrix(*ia_discret_->DofRowMap(), 81, true, true));
+  // force
+  ia_force_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
 
   // gather data for all column crosslinker initially
   const int numcolcl = bindis_->NumMyColNodes();
@@ -137,7 +149,7 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   PreComputeCrosslinkerData(numcolcl);
 
   // gather data for all column beams
-  const int numcolbeams = intactdis_->NumMyColElements();
+  const int numcolbeams = ia_discret_->NumMyColElements();
   beam_data_.resize(numcolbeams);
   PreComputeBeamData(numcolbeams);
 
@@ -155,6 +167,12 @@ void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
+  // Zero out force and stiffness contributions
+  force_->PutScalar(0.0);
+  ia_force_->PutScalar(0.0);
+  stiff_->Zero();
+  ia_stiff_->Zero();
+
   return;
 } // Reset()
 
@@ -165,6 +183,11 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
   CheckInitSetup();
   bool ok = true;
 
+
+
+  TransformForceAndStiff(true, false);
+
+  // that is it
   return ok;
 }
 
@@ -174,6 +197,16 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 {
   CheckInitSetup();
   bool ok = true;
+
+
+
+  if (not ia_stiff_->Filled())
+    ia_stiff_->Complete();
+
+  TransformForceAndStiff(false, true);
+
+  if (not stiff_->Filled())
+    stiff_->Complete();
 
   // that's it
   return ok;
@@ -186,6 +219,16 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
   CheckInitSetup();
   bool ok = true;
 
+
+
+  if (not ia_stiff_->Filled())
+    ia_stiff_->Complete();
+
+  TransformForceAndStiff();
+
+  if (not stiff_->Filled())
+    stiff_->Complete();
+
   // that's it
   return ok;
 }
@@ -195,7 +238,7 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::Crosslinking::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
-  CheckInitSetup();
+  STR::AssembleVector(1.0,f,-timefac_np,*force_);
   return true;
 }
 
@@ -206,6 +249,13 @@ bool STR::MODELEVALUATOR::Crosslinking::AssembleJacobian(
     const double & timefac_np) const
 {
   CheckInitSetup();
+
+  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
+      GState().ExtractDisplBlock(jac);
+  jac_dd_ptr->Add(*stiff_,false,timefac_np,1.0);
+  // no need to keep it
+  stiff_->Zero();
+  ia_stiff_->Zero();
   // nothing to do
   return true;
 }
@@ -213,8 +263,8 @@ bool STR::MODELEVALUATOR::Crosslinking::AssembleJacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::WriteRestart(
-        IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
 {
   CheckInitSetup();
 
@@ -248,6 +298,11 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateStepState(
 {
   CheckInitSetup();
 
+  // add the old time factor scaled contributions to the residual
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr =
+      GState().GetMutableFstructureOld();
+
+  fstructold_ptr->Update(-timefac_n,*force_,1.0);
 
   return;
 } // UpdateStepState()
@@ -287,34 +342,34 @@ void STR::MODELEVALUATOR::Crosslinking::OutputStepState(
 {
   CheckInitSetup();
 
-//  // mesh is not written to disc, only maximum node id is important for output
-//  bindis_->Writer()->ParticleOutput(GState().GetStepN(), GState().GetTimeN(), false);
-//  bindis_->Writer()->NewStep(GState().GetStepN(), GState().GetTimeN());
-//  Teuchos::RCP<Epetra_Vector> dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
-//  Teuchos::RCP<Epetra_Vector> numbond = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
-//
-//  //todo: this is of course not nice, this needs to be done somewhere else
-//  for(int i=0;i<bindis_->NodeRowMap()->NumMyElements();++i)
-//  {
-//    CROSSLINKING::CrosslinkerNode *crosslinker_i =
-//        dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lRowNode(i));
-//    // std::vector holding gids of dofs
-//    std::vector<int> dofnode  = bindis_->Dof(crosslinker_i);
-//
-//    // loop over all dofs
-//    for(int dim=0;dim<3;++dim)
-//    {
-//      int doflid = dis->Map().LID(dofnode[dim]);
-//      (*dis)[doflid] = crosslinker_i->X()[dim];
-//    }
-//
-//    (*numbond)[i] = crosslinker_i->ClData()->GetNumberOfBonds();
-//  }
-//  bindis_->Writer()->WriteVector("displacement", dis);
-//  bindis_->Writer()->WriteVector("numbond", numbond, bindis_->Writer()->nodevector);
-//  // as we know that our maps have changed every time we write output, we can empty
-//  // the map cache as we can't get any advantage saving the maps anyway
-//  bindis_->Writer()->ClearMapCache();
+  // mesh is not written to disc, only maximum node id is important for output
+  bindis_->Writer()->ParticleOutput(GState().GetStepN(), GState().GetTimeN(), false);
+  bindis_->Writer()->NewStep(GState().GetStepN(), GState().GetTimeN());
+  Teuchos::RCP<Epetra_Vector> dis = LINALG::CreateVector(*bindis_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> numbond = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+
+  //todo: this is of course not nice, this needs to be done somewhere else
+  for(int i=0;i<bindis_->NumMyRowNodes();++i)
+  {
+    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+        dynamic_cast<CROSSLINKING::CrosslinkerNode*>(bindis_->lRowNode(i));
+    // std::vector holding gids of dofs
+    std::vector<int> dofnode  = bindis_->Dof(crosslinker_i);
+
+    // loop over all dofs
+    for(int dim=0;dim<3;++dim)
+    {
+      int doflid = dis->Map().LID(dofnode[dim]);
+      (*dis)[doflid] = crosslinker_i->X()[dim];
+    }
+
+    (*numbond)[i] = crosslinker_i->ClData()->GetNumberOfBonds();
+  }
+  bindis_->Writer()->WriteVector("displacement", dis);
+  bindis_->Writer()->WriteVector("numbond", numbond, bindis_->Writer()->nodevector);
+  // as we know that our maps have changed every time we write output, we can empty
+  // the map cache as we can't get any advantage saving the maps anyway
+  bindis_->Writer()->ClearMapCache();
 
   return;
 } //OutputStepState()
@@ -370,7 +425,8 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
                                                           bool partition,
                                                           bool repartition,
                                                           bool createxaabb,
-                                                          bool setcutoff)
+                                                          bool setcutoff,
+                                                          bool cltoclinteraction)
 {
   CheckInit();
 
@@ -387,7 +443,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
 
   // store structure discretization in vector
   std::vector<Teuchos::RCP<DRT::Discretization> > discret_vec(1);
-  discret_vec[0] = intactdis_;
+  discret_vec[0] = ia_discret_;
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector> > disnp(1);
   disnp[0] = ia_disnp_;
@@ -397,17 +453,17 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
 
   // create XAABB and optionally set cutoff radius
   if(createxaabb)
-    particlealgo_->CreateXAABB(discret_vec,disnp,setcutoff);
+    binning_->CreateXAABB(discret_vec,disnp,setcutoff);
   // just set cutoff radius
   else if (setcutoff)
-    particlealgo_->ComputeMaxCutoff(discret_vec,disnp);
+    binning_->ComputeMaxCutoff(discret_vec,disnp);
 
   // -------------------------------------------------------------------------
   // Create bins according to XAABB and cutoff set in constructor (read
   // of input file)
   // -------------------------------------------------------------------------
-  if(!repartition && !transfer)
-    particlealgo_->CreateBins(Teuchos::null);
+  if(partition)
+    binning_->CreateBins(Teuchos::null);
 
   // -------------------------------------------------------------------------
   // assign bins to procs according to a weighted partitioning, i.e. bins
@@ -420,8 +476,10 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   if(partition || repartition)
   {
     // get optimal row distribution of bins to procs
-    rowbins_ = particlealgo_->WeightedDistributionOfBinsToProcs(
-        discret_vec,disnp,nodesinbin,repartition);
+    rowbins_ = binning_->WeightedDistributionOfBinsToProcs(discret_vec,
+                                                           disnp,
+                                                           nodesinbin,
+                                                           repartition);
   }
 
   // -------------------------------------------------------------------------
@@ -457,11 +515,11 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     {
       DRT::Node* node = bindis_->gNode(noderowmap->GID(lid));
       const double* currpos = node->X();
-      particlealgo_->PlaceNodeCorrectly(
+      binning_->PlaceNodeCorrectly(
           Teuchos::rcp(node,false), currpos, homelesscrosslinker);
     }
     // ii) round robin loop to assign homeless crosslinker to correct bin and owner
-    particlealgo_->FillParticlesIntoBinsRoundRobin(homelesscrosslinker);
+    binning_->FillParticlesIntoBinsRoundRobin(homelesscrosslinker);
 
   }
   // bin gids are the same
@@ -494,7 +552,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   else if (transfer)
   {
     // transfer crosslinker to their new bins
-    particlealgo_->TransferParticles();
+    binning_->TransferParticles();
   }
   else
   {
@@ -504,19 +562,25 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // -------------------------------------------------------------------------
   // call fill complete to build new node row map
   // -------------------------------------------------------------------------
-  bindis_->FillComplete(false,false,false);
+  if(cltoclinteraction)
+    bindis_->FillComplete(false,false,false);
 
   // -------------------------------------------------------------------------
   // each owner of a bin gets owner of the nodes (of the structure discret) this
   // bin contains. All other nodes of elements, of which proc is owner of at
   // least one node, are ghosted.
   // -------------------------------------------------------------------------
+
   // as extended ghosting is applied to discret_vec, colmaps of standard ghosting
   // are given back separately if needed
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmap;
-  particlealgo_->StandardGhosting(intactdis_,rowbins_,ia_disnp_,stdelecolmap,
-      stdnodecolmap,nodesinbin[0]);
+  binning_->StandardGhosting(ia_discret_,
+                             rowbins_,
+                             ia_disnp_,
+                             stdelecolmap,
+                             stdnodecolmap,
+                             nodesinbin[0]);
 
 #ifdef DEBUG
   // print distribution after standard ghosting
@@ -526,28 +590,67 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     IO::cout<<"   parallel distribution with standard ghosting   " << IO::endl;
     IO::cout<<"+--------------------------------------------------+"<<IO::endl;
   }
-  DRT::UTILS::PrintParallelDistribution(*intactdis_);
+  DRT::UTILS::PrintParallelDistribution(*ia_discret_);
 #endif
+
+  // -------------------------------------------------------------------------
+  // in case we have double bonded crosslinker on myrank we have to take care
+  // of two things:
+  // i)  do we (still) own dofs that are part of two crosslinked eles and there-
+  //     need to assemble ...
+  // ii) ... if so, we need to at least ghost the other element of the crosslinked
+  //     pair
+  // -------------------------------------------------------------------------
+
+//  // i) first we check if we at least ghost one element in each pair in our
+//  // double bonded cl list. As we have our discret with standard ghosting at this
+//  // point, we can be sure that if we ghost a element we certainly also own at
+//  // least one node of this element and therefore need to assemble force and stiff
+//  std::map<int, DoubleBondedCl>::const_iterator iter;
+//  for(iter=doublebondcl_.begin(); iter!= doublebondcl_.end(); ++iter)
+//  {
+//    // get crosslinking participants data
+//    DoubleBondedCl dbcl;
+//    const int firstelegid = iter->second.eleone.first;
+//    const int secelegid = iter->second.eletwo.first;
+//
+//    // check if at least one element is (still) ghosted
+//    if(ia_discret_->ElementColMap()->LID(firstelegid)<0 and
+//       ia_discret_->ElementColMap()->LID(secelegid)<0)
+//    {
+//      // in this case we can erase this crosslinking event as it has no relevance
+//      // any more on myrank
+//      doublebondcl_.erase(iter->first);
+//    }
+//  }
+
 
   // ----------------------------------------------------------------------
   // extended ghosting means the following here: Each proc ghosts
   // all elements whose XAABB cuts a bin that is next to a bin that is
   // owned by a proc an not empty. All associated nodes are ghosted as well
   // ----------------------------------------------------------------------
+
   // to distribute eles to bins correctly, we need a column map for disnp here
   // as the owner of a element does not need to be the owner of all nodes,
   // but we need the information of all nodes for correct distribution
-  // (note this vector is col format before extenden ghosting, later we
+  // (note this vector is col format before extended ghosting, later we
   // a col vector based on maps of extended ghosting)
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp(new Epetra_Vector(*intactdis_->DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_disnp_, *iadiscolnp);
 
   // extend ghosting
-  particlealgo_->ExtendBinGhosting(intactdis_,rowbins_,iadiscolnp,
-      extbintoelemap_,true,true);
+  binning_->ExtendBinGhosting(ia_discret_,
+                              rowbins_,
+                              iadiscolnp,
+                              extbintoelemap_,
+                              cltoclinteraction,
+                              true);
 
   // build element to bin map according to extended ghosting
+  // extbintoelemap_ than contains for each col element the bins that are
+  // somehow touched by an axis aligned bounding box around the element
   BuildEleToBinMap();
 
 #ifdef DEBUG
@@ -558,7 +661,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     IO::cout<<"   parallel distribution with extended ghosting   " << IO::endl;
     IO::cout<<"+--------------------------------------------------+"<<IO::endl;
   }
-  DRT::UTILS::PrintParallelDistribution(*intactdis_);
+  DRT::UTILS::PrintParallelDistribution(*ia_discret_);
 #endif
 
   // -------------------------------------------------------------------------
@@ -566,7 +669,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // bins (multibin elements, elemap) and particles (nodes, nodemap) of
   // its 26 neighbored bins -> final FillComplete() for maps included
   // -------------------------------------------------------------------------
-  particlealgo_->BuildBinColMap(rowbins_,extbintoelemap_);
+  binning_->BuildBinColMap(rowbins_,extbintoelemap_);
 
 #ifdef DEBUG
   // print distribution after extended ghosting
@@ -589,12 +692,25 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   //--------------------------------------------------------------------------
   // in case have not build new bins we need to clear the content
   if(!partition)
-    particlealgo_->RemoveElesFromBins(bin_beamcontent_);
+    binning_->RemoveElesFromBins(bin_beamcontent_);
   // note: extbintoelemap contains all necessary information for this step as
   // there is no assigning to do for empty bins (not in extbintoelemap) on a proc
   // bins that just have crosslinker are contained as well but do no damage
   // loop over all bins and remove assigned wall elements
-  particlealgo_->AssignElesToBins(intactdis_, extbintoelemap_, bin_beamcontent_);
+  binning_->AssignElesToBins(ia_discret_, extbintoelemap_, bin_beamcontent_);
+
+#ifdef DEBUG
+  // safety check if a crosslinker got lost
+  if(bindis_->NumGlobalNodes()!=eval_statmech_ptr_->GetDataSMDynPtr()->NumCrosslink())
+    dserror("A crosslinker got lost, something went wrong.");
+#endif
+
+  //--------------------------------------------------------------------------
+  // reset transformation member variables (eg. exporter) by rebuilding
+  // and provide new maps for coupling adapter
+  //--------------------------------------------------------------------------
+  siatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  coupsia_->SetupCoupling(*ia_discret_, Discret());
 
   // that's it
   return;
@@ -644,6 +760,7 @@ void STR::MODELEVALUATOR::Crosslinking::InitializeBinDiscret()
   // corresponding discret
   bindis_->SetWriter(
       Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
+  // this is necessary for particle algorithm constructor
   DRT::Problem::Instance()->AddDis("particle", bindis_);
   // -------------------------------------------------------------------------
   // set range for uniform random number generator
@@ -706,7 +823,7 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp(new Epetra_Vector(*intactdis_->DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_disnp_, *iadiscolnp);
 
   // loop over all row crosslinker (beam binding status not touched here)
@@ -767,21 +884,21 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
 #ifdef DEBUG
         // safety check
-        const int colelelid = intactdis_->ElementColMap()->LID(elegid);
+        const int colelelid = ia_discret_->ElementColMap()->LID(elegid);
         if(colelelid<0)
           dserror("Crosslinker has %i bonds but his binding partner with gid %i "
                   "is \nnot ghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
 #endif
 
         DRT::ELEMENTS::Beam3Base* ele =
-            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->gElement(elegid));
 
         LINALG::Matrix<3,1> bbspotpos;
         // get element location vector and ownerships
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        ele->LocationVector(*ia_discret_,lm,lmowner,lmstride);
         // get current displacements
         std::vector<double> eledisp(lm.size());
         DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
@@ -812,21 +929,21 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
 #ifdef DEBUG
         // safety check
-        int colelelid = intactdis_->ElementColMap()->LID(elegid);
+        int colelelid = ia_discret_->ElementColMap()->LID(elegid);
         if(colelelid<0)
           dserror("Crosslinker has %i bonds but his binding partner with gid %i "
                   "is not \nghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
 #endif
 
         DRT::ELEMENTS::Beam3Base* ele =
-            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->gElement(elegid));
         LINALG::Matrix<3,1> bbspotposone;
 
         // get element location vector and ownerships
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        ele->LocationVector(*ia_discret_,lm,lmowner,lmstride);
         // get current displacements
         std::vector<double> eledispone(lm.size());
         DRT::UTILS::ExtractMyValues(*iadiscolnp,eledispone,lm);
@@ -842,16 +959,16 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
 #ifdef DEBUG
         // safety check
-        colelelid = intactdis_->ElementColMap()->LID(elegid);
+        colelelid = ia_discret_->ElementColMap()->LID(elegid);
         if(colelelid<0)
           dserror("Crosslinker has %i bonds but his binding partner with gid %i "
                   "is \nnot ghosted/owned on proc %i (owner of crosslinker)",clnumbond_i,elegid,myrank_);
 #endif
 
-        ele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->gElement(elegid));
+        ele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->gElement(elegid));
         LINALG::Matrix<3,1> bbspotpostwo;
 
-        ele->LocationVector(*intactdis_,lm,lmowner,lmstride);
+        ele->LocationVector(*ia_discret_,lm,lmowner,lmstride);
         // get current displacements
         std::vector<double> eledisptwo(lm.size());
         DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisptwo,lm);
@@ -901,6 +1018,9 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinking()
   //    - according to browninan dyn for free cl
   //    - according to beams for single and double bonded
   // -------------------------------------------------------------------------
+  // note: it is possible that a crosslinker leaves the computational domain
+  // at this point, it gets shifted back in in UpdateBinStrategy which is called
+  // right after this
   DiffuseCrosslinker();
 
   // -------------------------------------------------------------------------
@@ -910,7 +1030,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinking()
   //    regarding their binding status, position and so on.
   // -------------------------------------------------------------------------
   // get current beam positions based on maps of intactdis
-  UpdateDofMapOfVector(intactdis_, ia_disnp_, GState().GetMutableDisNp());
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
 
   // todo: do we want this ? (how to choose between (re-) and partitioning?)
   // do a complete new weighted partitioning every 100th step
@@ -971,13 +1091,13 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateCrosslinking()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
-  std::map<int, BindEventData >&              mybonds,
-  std::map<int, std::vector<BindEventData> >& undecidedbonds)
+    std::map<int, BindEventData >&              mybonds,
+    std::map<int, std::vector<BindEventData> >& undecidedbonds)
 {
   CheckInit();
 
   // measure time of interaction search crosslinker to beam
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::InteractionSearchAndBinding");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents");
 
   // gather data for all column crosslinker initially
   const int numcolcl = bindis_->NumMyColNodes();
@@ -985,7 +1105,7 @@ void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
   PreComputeCrosslinkerData(numcolcl);
 
   // gather data for all column beams
-  const int numcolbeams = intactdis_->NumMyColElements();
+  const int numcolbeams = ia_discret_->NumMyColElements();
   beam_data_.resize(numcolbeams);
   PreComputeBeamData(numcolbeams);
 
@@ -999,7 +1119,7 @@ void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
    To ensure that no crosslinker is bonded to often but still totally random over
    all procs, each binding event of a col crosslinker to a row element needs to
    be communicated to the crosslinker owner, he randomly decides who is allowed
-   to bind, sets the according stuff for the cl, and then informs back the
+   to bind, sets the according stuff for the cl and  informs back the
    requesting procs so they can set the stuff for the elements.
    As no proc on his own can decide whether a crosslink should be set, two
    binding events for one crosslinker in one time step are excluded (for this
@@ -1033,12 +1153,12 @@ void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
     std::vector<int> neighboring_binIds;
     neighboring_binIds.reserve(27);
     // do not check on existence here -> shifted to GetBinContent
-    particlealgo_->GetNeighbouringBinGids(currbinId,neighboring_binIds);
+    binning_->GetNeighborAndOwnBinIds(currbinId,neighboring_binIds);
 
     // get set of neighbouring beam elements (i.e. elements that somehow touch nb bins)
     // as explained above, we only need row elements
     std::set<DRT::Element*> neighboring_beams;
-    particlealgo_->GetBinContent(neighboring_beams,bin_beamcontent_,neighboring_binIds,true);
+    binning_->GetBinContent(neighboring_beams,bin_beamcontent_,neighboring_binIds,true);
 
     // get all crosslinker in current bin
     DRT::Node **ClInCurrentBin = CurrentBin->Nodes();
@@ -1068,10 +1188,10 @@ void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
-  DRT::Node*                                  crosslinker_i,
-  const std::set<DRT::Element*>&              neighboring_beams,
-  std::map<int, BindEventData >&              mybonds,
-  std::map<int, std::vector<BindEventData> >& undecidedbonds)
+    DRT::Node*                                  crosslinker_i,
+    const std::set<DRT::Element*>&              neighboring_beams,
+    std::map<int, BindEventData >&              mybonds,
+    std::map<int, std::vector<BindEventData> >& undecidedbonds)
 {
   CheckInit();
 
@@ -1084,6 +1204,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
   const CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
   const LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
   const int& clnumbond_i = cldata_i.clnumbond;
+  const std::vector<std::pair<int, int> >& bnodegids_i = cldata_i.bnodegids_;
 //  const Teuchos::RCP<MAT::CrosslinkerMat>& clmat_i = cldata_i.clmat;
   const int& clowner_i = cldata_i.clowner;
 
@@ -1132,6 +1253,30 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
     const std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
 //    const int& bowner_i = beamdata_i.bowner;
 
+    // 2. criterion:
+    // exclude binding of a single bonded crosslinker in close proximity on the
+    // same filament (i.e. element cloud of old element binding partner is excluded)
+    if(clnumbond_i==1)
+    {
+
+      // check, which clbspot is occupied
+      int occbspotid = 0;
+      if(bnodegids_i[0].first < 0)
+        occbspotid  = 1;
+
+      // check if two considered eles share nodes
+      bool toclose = false;
+      for (int i=0; i<2; i++)
+        if(nbbeam->NodeIds()[i]==bnodegids_i[occbspotid].first ||
+           nbbeam->NodeIds()[i]==bnodegids_i[occbspotid].second)
+          toclose = true;;
+
+      // if considered ele in close proximity to old partner (i.e. sharing nodes),
+      // go to next ele
+      if(toclose)
+        continue;
+    }
+
     // loop over all binding spots of current element in random order
     std::vector<int> randbspot = STATMECH::UTILS::Permutation(bbspotstatus_i.size());
     std::vector<int> ::const_iterator rbspotiter;
@@ -1144,7 +1289,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
       // we are now doing some checks if a binding event could happen
       // -----------------------------------------------------------------------
       {
-        // 2. criterion:
+        // 3. criterion:
         // first check if binding spot is free, if not, check next bspot on curr ele
         // note: bspotstatus in bonded case holds cl gid, otherwise -1 (meaning free)
         if(bbspotstatus_i.at(locnbspot) != -1)
@@ -1159,12 +1304,12 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
         dist_vec.Update(1.0, currbbspos, -1.0, clpos_i);
         const double distance = dist_vec.Norm2();
 
-        // 3. criterion:
+        // 4. criterion:
         // if binding spot not in binding range, continue with next binding spot
         if(distance>rmax || distance<rmin)
           continue;
 
-        // 4. criterion:
+        // 5. criterion:
         // a crosslink is set if and only if it passes a probability check
         if(DRT::Problem::Instance()->Random()->Uni() > plink)
           continue;
@@ -1210,13 +1355,13 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
-  std::map<int, BindEventData >& mybonds,
-  std::map<int, BindEventData >& myelebonds)
+    std::map<int, BindEventData >& mybonds,
+    std::map<int, BindEventData >& myelebonds)
 {
   CheckInit();
 
   // time needed to realize binding events
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::DoBinding");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::BindCrosslinker");
 
   // store data of newly double bonded cl on proc = map key
   std::map<int, std::vector<DoubleBondedCl> > dbondcltosend;
@@ -1261,6 +1406,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
       CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
       LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
       std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
+      std::vector<std::pair<int, int> >& bnodegids_i = cldata_i.bnodegids_;
       int& clnumbond_i = cldata_i.clnumbond;
 
 #ifdef DEBUG
@@ -1271,7 +1417,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
 #endif
 
       // get beam data
-      const int colelelid = intactdis_->ElementColMap()->LID(binevdata.elegid);
+      const int colelelid = ia_discret_->ElementColMap()->LID(binevdata.elegid);
 
 #ifdef DEBUG
       // safety check
@@ -1282,7 +1428,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
 
       // beam element i
       DRT::ELEMENTS::Beam3Base* ele_i =
-          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
       const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
@@ -1305,6 +1451,11 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           clbspots_i[0].first  = binevdata.elegid;
           clbspots_i[0].second = binevdata.bspotlocn;
           crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+
+          // store gid of first and second node of new binding partner
+          bnodegids_i[0].first  = ele_i->NodeIds()[0];
+          bnodegids_i[0].second = ele_i->NodeIds()[1];
+          crosslinker_i->ClData()->SetBeamNodeGids(bnodegids_i);
 
           // update number of bonds
           clnumbond_i = 1;
@@ -1361,11 +1512,11 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           // get owner of element of already existing bond (that was set before
           // this time step)
           const int oldbondpartnergid = clbspots_i[occbspotid].first;
-          const int oldbondpartnerowner = intactdis_->gElement(oldbondpartnergid)->Owner();
+          const int oldbondpartnerowner = ia_discret_->gElement(oldbondpartnergid)->Owner();
 
 #ifdef DEBUG
           // safety check
-          const int colelelid = intactdis_->ElementColMap()->LID(oldbondpartnergid);
+          const int colelelid = ia_discret_->ElementColMap()->LID(oldbondpartnergid);
           if(colelelid<0)
             dserror("Binding element partner of current row crosslinker is not ghosted, but this must be the case");
 #endif
@@ -1377,6 +1528,11 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           clbspots_i[freebspotid].first = binevdata.elegid;
           clbspots_i[freebspotid].second = binevdata.bspotlocn;
           crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+
+          // store gid of first and second node of this element
+          bnodegids_i[freebspotid].first = ele_i->NodeIds()[0];
+          bnodegids_i[freebspotid].second = ele_i->NodeIds()[1];
+          crosslinker_i->ClData()->SetBeamNodeGids(bnodegids_i);
 
           // update number of bonds
           clnumbond_i = 2;
@@ -1537,7 +1693,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
       // ---------------------------------------------------------------------
       // get beam data
       // ---------------------------------------------------------------------
-      const int colelelid = intactdis_->ElementColMap()->LID(binevdata.elegid);
+      const int colelelid = ia_discret_->ElementColMap()->LID(binevdata.elegid);
 
 #ifdef DEBUG
       // safety check
@@ -1547,7 +1703,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
 
       // get beam element of current binding event
       DRT::ELEMENTS::Beam3Base* ele_i =
-          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
 //      const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
@@ -1628,7 +1784,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
   CheckInit();
 
   // time needed to communicate new crosslinker elements
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::CrosslinkerUnBinding");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker");
 
   // get current off-rate for crosslinkers
   // todo: this needs to go somewhere else
@@ -1676,6 +1832,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
     CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
     LINALG::Matrix<3,1>& clpos_i = cldata_i.clpos;
     std::vector<std::pair<int, int> >& clbspots_i = cldata_i.clbspots;
+    std::vector<std::pair<int, int> >& bnodegids_i = cldata_i.bnodegids_;
     int& clnumbond_i = cldata_i.clnumbond;
 //    const int& clowner_i = cldata_i.clowner;
 
@@ -1720,7 +1877,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 
         // owner of beam
         const int beamowner =
-            intactdis_->gElement(unbindevent.eletoupdate.first)->Owner();
+            ia_discret_->gElement(unbindevent.eletoupdate.first)->Owner();
         // check who needs to update the element status
         if(beamowner == myrank_)
           myrankunbindevent.push_back(unbindevent);
@@ -1734,6 +1891,9 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
         clbspots_i[occbspotid].first = -1;
         clbspots_i[occbspotid].second = -1;
         crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+        bnodegids_i[occbspotid].first = -1;
+        bnodegids_i[occbspotid].second = -1;
+        crosslinker_i->ClData()->SetBeamNodeGids(bnodegids_i);
 
         // update number of bonds
         clnumbond_i = 0;
@@ -1787,10 +1947,10 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
           // -----------------------------------------------------------------
           // owner of unbonded beam element
           const int freedbeamowner =
-              intactdis_->gElement(clbspots_i[freedbspotid].first)->Owner();
+              ia_discret_->gElement(clbspots_i[freedbspotid].first)->Owner();
           // owner of beam that stays connected to crosslinker
           const int occbeamowner =
-              intactdis_->gElement(clbspots_i[stayocc].first)->Owner();
+              ia_discret_->gElement(clbspots_i[stayocc].first)->Owner();
           // initialize two versions of unbinding events
           // update and deletion
           UnBindEventData unbindeventupdel;
@@ -1869,6 +2029,9 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
           clbspots_i[freedbspotid].first = -1;
           clbspots_i[freedbspotid].second = -1;
           crosslinker_i->ClData()->SetClBSpotStatus(clbspots_i);
+          bnodegids_i[freedbspotid].first = -1;
+          bnodegids_i[freedbspotid].second = -1;
+          crosslinker_i->ClData()->SetBeamNodeGids(bnodegids_i);
 
           // update number of bonds
           clnumbond_i = 1;
@@ -1876,7 +2039,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 
           // update postion
           const int collidoccbeam =
-              intactdis_->ElementColMap()->LID(clbspots_i[stayocc].first);
+              ia_discret_->ElementColMap()->LID(clbspots_i[stayocc].first);
 
 #ifdef DEBUG
           // safety check
@@ -1924,7 +2087,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
     // update beam data
     if(elegidtoupdate > -1)
     {
-      const int colelelid = intactdis_->ElementColMap()->LID(elegidtoupdate);
+      const int colelelid = ia_discret_->ElementColMap()->LID(elegidtoupdate);
 
 #ifdef DEBUG
       // safety check
@@ -1934,7 +2097,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 
       // get beam element of current binding event
       DRT::ELEMENTS::Beam3Base* ele_i =
-          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(colelelid));
+          dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(colelelid));
 
 #ifdef DEBUG
       // safety check
@@ -1969,7 +2132,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
-  const int numcolcl)
+    const int numcolcl)
 {
   CheckInit();
 
@@ -2005,6 +2168,8 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
       cldata.clpos(dim) = crosslinker_i->X()[dim];
     // get current binding spot status of crosslinker
     cldata.clbspots = crosslinker_i->ClData()->GetClBSpotStatus();
+    // get current binding spot status of crosslinker
+    cldata.bnodegids_ = crosslinker_i->ClData()->GetBeamNodeGids();
     // get number of bonds
     cldata.clnumbond = crosslinker_i->ClData()->GetNumberOfBonds();
     // get type of crosslinker (i.e. its material)
@@ -2027,17 +2192,17 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
-  const int numcolbeams)
+    const int numcolbeams)
 {
   CheckInit();
 
   // sanity check
-  if((int)beam_data_.size()!= intactdis_->NumMyColElements())
+  if((int)beam_data_.size()!= ia_discret_->NumMyColElements())
     dserror("temporary beam data container has wrong size");
 
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp(new Epetra_Vector(*intactdis_->DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_disnp_, *iadiscolnp);
 
   // loop over all column beams elements
@@ -2045,7 +2210,7 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
   {
     // beam element i for which data will be collected
     DRT::ELEMENTS::Beam3Base* ele_i =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(intactdis_->lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(i));
 
 #ifdef DEBUG
       if(ele_i == NULL)
@@ -2061,7 +2226,7 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    ele_i->LocationVector(*intactdis_,lm,lmowner,lmstride);
+    ele_i->LocationVector(*ia_discret_,lm,lmowner,lmstride);
     // get current displacements
     std::vector<double> eledisp(lm.size());
     // todo: discolnp_ with correct values here?
@@ -2094,14 +2259,14 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::ManageBindingInParallel(
-  std::map<int, BindEventData >&              mybonds,
-  std::map<int, std::vector<BindEventData> >& undecidedbonds,
-  std::map<int, BindEventData >&              myelebonds)
+    std::map<int, BindEventData >&              mybonds,
+    std::map<int, std::vector<BindEventData> >& undecidedbonds,
+    std::map<int, BindEventData >&              myelebonds) const
 {
   CheckInit();
 
   // time needed to make binding decision in parallel
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::BindingDecision");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::ManageBindingInParallel");
 
   // variable for safety check
   int numrecrequest;
@@ -2299,7 +2464,7 @@ void STR::MODELEVALUATOR::Crosslinking::ManageBindingInParallel(
 
   // -------------------------------------------------------------------------
   // 3) communicate the binding decisions made on myrank, receive decisions
-  //     made for its own requests and create colbondmap accordingly
+  //    made for its own requests and create colbondmap accordingly
   // -------------------------------------------------------------------------
   {
     // -----------------------------------------------------------------------
@@ -2391,8 +2556,8 @@ void STR::MODELEVALUATOR::Crosslinking::ManageBindingInParallel(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::CommunicateDoubleBondedCl(
-  std::map<int, DoubleBondedCl>&               mynewdbondcl,
-  std::map<int, std::vector<DoubleBondedCl> >& dbondcltosend)
+    std::map<int, DoubleBondedCl>&               mynewdbondcl,
+    std::map<int, std::vector<DoubleBondedCl> >& dbondcltosend) const
 {
   CheckInit();
 
@@ -2489,8 +2654,8 @@ void STR::MODELEVALUATOR::Crosslinking::CommunicateDoubleBondedCl(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::CommunicateCrosslinkerUnbinding(
-  std::map<int, std::vector<UnBindEventData> >& sendunbindevent,
-  std::vector<UnBindEventData>&                 myrankunbindevent)
+    std::map<int, std::vector<UnBindEventData> >& sendunbindevent,
+    std::vector<UnBindEventData>&                 myrankunbindevent) const
 {
   CheckInit();
 
@@ -2588,10 +2753,10 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
   CheckInit();
 
   // measure time for evaluating this function
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TimeForBeamToBeamInteraction");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles");
 
 #ifdef DEBUG
-  if((int)exteletobinmap_.size() != intactdis_->ElementColMap()->NumMyElements())
+  if((int)exteletobinmap_.size() != ia_discret_->ElementColMap()->NumMyElements())
     dserror("std::map does not equal elecolmap (check e.g. if extended ghosting contains "
             " standard ghosting). Therefore not every contact can be detected");
 #endif
@@ -2600,18 +2765,21 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
   std::map<int, std::set<int> >::const_iterator coleleiter;
   for(coleleiter=exteletobinmap_.begin(); coleleiter!=exteletobinmap_.end(); ++coleleiter)
   {
+    const int elegid = coleleiter->first;
+    DRT::Element* currele = ia_discret_->gElement(elegid);
+
     // (unique) set of neighboring bins for all col bins assigned to current element
     std::set<int> neighboring_binIds;
 
     // loop over all row bins
     std::set<int>::const_iterator colbiniter;
-    for(colbiniter=coleleiter->second.begin(); colbiniter!=coleleiter->second.end(); ++colbiniter)
+    for(colbiniter=exteletobinmap_[elegid].begin(); colbiniter!=exteletobinmap_[elegid].end(); ++colbiniter)
     {
       std::vector<int> loc_neighboring_binIds;
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      particlealgo_->GetNeighbouringBinGids(*colbiniter,loc_neighboring_binIds);
+      binning_->GetNeighborAndOwnBinIds(*colbiniter,loc_neighboring_binIds);
 
       // build up comprehensive unique set of neighboring bins
       neighboring_binIds.insert(loc_neighboring_binIds.begin(), loc_neighboring_binIds.end());
@@ -2621,17 +2789,50 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
 
     // set of elements that lie in neighboring bins
     std::set<DRT::Element*> neighboring_elements;
+    binning_->GetBinContent(neighboring_elements,bin_beamcontent_,glob_neighboring_binIds);
 
-    particlealgo_->GetBinContent(neighboring_elements,bin_beamcontent_,glob_neighboring_binIds);
+    // sort out elements that should not be considered in contact evaluation
+    VerifyNeighbors(currele, neighboring_elements);
 
-    // evaluate contact and potential
-//      Evaluate();
+  } // loop over all row elements
 
-  }
   // that is it
   return;
 
-} //GetneighboringEles()
+} // GetneighboringEles()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::VerifyNeighbors(
+    DRT::Element*            currele,
+    std::set<DRT::Element*>& neighbors) const
+{
+  CheckInit();
+
+  // -----------------------------------------------------------------------
+  // sort out elements that should not be considered in contact evaluation
+  // -----------------------------------------------------------------------
+  std::set<DRT::Element*>::const_iterator eiter;
+  for(eiter=neighbors.begin(); eiter!=neighbors.end(); ++eiter)
+  {
+    // 1) ensure each contact only evalutated once on myrank
+    if(not(currele->Id() < (*eiter)->Id()))
+    {
+      neighbors.erase(*eiter);
+      continue;
+    }
+
+    // 2) ensure that two elements sharing the same node do not get into contact
+    for (int i=0; i<2; i++)
+      for (int j=0; j<2; j++)
+        if((*eiter)->NodeIds()[i]==currele->NodeIds()[j])
+          neighbors.erase(*eiter);
+  }
+
+  // that is it
+  return;
+
+} //VerifyNeighbors()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -2643,12 +2844,15 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateMaps()
   // and not doing the safety checks in Linalg::Export. See in particle_timint
   // how this can be done.
 
-  // beam displacement
-  UpdateDofMapOfVector(intactdis_, ia_disnp_);
+  //todo: check if update is necessary (->SameAs())
 
-  // update stiff matrix
-  // todo:
-  // COUPLING ADAPTER, drt_fsi/fsi??????????????
+  // beam displacement
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_);
+
+  ia_stiff_ = Teuchos::rcp(new
+      LINALG::SparseMatrix(*ia_discret_->DofRowMap(), 81, true, true));
+  // force
+  ia_force_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
 
   // that is it
   return;
@@ -2658,9 +2862,9 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateMaps()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<Epetra_Vector>&      dofmapvec,
-  Teuchos::RCP<Epetra_Vector>       old)
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector>&      dofmapvec,
+    Teuchos::RCP<Epetra_Vector>       old)
 {
   CheckInit();
 
@@ -2681,6 +2885,38 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
   return;
 
 } //UpdateVectorDofMap()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff(
+    bool force,
+    bool stiff)
+{
+  CheckInit();
+
+  // time needed to transform force vector and stiffnes matrix
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
+
+  if(force)
+  {
+    // transform force vector to problem discret layout/distribution
+    force_ = coupsia_->MasterToSlave(ia_force_);
+  }
+  // transform stiffness matrix to problem discret layout/distribution
+  if(stiff)
+  {
+    // transform stiffness matrix to problem discret layout/distribution
+    (*siatransform_)(*ia_stiff_,
+                     1.0,
+                     ADAPTER::CouplingMasterConverter(*coupsia_),
+                     *stiff_,
+                     false);
+  }
+
+  // that is it
+  return;
+
+} //TransformForceAndStiff()
 
 ///*-----------------------------------------------------------------------------*
 // *-----------------------------------------------------------------------------*/
@@ -2784,7 +3020,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::Pack(
   DRT::PackBuffer&     data,
-  const BindEventData& bindeventdata)
+  const BindEventData& bindeventdata) const
 {
   CheckInit();
 
@@ -2804,7 +3040,7 @@ void STR::MODELEVALUATOR::Crosslinking::Pack(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::Pack(
   DRT::PackBuffer&       data,
-  const UnBindEventData& unbindeventdata)
+  const UnBindEventData& unbindeventdata) const
 {
   CheckInit();
 
@@ -2821,7 +3057,7 @@ void STR::MODELEVALUATOR::Crosslinking::Pack(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::Pack(
   DRT::PackBuffer&      data,
-  const DoubleBondedCl& dbondedcldata)
+  const DoubleBondedCl& dbondedcldata) const
 {
   CheckInit();
 
@@ -2840,7 +3076,7 @@ void STR::MODELEVALUATOR::Crosslinking::Pack(
 void STR::MODELEVALUATOR::Crosslinking::UnPack(
   std::vector<char>::size_type& position,
   std::vector<char>             data,
-  BindEventData&                bindeventdata)
+  BindEventData&                bindeventdata) const
 {
   CheckInit();
 
@@ -2861,7 +3097,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnPack(
 void STR::MODELEVALUATOR::Crosslinking::UnPack(
   std::vector<char>::size_type& position,
   std::vector<char>             data,
-  DoubleBondedCl&               dbondedcldata)
+  DoubleBondedCl&               dbondedcldata) const
 {
   CheckInit();
 
@@ -2880,7 +3116,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnPack(
 void STR::MODELEVALUATOR::Crosslinking::UnPack(
   std::vector<char>::size_type& position,
   std::vector<char>             data,
-  UnBindEventData&              unbindeventdata)
+  UnBindEventData&              unbindeventdata) const
 {
   CheckInit();
 
@@ -2895,7 +3131,7 @@ void STR::MODELEVALUATOR::Crosslinking::UnPack(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::Logo()
+void STR::MODELEVALUATOR::Crosslinking::Logo() const
 {
   CheckInit();
 

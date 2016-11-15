@@ -520,7 +520,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
       const int binId = rowbins->GID(lid);
 
       std::vector<int> neighbors;
-      GetBinConnectivity(binId,neighbors);
+      GetNeighborBinIds(binId,neighbors);
 
       int err = graph->InsertGlobalIndices(binId,(int)neighbors.size(),&neighbors[0]);
       if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,binId);
@@ -678,7 +678,7 @@ Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::Algorithm::CreateGraph()
       const int binId = oldrowmap->GID(lid);
 
       std::vector<int> neighbors;
-      GetBinConnectivity(binId,neighbors);
+      GetNeighborBinIds(binId,neighbors);
 
       int err = graph->InsertGlobalIndices(binId,(int)neighbors.size(),&neighbors[0]);
       if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,binId);
@@ -1105,8 +1105,13 @@ void PARTICLE::Algorithm::ExtendBinGhosting(
   // extbintoelemap[i] than contains all bins and its corresponding elements
   // that need to be owned or ghosted to ensure correct interaction handling
   // of the elements in the range of one layer
-  Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendPartAndEleGhosting(
-      discret->ElementColMap(),bintoelemap,extbintoelemap,rowbins,particle_ghosting,eleghosting);
+  Teuchos::RCP<Epetra_Map> extendedelecolmap =
+      ExtendPartAndEleGhosting(discret->ElementColMap(),
+                               bintoelemap,
+                               extbintoelemap,
+                               rowbins,
+                               particle_ghosting,
+                               eleghosting);
 
   // adapt layout to extended ghosting in discret
   // first export the elements according to the processor local element column maps
@@ -1181,10 +1186,8 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendPartAndEleGhosting(
 
           std::vector<int> binvec;
           // get neighboring bins
-          GetBinConnectivity(binId, binvec);
+          GetNeighborAndOwnBinIds(binId, binvec);
           bins.insert(binvec.begin(), binvec.end());
-          // insert bin itself
-          bins.insert(binId);
         }
       }
       // ----------------------------------------------------------------------
@@ -1207,10 +1210,8 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendPartAndEleGhosting(
             continue;
           std::vector<int> binvec;
           // get neighboring bins
-          GetBinConnectivity(binId, binvec);
+          GetNeighborAndOwnBinIds(binId, binvec);
           bins.insert(binvec.begin(), binvec.end());
-          // insert bin itself
-          bins.insert(binId);
         }
       }
     }
@@ -1275,10 +1276,8 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       int binId = binrowmap->GID(lid);
       std::vector<int> binvec;
       // get neighboring bins
-      GetBinConnectivity(binId, binvec);
+      GetNeighborAndOwnBinIds(binId, binvec);
       bins.insert(binvec.begin(), binvec.end());
-      // insert bin itself
-      bins.insert(binId);
     } // end for lid
 
     // remove non-existing ghost bins from original bin set
@@ -2306,37 +2305,12 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
     std::set<DRT::Element*>& neighboring_walls,
     const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources)
 {
-
-  int ijk[3];
-  ConvertGidToijk(binId,ijk);
-
-  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
-  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
   std::vector<int> binIds;
   binIds.reserve(27);
 
-  // do not check on existence here -> shifted to GetBinContent
-  GidsInijkRange(ijk_range,binIds,false);
+  GetNeighborAndOwnBinIds(binId,binIds);
 
   GetBinContent(neighboring_particles, neighboring_walls, neighboring_heatSources, binIds);
-}
-
-
-/*----------------------------------------------------------------------*
- | get the GIDs of the neighbouring bins                   ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetNeighbouringBinGids(
-    const int         currbinId,
-    std::vector<int>& neighbourbinIds)
-{
-  int ijk[3];
-  ConvertGidToijk(currbinId,ijk);
-
-  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
-  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
-
-  // do not check on existence here -> shifted to GetBinContent
-  GidsInijkRange(ijk_range,neighbourbinIds,false);
 }
 
 /*----------------------------------------------------------------------*
@@ -2641,7 +2615,6 @@ void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
   const double radiusOld = (*radius)[lidNode_old];
   (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * radiusOld * radiusOld * radiusOld /((nlist + 1) * dismemberRadius * dismemberRadius * dismemberRadius);
 }
-
 
 /*------------------------------------------------------------------------*
  | compute thermodynamic expansion - new densities and radii catta 06/16  |

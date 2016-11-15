@@ -42,11 +42,14 @@ CROSSLINKING::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer():
 numbond_(0)
 {
   clbspots_.clear();
+  bnodegids_.clear();
   std::pair<int, int> pair;
   pair.first = -1;
   pair.second = -1;
   clbspots_.push_back(pair);    // first binding spot of crosslinker
   clbspots_.push_back(pair);    // second binding spot of crosslinker
+  bnodegids_.push_back(pair);    // first binding spot of crosslinker
+  bnodegids_.push_back(pair);    // second binding spot of crosslinker
 
   return;
 }
@@ -61,6 +64,8 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Pack(DRT::PackBuffer& data) con
   DRT::ParObject::AddtoPack(data,numbond_);
   // add clbspots_
   DRT::ParObject::AddtoPack(data,clbspots_);
+  // add bnodegids_
+  DRT::ParObject::AddtoPack(data,bnodegids_);
 
   return;
 }
@@ -77,6 +82,8 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
   DRT::ParObject::ExtractfromPack(position,data,numbond_);
   // clbspots_
   DRT::ParObject::ExtractfromPack(position,data,clbspots_);
+  // bnodegids_
+  DRT::ParObject::ExtractfromPack(position,data,bnodegids_);
 
   return;
 }

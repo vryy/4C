@@ -34,6 +34,9 @@
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_inpar/inpar_meshfree.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_dofset_independent.H"
 
 #include "binning_strategy.H"
 
@@ -46,8 +49,10 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   LINALG::Matrix<3,2> XAABB
   ) :
   bindis_(Teuchos::null),
+  visbindis_(Teuchos::null),
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
+  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(comm.MyPID())
@@ -82,6 +87,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   const Epetra_Comm& comm
   ) :
   bindis_(Teuchos::null),
+  visbindis_(Teuchos::null),
+  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(comm.MyPID())
@@ -140,6 +147,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   ) :
   bindis_(Teuchos::null),
   cutoff_radius_(0.0),
+  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
   havepbc_(false),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(dis[0]->Comm().MyPID())
@@ -296,9 +304,9 @@ void BINSTRATEGY::BinningStrategy::DistributeCutElesToBins(
   double currpos[3] = {0.0,0.0,0.0};
   // exploit bounding box idea for elements in underlying discretization and bins
   // loop over all row elements
-  for (int lid = 0; lid < discret->NumMyRowElements(); ++lid)
+  for (int lid = 0; lid < discret->NumMyColElements(); ++lid)
   {
-    DRT::Element* ele = discret->lRowElement(lid);
+    DRT::Element* ele = discret->lColElement(lid);
     DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->NumNode();
 
@@ -584,7 +592,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
         const int binId = oldrowmap->GID(lid);
 
         std::vector<int> neighbors;
-        GetBinConnectivity(binId,neighbors);
+        GetNeighborBinIds(binId,neighbors);
 
         int err = bingraph->InsertGlobalIndices(binId,(int)neighbors.size(),&neighbors[0]);
         if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,binId);
@@ -639,7 +647,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
      // insert 26 (one level) neighboring bins to graph
      // (if active, periodic boundary conditions are considered here)
      std::vector<int> neighbors;
-     GetBinConnectivity(rowbinid,neighbors);
+     GetNeighborBinIds(rowbinid,neighbors);
 
      int err = bingraph->InsertGlobalIndices(rowbinid,(int)neighbors.size(),&neighbors[0]);
      if (err<0)
@@ -793,10 +801,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
         int binId = iter->first;
         std::vector<int> bins;
         // get neighboring bins
-        GetBinConnectivity(binId, bins);
+        GetNeighborAndOwnBinIds(binId, bins);
         binset.insert(bins.begin(), bins.end());
-        // insert bin itself
-        binset.insert(binId);
       }
     }
     // copy set to vector in order to broadcast data
@@ -934,10 +940,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
           }
           std::vector<int> binvec;
           // get neighboring bins
-          GetBinConnectivity(binId, binvec);
+          GetNeighborAndOwnBinIds(binId, binvec);
           bins.insert(binvec.begin(), binvec.end());
-          // insert bin itself
-          bins.insert(binId);
         }
       }
     }
@@ -1758,7 +1762,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(const int* ijk_range, std::vec
 /*----------------------------------------------------------------------*
  | get 26 neighboring bin ids to binId (if existing)       ghamm 08/13  |
 *-----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GetBinConnectivity(const int binId, std::vector<int>& binIds)
+void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(const int binId, std::vector<int>& binIds)
 {
   int ijk_base[3];
   ConvertGidToijk(binId, &ijk_base[0]);
@@ -1781,6 +1785,19 @@ void BINSTRATEGY::BinningStrategy::GetBinConnectivity(const int binId, std::vect
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | get 26 neighboring bin ids and myself                   ghamm 08/13  |
+*-----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::GetNeighborAndOwnBinIds(const int binId, std::vector<int>& binIds)
+{
+  // get neighbors
+  GetNeighborBinIds(binId, binIds);
+
+  // add myself
+  binIds.push_back(binId);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
 | corner position for given bin id                          ghamm 03/13 |
@@ -1810,6 +1827,10 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(const int binId, std::vector<LI
       } // end for int k
     } // end for int j
   } // end for int i
+
+  // change entries to get node numbering according to baci convention of vele
+  std::swap(bincorners[2],bincorners[3]);
+  std::swap(bincorners[6],bincorners[7]);
 
   return;
 }
@@ -1861,6 +1882,149 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
   return;
 }
 
+
+/*-----------------------------------------------------------------------------*
+| write bin output                                             eichinger 11/16 |
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::WriteBinOutput(int step, double time)
+{
+  // not bin output
+  if(writebinstype_==INPAR::MESHFREE::none)
+    return;
+
+  // -------------------------------------------------------------------------
+  // note: this is a debug feature only (as very expensive)
+  // -------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // add a visualization discretization manually (as it is not part of the input
+  // file) to the global problem to enable output of bins
+  // -------------------------------------------------------------------------
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->Comm().Clone());
+  visbindis_ = Teuchos::rcp(new DRT::Discretization("visbins" ,com));
+  // create discretization writer - in constructor set into and owned by
+  // corresponding discret
+  visbindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(visbindis_)));
+
+  // store gids of ghosted elements
+  std::map<int, std::vector<LINALG::Matrix<3,1> > > ghostcorners;
+  // add elements and nodes
+  for (int i=0;i<bindis_->NumMyColElements();++i)
+  {
+    DRT::Element* ele = bindis_->lColElement(i);
+    if (!ele) dserror("Cannot find element with lid %",i);
+
+    // get corner position as node positions
+    const int numcorner = 8;
+    int bingid = ele->Id();
+    std::vector<LINALG::Matrix<3,1> > bincorners;
+    GetBinCorners(bingid,bincorners);
+
+    // if element is a ghost
+    if(ele->Owner()!=myrank_)
+    {
+      ghostcorners[ele->Id()] = bincorners;
+      continue;
+    }
+
+    // add new node
+    std::vector<double> cornerpos(3,0.0);
+    std::vector<int> nids(8,0);
+    for(int corner_i=0; corner_i<numcorner; ++corner_i)
+    {
+      for(int dim=0; dim<3; ++dim)
+        cornerpos[dim] = bincorners[corner_i](dim);
+
+      nids[corner_i] = (bingid*numcorner) + corner_i;
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(new DRT::Node(nids[corner_i], &cornerpos[0], myrank_));
+      visbindis_->AddNode(newnode);
+    } // new node loop
+
+    // assign nodes to elements
+    Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory("VELE3","Polynomial", ele->Id(), myrank_);
+    newele->SetNodeIds(nids.size(), &nids[0]);
+    visbindis_->AddElement(newele);
+  } // loop over elements
+
+  // get max gid before adding elements
+  int maxgid = bindis_->ElementRowMap()->MaxAllGID() + 1;
+  if(writebinstype_==INPAR::MESHFREE::cols)
+  {
+    // gather all numbers of ghosted bins that are going to be row eles
+    std::vector<int> nummycol(1);
+    nummycol[0] = (int)ghostcorners.size();
+    // initialize std::vector for communication
+    std::vector<int> numcol(com->NumProc(),0);
+    // communicate
+    com->GatherAll(&nummycol[0],&numcol[0],nummycol.size());
+
+    // calculate starting index on myrank
+    int startnewgid = 0;
+    for(int i=0; i<myrank_; ++i)
+      startnewgid += numcol[i];
+
+    // loop over all ghosted bins
+    std::map<int, std::vector<LINALG::Matrix<3,1> > >::const_iterator iter;
+    int counter = 0;
+    for(iter=ghostcorners.begin(); iter!=ghostcorners.end(); ++iter)
+    {
+      // new elegid (unique over all procs)
+      int newelegid = maxgid + startnewgid + counter;
+      counter++;
+
+      // add new node
+      // get corner position as node positions
+      const int numcorner = 8;
+      std::vector<double> cornerpos(3,0.0);
+      std::vector<int> nids(8,0);
+      for(int corner_i=0; corner_i<numcorner; ++corner_i)
+      {
+        for(int dim=0; dim<3; ++dim)
+          cornerpos[dim] = iter->second[corner_i](dim);
+
+        nids[corner_i] = (newelegid*numcorner) + corner_i;
+        Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(new DRT::Node(nids[corner_i], &cornerpos[0], myrank_));
+        visbindis_->AddNode(newnode);
+      } // new node loop
+
+      // assign nodes to elements
+      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory("VELE3","Polynomial", newelegid, myrank_);
+      newele->SetNodeIds(nids.size(), &nids[0]);
+      visbindis_->AddElement(newele);
+    }
+  }
+
+  // complete new dis
+  Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
+  visbindis_->ReplaceDofSet(independentdofset);
+  visbindis_->FillComplete(true,false,false);
+
+  // create vector that shows ghosting
+  Teuchos::RCP<Epetra_Vector> ghostvec = LINALG::CreateVector(*visbindis_->ElementRowMap(),true);
+  for(int i=0; i<visbindis_->NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = visbindis_->lRowElement(i);
+
+    if(ele->Id()<=maxgid)
+    {
+      // owned
+      (*ghostvec)[i] = 0;
+    }
+    else
+    {
+      // ghost
+      (*ghostvec)[i] = 1;
+    }
+  }
+
+  // write output
+  visbindis_->Writer()->WriteMesh(step, time);
+  visbindis_->Writer()->NewStep(step, time);
+  visbindis_->Writer()->WriteVector("owner0ghost1", ghostvec, visbindis_->Writer()->elementvector);
+  visbindis_->Writer()->WriteElementData(true);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
 | create linear map with bin ids                            ghamm 11/16 |

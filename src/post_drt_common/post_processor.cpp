@@ -188,41 +188,39 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_particle:
     {
-      switch(problem.num_discr())
+      int numdiscr = problem.num_discr();
+      for(int i=0; i<numdiscr; ++i)
       {
-        case 1:
+        std::string disname = problem.get_discretization(i)->name();
+        if(disname == "structure")
         {
-          PostField* particlefield = problem.get_discretization(0);
-          ParticleFilter  particlewriter(particlefield, problem.outname());
-          particlewriter.WriteFiles();
-
-          break;
-        }
-
-        case 3:
-        {
-          PostField* structure = problem.get_discretization(0);
+          PostField* structure = problem.get_discretization(i);
           StructureFilter writer(structure, problem.outname(), problem.stresstype(), problem.straintype());
           writer.WriteFiles();
-
-          PostField* particlewallfield = problem.get_discretization(1);
+        }
+        else if (disname == "particlewalls")
+        {
+          PostField* particlewallfield = problem.get_discretization(i);
           StructureFilter wallwriter(particlewallfield, problem.outname());
           wallwriter.WriteFiles();
-
-          PostField* particlefield = problem.get_discretization(2);
-          ParticleFilter  particlewriter(particlefield, problem.outname());
-          particlewriter.WriteFiles();
-
-          break;
         }
-
-        default:
+        else if (disname == "particle")
         {
-          dserror("Particle problem has illegal number of discretizations!");
-          break;
+          PostField* particlefield = problem.get_discretization(i);
+          ParticleFilter particlewriter(particlefield, problem.outname());
+          particlewriter.WriteFiles();
+        }
+        else if (disname == "visbins")
+        {
+          PostField* visualizebins = problem.get_discretization(i);
+          StructureFilter binwriter(visualizebins, problem.outname());
+          binwriter.WriteFiles();
+        }
+        else
+        {
+          dserror("Particle problem has illegal discretization name!");
         }
       }
-
       break;
     }
     case prb_crack:

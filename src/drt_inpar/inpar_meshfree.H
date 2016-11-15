@@ -1,14 +1,15 @@
-/*!--------------------------------------------------------------------------
+/*-----------------------------------------------------------*/
+/*!
 \file inpar_meshfree.H
 
-<pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\brief inpar meshfree
 
-*---------------------------------------------------------------------------*/
+\maintainer Keijo Nissen
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef INPAR_MESHFREE_H
 #define INPAR_MESHFREE_H
@@ -59,6 +60,13 @@ namespace MESHFREE
   enum gaptype {
     g_perp,
     g_stream
+  };
+
+  //! type of gap function/projection
+  enum writebins {
+    none,
+    rows,
+    cols
   };
 
   /*------------------------------------------------------------------------*/

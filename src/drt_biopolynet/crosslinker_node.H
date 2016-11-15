@@ -111,6 +111,11 @@ public:
    */
   const std::vector<std::pair<int, int> >& GetClBSpotStatus()
   {
+#ifdef DEBUG
+    // safety check
+    if((int)clbspots_.size()!=2)
+      dserror("crosslinker has wrong bspot size");
+#endif
     return clbspots_;
   }
 
@@ -125,19 +130,39 @@ public:
 
   /*!
   \brief Get current number of bonds of crosslinker
-
   */
   const int& GetNumberOfBonds() { return numbond_; }
 
   /*!
   \brief Set current number of bonds of crosslinker
-
   */
   void SetNumberOfBonds(int numbond)
   {
     numbond_ = numbond;
     return;
   }
+
+  /*!
+  \brief Get current binding spot status of linker
+  */
+ const std::vector<std::pair<int, int> >& GetBeamNodeGids()
+ {
+#ifdef DEBUG
+    // safety check
+    if((int)bnodegids_.size()!=2)
+      dserror("crosslinker has wrong bspot size");
+#endif
+   return bnodegids_;
+ }
+
+ /*!
+  \brief Get
+  */
+ void SetBeamNodeGids(std::vector<std::pair<int, int> > bnodegids)
+ {
+   bnodegids_ = bnodegids;
+   return;
+ }
 
   //@}
 
@@ -147,8 +172,12 @@ protected:
   CrosslinkerNodeDataContainer operator =(const CrosslinkerNodeDataContainer& old);
   CrosslinkerNodeDataContainer(const CrosslinkerNodeDataContainer& old);
 
-  std::vector<std::pair<int, int> > clbspots_;   // gid of element to local number of bspot, [0] and [1] first and second bspot of cl
-  int numbond_;                                  // number of active bonds
+  /// gid of element to local number of bspot, [0] and [1] first and second bspot of cl
+  std::vector<std::pair<int, int> > clbspots_;
+  /// number of active bonds
+  int numbond_;
+  /// first and second node of beam binding partner, [0] and [1] first and second bspot of cl
+  std::vector<std::pair<int, int> > bnodegids_;
 
 };
 // class CrosslinkerNodeDataContainer

@@ -241,32 +241,6 @@ namespace ADAPTER
         const bool matchall=true,
         const double tolerance=1.e-3);
 
-    /*! \brief Setup coupling of given nodes and node maps
-     *
-     *  Setup the whole thing. Build appropriate dof maps (for given, matching nodes on both sides).
-     *
-     *  \note All master and slave nodes are required to match.
-     *  The permuted slave node map is given as input, thus no search tree to find matching nodes is used.
-     *  Only the corresponding dof maps are build here (+ some checks).
-     *  This setup method can be used, if one discretization was cloned from the others discretization,
-     *  and thus matching node GIDs are assured (for Fluid-ALE or poro, for instance).
-     *  In this case, this setup gives the same results as the standard version above, but
-     *  without the need to perform the matching node search.
-     *
-     *  \param masterdis         (i) master side mesh
-     *  \param slavedis          (i) slave side mesh
-     *  \param masternodemap     (i) gids of nodes on master side to be coupled
-     *  \param slavenodemap      (i) gids of nodes on slave side to be coupled
-     *  \param permslavenodemap  (i) permuted node map of the slave side
-     *  \param numdof            (i) number of dofs per node to be coupled
-     */
-    void SetupCoupling(const DRT::Discretization& masterdis,
-        const DRT::Discretization& slavedis,
-        const Epetra_Map& masternodemap,
-        const Epetra_Map& slavenodemap,
-        const Epetra_Map& permslavenodemap,
-        const int numdof);
-
     /*! \brief Setup coupling of given nodes
      *
      *  Setup the whole thing. Find matching nodes via octtree and build
@@ -297,6 +271,48 @@ namespace ADAPTER
         const bool matchall=true,
         const double tolerance=1.e-3);
 
+    /*! \brief Setup coupling of given nodes and node maps
+     *
+     *  Setup the whole thing. Build appropriate dof maps (for given, matching nodes on both sides).
+     *
+     *  \note All master and slave nodes are required to match.
+     *  The permuted slave node map is given as input, thus no search tree to find matching nodes is used.
+     *  Only the corresponding dof maps are build here (+ some checks).
+     *  This setup method can be used, if one discretization was cloned from the others discretization,
+     *  and thus matching node GIDs are assured (for Fluid-ALE or poro, for instance).
+     *  In this case, this setup gives the same results as the standard version above, but
+     *  without the need to perform the matching node search.
+     *
+     *  \param masterdis         (i) master side mesh
+     *  \param slavedis          (i) slave side mesh
+     *  \param masternodemap     (i) gids of nodes on master side to be coupled
+     *  \param slavenodemap      (i) gids of nodes on slave side to be coupled
+     *  \param permslavenodemap  (i) permuted node map of the slave side
+     *  \param numdof            (i) number of dofs per node to be coupled
+     */
+    void SetupCoupling(const DRT::Discretization& masterdis,
+        const DRT::Discretization& slavedis,
+        const Epetra_Map& masternodemap,
+        const Epetra_Map& slavenodemap,
+        const Epetra_Map& permslavenodemap,
+        const int numdof);
+
+    /*! \brief Setup coupling of given master and slave discretization
+     *
+     *  Setup the whole thing for matching dofs on both sides
+     *
+     *  \note All master and slave dofs are required to match.
+     *  This setup method can be used, if one discretization was cloned from the other discretization,
+     *  and thus matching dof GIDs are assured. All dofs of all nodes are coupled this way.
+     *  In this case, this setup gives the same results as the standard version above, but
+     *  neither a matching node search nor building dof maps is necessary.
+     *
+     *  \param masterdis         (i) master side mesh
+     *  \param slavedis          (i) slave side mesh
+     */
+    void SetupCoupling(const DRT::Discretization& masterdis,
+        const DRT::Discretization& slavedis);
+
     //@}
 
     /** \name Conversion between master and slave */
@@ -308,25 +324,25 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<Epetra_Vector> mv ///< master vector (to be transferred)
         ) const
-    { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
+    { return MasterToSlave(mv.getConst()); }
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<Epetra_Vector> sv ///< slave vector (to be transferred)
         ) const
-    { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv)); }
+    { return SlaveToMaster(sv.getConst()); }
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (to be transferred)
         ) const
-    { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv)); }
+    { return MasterToSlave(mv.getConst()); }
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<Epetra_MultiVector> sv ///< slave vector (to be transferred)
         ) const
-    { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv)); }
+    { return SlaveToMaster(sv.getConst()); }
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
@@ -416,6 +432,16 @@ namespace ADAPTER
 
     //@}
 
+  protected:
+    virtual void BuildDofMaps(
+        const DRT::Discretization& masterdis,
+        const DRT::Discretization& slavedis,
+        const Teuchos::RCP<const Epetra_Map>& masternodemap,
+        const Teuchos::RCP<const Epetra_Map>& slavenodemap,
+        const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
+        const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
+        const int& numdof);
+
   private:
 
     /*! \brief Do the actual matching of the master <-> slave pairs
@@ -458,8 +484,40 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Map>& dofmap,
         Teuchos::RCP<const Epetra_Map>& permdofmap,
         Teuchos::RCP<Epetra_Export>& exporter,
-        const int numdof);
+        const int numdof) const;
 
+  protected:
+    /// @name accessors to the private class members for derived classes
+    /// @{
+
+    /// access the interface DoF map of the master side
+    Teuchos::RCP<const Epetra_Map>& MaDofMapPtr();
+    const Epetra_Map& MaDofMap() const;
+
+    /// access the permuted interface DoF map of the master side
+    Teuchos::RCP<const Epetra_Map>& PermutedMaDofMapPtr();
+    const Epetra_Map& PermutedMaDofMap() const;
+
+    /// access the interface DoF map of the slave side
+    Teuchos::RCP<const Epetra_Map>& SlDofMapPtr();
+    const Epetra_Map& SlDofMap() const;
+
+    /// access the permuted interface DoF map of the slave side
+    Teuchos::RCP<const Epetra_Map>& PermutedSlDofMapPtr();
+    const Epetra_Map& PermutedSlDofMap() const;
+
+    /// access the permuted master dof map to master dof map exporter
+    Teuchos::RCP<Epetra_Export>& MaExporterPtr();
+    const Epetra_Export& MaExporter() const;
+
+    /// access the permuted slave dof map to slave dof map exporter
+    Teuchos::RCP<Epetra_Export>& SlExporterPtr();
+    const Epetra_Export& SlExporter() const;
+
+    /// @}
+
+
+  private:
     /*! @name Fundamental dof maps
      *
      *  We keep the master and slave dof map as well as permuted versions

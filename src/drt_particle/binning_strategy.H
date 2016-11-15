@@ -246,7 +246,13 @@ namespace BINSTRATEGY
       );
 
     /// get 26 neighboring bin ids to binId (if existing)
-    virtual void GetBinConnectivity(
+    virtual void GetNeighborBinIds(
+      const int binId,   ///< bin id whose connectivity is asked for
+      std::vector<int>& binIds   ///< all neighboring bins on axes
+      );
+
+    /// get 27 neighboring bin ids to binId and myself
+    virtual void GetNeighborAndOwnBinIds(
       const int binId,   ///< bin id whose connectivity is asked for
       std::vector<int>& binIds   ///< all neighboring bins on axes
       );
@@ -298,6 +304,8 @@ namespace BINSTRATEGY
     /// bins are created based on XAABB and cutoff radius
     virtual void CreateBins2D();
 
+    virtual void WriteBinOutput(int step, double time);
+
   protected:
 
     // create XAABB for discretization
@@ -319,9 +327,13 @@ namespace BINSTRATEGY
 
     Teuchos::RCP<DRT::Discretization> bindis_;     ///< particle discretization with bins
 
+    Teuchos::RCP<DRT::Discretization> visbindis_;     ///< visualization discretization for bins
+
     double cutoff_radius_;    ///< maximum influence radius
 
     LINALG::Matrix<3,2> XAABB_;    ///< extendedAxisAlignedBoundingBox of bins
+
+    int writebinstype_;    ///< type of bin visualization
 
     double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 

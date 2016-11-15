@@ -25,6 +25,15 @@
 
 
 //forward declaration ...
+namespace ADAPTER
+{
+  class Coupling;
+} // namespace ADAPTER
+namespace FSI{
+namespace UTILS{
+  class MatrixRowTransform;
+} // namespace FSI
+} // namespace UTILS
 namespace DRT
 {
   class Element;
@@ -138,6 +147,7 @@ namespace MODELEVALUATOR{
     struct CrosslinkerData {
       LINALG::Matrix<3,1> clpos;                      // current position of crosslinker
       std::vector<std::pair<int, int> > clbspots;     // gid of element to local number of bspot, [0] and [1] first and second bspot
+      std::vector<std::pair<int, int> > bnodegids_;     // gid of element to local number of bspot, [0] and [1] first and second bspot
       int clnumbond;                                  // number of active bonds
       Teuchos::RCP<MAT::CrosslinkerMat> clmat;        // material attached to crosslinker node
       int clowner;                                    // owner of crosslinker
@@ -229,11 +239,12 @@ namespace MODELEVALUATOR{
 
     /// update bin, crosslinker and beam distribution
     virtual void UpdateBinStrategy(
-        bool transfer    = true,
-        bool partition   = false,
-        bool repartition = false,
-        bool createxaabb = false,
-        bool setcutoff   = false
+        bool transfer          = true,
+        bool partition         = false,
+        bool repartition       = false,
+        bool createxaabb       = false,
+        bool setcutoff         = false,
+        bool cltoclinteraction = false
     );
 
     /// search and set crosslinker
@@ -260,7 +271,7 @@ namespace MODELEVALUATOR{
       std::map<int, BindEventData>&               mysetbonds,        // clgid to cldata
       std::map<int, std::vector<BindEventData> >& undecidedbonds,    // owner of cldatas in vector to be requested
       std::map<int, BindEventData >&              myelebonds
-    );
+    ) const;
 
     /// search for binding events on each proc separately (i.e. pretending myran is alone)
     /// communication to ensure correct binding over all procs is done afterwards
@@ -285,13 +296,13 @@ namespace MODELEVALUATOR{
     virtual void CommunicateDoubleBondedCl(
       std::map<int, DoubleBondedCl>&               mydbondcl,
       std::map<int, std::vector<DoubleBondedCl> >& dbondcltosend
-    );
+    ) const;
 
     /// communicate new crosslinker elements
     virtual void CommunicateCrosslinkerUnbinding(
       std::map<int, std::vector<UnBindEventData> >& sendunbindevent,
       std::vector<UnBindEventData>&                 myrankunbindevent
-    );
+    ) const;
 
     /// update map of vector (based on dof map) after redistribution
     virtual void UpdateDofMapOfVector(
@@ -300,8 +311,20 @@ namespace MODELEVALUATOR{
       Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
 
+    /// transform force vector and stiffness matrix from Discret to ia_discret_
+    virtual void TransformForceAndStiff(
+      bool force = true,
+      bool stiff = true
+      );
+
     /// get neighbouring eles in discret
     virtual void GetNeighboringEles();
+
+    /// exclude certein neighbors from interaction evaluation
+    virtual void VerifyNeighbors(
+        DRT::Element* currele,
+        std::set<DRT::Element*>& neighbors
+    ) const;
 
 //    ///
 //    template<typename T>
@@ -314,43 +337,43 @@ namespace MODELEVALUATOR{
     virtual void Pack(
       DRT::PackBuffer&     data,
       const BindEventData& bindeventdata
-    );
+    ) const;
 
     /// pack unbinding event data
     virtual void Pack(
       DRT::PackBuffer&      data,
       const DoubleBondedCl& dbondedcldata
-    );
+    ) const;
 
     /// pack unbinding event data
     virtual void Pack(
       DRT::PackBuffer&       data,
       const UnBindEventData& unbindeventdata
-    );
+    ) const;
 
     /// unpack binding event data
     virtual void UnPack(
       std::vector<char>::size_type& position,
       std::vector<char> data,
       BindEventData&    bindeventdata
-    );
+    ) const;
 
     /// unpack unbinding event data
     virtual void UnPack(
       std::vector<char>::size_type& position,
       std::vector<char> data,
       DoubleBondedCl&   dbondedcldata
-    );
+    ) const;
 
     /// unpack unbinding event data
     virtual void UnPack(
       std::vector<char>::size_type& position,
       std::vector<char> data,
       UnBindEventData&  unbindeventdata
-    );
+    ) const;
 
     /// print welcome to biopolymer network simulation
-    virtual void Logo();
+    virtual void Logo() const;
 
     //! @}
 
@@ -367,13 +390,31 @@ namespace MODELEVALUATOR{
 
     //! interaction discretization handling all interactions (e.g. crosslinker to beam,
     //! beam to beam, potential ...)
-    Teuchos::RCP<DRT::Discretization> intactdis_;
+    Teuchos::RCP<DRT::Discretization> ia_discret_;
+
+    //! coupling adapter to transfer vectors and matrices between Discret() and intactids_
+    Teuchos::RCP<ADAPTER::Coupling> coupsia_;
+
+    //! transform object for structure stiffness matrix
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> siatransform_;
+
+    //! global force based on Discret() at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> force_;
+
+    //! structural stiffness matrix based on Discret()
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+
+    //! global force based on intactdis_ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> ia_force_;
+
+    //! structural stiffness matrix based on intactdis_
+    Teuchos::RCP<LINALG::SparseMatrix> ia_stiff_;
 
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$ based on maps of interaction discretization
     Teuchos::RCP<Epetra_Vector> ia_disnp_;
 
     //! crosslinker management
-    Teuchos::RCP<PARTICLE::Algorithm> particlealgo_;
+    Teuchos::RCP<PARTICLE::Algorithm> binning_;
 
     //! crosslinker and bin discretization
     Teuchos::RCP<DRT::Discretization> bindis_;
