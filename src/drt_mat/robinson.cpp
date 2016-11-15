@@ -39,6 +39,8 @@
   the thermal equation is neglected so far.
   --> Future topic: extend to fully TSI.
 
+\level 3
+
 <pre>
 \maintainer Caroline Danowski
             danowski@lnm.mw.tum.de
@@ -179,6 +181,7 @@ void MAT::Robinson::Pack(DRT::PackBuffer& data) const
 
     AddtoPack(data,kvarva_->at(var));
     AddtoPack(data,kvakvae_->at(var));
+    AddtoPack(data,strain_last_.at(var));
   }
 
   return;
@@ -232,6 +235,7 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
   // unpack matrices needed for condensed system
   kvarva_ = Teuchos::rcp( new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,1> > );
   kvakvae_ = Teuchos::rcp( new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> > );
+  strain_last_.resize(0);
 
   for (int var=0; var<numgp; ++var)
   {
@@ -250,6 +254,9 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
     kvarva_->push_back(tmp1);
     ExtractfromPack(position,data,tmp2);
     kvakvae_->push_back(tmp2);
+
+    ExtractfromPack(position,data,tmp);
+    strain_last_.push_back(tmp);
 
     // current vectors have to be initialised
     strainplcurr_->push_back(tmp);
@@ -288,6 +295,7 @@ void MAT::Robinson::Setup(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> emptymat(true);
   strainpllast_->resize(numgp);
   strainplcurr_->resize(numgp);
+  strain_last_.resize(numgp,LINALG::Matrix<6,1>(true));
 
   backstresslast_->resize(numgp);
   backstresscurr_->resize(numgp);
@@ -368,11 +376,13 @@ void MAT::Robinson::Evaluate(
   )
 {
   // extract from parameter list
-  LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc");
-  const double scalartemp = params.get<double>("scalartemp",-1.0);
-  if (scalartemp < 0.0) dserror("No temperature available in Robinson material");
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("No Gauss point number provided in Robinson material");
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc(*strain);
+  straininc.Update(-1.,strain_last_[gp],1.);
+  strain_last_[gp]=*strain;
+  const double scalartemp = params.get<double>("scalartemp",-1.0);
+  if (scalartemp < 0.0) dserror("No temperature available in Robinson material");
 
   // update history of the condensed variables plastic strain and back stress
   // iterative update of the current history vectors at current Gauss point gp

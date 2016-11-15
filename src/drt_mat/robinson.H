@@ -19,9 +19,10 @@
         H_FACT 1.67e16
       12.01.12 as first step only implement geometric non-linear case, i.e., total Lagrange
 
+\level 3
 
 <pre>
-Maintainer: Caroline Danowski
+\maintainer Caroline Danowski
             danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15253
@@ -445,6 +446,8 @@ private:
     //!    kvakvae = [          ]      . [     ]
     //!              [ kav  kaa ]      . [ kae ]
     Teuchos::RCP<std::vector< LINALG::Matrix<(2*NUM_STRESS_3D),NUM_STRESS_3D> > > kvakvae_;
+    //! strain at last evaluation
+    std::vector<LINALG::Matrix<6,1> > strain_last_;
 
   };  // class Robinson : public Material
 }  // namespace MAT

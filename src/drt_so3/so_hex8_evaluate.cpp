@@ -2253,11 +2253,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
          or (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
          or (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
        )
-    {
-      params.set<LINALG::Matrix<NUMDOF_SOH8,1> >("res_d", res_d);
-      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> >("bop", bop);
       GetTemperatureForStructuralMaterial(shapefcts[gp],params);
-    }
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
@@ -3579,18 +3575,6 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
       // initialise the temperature field
       scalartemp = robinson->InitTemp();
     }
-    // robinson material is solved using incremental strains
-    // calculate incremental strains: Delta strain = B . Delta disp
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc(true);
-    // extract values from the parameter list
-    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop
-      = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> >("bop");
-    LINALG::Matrix<NUMDOF_SOH8,1> res_d
-      = params.get<LINALG::Matrix<NUMDOF_SOH8,1> >("res_d");
-    // calculate the linear strain increment
-    straininc.Multiply(bop,res_d);
-    // insert strain increment into parameter list
-    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
   } // end Robinson's material
 
   // current temperature vector is available
