@@ -229,10 +229,25 @@ public:
    *  \date 07/16 */
   virtual void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
                             const double&              xi,
-                            const std::vector<double>& psi_totlag) const
+                            const std::vector<double>& disp) const
   {
     // ToDo make pure virtual and add/generalize implementations in beam eles
     // so far only implemented for beam3r
+    dserror("not implemented");
+  }
+
+  virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      LINALG::TMatrix<double,6,12>& Ivar,
+      const double&                 xi) const
+  {
+    dserror("not implemented");
+  }
+
+  virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      LINALG::TMatrix<double,6,12>& Iinc,
+      const double&                 xi,
+      const std::vector<double>&    disp) const
+  {
     dserror("not implemented");
   }
 
@@ -470,10 +485,15 @@ protected:
 public:
 
   //! get centerline pos at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
-  virtual void GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
-                                   std::vector<double>&       disp,
-                                   const int&                 bspotlocn,
-                                   const std::vector<double>& periodlength) const;
+  void GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
+                           std::vector<double>&       disp,
+                           const int&                 bspotlocn,
+                           const std::vector<double>& periodlength) const;
+
+  //! get triad at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
+  void GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     triad,
+                             std::vector<double>&     disp,
+                             const int&               bspotlocn) const;
 
   const std::map<int, int>& GetBindingSpotStatus()
   {
@@ -482,7 +502,15 @@ public:
       dserror("size miss match regarding binding spots on this element");
 
     return bspotstatus_;
-  };
+  }
+
+  const double& GetBindingSpotXi(const int& bspotlocn) const
+  {
+    if ( (unsigned int) bspotlocn > bspotposxi_.size())
+      dserror("number of requested binding spot exceeds total number of binding spots");
+
+    return bspotposxi_[bspotlocn];
+  }
 
   void SetBindingSpotStatus(std::map<int, int> bspotstatus)
   {

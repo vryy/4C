@@ -679,54 +679,6 @@ private:
                                 Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
                                 LINALG::TMatrix<FAD,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS,1>& f_int);      //!< element internal force vector
 
-  // Todo move the following methods to LARGEROTATIONS namespace
-
-   //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad_ref^T*triad -> inversion of the right translation triad=triad_ref*exp(theta)
-  template<typename T>
-  void triadtoangleright(LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,const LINALG::TMatrix<T,3,3>& triad) const
-   {
-     LINALG::TMatrix<T,3,3> rotation_matrix;
-     LINALG::TMatrix<T,4,1> quaternion;
-
-     rotation_matrix.Clear();
-     quaternion.Clear();
-
-     rotation_matrix.MultiplyTN(triad_ref,triad);
-     LARGEROTATIONS::triadtoquaternion(rotation_matrix,quaternion);
-     LARGEROTATIONS::quaterniontoangle(quaternion,theta);
-   }
-
-  //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
-  template<typename T>
-  void triadtoangleleft(LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,const LINALG::TMatrix<T,3,3>& triad) const
-  {
-    LINALG::TMatrix<T,3,3> rotation_matrix;
-    LINALG::TMatrix<T,4,1> quaternion;
-
-    rotation_matrix.Clear();
-    quaternion.Clear();
-
-    rotation_matrix.MultiplyNT(triad,triad_ref);
-    LARGEROTATIONS::triadtoquaternion(rotation_matrix,quaternion);
-    LARGEROTATIONS::quaterniontoangle(quaternion,theta);
-  }
-
-   //!compute a triad with an (interpolated) relative angle between triad_ref and triad
-   template<typename T>
-   void angletotriad(const LINALG::TMatrix<T,3,1>& theta,const LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
-   {
-     LINALG::TMatrix<T,3,3> rotation_matrix;
-     LINALG::TMatrix<T,4,1> quaternion;
-
-     rotation_matrix.Clear();
-     quaternion.Clear();
-     triad.Clear();
-
-     LARGEROTATIONS::angletoquaternion(theta,quaternion);
-     LARGEROTATIONS::quaterniontotriad(quaternion,rotation_matrix);
-     triad.Multiply(triad_ref,rotation_matrix);// ???
-   }
-
    //!compute (material) strain K
    template<typename T>
    void computestrain(LINALG::TMatrix<T,3,1>& theta, LINALG::TMatrix<T,3,1>& theta_deriv, LINALG::TMatrix<T,3,1>& K)
@@ -744,71 +696,15 @@ private:
    //! calculate material stress resultants M,N from material strain resultants K, epsilon
    void straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par);
 
-   //! Rotate an arbitrary triad around its first base vector (tangent)
-   template<typename T>
-   void RotateTriad(LINALG::TMatrix<T,3,3>& triad, T& alpha, LINALG::TMatrix<T,3,3>& triad_rot)
-   {
-     for (int i=0; i<3; i++)
-     {
-     triad_rot(i,0)=triad(i,0);
-     triad_rot(i,1)=triad(i,1)*cos(alpha)+triad(i,2)*sin(alpha);
-     triad_rot(i,2)=triad(i,2)*cos(alpha)-triad(i,1)*sin(alpha);
-     }
-
-     return;
-   }
-
-  //! Calculate the SR mapping for a given reference system triad_ref and a given tangent vector r_s
-  template<typename T>
-  void CalculateSRTriads(LINALG::TMatrix<T,3,1>& r_s, LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad)
-  {
-
-    //In this calculation, r_s does not necessarily have to be a unit vector.
-    T temp_scalar1=0.0;
-    T temp_scalar2=0.0;
-    T temp_scalar3=0.0;
-    T fac_n0=0.0;
-    T fac_b0=0.0;
-    T abs_r_s = FADUTILS::Norm<T>(r_s);
-
-    for (int i=0; i<3; i++)
-    {
-      temp_scalar1+=triad_ref(i,1)*r_s(i);
-      temp_scalar2+=triad_ref(i,2)*r_s(i);
-      temp_scalar3+=triad_ref(i,0)*r_s(i);
-    }
-
-    // This line is necessary in order to avoid a floating point exception and subsequent abortion of the simulation
-    // in case the denominator equals zero. In such a case, convergence is still unlikely. However, since
-    // the simulation can continue, functionalities such as DIVERCONT==adapt_step will still work!
-    if(fabs(abs_r_s+temp_scalar3)<1.0e-10)
-    {
-      std::cout << "Warning: SR-Denominator scaled!" << std::endl;
-      temp_scalar3=0.99*temp_scalar3;
-    }
-
-    fac_n0=temp_scalar1/(abs_r_s+temp_scalar3);
-    fac_b0=temp_scalar2/(abs_r_s+temp_scalar3);
-
-    for (int i=0; i<3; i++)
-    {
-      triad(i,0)=r_s(i)/abs_r_s;
-      triad(i,1)=triad_ref(i,1)-fac_n0*(r_s(i)/abs_r_s+triad_ref(i,0));
-      triad(i,2)=triad_ref(i,2)-fac_b0*(r_s(i)/abs_r_s+triad_ref(i,0));
-     }
-
-    return;
-  }
-
   //! Compute the material triad in case of the strong Kirchhoff (SK)beam formulation
   template<typename T>
   void ComputeTriadSK(T& phi, LINALG::TMatrix<T,3,1>& r_s, LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad)
   {
     LINALG::TMatrix<T,3,3> triad_bar(true);
     //Compute triad_bar via SR mapping from triad_ref onto r_s
-    CalculateSRTriads(r_s,triad_ref,triad_bar);
+    LARGEROTATIONS::CalculateSRTriads<T>(r_s,triad_ref,triad_bar);
     //Compute triad via relative rotation of triad_bar
-    RotateTriad(triad_bar, phi, triad);
+    LARGEROTATIONS::RotateTriad<T>(triad_bar, phi, triad);
   }
 
   void AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>& N_i_xi,

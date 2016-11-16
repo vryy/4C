@@ -163,7 +163,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleJacobian(
   jac_dd_ptr->Add(*stiff_beaminteract_ptr_,false,timefac_np,1.0);
   // no need to keep it
   stiff_beaminteract_ptr_->Zero();
-  // nothing to do
+
   return true;
 }
 

@@ -437,7 +437,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     theta_cp[node].Clear();
-    triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+    LARGEROTATIONS::triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
   }
   //********end: evaluate quantities at collocation points********************************
 
@@ -514,7 +514,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
 
     //compute material triad at gp
     triad_mat[numgp].Clear();
-    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat[numgp]);
+    LARGEROTATIONS::angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat[numgp]);
 
     //pushforward of stress resultants
     m.Clear();
@@ -813,8 +813,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     {
       tangentref(i)=triad_mat_cp[node](i,0);
     }
-    CalculateSRTriads<FAD>(tangentref,triad_mat_cp[REFERENCE_NODE],Lambdabarref);
-    triadtoangleleft(phivec,Lambdabarref,triad_mat_cp[node]);
+    LARGEROTATIONS::CalculateSRTriads<FAD>(tangentref,triad_mat_cp[REFERENCE_NODE],Lambdabarref);
+    LARGEROTATIONS::triadtoangleleft(phivec,Lambdabarref,triad_mat_cp[node]);
     phi_cp[node]=0.0;
     for(int i=0;i<3;i++)
     {
@@ -2062,7 +2062,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(Teuchos::ParameterList&   
   for (unsigned int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     theta_cp[node].Clear();
-    triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+    LARGEROTATIONS::triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
   }
 
 
@@ -2086,7 +2086,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(Teuchos::ParameterList&   
 
     // compute material triad at gp
     triad_mat.Clear();
-    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+    LARGEROTATIONS::angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
 
 
     // compute quaterion of material triad at gp
@@ -2408,7 +2408,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
         for(int j=0;j<3;j++)
           triad_aux2(i,j)=triad_aux(i,j);
 
-      CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
+      LARGEROTATIONS::CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
 
       //Store nodal reference triad
       LINALG::TMatrix<FAD,4,1> Qref(true);
@@ -2418,7 +2418,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
 
       //calculate material triad
       triad_mat_cp[node].Clear();
-      RotateTriad(triad_ref,alpha,triad_mat_cp[node]);
+      LARGEROTATIONS::RotateTriad(triad_ref,alpha,triad_mat_cp[node]);
     }
   }
   else
@@ -2432,7 +2432,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
         theta(i)=disp_totlag[7*node+3+i];
         unity(i,i)=1.0;
       }
-      angletotriad(theta,unity,triad_mat_cp[node]);
+      LARGEROTATIONS::angletotriad(theta,unity,triad_mat_cp[node]);
       for (int i=0;i<3;i++)
       {
         disp_totlag_centerline[7*node+3+i]=(triad_mat_cp[node])(i,0)*disp_totlag[7*node+6];
@@ -2482,7 +2482,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
       for(int j=0;j<3;j++)
         triad_aux2(i,j)=triad_aux(i,j);
 
-    CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
+    LARGEROTATIONS::CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
 
     //Store nodal reference triad
     LINALG::TMatrix<FAD,4,1> Qref(true);
@@ -2492,7 +2492,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
 
     //calculate material triad
     triad_mat_cp[ind].Clear();
-    RotateTriad(triad_ref,alpha,triad_mat_cp[ind]);
+    LARGEROTATIONS::RotateTriad(triad_ref,alpha,triad_mat_cp[ind]);
 
   }//for (int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
 

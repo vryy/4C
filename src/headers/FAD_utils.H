@@ -1,25 +1,21 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file FAD_utils.H
 
 \brief A set of utility functions for Forward Automatic Differentiation
 
--------------------------------------------------------------------------
-</pre>
+\level 3
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
+
 #ifndef FAD_UTILS_H
 #define FAD_UTILS_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
-#include "../drt_fem_general/largerotations.H"
 
 typedef Sacado::Fad::DFad<double> FAD;
 
@@ -157,7 +153,16 @@ namespace FADUTILS
     result_vector.Clear();
     LINALG::TMatrix<type,3,3> S_first_vector;
     S_first_vector.Clear();
-    LARGEROTATIONS::computespin(S_first_vector,first_vector);
+
+    S_first_vector(0,0) = 0.0;
+    S_first_vector(0,1) = -first_vector(2);
+    S_first_vector(0,2) = first_vector(1);
+    S_first_vector(1,0) = first_vector(2);
+    S_first_vector(1,1) = 0.0;
+    S_first_vector(1,2) = -first_vector(0);
+    S_first_vector(2,0) = -first_vector(1);
+    S_first_vector(2,1) = first_vector(0);
+    S_first_vector(2,2) = 0.0;
 
     result_vector.Multiply(S_first_vector, second_vector);
 

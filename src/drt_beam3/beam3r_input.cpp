@@ -126,3 +126,11 @@ void DRT::ELEMENTS::Beam3r::SetCrossSecShear(const double& crosssecshear)
   crosssecshear_ = crosssecshear;
   return;
 }
+
+/*------------------------------------------------------------------------*
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno)
+{
+  centerline_hermite_ = yesno;
+  return;
+}

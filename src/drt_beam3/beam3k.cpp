@@ -577,7 +577,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
       if(ind>1)//only for internal CPs
       {
         LINALG::Matrix<3,3> G_aux(true);
-        CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
+        LARGEROTATIONS::CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
         //rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind]=G_aux;
         LARGEROTATIONS::triadtoquaternion(G_aux,Qrefconv_[ind]);
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
     for (int colpt=0; colpt<BEAM3K_COLLOCATION_POINTS; colpt++)
     {
       theta_cp[colpt].Clear();
-      triadtoangleright(theta_cp[colpt],Gref[REFERENCE_NODE],Gref[colpt]);
+      LARGEROTATIONS::triadtoangleright(theta_cp[colpt],Gref[REFERENCE_NODE],Gref[colpt]);
     }
 
     //Loop through all GPs and computation of all relevant values at each gp
@@ -642,7 +642,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
       computestrain(theta,theta_s,K0_[numgp]);
 
       triad_mat.Clear();
-      angletotriad(theta,Gref[REFERENCE_NODE],triad_mat);
+      LARGEROTATIONS::angletotriad(theta,Gref[REFERENCE_NODE],triad_mat);
       SetInitialDynamicClassVariables(numgp, triad_mat, r);
 
     }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -769,7 +769,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
       if(ind>1)//only for internal CPs
       {
         LINALG::Matrix<3,3> G_aux(true);
-        CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
+        LARGEROTATIONS::CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
         //rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind]=G_aux;
         LARGEROTATIONS::triadtoquaternion(G_aux,Qrefconv_[ind]);
@@ -794,8 +794,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
       {
         tangentref(i)=Gref[colpt](i,0);
       }
-      CalculateSRTriads<double>(tangentref,Gref[REFERENCE_NODE],Lambdabarref);
-      triadtoangleleft(phivec,Lambdabarref,Gref[colpt]);
+      LARGEROTATIONS::CalculateSRTriads<double>(tangentref,Gref[REFERENCE_NODE],Lambdabarref);
+      LARGEROTATIONS::triadtoangleleft(phivec,Lambdabarref,Gref[colpt]);
       phi_cp[colpt]=0.0;
       for(int i=0;i<3;i++)
       {
@@ -1192,7 +1192,7 @@ std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& 
     for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
     {
       theta_cp[node].Clear();
-      triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+      LARGEROTATIONS::triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
     }
 
     //Evaluate shape functions
@@ -1204,7 +1204,7 @@ std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& 
 
     //compute material triad at gp
     triad_mat.Clear();
-    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+    LARGEROTATIONS::angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
 
     for(int i=0;i<3;i++)
     {
@@ -1273,7 +1273,7 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues(const std::vector<T>&    
         theta(dim)=dofvec[dofperboundarynode*node+3+dim];
       }
       // transform to triad
-      angletotriad(theta,unity,triad);
+      LARGEROTATIONS::angletotriad(theta,unity,triad);
 
       // direction of tangent is equivalent to first base vector of triad; length of tangent is 7th nodal DOF
       for (unsigned int dim=0; dim<3; ++dim)

@@ -25,27 +25,24 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
 DRT::Element(id,owner),
 interface_ptr_(Teuchos::null),
 sm_interface_ptr_(Teuchos::null)
-
 {
   // todo: this is a temporary hack, should of course be set from outside
-  bspotposxi_.push_back(-1.0);
-//  bspotposxi_.push_back(1.0);
-  bspotstatus_[0] = -1;
-//  bspotstatus_[1] = -1;
-
+  for (unsigned int i=0; i<3; ++i)
+  {
+    bspotposxi_.push_back(-0.5+i*0.5);
+    bspotstatus_[i] = -1;
+  }
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
- DRT::Element(old)
+ DRT::Element(old),
+ bspotposxi_(old.bspotposxi_),
+ bspotstatus_(old.bspotstatus_)
 {
-  // todo: this is a temporary hack, should of course be set from outside
-  bspotposxi_.push_back(-1.0);
-//  bspotposxi_.push_back(1.0);
-  bspotstatus_[0] = -1;
-//  bspotstatus_[1] = -1;
+
 }
 
 /*----------------------------------------------------------------------*
@@ -361,6 +358,17 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>&       po
   // that is it
   return;
 
+}
+
+/*--------------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     triad,
+                                                   std::vector<double>&       disp,
+                                                   const int&                 bspotlocn) const
+{
+  const double xi = bspotposxi_[bspotlocn];
+  // get position
+  GetTriadAtXi(triad,xi,disp);
 }
 
 // explicit template instantiations

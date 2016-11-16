@@ -40,6 +40,7 @@
 
 #include "../drt_particle/particle_algorithm.H"
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_beamcontact/beam3tobeamlinkage.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_biopolynet/crosslinker_node.H"
 
@@ -53,10 +54,10 @@ STR::MODELEVALUATOR::Crosslinking::Crosslinking():
     ia_discret_(Teuchos::null),
     coupsia_(Teuchos::null),
     siatransform_(Teuchos::null),
-    force_(Teuchos::null),
-    stiff_(Teuchos::null),
-    ia_force_(Teuchos::null),
-    ia_stiff_(Teuchos::null),
+    force_crosslink_(Teuchos::null),
+    stiff_crosslink_(Teuchos::null),
+    ia_force_crosslink_(Teuchos::null),
+    ia_stiff_crosslink_(Teuchos::null),
     ia_disnp_(Teuchos::null),
     binning_(Teuchos::null),
     bindis_(Teuchos::null),
@@ -79,10 +80,10 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // todo: this container belongs to browndyn
   eval_statmech_ptr_ = EvalData().StatMechPtr();
   // stiff
-  stiff_ = Teuchos::rcp(new
+  stiff_crosslink_ = Teuchos::rcp(new
       LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
   // force
-  force_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
+  force_crosslink_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
   // get myrank
   myrank_ = DiscretPtr()->Comm().MyPID();
   // get number of procs
@@ -138,10 +139,10 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   UpdateBinStrategy(false,true);
 
   // init force vector and stiffness matrix
-  ia_stiff_ = Teuchos::rcp(new
+  ia_stiff_crosslink_ = Teuchos::rcp(new
       LINALG::SparseMatrix(*ia_discret_->DofRowMap(), 81, true, true));
   // force
-  ia_force_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
+  ia_force_crosslink_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
 
   // gather data for all column crosslinker initially
   const int numcolcl = bindis_->NumMyColNodes();
@@ -167,11 +168,13 @@ void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
+
+
   // Zero out force and stiffness contributions
-  force_->PutScalar(0.0);
-  ia_force_->PutScalar(0.0);
-  stiff_->Zero();
-  ia_stiff_->Zero();
+  force_crosslink_->PutScalar(0.0);
+  ia_force_crosslink_->PutScalar(0.0);
+  stiff_crosslink_->Zero();
+  ia_stiff_crosslink_->Zero();
 
   return;
 } // Reset()
@@ -181,14 +184,137 @@ void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
 {
   CheckInitSetup();
-  bool ok = true;
+
+  // ************************** update ia_disnp_ *********************************************
+  // Todo needed?
+  // get current displacement state and export to interaction discretization dofmap
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
+
+  // gather data for all column beams
+  // Todo only do this for double-bonded beam elements ?!
+  const int numcolbeams = ia_discret_->NumMyColElements();
+  beam_data_.resize(numcolbeams);
+  PreComputeBeamData(numcolbeams);
+
+  std::map<int,DoubleBondedCl>::const_iterator iter2;
+  for (iter2=doublebondcl_.begin(); iter2!=doublebondcl_.end(); ++iter2)
+  {
+    int elegid1 = doublebondcl_[iter2->first].eleone.first;
+    int elegid2 = doublebondcl_[iter2->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter2->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter2->first].eletwo.second;
+
+    // fetch pre-computed values for absolute position and triad at binding spots
+    LINALG::Matrix<3,1> pos1 = beam_data_[beamele1->LID()].bbspotpos.at(locbspotnum1);
+    LINALG::Matrix<3,1> pos2 = beam_data_[beamele2->LID()].bbspotpos.at(locbspotnum2);
+
+    LINALG::Matrix<3,3> triad1 = beam_data_[beamele1->LID()].bbspottriad.at(locbspotnum1);
+    LINALG::Matrix<3,3> triad2 = beam_data_[beamele2->LID()].bbspottriad.at(locbspotnum2);
+
+    // finally initialize and setup object
+    doublebondcl_[iter2->first].elepairptr->ResetState(
+        pos1,
+        pos2,
+        triad1,
+        triad2);
+  }
+
+  // *****************************************************************************************
 
 
+  // force and moment exerted on the two connection sites due to the mechanical connection
+  LINALG::TMatrix<double,6,1> bspotforce1(true);
+  LINALG::TMatrix<double,6,1> bspotforce2(true);
 
-  TransformForceAndStiff(true, false);
+  // resulting discrete element force vectors of the two parent elements
+  Epetra_SerialDenseVector ele1force(12);
+  Epetra_SerialDenseVector ele2force(12);
+
+
+  std::map<int,DoubleBondedCl>::const_iterator iter;
+  for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
+  {
+    bspotforce1.Clear();
+    bspotforce2.Clear();
+
+    // evaluate beam linkage object to get forces and moments on binding spots
+    doublebondcl_[iter->first].elepairptr->EvaluateForce(bspotforce1,bspotforce2);
+
+
+    // ********************** Interpolation *******************************
+    int elegid1 = doublebondcl_[iter->first].eleone.first;
+    int elegid2 = doublebondcl_[iter->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter->first].eletwo.second;
+
+
+    LINALG::TMatrix<double,6,12> trafomat(true);
+
+    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele1->GetBindingSpotXi(locbspotnum1));
+
+    LINALG::TMatrix<double,12,1> eleforce;
+
+    eleforce.MultiplyTN(trafomat,bspotforce1);
+
+    for (unsigned int i=0; i<12; ++i)
+      ele1force(i) = eleforce(i);
+
+
+    trafomat.Clear();
+    eleforce.Clear();
+
+    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele2->GetBindingSpotXi(locbspotnum2));
+
+    eleforce.MultiplyTN(trafomat,bspotforce2);
+
+    for (unsigned int i=0; i<12; ++i)
+      ele2force(i) = eleforce(i);
+    // ********************** end: Interpolation *******************************
+
+    // assemble the contributions into force vector class variable
+    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleForceIntoSystemVector(
+        *ia_discret_,
+        elegid1,
+        ele1force,
+        *ia_force_crosslink_);
+    AssembleEleForceIntoSystemVector(
+        *ia_discret_,
+        elegid2,
+        ele2force,
+        *ia_force_crosslink_);
+
+  }
+
+  // FixMe
+//  TransformForceAndStiff(true, false);
+  force_crosslink_ = ia_force_crosslink_;
+
 
   // that is it
-  return ok;
+return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -196,20 +322,225 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 {
   CheckInitSetup();
-  bool ok = true;
+
+  // ************************** update ia_disnp_ *********************************************
+  // Todo needed?
+  // get current displacement state and export to interaction discretization dofmap
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
+
+  // gather data for all column beams
+  // Todo only do this for double-bonded beam elements ?!
+  const int numcolbeams = ia_discret_->NumMyColElements();
+  beam_data_.resize(numcolbeams);
+  PreComputeBeamData(numcolbeams);
+
+  std::map<int,DoubleBondedCl>::const_iterator iter2;
+  for (iter2=doublebondcl_.begin(); iter2!=doublebondcl_.end(); ++iter2)
+  {
+    int elegid1 = doublebondcl_[iter2->first].eleone.first;
+    int elegid2 = doublebondcl_[iter2->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter2->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter2->first].eletwo.second;
+
+    // fetch pre-computed values for absolute position and triad at binding spots
+    LINALG::Matrix<3,1> pos1 = beam_data_[beamele1->LID()].bbspotpos.at(locbspotnum1);
+    LINALG::Matrix<3,1> pos2 = beam_data_[beamele2->LID()].bbspotpos.at(locbspotnum2);
+
+    LINALG::Matrix<3,3> triad1 = beam_data_[beamele1->LID()].bbspottriad.at(locbspotnum1);
+    LINALG::Matrix<3,3> triad2 = beam_data_[beamele2->LID()].bbspottriad.at(locbspotnum2);
+
+    // finally initialize and setup object
+    doublebondcl_[iter2->first].elepairptr->ResetState(
+        pos1,
+        pos2,
+        triad1,
+        triad2);
+  }
+
+  // *****************************************************************************************
+
+
+  /* linearizations, i.e. stiffness contributions due to forces on the two
+   * connection sites due to the mechanical connection */
+  LINALG::TMatrix<double,6,6> bspotstiff11(true);
+  LINALG::TMatrix<double,6,6> bspotstiff12(true);
+  LINALG::TMatrix<double,6,6> bspotstiff21(true);
+  LINALG::TMatrix<double,6,6> bspotstiff22(true);
+
+  // linearizations, i.e. discrete stiffness contributions to the two parent elements
+  // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
+  Epetra_SerialDenseMatrix ele11stiff(12,12);
+  Epetra_SerialDenseMatrix ele12stiff(12,12);
+  Epetra_SerialDenseMatrix ele21stiff(12,12);
+  Epetra_SerialDenseMatrix ele22stiff(12,12);
+
+  ia_stiff_crosslink_->UnComplete();     // Todo check if needed or can be avoided
+
+
+  // Todo needed?
+  // transformation from row to column (after extended ghosting)
+  Teuchos::RCP<Epetra_Vector> iadiscolnp =
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *iadiscolnp);
+
+
+  std::map<int,DoubleBondedCl>::const_iterator iter;
+  for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
+  {
+    bspotstiff11.Clear();
+    bspotstiff12.Clear();
+    bspotstiff21.Clear();
+    bspotstiff22.Clear();
+
+    // evaluate beam linkage object to get forces and moments on binding spots
+    doublebondcl_[iter->first].elepairptr->EvaluateStiff(
+        bspotstiff11,
+        bspotstiff12,
+        bspotstiff21,
+        bspotstiff22);
+
+    // ********************** Interpolation *******************************
+    int elegid1 = doublebondcl_[iter->first].eleone.first;
+    int elegid2 = doublebondcl_[iter->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter->first].eletwo.second;
+
+
+    // get element location vector and ownerships
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele1->LocationVector(*ia_discret_,lm,lmowner,lmstride);
+    // get current displacements
+    std::vector<double> eledisp(lm.size());
+    // todo: discolnp_ with correct values here?
+    DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
+
+    LINALG::TMatrix<double,6,12> trafomat(true);
+
+    LINALG::TMatrix<double,12,6> ele11stifftmp;
+    LINALG::TMatrix<double,12,6> ele12stifftmp;
+    LINALG::TMatrix<double,6,12> ele21stifftmp;
+    LINALG::TMatrix<double,6,12> ele22stifftmp;
+    LINALG::TMatrix<double,12,12> ele11stifftmp2;
+    LINALG::TMatrix<double,12,12> ele12stifftmp2;
+    LINALG::TMatrix<double,12,12> ele21stifftmp2;
+    LINALG::TMatrix<double,12,12> ele22stifftmp2;
 
 
 
-  if (not ia_stiff_->Filled())
-    ia_stiff_->Complete();
+    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele1->GetBindingSpotXi(locbspotnum1));
 
-  TransformForceAndStiff(false, true);
+    ele11stifftmp.MultiplyTN(trafomat,bspotstiff11);
+    ele12stifftmp.MultiplyTN(trafomat,bspotstiff12);
 
-  if (not stiff_->Filled())
-    stiff_->Complete();
+    trafomat.Clear();
 
-  // that's it
-  return ok;
+
+    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomat,
+        beamele1->GetBindingSpotXi(locbspotnum1),
+        eledisp);
+
+    ele11stifftmp2.Multiply(ele11stifftmp,trafomat);
+
+    ele21stifftmp.Multiply(bspotstiff21,trafomat);
+
+
+
+    lm.clear();
+    lmowner.clear();
+    lmstride.clear();
+    ele2->LocationVector(*ia_discret_,lm,lmowner,lmstride);
+    eledisp.clear();
+    eledisp.resize(lm.size());
+
+    DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
+
+    trafomat.Clear();
+
+    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomat,
+        beamele2->GetBindingSpotXi(locbspotnum2),
+        eledisp);
+
+    ele12stifftmp2.Multiply(ele12stifftmp,trafomat);
+    ele22stifftmp.Multiply(bspotstiff22,trafomat);
+
+    trafomat.Clear();
+
+    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele2->GetBindingSpotXi(locbspotnum2));
+
+    ele21stifftmp2.MultiplyTN(trafomat,ele21stifftmp);
+    ele22stifftmp2.MultiplyTN(trafomat,ele22stifftmp);
+
+
+
+    // Apply point force to parent elements
+    for (unsigned int i=0; i<12; ++i)
+      for (unsigned int j=0; j<12; ++j)
+      {
+        ele11stiff(i,j) = ele11stifftmp2(i,j);
+        ele12stiff(i,j) = ele12stifftmp2(i,j);
+
+        ele21stiff(i,j) = ele21stifftmp2(i,j);
+        ele22stiff(i,j) = ele22stifftmp2(i,j);
+      }
+
+    // ********************** End: Interpolation *******************************
+
+
+    // assemble the contributions into stiffness matrix class variable
+    // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleStiffIntoSystemMatrix(
+        *ia_discret_,
+        elegid1,
+        elegid2,
+        ele11stiff,
+        ele12stiff,
+        ele21stiff,
+        ele22stiff,
+        *ia_stiff_crosslink_);
+
+  }
+
+  if (not ia_stiff_crosslink_->Filled())
+    ia_stiff_crosslink_->Complete();
+
+  // FixMe
+//  TransformForceAndStiff(false, true);
+  stiff_crosslink_ = ia_stiff_crosslink_;
+
+  if (not stiff_crosslink_->Filled())
+    stiff_crosslink_->Complete();
+
+  // *************************** DEBUG *******************************************
+//  std::cout << "\nCrosslinking::EvaluateStiff: ia_stiff_crosslink_=\n";
+//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
+
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -217,20 +548,288 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 {
   CheckInitSetup();
-  bool ok = true;
+
+  // ************************** update ia_disnp_ *********************************************
+  // Todo needed?
+  // get current displacement state and export to interaction discretization dofmap
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
+
+  // gather data for all column beams
+  // Todo only do this for double-bonded beam elements ?!
+  const int numcolbeams = ia_discret_->NumMyColElements();
+  beam_data_.resize(numcolbeams);
+  PreComputeBeamData(numcolbeams);
+
+  std::map<int,DoubleBondedCl>::const_iterator iter2;
+  for (iter2=doublebondcl_.begin(); iter2!=doublebondcl_.end(); ++iter2)
+  {
+    int elegid1 = doublebondcl_[iter2->first].eleone.first;
+    int elegid2 = doublebondcl_[iter2->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter2->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter2->first].eletwo.second;
+
+    // fetch pre-computed values for absolute position and triad at binding spots
+    LINALG::Matrix<3,1> pos1 = beam_data_[beamele1->LID()].bbspotpos.at(locbspotnum1);
+    LINALG::Matrix<3,1> pos2 = beam_data_[beamele2->LID()].bbspotpos.at(locbspotnum2);
+
+    LINALG::Matrix<3,3> triad1 = beam_data_[beamele1->LID()].bbspottriad.at(locbspotnum1);
+    LINALG::Matrix<3,3> triad2 = beam_data_[beamele2->LID()].bbspottriad.at(locbspotnum2);
+
+    // finally initialize and setup object
+    doublebondcl_[iter2->first].elepairptr->ResetState(
+        pos1,
+        pos2,
+        triad1,
+        triad2);
+  }
+
+  // *****************************************************************************************
+
+  // force and moment exerted on the two connection sites due to the mechanical connection
+  LINALG::TMatrix<double,6,1> bspotforce1(true);
+  LINALG::TMatrix<double,6,1> bspotforce2(true);
+  // corresponding linearizations, i.e. stiffness contributions
+  LINALG::TMatrix<double,6,6> bspotstiff11(true);
+  LINALG::TMatrix<double,6,6> bspotstiff12(true);
+  LINALG::TMatrix<double,6,6> bspotstiff21(true);
+  LINALG::TMatrix<double,6,6> bspotstiff22(true);
+
+  // resulting discrete element force vectors of the two parent elements
+  Epetra_SerialDenseVector ele1force(12);
+  Epetra_SerialDenseVector ele2force(12);
+  // linearizations, i.e. discrete stiffness contributions to the two parent elements
+  // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
+  Epetra_SerialDenseMatrix ele11stiff(12,12);
+  Epetra_SerialDenseMatrix ele12stiff(12,12);
+  Epetra_SerialDenseMatrix ele21stiff(12,12);
+  Epetra_SerialDenseMatrix ele22stiff(12,12);
+
+  ia_stiff_crosslink_->UnComplete();     // Todo check if needed or can be avoided
 
 
 
-  if (not ia_stiff_->Filled())
-    ia_stiff_->Complete();
+  // Todo needed?
+  // transformation from row to column (after extended ghosting)
+  Teuchos::RCP<Epetra_Vector> iadiscolnp =
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *iadiscolnp);
 
-  TransformForceAndStiff();
 
-  if (not stiff_->Filled())
-    stiff_->Complete();
 
-  // that's it
-  return ok;
+  std::map<int,DoubleBondedCl>::const_iterator iter;
+  for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
+  {
+    bspotforce1.Clear();
+    bspotforce2.Clear();
+    bspotstiff11.Clear();
+    bspotstiff12.Clear();
+    bspotstiff21.Clear();
+    bspotstiff22.Clear();
+
+    // evaluate beam linkage object to get forces and moments on binding spots
+    doublebondcl_[iter->first].elepairptr->EvaluateForceStiff(
+        bspotforce1,
+        bspotforce2,
+        bspotstiff11,
+        bspotstiff12,
+        bspotstiff21,
+        bspotstiff22);
+
+
+    // ********************** Interpolation *******************************
+    int elegid1 = doublebondcl_[iter->first].eleone.first;
+    int elegid2 = doublebondcl_[iter->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter->first].eletwo.second;
+
+
+    // get element location vector and ownerships
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele1->LocationVector(*ia_discret_,lm,lmowner,lmstride);
+    // get current displacements
+    std::vector<double> eledisp(lm.size());
+    // todo: discolnp_ with correct values here?
+    DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
+
+    LINALG::TMatrix<double,6,12> trafomat(true);
+
+    LINALG::TMatrix<double,12,1> ele1forcetmp;
+    LINALG::TMatrix<double,12,1> ele2forcetmp;
+
+    LINALG::TMatrix<double,12,6> ele11stifftmp;
+    LINALG::TMatrix<double,12,6> ele12stifftmp;
+    LINALG::TMatrix<double,6,12> ele21stifftmp;
+    LINALG::TMatrix<double,6,12> ele22stifftmp;
+    LINALG::TMatrix<double,12,12> ele11stifftmp2;
+    LINALG::TMatrix<double,12,12> ele12stifftmp2;
+    LINALG::TMatrix<double,12,12> ele21stifftmp2;
+    LINALG::TMatrix<double,12,12> ele22stifftmp2;
+
+
+
+    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele1->GetBindingSpotXi(locbspotnum1));
+
+    ele1forcetmp.MultiplyTN(trafomat,bspotforce1);
+
+    ele11stifftmp.MultiplyTN(trafomat,bspotstiff11);
+    ele12stifftmp.MultiplyTN(trafomat,bspotstiff12);
+
+    trafomat.Clear();
+
+
+    // ************* DEBUG **************************************
+//    std::cout << "\neledisp:";
+//    for (unsigned int i=0; i<eledisp.size(); ++i)
+//      std::cout << " " << eledisp[i];
+//    std::cout << "\n";
+    // **********************************************************
+
+
+    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomat,
+        beamele1->GetBindingSpotXi(locbspotnum1),
+        eledisp);
+
+    ele11stifftmp2.Multiply(ele11stifftmp,trafomat);
+
+    ele21stifftmp.Multiply(bspotstiff21,trafomat);
+
+
+    // ************** DEBUG *************************************
+//    std::cout << "\nxi= "<< beamele1->GetBindingSpotXi(locbspotnum1) << ", trafomat: ";
+//    trafomat.Print(std::cout);
+    // **********************************************************
+
+
+    lm.clear();
+    lmowner.clear();
+    lmstride.clear();
+    ele2->LocationVector(*ia_discret_,lm,lmowner,lmstride);
+    eledisp.clear();
+    eledisp.resize(lm.size());
+
+    DRT::UTILS::ExtractMyValues(*iadiscolnp,eledisp,lm);
+
+    trafomat.Clear();
+
+    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomat,
+        beamele2->GetBindingSpotXi(locbspotnum2),
+        eledisp);
+
+    ele12stifftmp2.Multiply(ele12stifftmp,trafomat);
+    ele22stifftmp.Multiply(bspotstiff22,trafomat);
+
+    trafomat.Clear();
+
+    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
+        trafomat,
+        beamele2->GetBindingSpotXi(locbspotnum2));
+
+    ele2forcetmp.MultiplyTN(trafomat,bspotforce2);
+
+    ele21stifftmp2.MultiplyTN(trafomat,ele21stifftmp);
+    ele22stifftmp2.MultiplyTN(trafomat,ele22stifftmp);
+
+
+
+    // Apply point force to parent elements
+    for (unsigned int i=0; i<12; ++i)
+    {
+      ele1force(i) = ele1forcetmp(i);
+      ele2force(i) = ele2forcetmp(i);
+
+      for (unsigned int j=0; j<12; ++j)
+      {
+        ele11stiff(i,j) = ele11stifftmp2(i,j);
+        ele12stiff(i,j) = ele12stifftmp2(i,j);
+
+        ele21stiff(i,j) = ele21stifftmp2(i,j);
+        ele22stiff(i,j) = ele22stifftmp2(i,j);
+      }
+    }
+
+    // ********************** End: Interpolation *******************************
+
+
+// *************************** DEBUG *******************************************
+//    std::cout << "\nCrosslinking::EvaluateForceStiff: ele1force=\n";
+//    ele1force.Print(std::cout);
+//    std::cout << "\nele2force=\n";
+//    ele2force.Print(std::cout);
+
+
+    // assemble the contributions into force and stiffness class variables
+    // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleForceStiffIntoSystemVectorMatrix(
+        *ia_discret_,
+        elegid1,
+        elegid2,
+        ele1force,
+        ele2force,
+        ele11stiff,
+        ele12stiff,
+        ele21stiff,
+        ele22stiff,
+        *ia_force_crosslink_,
+        *ia_stiff_crosslink_);
+  }
+
+  if (not ia_stiff_crosslink_->Filled())
+    ia_stiff_crosslink_->Complete();
+
+  // *************************** DEBUG *******************************************
+//  std::cout << "\nCrosslinking::EvaluateForceStiff: ia_force_crosslink_=\n";
+//  ia_force_crosslink_->Print(std::cout);
+//  std::cout << "\nCrosslinking::EvaluateForceStiff: force_crosslink_=\n";
+//  force_crosslink_->Print(std::cout);
+//  std::cout << "\nia_stiff_crosslink_=\n";
+//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
+//  std::cout << "\nstiff_crosslink_=\n";
+//  stiff_crosslink_->EpetraMatrix()->Print(std::cout);
+
+  // FixMe
+//  TransformForceAndStiff();
+  stiff_crosslink_ = ia_stiff_crosslink_;
+  force_crosslink_ = ia_force_crosslink_;
+
+  if (not stiff_crosslink_->Filled())
+    stiff_crosslink_->Complete();
+
+  // *************************** DEBUG *******************************************
+//  std::cout << "\nCrosslinking::EvaluateForceStiff: ia_force_crosslink_=\n";
+//  ia_force_crosslink_->Print(std::cout);
+//  std::cout << "\nCrosslinking::EvaluateForceStiff: force_crosslink_=\n";
+//  force_crosslink_->Print(std::cout);
+//  std::cout << "\nia_stiff_crosslink_=\n";
+//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
+//  std::cout << "\nstiff_crosslink_=\n";
+//  stiff_crosslink_->EpetraMatrix()->Print(std::cout);
+
+
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -238,7 +837,10 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::Crosslinking::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
-  STR::AssembleVector(1.0,f,-timefac_np,*force_);
+  CheckInitSetup();
+
+  STR::AssembleVector(1.0,f,timefac_np,*force_crosslink_);  //Todo check sign
+
   return true;
 }
 
@@ -252,11 +854,12 @@ bool STR::MODELEVALUATOR::Crosslinking::AssembleJacobian(
 
   Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
       GState().ExtractDisplBlock(jac);
-  jac_dd_ptr->Add(*stiff_,false,timefac_np,1.0);
+  jac_dd_ptr->Add(*stiff_crosslink_,false,timefac_np,1.0);  //Todo check sign
+
   // no need to keep it
-  stiff_->Zero();
-  ia_stiff_->Zero();
-  // nothing to do
+  stiff_crosslink_->Zero();
+  ia_stiff_crosslink_->Zero();
+
   return true;
 }
 
@@ -302,7 +905,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateStepState(
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr =
       GState().GetMutableFstructureOld();
 
-  fstructold_ptr->Update(-timefac_n,*force_,1.0);
+  fstructold_ptr->Update(-timefac_n,*force_crosslink_,1.0);
 
   return;
 } // UpdateStepState()
@@ -653,7 +1256,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // somehow touched by an axis aligned bounding box around the element
   BuildEleToBinMap();
 
-#ifdef DEBUG
+//#ifdef DEBUG
   // print distribution after extended ghosting
   if(myrank_ == 0 && (partition || repartition))
   {
@@ -662,7 +1265,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     IO::cout<<"+--------------------------------------------------+"<<IO::endl;
   }
   DRT::UTILS::PrintParallelDistribution(*ia_discret_);
-#endif
+//#endif
 
   // -------------------------------------------------------------------------
   // one layer ghosting of bins and particles, i.e. each proc ghosts the
@@ -1249,7 +1852,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
     // get pre computed data of current nbbeam
     // -----------------------------------------------------------------------
     const BeamData& beamdata_i = beam_data_[nbbeam->LID()];
-    const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
+    const std::map<int, LINALG::Matrix<3,1> >& bbspotpos_i = beamdata_i.bbspotpos;
     const std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
 //    const int& bowner_i = beamdata_i.bowner;
 
@@ -1296,7 +1899,7 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
           continue;
 
         // get current position of free binding spot
-        const LINALG::Matrix<3,1> currbbspos = bbspotdofs_i.at(locnbspot)[0];
+        const LINALG::Matrix<3,1> currbbspos = bbspotpos_i.at(locnbspot);
 
         // compute distance between current binding spot and center (if free) or one
         // end (if single bonded) of crosslinker i
@@ -1430,7 +2033,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
       DRT::ELEMENTS::Beam3Base* ele_i =
           dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
-      const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
+      const std::map<int, LINALG::Matrix<3,1> >& bbspotpos_i = beamdata_i.bbspotpos;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
       const int& bowner_i = beamdata_i.bowner;
 
@@ -1462,7 +2065,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           crosslinker_i->ClData()->SetNumberOfBonds(clnumbond_i);
 
           // update position
-          clpos_i = bbspotdofs_i.at(binevdata.bspotlocn)[0];
+          clpos_i = bbspotpos_i.at(binevdata.bspotlocn);
           std::vector<double> newpos(3,0.0);
           for(int dim=0; dim<3; ++dim)
             newpos[dim] = clpos_i(dim);
@@ -1543,7 +2146,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           for(int dim=0; dim<3; ++dim)
           {
             // newpos = 0.5*( pos new bbspot partner + old bbspot partner position(=cl pos))
-            newpos[dim] = (bbspotdofs_i.at(clbspots_i[freebspotid].second)[0](dim) + clpos_i(dim))/2.0;
+            newpos[dim] = (bbspotpos_i.at(clbspots_i[freebspotid].second)(dim) + clpos_i(dim))/2.0;
             clpos_i(dim ) = newpos[dim];
           }
           crosslinker_i->SetPos(newpos);
@@ -1553,6 +2156,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           dbondcl.id = binevdata.clgid;
           dbondcl.eleone = clbspots_i[freebspotid];
           dbondcl.eletwo = clbspots_i[occbspotid];
+          dbondcl.elepairptr = Teuchos::null;
 
           // first check if myrank is owner of element of current binding event
           // (additionally to being owner of cl)
@@ -1705,7 +2309,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
       DRT::ELEMENTS::Beam3Base* ele_i =
           dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ia_discret_->lColElement(colelelid));
       BeamData& beamdata_i = beam_data_[colelelid];
-//      const std::map<int, std::vector<LINALG::Matrix<3,1> > >& bbspotdofs_i = beamdata_i.bbspotdofs;
+//      const std::map<int, LINALG::Matrix<3,1> >& bbspotpos_i = beamdata_i.bbspotpos;
       std::map<int, int>& bbspotstatus_i = beamdata_i.bbspotstatus;
 
 #ifdef DEBUG
@@ -1749,6 +2353,7 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
           dbondcl.id = binevdata.clgid;
           dbondcl.eleone = clbspots_i[0];
           dbondcl.eletwo = clbspots_i[1];
+          dbondcl.elepairptr = Teuchos::null;
           mynewdbondcl[dbondcl.id] = dbondcl;
 
           break;
@@ -1770,7 +2375,54 @@ void STR::MODELEVALUATOR::Crosslinking::BindCrosslinker(
   // elements are now double bonded without him knowing (yet)
   CommunicateDoubleBondedCl(mynewdbondcl,dbondcltosend);
 
-  //todo: HOW TO INSERT NEW DOUBLE BONDS IN NORMAL LIST
+
+  std::map<int,DoubleBondedCl>::const_iterator iter;
+  for (iter=mynewdbondcl.begin(); iter!=mynewdbondcl.end(); ++iter)
+  {
+    // insert new double bonded crosslinkers in map of already existing ones
+    doublebondcl_.insert(*iter);
+
+    // create and initialize objects of beam-to-beam connections
+    // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
+    //      and introduce corresponding input parameter or even condition for mechanical links between beams in general
+    doublebondcl_[iter->first].elepairptr =
+      BEAMINTERACTION::BeamToBeamLinkage::Create();
+
+    int elegid1 = doublebondcl_[iter->first].eleone.first;
+    int elegid2 = doublebondcl_[iter->first].eletwo.first;
+
+    DRT::Element* ele1 = ia_discret_->gElement(elegid1);
+    DRT::Element* ele2 = ia_discret_->gElement(elegid2);
+
+    DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+    DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+    int locbspotnum1 = doublebondcl_[iter->first].eleone.second;
+    int locbspotnum2 = doublebondcl_[iter->first].eletwo.second;
+
+    // fetch pre-computed values for absolute position and triad at binding spots
+    LINALG::Matrix<3,1> pos1 = beam_data_[beamele1->LID()].bbspotpos.at(locbspotnum1);
+    LINALG::Matrix<3,1> pos2 = beam_data_[beamele2->LID()].bbspotpos.at(locbspotnum2);
+
+    LINALG::Matrix<3,3> triad1 = beam_data_[beamele1->LID()].bbspottriad.at(locbspotnum1);
+    LINALG::Matrix<3,3> triad2 = beam_data_[beamele2->LID()].bbspottriad.at(locbspotnum2);
+
+    // ToDo specify and pass material parameters for crosslinker element
+
+    // finally initialize and setup object
+    doublebondcl_[iter->first].elepairptr->Init(
+        pos1,
+        pos2,
+        triad1,
+        triad2);
+
+    doublebondcl_[iter->first].elepairptr->Setup();
+  }
+
+  IO::cout(IO::standard) << "\nPID " << DiscretPtr()->Comm().MyPID() << ": added " << mynewdbondcl.size()
+      << " new db crosslinkers. Now have " << doublebondcl_.size() << "\n";
 
   // that is it
   return;
@@ -2048,8 +2700,8 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 #endif
 
           BeamData& beamdata_i = beam_data_[collidoccbeam];
-          std::map<int, std::vector<LINALG::Matrix<3,1> > > bspotdofs_i = beamdata_i.bbspotdofs;
-          clpos_i = bspotdofs_i.at(clbspots_i[stayocc].second)[0];
+          std::map<int, LINALG::Matrix<3,1> > bspotpos_i = beamdata_i.bbspotpos;
+          clpos_i = bspotpos_i.at(clbspots_i[stayocc].second);
           std::vector<double> newpos(3,0.0);
           for(int dim=0; dim<3; ++dim)
             newpos[dim] = clpos_i(dim);
@@ -2123,6 +2775,9 @@ void STR::MODELEVALUATOR::Crosslinking::UnBindCrosslinker()
     doublebondcl_.erase(idtoerase);
 
   }
+
+  IO::cout(IO::standard) << "\nPID " << DiscretPtr()->Comm().MyPID() << ": deleted " << myrankunbindevent.size()
+      << " db crosslinkers. Now have " << doublebondcl_.size() << "\n";
 
   // that is it
   return;
@@ -2240,7 +2895,12 @@ void STR::MODELEVALUATOR::Crosslinking::PreComputeBeamData(
       LINALG::Matrix<3,1> bbspotpos_j;
       ele_i->GetPosOfBindingSpot(bbspotpos_j,eledisp,j,
           *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
-      bdata.bbspotdofs[j].push_back(bbspotpos_j);
+      bdata.bbspotpos[j]=bbspotpos_j;
+
+      // get current triad at binding spot xi
+      LINALG::Matrix<3,3> bbspottriad_j;
+      ele_i->GetTriadOfBindingSpot(bbspottriad_j,eledisp,j);
+      bdata.bbspottriad[j]=bbspottriad_j;
     }
 
     // get status of beam binding spots
@@ -2849,10 +3509,10 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateMaps()
   // beam displacement
   UpdateDofMapOfVector(ia_discret_, ia_disnp_);
 
-  ia_stiff_ = Teuchos::rcp(new
+  ia_stiff_crosslink_ = Teuchos::rcp(new
       LINALG::SparseMatrix(*ia_discret_->DofRowMap(), 81, true, true));
   // force
-  ia_force_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
+  ia_force_crosslink_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(),true));
 
   // that is it
   return;
@@ -2888,6 +3548,115 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::AssembleEleForceIntoSystemVector(
+  const DRT::Discretization&       discret,
+  const int                        elegid,
+  const Epetra_SerialDenseVector&  elevec,
+  Epetra_Vector&                   sysvec
+  ) const
+{
+  // the entries of elevec belong to the Dofs of this element
+  DRT::Element* ele = discret.gElement(elegid);
+
+  // get element location vector and ownerships
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+
+  ele->LocationVector(discret,lm,lmowner,lmstride);
+
+  // assemble element vector into global system vector
+  LINALG::Assemble(sysvec,elevec,lm,lmowner);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::AssembleEleStiffIntoSystemMatrix(
+  const DRT::Discretization&       discret,
+  const int                        elegid1,
+  const int                        elegid2,
+  const Epetra_SerialDenseMatrix&  elemat11,
+  const Epetra_SerialDenseMatrix&  elemat12,
+  const Epetra_SerialDenseMatrix&  elemat21,
+  const Epetra_SerialDenseMatrix&  elemat22,
+  LINALG::SparseMatrix&            sysmat
+  ) const
+{
+  // the entries of elevec1 belong to the Dofs of this element
+  DRT::Element* ele1 = discret.gElement(elegid1);
+  // the entries of elevec2 belong to the Dofs of this element
+  DRT::Element* ele2 = discret.gElement(elegid2);
+
+  // get element location vector and ownerships
+  std::vector<int> lmrow1;
+  std::vector<int> lmrow2;
+  std::vector<int> lmrowowner1;
+  std::vector<int> lmrowowner2;
+  std::vector<int> lmstride;
+
+  ele1->LocationVector(discret,lmrow1,lmrowowner1,lmstride);
+  ele2->LocationVector(discret,lmrow2,lmrowowner2,lmstride);
+
+  // and finally also assemble stiffness contributions
+  sysmat.Assemble(0,elemat11,lmrow1,lmrowowner1,lmrow1);
+  sysmat.Assemble(0,elemat12,lmrow1,lmrowowner1,lmrow2);
+  sysmat.Assemble(0,elemat21,lmrow2,lmrowowner2,lmrow1);
+  sysmat.Assemble(0,elemat22,lmrow2,lmrowowner2,lmrow2);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::AssembleEleForceStiffIntoSystemVectorMatrix(
+  const DRT::Discretization&       discret,
+  const int                        elegid1,
+  const int                        elegid2,
+  const Epetra_SerialDenseVector&  elevec1,
+  const Epetra_SerialDenseVector&  elevec2,
+  const Epetra_SerialDenseMatrix&  elemat11,
+  const Epetra_SerialDenseMatrix&  elemat12,
+  const Epetra_SerialDenseMatrix&  elemat21,
+  const Epetra_SerialDenseMatrix&  elemat22,
+  Epetra_Vector&                   sysvec,
+  LINALG::SparseMatrix&            sysmat
+  ) const
+{
+  // the entries of elevec1 belong to the Dofs of this element
+  DRT::Element* ele1 = discret.gElement(elegid1);
+  // the entries of elevec2 belong to the Dofs of this element
+  DRT::Element* ele2 = discret.gElement(elegid2);
+
+  // get element location vector and ownerships
+  std::vector<int> lmrow1;
+  std::vector<int> lmrow2;
+  std::vector<int> lmrowowner1;
+  std::vector<int> lmrowowner2;
+  std::vector<int> lmstride;
+
+  ele1->LocationVector(discret,lmrow1,lmrowowner1,lmstride);
+  ele2->LocationVector(discret,lmrow2,lmrowowner2,lmstride);
+
+
+  // *************************** DEBUG *******************************************
+//  std::cout << "\nCrosslinking::AssembleEleForceStiffIntoSystemVectorMatrix: elevec1=\n";
+//  elevec1.Print(std::cout);
+//  std::cout << "\nelevec2=\n";
+//  elevec2.Print(std::cout);
+
+  // assemble both element vectors into global system vector
+  LINALG::Assemble(sysvec,elevec1,lmrow1,lmrowowner1);
+  LINALG::Assemble(sysvec,elevec2,lmrow2,lmrowowner2);
+
+  // *************************** DEBUG *******************************************
+//  std::cout << "\nCrosslinking::AssembleEleForceStiffIntoSystemVectorMatrix: sysvec=\n";
+//  sysvec.Print(std::cout);
+
+  // and finally also assemble stiffness contributions
+  sysmat.Assemble(0,elemat11,lmrow1,lmrowowner1,lmrow1);
+  sysmat.Assemble(0,elemat12,lmrow1,lmrowowner1,lmrow2);
+  sysmat.Assemble(0,elemat21,lmrow2,lmrowowner2,lmrow1);
+  sysmat.Assemble(0,elemat22,lmrow2,lmrowowner2,lmrow2);
+}
+
 void STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff(
     bool force,
     bool stiff)
@@ -2900,16 +3669,16 @@ void STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff(
   if(force)
   {
     // transform force vector to problem discret layout/distribution
-    force_ = coupsia_->MasterToSlave(ia_force_);
+    force_crosslink_ = coupsia_->MasterToSlave(ia_force_crosslink_);
   }
   // transform stiffness matrix to problem discret layout/distribution
   if(stiff)
   {
     // transform stiffness matrix to problem discret layout/distribution
-    (*siatransform_)(*ia_stiff_,
+    (*siatransform_)(*ia_stiff_crosslink_,
                      1.0,
                      ADAPTER::CouplingMasterConverter(*coupsia_),
-                     *stiff_,
+                     *stiff_crosslink_,
                      false);
   }
 

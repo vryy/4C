@@ -19,6 +19,7 @@
 
 #include "str_model_evaluator_generic.H"        // base class
 #include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseVector.h>
 #include "str_elements_paramsinterface.H"       // interface to the element evaluation
 #include "../drt_inpar/inpar_binstrategy.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -51,6 +52,9 @@ namespace PARTICLE
 {
   class Algorithm;
 } // namespace PARTICLE
+namespace BEAMINTERACTION {
+class BeamToBeamLinkage;
+}
 
 namespace STR{
 namespace MODELEVALUATOR{
@@ -155,8 +159,9 @@ namespace MODELEVALUATOR{
 
     //! struct to store beam data for faster access
     struct BeamData {
-      std::map<int, std::vector<LINALG::Matrix<3,1> > > bbspotdofs;    // currrent values of dofs at bindingspots (xi) (key is local number of binding spot)
-      std::map<int, int> bbspotstatus;                                 // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
+      std::map<int, LINALG::Matrix<3,1> > bbspotpos;    // current position at bindingspots (xi) (key is local number of binding spot)
+      std::map<int, LINALG::Matrix<3,3> > bbspottriad;  // current triad at bindingspots (xi) (key is local number of binding spot)
+      std::map<int, int> bbspotstatus;                  // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
 //      int type;
 //      int filnumber;
       int bowner;                                                      // owner of current beam
@@ -176,6 +181,7 @@ namespace MODELEVALUATOR{
       int id;                          // gid of crosslinker
       std::pair<int, int> eleone;      // elegid and local binding spot number of first element
       std::pair<int, int> eletwo;      // elegid and local binding spot number of second element
+      Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr;
     };
 
     //! struct that stores unbinding event data that needs to be be communicated
@@ -192,35 +198,6 @@ namespace MODELEVALUATOR{
     virtual void Reset(const Epetra_Vector& x);
 
   private:
-    //! apply Browian (stochastic and damping forces)
-    bool ApplyForceBrownian();
-
-    //! apply statmech specific neumann conditions
-    bool ApplyForceExternal();
-
-    //! apply Browian (stochastic and damping forces)
-    bool ApplyForceStiffBrownian();
-
-    //! apply statmech specific neumann conditions
-    bool ApplyForceStiffExternal();
-
-    //! evaluate statmech specific neumann conditions
-    void EvaluateNeumannStatMech(
-        Teuchos::RCP<Epetra_Vector> eval_vec,
-        Teuchos::RCP<LINALG::SparseOperator> eval_mat);
-
-    //! evaluate Browian (stochastic and damping forces)
-    void EvaluateBrownian(
-        Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
-        Teuchos::RCP<Epetra_Vector>* eval_vec);
-
-    //! evaluate Browian (stochastic and damping forces)
-    void EvaluateBrownian(
-        Teuchos::ParameterList& p,
-        Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
-        Teuchos::RCP<Epetra_Vector>* eval_vec);
-
-
     //!@name routines that manage crosslinker as particles as well as
     //       the whole corresponding binstrategy
     //! @{
@@ -311,6 +288,41 @@ namespace MODELEVALUATOR{
       Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
 
+    /// assemble element force vector into system vector
+    void AssembleEleForceIntoSystemVector(
+        const DRT::Discretization&       discret,
+        const int                        elegid,
+        const Epetra_SerialDenseVector&  elevec,
+        Epetra_Vector&                   sysvec
+      ) const;
+
+    /// assemble element stiffness matrix into system matrix
+    void AssembleEleStiffIntoSystemMatrix(
+        const DRT::Discretization&       discret,
+        const int                        elegid1,
+        const int                        elegid2,
+        const Epetra_SerialDenseMatrix&  elemat11,
+        const Epetra_SerialDenseMatrix&  elemat12,
+        const Epetra_SerialDenseMatrix&  elemat21,
+        const Epetra_SerialDenseMatrix&  elemat22,
+        LINALG::SparseMatrix&            sysmat
+      ) const;
+
+    /// assemble element force vector and stiffness matrix into system vector and matrix
+    void AssembleEleForceStiffIntoSystemVectorMatrix(
+        const DRT::Discretization&       discret,
+        const int                        elegid1,
+        const int                        elegid2,
+        const Epetra_SerialDenseVector&  elevec1,
+        const Epetra_SerialDenseVector&  elevec2,
+        const Epetra_SerialDenseMatrix&  elemat11,
+        const Epetra_SerialDenseMatrix&  elemat12,
+        const Epetra_SerialDenseMatrix&  elemat21,
+        const Epetra_SerialDenseMatrix&  elemat22,
+        Epetra_Vector&                   sysvec,
+        LINALG::SparseMatrix&            sysmat
+      ) const;
+
     /// transform force vector and stiffness matrix from Discret to ia_discret_
     virtual void TransformForceAndStiff(
       bool force = true,
@@ -399,16 +411,16 @@ namespace MODELEVALUATOR{
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> siatransform_;
 
     //! global force based on Discret() at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> force_;
+    Teuchos::RCP<Epetra_Vector> force_crosslink_;
 
     //! structural stiffness matrix based on Discret()
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_crosslink_;
 
     //! global force based on intactdis_ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ia_force_;
+    Teuchos::RCP<Epetra_Vector> ia_force_crosslink_;
 
     //! structural stiffness matrix based on intactdis_
-    Teuchos::RCP<LINALG::SparseMatrix> ia_stiff_;
+    Teuchos::RCP<LINALG::SparseMatrix> ia_stiff_crosslink_;
 
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$ based on maps of interaction discretization
     Teuchos::RCP<Epetra_Vector> ia_disnp_;

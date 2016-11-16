@@ -115,7 +115,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case ELEMENTS::struct_calc_nlnstiffmass:
     case ELEMENTS::struct_calc_nlnstifflmass:
     case ELEMENTS::struct_calc_nlnstiff:
@@ -138,13 +137,9 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
-            }
             else
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
-            }
             break;
           }
           case 3:
@@ -187,13 +182,9 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,mydisp,&elemat1,NULL,&elevec1,NULL);
-            }
             else
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,mydisp,&elemat1,NULL,&elevec1,NULL);
-            }
             break;
           }
           case 3:
@@ -232,13 +223,9 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,mydisp,NULL,NULL,&elevec1,NULL);
-            }
             else
-            {
               CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,mydisp,NULL,NULL,&elevec1,NULL);
-            }
             break;
           }
           case 3:
@@ -471,7 +458,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("This action type is not implemented for Beam3eb");
+      dserror("This action type is not implemented for Beam3r");
     break;
   }
   return 0;
@@ -701,16 +688,52 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T,3,3>& Lam
    return;
 }
 
-/*------------------------------------------------------------------------------------------------------------*
- | calculate internal and inertia forces and their contributions to stiffmatrix                    cyron 01/08|
- *-----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&        params,
-                                                                      std::vector<double>&      disp,
-                                                                      Epetra_SerialDenseMatrix* stiffmatrix,
-                                                                      Epetra_SerialDenseMatrix* massmatrix,
-                                                                      Epetra_SerialDenseVector* force,
-                                                                      Epetra_SerialDenseVector* inertia_force)
+void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
+    Teuchos::ParameterList&   params,
+    std::vector<double>&      disp,
+    Epetra_SerialDenseMatrix* stiffmatrix,
+    Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector* force,
+    Epetra_SerialDenseVector* inertia_force)
+{
+  //************ statmech periodic boundary conditions **********************
+  /* unshift node positions, i.e. manipulate element displacement vector
+   * as if there where no periodic boundary conditions */
+  if(StatMechParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp,nnodecl);
+
+  /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
+   * style, i.e. initial values + displacements */
+  LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+
+  // quaternions of all nodal triads
+  std::vector<LINALG::TMatrix<FADordouble,4,1> > Qnode(nnodetriad);
+
+  // update disp_totlag
+  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,FADordouble>(disp,disp_totlag_centerline,Qnode);
+
+  CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,FADordouble>(
+      disp_totlag_centerline,
+      Qnode,
+      stiffmatrix,
+      massmatrix,
+      force,
+      inertia_force);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+    std::vector<LINALG::TMatrix<T,4,1> >&    Qnode,
+    Epetra_SerialDenseMatrix*                stiffmatrix,
+    Epetra_SerialDenseMatrix*                massmatrix,
+    Epetra_SerialDenseVector*                force,
+    Epetra_SerialDenseVector*                inertia_force)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -719,13 +742,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
   /********************************** Initialize/resize variables **************************************
    *****************************************************************************************************/
-
-  //********************************* statmech periodic boundary conditions ****************************
-
-  // unshift node positions, i.e. manipulate element displacement vector
-  // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp,nnodecl);
 
   //********************************** quantities valid for entire element *****************************
   const int dofperclnode = 3*vpernode;
@@ -747,13 +763,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
   //**************************************** nodal quantities *******************************************
 
-  // current nodal DOFs relevant for centerline interpolation in total Lagrangian style, i.e. initial values + displacements
-  LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
-
-  // quaternions of all nodal triads
-  std::vector<LINALG::TMatrix<FADordouble,4,1> > Q_i(nnodetriad);
-
-  // rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
+  // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
   std::vector<LINALG::TMatrix<FADordouble,3,1> > Psi_li(nnodetriad);
 
   //*************************** physical quantities evaluated at a certain GP ***************************
@@ -812,11 +822,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
   /*************************** update/compute quantities valid for entire element **********************
    *****************************************************************************************************/
 
-  // update disp_totlag
-  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode>(disp,disp_totlag_centerline,Q_i);
-
   // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion<FADordouble>(Q_i[nodeI_],Q_i[nodeJ_],Q_r,Phi_IJ);
+  CalcRefQuaternion<FADordouble>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
   LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
 
   // setup constitutive matrices
@@ -826,7 +833,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
    * this is done individually for each node in order to avoid function argument std::vector<LINALG::TMatrix<...> >
    * a function with this argument type cannot be called with an argument of type std::vector<LINALG::Matrix<...> > (needed e.g. in SetUpReferenceGeometry) */
   for (unsigned int node=0; node<nnodetriad; ++node)
-    CalcPsi_li<FADordouble>(Q_i[node],Q_r,Psi_li[node]);
+    CalcPsi_li<FADordouble>(Qnode[node],Q_r,Psi_li[node]);
 
   /******************************* elasticity: compute fint and stiffmatrix ****************************
    *****************************************************************************************************/
@@ -1410,28 +1417,11 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
      *         temporal discretization of spatially continuous variables (angular velocity and acceleration) because the reverse order of discretization (spatial -> temporal)
      *         is much more intricate basically because of the triad interpolation. See also the discussion in Christoph Meier's Dissertation on this topic. (Maximilian Grill, 08/16)*/
 
-    double dt = 1000.0;
-    double beta = -1.0;
-    double gamma = -1.0;
-    double alpha_f = -1.0;
-    double alpha_m = -1.0;
-
-    if (this->IsParamsInterface())
-    {
-      dt = ParamsInterface().GetDeltaTime();
-      beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
-      gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
-      alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
-      alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
-    }
-    else
-    {
-      beta = params.get<double>("rot_beta",1000);
-      gamma = params.get<double>("rot_gamma",1000);
-      alpha_f = params.get<double>("rot_alphaf",1000);
-      alpha_m = params.get<double>("rot_alpham",1000);
-      dt = params.get<double>("delta time",1000);
-    }
+    const double dt = ParamsInterface().GetDeltaTime();
+    const double beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+    const double gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
+    const double alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+    const double alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
 
     const bool materialintegration=true;        // TODO unused?
     const double diff_factor_vel = gamma/(beta*dt);
@@ -1480,7 +1470,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
     // Calculate current centerline position at gauss points (needed for element intern time integration)
     for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
-      Calc_r<nnodecl,vpernode,double>(FADUTILS::CastToDouble<FADordouble,3*vpernode*nnodecl,1>(disp_totlag_centerline),H_i[gp],rnewGPmass_[gp]);
+      Calc_r<nnodecl,vpernode,double>(
+          FADUTILS::CastToDouble<FADordouble,3*vpernode*nnodecl,1>(disp_totlag_centerline),
+          H_i[gp],
+          rnewGPmass_[gp]);
 
     Ekin_=0.0;
     L_=0.0;
@@ -1760,16 +1753,16 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   /****** update/compute key variables describing displacement and velocity state of this element *****/
 
   // current nodal DOFs relevant for centerline interpolation in total Lagrangian style, i.e. initial values + displacements
-  LINALG::Matrix<3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+  LINALG::TMatrix<double,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
 
   // discrete centerline (i.e. translational) velocity vector
-  LINALG::Matrix<3*vpernode*nnodecl,1> vel_centerline(true);
+  LINALG::TMatrix<double,3*vpernode*nnodecl,1> vel_centerline(true);
 
   // quaternions of all nodal triads
-  std::vector<LINALG::Matrix<4,1> > Q_i(nnodetriad);
+  std::vector<LINALG::TMatrix<double,4,1> > Q_i(nnodetriad);
 
   // update disp_totlag_centerline and nodal triads
-  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode>(disp,disp_totlag_centerline,Q_i);
+  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(disp,disp_totlag_centerline,Q_i);
 
   // update current values of centerline (i.e. translational) velocity
   ExtractCenterlineDofValues<nnodecl,vpernode,double>(vel,vel_centerline);
@@ -1790,35 +1783,29 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
 /*------------------------------------------------------------------------------------------------------------*
  | update (total) displacement vector and set nodal triads (as quaternions)                        grill 03/16|
  *------------------------------------------------------------------------------------------------------------*/
-template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<double>&            disp,
-                                                           LINALG::Matrix<3*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                                           std::vector<LINALG::Matrix<4,1> >&    Q_i)
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<double>&               disp,
+                                                           LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+                                                           std::vector<LINALG::TMatrix<T,4,1> >&    Q_i)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
   // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
   // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
 
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
-
   // get current values of translational nodal DOFs in total Lagrangean manner (initial value + disp)
   // rotational DOFs need different handling, depending on whether FAD is used or not (see comment below)
-  ExtractCenterlineDofValues<nnodecl,vpernode,double>(disp,disp_totlag_centerline);
-  AddRefValuesDispCenterline<nnodecl,vpernode,double>(disp_totlag_centerline);
+  ExtractCenterlineDofValues<nnodecl,vpernode,T>(disp,disp_totlag_centerline);
+  AddRefValuesDispCenterline<nnodecl,vpernode,T>(disp_totlag_centerline);
 
   // get current displacement values of rotational DOFs (i.e. relative rotation with respect to reference config)
-  for(int dim=0; dim<3; dim++)
-  {
-    for (unsigned int node=0; node<nnodecl; ++node)
-      dispthetanewnode_[node](dim) = disp[dofpercombinode*node+3+dim];
+  std::vector<LINALG::TMatrix<double,3,1> > disptheta;
+  disptheta.resize(nnodetriad);
+  ExtractRotVecDofValues<nnodetriad,nnodecl,vpernode,double>(disp,disptheta);
 
-    for (unsigned int node=nnodecl; node<nnodetriad; ++node)
-      dispthetanewnode_[node](dim) = disp[dofperclnode*nnodecl+dofpertriadnode*node+dim];
-  }
-
+  for (unsigned int node=0; node<nnodetriad; ++node)
+    for (unsigned int dim=0; dim<3; ++dim)
+      dispthetanewnode_[node](dim)=disptheta[node](dim);
 
   // rotational displacement at a certain node in quaternion form
   LINALG::Matrix<4,1> deltaQ;
@@ -1826,82 +1813,20 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
   LINALG::Matrix<4,1> Q0;
 
   // Compute current nodal triads
+  GetNodalTriadsFromDispTheta<nnodetriad,T>(disptheta,Q_i);
+
   for (unsigned int node=0; node<nnodetriad; ++node)
   {
-    // get initial nodal rotation vectors and transform to quaternions
-    LARGEROTATIONS::angletoquaternion(theta0node_[node],Q0);
-
-    // rotate initial triads by relative rotation vector from displacement vector (via quaternion product)
-    LARGEROTATIONS::angletoquaternion(dispthetanewnode_[node],deltaQ);
-    LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnewnode_[node]);
-
-    // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
-    Qnewnode_[node].Scale(1/Qnewnode_[node].Norm2());
-
     // copy quaternions of nodal triads to TMatrix FADordouble
     for (unsigned int i=0; i<4; ++i)
-      Q_i[node](i) = Qnewnode_[node](i);
-  }
-
-}
-
-/*------------------------------------------------------------------------------------------------------------*
- | update (total) displacement vector and set nodal triads (as quaternions)                        grill 03/16|
- *------------------------------------------------------------------------------------------------------------*/
-template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
-                                                           LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                                           std::vector<LINALG::TMatrix<FADordouble,4,1> >&    Q_i)
-{
-  // nnodetriad: number of nodes used for interpolation of triad field
-  // nnodecl: number of nodes used for interpolation of centerline
-  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
-  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
-
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
-
-  // get current values of translational nodal DOFs in total Lagrangean manner (initial value + disp)
-  // rotational DOFs need different handling, depending on whether FAD is used or not (see comment below)
-  ExtractCenterlineDofValues<nnodecl,vpernode,FADordouble>(disp,disp_totlag_centerline);
-  AddRefValuesDispCenterline<nnodecl,vpernode,FADordouble>(disp_totlag_centerline);
-
-  // get current displacement values of rotational DOFs (i.e. relative rotation with respect to reference config)
-  for(int dim=0; dim<3; dim++)
-  {
-    for (unsigned int node=0; node<nnodecl; ++node)
-      dispthetanewnode_[node](dim) = disp[dofpercombinode*node+3+dim];
-
-    for (unsigned int node=nnodecl; node<nnodetriad; ++node)
-      dispthetanewnode_[node](dim) = disp[dofperclnode*nnodecl+dofpertriadnode*node+dim];
-  }
-
-
-  // rotational displacement at a certain node in quaternion form
-  LINALG::Matrix<4,1> deltaQ;
-  // initial nodal rotation vector in quaternion form
-  LINALG::Matrix<4,1> Q0;
-
-  // Compute current nodal triads
-  for (unsigned int node=0; node<nnodetriad; ++node)
-  {
-    // get initial nodal rotation vectors and transform to quaternions
-    LARGEROTATIONS::angletoquaternion(theta0node_[node],Q0);
-
-    // rotate initial triads by relative rotation vector from displacement vector (via quaternion product)
-    LARGEROTATIONS::angletoquaternion(dispthetanewnode_[node],deltaQ);
-    LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnewnode_[node]);
-
-    // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
-    Qnewnode_[node].Scale(1/Qnewnode_[node].Norm2());
-
-    // copy quaternions of nodal triads to TMatrix FADordouble
-    for (unsigned int i=0; i<4; ++i)
-      Q_i[node](i) = Qnewnode_[node](i);
+       Qnewnode_[node](i) = Q_i[node](i);
   }
 
 #ifdef BEAM3RAUTOMATICDIFF
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
   // set differentiation variables for FAD: translational DOFs
   for (int dim=0; dim<3; ++dim)
   {
@@ -2037,7 +1962,7 @@ int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed() const
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&          params,  //!<parameter list
-                                              const std::vector<LINALG::Matrix<4,1> >& Qnode,
+                                              const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
                                               Epetra_SerialDenseMatrix*                stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector*                force)  //!< element internal force vector
 {
@@ -2249,8 +2174,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                  const LINALG::Matrix<ndim*vpernode*nnodecl,1>& vel_centerline,
-                                                  const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+                                                  const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
+                                                  const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                                                   Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
                                                   Epetra_SerialDenseVector*        force)//!< element internal force vector
 {
@@ -2383,7 +2308,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl,unsigned int vpernode, unsigned int ndim, unsigned int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
-                                              const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+                                              const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                                               Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector*        force)//!< element internal force vector
 {

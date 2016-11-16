@@ -274,9 +274,26 @@ public:
    *
    *  \author grill
    *  \date 07/16 */
-  void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
-                    const double&              xi,
-                    const std::vector<double>& psi_totlag) const;
+  virtual void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
+                            const double&              xi,
+                            const std::vector<double>& psi_totlag) const;
+
+  /** \brief
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      LINALG::TMatrix<double,6,12>& Ivar,
+      const double&                 xi) const;
+
+  /** \brief
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      LINALG::TMatrix<double,6,12>& Iinc,
+      const double&                 xi,
+      const std::vector<double>&    disp) const;
 
   /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
    *
@@ -374,6 +391,11 @@ public:
   */
   void SetCrossSecShear(const double& crosssecshear);
 
+  /*!
+  \brief Set bool indicating Hermite centerline interpolation
+  */
+  void SetCenterlineHermite(const bool yesno);
+
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   virtual int HowManyRandomNumbersINeed() const;
 
@@ -465,6 +487,16 @@ public:
   template<unsigned int nnode>
   void EvaluatePTC(Teuchos::ParameterList&   params,
                    Epetra_SerialDenseMatrix& elemat1);
+
+  //! calculation of nonlinear stiffness and mass matrix
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+  void CalcInternalAndInertiaForcesAndStiff(
+      LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+      std::vector<LINALG::TMatrix<T,4,1> >&    Qnode,
+      Epetra_SerialDenseMatrix*                stiffmatrix,
+      Epetra_SerialDenseMatrix*                massmatrix,
+      Epetra_SerialDenseVector*                force,
+      Epetra_SerialDenseVector*                inertia_force);
 
   //@}
 
@@ -735,23 +767,10 @@ private:
   /*!
    \brief Get triad (three unit base vectors) at given parameter coordinate xi
   */
-  template<unsigned int nnodetriad>
+  template<unsigned int nnodetriad, typename T>
   LINALG::Matrix<3,3> GetTriadAtXi(const double& xi,
-                                   const std::vector<LINALG::Matrix<3,1> >& psi_totlag) const
+                                   const std::vector<LINALG::TMatrix<T,4,1> >& Qnode) const
   {
-    // nodal triads in form of quaternions
-    std::vector<LINALG::Matrix<4,1> > Qnode(nnodetriad);
-    for (unsigned int node=0; node<nnodetriad; node++)
-    {
-      // ToDo
-      /* make function call independent from class variable Qnewnode_
-         by using absolute coordinate vector psi_totlag (nodal rotation pseudo-vectors)
-         passed into function from outside */
-
-//      LARGEROTATIONS::angletoquaternion(psi_totlag[node],Qnode[node]);
-      Qnode[node]=Qnewnode_[node];
-    }
-
     // compute reference triad Lambda_r (in form of a quaternion) according to (3.9), Jelenic 1999
     LINALG::Matrix<4,1> Q_r(true);
     LINALG::Matrix<3,1> dummy(true);  // dummy 3x1 vector, quantity not required here
@@ -760,9 +779,7 @@ private:
     // compute nodal rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
     std::vector<LINALG::Matrix<3,1> > Psi_li(nnodetriad);
     for (unsigned int node=0; node<nnodetriad; node++)
-    {
       CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
-    }
 
     // values of Lagrange shape function at xi used for interpolation
     LINALG::Matrix<1,nnodetriad> I_i;
@@ -778,7 +795,6 @@ private:
 
     return triad;
   }
-
 
   //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic 1999
   template<typename T>
@@ -984,7 +1000,7 @@ private:
                      const LINALG::TMatrix<double,3,1>&               phiIJ,
                      const LINALG::TMatrix<double,3,3>&               Lambdar,
                      const std::vector<LINALG::TMatrix<double,3,1> >& Psili,
-                     const LINALG::Matrix<1,nnode>&                   funct)
+                     const LINALG::Matrix<1,nnode>&                   funct) const
   {
     /* note: Itilde is always be of type double because it is only needed for computation of analytical stiffness/mass matrix
      *       thus no need to template for FADordouble here*/
@@ -1054,7 +1070,7 @@ private:
                      const LINALG::TMatrix<FAD,3,1>&               phiIJ,
                      const LINALG::TMatrix<FAD,3,3>&               Lambdar,
                      const std::vector<LINALG::TMatrix<FAD,3,1> >& Psili,
-                     const LINALG::Matrix<1,nnode>&                funct)
+                     const LINALG::Matrix<1,nnode>&                funct) const
   {
     /* note: Itilde should always be of type double because it is only needed for computation of analytical stiffness/mass matrix
      * therefore no templated function used here; cast pre-calculated FAD values to double and call 'regular' function afterwards*/
@@ -1082,7 +1098,7 @@ private:
                           const std::vector<LINALG::TMatrix<T,3,1> >& Psili,
                           const LINALG::Matrix<1,nnode>&              funct,
                           const LINALG::Matrix<1,nnode>&              deriv,
-                          const double&                               jacobi)
+                          const double&                               jacobi) const
   {
     // auxiliary matrices for storing intermediate results
     LINALG::TMatrix<T,3,3> auxmatrix;
@@ -1163,7 +1179,7 @@ private:
   }
 
   //! compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-  LINALG::TMatrix<double,3,3> vI(const LINALG::TMatrix<double,3,1>& phiIJ)
+  LINALG::TMatrix<double,3,3> vI(const LINALG::TMatrix<double,3,1>& phiIJ) const
   {
     // matrix v_I
     LINALG::TMatrix<double,3,3> result;
@@ -1183,7 +1199,7 @@ private:
   }
 
   //! compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-  LINALG::TMatrix<double,3,3> vJ(const LINALG::TMatrix<double,3,1>& phiIJ)
+  LINALG::TMatrix<double,3,3> vJ(const LINALG::TMatrix<double,3,1>& phiIJ) const
   {
     // matrix v_J
     LINALG::TMatrix<double,3,3> result;
@@ -1220,16 +1236,10 @@ private:
                                   Epetra_SerialDenseVector* force);
 
   //! update (total) displacement vector and set nodal triads (as quaternions)
-  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-  void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
-                                      LINALG::Matrix<3*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                      std::vector<LINALG::Matrix<4,1> >&    Q_i);
-
-  //! update (total) displacement vector and set nodal triads (as quaternions)
-  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-  void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                         disp,
-                                      LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                      std::vector<LINALG::TMatrix<FADordouble,4,1> >&    Q_i);
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+  void UpdateDispTotLagAndNodalTriads(const std::vector<double>&                      disp,
+                                      LINALG::TMatrix<T,3*vpernode*nnodecl,1>&        disp_totlag_centerline,
+                                      std::vector<LINALG::TMatrix<T,4,1> >& Q_i);
 
   //! extract those Dofs relevant for centerline-interpolation from total state vector
   template<unsigned int nnodecl, unsigned int vpernode, typename T>
@@ -1240,9 +1250,23 @@ private:
   void ExtractCenterlineDofValues(const std::vector<double>& dofvec,
                                   std::vector<double>&       dofvec_centerline) const;
 
+  //! extract those Dofs relevant for triad interpolation from total state vector
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+  void ExtractRotVecDofValues(const std::vector<double>&            dofvec,
+                              std::vector<LINALG::TMatrix<T,3,1> >& dofvec_rotvec) const;
+
+  //! extract those Dofs relevant for triad interpolation from total state vector
+  void ExtractRotVecDofValues(const std::vector<double>&                 dofvec,
+                              std::vector<LINALG::TMatrix<double,3,1> >& dofvec_rotvec) const;
+
   //! add reference positions and tangents to (centerline) displacement state vector
   template<unsigned int nnodecl, unsigned int vpernode, typename T>
   void AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
+
+  //! compute nodal triads from current nodal rotation vectors ("displacement", i.e. relative rotations)
+  template<unsigned int nnodetriad, typename T>
+  void GetNodalTriadsFromDispTheta(const std::vector<LINALG::TMatrix<T,3,1> >& disptheta,
+                                   std::vector<LINALG::TMatrix<T,4,1> >&       Qnode) const;
 
   //! lump mass matrix
   template<unsigned int nnode>
@@ -1263,22 +1287,22 @@ private:
   //! computes rotational damping forces and stiffness
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
   void EvaluateRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                         const std::vector<LINALG::Matrix<4,1> >& Qnode,
+                         const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
                          Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
                          Epetra_SerialDenseVector*       force);      //!< element internal force vector
 
   //! computes translational damping forces and stiffness
   template<unsigned int nnodecl, unsigned int vpernode, unsigned int ndim> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
   void EvaluateTranslationalDamping(Teuchos::ParameterList&  params,  //!<parameter list
-                           const LINALG::Matrix<ndim*vpernode*nnodecl,1>& vel_centerline,
-                           const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+                           const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
+                           const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                            Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
                            Epetra_SerialDenseVector*  force);//!< element internal force vector
 
   //! computes stochastic translational forces and resulting stiffness
   template<unsigned int nnodecl,unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
   void EvaluateStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
-                          const LINALG::Matrix<ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+                          const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
                        Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseVector*  force);//!< element internal force vector
 

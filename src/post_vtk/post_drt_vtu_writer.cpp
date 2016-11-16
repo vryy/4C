@@ -785,29 +785,24 @@ VtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
 
   const Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
   std::vector<int> nodedofs;
-  std::vector<double> centerlinedofvals;
+  std::vector<double> elementdofvals;
 
-  for (int n=0; n<beamele->NumCenterlineNodes(); ++n)
+  for (int n=0; n<beamele->NumNode(); ++n)
   {
     nodedofs.clear();
 
     // local storage position of desired dof gid
     dis->Dof(beamele->Nodes()[n], nodedofs);
 
-    std::vector<int> centerlinedofindices;
-
-    beamele->PositionDofIndices(centerlinedofindices,*(beamele->Nodes()[n]));
-    beamele->TangentDofIndices(centerlinedofindices,*(beamele->Nodes()[n]));
-
-    for (std::vector<int>::const_iterator it=centerlinedofindices.begin(); it!=centerlinedofindices.end(); ++it)
+    for (std::vector<int>::const_iterator it=nodedofs.begin(); it!=nodedofs.end(); ++it)
     {
-      const int lid = ghostedData->Map().LID(nodedofs[*it]);
+      const int lid = ghostedData->Map().LID(*it);
       if (lid > -1)
-        centerlinedofvals.push_back((*ghostedData)[lid]);
+        elementdofvals.push_back((*ghostedData)[lid]);
       else
       {
         if(fillzeros)
-          centerlinedofvals.push_back(0.);
+          elementdofvals.push_back(0.);
         else
           dserror("received illegal dof local id: %d", lid);
       }
@@ -818,21 +813,21 @@ VtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
    * which is supported as vtkCellType number 4 (see also list vtk_element_types above)
    * loop over the chosen visualization points (equidistant distribution in the element
    * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
-  LINALG::Matrix<3,1> disp;
+  LINALG::Matrix<3,1> pos, refpos;
   double xi=0.0;
 
   for (unsigned int i=0; i<BEAMSVTUVISUALSUBSEGMENTS+1; ++i)
   {
-    disp.Clear();
+    pos.Clear();
+    refpos.Clear();
     xi= -1.0 + i*2.0/BEAMSVTUVISUALSUBSEGMENTS;
 
     // let the beam element do the interpolation
-    // note: we "misuse" the method for interpolation of the total position which is thought to get absolute state values (disp_totlag)
-    //       here, we use it to interpolate the translational displacement of a point, i.e. we hand in the displacements instead of the total values
-    beamele->GetPosAtXi(disp,xi,centerlinedofvals);
+    beamele->GetRefPosAtXi(refpos,xi);
+    beamele->GetPosAtXi(pos,xi,elementdofvals);
 
     for (int d=0; d<3; ++d)
-      solution.push_back(disp(d));
+      solution.push_back(pos(d) - refpos(d));
   }
 }
 

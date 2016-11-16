@@ -443,9 +443,9 @@ P_(0.0),
 Ekintorsion_(0.0),
 Ekinbending_(0.0),
 Ekintrans_(0.0),
-inertscaletrans_(0.0),
-inertscalerot1_(0.0),
-inertscalerot2_(0.0)
+inertscaletrans_(1.0),
+inertscalerot1_(1.0),
+inertscalerot2_(1.0)
 {
   return;
 }
@@ -1481,17 +1481,17 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
   const unsigned int nnodecl=this->NumCenterlineNodes();
   const unsigned int nnodetriad=this->NumNode();
 
-  std::vector<double> disp_totlag_centerline(3*numnodalvalues*nnodecl,0.0);
+  std::vector<double> disp_centerline(3*numnodalvalues*nnodecl,0.0);
 
   /* we assume that either the full disp vector of this element or
    * disp_centerline (without rotational DoFs) is passed in this function call */
   if (disp.size() == 3*numnodalvalues*nnodecl)
-    disp_totlag_centerline = disp;
+    disp_centerline = disp;
   else if (disp.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
-    ExtractCenterlineDofValues(disp,disp_totlag_centerline);
+    ExtractCenterlineDofValues(disp,disp_centerline);
   else
-    dserror("size mismatch: expected either %d values for disp_totlag or "
-        "%d values for disp_totlag_centerline and got %d",
+    dserror("size mismatch: expected either %d values for disp_centerline or "
+        "%d values for full disp state vector of this element and got %d",
         3*numnodalvalues*nnodecl,3*numnodalvalues*nnodecl+3*nnodetriad,disp.size());
 
   switch (nnodecl)
@@ -1500,13 +1500,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     {
       if (this->HermiteCenterlineInterpolation())
       {
-        LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+        LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
         AddRefValuesDispCenterline<2,2,double>(disp_totlag_centerline_fixedsize);
         pos = this->GetPosAtXi<2,2>(xi,disp_totlag_centerline_fixedsize);
       }
       else
       {
-        LINALG::Matrix<6,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+        LINALG::Matrix<6,1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
         AddRefValuesDispCenterline<2,1,double>(disp_totlag_centerline_fixedsize);
         pos = this->GetPosAtXi<2,1>(xi,disp_totlag_centerline_fixedsize);
       }
@@ -1514,21 +1514,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     }
     case 3:
     {
-      LINALG::Matrix<9,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      LINALG::Matrix<9,1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
       AddRefValuesDispCenterline<3,1,double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<3,1>(xi,disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
-      LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      LINALG::Matrix<12,1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
       AddRefValuesDispCenterline<4,1,double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<4,1>(xi,disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
-      LINALG::Matrix<15,1> disp_totlag_centerline_fixedsize(&disp_totlag_centerline[0]);
+      LINALG::Matrix<15,1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
       AddRefValuesDispCenterline<5,1,double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<5,1>(xi,disp_totlag_centerline_fixedsize);
       break;
@@ -1578,47 +1578,185 @@ double DRT::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
 
 void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,
                                         const double&              xi,
-                                        const std::vector<double>& psi_totlag) const
+                                        const std::vector<double>& disp) const
 {
-  unsigned int nnodetriad=this->NumNode();
+  const unsigned int numnodalvalues= this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl=this->NumCenterlineNodes();
+  const unsigned int nnodetriad=this->NumNode();
 
-  // we assume that psi_totlag (contains only rotation vector DoFs, no centerline DoFs) is passed in this function call
-  if (psi_totlag.size() != 3*nnodetriad)
-    dserror("size mismatch: expected %d values for disp_totlag and got %d",3*nnodetriad,psi_totlag.size());
+  std::vector<LINALG::TMatrix<double,3,1> > nodal_rotvecs(nnodetriad);
 
-  std::vector<LINALG::Matrix<3,1> > psi_totlag_fixedsize(nnodetriad);
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    for (unsigned int i=0; i<3; ++i)
-      psi_totlag_fixedsize[node](i) = psi_totlag[node*3+i];
+  /* we assume that either the full disp vector of this element or only
+   * values for nodal rotation vectors are passed in this function call */
+  if (disp.size() == 3*nnodetriad)
+  {
+    for (unsigned int node=0; node<nnodetriad; ++node)
+      for (unsigned int i=0; i<3; ++i)
+        nodal_rotvecs[node](i) = disp[node*3+i];
+  }
+  else if (disp.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
+  {
+    ExtractRotVecDofValues(disp,nodal_rotvecs);
+  }
+  else
+  {
+    dserror("size mismatch: expected either %d values for psi (rotation vecs) or "
+        "%d values for for full disp state vector of this element and got %d",
+        3*nnodetriad,3*numnodalvalues*nnodecl+3*nnodetriad,disp.size());
+  }
+
+  // nodal triads
+  std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
 
   switch (nnodetriad)
   {
     case 2:
     {
-      triad = this->GetTriadAtXi<2>(xi,psi_totlag_fixedsize);
+      GetNodalTriadsFromDispTheta<2,double>(nodal_rotvecs,Qnode);
+      triad = this->GetTriadAtXi<2>(xi,Qnode);
       break;
     }
     case 3:
     {
-      triad = this->GetTriadAtXi<3>(xi,psi_totlag_fixedsize);
+      GetNodalTriadsFromDispTheta<3,double>(nodal_rotvecs,Qnode);
+      triad = this->GetTriadAtXi<3>(xi,Qnode);
       break;
     }
     case 4:
     {
-      triad = this->GetTriadAtXi<4>(xi,psi_totlag_fixedsize);
+      GetNodalTriadsFromDispTheta<4,double>(nodal_rotvecs,Qnode);
+      triad = this->GetTriadAtXi<4>(xi,Qnode);
       break;
     }
     case 5:
     {
-      triad = this->GetTriadAtXi<5>(xi,psi_totlag_fixedsize);
+      GetNodalTriadsFromDispTheta<5,double>(nodal_rotvecs,Qnode);
+      triad = this->GetTriadAtXi<5>(xi,Qnode);
       break;
     }
     default:
       dserror("%d is no valid number of nodes for beam3r triad interpolation",nnodetriad);
   }
 
-  return;
 }
+
+void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
+    LINALG::TMatrix<double,6,12>& Ivar,
+    const double&                 xi) const
+{
+  const unsigned int nnodecl=2;
+  //const unsigned int nnodetriad=2;
+  const unsigned int vpernode=1;
+
+  LINALG::Matrix<1,2> H_i;
+
+  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
+
+  const unsigned int assembly[6][12] = {{1,0,0,0,0,0,2,0,0,0,0,0},
+                                        {0,1,0,0,0,0,0,2,0,0,0,0},
+                                        {0,0,1,0,0,0,0,0,2,0,0,0},
+                                        {0,0,0,1,0,0,0,0,0,2,0,0},
+                                        {0,0,0,0,1,0,0,0,0,0,2,0},
+                                        {0,0,0,0,0,1,0,0,0,0,0,2}};
+
+  for (unsigned int row=0; row<6; ++row)
+    for (unsigned int col=0; col<12; ++col)
+    {
+      if (assembly[row][col]==0)
+        Ivar(row,col) = 0.0;
+      else
+        Ivar(row,col) = H_i(assembly[row][col]-1);
+    }
+}
+
+void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
+    LINALG::TMatrix<double,6,12>& Iinc,
+    const double&                 xi,
+    const std::vector<double>&    disp) const
+{
+  const unsigned int nnodecl=2;
+  const unsigned int nnodetriad=2;
+  const unsigned int vpernode=1;
+
+  LINALG::Matrix<1,2> H_i;
+
+  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
+
+  std::vector<LINALG::TMatrix<double,3,1> > nodal_rotvecs(nnodetriad);
+
+  /* we assume that either the full disp vector of this element or only
+   * values for nodal rotation vectors are passed in this function call */
+  if (disp.size() == 3*nnodetriad)
+  {
+    for (unsigned int node=0; node<nnodetriad; ++node)
+      for (unsigned int i=0; i<3; ++i)
+        nodal_rotvecs[node](i) = disp[node*3+i];
+  }
+  else if (disp.size() == 3*vpernode*nnodecl+3*nnodetriad)
+  {
+    ExtractRotVecDofValues(disp,nodal_rotvecs);
+  }
+  else
+  {
+    dserror("size mismatch: expected either %d values for psi (rotation vecs) or "
+        "%d values for for full disp state vector of this element and got %d",
+        3*nnodetriad,3*vpernode*nnodecl+3*nnodetriad,disp.size());
+  }
+
+  // nodal triads
+  std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
+
+  GetNodalTriadsFromDispTheta<2,double>(nodal_rotvecs,Qnode);
+
+
+
+  // reference triad Lambda_r and corresponding quaternion Q_r
+  LINALG::TMatrix<double,3,3> Lambda_r(true);
+  LINALG::TMatrix<double,4,1> Q_r(true);
+
+  // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
+  LINALG::TMatrix<double,3,1> Phi_IJ(true);
+
+  // compute reference triad Lambda_r according to (3.9), Jelenic 1999
+  CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
+  LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
+
+  // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,1> > Psi_li(nnodetriad);
+
+  for (unsigned int node=0; node<nnodetriad; ++node)
+    CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
+
+  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+  LINALG::TMatrix<double,3,1> Psi_l;
+
+  Calc_Psi_l<nnodetriad,double>(Psi_li, H_i, Psi_l);
+
+
+
+
+
+  // vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
+  // function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+
+  computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,H_i);
+
+
+  double vals[6][12] = {{H_i(0),0,0,0,0,0,H_i(1),0,0,0,0,0},
+                        {0,H_i(0),0,0,0,0,0,H_i(1),0,0,0,0},
+                        {0,0,H_i(0),0,0,0,0,0,H_i(1),0,0,0},
+                        {0,0,0,Itilde[0](0,0),Itilde[0](0,1),Itilde[0](0,2),0,0,0,Itilde[1](0,0),Itilde[1](0,1),Itilde[1](0,2)},
+                        {0,0,0,Itilde[0](1,0),Itilde[0](1,1),Itilde[0](1,2),0,0,0,Itilde[1](1,0),Itilde[1](1,1),Itilde[1](1,2)},
+                        {0,0,0,Itilde[0](2,0),Itilde[0](2,1),Itilde[0](2,2),0,0,0,Itilde[1](2,0),Itilde[1](2,1),Itilde[1](2,2)}};
+
+
+  for (unsigned int i=0; i<6; ++i)
+    for (unsigned int j=0; j<12; ++j)
+      Iinc(i,j) = vals[i][j];
+
+}
+
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
@@ -1656,14 +1794,13 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>
 void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>& dofvec,
                                                        std::vector<double>&       dofvec_centerline) const
 {
-  // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
-
   switch (this->NumCenterlineNodes())
   {
     case 2:
     {
       if (this->HermiteCenterlineInterpolation())
       {
+        // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
         LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
         this->ExtractCenterlineDofValues<2,2,double>(dofvec,dofvec_centerline_fixedsize);
       }
@@ -1700,6 +1837,99 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>&            dofvec,
+                                                   std::vector<LINALG::TMatrix<T,3,1> >& dofvec_rotvec) const
+{
+  // nnodetriad: number of nodes used for triad interpolation
+  // nnodecl: number of nodes used for interpolation of centerline
+  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  if (dofvec.size() != dofperclnode*nnodecl + dofpertriadnode*nnodetriad)
+    dserror("size mismatch: expected %d values for element state vector and got %d",
+        dofperclnode*nnodecl + dofpertriadnode*nnodetriad, dofvec.size());
+
+  // get current values for DOFs relevant for triad interpolation
+  for (unsigned int dim=0; dim<3; ++dim)
+  {
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_rotvec[node](dim) = dofvec[dofpercombinode*node+3+dim];
+    }
+    for (unsigned int node=nnodecl; node<nnodetriad; ++node)
+    {
+      dofvec_rotvec[node](dim) = dofvec[dofperclnode*nnodecl+dofpertriadnode*node+dim];
+    }
+  }
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& dofvec,
+                                                   std::vector<LINALG::TMatrix<double,3,1> >& dofvec_rotvec) const
+{
+  switch (this->NumNode())
+  {
+    case 2:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        this->ExtractRotVecDofValues<2,2,2,double>(dofvec,dofvec_rotvec);
+      }
+      else
+      {
+        this->ExtractRotVecDofValues<2,2,1,double>(dofvec,dofvec_rotvec);
+      }
+      break;
+    }
+    case 3:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        this->ExtractRotVecDofValues<3,2,2,double>(dofvec,dofvec_rotvec);
+      }
+      else
+      {
+        this->ExtractRotVecDofValues<3,3,1,double>(dofvec,dofvec_rotvec);
+      }
+      break;
+    }
+    case 4:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        this->ExtractRotVecDofValues<4,2,2,double>(dofvec,dofvec_rotvec);
+      }
+      else
+      {
+        this->ExtractRotVecDofValues<4,4,1,double>(dofvec,dofvec_rotvec);
+      }
+      break;
+    }
+    case 5:
+    {
+      if (this->HermiteCenterlineInterpolation())
+      {
+        this->ExtractRotVecDofValues<5,2,2,double>(dofvec,dofvec_rotvec);
+      }
+      else
+      {
+        this->ExtractRotVecDofValues<5,5,1,double>(dofvec,dofvec_rotvec);
+      }
+      break;
+    }
+    default:
+      dserror("no valid number for number of centerline nodes");
+  }
+
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
 {
@@ -1712,6 +1942,33 @@ void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpern
       if(vpernode==2)
         dofvec_centerline(3*vpernode*node+3+dim) += Trefnode_[node](dim);
     }
+
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, typename T>
+void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(const std::vector<LINALG::TMatrix<T,3,1> >& disptheta,
+                                                        std::vector<LINALG::TMatrix<T,4,1> >&       Qnode) const
+{
+  // initial nodal rotation vector in quaternion form
+  LINALG::Matrix<4,1> Q0;
+  // rotational displacement at a certain node in quaternion form
+  LINALG::Matrix<4,1> deltaQ;
+
+  // Compute nodal triads in quaternion form
+  for (unsigned int node=0; node<nnodetriad; ++node)
+  {
+    // get initial nodal rotation vectors and transform to quaternions
+    LARGEROTATIONS::angletoquaternion(theta0node_[node],Q0);
+
+    // rotate initial triads by relative rotation vector from displacement vector (via quaternion product)
+    LARGEROTATIONS::angletoquaternion(disptheta[node],deltaQ);
+    LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnode[node]);
+
+    // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+    Qnode[node].Scale(1.0/Qnode[node].Norm2());
+  }
 
 }
 
@@ -1743,8 +2000,32 @@ template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<5,1,double>(cons
                                                                            LINALG::TMatrix<double,15,1>&) const;
 template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<2,2,double>(const std::vector<double>&,
                                                                            LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<2,2,1,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<2,2,2,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<3,3,1,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<3,2,2,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<4,4,1,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<4,2,2,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5,5,1,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5,2,2,double>(const std::vector<double>&,
+                                                                          std::vector<LINALG::TMatrix<double,3,1> >&) const;
 template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2,1,double>(LINALG::TMatrix<double,6,1>&) const;
 template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<3,1,double>(LINALG::TMatrix<double,9,1>&) const;
 template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<4,1,double>(LINALG::TMatrix<double,12,1>&) const;
 template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<5,1,double>(LINALG::TMatrix<double,15,1>&) const;
 template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2,2,double>(LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<2,double>(const std::vector<LINALG::TMatrix<double,3,1> >&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<3,double>(const std::vector<LINALG::TMatrix<double,3,1> >&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<4,double>(const std::vector<LINALG::TMatrix<double,3,1> >&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<5,double>(const std::vector<LINALG::TMatrix<double,3,1> >&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
