@@ -20,25 +20,61 @@
  | compute the cubicBspline weight function           cattabiani 08/16  |
  *----------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_CubicBspline::Weight(
-  const double distRel,
-  const double radius
+  const double &distRel,
+  const double &radius
   )
 {
   // safety checks
   assert(distRel >= 0);
   assert(radius >= 0);
 
-  const double norm_const = 1.5 * M_1_PI;
-  const double norm_dist_rel = 2 * distRel / radius;
+  const double reszDis = 2 * distRel / radius;
 
   double weight = 0;
-  if (norm_dist_rel< 1)
-    weight = norm_const * (2.0 / 3.0 - std::pow(norm_dist_rel,2) + 0.5 * std::pow(norm_dist_rel,3));
-  else if (norm_dist_rel< 2)
-    weight = norm_const * (1.0 / 6.0) * std::pow(2 - norm_dist_rel,3);
+  if (reszDis < 1)
+  {
+    weight = (1.0 / 6.0) * std::pow(2-reszDis,3) - 4 * std::pow(1-reszDis,3);
+  }
+  else if (reszDis < 2)
+  {
+    weight = (1.0 / 6.0) * std::pow(2-reszDis,3);
+  }
+
+  // resizing to have an integral = 1
+  weight *= Resizer3D();
 
   return weight;
 }
+
+
+/*-----------------------------------------------------------------------------*
+ | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
+ *-----------------------------------------------------------------------------*/
+double PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(const double &distRel, const double &radius)
+{
+  // safety checks
+  assert(distRel >= 0);
+  assert(radius >= 0);
+
+  const double derivativeResizer = 2 / radius;
+  const double reszDis = derivativeResizer * distRel;
+
+  double derivativeWeight = 0;
+  if (reszDis < 1)
+  {
+    derivativeWeight = 0.5 * reszDis * (3 * reszDis - 4);
+  }
+  else if (reszDis < 2)
+  {
+    derivativeWeight = - 0.5 * (reszDis - 2) * (reszDis - 2);
+  }
+
+  // resizing to have an integral = 1
+  derivativeWeight *= Resizer3D() * derivativeResizer / distRel;
+
+  return derivativeWeight;
+}
+
 
 /*-----------------------------------------------------------------------------*
  | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
@@ -48,32 +84,24 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::GradientWeight(LINALG
   // safety checks
   assert(radius > 0);
 
-  LINALG::Matrix<3,1> WFGrad;
-  const double norm_const = 1.5 * M_1_PI;
-  const double rRelNorm = rRel.Norm2();
+  const double distRel = rRel.Norm2();
 
   // solving the particular case in which two particles perfectly overlap
-  if (rRelNorm <= 1e-16)
+  if (distRel <= 1e-15)
   {
     dserror("Warning! particles are overlapping! Right now, it is not allowed");
     std::cout << "Warning! particles are overlapping!\n";
-    return WFGrad;
+    return rRel;
   }
 
-
-  const double resizer_temp = 2 / radius;
-  const double norm_dist_rel = resizer_temp * rRelNorm;
-  const double resizer = resizer_temp / rRelNorm;
-
-  if (norm_dist_rel< 1)
-  {
-    WFGrad.Update(norm_const * resizer * (1.5 * std::pow(norm_dist_rel,2) - 2 * norm_dist_rel),rRel,0);
-  }
-  else if (norm_dist_rel< 2)
-  {
-    WFGrad.Update(- 0.5 * norm_const * resizer * std::pow(norm_dist_rel - 2,2),rRel,0);
-  }
+  LINALG::Matrix<3,1> WFGrad(rRel);
+  const double derivativeWeight = DerivativeWeight(distRel, radius);
+  WFGrad.Scale(derivativeWeight);
 
   return WFGrad;
 }
+
+
+
+
 

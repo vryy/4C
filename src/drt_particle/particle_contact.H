@@ -33,7 +33,7 @@ namespace PARTICLE
   class Algorithm;
   struct WallContactPoint;
   struct ParticleCollData;
-  struct HeatSource;
+  class HeatSource;
 }
 namespace BINSTRATEGY
 {

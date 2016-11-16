@@ -30,12 +30,19 @@ namespace PARTICLE
      //@{
 
      //!
-     static double Weight(const double distRel, const double radius);
+     static double Weight(const double &distRel, const double &radius);
+
+     //!
+     static double DerivativeWeight(const double &distRel, const double &radius);
 
      //!
      static LINALG::Matrix<3,1> GradientWeight(LINALG::Matrix<3,1> &WFGrad, const double &radius);
 
      //@}
+
+  private :
+
+     static double Resizer3D() {return 1.5 * M_1_PI; }
 
   };
 
