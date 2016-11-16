@@ -308,10 +308,7 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
 
   }
 
-  // FixMe
-//  TransformForceAndStiff(true, false);
-  force_crosslink_ = ia_force_crosslink_;
-
+  TransformForceAndStiff(true, false);
 
   // that is it
 return true;
@@ -529,16 +526,10 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
   if (not ia_stiff_crosslink_->Filled())
     ia_stiff_crosslink_->Complete();
 
-  // FixMe
-//  TransformForceAndStiff(false, true);
-  stiff_crosslink_ = ia_stiff_crosslink_;
+  TransformForceAndStiff(false, true);
 
   if (not stiff_crosslink_->Filled())
     stiff_crosslink_->Complete();
-
-  // *************************** DEBUG *******************************************
-//  std::cout << "\nCrosslinking::EvaluateStiff: ia_stiff_crosslink_=\n";
-//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
 
   return true;
 }
@@ -800,34 +791,10 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
   if (not ia_stiff_crosslink_->Filled())
     ia_stiff_crosslink_->Complete();
 
-  // *************************** DEBUG *******************************************
-//  std::cout << "\nCrosslinking::EvaluateForceStiff: ia_force_crosslink_=\n";
-//  ia_force_crosslink_->Print(std::cout);
-//  std::cout << "\nCrosslinking::EvaluateForceStiff: force_crosslink_=\n";
-//  force_crosslink_->Print(std::cout);
-//  std::cout << "\nia_stiff_crosslink_=\n";
-//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
-//  std::cout << "\nstiff_crosslink_=\n";
-//  stiff_crosslink_->EpetraMatrix()->Print(std::cout);
-
-  // FixMe
-//  TransformForceAndStiff();
-  stiff_crosslink_ = ia_stiff_crosslink_;
-  force_crosslink_ = ia_force_crosslink_;
+  TransformForceAndStiff();
 
   if (not stiff_crosslink_->Filled())
     stiff_crosslink_->Complete();
-
-  // *************************** DEBUG *******************************************
-//  std::cout << "\nCrosslinking::EvaluateForceStiff: ia_force_crosslink_=\n";
-//  ia_force_crosslink_->Print(std::cout);
-//  std::cout << "\nCrosslinking::EvaluateForceStiff: force_crosslink_=\n";
-//  force_crosslink_->Print(std::cout);
-//  std::cout << "\nia_stiff_crosslink_=\n";
-//  ia_stiff_crosslink_->EpetraMatrix()->Print(std::cout);
-//  std::cout << "\nstiff_crosslink_=\n";
-//  stiff_crosslink_->EpetraMatrix()->Print(std::cout);
-
 
   return true;
 }
@@ -1256,7 +1223,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // somehow touched by an axis aligned bounding box around the element
   BuildEleToBinMap();
 
-//#ifdef DEBUG
+#ifdef DEBUG
   // print distribution after extended ghosting
   if(myrank_ == 0 && (partition || repartition))
   {
@@ -1265,7 +1232,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
     IO::cout<<"+--------------------------------------------------+"<<IO::endl;
   }
   DRT::UTILS::PrintParallelDistribution(*ia_discret_);
-//#endif
+#endif
 
   // -------------------------------------------------------------------------
   // one layer ghosting of bins and particles, i.e. each proc ghosts the
@@ -3674,6 +3641,7 @@ void STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff(
   // transform stiffness matrix to problem discret layout/distribution
   if(stiff)
   {
+    stiff_crosslink_->UnComplete();
     // transform stiffness matrix to problem discret layout/distribution
     (*siatransform_)(*ia_stiff_crosslink_,
                      1.0,

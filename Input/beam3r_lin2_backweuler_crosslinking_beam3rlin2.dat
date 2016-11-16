@@ -31,7 +31,7 @@ RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
 DIVERCONT              stop            // Continue even if results are divergent
 TIMESTEP               0.0001                  // step size
-NUMSTEP                100             // total number of steps  //rumpf2.txt end
+NUMSTEP                30             // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
 TOLDISP                1.0E-12               // 5.5e-05 1.0E-06
@@ -175,7 +175,7 @@ MAT 2 MAT_Crosslinker              YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09
 ---------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  2.35960979291869627e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  2.14797517448771069e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -1.75602005705781695e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  1.50701733795405218e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  3.08512777021453799e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  1.23913858999164780e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
