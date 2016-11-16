@@ -65,9 +65,13 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
  |  copy-ctor                                          (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old)
-:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(old),
-    associatedeleid_(old.associatedeleid_)
+:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(old)
 {
+  for(int i=0;i<INPAR::BINSTRATEGY::enumsize;++i)
+  {
+    associatedeleid_[i] = old.associatedeleid_[i];
+    associatedele_[i] = old.associatedele_[i];
+  }
   return;
 }
 
