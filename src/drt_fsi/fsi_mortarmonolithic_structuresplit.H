@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file fsi_mortarmonolithic_structuresplit.H
 
@@ -6,9 +6,10 @@
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed structure interface displacements
-*/
 
-/*----------------------------------------------------------------------*/
+\level 1
+*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
 #define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
@@ -225,13 +226,6 @@ namespace FSI
 
     /// Write Lagrange multiplier
     virtual void OutputLambda();
-
-    /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams, ///< parameter list
-        NOX::Epetra::Vector& noxSoln, ///< solution vector
-        Teuchos::RCP<NOX::Utils> utils ///< printing utilities
-        );
 
     /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>

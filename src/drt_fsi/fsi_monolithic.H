@@ -1284,6 +1284,13 @@ namespace FSI
     void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
                             bool structuresplit);
 
+    /// setup solver for global block system
+    virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
+    CreateLinearSystem(Teuchos::ParameterList& nlParams, ///< parameter list
+        NOX::Epetra::Vector& noxSoln, ///< solution vector in NOX format
+        Teuchos::RCP<NOX::Utils> utils ///< NOX utils
+        );
+
     /*! Put three field vectors together to a monolithic vector
      *
      *  Slave vectors are only allowed to contain inner DOFs. Only master vector

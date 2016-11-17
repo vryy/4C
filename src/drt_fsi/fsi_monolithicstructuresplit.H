@@ -1,18 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file fsi_monolithicstructuresplit.H
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
-*/
+\level 1
 
-/*----------------------------------------------------------------------*/
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHICSTRUCTURESPLIT_H
 #define FSI_MONOLITHICSTRUCTURESPLIT_H
@@ -192,12 +189,6 @@ namespace FSI
 
     /// create the composed system matrix
     void CreateSystemMatrix();
-
-    /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                       NOX::Epetra::Vector& noxSoln,
-                       Teuchos::RCP<NOX::Utils> utils);
 
     /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>

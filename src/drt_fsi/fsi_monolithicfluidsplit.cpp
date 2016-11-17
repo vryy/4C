@@ -9,7 +9,6 @@ with condensed fluid interface velocities
 
 \level 1
 */
-
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -947,46 +946,6 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
 
   if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
     StructureField()->SystemMatrix()->Reset();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicFluidSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                                           NOX::Epetra::Vector& noxSoln,
-                                           Teuchos::RCP<NOX::Utils> utils)
-{
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
-
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
-  const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
-
-  switch (linearsolverstrategy_)
-  {
-  case INPAR::FSI::PreconditionedKrylov:
-  case INPAR::FSI::FSIAMG:
-
-  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
-                                                             lsParams,
-                                                             Teuchos::rcp(iJac,false),
-                                                             J,
-                                                             Teuchos::rcp(iPrec,false),
-                                                             M,
-                                                             noxSoln));
-    break;
-  default:
-    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
-    break;
-  }
-
-  return linSys;
 }
 
 /*----------------------------------------------------------------------*/

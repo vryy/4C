@@ -5,11 +5,9 @@
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed fluid interface velocities
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
@@ -216,12 +214,6 @@ namespace FSI
 
     /// create the composed system matrix
     void CreateSystemMatrix();
-
-    /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                       NOX::Epetra::Vector& noxSoln,
-                       Teuchos::RCP<NOX::Utils> utils);
 
     /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>

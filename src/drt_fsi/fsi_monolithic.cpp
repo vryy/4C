@@ -8,7 +8,6 @@
 
 \level 1
 */
-
 /*----------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -1350,4 +1349,49 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
+    Teuchos::RCP<NOX::Utils> utils)
+{
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  NOX::Epetra::Interface::Jacobian* iJac = this;
+  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  const Teuchos::RCP< Epetra_Operator > J = SystemMatrix();
+  const Teuchos::RCP< Epetra_Operator > M = SystemMatrix();
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+        DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
+
+  switch (linearsolverstrategy)
+  {
+  case INPAR::FSI::PreconditionedKrylov:
+  case INPAR::FSI::FSIAMG:
+  {
+
+    linSys = Teuchos::rcp(
+        new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+            Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M,
+            noxSoln));
+    break;
+  }
+  default:
+  {
+    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy);
+    break;
+  }
+  }
+
+  return linSys;
 }
