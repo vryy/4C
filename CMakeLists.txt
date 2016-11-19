@@ -1040,7 +1040,6 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
   src/drt_lib/drt_dirichletextractor.cpp
-  src/drt_lib/drt_dserror.cpp
   src/drt_lib/drt_elementdefinition.cpp
   src/drt_lib/drt_elementtype.cpp
   src/drt_lib/drt_exporter.cpp
@@ -1054,6 +1053,9 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
+)
+set(OBJS_DRT_ERROR
+  src/drt_lib/drt_dserror.cpp
 )
 set(OBJS_DRT_EHL
   src/drt_ehl/ehl_base.cpp
@@ -2656,6 +2658,9 @@ set(SUPPORT_LIBRARIES
   drt_lib_immersed
   )
 
+# separate library as it does not play well with testing
+add_library(drt_error ${OBJS_DRT_ERROR})
+
 # filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
@@ -2689,7 +2694,7 @@ add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 add_executable (pre_curve EXCLUDE_FROM_ALL ${OBJS_PRE_CURVE})
 add_executable (pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 
-target_link_libraries (${baciname}
+set(BACI_LIBRARIES
   ${MULTIFIELD_LIBRARIES}
   drt_adapter
   ${SINGLEFIELD_LIBRARIES}
@@ -2710,8 +2715,9 @@ target_link_libraries (${baciname}
   nlnsolver_nox
   libsolver
   linalg
-  drt_comm
-  ${LIBRARIES})
+  drt_comm)
+
+target_link_libraries (${baciname} ${BACI_LIBRARIES} ${LIBRARIES} drt_error)
 
 set(FILTER_LIBRARIES
   post_drt_common
@@ -2724,7 +2730,8 @@ set(FILTER_LIBRARIES
   linalg                  #linalg requires symbols from drt_lib which are in the SUPPORT_LIBRARIES
   filter_common
   drt_comm
-  ${LIBRARIES})
+  ${LIBRARIES}
+  drt_error)
 
 target_link_libraries (post_processor post_drt_ensight_lib post_drt_gid_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
@@ -2770,3 +2777,4 @@ target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuc
 add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 
 include (TestingFramework.cmake)
+include (UnittestingFramework.cmake)

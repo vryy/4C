@@ -90,3 +90,6 @@ tags
 
 # Modules
 modules/contact_module/src/
+
+# Python
+*.pyc

@@ -17,6 +17,8 @@
 #ifndef LIKELIHOOD_EVALUATION_H_
 #define LIKELIHOOD_EVALUATION_H_
 
+#include <random>
+
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 

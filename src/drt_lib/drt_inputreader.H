@@ -80,6 +80,8 @@ namespace INPUT
 class DatFileReader
 {
 public:
+  /// empty constructor, which avoids directly opening a file for reading
+  DatFileReader();
 
   /// construct a reader for a given file
   DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0);

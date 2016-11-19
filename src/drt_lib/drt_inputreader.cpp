@@ -83,6 +83,9 @@ namespace DRT
 namespace INPUT
 {
 
+DatFileReader::DatFileReader()
+  : filename_(""), comm_(Teuchos::null), numrows_(0), outflag_(0)
+{}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

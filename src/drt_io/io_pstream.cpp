@@ -33,7 +33,7 @@ IO::Pstream::Pstream()
   prefixgroupID_(false),
   groupID_(-2),
   buffer_(std::string()),
-  outputlevel_(undef),
+  requestedoutputlevel_(undef),
   level_(new Level(this))
 {}
 
@@ -46,6 +46,7 @@ IO::Pstream::~Pstream()
   if(level_)
     delete level_;
   level_ = NULL;
+  this->close();
 }
 
 /*----------------------------------------------------------------------*
@@ -66,7 +67,7 @@ void IO::Pstream::setup(
   if (is_initialized_) dserror("Thou shalt not call setup on the output twice!");
   is_initialized_ = true;
 
-  outputlevel_   = level;
+  requestedoutputlevel_ = level;
   comm_          = comm;
   targetpid_     = targetpid;
   writetoscreen_ = writetoscreen;
@@ -210,7 +211,7 @@ IO::Level& IO::flush(IO::Level& out)
  *----------------------------------------------------------------------*/
 void IO::Level::flush()
 {
-  if(level_ <= pstream_->OutputLevel())
+  if(level_ <= pstream_->RequestedOutputLevel())
     pstream_->flush();
 
   return;

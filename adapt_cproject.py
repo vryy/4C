@@ -18,70 +18,70 @@ import string
 
 def getCompilerPaths():
     """Get compiler paths using 'g++ -v -E -P -dD'"""
-    
+    comppath=set()
+
     # to avoid filename clashes
     save = "".join([random.choice(string.letters) for x in xrange(30)])
     complicated_name_cpp = "dummy_" + save + ".cpp"
     complicated_name_output = "dummy_" + save + ".txt"
-    
+
     # write path information into output file
-    f = open(complicated_name_cpp,"w")
-    f.write("\n")
-    f.close()
+    with open(complicated_name_cpp,"w") as f:
+      f.write("\n")
     os.system('g++ -v -E -P -dD '+complicated_name_cpp+' &> '+complicated_name_output)
     os.system('rm '+complicated_name_cpp)
 
     # parse output file and store compiler paths in set
-    f = open(complicated_name_output,"r")
-    paths_are_comming=False
-    comppath=set()
-    for l in f.readlines():
-        if l.find("#include <...> search starts here:") == 0:
-            paths_are_comming=True
-        else:
-            if l.find("End of search list") == 0:
-                paths_are_comming=False
-            if paths_are_comming:
-                comppath.add(l.strip())
-    f.close()
+    with open(complicated_name_output,"r") as f:
+      paths_are_comming=False
+      for l in f.readlines():
+          if l.find("#include <...> search starts here:") == 0:
+              paths_are_comming=True
+          else:
+              if l.find("End of search list") == 0:
+                  paths_are_comming=False
+              if paths_are_comming:
+                  comppath.add(l.strip())
+
     os.system('rm '+complicated_name_output)
     return comppath
 
 def getPaths(build_folder):
     """Get all include paths"""
-    
-    cachefile = str(build_folder) + "/CMakeCache.txt"
-    
-    f = open(cachefile,"r")
-    
-    # get paths from do-configure file
     pathlist = set()
-    for l in f.readlines():
-	
-        if (l.find("INCLUDE_INSTALL_DIR:FILEPATH=") > -1):
-            pathlist.add(l.split("=")[1][0:-1])
-        if (l.find("Trilinos_DIR:FILEPATH=") > -1):
-            pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
+
+    # get paths specified in the do-configure file from the cmake cache
+    cachefile = os.path.join(build_folder,"CMakeCache.txt")
+    with open(cachefile,"r") as f:
+      for l in f.readlines():
+          if (l.find("INCLUDE_INSTALL_DIR:FILEPATH=") > -1):
+              pathlist.add(l.split("=")[1][0:-1])
+          if (l.find("Trilinos_DIR:FILEPATH=") > -1):
+              pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
+
+    # add the cmake generated header directory
+    pathlist.add( os.path.join(build_folder,"src","headers") )
+
     # check whether a 64-bit machine is used
     version = subprocess.Popen(["uname","-r"], stdout=subprocess.PIPE).communicate()[0]
     if 'x86_64' in version:
     	pathlist.add("/usr/include/openmpi-x86_64")
     else:
     	pathlist.add("/usr/include/openmpi/1.2.4-gcc")
-    
+
     # add compiler paths
     pathlist.update(getCompilerPaths())
-    
+
     return pathlist
 
 def getDefineValue(build_folder):
     """Get all define flags that specify a value from the CMakeFiles folder"""
     definevalueset = set()
     symbolset = set()
-    
+
     with open(build_folder+"/CMakeFiles/drt_lib.dir/flags.make","r") as f:
       for l in f.readlines():
-	if l.startswith("CXX_DEFINES"):  
+	if l.startswith("CXX_DEFINES"):
 	  for w in l.split():
 	    if w.startswith("-D"):
 	      flag = w[2:]
@@ -89,28 +89,27 @@ def getDefineValue(build_folder):
 		defineflag,val = flag.split("=",1)
 		definevalueset.add((defineflag,val))
 	      else:
-		symbolset.add(flag)           
-    
+		symbolset.add(flag)
+
     definevaluelist = []
     symbollist = []
-    
+
     definevaluelist = [x for x in definevalueset]
     definevaluelist.sort()
-    
+
     symbollist = [x for x in symbolset]
     symbollist.sort()
 
     return (definevaluelist, symbollist)
-    
+
 def adapt(do_configure_file,build_folder,build_type):
     """update .cproject file if existing"""
 
     print build_folder
-    
+
     if os.path.isfile(".cproject"): # if file exists
-        f = open(".cproject","r")
-       
-        project = etree.fromstring(f.read())
+        with open(".cproject","r") as f:
+          project = etree.fromstring(f.read())
 
         pathset = getPaths(build_folder)
         pathlist = [x for x in pathset]
@@ -120,7 +119,7 @@ def adapt(do_configure_file,build_folder,build_type):
 
         # iterate over all entries named 'option'
         found_path = False
-        found_symbol = False 
+        found_symbol = False
         for option in project.iter("option"):
             superClass = option.get("superClass")
 
@@ -143,7 +142,7 @@ def adapt(do_configure_file,build_folder,build_type):
                     option.append(etree.Element("listOptionValue", builtIn="false", value="{}={}".format(entry[0],entry[1]) ))
                 #print(etree.tostring(option, pretty_print=True))
                 found_symbol = True
-                
+
         if not found_path:
         	print "Please add manually (Eclipse) any path to the project's include path section to create an initial entry in '.cproject'"
         if not found_symbol:

@@ -45,13 +45,14 @@ namespace IO
 
   /*====================================================================*/
   /*!
-   * \brief This object allows to write to std::cout in a very fancy way
+   * \brief This object allows to write to std::cout in a very fancy way.
    *        The output can be regulated by various parameters, in particular
    *        there are:
    *        o writing to screen
    *        o writing to files
    *        o modifying the output for use with nested parallelism
    *        o limit output to certain procs
+   *        o selecting an output level
    *
    * \author wichmann & hammerl \date 11/12
    */
@@ -155,9 +156,9 @@ namespace IO
     Level& operator()(const verbositylevel level);
 
     /// Return verbosity level
-    inline verbositylevel OutputLevel() const
+    inline verbositylevel RequestedOutputLevel() const
     {
-      return outputlevel_;
+      return requestedoutputlevel_;
     }
 
   private :
@@ -197,7 +198,7 @@ namespace IO
     /// format containing temporary buffer
     std::stringstream fmt_tmp_;
 
-    verbositylevel outputlevel_;
+    verbositylevel requestedoutputlevel_;
 
     // internal variable of Pstream
     Level* level_;
@@ -216,8 +217,8 @@ namespace IO
 
   /*====================================================================*/
   /*!
-   * \brief This object handles output if a level was specified
-   *        then, everythind is streamed to Pstream
+   * \brief This object handles output if a level was specified.
+   *        Everything is then streamed to Pstream.
    *
    * \author wichmann & hammerl \date 09/16
    */
@@ -241,7 +242,7 @@ namespace IO
     template <typename CharT>
     Level& stream(CharT s)  ///< text to be added
     {
-      if(level_ <= pstream_->OutputLevel())
+      if(level_ <= pstream_->RequestedOutputLevel())
         pstream_->stream(s);
       return *this;
     }
