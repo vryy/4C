@@ -914,7 +914,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltanWithoutWeights(
 //  paramlist.set("partitioning method", "hypergraph");
 //  paramlist.set("PARTITIONING METHOD", "HYPERGRAPH");
 //
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+//  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
 //  sublist.set("GRAPH_PACKAGE", "PHG");
 //  sublist.set("HYPERGRAPH_PACKAGE", "PHG");
 //  sublist.set("EDGE_WEIGHT_DIM", "1");      // One weight per edge
