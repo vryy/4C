@@ -21,6 +21,8 @@
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_fluid_xfluid/xfluidfluid.H" //Todo: remove me finally
+
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
@@ -104,7 +106,11 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase&
 
 
    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-   if (probtype == prb_fsi_xfem)// use assign for off diagonal blocks
+
+   //Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling matrixes(merged)
+   bool is_xfluidfluid = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_,false) != Teuchos::null;
+
+   if (probtype == prb_fsi_xfem && !is_xfluidfluid)// use assign for off diagonal blocks
    {
      // scale the off diagonal coupling blocks
      xfluid_->C_sx_Matrix(cond_name_)->Scale(scaling);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
@@ -113,7 +119,7 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase&
      systemmatrix.Assign(idx_[0],idx_[1],LINALG::View,*xfluid_->C_sx_Matrix(cond_name_));
      systemmatrix.Assign(idx_[1],idx_[0],LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
    }
-   else if (probtype == prb_fpsi_xfem)
+   else if (probtype == prb_fpsi_xfem || is_xfluidfluid)
    {
      LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1],idx_[0]);
      LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0],idx_[1]);
