@@ -302,7 +302,7 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
       deriv_sigma_nn[p->first]+=dsnndn(d)*p->second*w;
 
   if (abs(theta_)>1.e-12)
-    BuildNormalAdjointTest<dim>(moEle,1.,dsnndd,d2snndd2,d2snnDdDn,d2snnDdDpxi,boundary_gpcoord_lin,derivtravo_slave,contactN_deriv,adjoint_test,deriv_adjoint_test);
+    BuildNormalAdjointTest<dim>(moEle,w,dsnndd,d2snndd2,d2snnDdDn,d2snnDdDpxi,boundary_gpcoord_lin,derivtravo_slave,contactN_deriv,adjoint_test,deriv_adjoint_test);
 
   return;
 }
