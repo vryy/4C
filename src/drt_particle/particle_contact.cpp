@@ -17,7 +17,7 @@
 #include "particle_contact.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
-#include "heatSource.H"
+#include "particle_heatSource.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -552,7 +552,9 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
           havepbc, dt, f_contact, m_contact, specEnthalpyDotn);
 
       if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+      {
         CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, specEnthalpyDotn);
+      }
     }
   }
 

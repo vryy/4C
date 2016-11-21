@@ -22,13 +22,13 @@
 #include "particle_contact.H"
 #include "particle_utils.H"
 #include "particleMeshFree_interaction.H"
-#include "heatSource.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "particle_algorithm.H"
+#include "particle_heatSource.H"
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
@@ -151,7 +151,7 @@ void PARTICLE::TimIntCentrDiff::Init()
   }
 
   /////////////
-  // fast check of the thermodinamic heat exchange
+  // fast check of the thermodynamic heat exchange
   //    std::cout << "cheap temperature change to test\n";
   //    (*specEnthalpyn_)[0] += 1e3;
   //    (*(*specEnthalpy_)(0))[0] += 1e3;

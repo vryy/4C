@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file heatSource.H
+\file particle_heatSource.H
 
 \brief HeatSource object
 
@@ -9,8 +9,8 @@
 \maintainer Alessandro Cattabiani
 *----------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_PARTICLE_HEATSOURCE_H_
-#define SRC_DRT_PARTICLE_HEATSOURCE_H_
+#ifndef SRC_DRT_PARTICLE_PARTICLE_HEATSOURCE_H_
+#define SRC_DRT_PARTICLE_PARTICLE_HEATSOURCE_H_
 
 namespace PARTICLE
 {
@@ -53,4 +53,4 @@ namespace PARTICLE
   }; // HeatSource
 }
 
-#endif /* SRC_DRT_PARTICLE_HEATSOURCE_H_ */
+#endif /* SRC_DRT_PARTICLE_PARTICLE_HEATSOURCE_H_ */

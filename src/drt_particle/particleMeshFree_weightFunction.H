@@ -29,14 +29,11 @@ namespace PARTICLE
      //! @name Actions
      //@{
 
-     //!
+     //! compute the cubicBspline weight function
      static double Weight(const double &distRel, const double &radius);
 
-     //!
+     //! compute the weight function derivative of the cubicBspline weight function
      static double DerivativeWeight(const double &distRel, const double &radius);
-
-     //!
-     static LINALG::Matrix<3,1> GradientWeight(LINALG::Matrix<3,1> &WFGrad, const double &radius);
 
      //@}
 

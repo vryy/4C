@@ -40,7 +40,7 @@ namespace MAT
       virtual double SpeedOfSoundS() const { return std::pow(youngModulus_/initDensity_,0.5); }
 
       //! return the nominal speed of sound in case of small density variations and liquid phase
-      virtual double SpeedOfSoundL() const { return std::pow(compressibilityModulus_/initDensity_,0.5); }
+      virtual double SpeedOfSoundL() const { return std::pow(bulkModulus_/initDensity_,0.5); }
 
       //! return the nominal speed of sound in case of small density variations and transition phase
       virtual double SpeedOfSoundT(const double specEnthalpy) const
@@ -50,7 +50,7 @@ namespace MAT
           dserror("This particle is not in transition phase");
 
         // linear interpolation between the Young and compressibility moduli
-        const double alpha = ( compressibilityModulus_ - youngModulus_)/latentHeat_;
+        const double alpha = ( bulkModulus_ - youngModulus_)/latentHeat_;
         const double qq = youngModulus_ - SpecEnthalpyST() * alpha;
         const double xx = alpha * specEnthalpy + qq;
 
@@ -78,8 +78,10 @@ namespace MAT
       const double thermalExpansionL_;
       /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!
       const double thermalExpansionT_;
-      /// compressibility modulus for the liquid phase
-      const double compressibilityModulus_;
+      /// bulk modulus. 1/compressibility for the liquid phase
+      const double bulkModulus_;
+      /// dynamic (shear) viscosity for the liquid phase
+      const double dynamicViscosity_;
       /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
       const double thermalConductivity_;
 

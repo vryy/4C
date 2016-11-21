@@ -14,7 +14,6 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "particle_utils.H"
-#include "heatSource.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure.H"
 
@@ -46,6 +45,7 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 
+#include "particle_heatSource.H"
 #include "particle_node.H"
 
 /*----------------------------------------------------------------------*

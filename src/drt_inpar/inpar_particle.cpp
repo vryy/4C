@@ -118,8 +118,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
-   DoubleParameter("WALL_INTERACTION_PRESSDIV",-1.0,"pressure divergence coefficient for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
-   DoubleParameter("WALL_INTERACTION_FAKEMASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
+   DoubleParameter("WALL_FAKE_DENSITY",-1.0,"fake density for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
+   DoubleParameter("WALL_FAKE_MASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
+   DoubleParameter("WALL_FAKE_PRESSURE",-1.0,"fake pressure of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);

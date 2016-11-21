@@ -48,7 +48,7 @@ double PARTICLE::WeightFunction_CubicBspline::Weight(
 
 
 /*-----------------------------------------------------------------------------*
- | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
+ | compute the weight function derivative                    cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(const double &distRel, const double &radius)
 {
@@ -79,6 +79,7 @@ double PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(const double &dis
 /*-----------------------------------------------------------------------------*
  | compute the gradient of the cubicBspline weight function  cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
+/*
 LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::GradientWeight(LINALG::Matrix<3,1> &rRel, const double &radius)
 {
   // safety checks
@@ -100,7 +101,7 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_CubicBspline::GradientWeight(LINALG
 
   return WFGrad;
 }
-
+*/
 
 
 
