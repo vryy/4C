@@ -52,7 +52,8 @@ public:
         CoIntegrator(params,eletype,comm),
         fc_(params.get<Teuchos::RCP<Epetra_FEVector> >("GLOBAL_CONTACT_FORCE",Teuchos::null)),
         kc_(params.get<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",Teuchos::null)),
-        theta_(params.get<double>("NITSCHE_THETA")){}
+        theta_(params.get<double>("NITSCHE_THETA")),
+        nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params,"NITSCHE_WEIGHTING")){}
 
   /*!
    \brief Destructor
@@ -196,6 +197,7 @@ protected:
     Teuchos::RCP<Epetra_FEVector> fc_;
     Teuchos::RCP<LINALG::SparseMatrix> kc_;
     double theta_;
+    INPAR::CONTACT::NitscheWeighting nit_wgt_;
 };
 }
 #endif // CONTACT_INTEGRATOR_NITSCHE_H

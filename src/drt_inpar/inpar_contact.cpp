@@ -227,6 +227,19 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
   DoubleParameter("NITSCHE_THETA",0.0,"+1: symmetric, 0: non-symmetric, -1: skew-symmetric",&scontact);
 
+  setStringToIntegralParameter<int>("NITSCHE_WEIGHTING","harmonic",
+      "how to weight consistency terms in Nitsche contact formulation",
+      tuple<std::string>(
+        "slave",
+        "master",
+        "harmonic"),
+      tuple<int>(
+        NitWgt_slave,
+        NitWgt_master,
+        NitWgt_harmonic),
+      &scontact
+      );
+
 }
 
 

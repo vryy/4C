@@ -146,14 +146,24 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     MAT::ElastHyper* smat = dynamic_cast<MAT::ElastHyper*>(&*sele.ParentElement()->Material());
     if (smat==NULL || mmat==NULL)
       dserror("Nitsche contact only for elast hyper material");
-    double ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceH()
-        *mmat->GetYoung();
-    double wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceH()
-        *smat->GetYoung();
-    ws/=(ws+wm);
-    wm=1.-ws;
 
-//    ws=1.;wm=0.; // fixme
+    double ws=0.;
+    double wm=0.;
+    switch(nit_wgt_)
+    {
+    case INPAR::CONTACT::NitWgt_slave : ws=1.;wm=0.;break;
+    case INPAR::CONTACT::NitWgt_master: ws=0.;wm=1.;break;
+    case INPAR::CONTACT::NitWgt_harmonic:
+      ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceH()
+      *mmat->GetYoung();
+      wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceH()
+            *smat->GetYoung();
+      ws/=(ws+wm);
+      wm=1.-ws;
+      break;
+    default: dserror("unknown Nitsche weighting"); break;
+    }
+
     SoEleCauchy<dim>(sele,sxi,dsxi,wgt,gpn,dnmap_unit,false,ws,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
     SoEleCauchy<dim>(mele,mxi,dmxi,wgt,gpn,dnmap_unit,false,wm,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
 

@@ -110,6 +110,14 @@ namespace INPAR
       other                  ///< other problemtypes
     };
 
+    /// weighting in Nitsche contact
+    enum NitscheWeighting
+    {
+      NitWgt_slave,
+      NitWgt_master,
+      NitWgt_harmonic,
+    };
+
     /// set the contact parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
