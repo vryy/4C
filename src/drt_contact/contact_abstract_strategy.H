@@ -580,6 +580,18 @@ public:
       double alphaf,
       int maxdof);
 
+  /*! \brief Setup this strategy object (maps, vectors, etc.)
+
+   All global maps and vectors are initialized by collecting
+   the necessary information from all interfaces. In the case
+   of a parallel redistribution, this method is called again
+   to re-setup the above mentioned quantities. In this case
+   we set the input parameter redistributed=TRUE. Moreover,
+   when called for the first time (in the constructor) this
+   method is given the input parameter init=TRUE to account
+   for initialization of the active set. */
+  virtual void Setup(bool redistributed, bool init);
+
   //! Destructor
   virtual ~CoAbstractStrategy() {};
 
@@ -786,7 +798,7 @@ public:
       Teuchos::RCP<Epetra_Map>& ActiveDofMap);
 
   //! Return Lagrange multiplier vector (\f$t_{n+1}\f$)
-  Teuchos::RCP<Epetra_Vector> LagrMult() { return z_; }
+  virtual Teuchos::RCP<Epetra_Vector> LagrMult() { return z_; }
 
   /*! \brief Return Lagrange multiplier vector \f$(t_{n+1})\f$
    *
@@ -799,10 +811,10 @@ public:
    *
    *  \author hiermeier
    *  \date 05/16 */
-  Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
+  virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
 
   //! Return old Lagrange multiplier vector (\f$t_{n}\f$)
-  Teuchos::RCP<Epetra_Vector> LagrMultOld() { return Data().OldLmPtr(); }
+  virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() { return Data().OldLmPtr(); }
 
   /*! \brief Return old Lagrange multiplier vector \f$(t_n)\f$
    *
@@ -815,7 +827,7 @@ public:
    *
    *  \author hiermeier
    *  \date 05/16 */
-  Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const;
+  virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const;
 
   //! Return Lagrange multiplier vector from last Uzawa step
   Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return Data().LmUzawaPtr(); }
@@ -1041,7 +1053,7 @@ public:
    This is called at the end of each time or load step. It calculates
    the stress vector in normal direction and the stress vector in the
    tangential plane. */
-  void OutputStresses();
+  virtual void OutputStresses();
 
   /*! \brief Get dirichlet B.C. status and store into CoNodes
 
@@ -1049,7 +1061,7 @@ public:
    to set the D.B.C. status in each CNode.
 
    \param dbcmaps (in): MapExtractor carrying global dbc map */
-  void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
+  virtual void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
 
   virtual void SetParentState(
       const std::string& statename,
@@ -1062,7 +1074,7 @@ public:
    \param dis (in):  current displacements (-> old displacements)
 
    */
-  void Update(Teuchos::RCP<const Epetra_Vector> dis);
+  virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
 
   /*! \brief Perform a write restart
 
@@ -1303,18 +1315,6 @@ protected:
   /*! check the parallel distribution and initialize a possible
    *  redistribution */
   void CheckParallelDistribution(const double& t_start);
-
-  /*! \brief Setup this strategy object (maps, vectors, etc.)
-
-   All global maps and vectors are initialized by collecting
-   the necessary information from all interfaces. In the case
-   of a parallel redistribution, this method is called again
-   to re-setup the above mentioned quantities. In this case
-   we set the input parameter redistributed=TRUE. Moreover,
-   when called for the first time (in the constructor) this
-   method is given the input parameter init=TRUE to account
-   for initialization of the active set. */
-  void Setup(bool redistributed, bool init);
 
   /*! \brief Update Mortar matrices D and M
 

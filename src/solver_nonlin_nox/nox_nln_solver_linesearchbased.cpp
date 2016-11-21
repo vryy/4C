@@ -125,12 +125,12 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
       utilsPtr->out() << " (Converged!)";
     if (status == NOX::StatusTest::Failed)
       utilsPtr->out() << " (Failed!)";
-    utilsPtr->out() << "\n";
+    utilsPtr->out() << std::endl;
   }
 
   // Print the final parameter values of the status test
   if ((status != NOX::StatusTest::Unconverged) &&
-      (utilsPtr->isPrintType(NOX::Utils::OuterIteration)))
+      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)))
   {
     utilsPtr->out() << NOX::Utils::fill(72) << "\n";
     utilsPtr->out() << "-- Final Status Test Results --\n";

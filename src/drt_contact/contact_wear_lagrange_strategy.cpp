@@ -104,13 +104,20 @@ WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
   if (wtime == INPAR::WEAR::wear_time_different)
     weartimescales_=true;
 
-  // max dof number -- disp dofs and lm dofs considered
-  maxdofwear_ = maxdof_ + glmdofrowmap_->NumGlobalElements();
-
-  // Setup maps ...
-  SetupWear(false,true);
-
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup this strategy object                               seitz 11/16 |
+ *----------------------------------------------------------------------*/
+void WEAR::WearLagrangeStrategy::Setup(bool redistributed, bool init)
+{
+  // base class setup
+  CoAbstractStrategy::Setup(redistributed,init);
+
+  // wear specific setup
+  SetupWear(redistributed,init);
 }
 
 
@@ -119,6 +126,9 @@ WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
  *----------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
 {
+  // max dof number -- disp dofs and lm dofs considered
+  maxdofwear_ = maxdof_ + glmdofrowmap_->NumGlobalElements();
+
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------

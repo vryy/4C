@@ -186,6 +186,9 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
       chQ != NOX::NLN::StatusTest::quantity_contact_friction)
     return -1.0;
 
+  if (Strategy().GetLagrMultNp(true)==Teuchos::null)
+    return 0.;
+
   double updatenorm = -1.0;
   Teuchos::RCP<Epetra_Vector> zincr_ptr = Teuchos::null;
   switch (chQ)
@@ -235,6 +238,9 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
     return -1.0;
 
   double zoldnorm = -1.0;
+
+  if (Strategy().GetLagrMultNp(true)==Teuchos::null)
+    return 0;
 
   /* lagrange multiplier of the previous Newton step
    * (NOT equal to zOld_, which is stored in the Strategy object!!!) */

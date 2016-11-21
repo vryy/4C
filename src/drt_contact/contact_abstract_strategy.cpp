@@ -203,22 +203,6 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       (Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
     regularized_ = true;
 
-  // call setup method with flag redistributed=FALSE, init=TRUE
-  Setup(false, true);
-
-  // store interface maps with parallel distribution of underlying
-  // problem discretization (i.e. interface maps before parallel
-  // redistribution of slave and master sides)
-  if (ParRedist())
-  {
-    for (std::size_t i = 0; i < interface_.size(); ++i)
-      interface_[i]->StoreUnredistributedDofRowMaps();
-    pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
-    pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
-    pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
-    pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
-  }
-
   // intialize storage fields for parallel redistribution
   tunbalance_.clear();
   eunbalance_.clear();
@@ -676,6 +660,22 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     }
     else
       doldmod_ = MORTAR::MatrixRowColTransform(doldmod_, SlDoFRowMapPtr(true), SlDoFRowMapPtr(true));
+  }
+
+  if (init)
+  {
+    // store interface maps with parallel distribution of underlying
+    // problem discretization (i.e. interface maps before parallel
+    // redistribution of slave and master sides)
+    if (ParRedist())
+    {
+      for (std::size_t i = 0; i < interface_.size(); ++i)
+        interface_[i]->StoreUnredistributedDofRowMaps();
+      pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
+      pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
+      pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+      pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
+    }
   }
 
   PostSetup(redistributed,init);

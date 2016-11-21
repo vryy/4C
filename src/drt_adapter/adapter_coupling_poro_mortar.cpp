@@ -361,6 +361,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(
       poroslave,
       poromaster));
 
+  porolagstrategy_->Setup(false,true);
   porolagstrategy_->PoroMtInitialize();
 
   firstinit_ = true;

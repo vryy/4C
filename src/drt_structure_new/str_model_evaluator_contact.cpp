@@ -208,6 +208,14 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
           "are present!");
     STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
   }
+  else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+  {
+    block_vec_ptr = Strategy().GetRhsBlockPtr(STR::block_displ);
+    // if there are no active contact contributions, we can skip this...
+    if (block_vec_ptr.is_null()) return true;
+    STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
+  }
   return true;
 }
 
@@ -275,6 +283,15 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }
+  else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+  {
+    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_displ_displ);
+    Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
+        GState().ExtractDisplBlock(jac);
+    jac_dd->Add(*block_ptr,false,timefac_np,1.0);
+  }
+
   return (err==0);
 }
 
@@ -300,7 +317,8 @@ void STR::MODELEVALUATOR::Contact::WriteRestart(
   /* ToDo Move this stuff into the DoWriteRestart() routine of the
    * AbstractStrategy as soon as the old structural time integration
    * is gone! */
-  iowriter.WriteVector("lagrmultold", Strategy().GetLagrMultN(true));
+  if (Strategy().GetLagrMultN(true)!=Teuchos::null)
+    iowriter.WriteVector("lagrmultold", Strategy().GetLagrMultN(true));
 
   // since the global OutputStepState() routine is not called, if the
   // restart is written, we have to do it here manually.
@@ -414,6 +432,10 @@ void STR::MODELEVALUATOR::Contact::DetermineEnergy()
 void STR::MODELEVALUATOR::Contact::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
+  // no output in nitsche Strategy
+  if (Strategy().IsNitsche())
+    return;
+
   // *********************************************************************
   // print active set
   // *********************************************************************
@@ -701,7 +723,11 @@ const CONTACT::CoAbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::
     GetBlockDofRowMapPtr() const
 {
-  return Strategy().LMDoFRowMapPtr(false);
+  CheckInitSetup();
+  if (Strategy().LMDoFRowMapPtr(false)==Teuchos::null)
+    return GState().DofRowMap();
+  else
+    return Strategy().LMDoFRowMapPtr(false);
 }
 
 /*----------------------------------------------------------------------*
@@ -709,11 +735,16 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
     GetCurrentSolutionPtr() const
 {
-  Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
-      Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultNp(false)));
-  if (not curr_lm_ptr.is_null())
-    curr_lm_ptr->ReplaceMap(*GetBlockDofRowMapPtr());
-  return curr_lm_ptr;
+  if (Strategy().GetLagrMultNp(false)!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
+        Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultNp(false)));
+    if (not curr_lm_ptr.is_null())
+      curr_lm_ptr->ReplaceMap(*GetBlockDofRowMapPtr());
+    return curr_lm_ptr;
+  }
+  else
+    return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
@@ -721,6 +752,9 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
     GetLastTimeStepSolutionPtr() const
 {
+  if (Strategy().GetLagrMultN(false).is_null())
+    return Teuchos::null;
+
   Teuchos::RCP<Epetra_Vector> old_lm_ptr =
       Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultN(false)));
   if (not old_lm_ptr.is_null())

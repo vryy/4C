@@ -298,6 +298,9 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
     //Flag for Poro No Penetration Condition (overloaded by PoroLagrangeStrategy)
     virtual bool HasPoroNoPenetration() const {return false;}
 
+    // Nitsche stuff
+    virtual bool IsNitsche() const {return false;}
+
     // wear stuff
     virtual bool WeightedWear() const {return false;};
     virtual bool WearBothDiscrete() const {return false;};

@@ -314,7 +314,13 @@ private:
   when called for the first time (in the constructor) this
   method is given the input parameter init=TRUE to account
   for initialization of the active set.
+    */
+  virtual void Setup(bool redistributed, bool init);
 
+  /*!
+  \brief Setup this strategy object (maps, vectors, etc.)
+
+  All wear specific maps here
   */
   void SetupWear(bool redistributed, bool init);
 

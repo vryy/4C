@@ -86,7 +86,13 @@ Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::
       noxNlnGlobalData->GetNlnParameterList().sublist("Solver Options");
 
   std::string mftype = solverOptionsList.get<std::string>("Merit Function");
-  if (mftype=="Lagrangian")
+
+  if (mftype == "Sum of Squares")
+  {
+    // default NOX case, no pointer necessary
+    mrtFctPtr = Teuchos::null;
+  }
+  else if (mftype=="Lagrangian")
   {
     mrtFctPtr = Teuchos::rcp(new Lagrangian(noxNlnGlobalData->GetNoxUtilsPtr()));
   }

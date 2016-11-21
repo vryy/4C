@@ -44,6 +44,7 @@
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
+#include "contact_nitsche_strategy.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -644,6 +645,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   INPAR::CONTACT::AdhesionType ad = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
   const bool nurbs = cparams.get<bool>("NURBS");
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<
+      INPAR::MORTAR::AlgorithmType>(cparams,"ALGORITHM");
 
   bool friplus = false;
   if ((wlaw != INPAR::WEAR::wear_none)
@@ -1114,6 +1117,16 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         if (isporo)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
+        if (algo == INPAR::MORTAR::algorithm_gpts)
+        {
+          Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+          if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+          if (faceele->ParentElement()==NULL) dserror("face parent does not exist");
+          if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id())==-1) dserror("vol dis does not have parent ele");
+          cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+          cele->EstimateNitscheTraceMaxEigenvalue(faceele,*DRT::Problem::Instance()->GetDis("structure"));
+        }
+
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -1328,6 +1341,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
       INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearType>(cparams, "WEARTYPE");
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<
+      INPAR::MORTAR::AlgorithmType>(cparams,"ALGORITHM");
 
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if ( stype == INPAR::CONTACT::solution_lagmult &&
@@ -1388,7 +1403,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
           dof_offset));
     }
   }
-  else if (stype == INPAR::CONTACT::solution_penalty)
+  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
+      stype == INPAR::CONTACT::solution_uzawa)
   {
     dserror("This contact strategy is not yet considered!");
 //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
@@ -1425,10 +1441,28 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         CommPtr(),
         dof_offset));
   }
+  else if (algo == INPAR::MORTAR::algorithm_gpts &&
+      (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
+  {
+    data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+    strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
+        data_ptr,
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        cparams,
+        interfaces,
+        Dim(),
+        CommPtr(),
+        0,
+        dof_offset));
+  }
   else
   {
     dserror("ERROR: Unrecognized strategy");
   }
+
+  // setup the stategy object
+  strategy_ptr->Setup(false,true);
 
   if (Comm().MyPID() == 0)
     std::cout << "done!" << std::endl;

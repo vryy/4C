@@ -35,6 +35,7 @@
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "contact_nitsche_utils.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -1425,6 +1426,13 @@ void CONTACT::CoInterface::Initialize()
       mele->MoData().ResetDerivDualShape();
     }
   }
+
+  // clear all Nitsche data
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM")
+      ==INPAR::MORTAR::algorithm_gpts)
+    for (int e=0;e<Discret().ElementColMap()->NumMyElements();++e)
+      dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(
+                Discret().ElementColMap()->GID(e)))->GetNitscheContainer().Clear();
 
   // reset s/m pairs and intcell counters
   smpairs_    = 0;

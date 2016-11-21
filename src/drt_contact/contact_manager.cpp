@@ -746,6 +746,8 @@ CONTACT::CoManager::CoManager(
     dserror("ERROR: Unrecognized strategy");
   }
 
+  dynamic_cast<CONTACT::CoAbstractStrategy&>(*strategy_).Setup(false,true);
+
   if (Comm().MyPID() == 0)
     std::cout << "done!" << std::endl;
   //**********************************************************************
@@ -1199,6 +1201,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
   {
+    DRT::Problem::Instance()->getNonconstParameterList()->sublist("CONTACT DYNAMIC")
+        .set("SYSTEM", "none");
+
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
@@ -1295,7 +1300,8 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output,
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
 
-  output.WriteVector("lagrmultold", GetStrategy().LagrMultOld());
+  if (GetStrategy().LagrMultOld()!=Teuchos::null)
+    output.WriteVector("lagrmultold", GetStrategy().LagrMultOld());
 
   // write all vectors specified by used strategy
   for (std::map<std::string,Teuchos::RCP<Epetra_Vector> >::const_iterator p=restart_vectors.begin();
@@ -1335,6 +1341,9 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
+  if (strategy_->IsNitsche())
+    return;
+
   // *********************************************************************
   // active contact set and slip set
   // *********************************************************************

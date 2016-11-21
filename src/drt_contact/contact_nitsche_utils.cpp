@@ -23,12 +23,14 @@ void MORTAR::MortarElementNitscheData<num_parent_dof>::Assemble(
     Teuchos::RCP<Epetra_FEVector> fc,
     Teuchos::RCP<LINALG::SparseMatrix> kc)
 {
+  if (fc!=Teuchos::null)
   fc->SumIntoGlobalValues(num_parent_dof,&mele->MoData().ParentDof()[0],rhs_.A());
 
-  for (typename std::map<int,LINALG::Matrix<num_parent_dof,1> >::const_iterator
-      p=k_.begin();p!=k_.end();++p)
-    for (int dof=0;dof<(int)mele->MoData().ParentDof().size();++dof)
-      kc->FEAssemble(p->second(dof),mele->MoData().ParentDof()[dof],p->first);
+  if (kc!=Teuchos::null)
+    for (typename std::map<int,LINALG::Matrix<num_parent_dof,1> >::const_iterator
+        p=k_.begin();p!=k_.end();++p)
+      for (int dof=0;dof<(int)mele->MoData().ParentDof().size();++dof)
+        kc->FEAssemble(p->second(dof),mele->MoData().ParentDof()[dof],p->first);
 }
 
 template class MORTAR::MortarElementNitscheData<8>;

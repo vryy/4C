@@ -87,12 +87,6 @@ CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(
       dserror("AugmentedLagrangeStartegy: Interface-cast failed!");
   }
 
-  // re-setup the global sndofrowmap_ and stdofrowmap_ for the augmented Lagrangian case
-  AssembleGlobalSlNTDofRowMaps();
-
-  // initialize cn
-  InitializeCn(false,true);
-
   return;
 }
 
@@ -102,20 +96,29 @@ void CONTACT::AugmentedLagrangeStrategy::PostSetup(
     const bool& redistributed,
     const bool& init)
 {
+  if (init)
+  {
+    // re-setup the global sndofrowmap_ and stdofrowmap_ for the augmented Lagrangian case
+    AssembleGlobalSlNTDofRowMaps();
+
+    // initialize cn
+    InitializeCn(false,true);
+  }
+
   // just used for the redistributed case
-  if (not redistributed) return;
-
-  // redistribute the slave/master dirichlet boundary condition row map
-  AssembleSlMaNoDbcDofRowMap(Teuchos::null);
-  // reassemble the global slave normal/tangential dof row maps
-  AssembleGlobalSlNTDofRowMaps();
-  // redistribute the cn-vector
-  InitializeCn(redistributed,false);
-  // redistribute the global augmented old active slave nodes map
-  if ((not Data().GOldActiveSlaveNodesPtr().is_null())and
-      (Data().GOldActiveSlaveNodes().NumGlobalElements()>0))
-    RedistributeRowMap(SlRowNodes(),Data().GOldActiveSlaveNodes());
-
+  if (redistributed)
+  {
+    // redistribute the slave/master dirichlet boundary condition row map
+    AssembleSlMaNoDbcDofRowMap(Teuchos::null);
+    // reassemble the global slave normal/tangential dof row maps
+    AssembleGlobalSlNTDofRowMaps();
+    // redistribute the cn-vector
+    InitializeCn(redistributed,false);
+    // redistribute the global augmented old active slave nodes map
+    if ((not Data().GOldActiveSlaveNodesPtr().is_null())and
+        (Data().GOldActiveSlaveNodes().NumGlobalElements()>0))
+      RedistributeRowMap(SlRowNodes(),Data().GOldActiveSlaveNodes());
+  }
   return;
 }
 

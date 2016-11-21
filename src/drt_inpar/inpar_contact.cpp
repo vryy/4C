@@ -79,12 +79,13 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",
         tuple<std::string>("Condensed","condensed", "cond",
                            "Condensedlagmult","condensedlagmult","condlm",
-                           "SaddlePoint","Saddlepoint","saddlepoint", "sp"),
+                           "SaddlePoint","Saddlepoint","saddlepoint", "sp","none"),
         tuple<int>(
                 system_condensed, system_condensed, system_condensed,
                 system_condensed_lagmult,system_condensed_lagmult,system_condensed_lagmult,
                 system_saddlepoint, system_saddlepoint,
-                system_saddlepoint, system_saddlepoint),
+                system_saddlepoint, system_saddlepoint,
+                system_none),
         &scontact);
 
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / Uzawa augmented solution strategy",&scontact);
