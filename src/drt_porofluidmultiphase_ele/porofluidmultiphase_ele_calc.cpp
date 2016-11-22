@@ -336,6 +336,24 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
     // set the current node state as GP state in the manager
     phasemanager_->EvaluateGPState(1.0,*variablemanager_);
 
+    //----------------------------------------------------------------
+    // 1) element matrix
+    //----------------------------------------------------------------
+    evaluator_->EvaluateMatrix(
+        elemat,
+        funct_,
+        derxy_,
+        inode,
+        numdofpernode_,
+        *phasemanager_,
+        *variablemanager_,
+        1.0,
+        1.0
+      );
+
+    //----------------------------------------------------------------
+    // 2) element vector
+    //----------------------------------------------------------------
     evaluator_->EvaluateVector(
         elevec,
         funct_,
@@ -348,6 +366,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
         1.0
       );
 
+    // clear current gauss point data for safety
     phasemanager_->ClearGPState();
   }
 }
@@ -390,7 +409,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
           action,
           numdofpernode_);
 
-  // built the evaluator
+  // build the evaluator
   evaluator_ = DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd_,nen_>::CreateEvaluator(
       *para_,
       action,

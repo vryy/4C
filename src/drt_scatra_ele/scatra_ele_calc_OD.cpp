@@ -298,12 +298,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
-      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp[k],J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel());
+      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp[k],J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k));
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(),dJ_dmesh);
+      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k),dJ_dmesh);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term

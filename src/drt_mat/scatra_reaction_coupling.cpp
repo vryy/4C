@@ -716,7 +716,7 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
   dsassert(IsInit(),"Reaction class has not been initialized!");
 
   // call the real evaluation (scale_phi should have been applied in wrapper class)
-  return CalcReaBodyForceTerm(k,numscal,phinp,couprole,scale_reac);
+  return CalcReaBodyForceTerm(k,numscal,phinp,constants,couprole,scale_reac);
 }
 
 /*--------------------------------------------------------------------------------*
@@ -738,7 +738,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
   dsassert(IsInit(),"Reaction class has not been initialized!");
 
   // call the real evaluation (scale_phi should have been applied in wrapper class)
-  CalcReaBodyForceDeriv(k,numscal,derivs,phinp,couprole,scale_reac);
+  CalcReaBodyForceDeriv(k,numscal,derivs,phinp,constants,couprole,scale_reac);
 
   return;
 }

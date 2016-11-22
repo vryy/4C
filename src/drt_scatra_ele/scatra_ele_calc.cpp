@@ -453,11 +453,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
   if (not scatrapara_->TauGP())
   {
-    // get velocity at element center
-    LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel();
-
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
     {
+      // get velocity at element center
+      LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel(k);
+
       // calculation of all-scale subgrid diffusivity (by, e.g.,
       // Smagorinsky model) at element center
       if (turbparams_->TurbModel() == INPAR::FLUID::smagorinsky
@@ -574,7 +574,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         if (scatrapara_->ASSGD())
         {
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
-          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(),vol);
+          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(k),vol);
 
           // compute artificial diffusion
           CalcArtificialDiff(vol,k,densnp[k],scatravarmanager_->ConVel(k),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
@@ -597,7 +597,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
         // calculation of fine-scale artificial subgrid diffusivity at element center
         if (turbparams_->FSSGD())
-          CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
+          CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel(k));
 
         // calculation of subgrid-scale velocity at integration point if required
         if (scatrapara_->RBSubGrVel())

@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
 
   // 2c) element matrix: stabilization of convective term due to fluid flow and migration
-  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,VarManager()->FRT(),VarManager()->Conv(),VarManager()->MigConv(),VarManager()->Phinp(k),VarManager()->GradPhi(k),residual);
+  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,VarManager()->FRT(),VarManager()->Conv(k),VarManager()->MigConv(),VarManager()->Phinp(k),VarManager()->GradPhi(k),residual);
 
   // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
   my::CalcMatDiff(emat,k,timefacfac);
@@ -213,7 +213,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
 
   // 4f) element rhs: stabilization of convective term due to fluid flow and migration
-  CalcRhsConvStab(erhs,k,rhstaufac,VarManager()->Conv(),VarManager()->MigConv(),residual);
+  CalcRhsConvStab(erhs,k,rhstaufac,VarManager()->Conv(k),VarManager()->MigConv(),residual);
 
   // 4g) element rhs: standard Galerkin diffusion term
   my::CalcRHSDiff(erhs,k,rhsfac);
@@ -1015,10 +1015,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     {
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
-        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(k),vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(),vol);
+        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetStabilizationCoeff(k,my::scatravarmanager_->Phinp(k)),densnp[k],VarManager()->ConVel(k),vol);
     }
   }
 
@@ -1044,7 +1044,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     for (int k=0; k<my::numscal_; ++k)
     {
       // Compute effective velocity as sum of convective and migration velocities
-      LINALG::Matrix<my::nsd_,1> veleff(VarManager()->ConVel());
+      LINALG::Matrix<my::nsd_,1> veleff(VarManager()->ConVel(k));
       veleff.Update(myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->MigVelInt(),1.);
 
       // calculate stabilization parameter tau

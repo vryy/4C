@@ -1482,7 +1482,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(),vol);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(k),vol);
       }
     }
   }
@@ -1529,7 +1529,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
 
       // calculation of stabilization parameter at integration point
       if (scatrapara_->TauGP())
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(),vol);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(k),vol);
 
       const double fac_tau = fac*tau[k];
 
@@ -2341,11 +2341,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
 
   if (not scatrapara_->TauGP())
   {
-    // get velocity at element center
-    LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel();
-
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
     {
+      // get velocity at element center
+      LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel(k);
       // calculation of stabilization parameter at element center
       CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],convelint,vol);
     }
@@ -2401,7 +2400,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
       if (scatrapara_->TauGP())
       {
         // (re)compute stabilization parameter at integration point, since diffusion may have changed
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetStabilizationCoeff(k,scatravarmanager_->Phinp(k)),densnp[k],scatravarmanager_->ConVel(k),vol); //TODO:(Thon) do we really have to do this??
       }
 
       //----------------------------------------------------------------

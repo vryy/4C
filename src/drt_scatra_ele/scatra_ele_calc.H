@@ -1380,9 +1380,9 @@ namespace ELEMENTS
     //! return scalar value at t_(n)
     virtual const double& Phin(const int k) const {return phin_[k];};
     //! return convective velocity
-    virtual const LINALG::Matrix<NSD,1>& ConVel(const int k=0) const {return convelint_;};
+    virtual const LINALG::Matrix<NSD,1>& ConVel(const int k) const {return convelint_;};
     //! return convective part in convective form
-    virtual const LINALG::Matrix<NEN,1>& Conv(const int k=0) const {return conv_;};
+    virtual const LINALG::Matrix<NEN,1>& Conv(const int k) const {return conv_;};
     //! return spatial gradient of all scalar values
     virtual const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return gradphi_;};
     //! return spatial gradient of current scalar value

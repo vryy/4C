@@ -213,7 +213,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   {
   case INPAR::SCATRA::flux_total:
     // convective flux contribution
-    q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
+    q.Update(VarManager()->Phinp(k),VarManager()->ConVel(k));
 
     // no break statement here!
   case INPAR::SCATRA::flux_diffusive:

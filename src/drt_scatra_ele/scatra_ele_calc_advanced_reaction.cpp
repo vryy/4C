@@ -303,7 +303,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
 
   my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
-  const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv();
+  const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv(k);
 
   // -----------------second care for advanced reaction terms ( - (\partial_c f(c) )------------
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new implementations

@@ -1654,10 +1654,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // special case (computation of fine-scale subgrid diffusivity for non-incremental
     // solver -> only artificial subgrid diffusivity) not considered here
     Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-    if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
+    if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel(0));
 
     // calculation of stabilization parameter at element center
-    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetStabilizationCoeff(0,scatravarmanager_->Phinp(0)),densnp[0],scatravarmanager_->ConVel(),vol);
+    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetStabilizationCoeff(0,scatravarmanager_->Phinp(0)),densnp[0],scatravarmanager_->ConVel(0),vol);
   }
 
 
@@ -1687,7 +1687,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[0],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[0],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(k),fsvelint);
     }
   }
 
@@ -1717,7 +1717,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       GetMaterialParams(ele,densn,densnp,densam,visc);
 
     // get velocity at integration point
-    const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();
+    const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel(0);
 
     // scalar at integration point at time step n+1
     const double& phinp = scatravarmanager_->Phinp(0);
@@ -1772,7 +1772,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       // special case (computation of fine-scale subgrid diffusivity for non-incremental
       // solver -> only artificial subgrid diffusivity) not considered here
       Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
+      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel(0));
 
       // calculation of subgrid-scale velocity at integration point if required
       if (scatrapara_->RBSubGrVel())

@@ -440,6 +440,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVector()
     {
       std::ostringstream temp;
       temp << i+1;
+
       couplingvalues_.push_back(std::pair<std::string,double>("S"+temp.str(),saturations[i]));
     }
     //porosity
@@ -452,13 +453,20 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVector()
     const std::vector<double>& pressures = VarManager()->Pressure();
     const int numphases = pressures.size();
     for(int i =0;i<numphases;i++)
+    {
+     // std::cout<<"pressure "<<i<<": "<<pressures[i]<<std::endl;
       couplingvalues_[i].second=pressures[i];
+    }
     //saturation
     const std::vector<double>& saturations = VarManager()->Saturation();
     for(int i =0;i<numphases;i++)
+    {
+   //   std::cout<<"saturation "<<i<<": "<<saturations[i]<<std::endl;
       couplingvalues_[numphases+i].second=saturations[i];
+    }
     //porosity
     couplingvalues_[2*numphases].second=poro::DiffManager()->GetPorosity(0);
+    //std::cout<<"porosity: "<<poro::DiffManager()->GetPorosity(0)<<std::endl;
   }
 }
 
