@@ -24,7 +24,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include "Epetra_FECrsMatrix.h"
 #include "../drt_fem_general/drt_utils_integration.H"
-
+#include "../drt_inpar/inpar_cardiovascular0d.H"
 
 
 //forward declarations
@@ -65,9 +65,7 @@ namespace UTILS
     Cardiovascular0D
     (
       Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Cardiovascular0D lives on
-      const std::string& CondName, ///< Name of condition to creat Cardiovascular0D from
-      int& minID,  ///< minimum Cardiovascular0D ID so far
-      int& maxID, ///< maximum Cardiovascular0D ID so far
+      const std::string& CondName, ///< Name of condition to create Cardiovascular0D from
       std::vector<int>& curID ///< current ID
     );
 
@@ -111,8 +109,7 @@ namespace UTILS
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec2,  ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec3  ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateCardiovascular0D routine is called
@@ -126,8 +123,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> sysvec2,
       Teuchos::RCP<Epetra_Vector> sysvec3,
       Teuchos::RCP<Epetra_Vector> sysvec4,
-      Teuchos::RCP<Epetra_Vector> sysvec5,
-      Teuchos::RCP<Epetra_Vector> sysvec6
+      Teuchos::RCP<Epetra_Vector> sysvec5
     );
 
     ///Return type of Cardiovascular0D function
@@ -136,12 +132,22 @@ namespace UTILS
       return cardiovascular0dtype_;
     }
 
+    std::vector<DRT::Condition*> GetCardiovascular0DCondition()
+    {
+      return cardiovascular0dcond_;
+    }
+    std::vector<DRT::Condition*> GetCardiovascular0DStructureCouplingCondition()
+    {
+      return cardiovascular0dstructcoupcond_;
+    }
+
   protected:
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
     std::vector<DRT::Condition*> cardiovascular0dcond_; ///< 0D cardiovascular conditions
     std::vector<DRT::Condition*> cardiovascular0dstructcoupcond_; ///< 0D cardiovascular structure coupling conditions
     Cardiovascular0DType cardiovascular0dtype_; ///< Cardiovascular0D type
+    INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel atrium_model_;
     std::map<int,double>  inittimes_; ///< map with times at which Cardiovascular0D is supposed to become active
     std::map<int,bool> activecons_; ///< map with indicator if Cardiovascular0Ds are active
     //! gaussian integration to be used
@@ -171,8 +177,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
-      Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6
+      Teuchos::RCP<Epetra_Vector>    sysvec5
     );
 
     //! Evaluate Cardiovascular0D conditions and assemble the results
@@ -186,8 +191,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
-      Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6
+      Teuchos::RCP<Epetra_Vector>    sysvec5
     );
 
     //! Evaluate Cardiovascular0D conditions and assemble the results
@@ -208,8 +212,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
-      Teuchos::RCP<Epetra_Vector>    sysvec5,
-      Teuchos::RCP<Epetra_Vector>    sysvec6
+      Teuchos::RCP<Epetra_Vector>    sysvec5
     );
 
     //! Compute and assemble initial values
@@ -233,8 +236,7 @@ namespace UTILS
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec2, ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec3 ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
 
   }; //class

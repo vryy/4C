@@ -32,6 +32,12 @@ namespace CARDIOVASCULAR0D
     cardvasc0dsolve_simple  ///< use simple preconditioner for iterative solve
   };
 
+  enum Cardvasc0DAtrimModel
+  {
+    elastance_0d,
+    structure_3d
+  };
+
   /// set the 0Dcardiovascular parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

@@ -85,7 +85,7 @@ PRESTRESS                       None
 PRESTRESSTIME                   1.001
 PTCDT                           0.3
 RESEVRYERGY                     0
-RESTARTEVRY                     0
+RESTARTEVRY                     1
 RESULTSEVRY                     10
 STC_LAYER                       1
 TIMESTEP                        0.009

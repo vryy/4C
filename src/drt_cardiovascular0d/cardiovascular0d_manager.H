@@ -19,8 +19,8 @@ orig. equation is C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/
 -> we reformulate the ODE to three first-order ODEs with variables p, q, s:
 
       [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s - L C * ds/dt]   [ 0 ]
-Res = [dV/dt - q                                                                           ]   [ 0 ]
-      [dq/dt - s                                                                           ] = [ 0 ]
+Res = [dV/dt - q                                                                           ] = [ 0 ]
+      [dq/dt - s                                                                           ]   [ 0 ]
 
 The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
 
@@ -390,10 +390,6 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_np_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_m_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+theta}
-
-    Teuchos::RCP<Epetra_Vector> compvol_n_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n}
-    Teuchos::RCP<Epetra_Vector> compvol_np_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> compvol_m_; ///< compartment volume vector (V_at, V_ar, V_ven), at t_{n+theta}
 
     int Cardiovascular0DID_;  ///< smallest Cardiovascular0D bc id
     int offsetID_;  ///< smallest Cardiovascular0D bc id

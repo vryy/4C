@@ -90,38 +90,36 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   numCardiovascular0DID_=0;
   Cardiovascular0DID_=0;
   offsetID_=10000;
-  int maxCardiovascular0DID=0;
-  int num_dofs_per_cardiovascular0d=0;
 
   //Check what kind of Cardiovascular0D boundary conditions there are
-  cardvasc0d_windkesselonly_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DWindkesselOnlyStructureCond",offsetID_,maxCardiovascular0DID,currentID));
-  cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",offsetID_,maxCardiovascular0DID,currentID));
-  cardvasc0d_arterialvenoussyspulcoupled_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialVenousSysPulCoupledStructureCond",offsetID_,maxCardiovascular0DID,currentID));
+  cardvasc0d_windkesselonly_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DWindkesselOnlyStructureCond",currentID));
+  cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",currentID));
+  cardvasc0d_arterialvenoussyspulcoupled_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialVenousSysPulCoupledStructureCond",currentID));
 
   havecardiovascular0d_ = (cardvasc0d_windkesselonly_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D());
 
   if (cardvasc0d_windkesselonly_->HaveCardiovascular0D())
   {
-    // dof vector for ONE 0D cardiovascular condition of this type: [p]^T
-    num_dofs_per_cardiovascular0d = 3;
+    // dof vector for ONE 0D cardiovascular condition of this type: [p  q  s]^T
+    numCardiovascular0DID_ = 3 * cardvasc0d_windkesselonly_->GetCardiovascular0DCondition().size();;
   }
   if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
   {
-    // dof vector for ONE 0D cardiovascular condition of this type: [p_v  p_arp  y_arp  p_ard]^T
-    num_dofs_per_cardiovascular0d = 4;
+    // dof vector for ONE 0D cardiovascular condition of this type: [p_v  p_arp  q_arp  p_ard]^T
+    numCardiovascular0DID_ = 4 * cardvasc0d_arterialproxdist_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
   {
-    // dof vector for ONE 0D cardiovascular condition of this type: [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
-    num_dofs_per_cardiovascular0d = 8;
+    // dof vector for 0D cardiovascular condition of this type:
+    // [q_vin_l  p_at_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  q_vin_r  p_at_r  q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
+    numCardiovascular0DID_ = 16;
   }
 
   if (cardvasc0d_windkesselonly_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
   {
-    numCardiovascular0DID_ = num_dofs_per_cardiovascular0d * std::max(maxCardiovascular0DID-offsetID_+1,0);
     cardiovascular0ddofset_ = Teuchos::rcp(new Cardiovascular0DDofSet());
     cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0);
-    offsetID_ -= cardiovascular0ddofset_->FirstGID();
+    offsetID_ = cardiovascular0ddofset_->FirstGID();
 
     linsolveerror_ = 0;
 
@@ -171,10 +169,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     cardvasc0d_f_np_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cardvasc0d_f_m_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
 
-    compvol_n_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    compvol_np_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    compvol_m_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-
     cv0ddofincrement_->PutScalar(0.0);
 
     cv0ddof_n_->PutScalar(0.0);
@@ -193,9 +187,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     cardvasc0d_f_np_->PutScalar(0.0);
     cardvasc0d_f_m_->PutScalar(0.0);
 
-    compvol_n_->PutScalar(0.0);
-    compvol_np_->PutScalar(0.0);
-    compvol_m_->PutScalar(0.0);
     cardiovascular0dstiffness_->Zero();
 
     p.set("total time",time);
@@ -206,32 +197,33 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     actdisc_->SetState("displacement",disp);
 
     Teuchos::RCP<Epetra_Vector> v_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
+    Teuchos::RCP<Epetra_Vector> v_n_red2 = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
     Teuchos::RCP<Epetra_Vector> cv0ddof_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-    Teuchos::RCP<Epetra_Vector> compvol_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
     //initialize everything
-    cardvasc0d_windkesselonly_->Initialize(p,v_n_red,cv0ddof_n_red,Teuchos::null);
-    cardvasc0d_arterialproxdist_->Initialize(p,v_n_red,cv0ddof_n_red,Teuchos::null);
-    cardvasc0d_arterialvenoussyspulcoupled_->Initialize(p,v_n_red,cv0ddof_n_red,compvol_n_red);
+    cardvasc0d_windkesselonly_->Initialize(p,v_n_red,cv0ddof_n_red);
+    cardvasc0d_arterialproxdist_->Initialize(p,v_n_red,cv0ddof_n_red);
+    cardvasc0d_arterialvenoussyspulcoupled_->Initialize(p,v_n_red,cv0ddof_n_red);
 
+    v_n_->PutScalar(0.0);
     v_n_->Export(*v_n_red,*cardvasc0dimpo_,Add);
-    v_np_->Update(1.0,*v_n_,0.0);
 
     cv0ddof_n_->Export(*cv0ddof_n_red,*cardvasc0dimpo_,Insert);
     cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
 
-    compvol_n_->Export(*compvol_n_red,*cardvasc0dimpo_,Insert);
-    compvol_np_->Update(1.0,*compvol_n_,0.0);
-
-    LINALG::Export(*cv0ddof_n_,*cv0ddof_n_red);
-    LINALG::Export(*v_n_,*v_n_red);
+    LINALG::Export(*v_n_,*v_n_red2);
 
     // evaluate initial 0D right-hand side at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-    cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red, Teuchos::null);
-    cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red, Teuchos::null);
-    cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red, Teuchos::null);
+    cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
+    cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
+    cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
+
+    // insert compartment volumes into vol vector
+    v_n_->Export(*v_n_red2,*cardvasc0dimpo_,Insert);
+
+    v_np_->Update(1.0,*v_n_,0.0);
 
     cardvasc0d_df_n_->PutScalar(0.0);
     cardvasc0d_df_n_->Export(*cardvasc0d_df_n_red,*cardvasc0dimpo_,Insert);
@@ -281,10 +273,10 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
 
   totaltime_ = time;
   Teuchos::RCP<Epetra_Vector> v_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
+  Teuchos::RCP<Epetra_Vector> v_np_red2 = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddof_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cardvasc0d_df_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cardvasc0d_f_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-  Teuchos::RCP<Epetra_Vector> compvol_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
@@ -293,36 +285,36 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   // the DOF vector "dof" for ONE Cardiovascular0D bc holds depending on case A, B or C (see description at top of this file):
   // A) dof = [p  q  s]^T
   // B) dof = [p_v  p_arp  y_arp  p_ard]^T
-  // C) dof = [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
+  // C) dof = [q_vin  p_at  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
 
   // evaluate current volume only
-  cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null, Teuchos::null);
-  cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null, Teuchos::null);
-  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null, Teuchos::null);
+  cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
+  cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
+  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
 
   // import into vol vector at end-point
   v_np_->PutScalar(0.0);
   v_np_->Export(*v_np_red,*cardvasc0dimpo_,Add);
 
-  // solution, rate of solution and volume at generalized mid-point t_{n+theta}
+  // solution and rate of solution at generalized mid-point t_{n+theta}
   // for post-processing only - residual midpoint evaluation done separately!
   cv0ddof_m_->Update(theta_, *cv0ddof_np_, 1.-theta_, *cv0ddof_n_, 0.0);
   dcv0ddof_m_->Update(1./ts_size, *cv0ddof_np_, -1./ts_size, *cv0ddof_n_, 0.0);
-  v_m_->Update(theta_, *v_np_, 1.-theta_, *v_n_, 0.0);
 
   // export end-point values
   LINALG::Export(*cv0ddof_np_,*cv0ddof_np_red);
-  LINALG::Export(*v_np_,*v_np_red);
+  LINALG::Export(*v_np_,*v_np_red2);
 
   // assemble Cardiovascular0D stiffness and offdiagonal coupling matrices as well as rhs contributions
-  cardvasc0d_windkesselonly_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red, Teuchos::null);
-  cardvasc0d_arterialproxdist_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red, Teuchos::null);
-  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red, compvol_np_red);
+  cardvasc0d_windkesselonly_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
+  cardvasc0d_arterialproxdist_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
+  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
 
-  // import into compartment vol vector at mid-point
-  compvol_np_->PutScalar(0.0);
-  compvol_np_->Export(*compvol_np_red,*cardvasc0dimpo_,Insert);
+  // insert compartment volumes into vol vector
+  v_np_->Export(*v_np_red2,*cardvasc0dimpo_,Insert);
 
+  // volume at generalized mid-point t_{n+theta} - for post-processing only
+  v_m_->Update(theta_, *v_np_, 1.-theta_, *v_n_, 0.0);
 
   cardvasc0d_df_np_->PutScalar(0.0);
   cardvasc0d_df_np_->Export(*cardvasc0d_df_np_red,*cardvasc0dimpo_,Insert);
@@ -334,9 +326,6 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   cardvasc0d_f_m_->Update(theta_,*cardvasc0d_f_np_,1.-theta_,*cardvasc0d_f_n_,0.0);
   // total 0D residual r_m = df_m + f_m
   cardvasc0d_res_m_->Update(1.,*cardvasc0d_df_m_,1.,*cardvasc0d_f_m_,0.0);
-
-  // compartment volumes - only for postprocessing
-  compvol_m_->Update(theta_,*compvol_np_,1.-theta_,*compvol_n_,0.0);
 
   // Complete matrices
   cardiovascular0dstiffness_->Complete(*cardiovascular0dmap_,*cardiovascular0dmap_);
@@ -359,9 +348,6 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
   cardvasc0d_df_n_->Update(1.0,*cardvasc0d_df_np_,0.0);
   cardvasc0d_f_n_->Update(1.0,*cardvasc0d_f_np_,0.0);
 
-  // compartment volumes - only for postprocessing
-  compvol_n_->Update(1.0,*compvol_np_,0.0);
-
   return;
 
 }
@@ -373,9 +359,6 @@ void UTILS::Cardiovascular0DManager::ResetStep()
 
   cardvasc0d_df_np_->Update(1.0,*cardvasc0d_df_n_,0.0);
   cardvasc0d_f_np_->Update(1.0,*cardvasc0d_f_n_,0.0);
-
-  // compartment volumes - only for postprocessing
-  compvol_np_->Update(1.0,*compvol_n_,0.0);
 
   return;
 }
@@ -462,14 +445,31 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   // fill the i-sorted wk coupling conditions vector with the id-sorted values of the wk pressure vector, at the respective coupling_id
   for (unsigned int i=0; i<numcoupcond; ++i)
   {
-
     int id_strcoupcond = (cardvasc0dstructcoupcond[i])->GetInt("coupling_id");
 
     DRT::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6,0.0);
     if (cardvasc0d_windkesselonly_->HaveCardiovascular0D()) newval[0] = -(*actpres)[3*id_strcoupcond];
     if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D()) newval[0] = -(*actpres)[4*id_strcoupcond];
-    if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D()) newval[0] = -(*actpres)[8*id_strcoupcond+3];
+
+    if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+    {
+      for (unsigned int j = 0; j < cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition().size(); ++j)
+      {
+        DRT::Condition& cond = *(cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition()[j]);
+        int id_cardvasc0d = cond.GetInt("id");
+
+        if (id_strcoupcond == id_cardvasc0d)
+        {
+          const std::string* conditiontype =
+              cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition()[j]->Get<std::string>("type");
+          if (*conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
+          if (*conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
+          if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[1];
+          if (*conditiontype == "atrium_right") newval[0] = -(*actpres)[9];
+        }
+      }
+    }
     coupcond->Add("val",newval);
 
 
@@ -515,23 +515,19 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
   Teuchos::RCP<Epetra_Vector> cv0ddof_m_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> dcv0ddof_m_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> v_m_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-  Teuchos::RCP<Epetra_Vector> compvol_m_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddof_np_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   if(init)
   {
     LINALG::Export(*cv0ddof_n_,*cv0ddof_m_red);
     LINALG::Export(*v_n_,*v_m_red);
-    LINALG::Export(*compvol_n_,*compvol_m_red);
   }
   else
   {
     LINALG::Export(*cv0ddof_m_,*cv0ddof_m_red);
     LINALG::Export(*v_m_,*v_m_red);
-    LINALG::Export(*compvol_m_,*compvol_m_red);
   }
 
   LINALG::Export(*dcv0ddof_m_,*dcv0ddof_m_red);
-
 
   LINALG::Export(*cv0ddof_n_,*cv0ddof_np_red);
 
@@ -562,44 +558,37 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
           printf("%2d dp_ar_dist/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[4*i+3]);
         }
       }
-      if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
-      {
-        printf("Cardiovascular0D output id%2d:\n",currentID[i]);
-        printf("%2d p_at: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i]);
-        printf("%2d q_vin: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+1]);
-        printf("%2d q_vout: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+2]);
-        printf("%2d p_v: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+3]);
-        printf("%2d p_ar: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+4]);
-        printf("%2d q_ar: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+5]);
-        printf("%2d p_ven: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+6]);
-        printf("%2d q_ven: %10.16e \n",currentID[i],(*cv0ddof_m_red)[8*i+7]);
-        printf("%2d V_v: %10.16e \n",currentID[i],(*v_m_red)[8*i+2]);
-        // compartment volumes which do not contribute to model - only for postprocessing reasons!
-        printf("%2d V_at: %10.16e \n",currentID[i],(*compvol_m_red)[8*i+0]);
-        printf("%2d V_ar: %10.16e \n",currentID[i],(*compvol_m_red)[8*i+1]);
-        printf("%2d V_ven: %10.16e \n",currentID[i],(*compvol_m_red)[8*i+2]);
-        if(enhanced_output_ and !(init))
-        {
-          printf("%2d dp_at/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i]);
-          printf("%2d dq_vin/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+1]);
-          printf("%2d dq_vout/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+2]);
-          printf("%2d dp_v/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+3]);
-          printf("%2d dp_ar/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+4]);
-          printf("%2d dq_ar/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+5]);
-          printf("%2d dp_ven/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+6]);
-          printf("%2d dq_ven/dt: %10.16e \n",currentID[i],(*dcv0ddof_m_red)[8*i+7]);
-          // values at t_{n+1} - do we want them for postprocessing? --> values at t_{n+theta} are the ones to look at!
-//          printf("%2d p_at_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i]);
-//          printf("%2d q_vin_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+1]);
-//          printf("%2d q_vout_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+2]);
-//          printf("%2d p_v_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+3]);
-//          printf("%2d p_ar_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+4]);
-//          printf("%2d q_ar_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+5]);
-//          printf("%2d p_ven_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+6]);
-//          printf("%2d q_ven_n: %10.16e \n",currentID[i],(*cv0ddof_np_red)[8*i+7]);
-        }
-      }
     }
+
+    if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+    {
+      printf("q_vin_l: %10.16e \n",(*cv0ddof_m_red)[0]);
+      printf("p_at_l: %10.16e \n",(*cv0ddof_m_red)[1]);
+      printf("q_vout_l: %10.16e \n",(*cv0ddof_m_red)[2]);
+      printf("p_v_l: %10.16e \n",(*cv0ddof_m_red)[3]);
+      printf("p_ar_sys: %10.16e \n",(*cv0ddof_m_red)[4]);
+      printf("q_ar_sys: %10.16e \n",(*cv0ddof_m_red)[5]);
+      printf("p_ven_sys: %10.16e \n",(*cv0ddof_m_red)[6]);
+      printf("q_ven_sys: %10.16e \n",(*cv0ddof_m_red)[7]);
+      printf("V_v_l: %10.16e \n",(*v_m_red)[2]);
+      printf("q_vin_r: %10.16e \n",(*cv0ddof_m_red)[8]);
+      printf("p_at_r: %10.16e \n",(*cv0ddof_m_red)[9]);
+      printf("q_vout_r: %10.16e \n",(*cv0ddof_m_red)[10]);
+      printf("p_v_r: %10.16e \n",(*cv0ddof_m_red)[11]);
+      printf("p_ar_pul: %10.16e \n",(*cv0ddof_m_red)[12]);
+      printf("q_ar_pul: %10.16e \n",(*cv0ddof_m_red)[13]);
+      printf("p_ven_pul: %10.16e \n",(*cv0ddof_m_red)[14]);
+      printf("q_ven_pul: %10.16e \n",(*cv0ddof_m_red)[15]);
+      printf("V_v_r: %10.16e \n",(*v_m_red)[10]);
+      // compartment volumes which do not contribute to model - only for postprocessing reasons!
+      printf("V_at_l: %10.16e \n",(*v_m_red)[0]);
+      printf("V_ar_sys: %10.16e \n",(*v_m_red)[4]);
+      printf("V_ven_sys: %10.16e \n",(*v_m_red)[6]);
+      printf("V_at_r: %10.16e \n",(*v_m_red)[8]);
+      printf("V_ar_pul: %10.16e \n",(*v_m_red)[12]);
+      printf("V_ven_pul: %10.16e \n",(*v_m_red)[14]);
+    }
+
     printf("total time: %10.16e \n",totaltime_);
   }
 
