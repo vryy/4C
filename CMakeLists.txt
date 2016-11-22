@@ -434,7 +434,10 @@ if (AMDLIBM_FOUND)
 endif()
 
 #explicitly remove all duplicate libraries, keeping the rightmost library
+#additionally remove the keywords debug;optimized;general since the libraries
+#are precompiled and this flag has no influence
 REMOVE_DUPLICATES(LIBRARIES)
+list(REMOVE_ITEM LIBRARIES debug optimized general)
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
