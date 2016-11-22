@@ -522,7 +522,7 @@ void MAT::SuperElasticSMA::Evaluate(
   double kirchhoff_stress_deviatoric_norm_zero = 2.0 * matdata.shear * logarithmic_strain_deviatoric_norm;
   double drucker_prager_loading_zero_SA = kirchhoff_stress_deviatoric_norm_zero + 3.0 * matdata.alpha * kirchhoff_stress_volumetric_zero - matdata.C_SA * matdata.temperature;
   if (drucker_prager_loading_zero_SA < matdata.R_SA_f) {
-    // xi_S = 0 is the appropriate solution
+     //xi_S = 0 is the appropriate solution
     xi_S = 0;
     H_SA = 1;
     lambda_SA = xi_S;
@@ -534,7 +534,7 @@ void MAT::SuperElasticSMA::Evaluate(
   double kirchhoff_stress_deviatoric_norm_full = 2.0 * matdata.shear * ( logarithmic_strain_deviatoric_norm - matdata.epsilon_L );
   double drucker_prager_loading_full_AS = kirchhoff_stress_deviatoric_norm_full + 3.0 * matdata.alpha * kirchhoff_stress_volumetric_full - matdata.C_AS * matdata.temperature;
   if (drucker_prager_loading_full_AS > matdata.R_AS_f) {
-    // xi_S = 0 is the appropriate solution
+     //xi_S = 1 is the appropriate solution
     xi_S = 1;
     H_AS = 1;
     lambda_AS = 1.0 - xi_S;
@@ -870,9 +870,8 @@ void MAT::SuperElasticSMA::Evaluate(
        material_principal_directions.at(i).Multiply(deformation_gradient_invert,spatial_principal_directions.at(i));
        double logStrainPrincipal = std::log(std::pow(cauchy_green_jacobian, -1.0 / 3.0) * std::sqrt(cauchy_green_eigenvalues(i)));
        double logLoadingDirection = 0.0;
-       if(logarithmic_strain_deviatoric_norm > 0) {
-         logLoadingDirection = logStrainPrincipal / logarithmic_strain_deviatoric_norm;
-       }
+       //xi_S is zero!
+       dev_KH(i)=2.0 * matdata.shear * logStrainPrincipal;
        dev_KH(i)=2.0 * matdata.shear * ( logStrainPrincipal - matdata.epsilon_L * xi_S * logLoadingDirection );
        lambda_trial_square(i)=cauchy_green_eigenvalues(i);
      }
