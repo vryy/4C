@@ -14,15 +14,16 @@
 
 ************************************************************************************************************************************
 A) a four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS):
-orig. equation is C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
+orig. equation is C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * Q - (C Z_c  + L/R_p) * dQ/dt - L C * d2Q/dt2 = 0
+where Q := -dV/dt
 
 -> we reformulate the ODE to three first-order ODEs with variables p, q, s:
 
-      [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s - L C * ds/dt]   [ 0 ]
+      [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s + L C * ds/dt]   [ 0 ]
 Res = [dV/dt - q                                                                           ] = [ 0 ]
       [dq/dt - s                                                                           ]   [ 0 ]
 
-The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
+The classical 3- or 2-element windkessel models are reproduced by setting L, or L and Z_c to zero, respectively
 
 B) an arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
@@ -35,23 +36,32 @@ Res = [C_arp * d(p_arp)/dt + q_arp - (p_v - p_arp)/R_arv                      ] 
       [C_ard * d(p_ard)/dt + (p_ard - p_ref)/R_ard - q_arp                    ]   [ 0 ]
 
 with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
-by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
+by the code author! - reproduce classical piecewise linear valves with k_p -> 0
 
 C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
 (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS)
 (detailed fully in Hirschvogel, Bassilious, Jagschies, Wildhirt, Gee, "A monolithic 3D-0D coupled closed-loop model of the heart and
 the vascular system: Experiment-based parameter estimation for patient-specific cardiac mechanics", IJNMBE, 2016)
 
-for one half of the circulation, the residual vector reads:
+The residual vector reads:
 
-      [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
-      [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
-      [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
-Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
-      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
-      [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
-      [C_ven * d(p_ven)/dt - q_ar + q_ven              ]   [ 0 ]
-      [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
+      [d(p_at_l/E_at_l)/dt - q_ven_pul + q_vin_l                                    ]   [ 0 ]
+      [(p_at_l - p_v_l)/R_atv_l - q_vin_l                                           ]   [ 0 ]
+      [d(V_v_l)/dt - q_vin_l + q_vout_l                                             ]   [ 0 ]
+      [(p_v_l - p_ar_sys)/R_arv_l - q_vout_l                                        ]   [ 0 ]
+      [C_ar_sys * (d(p_ar_sys)/dt - Z_ar_sys * d(q_vout_l)/dt) - q_vout_l + q_ar_sys]   [ 0 ]
+      [L_ar_sys/R_ar_sys + (p_ven_sys - p_ar_sys)/R_ar_sys + q_ar_sys               ]   [ 0 ]
+      [C_ven_sys * d(p_ven_sys)/dt - q_ar_sys + q_ven_sys                           ]   [ 0 ]
+      [L_ven_sys/R_ven_sys + (p_at_r - p_ven_sys)/R_ven_sys + q_ven_sys             ]   [ 0 ]
+Res =                                                                                 =
+      [d(p_at_r/E_at_r)/dt - q_ven_sys + q_vin_r                                    ]   [ 0 ]
+      [(p_at_r - p_v_r)/R_atv_r - q_vin_r                                           ]   [ 0 ]
+      [d(V_v_r)/dt - q_vin_r + q_vout_r                                             ]   [ 0 ]
+      [(p_v_r - p_ar_pul)/R_arv_r - q_vout_r                                        ]   [ 0 ]
+      [C_ar_pul * (d(p_ar_pul)/dt - Z_ar_pul * d(q_vout_r)/dt) - q_vout_r + q_ar_pul]   [ 0 ]
+      [L_ar_pul/R_ar_pul + (p_ven_sys - p_ar_pul)/R_ar_pul + q_ar_pul               ]   [ 0 ]
+      [C_ven_pul * d(p_ven_pul)/dt - q_ar_pul + q_ven_pul                           ]   [ 0 ]
+      [L_ven_pul/R_ven_pul + (p_at_l - p_ven_pul)/R_ven_pul + q_ven_pul             ]   [ 0 ]
 ************************************************************************************************************************************
 
 *----------------------------------------------------------------------*/
