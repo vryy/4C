@@ -983,7 +983,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     df_np[1]  = 0.;
     df_np[2]  = V_v_l_np;
     df_np[3]  = 0.;
-    df_np[4]  = C_ar_sys * p_ar_sys_np - Z_ar_sys * q_vout_l_np;
+    df_np[4]  = C_ar_sys * (p_ar_sys_np - Z_ar_sys * q_vout_l_np);
     df_np[5]  = (L_ar_sys/R_ar_sys) * q_ar_sys_np;
     df_np[6]  = C_ven_sys * p_ven_sys_np;
     df_np[7]  = (L_ven_sys/R_ven_sys) * q_ven_sys_np;
@@ -991,7 +991,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     df_np[9]  = 0.;
     df_np[10] = V_v_r_np;
     df_np[11] = 0.;
-    df_np[12] = C_ar_pul * p_ar_pul_np - Z_ar_pul * q_vout_r_np;
+    df_np[12] = C_ar_pul * (p_ar_pul_np - Z_ar_pul * q_vout_r_np);
     df_np[13] = (L_ar_pul/R_ar_pul) * q_ar_pul_np;
     df_np[14] = C_ven_pul * p_ven_pul_np;
     df_np[15] = (L_ven_pul/R_ven_pul) * q_ven_pul_np;

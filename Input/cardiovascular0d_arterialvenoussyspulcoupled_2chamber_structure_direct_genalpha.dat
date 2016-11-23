@@ -72,7 +72,7 @@ E_at_min_r                      8.0e-6
 C_ar_sys                        8592.86096617
 R_ar_sys                        0.00012
 L_ar_sys                        6.67e-7
-Z_ar_sys                        0.0
+Z_ar_sys                        6.0e-6
 C_ar_pul                        20000.0
 R_ar_pul                        1.5e-5
 L_ar_pul                        0.0
@@ -198,7 +198,7 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.50580490807208633e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.49728830197834439e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
