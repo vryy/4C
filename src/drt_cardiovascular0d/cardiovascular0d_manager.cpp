@@ -101,7 +101,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   if (cardvasc0d_windkesselonly_->HaveCardiovascular0D())
   {
     // dof vector for ONE 0D cardiovascular condition of this type: [p  q  s]^T
-    numCardiovascular0DID_ = 3 * cardvasc0d_windkesselonly_->GetCardiovascular0DCondition().size();;
+    numCardiovascular0DID_ = 3 * cardvasc0d_windkesselonly_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
   {
@@ -280,12 +280,6 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
-
-  // start of Cardiovascular0D time integration
-  // the DOF vector "dof" for ONE Cardiovascular0D bc holds depending on case A, B or C (see description at top of this file):
-  // A) dof = [p  q  s]^T
-  // B) dof = [p_v  p_arp  y_arp  p_ard]^T
-  // C) dof = [q_vin  p_at  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
 
   // evaluate current volume only
   cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
