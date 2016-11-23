@@ -962,6 +962,27 @@ public:
       const int lsc_idx = 0
   );
 
+  /// get viscosity of the slave fluid
+  void GetViscositySlave(
+      DRT::Element * coup_ele,                   ///< xfluid ele
+      double& visc_s                             ///< viscosity slavesided
+      );
+
+  /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
+  virtual void GetPenaltyScalingSlave(
+      DRT::Element * coup_ele,                      ///< xfluid ele
+      double& penscaling_s)                         ///< penalty scaling slavesided
+  {
+    GetViscositySlave(coup_ele,penscaling_s);
+  }
+
+  /// get coupling specific weighting paramters
+  virtual void  GetCouplingSpecificAverageWeights(
+      DRT::Element * xfele,                      ///< xfluid ele
+      DRT::Element * coup_ele,                   ///< coup_ele ele
+      double & kappa_m
+      );
+
 protected:
 
   //! Initializes configurationmap

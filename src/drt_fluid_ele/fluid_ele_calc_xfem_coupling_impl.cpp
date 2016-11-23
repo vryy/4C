@@ -1847,8 +1847,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Traction_Consisten
       rhC_um_(row,0) += funct_m_ks_timefacfac_traction;
     }
 
-    if (!eval_coupling_ ) continue;
-
     //-----------------------------------------------
     //    + (vs, km * t)
     //-----------------------------------------------
@@ -1902,8 +1900,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Projected_Traction
       const unsigned row = mIndex(ir,ivel);
       rhC_um_(row,0) -= derxy_m_ks_timefacfac_sum;
     }
-
-    if (!eval_coupling_ ) continue;
 
     //-----------------------------------------------
     //    + (\nabla vs, km * P)

@@ -4,11 +4,14 @@
 
 \brief Setting of specific XFEM based fluid parameter for element evaluation
 
+
+\level 2
+
 <pre>
-Maintainers: Benedikt Schott
-             schott@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15241
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -93,7 +96,7 @@ public:
 
   //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the third dimension and
   //! strong Dirichlet condition to fix u_z = 0
-  bool IsPseudo2D(){return is_pseudo_2D_;};
+  bool IsPseudo2D() const{ return is_pseudo_2D_; };
 
   //@}
 

@@ -18,6 +18,7 @@ xfluid class and the cut-library
 
 #include "xfem_coupling_levelset.H"
 #include "xfem_utils.H"
+#include "xfem_interface_utils.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -32,6 +33,9 @@ xfluid class and the cut-library
 
 //Needed to find element conditions
 #include "../drt_lib/drt_condition_utils.H"
+
+//Needed for TwoPhaseflow
+#include "../drt_mat/newtonianfluid.H"
 
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
@@ -1235,6 +1239,7 @@ void XFEM::LevelSetCouplingTwoPhase::SetSurfaceTensionSpecifcParameters(
 }
 
 /*--------------------------------------------------------------------------*
+ * this function should go finally!
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingTwoPhase::GetInterfaceSlaveMaterial(
   DRT::Element* actele,
@@ -1348,5 +1353,48 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
   }
   else
     dserror("XFEM::LevelSetCouplingTwoPhase: You want to initialize another strategy than harmonic?");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+* get viscosity of the slave fluid
+*--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::GetViscositySlave(
+    DRT::Element * coup_ele,                   ///< xfluid ele
+    double& visc_s)                            ///< viscosity slavesided
+{
+  Teuchos::RCP<MAT::Material> mat_s;
+  XFEM::UTILS::GetVolumeCellMaterial(coup_ele,mat_s,GEO::CUT::Point::inside);
+  if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
+    visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
+  else
+    dserror("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ * get coupling specific weighting paramters
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::GetCouplingSpecificAverageWeights(
+    DRT::Element * xfele,                      ///< xfluid ele
+    DRT::Element * coup_ele,                   ///< coup_ele ele
+    double & kappa_m)
+{
+  if (GetAveragingStrategy() == INPAR::XFEM::Harmonic)
+  {
+    //Get Materials of master and slave
+    double visc_m = 0.0;
+    GetViscosityMaster(xfele,visc_m);
+
+    double visc_s = 0.0;
+    GetViscositySlave(coup_ele,visc_s);
+
+    kappa_m = visc_s/(visc_m+visc_s);
+
+    if ( kappa_m > 1.0 || kappa_m < 0.0) dserror("Nitsche weights for inverse estimate kappa_m lies not in [0,1]: %d", kappa_m);
+  }
+  else
+    dserror("XFEM::LevelSetCouplingTwoPhase: GetCouplingSpecificAverageWeights not implemented for this averaging strategy!");
   return;
 }

@@ -19,6 +19,7 @@ xfluid class and the cut-library
 #include "xfem_coupling_fpi_mesh.H"
 
 #include "xfem_utils.H"
+#include "xfem_interface_utils.H"
 #include "xfem_discretization_utils.H"
 
 #include "../drt_lib/drt_colors.H"

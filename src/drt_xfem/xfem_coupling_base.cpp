@@ -21,7 +21,14 @@ xfluid class and the cut-library
 #include "xfem_coupling_base.H"
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "xfem_utils.H"
+#include "xfem_interface_utils.H"
 
+//Needed for Master Fluid
+#include "../drt_mat/newtonianfluid.H"
+
+//finally this parameter list should go and all interface relevant parameters should be stored in the condition mangager or coupling objects
+#include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
 
 INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
 {
@@ -545,4 +552,86 @@ void XFEM::CouplingBase::EvaluateScalarFunction(
 
     final_values = num*(functionfac+noise);
   } // loop dofs
+}
+
+/*--------------------------------------------------------------------------*
+* get viscosity of the master fluid
+*--------------------------------------------------------------------------*/
+void XFEM::CouplingBase::GetViscosityMaster(
+    DRT::Element * xfele,                 ///< xfluid ele
+    double& visc_m)                       ///< viscosity mastersided
+{
+  //Get Materials of master
+  Teuchos::RCP<MAT::Material> mat_m;
+
+  //Todo: As soon as the master side may not be position = outside anymore we need to take that into account
+  // by an additional input parameter here (e.g. XFSI with TwoPhase)
+  XFEM::UTILS::GetVolumeCellMaterial(xfele,mat_m,GEO::CUT::Point::outside);
+  if (mat_m->MaterialType() == INPAR::MAT::m_fluid)
+    visc_m = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_m)->Viscosity();
+  else
+    dserror("GetCouplingSpecificAverageWeights: Master Material not a fluid material?");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+* get weighting paramters
+*--------------------------------------------------------------------------*/
+void XFEM::CouplingBase::GetAverageWeights(
+    DRT::Element * xfele,                      ///< xfluid ele
+    DRT::Element * coup_ele,                   ///< coup_ele ele
+    double & kappa_m,                          ///< Weight parameter (parameter +/master side)
+    double & kappa_s,                          ///< Weight parameter (parameter -/slave  side)
+    bool   & non_xfluid_coupling)
+{
+  non_xfluid_coupling = (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided);
+
+  if (GetAveragingStrategy() != INPAR::XFEM::Harmonic)
+    XFEM::UTILS::GetStdAverageWeights(GetAveragingStrategy(), kappa_m);
+  else
+    GetCouplingSpecificAverageWeights(xfele,coup_ele,kappa_m);
+
+  kappa_s = 1.0-kappa_m;
+  return;
+}
+
+/*--------------------------------------------------------------------------------
+ * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+ *--------------------------------------------------------------------------------*/
+void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(
+    DRT::Element * xfele,                                ///< xfluid ele
+    DRT::Element * coup_ele,                             ///< coup_ele ele
+    const double& kappa_m,                               ///< Weight parameter (parameter +/master side)
+    const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
+    const double& inv_h_k,                               ///< the inverse characteristic element length h_k
+    const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
+    double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+    )
+{
+  double penscaling = 0.0;
+  {
+    double visc_m = 0.0;
+    GetViscosityMaster(xfele,visc_m); //As long as mastersided we just have a fluid, directly use this ...
+    penscaling = visc_m*kappa_m;
+  }
+
+  if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+  {
+    double penscaling_s = 0.0;
+    GetPenaltyScalingSlave(coup_ele,penscaling_s);
+    std::cout << "penscaling_s " << penscaling_s << std::endl;
+    penscaling += penscaling_s*kappa_s;
+  }
+
+  std::cout << "kappa_m " << kappa_m<< "kappa_s " << kappa_s<< "penscaling " << penscaling << std::endl;
+
+  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
+      xfele->Shape(),
+      inv_h_k,
+      penscaling,
+      params->NITStabScaling(),
+      params->IsPseudo2D(),
+      params->ViscStabTracEstimate(),
+      NIT_visc_stab_fac);
+  return;
 }

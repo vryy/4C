@@ -448,12 +448,6 @@ private:
     return hk;
   }
 
-  //Get the average weights kappa1 and kappa2 for the Nitsche calculations.
-  void GetAverageWeights(const INPAR::XFEM::AveragingStrategy averaging_strategy,
-                         double & kappa_m,
-                         double & kappa_s,
-                         bool   & non_xfluid_coupling);
-
   //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
   void GetMaterialParametersVolumeCell( Teuchos::RCP<const MAT::Material>  material,
       double &                           densaf,  //done

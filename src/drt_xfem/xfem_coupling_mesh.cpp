@@ -19,6 +19,7 @@ xfluid class and the cut-library
 #include "xfem_coupling_mesh.H"
 
 #include "xfem_utils.H"
+#include "xfem_interface_utils.H"
 #include "xfem_discretization_utils.H"
 
 #include "../drt_lib/drt_colors.H"
@@ -38,6 +39,8 @@ xfluid class and the cut-library
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
+//Needed for Slave Fluid
+#include "../drt_mat/newtonianfluid.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -2053,6 +2056,9 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 }
 
 /*--------------------------------------------------------------------------*
+ * this function should go finally!
+ * (evaluates materials on the xfluid element for slave side which basically is wrong)
+ * doesn't matter if you have the same material on both sides ...
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::GetInterfaceSlaveMaterial(
   DRT::Element* actele,
@@ -2146,6 +2152,23 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
   configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+* get viscosity of the slave fluid
+*--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::GetViscositySlave(
+    DRT::Element * coup_ele,                   ///< xfluid ele
+    double& visc_s)                            ///< viscosity slavesided
+{
+  Teuchos::RCP<MAT::Material> mat_s;
+  XFEM::UTILS::GetVolumeCellMaterial(coup_ele,mat_s,GEO::CUT::Point::outside);
+  if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
+    visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
+  else
+    dserror("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");
+
   return;
 }
 

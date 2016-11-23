@@ -880,6 +880,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                 condition_manager_->GetCouplingEleLocationVector(coup_sid,patchlm);
 
                 // set material for coupling element
+                //Todo --> this is just used for XFF and takes the material of the master fluid element
+                //(just correct for equal material on master and slave side ...)
                 condition_manager_->GetInterfaceSlaveMaterial(actele,matptr_s,coup_sid);
               }
               else if(condition_manager_->IsLevelSetCoupling(coup_sid))

@@ -55,21 +55,6 @@ namespace XFEM
     void SafetyCheckMaterials(Teuchos::RCP<MAT::Material> &          pmat,
                               Teuchos::RCP<MAT::Material> &          nmat
                               );
-
-    //! @name GetNavierSlipStabilizationParameters
-    /*!
-
-    \brief Get NavierSlip Stabilization Parameters for tangential direction
-
-     */
-    void GetNavierSlipStabilizationParameters(
-      const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
-      const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
-      double &                                      dynvisc,                      ///< average dynamic viscosity
-      double &                                      sliplength,                   ///< sliplength
-      double &                                      stabnit,                      ///< stabilization factor NIT_Penalty
-      double &                                      stabadj                       ///< stabilization factor Adjoint
-    );
   }
 }
 

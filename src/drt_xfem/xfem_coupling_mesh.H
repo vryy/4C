@@ -820,6 +820,20 @@ public:
     return moving_interface_;
   }
 
+  /// get viscosity of the slave fluid
+  void GetViscositySlave(
+      DRT::Element * coup_ele,                   ///< xfluid ele
+      double& visc_s                             ///< viscosity slavesided
+  );
+
+  /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
+  virtual void GetPenaltyScalingSlave(
+      DRT::Element * coup_ele,                      ///< xfluid ele
+      double& penscaling_s)                         ///< penalty scaling slavesided
+  {
+    GetViscositySlave(coup_ele,penscaling_s);
+  }
+
 protected:
 
   //! Initializes configurationmap

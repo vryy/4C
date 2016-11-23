@@ -32,6 +32,15 @@ class VolumeCell;
 }
 }
 
+namespace DRT
+{
+namespace ELEMENTS
+{
+//finally this parameter list should go and all interface relevant parameters should be stored in the condition mangager or coupling objects
+class FluidEleParameterXFEM;
+}
+}
+
 namespace XFEM
 {
 
@@ -655,6 +664,26 @@ public:
 
   void GetCouplingEleLocationVector(const int coup_sid,
                                     std::vector<int> & patchlm);
+
+  /// Get the average weights from the coupling objects
+  void GetAverageWeights(
+      const int coup_sid,                        ///< the overall global coupling side id
+      DRT::Element * xfele,                      ///< xfluid ele
+      double& kappa_m,                           ///< Weight parameter (parameter +/master side)
+      double& kappa_s,                           ///< Weight parameter (parameter -/slave  side)
+      bool   & non_xfluid_coupling
+  );
+
+  /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+  void Get_ViscPenalty_Stabfac(
+      const int coup_sid,                                  ///< the overall global coupling side id
+      DRT::Element * xfele,                                ///< xfluid ele
+      const double& kappa_m,                               ///< Weight parameter (parameter +/master side)
+      const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
+      const double& inv_h_k,                               ///< the inverse characteristic element length h_k
+      const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
+      double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+      );
 
 /// set material pointer for volume
   void GetVolumeCellMaterial(

@@ -29,6 +29,15 @@ xfluid class and the cut-library
 
 #include <Epetra_Vector.h>
 
+namespace DRT
+{
+namespace ELEMENTS
+{
+//finally this parameter list should go and all interface relevant parameters should be stored in the condition mangager or coupling objects
+class FluidEleParameterXFEM;
+}
+}
+
 namespace XFEM
 {
 
@@ -252,6 +261,45 @@ public:
     #endif
     return configuration_map_;
   }
+
+  /// get viscosity of the master fluid
+  void GetViscosityMaster(
+      DRT::Element * xfele,                      ///< xfluid ele
+      double& visc_m);                           ///< viscosity mastersided
+
+  /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
+  virtual void GetPenaltyScalingSlave(
+      DRT::Element * coup_ele,                      ///< xfluid ele
+      double& penscaling_s)                         ///< penalty scaling slavesided
+  {
+    dserror("GetPenaltyScalingSlave not implemented for this coupling object!");
+  }
+
+  /// get weighting paramters
+  void GetAverageWeights(
+      DRT::Element * xfele,                      ///< xfluid ele
+      DRT::Element * coup_ele,                   ///< coup_ele ele
+      double & kappa_m,                          ///< Weight parameter (parameter +/master side)
+      double & kappa_s,                          ///< Weight parameter (parameter -/slave  side)
+      bool   & non_xfluid_coupling);
+
+  /// get coupling specific weighting paramters (should be overload, whenever required)
+  virtual void  GetCouplingSpecificAverageWeights(
+      DRT::Element * xfele,                      ///< xfluid ele
+      DRT::Element * coup_ele,                   ///< coup_ele ele
+      double & kappa_m)                          ///< Weight parameter (parameter +/master side)
+  { dserror("XFEM::CouplingBase: GetCouplingSpecificAverageWeights not implemented for this coupling object!"); }
+
+  /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+  void Get_ViscPenalty_Stabfac(
+      DRT::Element * xfele,                                ///< xfluid ele
+      DRT::Element * coup_ele,                             ///< coup_ele ele
+      const double& kappa_m,                               ///< Weight parameter (parameter +/master side)
+      const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
+      const double& inv_h_k,                               ///< the inverse characteristic element length h_k
+      const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
+      double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+      );
 
 protected:
 
