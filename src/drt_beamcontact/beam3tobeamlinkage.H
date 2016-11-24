@@ -14,12 +14,15 @@
 
 #include <Teuchos_RCP.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 // forward declarations
 class Epetra_Vector;
 class Epetra_SerialDenseMatrix;
 namespace DRT {
   class Element;
+  class PackBuffer;
 namespace ELEMENTS {
   class Beam3Base;
   class Beam3r;
@@ -33,10 +36,38 @@ namespace LINALG {
 namespace BEAMINTERACTION
 {
 
+class BeamToBeamLinkageType: public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const{return "BeamToBeamLinkageType";};
+
+  static BeamToBeamLinkageType & Instance(){return instance_;};
+
+private:
+
+  static BeamToBeamLinkageType instance_;
+};
+
+class Beam3rLin2LinkageType: public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const {return "Beam3rLin2LinkageType";};
+
+  static Beam3rLin2LinkageType & Instance(){return instance_;};
+
+  virtual DRT::ParObject* Create(const std::vector<char> & data);
+
+private:
+
+  static Beam3rLin2LinkageType instance_;
+};
+
 /*!
  \brief element for interaction of two 3D beam elements via a mechanical linkage
  */
-class BeamToBeamLinkage
+class BeamToBeamLinkage : public DRT::ParObject
 {
 public:
   //! @name Constructors and destructors and related methods
@@ -45,7 +76,7 @@ public:
   BeamToBeamLinkage();
 
   //! Destructor
-  virtual ~BeamToBeamLinkage() {}
+  virtual ~BeamToBeamLinkage() {};
 
   //! Initialization
   virtual void Init(
@@ -53,17 +84,72 @@ public:
 //      DRT::ELEMENTS::Beam3Base*  element2,
 //      const double&  xi1,
 //      const double&  xi2,
-      const LINALG::Matrix<3,1>& initpos1,
-      const LINALG::Matrix<3,1>& initpos2,
-      const LINALG::Matrix<3,3>& inittriad1,
-      const LINALG::Matrix<3,3>& inittriad2);
+      const int id,
+      const std::vector<std::pair<int, int> >& eleids,
+      const std::vector<LINALG::Matrix<3,1> >& initpos,
+      const std::vector<LINALG::Matrix<3,3> >& inittriad);
 
   //! Setup
   virtual void Setup();
 
+  /*!
+  \brief Return unique ParObject id
+
+  Every class implementing ParObject needs a unique id defined at the
+  top of drt_parobject.H
+  */
+  virtual int UniqueParObjectId() const = 0;
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
   //@}
 
   //! @name Access methods
+
+  /*!
+  \brief Return global id
+  */
+  virtual inline int Id() const { return id_; }
+
+  /*!
+  \brief Return gid of element one
+  */
+  virtual inline const int& GetEleGid(const int& elenum) const {
+    return eleids_[elenum].first; }
+
+  /*!
+  \brief Return gid of element one
+  */
+  virtual inline const int& GetLocBSpotNum(const int& elenum) const {
+    return eleids_[elenum].second; }
+
+  /*!
+  \brief Return gid of element one
+  */
+  virtual inline const std::set<int>& GetInvolvedProcs() const {
+    return involvedprocs_; }
+
+  /*!
+  \brief Return gid of element one
+  */
+  virtual inline void SetInvolvedProcs(std::set<int>& involvedprocs) {
+    involvedprocs_.clear();
+    involvedprocs_ = involvedprocs;
+    return; }
 
   //! return position of first connection site
   inline const LINALG::TMatrix<double,3,1>& GetBindSpotPos1() const
@@ -116,10 +202,8 @@ public:
   \brief Update position and triad of both connection sites (a.k.a. binding spots)
   */
   void ResetState(
-      LINALG::Matrix<3,1>& bspotpos1,
-      LINALG::Matrix<3,1>& bspotpos2,
-      LINALG::Matrix<3,3>& bspottriad1,
-      LINALG::Matrix<3,3>& bspottriad2);
+      std::vector<LINALG::Matrix<3,1> >& bspotpos,
+      std::vector<LINALG::Matrix<3,3> >& bspottriad);
 
   //! return appropriate instance of the desired class (acts as a simple factory)
   static Teuchos::RCP<BeamToBeamLinkage> Create();
@@ -169,22 +253,28 @@ private:
 //  double xi1_;
 //  double xi2_;
 
+  //! a unique global id
+  int                                      id_;
+  //! elegid and local binding spot number of first [0] and second [1] element
+  std::vector<std::pair<int, int> >        eleids_;
+  //! involved procs
+  std::set<int> involvedprocs_;
+
   //! current position of the two connection sites (a.k.a. binding spots)
-  LINALG::TMatrix<double,3,1> bspotpos1_;
-  LINALG::TMatrix<double,3,1> bspotpos2_;
+  LINALG::Matrix<3,1> bspotpos1_;
+  LINALG::Matrix<3,1> bspotpos2_;
 
   //! current triad of the two connection sites as quaternions
-  LINALG::TMatrix<double,4,1> bspottriad1_;
-  LINALG::TMatrix<double,4,1> bspottriad2_;
+  LINALG::Matrix<4,1> bspottriad1_;
+  LINALG::Matrix<4,1> bspottriad2_;
 
   //! triads representing the (constant) relative rotation between the two nodal triads of the linker element
   // and cross-section orientation of its connection sites (a.k.a. binding spots)
-  LINALG::TMatrix<double,3,3> Lambdarel1_;
-  LINALG::TMatrix<double,3,3> Lambdarel2_;
+  LINALG::Matrix<3,3> Lambdarel1_;
+  LINALG::Matrix<3,3> Lambdarel2_;
 
   //@}
 };
-
 
 /*!
  \brief element for link between two 3D beam elements via a linear (2 noded) Simo-Reissner beam element
@@ -210,6 +300,31 @@ public:
 
   //! Setup [derived]
   virtual void Setup();
+
+  /*!
+  \brief Return unique ParObject id
+
+  Every class implementing ParObject needs a unique id defined at the
+  top of drt_parobject.H
+  */
+  virtual int UniqueParObjectId() const { return Beam3rLin2LinkageType::Instance().UniqueParObjectId(); };
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
   //@}
 
 

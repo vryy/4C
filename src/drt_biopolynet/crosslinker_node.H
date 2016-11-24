@@ -38,7 +38,7 @@ public:
   std::string Name() const
   {
     return "CrosslinkerNodeType";
-  }
+  };
 
   static CrosslinkerNodeType & Instance()
   {

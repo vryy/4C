@@ -20,23 +20,38 @@
 #include "../drt_fem_general/largerotations.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils_factory.H"
+
+BEAMINTERACTION::BeamToBeamLinkageType BEAMINTERACTION::BeamToBeamLinkageType::instance_;
+BEAMINTERACTION::Beam3rLin2LinkageType BEAMINTERACTION::Beam3rLin2LinkageType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamLinkage::BeamToBeamLinkage():
-isinit_(false),
-issetup_(false),
-//element1_(Teuchos::null),
-//element2_(Teuchos::null),
-//xi1_(0.0),
-//xi2_(0.0),
-bspotpos1_(true),
-bspotpos2_(true),
-bspottriad1_(true),
-bspottriad2_(true),
-Lambdarel1_(true),
-Lambdarel2_(true)
+DRT::ParObject* BEAMINTERACTION::Beam3rLin2LinkageType::Create( const std::vector<char> & data )
+{
+  BEAMINTERACTION::Beam3rLin2Linkage * my_beam3rlin2 = new BEAMINTERACTION::Beam3rLin2Linkage();
+  my_beam3rlin2->Unpack(data);
+  return my_beam3rlin2;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+BEAMINTERACTION::BeamToBeamLinkage::BeamToBeamLinkage() :
+    ParObject(),
+    isinit_(false),
+    issetup_(false),
+    //element1_(Teuchos::null),
+    //element2_(Teuchos::null),
+    //xi1_(0.0),
+    //xi2_(0.0),
+    id_(-1),
+    bspotpos1_(true),
+    bspotpos2_(true),
+    bspottriad1_(true),
+    bspottriad2_(true),
+    Lambdarel1_(true),
+    Lambdarel2_(true)
 {
   // empty constructor
   return;
@@ -49,19 +64,21 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
 //    DRT::ELEMENTS::Beam3Base*  element2,
 //    const double&  xi1,
 //    const double&  xi2,
-    const LINALG::Matrix<3,1>& initpos1,
-    const LINALG::Matrix<3,1>& initpos2,
-    const LINALG::Matrix<3,3>& inittriad1,
-    const LINALG::Matrix<3,3>& inittriad2)
+    const int id,
+    const std::vector<std::pair<int, int> >& eleids,
+    const std::vector<LINALG::Matrix<3,1> >& initpos,
+    const std::vector<LINALG::Matrix<3,3> >& inittriad)
 {
   issetup_ = false;
 
 //  xi1_ = xi1;
 //  xi2_ = xi2;
 
+  id_ = id;
+  eleids_ = eleids;
 
-  bspotpos1_ = initpos1;
-  bspotpos2_ = initpos2;
+  bspotpos1_ = initpos[0];
+  bspotpos2_ = initpos[1];
 
 
   /* the initial triads of the connecting element are chosen such that the first base
@@ -73,7 +90,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   LINALG::Matrix<3,1> distvec(true);
   distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
-  LARGEROTATIONS::CalculateSRTriads<double>(distvec,inittriad1,linkeletriad);
+  LARGEROTATIONS::CalculateSRTriads<double>(distvec,inittriad[0],linkeletriad);
 
   LARGEROTATIONS::triadtoquaternion(linkeletriad,bspottriad1_);
   bspottriad2_=bspottriad1_;
@@ -81,8 +98,8 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   /* store relative rotation matrix between triads of connecting element and
    * the material triads of the "parent elements"; these remain constant over
    * the entire life of this connection */
-  Lambdarel1_.MultiplyTN(inittriad1,linkeletriad);
-  Lambdarel2_.MultiplyTN(inittriad2,linkeletriad);
+  Lambdarel1_.MultiplyTN(inittriad[0],linkeletriad);
+  Lambdarel2_.MultiplyTN(inittriad[1],linkeletriad);
 
   isinit_ = true;
 }
@@ -96,26 +113,104 @@ void BEAMINTERACTION::BeamToBeamLinkage::Setup()
   // the flag issetup_ will be set in the derived method!
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // isinit_
+  AddtoPack(data,isinit_);
+  // issetup
+  AddtoPack(data,issetup_);
+  // add id
+  int id = Id();
+  AddtoPack(data,id);
+
+  // add eleids_
+  AddtoPack(data,eleids_);
+  // add involved procs
+  AddtoPack(data,involvedprocs_);
+  // bspotpos1_
+  AddtoPack(data,bspotpos1_);
+  // bspotpos2_
+  AddtoPack(data,bspotpos2_);
+  // bspottriad1_
+  AddtoPack(data,bspottriad1_);
+  // bspottriad2_
+  AddtoPack(data,bspottriad2_);
+  // Lambdarel1_
+  AddtoPack(data,Lambdarel1_);
+  // Lambdarel2_
+  AddtoPack(data,Lambdarel2_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // isinit_
+  isinit_ = DRT::ParObject::ExtractInt(position,data);
+  // issetup
+  issetup_ = DRT::ParObject::ExtractInt(position,data);
+  // id_
+  ExtractfromPack(position,data,id_);
+
+  // eleids_
+  ExtractfromPack(position,data,eleids_);
+  // involved procs
+  ExtractfromPack(position,data,involvedprocs_);
+  // bspotpos1_
+  ExtractfromPack(position,data,bspotpos1_);
+  // bspotpos2_
+  ExtractfromPack(position,data,bspotpos2_);
+  // bspottriad1_
+  ExtractfromPack(position,data,bspottriad1_);
+  // bspottriad2_
+  ExtractfromPack(position,data,bspottriad2_);
+  // Lambdarel1_
+  ExtractfromPack(position,data,Lambdarel1_);
+  // Lambdarel2_
+  ExtractfromPack(position,data,Lambdarel2_);
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
-    LINALG::Matrix<3,1>& bspotpos1,
-    LINALG::Matrix<3,1>& bspotpos2,
-    LINALG::Matrix<3,3>& bspottriad1,
-    LINALG::Matrix<3,3>& bspottriad2)
+    std::vector<LINALG::Matrix<3,1> >& bspotpos,
+    std::vector<LINALG::Matrix<3,3> >& bspottriad)
 {
   CheckInitSetup();
 
-  bspotpos1_=bspotpos1;
-  bspotpos2_=bspotpos2;
+  bspotpos1_=bspotpos[0];
+  bspotpos2_=bspotpos[1];
 
   LINALG::TMatrix<double,3,3> currenttriad(true);
-  currenttriad.Multiply(bspottriad1,Lambdarel1_);
+  currenttriad.Multiply(bspottriad[0],Lambdarel1_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad,bspottriad1_);
 
   currenttriad.Clear();
-  currenttriad.Multiply(bspottriad2,Lambdarel2_);
+  currenttriad.Multiply(bspottriad[1],Lambdarel2_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad,bspottriad2_);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -128,15 +223,11 @@ BEAMINTERACTION::BeamToBeamLinkage::Create()
 
 }
 
-
-
-
-
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Beam3rLin2Linkage::Beam3rLin2Linkage():
-linkele_(Teuchos::null)
+BEAMINTERACTION::Beam3rLin2Linkage::Beam3rLin2Linkage() :
+    BeamToBeamLinkage(),
+    linkele_(Teuchos::null)
 {
   // empty constructor
   return;
@@ -197,6 +288,60 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Setup()
   linkele_->SetUpReferenceGeometry<2,2,1>(refpos,refrotvec);
 
   issetup_ = true;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::Beam3rLin2Linkage::Pack(DRT::PackBuffer& data) const
+{
+  CheckInitSetup();
+
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class DRT::Node
+  BeamToBeamLinkage::Pack(data);
+
+  // pack linker element
+  if (linkele_!=Teuchos::null)
+    linkele_->Pack(data);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class DRT::Node
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  BeamToBeamLinkage::Unpack(basedata);
+
+  // Unpack data of sub material (these lines are copied from drt_element.cpp)
+  std::vector<char> dataele;
+  ExtractfromPack(position,data,dataele);
+  if (dataele.size()>0)
+  {
+    DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
+    DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
+    if (linkele==NULL)
+      dserror("failed to unpack elastic material");
+    linkele_ = Teuchos::rcp(linkele);
+  }
+  else linkele_ = Teuchos::null;
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

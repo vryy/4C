@@ -41,7 +41,7 @@ NEGLECTINERTIA         yes
 MASSLIN                rotations
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.5
+CUTOFF_RADIUS                   3
 BOUNDINGBOX                     0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1                     // header_01 end
@@ -175,7 +175,7 @@ MAT 2 MAT_Crosslinker              YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09
 ---------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  1.50701733795405218e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  3.08512777021453799e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  1.23913858999164780e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  1.52730200152218970e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  3.63281735904278036e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  2.86214801597366106e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END

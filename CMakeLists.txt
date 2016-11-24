@@ -649,9 +649,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
 )
-set(OBJS_DRT_BIOPOLYNET
-  src/drt_biopolynet/crosslinker_node.cpp
-)
+
 set(OBJS_DRT_PLASTIC_SSN
   src/drt_plastic_ssn/plastic_ssn_manager.cpp
 )
@@ -1495,6 +1493,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
+  src/drt_biopolynet/crosslinker_node.cpp
   src/drt_particle/particle_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
@@ -2561,7 +2560,6 @@ add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
-add_library(alg_biopolynet ${OBJS_DRT_BIOPOLYNET})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
@@ -2584,7 +2582,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_porofluidmultiphase
   alg_scatra
   alg_structure
-  alg_biopolynet
   alg_crack
   alg_plastic_ssn
   alg_invanalysis

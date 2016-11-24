@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
 
-namespace STATMECH
+namespace BIOPOLYNET
 {
 /*!
 \brief namespace of utility functions for statmech methods
@@ -124,6 +124,6 @@ inline std::vector<int> Permutation(const int& number)
 
 
 }//namespace UTILS
-}//namespace STATMECH
+}//namespace BIOPOLYNET
 
 #endif /* BIOPOLYNET_CALC_UTILS_H_ */

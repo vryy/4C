@@ -77,11 +77,11 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // Shifting to periodic boundary configuration is done here. From now on the
   // global displacement vector always contains the shifted configuration.
   // -------------------------------------------------------------------------
-  STATMECH::UTILS::PeriodicBoundaryConsistentDis(
+  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDis(
       GStatePtr()->GetMutableDisN(),                            // disn
       eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
       DiscretPtr());
-  STATMECH::UTILS::PeriodicBoundaryConsistentDis(
+  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDis(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
       DiscretPtr());
@@ -120,7 +120,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   // adapt displacement vector so that node positions are consistent with
   // periodic boundary condition.
   // -------------------------------------------------------------------------
-  STATMECH::UTILS::PeriodicBoundaryConsistentDis(
+  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDis(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
       DiscretPtr());

@@ -34,6 +34,7 @@
 #include "../drt_meshfree_discret/meshfree_scatra_cell.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_particle/particle_node.H"
+#include "../drt_biopolynet/crosslinker_node.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
@@ -167,6 +168,7 @@
 #include "../drt_mat/maxwell_0d_acinus_DoubleExponential.H"
 #include "../drt_mat/maxwell_0d_acinus_Ogden.H"
 #include "../drt_inv_analysis/particle_data.H"
+#include "../drt_beamcontact/beam3tobeamlinkage.H"
 
 
 std::string DRT::ParObjectList()
@@ -179,6 +181,7 @@ std::string DRT::ParObjectList()
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
     << PARTICLE::ParticleNodeType::Instance().Name() << " "
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
+    << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3Type::Instance().Name() << " "
@@ -372,6 +375,7 @@ std::string DRT::ParObjectList()
     << MAT::ActiveFiberType::Instance().Name() << " "
     << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
     << INVANA::ParticleDataType::Instance().Name() << " "
+    << BEAMINTERACTION::Beam3rLin2LinkageType::Instance().Name() << " "
     ;
 
   std::cout << s.str() << std::endl;

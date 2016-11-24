@@ -336,7 +336,7 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>&       po
                                                    const int&                 bspotlocn,
                                                    const std::vector<double>& periodlength) const
 {
-  // unshift node position to get correct postion at xi
+  // unshift node position to get correct position at xi
   UnShiftNodePosition(disp,periodlength,NumCenterlineNodes());
 
   const double xi = bspotposxi_[bspotlocn];
@@ -369,6 +369,8 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     tr
   const double xi = bspotposxi_[bspotlocn];
   // get position
   GetTriadAtXi(triad,xi,disp);
+
+  return;
 }
 
 // explicit template instantiations
