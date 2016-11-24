@@ -166,9 +166,9 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     if (*std::max_element(wkID.begin(),wkID.end()) != *std::max_element(coupcondID.begin(),coupcondID.end()))
       dserror("Max cardiovascular0d id not equal to max cardiovascular0d structure coupling id!");
 
-    if (*std::max_element(wkID.begin(),wkID.end()) != cardiovascular0dcond_.size()-1)
+    if (*std::max_element(wkID.begin(),wkID.end()) != static_cast<int>(cardiovascular0dcond_.size())-1)
       dserror("Max ID should be the number of conditions minus 1!");
-    if (*std::max_element(coupcondID.begin(),coupcondID.end()) != cardiovascular0dstructcoupcond_.size()-1)
+    if (*std::max_element(coupcondID.begin(),coupcondID.end()) != static_cast<int>(cardiovascular0dstructcoupcond_.size())-1)
       dserror("Max coupling_id should be the number of conditions minus 1!");
 
   }
