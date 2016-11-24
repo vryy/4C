@@ -96,10 +96,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                "WEIGHT_FUNCTION","CubicBspline",
                                "weight function for meshFree interaction dynamics",
                                tuple<std::string>(
-                                 "CubicBspline"
+                                 "CubicBspline",
+                                 "SqrtHyperbola"
                                  ),
                                tuple<int>(
-                                 INPAR::PARTICLE::CubicBspline
+                                 INPAR::PARTICLE::CubicBspline,
+                                 INPAR::PARTICLE::SqrtHyperbola
                                  ),
                                &particledyn);
 

@@ -130,7 +130,8 @@ namespace PARTICLE
       const Teuchos::RCP<DRT::Discretization>& walldiscret,
       const Teuchos::RCP<const Epetra_Vector>& walldisn,
       const Teuchos::RCP<const Epetra_Vector>& wallveln,
-      const Teuchos::RCP<Epetra_Vector>& accn);
+      const Teuchos::RCP<Epetra_Vector>& accn,
+      Teuchos::RCP<Epetra_Vector> densityDotn);
 
     virtual void CalcNeighboringHeatSourcesContact(
       const int lidNodeCol_i,

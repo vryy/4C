@@ -19,29 +19,31 @@
 /*----------------------------------------------------------------------*
  | compute the cubicBspline weight function           cattabiani 08/16  |
  *----------------------------------------------------------------------*/
+
+// The formula can be found in:
+// Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
+
 double PARTICLE::WeightFunction_CubicBspline::Weight(
-  const double &distRel,
+  const double &disRel,
   const double &radius
   )
 {
-  // safety checks
-  assert(distRel >= 0);
-  assert(radius >= 0);
 
-  const double reszDis = 2 * distRel / radius;
+
+  const double rszDisRel = RszDisRel(disRel,radius);
 
   double weight = 0;
-  if (reszDis < 1)
+  if (rszDisRel < 1)
   {
-    weight = (1.0 / 6.0) * std::pow(2-reszDis,3) - 4 * std::pow(1-reszDis,3);
+    weight = 1 - 1.5 * std::pow(rszDisRel,2) - 0.75 * std::pow(rszDisRel,3);
   }
-  else if (reszDis < 2)
+  else if (rszDisRel < 2)
   {
-    weight = (1.0 / 6.0) * std::pow(2-reszDis,3);
+    weight = 0.25 * std::pow(2-rszDisRel,3);
   }
 
   // resizing to have an integral = 1
-  weight *= Resizer3D();
+  weight *= Rsz3D(radius);
 
   return weight;
 }
@@ -50,29 +52,63 @@ double PARTICLE::WeightFunction_CubicBspline::Weight(
 /*-----------------------------------------------------------------------------*
  | compute the weight function derivative                    cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
-double PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(const double &distRel, const double &radius)
+
+// empowered by mathematica:
+// https://www.wolframalpha.com/input/?i=Piecewise+%5B%7B%7B+(6+x+(3+x+-+4))%2F8,+0%3C%3Dx%2F2%3C%3D1%2F2%7D,%7B+-(6+(2+-+x)%5E2)%2F8,1%2F2%3Cx%2F2%3C%3D1%7D%7D%5D
+
+double PARTICLE::WeightFunction_CubicBspline::WeightDerivative(const double &disRel, const double &radius)
 {
-  // safety checks
-  assert(distRel >= 0);
-  assert(radius >= 0);
 
-  const double derivativeResizer = 2 / radius;
-  const double reszDis = derivativeResizer * distRel;
+  const double rszDisRel = RszDisRel(disRel,radius);
 
-  double derivativeWeight = 0;
-  if (reszDis < 1)
+  double weightDerivative = 0;
+  if (rszDisRel < 1)
   {
-    derivativeWeight = 0.5 * reszDis * (3 * reszDis - 4);
+    weightDerivative = 6.0 * disRel * (3.0 * disRel - 2.0 * radius) / std::pow(radius,3);
   }
-  else if (reszDis < 2)
+  else if (rszDisRel < 2)
   {
-    derivativeWeight = - 0.5 * (reszDis - 2) * (reszDis - 2);
+    weightDerivative = - 6.0 * std::pow(radius - disRel,2) / std::pow(radius,3);
   }
 
   // resizing to have an integral = 1
-  derivativeWeight *= Resizer3D() * derivativeResizer / distRel;
+  // it is divided by disRel so that DW * rRel is the gradient
+  weightDerivative *= Rsz3D(radius);
 
-  return derivativeWeight;
+  return weightDerivative;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute the cubicBspline weight function           cattabiani 08/16  |
+ *----------------------------------------------------------------------*/
+double PARTICLE::WeightFunction_SqrtHyperbola::Weight(
+  const double &disRel,
+  const double &radius
+  )
+{
+  double weight = 0;
+  if (disRel<radius)
+  {
+    weight = (std::pow(radius/disRel,0.5) - 1) * Rsz3D(radius);
+  }
+
+  return weight;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | compute the weight function derivative                    cattabiani 08/16  |
+ *-----------------------------------------------------------------------------*/
+double PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(const double &disRel, const double &radius)
+{
+  double weightDerivative = 0;
+  if (disRel<radius)
+  {
+    weightDerivative = (- std::pow(radius/disRel,0.5) / (2 * disRel) ) * Rsz3D(radius);
+  }
+
+  return weightDerivative;
 }
 
 

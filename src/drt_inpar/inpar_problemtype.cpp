@@ -64,6 +64,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Lubrication"]                                      = prb_lubrication;
     string2prbtype["NP_Supporting_Procs"]                              = prb_np_support;
     string2prbtype["Particle"]                                         = prb_particle;
+    string2prbtype["MeshFree"]                                         = prb_meshfree;
     string2prbtype["Poroelastic_scalar_transport"]                     = prb_poroscatra;
     string2prbtype["Poroelasticity"]                                   = prb_poroelast;
     string2prbtype["Multiphase_Poroelasticity"]                        = prb_poromultiphase;

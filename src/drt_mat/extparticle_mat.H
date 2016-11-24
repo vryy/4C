@@ -82,6 +82,8 @@ namespace MAT
       const double bulkModulus_;
       /// dynamic (shear) viscosity for the liquid phase
       const double dynamicViscosity_;
+      /// bulk viscosity for the liquid phase
+      const double bulkViscosity_;
       /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
       const double thermalConductivity_;
 

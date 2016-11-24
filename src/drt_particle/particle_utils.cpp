@@ -109,24 +109,25 @@ void PARTICLE::Utils::Density2Pressure(
   const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
   const double speedOfSoundS = extParticleMat->SpeedOfSoundS();
   const double speedOfSoundL = extParticleMat->SpeedOfSoundL();
-  //const double baseDensity = 0;//extParticleMat->initDensity_;
 
   // rebuild the pressure vector
   if (trg_createPressureVector || pressure == Teuchos::null)
-    Teuchos::RCP<Epetra_Vector> pressure = Teuchos::rcp(new Epetra_Vector(deltaDensity->Map(), true));
+  {
+    pressure = Teuchos::rcp(new Epetra_Vector(deltaDensity->Map(), true));
+  }
 
   // compute inertia for every particle
   for (int lidNode = 0; lidNode < deltaDensity->MyLength(); ++lidNode)
   {
-    const double densityDelta = (*deltaDensity)[lidNode];// - baseDensity;
+    const double deltaDensity_i = (*deltaDensity)[lidNode];
     if ((*specEnthalpy)[lidNode] <= specEnthalpyST)
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundS, densityDelta);
+      (*pressure)[lidNode] = Density2Pressure(speedOfSoundS, deltaDensity_i);
     else if ((*specEnthalpy)[lidNode] >= specEnthalpyTL)
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundL, densityDelta);
+      (*pressure)[lidNode] = Density2Pressure(speedOfSoundL, deltaDensity_i);
     else
     {
       const double speedOfSoundT = extParticleMat->SpeedOfSoundT((*specEnthalpy)[lidNode]);
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundT, densityDelta);
+      (*pressure)[lidNode] = Density2Pressure(speedOfSoundT, deltaDensity_i);
     }
   }
 }

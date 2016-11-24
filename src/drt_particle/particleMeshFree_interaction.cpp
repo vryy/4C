@@ -2,7 +2,10 @@
 /*!
 \file particleMeshFree_interaction.cpp
 
-\brief Particle-MeshFree interaction handling
+\brief Particle-MeshFree interaction handling.
+papers: - Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705
+        - Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
+
 
 \level 3
 
@@ -57,6 +60,9 @@ case INPAR::PARTICLE::InitParticle :
   {
     wallMeshFreeData_.density = extParticleMat->initDensity_;
     wallMeshFreeData_.mass = extParticleMat->initDensity_ * PARTICLE::Utils::Radius2Volume(extParticleMat->initRadius_);
+    // the pressure is linked to the deltaDensity_ with the initial density. In case of this wall it is always 0
+    wallMeshFreeData_.pressure = 0;
+    /*
     if (extParticleMat->initTemperature_ < extParticleMat->transitionTemperature_)
     {
       wallMeshFreeData_.pressure = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundS(),extParticleMat->initDensity_);
@@ -69,6 +75,7 @@ case INPAR::PARTICLE::InitParticle :
     {
       dserror("Start from the transition state not implemented");
     }
+    */
     break;
   }
 case INPAR::PARTICLE::Mirror :
@@ -96,8 +103,19 @@ if (wallInteractionType_ != INPAR::PARTICLE::Mirror)
     dserror("the value of WALL_FAKE_MASS is unacceptable");
 }
 
-diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkModulus_;
-convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkModulus_);
+diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkViscosity_);
+
+// checks
+if (diffusionCoeff_<0)
+{
+  dserror("The diffusion coefficient is negative! The following equation should hold: 5*dynamicViscosity >= 3*bulkViscosity");
+}
+
+if (convectionCoeff_<0)
+{
+  dserror("The convection coefficient is negative! Are you sure that the dynamic viscosity and the bulk modulus are positive?");
+}
 
 }
 
@@ -309,7 +327,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
       CalcNeighboringHeatSourcesContact(lidNodeCol_i, neighboring_heatSources, specEnthalpyDotn);
 
       // compute contact with neighboring walls
-      CalcNeighboringWallMeshFreeInteraction(lidNodeCol_i, neighboring_walls, walldiscret, walldisn, wallveln, accn);
+      CalcNeighboringWallMeshFreeInteraction(lidNodeCol_i, neighboring_walls, walldiscret, walldisn, wallveln, accn, densityDotn);
 
       // compute interactions with neighboring particles
       CalcNeighboringParticleMeshFreeInteraction(lidNodeCol_i, neighboring_particles, accn, densityDotn, specEnthalpyDotn);
@@ -384,19 +402,28 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
     {
 
       // compute distance and relative velocities
-      LINALG::Matrix<3,1> rRel, vRel;
-      double WFDerivative = 0;
+      LINALG::Matrix<3,1> rRel, rRelVersor;
       rRel.Update(1.0, particle_i.dis, -1.0, particle_j.dis);
       const double rRelNorm2 = rRel.Norm2();
+      rRelVersor.Update(1/rRelNorm2,rRel);
+
+      LINALG::Matrix<3,1> vRel;
       vRel.Update(1.0, particle_i.vel, -1.0, particle_j.vel);
-      const double rRelDotVrel = rRel.Dot(vRel);
+
+      const double rRelVersorDotVrel = rRelVersor.Dot(vRel);
 
       // compute the proper weight function gradient
+      double weightDerivative = 0;
       switch (weightFunctionType_)
       {
       case INPAR::PARTICLE::CubicBspline :
       {
-        WFDerivative = PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(rRelNorm2, particle_i.radius);
+        weightDerivative = PARTICLE::WeightFunction_CubicBspline::WeightDerivative(rRelNorm2, particle_i.radius);
+        break;
+      }
+      case INPAR::PARTICLE::SqrtHyperbola :
+      {
+        weightDerivative = PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(rRelNorm2, particle_i.radius);
         break;
       }
       }
@@ -406,23 +433,23 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
       // p_i/\rho_i^2 + p_j/\rho_j^2
       const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure/rhoSquare_j);
       // WFDerivative/(\rho_i \rho_j)
-      const double WFDerivative_Rho2 = WFDerivative / (particle_i.density * particle_j.density);
+      const double weightDerivative_Rho2 = weightDerivative / (particle_i.density * particle_j.density);
       // T_i/\rho_i^2 - T_j/\rho_j^2
       //const double gradT_over_rho_coeff = (particle_j.temperature/rhoSquare_j - T_over_rhoSquare_i);
 
       // compute WFGradDotVrel
-      const double WFGradDotVrel = WFDerivative * rRelDotVrel;
+      const double WFGradDotVrel = weightDerivative * rRelVersorDotVrel;
 
       // compute divT_rho_i
-      const double divT_rho_i = 2 * particle_algorithm_->ExtParticleMat()->thermalConductivity_ * WFDerivative_Rho2 * (particle_i.temperature - particle_j.temperature);
+      const double divT_rho_i = 2 * particle_algorithm_->ExtParticleMat()->thermalConductivity_ * (weightDerivative_Rho2/rRelNorm2) * (particle_i.temperature - particle_j.temperature);
 
       LINALG::Matrix<3,1> momentum_i;
       // compute the pressure term
-      momentum_i.Update(- gradP_Rho2 * WFDerivative,rRel);
+      momentum_i.Update(- gradP_Rho2 * weightDerivative,rRelVersor);
       // compute the diffusion term
-      momentum_i.Update(diffusionCoeff_ * WFDerivative_Rho2,vRel,1.0);
+      momentum_i.Update(diffusionCoeff_ * weightDerivative_Rho2/rRelNorm2,vRel,1.0);
       // compute the convection term
-      momentum_i.Update(convectionCoeff_ * WFDerivative_Rho2 * rRelDotVrel / (rRelNorm2 * rRelNorm2),rRel,1.0);
+      momentum_i.Update(convectionCoeff_ * weightDerivative_Rho2 * rRelVersorDotVrel / (rRelNorm2 * rRelNorm2),rRel,1.0);
 
       // mass scalings
       double densityDotn_i = particle_j.mass * WFGradDotVrel;
@@ -474,7 +501,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     const Teuchos::RCP<DRT::Discretization>& walldiscret,
     const Teuchos::RCP<const Epetra_Vector>& walldisn,
     const Teuchos::RCP<const Epetra_Vector>& wallveln,
-    const Teuchos::RCP<Epetra_Vector>& accn)
+    const Teuchos::RCP<Epetra_Vector>& accn,
+    Teuchos::RCP<Epetra_Vector> densityDotn)
 {
 
   // ids i
@@ -639,7 +667,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
   if(history_wall.size() > 3)
     dserror("Contact with more than 3 wall elements. Check whether history is deleted correctly.");
 
-  const double p_Rho2_i = particle_i.pressure/std::pow(particle_i.density,2);
+  const double rhoSquare_i = std::pow(particle_i.density,2);
+  const double p_Rho2_i = particle_i.pressure/rhoSquare_i;
 
   for(size_t s=0; s<surfaces.size(); ++s)
   {
@@ -647,54 +676,72 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringWallMeshFreeIn
     WallInteractionPoint wallcontact = surfaces[s];
 
     // compute distance and relative velocities
-    LINALG::Matrix<3,1> rRel;
-    double WFDerivative = 0;
+    LINALG::Matrix<3,1> rRel, rRelVersor;
     rRel.Update(1.0, particle_i.dis, -1.0, wallcontact.point);
     const double rRelNorm2 = rRel.Norm2();
+    rRelVersor.Update(1/rRelNorm2,rRel);
+
     LINALG::Matrix<3,1> vRel(particle_i.vel);
-    const double rRelDotVrel = rRel.Dot(vRel);
-
-    if(rRelNorm2 == 0.0)
-      dserror("particle center and wall are lying in the same place -> bad initialization?");
-
-    // compute the proper weight function derivative
-    switch (weightFunctionType_)
-    {
-    case INPAR::PARTICLE::CubicBspline :
-    {
-      WFDerivative = PARTICLE::WeightFunction_CubicBspline::DerivativeWeight(rRelNorm2, particle_i.radius);
-      break;
-    }
-    }
 
     if (wallInteractionType_ == INPAR::PARTICLE::Mirror)
     {
       wallMeshFreeData_.pressure = particle_i.pressure;
       wallMeshFreeData_.density = particle_i.density;
       wallMeshFreeData_.mass = particle_i.mass;
+      // mirrored velocity
+      vRel.Scale(2);
+    }
+
+    const double rRelVersorDotVrel = rRelVersor.Dot(vRel);
+
+    if(rRelNorm2 == 0.0)
+    {
+      dserror("particle center and wall are lying in the same place -> bad initialization?");
+    }
+
+    // compute the proper weight function derivative
+    double weightDerivative = 0;
+    switch (weightFunctionType_)
+    {
+    case INPAR::PARTICLE::CubicBspline :
+    {
+      weightDerivative = PARTICLE::WeightFunction_CubicBspline::WeightDerivative(rRelNorm2, particle_i.radius);
+      break;
+    }
+    case INPAR::PARTICLE::SqrtHyperbola :
+    {
+      weightDerivative = PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(rRelNorm2, particle_i.radius);
+      break;
+    }
     }
 
     // p_i/\rho_i^2 + p_j/\rho_j^2
     const double gradP_Rho2 = (p_Rho2_i + wallMeshFreeData_.pressure/(wallMeshFreeData_.density * wallMeshFreeData_.density));
     // WFDerivative/(\rho_i \rho_j)
-    const double WFDerivative_Rho2 = WFDerivative / (particle_i.density * wallMeshFreeData_.density);
+    const double weightDerivative_Rho2 = weightDerivative / (particle_i.density * wallMeshFreeData_.density);
+    // compute WFGradDotVrel
+    const double WFGradDotVrel = weightDerivative * rRelVersorDotVrel;
 
     LINALG::Matrix<3,1> momentum_i;
     // compute the pressure term
-    momentum_i.Update(- gradP_Rho2 * WFDerivative,rRel);
+    momentum_i.Update(- gradP_Rho2 * weightDerivative,rRelVersor);
     // compute the diffusion term
-    momentum_i.Update(diffusionCoeff_ * WFDerivative_Rho2,vRel,1.0);
+    momentum_i.Update(diffusionCoeff_ * weightDerivative_Rho2/rRelNorm2,vRel,1.0);
     // compute the convection term
-    momentum_i.Update(convectionCoeff_ * WFDerivative_Rho2 * rRelDotVrel / (rRelNorm2 * rRelNorm2),rRel,1.0);
+    momentum_i.Update(convectionCoeff_ * weightDerivative_Rho2 * rRelVersorDotVrel / (rRelNorm2 * rRelNorm2),rRel,1.0);
 
     // mass scalings
+    double densityDotn_i = wallMeshFreeData_.mass * WFGradDotVrel;
     LINALG::Matrix<3,1> accn_i;
     accn_i.Update(wallMeshFreeData_.mass,momentum_i);
 
+    // compute and add the correct densityDot_i
+    LINALG::Assemble(*densityDotn, densityDotn_i, particle_i.gid, particle_i.owner);
+    // adiabatic walls (for now)
+    // compute and add the correct accn_i
     LINALG::Assemble(*accn, accn_i, particle_i.lm, particle_i.owner);
   }
 }
-
 
 /*--------------------------------------------------------------------------*
  | calculate interaction with neighboring heat sources         katta 10/16  |
@@ -763,6 +810,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
       case INPAR::PARTICLE::CubicBspline :
       {
         WFGrad = PARTICLE::WeightFunction_CubicBspline::GradientWeight(rRel, particle_i.radius);
+        break;
+      }
+      case INPAR::PARTICLE::SqrtHyperbola :
+      {
+        weightDerivative = PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(rRelNorm2, particle_i.radius);
         break;
       }
       }

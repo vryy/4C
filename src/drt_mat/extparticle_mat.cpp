@@ -32,6 +32,7 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     thermalExpansionT_(matdata->GetDouble("THERMAL_EXPANSION_T")),
     bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
     dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
+    bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
     thermalConductivity_(matdata->GetDouble("THERMAL_CONDUCTIVITY"))
 {
   return;

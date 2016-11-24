@@ -5,13 +5,12 @@
                   General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-- Sling-shotting of two particles (MeshFree interactions)
+- MeshFree interactions
 - CubicBspline weight function
-- basic density and acc particle-particle and particle-wall dynamics are implemented and tested
 - A fake gravity is included to see its effects even if the time-span is small
-- Thermodynamic parameters are introduced but not used
+- Thermodynamics and Dynamics tested
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle
+PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
 RANDSEED                        1
 --------------------------------------------------------------------MESHFREE
@@ -21,11 +20,11 @@ BOUNDINGBOX                     -3.000001 -3.000001 -3.000001 3.000001 3.000001 
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
-RESULTSEVRY                     10
+RESULTSEVRY                     50
 RESTARTEVRY                     500
-TIMESTEP                        5e-5
-NUMSTEP                         2000
-MAXTIME                         0.3
+TIMESTEP                        1e-5
+NUMSTEP                         10000
+MAXTIME                         30
 GRAVITY_ACCELERATION            0.0 0.0 -500.0
 PARTICLE_INTERACTION            MeshFree
 WEIGHT_FUNCTION                 CubicBspline
@@ -34,14 +33,19 @@ MAX_RADIUS                      0.1
 MAX_VELOCITY                    1.0
 RADIUS_DISTRIBUTION             no
 RADIUS_DISTRIBUTION_SIGMA       0.004
-WALL_INTERACTION_TYPE           InitParticle
+WALL_INTERACTION_TYPE           Mirror
 WALL_FAKE_DENSITY               -1
 WALL_FAKE_MASS                  -1
 WALL_FAKE_PRESSURE              -1
+---------------------------------------------------MESHFREE RENDERING DOMAIN
+LOWER_BOUND -3.0 -3.0 -3.0
+UPPER_BOUND  3.0  3.0  3.0
+INTERVALS   3 3 3
+ELEMENTS    FLUID HEX8 MAT 1 NA Euler GP 2 2 2
 ------------------------------------------------DESIGN HEAT SOURCE CONDITION
 DPARTICLE                       1
 // heat source
-E 1 - vertex0 -0.050001 0.050001 -0.060000 vertex1 0.050001 -0.050001 -0.80000 HSQDot 1e7 HSTstart 0 HSTend 3
+E 1 - vertex0 -0.050001 0.050001 -0.060000 vertex1 0.050001 -0.050001 -0.80000 HSQDot 1e8 HSTstart 0 HSTend 3
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -51,11 +55,12 @@ DSURF                           1
 E 1 - 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
-MAT 2 MAT_ExtParticle DENSITY 7.85e3 INITRADIUS 0.03 DISMEMBER_RADIUS 0.01 NUE 0.3 YOUNG 210.0e9 INITTEMPERATURE 293.16 CPS 1 CPL 1 LATENT_HEAT 2 TRANSITION_TEMPERATURE 300 THERMAL_EXPANSION_S 0.00001 THERMAL_EXPANSION_L 0.00003 THERMAL_EXPANSION_T 0.00005 BULK_MODULUS 40e7 DYNAMIC_VISCOSITY 40e7 THERMAL_CONDUCTIVITY 20000
+// mercury, dynamic viscosity and thermal conductivity modified
+MAT 2 MAT_ExtParticle DENSITY 1353.4 INITRADIUS 0.1 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 293.15 CPS 0.1 CPL 140 LATENT_HEAT 11450 TRANSITION_TEMPERATURE 234.3210 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 28.5e9 DYNAMIC_VISCOSITY 1.5e4 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 8.3e4
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -1.07141008772791868e+00 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 2 QUANTITY temperature VALUE 3.16629583542015496e+02 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 2 QUANTITY velz VALUE -2.08913088402731706e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -9.83826741217183720e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY temperature VALUE 3.25946121427332514e+02 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 6.14695599546667459e+00  TOLERANCE 1.0e-10
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

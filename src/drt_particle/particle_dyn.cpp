@@ -3,10 +3,12 @@
 \brief Main control routine for particle simulations
 
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
+
+\level 1
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -35,6 +37,34 @@ void particle_drt()
 
   switch (probtype)
   {
+    case prb_meshfree:
+    {
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
+
+      problem->GetDis("rendering")->FillComplete();
+      /// algorithm is created
+      Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
+
+      /// init particle simulation
+      particlesimulation->Init(false);
+
+      /// read the restart information, set vectors and variables ---
+      const int restart = problem->Restart();
+      if (restart)
+      {
+        particlesimulation->ReadRestart(restart);
+      }
+
+      /// setup particle simulation
+      particlesimulation->SetupSystem();
+
+      /// solve the whole problem
+      particlesimulation->Timeloop();
+
+      /// perform the result test
+      particlesimulation->TestResults(comm);
+    }
+    break;
     case prb_particle:
     {
       const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();

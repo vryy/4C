@@ -67,7 +67,8 @@ PARTICLE::Algorithm::Algorithm(
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   particleMat_(NULL),
   extParticleMat_(NULL),
-  bin_surfcontent_(INPAR::BINSTRATEGY::Surface)
+  bin_surfcontent_(INPAR::BINSTRATEGY::Surface),
+  renderingdis_(Teuchos::null)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -98,6 +99,11 @@ PARTICLE::Algorithm::Algorithm(
   // new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
   Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
   bindis_->ReplaceDofSet(independentdofset);
+
+  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
+  {
+    renderingdis_ = DRT::Problem::Instance()->GetDis("rendering");
+  }
 
   return;
 }
@@ -346,11 +352,14 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
-
   if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
+  {
     CalculateAndApplyAccelerationsToParticles();
+  }
   else
+  {
     CalculateAndApplyForcesToParticles();
+  }
 
   if(particlewalldis_ != Teuchos::null)
   {

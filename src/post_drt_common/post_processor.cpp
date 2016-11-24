@@ -186,6 +186,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
       break;
     }
+    case prb_meshfree:
     case prb_particle:
     {
       int numdiscr = problem.num_discr();

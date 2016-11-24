@@ -26,6 +26,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_timestepping/timintmstep.H"
 
+#include "../drt_mat/extparticle_mat.H"
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntExpl::TimIntExpl(
@@ -98,7 +100,10 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   // It is here because it is a slave of the density
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
-    PARTICLE::Utils::Density2Pressure(densityn_, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
+    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+    deltaDensity->PutScalar(- particle_algorithm_->ExtParticleMat()->initDensity_);
+    deltaDensity->Update(1.0,*densityn_,1.0);
+    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
   }
 
   if(collhandler_ != Teuchos::null)

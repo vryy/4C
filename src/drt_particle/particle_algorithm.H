@@ -340,6 +340,8 @@ namespace PARTICLE
 
     INPAR::BINSTRATEGY::BinContent bin_surfcontent_;
 
+    Teuchos::RCP<DRT::Discretization> renderingdis_;     ///< rendering discretization for meshfree dynamics
+
     //@}
 
   }; // Algorithm

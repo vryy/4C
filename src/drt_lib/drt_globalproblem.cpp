@@ -1061,6 +1061,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> porofluiddis    = Teuchos::null; // fpsi, poroelast
   Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis         = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> renderingdis    = Teuchos::null; // simple and general rendering discretization for particleMeshFree simulations
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -2031,6 +2032,35 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
     nodereader.AddParticleReader(particledis, reader, "PARTICLE");
+
+    break;
+  }
+  case prb_meshfree:
+  {
+    if(distype == "Meshfree")
+    {
+     particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
+    }
+    else
+    {
+     dserror("meshfree simulations must be distype=Meshfree");
+    }
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    renderingdis = Teuchos::rcp(new DRT::DiscretizationFaces("rendering",reader.Comm()));
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
+    renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
+
+    AddDis("structure", structdis);
+    AddDis("particle", particledis);
+    AddDis("rendering", renderingdis);
+
+    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
+       DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
+    nodereader.AddAdvancedReader(renderingdis, reader, "MESHFREE RENDERING",INPAR::geometry_box, 0);
 
     break;
   }
