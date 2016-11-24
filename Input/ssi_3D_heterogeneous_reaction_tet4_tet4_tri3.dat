@@ -38,6 +38,7 @@ TOLRES                          1.000e-04
 NORM_RESF                       Abs
 TOLDISP                         1.000e-04
 PREDICT                         ConstDis
+INT_STRATEGY                    Old
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -106,8 +107,8 @@ CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 10.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi VALUE 2.31225497123522539e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 145 QUANTITY phi2 VALUE 6.90332559095493448e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 40 QUANTITY phi VALUE 2.30465158895883215e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 145 QUANTITY phi2 VALUE 6.87626254659050762e+00 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0
