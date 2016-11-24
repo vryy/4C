@@ -2,7 +2,7 @@
 /*!
  \file drt_dofset_subproxy.cpp
 
- \brief Implementation of subproxy for dofset
+ \brief Implementation of a dofset using a GID based mapping
 
  <pre>
    \level 1
@@ -14,28 +14,91 @@
  *----------------------------------------------------------------------*/
 
 #include "drt_dofset_subproxy.H"
+#include "drt_dofset_proxy.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetSubProxy::DofSetSubProxy(DofSet* dofset,
-                                    Teuchos::RCP<Epetra_Map>& subcolnodes,
-                                    Teuchos::RCP<Epetra_Map>& subcoleles)
-  : DofSetProxy(dofset),
-    subcolnodes_(subcolnodes),
-    subcoleles_(subcoleles)
+DRT::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
+    Teuchos::RCP<DRT::Discretization> sourcedis,
+    Teuchos::RCP<DRT::DofSetInterface> sourcedofset)
+  : DofSetBase(),
+    sourcedis_(sourcedis),
+    sourcedofset_(sourcedofset),
+    isassigned_(sourcedofset->Filled())
 {
-  if(subcolnodes_==Teuchos::null or subcoleles_==Teuchos::null)
-    dserror("no node or element map provided for DofSetSubProxy");
+  if(sourcedofset_ == Teuchos::null)
+    dserror("Source dof set is null pointer.");
+  if(sourcedis_ == Teuchos::null)
+    dserror("Source discretization is null pointer.");
+
+  sourcedofset_->Register(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetSubProxy::NotifyReset()
+DRT::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 {
-//  subcolnodes_ = NULL;
-//  subcoleles_ = NULL;
+  if (sourcedofset_!=Teuchos::null)
+    sourcedofset_->Unregister(this);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetGIDBasedWrapper::Reset()
+{
+  isassigned_ = false;
+  NotifyReset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSetGIDBasedWrapper::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+{
+  NotifyAssigned();
+  return start;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetGIDBasedWrapper::NotifyAssigned()
+{
+  if(sourcedis_->NodeColMap()==NULL)
+    dserror("No NodeColMap on sourcedis");
+  if(sourcedis_->ElementColMap()==NULL)
+    dserror("No ElementColMap on sourcedis");
+
+  isassigned_ = sourcedofset_->Filled();
+
+  // call base class
+  DRT::DofSetBase::NotifyAssigned();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
+{
+  if (dofset==sourcedofset_.get())
+  {
+    sourcedofset_ = Teuchos::null;
+    sourcedis_ = Teuchos::null;
+  }
+  else
+    dserror("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
-  DofSetProxy::NotifyReset();
+  Reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetGIDBasedWrapper::CheckIsAssigned() const
+{
+  //checks in debug mode only
+  dsassert(isassigned_,"AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
+            "and/or this proxy was not notified.");
+  dsassert(sourcedofset_!=Teuchos::null,"dofset_ pointer is NULL");
+
+  return;
 }

@@ -94,6 +94,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   {
     dserror("unexpected numbers of dofsets in fluid field");
   }
+  FluidField()->Discretization()->FillComplete(true,false,false);
 } // MonolithicBase
 
 /*----------------------------------------------------------------------*/

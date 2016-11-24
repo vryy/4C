@@ -17,6 +17,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_lib/drt_utils_parallel.H"
 
@@ -107,7 +108,9 @@ void scatra_dyn(int restart)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+      Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+      if ( scatradis->AddDofSet(dofsetaux)!= 1 )
         dserror("Scatra discretization has illegal number of dofsets!");
 
       // allow TRANSPORT conditions, too
@@ -196,10 +199,6 @@ void scatra_dyn(int restart)
           else
             element->SetImplType(INPAR::SCATRA::impltype_std);
         }
-
-        // add proxy of fluid transport degrees of freedom to scatra discretization
-        if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
       }
 
       // support for turbulent flow statistics
@@ -219,6 +218,14 @@ void scatra_dyn(int restart)
               "scatra",
               DRT::Problem::Instance()->SolverParams(linsolvernumber)) );
 
+      // create scatra elements by cloning from fluid dis in matching case
+      if (fieldcoupling == INPAR::SCATRA::coupling_match)
+      {
+        // add proxy of fluid transport degrees of freedom to scatra discretization
+        if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+          dserror("Scatra discretization has illegal number of dofsets!");
+      }
+
       // we create  the aux dofsets before Init(...)
       // volmortar adapter Init(...) relies on this
       if (fieldcoupling == INPAR::SCATRA::coupling_volmortar)
@@ -235,9 +242,14 @@ void scatra_dyn(int restart)
         const int ndofperelement_scatra  = 0;
         const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
         const int ndofperelement_fluid = 0;
-        if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+
+        // add proxy of velocity related degrees of freedom to scatra discretization
+        Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+        if (fluiddis->AddDofSet(dofsetaux) != 1)
           dserror("unexpected dof sets in fluid field");
-        if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 1)
+        dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_fluid, ndofperelement_fluid, 0, true ));
+        if (scatradis->AddDofSet(dofsetaux) != 1)
           dserror("unexpected dof sets in scatra field");
 
         //call AssignDegreesOfFreedom also for auxiliary dofsets

@@ -4,7 +4,8 @@
 \brief statistical data processing for ORACLES premixed combustion test case
 
 <pre>
-Maintainer: Benjamin Krank
+\level 2
+\maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -26,6 +27,11 @@ Maintainer: Benjamin Krank
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+
+namespace DRT
+{
+class DofSet;
+}
 
 namespace COMBUST
 {
@@ -333,4 +339,3 @@ private:
 
 
 #endif
-

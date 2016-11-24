@@ -70,8 +70,8 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
   DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
   if (pccdofhandling_) dserror("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
-  myMaxGID_ = DRT::DofSetBase::MaxAllGID();
-  myMinGID_ = DRT::DofSetBase::MinAllGID();
+  myMaxGID_ = DRT::DofSet::MaxAllGID();
+  myMinGID_ = DRT::DofSet::MinAllGID();
 
   // restore the slave node set
   slavenodeids_ = tempset;

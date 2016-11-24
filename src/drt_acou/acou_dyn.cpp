@@ -24,6 +24,7 @@
 #include "pat_imagereconstruction.H"
 #include "acou_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_inpar/inpar_acou.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_discret_hdg.H"
@@ -160,7 +161,10 @@ void acoustics_drt()
   {
     eledofs.push_back(dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary());
   }
-  acoudishdg->BuildDofSetAuxProxy(0,eledofs,0,false);
+
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0,eledofs,0,false));
+  acoudishdg->AddDofSet(dofsetaux);
 
   // call fill complete on acoustical discretization
   acoudishdg->FillComplete();
@@ -268,7 +272,9 @@ void acoustics_drt()
             dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
           // add proxy of velocity related degrees of freedom to scatra discretization
-          if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+          Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+              Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+          if ( scatradis->AddDofSet(dofsetaux)!= 1 )
             dserror("Scatra discretization has illegal number of dofsets!");
 
           // finalize discretization
@@ -363,7 +369,9 @@ void acoustics_drt()
       dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
 
     // add proxy of velocity related degrees of freedom to scatra discretization
-    if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+    if ( scatradis->AddDofSet(dofsetaux)!= 1 )
       dserror("Scatra discretization has illegal number of dofsets!");
 
     // finalize discretization

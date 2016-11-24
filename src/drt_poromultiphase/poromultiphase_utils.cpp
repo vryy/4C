@@ -22,6 +22,7 @@
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
@@ -63,9 +64,9 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
   fluiddis->FillComplete();
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
 
   //assign structure dof set to fluid and save the dofset number
   nds_disp = fluiddis->AddDofSet(structdofset);
@@ -78,7 +79,8 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
     dserror("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
-  nds_solidpressure = fluiddis->BuildDofSetAuxProxy(1,0,0,false);
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1,0,0,false));
+  nds_solidpressure = fluiddis->AddDofSet(dofsetaux);
   // add it also to the solid field
   structdis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure));
 

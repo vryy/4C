@@ -64,6 +64,8 @@
 //for coupling of nonmatching meshes
 #include "../drt_volmortar/volmortar_utils.H"
 
+#include "../drt_lib/drt_dofset_subproxy.H"
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                    vuong 01/12  |
  *----------------------------------------------------------------------*/
@@ -517,10 +519,8 @@ void POROELAST::PoroBase::SetupCoupling()
 void POROELAST::PoroBase::ReplaceDofSets()
 {
   // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
 
-  //get discretizations
+  // get discretizations
   Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
   Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
 
@@ -529,21 +529,34 @@ void POROELAST::PoroBase::ReplaceDofSets()
    */
   if(submeshes_)
   {
-    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
-    structdofset = structdis->GetDofSetSubProxy();
-    // build a proxy of the fluid discretization for the structure field
-    fluiddofset = fluiddis->GetDofSetSubProxy();
+    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+            structdis,
+            structdis->GetDofSetProxy())
+    );
+    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+            fluiddis,
+            fluiddis->GetDofSetProxy())
+    );
+
+    fluiddis ->ReplaceDofSet(1,structsubdofset);
+    structdis->ReplaceDofSet(1,fluidsubdofset);
   }
   else
   {
     // build a proxy of the structure discretization for the fluid field
-    structdofset = structdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> structdofsetproxy = structdis->GetDofSetProxy();
     // build a proxy of the fluid discretization for the structure field
-    fluiddofset = fluiddis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> fluiddofsetproxy = fluiddis->GetDofSetProxy();
+
+    fluiddis ->ReplaceDofSet(1,structdofsetproxy);
+    structdis->ReplaceDofSet(1,fluiddofsetproxy);
   }
 
-  fluiddis->ReplaceDofSet(1,structdofset);
-  structdis->ReplaceDofSet(1,fluiddofset);
+  fluiddis->FillComplete(true,true,true);
+  structdis->FillComplete(true,true,true);
+
 }
 
 /*----------------------------------------------------------------------*

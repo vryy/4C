@@ -119,8 +119,8 @@ void ssi_drt()
   }
 
   // now we can finally fill our discretizations
-  problem->GetDis("structure")->FillComplete(true,false,true);
-  problem->GetDis("scatra")->FillComplete(true,false,true);
+  problem->GetDis("structure")->FillComplete(true,true,true);
+  problem->GetDis("scatra")->FillComplete(true,true,true);
 
   // now as we redistributed our discretizations we can construct all
   // objects relying on the parallel distribution
@@ -147,7 +147,7 @@ void ssi_drt()
 
   //4.- Run of the actual problem.
 
-  // 4.1.- Some setup needed for the poroelastic subproblem.
+  // 4.1.- Some setup needed for the subproblems.
   ssi->SetupSystem();
 
   // 4.2.- Solve the whole problem

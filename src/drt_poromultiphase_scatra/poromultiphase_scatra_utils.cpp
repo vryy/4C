@@ -38,7 +38,7 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
     const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase> algo = Teuchos::null;
+  Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase> algo;
 
   switch(solscheme)
   {
@@ -105,16 +105,13 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   }
 
   // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
 
   // build a proxy of the structure discretization for the scatra field
-  structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the fluid discretization for the scatra field
-  fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
   // build a proxy of the fluid discretization for the structure/fluid field
-  scatradofset = scatradis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
   if (scatradis->AddDofSet(structdofset) != 1)
@@ -129,6 +126,10 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
   if (ndsporofluid_scatra!=3)
     dserror("unexpected dof sets in fluid field");
+
+  structdis->FillComplete(true,false,false);
+  fluiddis->FillComplete(true,false,false);
+  scatradis->FillComplete(true,false,false);
 
   return;
 }

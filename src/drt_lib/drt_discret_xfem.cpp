@@ -70,7 +70,7 @@ void DRT::DiscretizationXFEM::StoreInitialDofs()
   initialdofsets_.clear();
   for (unsigned int dofset = 0; dofset < dofsets_.size(); ++dofset)
   {
-    initialdofsets_.push_back(dofsets_[dofset]->Clone());
+    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset])->Clone());
   }
 
   // store map required for export to active dofs

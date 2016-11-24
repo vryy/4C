@@ -15,12 +15,9 @@ nodes (for easy visualisation in paraview). Note that this
 involves heavy communication --- including two round robin
 loops --- and produces additional output.
 
-<pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
-</pre>
+\level 2
+
+\maintainer Benjamin Krank
 
 */
 #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H

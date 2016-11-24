@@ -2,10 +2,11 @@
 /*!
  \file poro_scatra_part_1wc.cpp
 
- \brief
+ \brief partitioned one way coupled poroelasticity scalar transport interaction algorithms
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+ \level 2
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -188,7 +189,7 @@ POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(const Ep
     std::cout<<"\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n"<<std::endl;
 
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
+  Teuchos::RCP<DRT::DofSetInterface> scatradofset
     = ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible

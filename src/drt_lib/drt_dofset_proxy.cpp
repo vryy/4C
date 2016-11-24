@@ -15,17 +15,17 @@
 /*----------------------------------------------------------------------*/
 
 
-
 #include "drt_dofset_proxy.H"
+#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetProxy::DofSetProxy(DofSet* dofset)
-  : dofset_(dofset)
+DRT::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
+  : dofset_(dofset),
+    isassigned_(dofset->Filled())
 {
-  dofset->RegisterProxy(this);
-  NotifyAssigned();
+  dofset->Register(this);
 }
 
 
@@ -34,7 +34,7 @@ DRT::DofSetProxy::DofSetProxy(DofSet* dofset)
 DRT::DofSetProxy::~DofSetProxy()
 {
   if (dofset_!=NULL)
-    dofset_->UnregisterProxy(this);
+    dofset_->Unregister(this);
 }
 
 
@@ -51,8 +51,10 @@ void DRT::DofSetProxy::AddDofSettoList()
  *----------------------------------------------------------------------*/
 int DRT::DofSetProxy::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
 {
-  // Assume our original DofSet is valid right now. Otherwise we will be
-  // notified anyway.
+  // This method does nothing, because the DofSetProxy is not supposed to assign dofs itself.
+  // Instead, the original dofset assigns dofs when FillComplete() is called on its discretization.
+  // This invokes the call to AssignDegreesOfFreedom on the original dofset. In AssignDegreesOfFreedom
+  // NotifyAssigned() is called. This calls NotifyAssigned() on all registered proxies.
   NotifyAssigned();
   return start;
 }
@@ -62,42 +64,26 @@ int DRT::DofSetProxy::AssignDegreesOfFreedom(const Discretization& dis, const un
  *----------------------------------------------------------------------*/
 void DRT::DofSetProxy::NotifyAssigned()
 {
-  if (dofset_!=NULL)
-  {
-    // Just copy those Teuchos::rcps.
-    dofrowmap_        = dofset_->dofrowmap_;
-    dofcolmap_        = dofset_->dofcolmap_;
-    numdfcolnodes_    = dofset_->numdfcolnodes_;
-    numdfcolelements_ = dofset_->numdfcolelements_;
-    idxcolnodes_      = dofset_->idxcolnodes_;
-    idxcolelements_   = dofset_->idxcolelements_;
+  if(dofset_==NULL)
+    dserror("dofset_ pointer is NULL");
+  else
+    isassigned_ = dofset_->Filled();
 
-    // special dof handling due to point coupling conditions
-    pccdofhandling_   = dofset_->pccdofhandling_;
-    dofscolnodes_     = dofset_->dofscolnodes_;
-    shiftcolnodes_    = dofset_->shiftcolnodes_;
-  }
-
-  DofSet::NotifyAssigned();
-
+  DRT::DofSetBase::NotifyAssigned();
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::NotifyReset()
+void DRT::DofSetProxy::Reset()
 {
-  // clear my Teuchos::rcps.
-  Reset();
-
-  DofSet::NotifyReset();
+  isassigned_=false;
+  NotifyReset();
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::Disconnect(DofSet* dofset)
+void DRT::DofSetProxy::Disconnect(DofSetInterface* dofset)
 {
   if (dofset==dofset_)
     dofset_ = NULL;
@@ -114,8 +100,20 @@ void DRT::DofSetProxy::Disconnect(DofSet* dofset)
 bool DRT::DofSetProxy::Filled() const
 {
   if (dofset_)
-  {
     return dofset_->Filled();
-  }
+
   return false;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetProxy::CheckIsAssigned() const
+{
+  // checks in debug mode only
+  dsassert (isassigned_,"AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
+            "and/or this proxy was not notified.");
+  dsassert (dofset_!=NULL,"dofset_ pointer is NULL");
+
+  return;
 }

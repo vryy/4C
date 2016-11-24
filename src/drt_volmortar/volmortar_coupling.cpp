@@ -27,6 +27,7 @@
 #include "../drt_inpar/inpar_volmortar.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_multiply.H"
@@ -1227,8 +1228,11 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 void VOLMORTAR::VolMortarCoupl::MeshInit()
 {
   // create merged map:
-  int dofseta = dis1_->BuildDofSetAuxProxy(dim_,0,0,true);
-  int dofsetb = dis2_->BuildDofSetAuxProxy(dim_,0,0,true);
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(dim_,0,0,true));
+  int dofseta = dis1_->AddDofSet(dofsetaux);
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(dim_,0,0,true));
+  int dofsetb = dis2_->AddDofSet(dofsetaux);
   dis1_->FillComplete(true,false,false);
   dis2_->FillComplete(true,false,false);
 

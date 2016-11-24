@@ -17,6 +17,7 @@
 #define DISCRET_XFEM_H
 
 #include "drt_discret_faces.H"
+#include "drt_dofset.H"
 
 /*!
 \brief DRT: namespace of the baci discretization module

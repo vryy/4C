@@ -25,7 +25,7 @@
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet()
-: DRT::DofSetBase()
+: DRT::DofSet()
 {
   return;
 }

@@ -161,7 +161,7 @@ void LOMA::Algorithm::Setup()
       dserror("Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number solver, for the time being!");
 
     // generate proxy of scatra dof set to be used by fluid field
-    Teuchos::RCP<DRT::DofSet> scatradofset = ScaTraField()->Discretization()->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> scatradofset = ScaTraField()->Discretization()->GetDofSetProxy();
 
     // check number of dof sets in respective fields
     if (FluidField()->Discretization()->AddDofSet(scatradofset)!=1)

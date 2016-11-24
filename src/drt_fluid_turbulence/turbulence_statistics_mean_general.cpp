@@ -1,14 +1,10 @@
-/*
-         Computation of mean values of nodal/cp quantities.
-
-<pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
-</pre>
-
-*/
+/*----------------------------------------------------------------------*/
+/*!
+\file turbulence_statistics_mean_general.cpp
+\brief Computation of mean values of nodal/cp quantities.
+\level 2
+\maintainer  Benjamin Krank
+ *----------------------------------------------------------------------*/
 
 
 
@@ -16,6 +12,7 @@ Maintainer: Benjamin Krank
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_io/io.H"
 
 //----------------------------------------------------------------------
@@ -1415,5 +1412,3 @@ void  FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
 
   return;
 }
-
-

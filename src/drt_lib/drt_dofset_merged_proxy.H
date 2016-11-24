@@ -2,15 +2,14 @@
 /*!
  \file drt_dofset_merged_proxy.H
 
- \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
+ \brief A dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not yet to elements).
 
  \level 2
 
- \maintainer Anh-Tu Vuong
-             vuong@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15251
+ \maintainer  Andreas Rauch
+              rauch@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DOFSET_MERGED_PROXY_H_
@@ -23,27 +22,87 @@
 
 namespace DRT
 {
-  class DofSetMergedProxy : public DofSetProxy
+/*!
+\brief A dofset that adds additional, existing degrees of freedom from the same
+       discretization to nodes.
+
+\warning not implemented for element DOFs
+
+  The Dofs of the nodes to be merged are defined by master and slave side conditions given as input.
+  Overlapping nodes are identified using a search tree and this dofset will handle the dofs of one node
+  as if there were one in the Dof(..) and NumDof(..) methods (see the implementation of theses methods).
+
+\warning For the Dof(..) methods providing the full dof vector an ordering of the nodes is assumed. That
+         is, first the Dofs from the slave node are filled into the dof vector followed by the Dofs of the
+         master node.
+
+*/
+
+  class DofSetMergedWrapper : public DofSetBase
   {
   public:
 
-
     //! Standard Constructor
-    DofSetMergedProxy(Teuchos::RCP<DofSet>  dofset,
-        const Teuchos::RCP<const DRT::Discretization>& sourcedis,
+    DofSetMergedWrapper(
+        Teuchos::RCP<DofSetInterface>  dofset,
+        Teuchos::RCP<const DRT::Discretization> sourcedis,
         const std::string& couplingcond_master,
         const std::string& couplingcond_slave);
 
      //! Destructor
-     ~DofSetMergedProxy(){};
+     ~DofSetMergedWrapper();
+
+     /// Returns true if filled
+     virtual bool Filled() const
+     {return filled_ and sourcedofset_->Filled();};
 
      /// Assign dof numbers using all elements and nodes of the discretization.
      virtual int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start);
 
-     /// original DofSet has new dofs
-     virtual void NotifyAssigned();
+     /// reset all internal variables
+     virtual void Reset();
+
+     //! @name Proxy management
+     /// Proxies need to know about changes to the DofSet.
+
+     /// our original DofSet dies
+     virtual void Disconnect(DofSetInterface* dofset);
+
+     //@}
+
+     /// Get degree of freedom row map
+     virtual const Epetra_Map* DofRowMap() const;
+
+     /// Get degree of freedom column map
+     virtual const Epetra_Map* DofColMap() const;
 
      //! @name Access methods
+
+     /// Get number of dofs for given node
+     virtual int NumDof(
+         const Node* node
+         ) const
+     {
+       const DRT::Node* masternode = GetMasterNode(node->LID());
+       const DRT::Node* slavenode = GetSlaveNode(node->LID());
+       return sourcedofset_->NumDof(slavenode)+sourcedofset_->NumDof(masternode);
+     }
+
+     /// Get number of dofs for given element
+     virtual int NumDof(
+         const Element* element
+         ) const
+      {return sourcedofset_->NumDof(element);}
+
+     /// get number of nodal dofs
+     virtual int NumDofPerNode(
+         const Node & node ///< node, for which you want to know the number of dofs
+         ) const
+     {
+       const DRT::Node* masternode = GetMasterNode(node.LID());
+       const DRT::Node* slavenode  = GetSlaveNode(node.LID());
+       return sourcedofset_->NumDofPerNode(*masternode)+sourcedofset_->NumDofPerNode(*slavenode);
+     };
 
      /*! \brief Get the gid of all dofs of a node
       *
@@ -54,9 +113,9 @@ namespace DRT
      virtual std::vector<int> Dof(const Node* node) const
        {
          const DRT::Node* slavenode = GetSlaveNode(node->LID());
-         std::vector<int> slavedof = DofSetProxy::Dof(slavenode);
+         std::vector<int> slavedof = sourcedofset_->Dof(slavenode);
          const DRT::Node* masternode = GetMasterNode(node->LID());
-         std::vector<int> masterdof = DofSetProxy::Dof(masternode);
+         std::vector<int> masterdof = sourcedofset_->Dof(masternode);
 
          std::vector<int> dof;
          dof.reserve( slavedof.size() + masterdof.size() ); // preallocate memory
@@ -66,45 +125,49 @@ namespace DRT
          return dof;
        }
 
+     /// Get the gid of all dofs of a node
+     virtual void Dof(
+         std::vector<int>& dof, ///< vector of dof gids (to be filled)
+         const Node* node,      ///< node, for which you want the dof positions
+         unsigned nodaldofset   ///< number of nodal dof set of the node (currently !=0 only for XFEM)
+         ) const
+     {
+       const DRT::Node* masternode = GetMasterNode(node->LID());
+       const DRT::Node* slavenode  = GetSlaveNode(node->LID());
+       std::vector<int> slavedof;
+       sourcedofset_->Dof(slavedof,slavenode,nodaldofset);
+       std::vector<int> masterdof;
+       sourcedofset_->Dof(masterdof,masternode,nodaldofset);
+
+       dof.reserve( slavedof.size() + masterdof.size() ); // preallocate memory
+       dof.insert( dof.end(), slavedof.begin(), slavedof.end() );
+       dof.insert( dof.end(), masterdof.begin(), masterdof.end() );
+     }
+
      /// Get the gid of all dofs of a element
      virtual std::vector<int> Dof(const Element* element) const
        {
-         return DofSetProxy::Dof(element);
-       }
-
-     /// Get number of dofs for given node
-     virtual int NumDof(const Node* node) const
-       {
-       const DRT::Node* masternode = GetMasterNode(node->LID());
-       const DRT::Node* slavenode = GetSlaveNode(node->LID());
-
-         return DofSetProxy::NumDof(slavenode)+DofSetProxy::NumDof(masternode);
-       }
-
-     /// Get number of dofs for given element
-     virtual int NumDof(const Element* element) const
-       {
-         return dofset_->NumDof(element);
+         return sourcedofset_->Dof(element);
        }
 
      /// Get the gid of a dof for given node
      virtual int Dof(const Node* node, int dof) const
        {
          const DRT::Node* slavenode = GetSlaveNode(node->LID());
-         const int numslavedofs = DofSetProxy::NumDof(slavenode);
+         const int numslavedofs = sourcedofset_->NumDof(slavenode);
          if(dof<numslavedofs)
-           return DofSetProxy::Dof(slavenode,dof);
+           return sourcedofset_->Dof(slavenode,dof);
          else
          {
            const DRT::Node* masternode = GetMasterNode(node->LID());
-           return DofSetProxy::Dof(masternode,dof-numslavedofs);
+           return sourcedofset_->Dof(masternode,dof-numslavedofs);
          }
        }
 
      /// Get the gid of a dof for given element
      virtual int Dof(const Element* element, int dof) const
        {
-         return DofSetProxy::Dof(element,dof);
+         return sourcedofset_->Dof(element,dof);
        }
 
      /// Get the gid of all dofs of a node
@@ -112,8 +175,8 @@ namespace DRT
        {
          const DRT::Node* masternode = GetMasterNode(node->LID());
          const DRT::Node* slavenode = GetSlaveNode(node->LID());
-         DofSetProxy::Dof(slavenode,lm);
-         DofSetProxy::Dof(masternode,lm);
+         sourcedofset_->Dof(slavenode,lm);
+         sourcedofset_->Dof(masternode,lm);
 
          return;
        }
@@ -126,18 +189,16 @@ namespace DRT
          ) const
      {
        const DRT::Node* slavenode = GetSlaveNode(node->LID());
-       const int numslavedofs = DofSetProxy::NumDof(slavenode);
-       DofSetProxy::Dof(slavenode,startindex,lm);
+       const int numslavedofs = sourcedofset_->NumDof(slavenode);
+       sourcedofset_->Dof(slavenode,startindex,lm);
 
        const DRT::Node* masternode = GetMasterNode(node->LID());
-       DofSetProxy::Dof(masternode,startindex+numslavedofs,lm);
+       sourcedofset_->Dof(masternode,startindex+numslavedofs,lm);
      }
 
      /// Get the gid of all dofs of a element
      virtual void Dof(const Element* element, std::vector<int>& lm) const
-       {
-         DofSetProxy::Dof(element,lm);
-       }
+     {sourcedofset_->Dof(element,lm); }
 
      /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
      virtual void Dof(
@@ -147,31 +208,47 @@ namespace DRT
          ) const
      {
        const DRT::Node* slavenode = GetSlaveNode(node->LID());
-       DofSetProxy::Dof(element,slavenode,lm);
+       sourcedofset_->Dof(element,slavenode,lm);
 
        const DRT::Node* masternode = GetMasterNode(node->LID());
-       DofSetProxy::Dof(element,masternode,lm);
+       sourcedofset_->Dof(element,masternode,lm);
      }
+
+     /// Get maximum GID of degree of freedom row map
+     virtual int MaxAllGID() const
+     {return sourcedofset_->MaxAllGID();};
+
+     /// Get minimum GID of degree of freedom row map
+     virtual int MinAllGID() const
+     {return sourcedofset_->MinAllGID();};
+
+     /// Get Max of all GID assigned in the DofSets in front of current one in the list #static_dofsets_
+     virtual int MaxGIDinList(const Epetra_Comm& comm) const
+     {return sourcedofset_->MaxGIDinList(comm);};
+
+     /// are the dof maps already initialized?
+     virtual bool Initialized() const
+     {return sourcedofset_->Initialized();};
+
+     /// Get Number of Global Elements of degree of freedom row map
+     virtual int NumGlobalElements() const
+     {return sourcedofset_->NumGlobalElements();};
 
   private:
 
+     //! get the master node to a corresponding slave node (given by LID)
      const DRT::Node* GetMasterNode(int slaveLid) const
      {
-       if(slaveLid>master_nodegids_col_layout_->MyLength())
-         dserror("Target Lid %i not found in discretization!",slaveLid);
+       dsassert(slaveLid<=master_nodegids_col_layout_->MyLength(),"Slave node Lid out of range!");
        int mastergid = (*master_nodegids_col_layout_)[slaveLid];
-       if(not sourcedis_->HaveGlobalNode(mastergid))
-         dserror("Master Gid %i not found in source discretization!",mastergid);
        return sourcedis_->gNode(mastergid);
      }
 
-     const DRT::Node* GetSlaveNode(int slaveLid) const
+     //! get the slave node to a corresponding master node (given by LID)
+     const DRT::Node* GetSlaveNode(int masterLid) const
      {
-       if(slaveLid>slave_nodegids_col_layout_->MyLength())
-         dserror("Target Lid %i not found in discretization!",slaveLid);
-       int slavegid = (*slave_nodegids_col_layout_)[slaveLid];
-       if(not sourcedis_->HaveGlobalNode(slavegid))
-         dserror("Master Gid %i not found in source discretization!",slavegid);
+       dsassert(masterLid<=slave_nodegids_col_layout_->MyLength(),"Master node Lid out of range!");
+       int slavegid = (*slave_nodegids_col_layout_)[masterLid];
        return sourcedis_->gNode(slavegid);
      }
 
@@ -181,15 +258,18 @@ namespace DRT
     //! slave node gids in col layout matching conditioned master nodes
     Teuchos::RCP<Epetra_IntVector>  slave_nodegids_col_layout_;
 
-    //! underlying proxy of actual dofset
-    Teuchos::RCP<DofSet> dofset_;
+    //! underlying actual dofset
+    Teuchos::RCP<DofSetInterface> sourcedofset_;
 
     //! source discretization
-    const Teuchos::RCP<const DRT::Discretization> sourcedis_;
+    Teuchos::RCP<const DRT::Discretization> sourcedis_;
 
     //! condition strings defining the coupling
     const std::string couplingcond_master_;
     const std::string couplingcond_slave_;
+
+    /// filled flag
+    bool filled_;
   };
 }
 

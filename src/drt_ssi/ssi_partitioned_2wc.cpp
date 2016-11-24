@@ -114,6 +114,7 @@ void SSI::SSI_Part2WC::InitDiscretizations(
   SSI::SSI_Base::InitDiscretizations(comm,struct_disname,scatra_disname);
   return;
 }
+
 /*----------------------------------------------------------------------*
  | Timeloop for 2WC SSI problems                             Thon 12/14 |
  *----------------------------------------------------------------------*/

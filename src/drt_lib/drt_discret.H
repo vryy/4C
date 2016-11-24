@@ -20,10 +20,11 @@
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_CrsGraph.h"
+#include "Epetra_IntVector.h"
 
 #include "drt_element.H"
 #include "drt_node.H"
-#include "drt_dofset.H"
+#include "drt_dofset_interface.H"
 #include "drt_dserror.H"
 
 namespace LINALG
@@ -48,7 +49,6 @@ namespace DRT
   class DofSetProxy;
 
 /*!
-\brief A class to manage a discretization in parallel
 
 A discretization describes a discretized physical domain including any
 boundary conditions. This is a huge concept that includes four different parts:
@@ -296,7 +296,7 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
+  virtual void ReplaceDofSet(Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
 
   /*!
   \brief Get master to slave coupling in case of periodic boundary conditions
@@ -482,34 +482,19 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
+  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
 
   /*!
   \brief Add a new dofset to the discretisation.
 
   Sets havedof_ to false only if the new dofset is not properly filled yet.
   */
-  virtual int AddDofSet(Teuchos::RCP<DofSet> newdofset);
+  virtual int AddDofSet(Teuchos::RCP<DofSetInterface> newdofset);
 
   /*!
   \brief Get proxy to dof set.
   */
-  virtual Teuchos::RCP<DofSet> GetDofSetProxy(int nds=0);
-
-  /*!
-  \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
-   */
-  virtual int BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, int numdofperface, bool indenpendentdofnumbers);
-
-  /*!
-  \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
-   */
-  virtual int BuildDofSetAuxProxy(int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool indenpendentdofnumbers);
-
-  /*!
-  \brief Get proxy to dof set for special case of partial dof sets.
-  */
-  virtual Teuchos::RCP<DofSet> GetDofSetSubProxy(int nds=0);
+  virtual Teuchos::RCP<DofSetInterface> GetDofSetProxy(int nds=0);
 
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
@@ -2163,7 +2148,7 @@ protected:
 
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_; // some conditions e.g. BCs
 
-  std::vector<Teuchos::RCP<DofSet> >             dofsets_;   // set of DofSets
+  std::vector<Teuchos::RCP<DofSetInterface> > dofsets_;   // vector of DofSets
 }; // class Discretization
 } // namespace DRT
 

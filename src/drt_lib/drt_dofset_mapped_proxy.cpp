@@ -2,46 +2,65 @@
 /*!
  \file drt_dofset_mapped_proxy.cpp
 
- \brief  A proxy of a dofset that does not rely on same GID/LID numbers but uses
+ \brief  A dofset that does not rely on same GID/LID numbers but uses
          a defined node mapping instead (not implemented for element DOFs).
 
    \level 3
 
-   \maintainer Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
+   \maintainer Andreas Rauch
+                rauch@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
-                089 - 289-15251
  *----------------------------------------------------------------------*/
 
 
 #include "drt_dofset_mapped_proxy.H"
+#include "drt_dofset_base.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetMappedProxy::DofSetMappedProxy( Teuchos::RCP<DofSet>  dofset,
-                                          const Teuchos::RCP<const DRT::Discretization> sourcedis,
-                                          const std::string& couplingcond,
-                                          const std::set<int> condids)
-  : DofSetProxy(&(*dofset)),
+DRT::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
+    Teuchos::RCP<DofSetInterface>  sourcedofset,
+    Teuchos::RCP<const DRT::Discretization> sourcedis,
+    const std::string& couplingcond,
+    const std::set<int> condids)
+  : DofSetBase(),
+    sourcedofset_(sourcedofset),
     targetlidtosourcegidmapping_(Teuchos::null),
-    dofset_(dofset),
     sourcedis_(sourcedis),
     couplingcond_(couplingcond),
-    condids_(condids)
+    condids_(condids),
+    filled_(false)
 {
+  if(sourcedofset_ == Teuchos::null)
+    dserror("Source dof set is null pointer.");
+  if(sourcedis_ == Teuchos::null)
+    dserror("Source discretization is null pointer.");
+
+  sourcedofset_->Register(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+DRT::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 {
-  // make sure the real dofset gets the dofmaps
-  DofSetProxy::AssignDegreesOfFreedom(dis,dspos,start);
+  if (sourcedofset_!=Teuchos::null)
+    sourcedofset_->Unregister(this);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+{
+  if(sourcedofset_==Teuchos::null)
+    dserror("No source dof set assigned to mapping dof set!");
+  if(sourcedis_==Teuchos::null)
+    dserror("No source discretization assigned to mapping dof set!");
 
   //get condition which defines the coupling on target discretization
   std::vector<DRT::Condition*> conds;
@@ -69,22 +88,20 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   {
     // find corresponding condition on source discretization
     iter_target = nodes.find(*it);
-    if(iter_target == nodes.end())
-      dserror("Condition ID %i not found in Coupling condition on source discretization s!",*it,sourcedis_->Name().c_str());
-
-
     // find corresponding condition on source discretization
     iter_source = nodes_source.find(*it);
-    if(iter_source == nodes_source.end())
-      dserror("Condition ID %i not found in Coupling condition on source discretization %s!",*it,sourcedis_->Name().c_str());
-
 
     // get the nodes
-    Teuchos::RCP<std::vector<int> > sourcenodes = iter_source->second;
+    std::vector<int> sourcenodes;
+    std::vector<int> targetnodes;
+    if(iter_source != nodes_source.end())
+      sourcenodes = *iter_source->second;
+    if(iter_target != nodes.end())
+      targetnodes = *iter_target->second;
 
     // initialize search tree for search
-    DRT::UTILS::NodeMatchingOctree nodematchingtree = DRT::UTILS::NodeMatchingOctree();
-    nodematchingtree.Init(dis, *iter_target->second,150,1e-08);
+    DRT::UTILS::NodeMatchingOctree nodematchingtree;
+    nodematchingtree.Init(dis, targetnodes,150,1e-08);
     nodematchingtree.Setup();
 
     // map that will be filled with coupled nodes for this condition
@@ -93,14 +110,14 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     //       and finds corresponding target nodes.
     std::map<int,std::pair<int,double> > condcoupling;
     // match target and source nodes using octtree
-    nodematchingtree.FindMatch(*sourcedis_, *sourcenodes, condcoupling);
+    nodematchingtree.FindMatch(*sourcedis_, sourcenodes, condcoupling);
 
     // check if all nodes where matched for this condition ID
-    if (iter_target->second->size() != condcoupling.size())
+    if (targetnodes.size() != condcoupling.size())
       dserror("Did not get unique target to source spatial node coordinate mapping.\n"
           "targetnodes.size()=%d, coupling.size()=%d.\n"
           "The heterogeneous reaction strategy requires matching source and target meshes!",
-          iter_target->second->size(), condcoupling.size());
+          targetnodes.size(), condcoupling.size());
 
     // insert found coupling of this condition ID into map of all match nodes
     coupling.insert(condcoupling.begin(), condcoupling.end());
@@ -146,18 +163,68 @@ int DRT::DofSetMappedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
     dserror("target and permuted source node maps do not match");
 
   // export target nodes to source node distribution
-
   Teuchos::RCP<Epetra_IntVector> permsourcenodevec =
       Teuchos::rcp(new Epetra_IntVector(Copy, *targetnodemap, permsourcenodemap->MyGlobalElements()));
 
+  // initialize the final mapping
   targetlidtosourcegidmapping_ =
     Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
+  // default value -1
   targetlidtosourcegidmapping_->PutValue(-1);
 
   // export to column map
   LINALG::Export(*permsourcenodevec,*targetlidtosourcegidmapping_);
 
+  //filled.
+  filled_=true;
+
+  // tell the proxies
+  NotifyAssigned();
 
   return start;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetDefinedMappingWrapper::Reset()
+{
+  targetlidtosourcegidmapping_ = Teuchos::null;
+  filled_=false;
+
+  // tell the proxies
+  NotifyReset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
+{
+  if (dofset==sourcedofset_.get())
+  {
+    sourcedofset_ = Teuchos::null;
+    sourcedis_ = Teuchos::null;
+  }
+  else
+    dserror("cannot disconnect from non-connected DofSet");
+
+  // clear my Teuchos::rcps.
+  Reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) const
+{
+  //check
+  dsassert(targetLid<=targetlidtosourcegidmapping_->MyLength(),"Target Lid out of range!");
+
+  // get the gid of the source node
+  int sourcegid = (*targetlidtosourcegidmapping_)[targetLid];
+
+  // the target is not mapped -> return null pointer
+  if(sourcegid==-1)
+    return NULL;
+  // get the node from the source discretization
+  return sourcedis_->gNode(sourcegid);
 }

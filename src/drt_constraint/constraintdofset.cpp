@@ -4,7 +4,8 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Thomas Kloeppel
+\level 2
+\maintainer Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -22,7 +23,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 UTILS::ConstraintDofSet::ConstraintDofSet()
-: DRT::DofSetBase()
+: DRT::DofSet()
 {
   return;
 }
@@ -95,5 +96,3 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
 
   return count;
 }
-
-

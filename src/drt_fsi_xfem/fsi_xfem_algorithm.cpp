@@ -103,7 +103,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   if (ale)
   {
     // build a proxy of the fluid discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> aledofset = ale_->WriteAccessDiscretization()->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> aledofset = ale_->WriteAccessDiscretization()->GetDofSetProxy();
     if (fluid_->Discretization()->AddDofSet(aledofset) != 1)
       dserror("Fluid Discretization does not have two Dofsets (Fluid/Ale)!");
   }

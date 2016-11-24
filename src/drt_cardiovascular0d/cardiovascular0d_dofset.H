@@ -23,7 +23,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_dofset_base.H"
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_discret.H"
 
 namespace UTILS
@@ -52,9 +52,8 @@ There are two possible states in this class: Reset and setup. To
 change back and forth use AssignDegreesOfFreedom() and Reset().
 
 
-\author tk
-*/
-class Cardiovascular0DDofSet: public DRT::DofSetBase
+\author tk     */
+class Cardiovascular0DDofSet: public DRT::DofSet
 {
 public:
 

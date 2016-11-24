@@ -3,8 +3,10 @@
 
 \brief statistical data processing for ORACLES problem
 
+\level 2
+
 <pre>
-Maintainer: Benjamin Krank
+\maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -17,6 +19,7 @@ Maintainer: Benjamin Krank
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_utils.H"
 
 #define NODETOL 1e-9

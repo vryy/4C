@@ -20,6 +20,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_particle/binning_strategy.H"
 
@@ -95,7 +96,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+      Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+      if ( scatradis->AddDofSet(dofsetaux)!= 1 )
         dserror("Scatra discretization has illegal number of dofsets!");
 
       // allow TRANSPORT conditions, too
@@ -130,7 +133,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           dis.push_back(scatradis);
 
           //binning strategy for parallel redistribution
-          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy;
 
           std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
           std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
@@ -235,9 +238,12 @@ void scatra_cardiac_monodomain_dyn(int restart)
         const int ndofperelement_scatra  = 0;
         const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
         const int ndofperelement_fluid = 0;
-        if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+        Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+        if (fluiddis->AddDofSet(dofsetaux) != 1)
           dserror("unexpected dof sets in fluid field");
-        if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 1)
+        dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_fluid, ndofperelement_fluid, 0, true ));
+        if (scatradis->AddDofSet(dofsetaux) != 1)
           dserror("unexpected dof sets in scatra field");
 
         //call AssignDegreesOfFreedom also for auxiliary dofsets
@@ -264,7 +270,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
             dis.push_back(scatradis);
 
             //binning strategy for parallel redistribution
-            Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+            Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy;
 
             std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
             std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;

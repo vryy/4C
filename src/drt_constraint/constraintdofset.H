@@ -4,7 +4,8 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Thomas Kloeppel
+\level 2
+\maintainer Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -20,7 +21,7 @@ Maintainer: Thomas Kloeppel
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_dofset_base.H"
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_discret.H"
 
 namespace UTILS
@@ -51,7 +52,7 @@ change back and forth use AssignDegreesOfFreedom() and Reset().
 
 \author tk
 */
-class ConstraintDofSet: public DRT::DofSetBase
+class ConstraintDofSet: public DRT::DofSet
 {
 public:
 

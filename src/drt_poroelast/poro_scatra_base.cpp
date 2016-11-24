@@ -35,6 +35,8 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_inpar/inpar_scatra.H"
 
+#include "../drt_lib/drt_dofset_subproxy.H"
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
@@ -247,33 +249,49 @@ void POROELAST::PoroScatraBase::ReplaceDofSets(
   if(matchinggrid_)
   {
     // the problem is two way coupled, thus each discretization must know the other discretization
-    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-    Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
 
     if(PoroField()->HasSubmeshes())
     {
-      // build a proxy of the structure discretization for the scatra field
-      structdofset = structdis->GetDofSetSubProxy();
-      // build a proxy of the fluid discretization for the scatra field
-      fluiddofset = fluiddis->GetDofSetSubProxy();
-      // build a proxy of the scatra discretization for the structure/fluid field
-      scatradofset = scatradis->GetDofSetSubProxy();
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              structdis,
+              structdis->GetDofSetProxy())
+      );
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              fluiddis,
+              fluiddis->GetDofSetProxy())
+      );
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatrasubdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              scatradis,
+              scatradis->GetDofSetProxy())
+      );
+
+      scatradis->ReplaceDofSet(1,structsubdofset);
+      scatradis->ReplaceDofSet(2,fluidsubdofset);
+      structdis->ReplaceDofSet(2,scatrasubdofset);
+      fluiddis ->ReplaceDofSet(2,scatrasubdofset);
     }
     else
     {
       // build a proxy of the structure discretization for the scatra field
-      structdofset = structdis->GetDofSetProxy();
+      Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
       // build a proxy of the fluid discretization for the scatra field
-      fluiddofset = fluiddis->GetDofSetProxy();
+      Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
       // build a proxy of the fluid discretization for the structure/fluid field
-      scatradofset = scatradis->GetDofSetProxy();
+      Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+
+      scatradis->ReplaceDofSet(1,structdofset);
+      scatradis->ReplaceDofSet(2,fluiddofset);
+      structdis->ReplaceDofSet(2,scatradofset);
+      fluiddis ->ReplaceDofSet(2,scatradofset);
     }
 
-    scatradis->ReplaceDofSet(1,structdofset);
-    scatradis->ReplaceDofSet(2,fluiddofset);
-    structdis->ReplaceDofSet(2,scatradofset);
-    fluiddis->ReplaceDofSet(2,scatradofset);
+    fluiddis->FillComplete();
+    scatradis->FillComplete();
+    structdis->FillComplete();
+
   }
   else
   {

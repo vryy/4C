@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_lib/drt_dofset_merged_proxy.H"
+#include "../drt_lib/drt_dofset_subproxy.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -134,8 +135,8 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
   {
     // build a dofset that merges the DOFs from both sides
-    Teuchos::RCP<DRT::DofSet> newdofset =
-        Teuchos::rcp(new DRT::DofSetMergedProxy(
+    Teuchos::RCP<DRT::DofSetMergedWrapper> newdofset =
+        Teuchos::rcp(new DRT::DofSetMergedWrapper(
             scatradis->GetDofSetProxy(),
             scatradis,
             "ScatraHeteroReactionMaster",
@@ -144,15 +145,21 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     // assign the dofset to the reaction discretization
     discret_->ReplaceDofSet(newdofset,false);
 
-    // add all secondary dofsets as sub proxies
+    // add all secondary dofsets as proxies
     for(int ndofset=1;ndofset<scatratimint_->Discretization()->NumDofSets();++ndofset)
-      discret_->AddDofSet(scatratimint_->Discretization()->GetDofSetProxy(ndofset));
+    {
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> gidmatchingdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              scatratimint_->Discretization(),
+              scatratimint_->Discretization()->GetDofSetProxy(ndofset)));
+      discret_->AddDofSet(gidmatchingdofset);
+    }
 
     // done. Rebuild all maps and boundary condition geometries
     discret_->FillComplete(true,true,true);
 
     if(com->MyPID() == 0 and com->NumProc()>1)
-      std::cout << "parallel distribution of auxialiary discr. with standard ghosting" << std::endl;
+      std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*discret_);
   }
 

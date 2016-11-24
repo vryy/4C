@@ -2,7 +2,7 @@
 \file fluid_utils.H
 \brief utility functions for fluid problems
 
-
+\level 2
 \maintainer Benjamin Krank & Martin Kronbichler
             {krank,kronbichler}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -23,6 +23,11 @@
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>
+
+namespace DRT
+{
+  class DofSet;
+}
 
 namespace LINALG
 {

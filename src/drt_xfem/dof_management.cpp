@@ -4,7 +4,8 @@
 \brief provides the dofmanager class
 
 <pre>
-Maintainer: Ursula Rasthofer
+\level 2
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -19,6 +20,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -749,4 +751,3 @@ void XFEM::DofManager::toGmsh(
 #endif
 #endif
 }
-

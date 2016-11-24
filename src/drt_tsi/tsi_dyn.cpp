@@ -5,7 +5,8 @@
 
 
 <pre>
-   Maintainer: Alexander Seitz
+\level 2
+\maintainer    Alexander Seitz
                seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15271
@@ -60,7 +61,7 @@ void tsi_dyn_drt()
     = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // create an empty TSI::Algorithm instance
-  Teuchos::RCP<TSI::Algorithm> tsi = Teuchos::null;
+  Teuchos::RCP<TSI::Algorithm> tsi;
 
   // choose algorithm depending on solution type
   switch (coupling)

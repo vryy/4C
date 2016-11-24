@@ -48,6 +48,7 @@ combustion problem.
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/matlist.H"

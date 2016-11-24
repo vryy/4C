@@ -153,8 +153,8 @@ protected:
       int                                        nds_var_old,
       int                                        nds_intvar_old,
       std::vector<DRT::Element::LocationArray>   la_old,
-      const Epetra_Map*                          dofrowmap_old,
-      const Epetra_Map*                          intdofrowmap_old
+      const Teuchos::RCP<Epetra_Map>&            dofrowmap_old,
+      const Teuchos::RCP<Epetra_Map>&            intdofrowmap_old
       );
 
   //! calculate matrices on element

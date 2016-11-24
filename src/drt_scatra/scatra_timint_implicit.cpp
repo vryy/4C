@@ -233,12 +233,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   if (pbc->HasPBC() and not isinit_)
   {
     pbc->UpdateDofsForPeriodicBoundaryConditions();
-
-    if(problem_->DoesExistDis("fluid") and problem_->GetDis("fluid")->NumGlobalNodes() and problem_->ProblemType() != prb_combust)
-    {
-      Teuchos::RCP<DRT::Discretization> fluiddis = problem_->GetDis("fluid");
-      discret_->ReplaceDofSet(1,fluiddis->GetDofSetProxy(),false);
-    }
   }
 
   // -------------------------------------------------------------------

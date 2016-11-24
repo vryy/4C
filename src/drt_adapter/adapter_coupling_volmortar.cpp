@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_volmortar/volmortar_coupling.H"
 #include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -191,9 +192,13 @@ void ADAPTER::MortarVolCoupl::CreateAuxDofsets(
   dis2->FillComplete();
 
   //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-  if (dis2->BuildDofSetAuxProxy(coupleddof21->size(), 0, 0, true) != 1)
+  // add proxy of velocity related degrees of freedom to scatra discretization
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
+  if (dis2->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in fluid field");
-  if (dis1->BuildDofSetAuxProxy(coupleddof12->size(), 0, 0, true ) != 1)
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
+  if (dis1->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in structure field");
 
   //call AssignDegreesOfFreedom also for auxiliary dofsets

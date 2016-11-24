@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_utils_parallel.H"
 
+#include "../drt_lib/drt_dofset_subproxy.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 namespace POROELAST
 {
@@ -47,14 +49,14 @@ void SetupPoro(bool setmaterialpointers=true)
   const bool matchinggrid = DRT::INPUT::IntegralValue<bool>(porodyn,"MATCHINGGRID");
 
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structdis;
   structdis = problem->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
     structdis->FillComplete();
 
   // access the fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluiddis;
   fluiddis = problem->GetDis("porofluid");
   if (!fluiddis->Filled())
     fluiddis->FillComplete();
@@ -86,32 +88,45 @@ void SetupPoro(bool setmaterialpointers=true)
     const int numglobalfluidnodes = fluidnodecolmap->NumGlobalElements();
 
     // the problem is two way coupled, thus each discretization must know the other discretization
-    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
 
     /* When coupling porous media with a pure structure we will have two discretizations
-     * of different size. In this case we need a special proxy, which can handle submeshes.
+     * of different size. In this case we need a special dofset, which can handle submeshes.
      */
     if(numglobalstructnodes != numglobalfluidnodes)
     {
-      // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
-      structdofset = structdis->GetDofSetSubProxy();
-      // build a proxy of the fluid discretization for the structure field
-      fluiddofset = fluiddis->GetDofSetSubProxy();
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              structdis,
+              structdis->GetDofSetProxy())
+      );
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+              fluiddis,
+              fluiddis->GetDofSetProxy())
+      );
+
+      // check if FluidField has 2 discretizations, so that coupling is possible
+      if (fluiddis->AddDofSet(structsubdofset) != 1)
+        dserror("unexpected dof sets in fluid field");
+      if (structdis->AddDofSet(fluidsubdofset)!=1)
+        dserror("unexpected dof sets in structure field");
     }
     else
     {
       // build a proxy of the structure discretization for the fluid field
-      structdofset = structdis->GetDofSetProxy();
+      Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
       // build a proxy of the fluid discretization for the structure field
-      fluiddofset = fluiddis->GetDofSetProxy();
+      Teuchos::RCP<DRT::DofSetInterface> fluiddofset  = fluiddis ->GetDofSetProxy();
+
+      // check if FluidField has 2 discretizations, so that coupling is possible
+      if (fluiddis->AddDofSet(structdofset) != 1)
+        dserror("unexpected dof sets in fluid field");
+      if (structdis->AddDofSet(fluiddofset)!=1)
+        dserror("unexpected dof sets in structure field");
     }
 
-    // check if FluidField has 2 discretizations, so that coupling is possible
-    if (fluiddis->AddDofSet(structdofset) != 1)
-      dserror("unexpected dof sets in fluid field");
-    if (structdis->AddDofSet(fluiddofset)!=1)
-      dserror("unexpected dof sets in structure field");
+    structdis->FillComplete();
+    fluiddis->FillComplete();
   }
   else
   {
@@ -128,9 +143,13 @@ void SetupPoro(bool setmaterialpointers=true)
     const int ndofperelement_fluid  = 0;
     const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true ) != 1)
+
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_fluid, ndofperelement_fluid, 0, true ));
+    if (structdis->AddDofSet(dofsetaux) != 1)
       dserror("unexpected dof sets in structure field");
-    if (fluiddis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_struct, ndofperelement_struct, 0, true ));
+    if (fluiddis->AddDofSet(dofsetaux) != 1)
       dserror("unexpected dof sets in fluid field");
 
     //call AssignDegreesOfFreedom also for auxiliary dofsets
@@ -188,16 +207,13 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
 
     // the problem is two way coupled, thus each discretization must know the other discretization
-    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-    Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
 
     // build a proxy of the structure discretization for the scatra field
-    structdofset = structdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
     // build a proxy of the fluid discretization for the scatra field
-    fluiddofset = fluiddis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis  ->GetDofSetProxy();
     // build a proxy of the fluid discretization for the structure/fluid field
-    scatradofset = scatradis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
     if (scatradis->AddDofSet(structdofset) != 1)
@@ -208,6 +224,11 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
       dserror("unexpected dof sets in structure field");
     if (fluiddis->AddDofSet(scatradofset)!=2)
       dserror("unexpected dof sets in fluid field");
+
+    structdis->FillComplete();
+    fluiddis ->FillComplete();
+    scatradis->FillComplete();
+
   }
   else
   {
@@ -235,13 +256,19 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
     const int ndofperelement_struct = 0;
     const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
     const int ndofperelement_scatra = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 2)
+
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+    if (structdis->AddDofSet(dofsetaux) != 2)
       dserror("unexpected dof sets in structure field");
-    if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true) != 2)
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+    if (fluiddis->AddDofSet(dofsetaux) != 2)
       dserror("unexpected dof sets in fluid field");
-    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_struct, ndofperelement_struct, 0, true ));
+    if (scatradis->AddDofSet(dofsetaux) != 1)
       dserror("unexpected dof sets in scatra field");
-    if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 2)
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_fluid, ndofperelement_fluid, 0, true ));
+    if (scatradis->AddDofSet(dofsetaux) != 2)
       dserror("unexpected dof sets in scatra field");
 
     //call AssignDegreesOfFreedom also for auxiliary dofsets

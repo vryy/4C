@@ -4,7 +4,8 @@
 \brief HDG time-integration scheme
 
 <pre>
-Maintainer: Martin Kronbichler
+\level 3
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -15,6 +16,7 @@ Maintainer: Martin Kronbichler
 #include "fluid_timint_hdg.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
@@ -52,7 +54,9 @@ void FLD::TimIntHDG::Init()
       dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))->NumDofPerElementAuxiliary() : 0;
 
   // set degrees of freedom in the discretization
-  discret_->BuildDofSetAuxProxy(0,elementndof,0,false);
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( 0,elementndof,0,false ));
+  discret_->AddDofSet(dofsetaux);
   discret_->FillComplete();
 
   // build velocity/pressure splitting
@@ -645,4 +649,3 @@ void FLD::TimIntHDG::InitForcing()
   }
   return;
 }
-

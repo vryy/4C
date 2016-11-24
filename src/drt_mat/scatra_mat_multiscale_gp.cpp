@@ -20,6 +20,7 @@
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_scatra/scatra_timint_ost.H"
 
@@ -153,7 +154,9 @@ void MAT::ScatraMatMultiScaleGP::Init()
     }
 
     // add proxy of velocity related degrees of freedom to scatra discretization
-    if(microdis->BuildDofSetAuxProxy(DRT::Problem::Instance(microdisnum_)->NDim()+1,0,0,true) != 1)
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance(microdisnum_)->NDim()+1, 0, 0, true));
+    if ( microdis->AddDofSet(dofsetaux)!= 1 )
       dserror("Micro-scale discretization has illegal number of dofsets!");
 
     // finalize discretization

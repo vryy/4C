@@ -2,32 +2,37 @@
 /*!
  \file drt_dofset_mapped_proxy.H
 
- \brief A proxy of a dofset that does not rely on same GID/LID numbers but uses
+ \brief A dofset that does not rely on same GID/LID numbers but uses
          a defined node mapping instead (not implemented for element DOFs).
 
    \level 3
 
-   \maintainer Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
+   \maintainer Andreas Rauch
+                rauch@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
-                089 - 289-15251
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DOFSET_MAPPED_PROXY_H_
 #define SRC_DRT_LIB_DRT_DOFSET_MAPPED_PROXY_H_
 
-#include "drt_dofset_proxy.H"
+#include "drt_dofset_base.H"
 
-#include "drt_discret.H"
+#include "drt_node.H"
+
+#include <Epetra_IntVector.h>
+
 
 namespace DRT
 {
+class Discretization;
 
 /*!
-\brief A proxy of a dofset that does not rely on same GID/LID numbers but uses
-       a defined node mapping instead (not implemented for element DOFs).
+\brief A dofset that does not rely on same GID/LID numbers but uses
+       a defined node mapping instead
 
-This dofset proxy was originally written to handle heterogeneous reactions :
+\warning not implemented for element DOFs
+
+This dofset was originally written to handle heterogeneous reactions :
 \ref SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy .
 This means reactions between volume-bound scalars and surface-bound scalars in the
 context of scalar transport simulations.
@@ -55,10 +60,10 @@ One example for the proper use of this class:
 
 \code
 
-  Teuchos::RCP<DRT::DofSet> newdofset_for_target_dis =
+  Teuchos::RCP<DRT::DofSet> newsourcedofset_for_target_dis =
       Teuchos::rcp(new DRT::DofSetMappedProxy(sourcedis->GetDofSetProxy(),sourcedis,"CouplingSourceToTarget",setofcouplingids));
 
-  target_dis->AddDofSet(newdofset_for_target_dis);
+  target_dis->AddDofSet(newsourcedofset_for_target_dis);
 
   target_dis->FillComplete();
 
@@ -70,35 +75,30 @@ the BACI 'Input' folder.
 \note Date of this documentation 08/16 by author rauch ( rauch@lnm.mw.tum.de )
 
 \date 08/2016
-\author vuong (vuong@lnm.mw.tum.de)
+\author rauch
+\author vuong
 */
-  class DofSetMappedProxy : public DofSetProxy
+  class DofSetDefinedMappingWrapper : public DofSetBase
   {
   public:
 
-    /*!
-    \brief Standard Constructor
+    /*! \brief Standard Constructor
 
     \param dofset       (in) : dofset proxy of source discretization \ref sourcedis
     \param sourcedis    (in) : source discretization for the new dofset
     \param couplingcond (in) : condition to be coupled
-    \param condids      (in) : set of condition ids to merge into one dofset
-
-    */
-    DofSetMappedProxy(Teuchos::RCP<DofSet>  dofset,
-                      const Teuchos::RCP<const DRT::Discretization> sourcedis,
+    \param condids      (in) : set of condition ids to merge into one dofset    */
+    DofSetDefinedMappingWrapper(
+                      Teuchos::RCP<DofSetInterface>  dofset,
+                      Teuchos::RCP<const DRT::Discretization> sourcedis,
                       const std::string& couplingcond,
                       const std::set<int> condids);
 
-    /*!
-    \brief Destructor
-
-    */
-     ~DofSetMappedProxy(){};
+     //! destructor
+     virtual ~DofSetDefinedMappingWrapper();
 
 
-     /*!
-     \brief Assign dof numbers using all elements and nodes of the discretization.
+     /*! \brief Assign dof numbers using all elements and nodes of the discretization.
 
             This method is called during \ref FillComplete() on the target
             discretization.
@@ -148,63 +148,115 @@ the BACI 'Input' folder.
           \endcode
 
           The std::set 'couplingids' contains the ids from both, VOL and SURF conditions
-          given above. This way, one unique struct dofset for all scatra nodes is created.
-
-     */
+          given above. This way, one unique struct dofset for all scatra nodes is created.    */
      virtual int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start);
+
+     /// reset all internal variables
+     virtual void Reset();
+
+     //! @name Proxy management
+     /// Proxies need to know about changes to the DofSet.
+
+     /// our original DofSet dies
+     virtual void Disconnect(DofSetInterface* dofset);
+
+     //@}
+
+     /// Returns true if filled
+     virtual bool Filled() const
+     {return filled_ and sourcedofset_->Filled();};
+
 
      //! @name Access methods
 
-     /// Get the gid of all dofs of a node
-     virtual std::vector<int> Dof(const Node* node) const
-       {
-         const DRT::Node* sourcenode = GetSourceNode(node->LID());
-         if(sourcenode==NULL)
-           return std::vector<int>();
-         else
-          return DofSetProxy::Dof(sourcenode);
-       }
+     /// Get degree of freedom row map
+     virtual const Epetra_Map* DofRowMap() const
+     {return sourcedofset_->DofRowMap();};
 
-     /// Get the gid of all dofs of a element
-     virtual std::vector<int> Dof(const Element* element) const
-       {
-        return std::vector<int>();
-         //return DofSetProxy::Dof(element);
-       }
+     /// Get degree of freedom column map
+     virtual const Epetra_Map* DofColMap() const
+     {return sourcedofset_->DofColMap();};
 
      /// Get number of dofs for given node
-     virtual int NumDof(const Node* node) const
+     virtual int NumDof(
+         const Node* node ///< node, for which you want to know the number of dofs
+         ) const
        {
          const DRT::Node* sourcenode = GetSourceNode(node->LID());
          if(sourcenode==NULL)
-           return 0;
+           return sourcedofset_->NumDof(node);
          else
-           return DofSetProxy::NumDof(sourcenode);
+           return sourcedofset_->NumDof(sourcenode);
        }
 
      /// Get number of dofs for given element
-     virtual int NumDof(const Element* element) const
+     virtual int NumDof(
+         const Element* element ///< element, for which you want to know the number of dofs
+         ) const
        {
          // element dofs not yet supported
          return 0;
-         //return DofSetProxy::NumDof(element);
        }
+
+     /// get number of nodal dofs
+     virtual int NumDofPerNode(
+         const Node & node ///< node, for which you want to know the number of dofs
+         ) const
+     {
+       const DRT::Node* sourcenode = GetSourceNode(node.LID());
+       if(sourcenode==NULL)
+         return sourcedofset_->NumDofPerNode(node);
+       else
+         return sourcedofset_->NumDofPerNode(*sourcenode);
+     }
+
+     /// Get the gid of all dofs of a node
+     virtual std::vector<int> Dof(
+         const Node* node ///< node, for which you want to know the number of dofs
+         ) const
+       {
+         const DRT::Node* sourcenode = GetSourceNode(node->LID());
+         if(sourcenode==NULL)
+           return sourcedofset_->Dof(node);
+         else
+           return sourcedofset_->Dof(sourcenode);
+       }
+
+     /// Get the gid of all dofs of a node
+     virtual void Dof(
+         std::vector<int>& dof, ///< vector of dof gids (to be filled)
+         const Node* node,      ///< node, for which you want the dof positions
+         unsigned nodaldofset   ///< number of nodal dof set of the node (currently !=0 only for XFEM)
+         ) const
+     {
+       const DRT::Node* sourcenode = GetSourceNode(node->LID());
+       if(sourcenode==NULL)
+         sourcedofset_->Dof(dof,node,nodaldofset);
+       else
+         sourcedofset_->Dof(dof,sourcenode,nodaldofset);
+     };
+
+     /// Get the gid of all dofs of a element
+     virtual std::vector<int> Dof(const Element* element) const
+     {
+       return std::vector<int>();
+     }
 
      /// Get the gid of a dof for given node
      virtual int Dof(const Node* node, int dof) const
        {
           const DRT::Node* sourcenode = GetSourceNode(node->LID());
           if(sourcenode==NULL)
-            return -1;
+            return sourcedofset_->Dof(node,dof);
           else
-            return DofSetProxy::Dof(sourcenode,dof);
+            return sourcedofset_->Dof(sourcenode,dof);
        }
 
      /// Get the gid of a dof for given element
      virtual int Dof(const Element* element, int dof) const
        {
+       // element dofs not yet supported
          return 0;
-         return DofSetProxy::Dof(element,dof);
        }
 
      /// Get the gid of all dofs of a node
@@ -212,9 +264,9 @@ the BACI 'Input' folder.
        {
          const DRT::Node* sourcenode = GetSourceNode(node->LID());
          if(sourcenode==NULL)
-             return;
-         DofSetProxy::Dof(sourcenode,lm);
-         return;
+           return sourcedofset_->Dof(node,lm);
+         else
+           return sourcedofset_->Dof(sourcenode,lm);
        }
 
      /// Get the gid of all dofs of a node
@@ -226,8 +278,9 @@ the BACI 'Input' folder.
      {
        const DRT::Node* sourcenode = GetSourceNode(node->LID());
        if(sourcenode==NULL)
-           return;
-       DofSetProxy::Dof(sourcenode,startindex,lm);
+         sourcedofset_->Dof(node,startindex,lm);
+       else
+         sourcedofset_->Dof(sourcenode,startindex,lm);
      }
 
      /// Get the gid of all dofs of a element
@@ -235,7 +288,6 @@ the BACI 'Input' folder.
      {
        // element dofs not yet supported
        return;
-       //DofSetProxy::Dof(element,lm);
      }
 
      /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
@@ -247,42 +299,55 @@ the BACI 'Input' folder.
      {
        const DRT::Node* sourcenode = GetSourceNode(node->LID());
        if(sourcenode==NULL)
-           return;
-       DofSetProxy::Dof(element,sourcenode,lm);
+         sourcedofset_->Dof(element,node,lm);
+       else
+         sourcedofset_->Dof(element,sourcenode,lm);
      }
+
+     /// Get maximum GID of degree of freedom row map
+     virtual int MaxAllGID() const
+     {return sourcedofset_->MaxAllGID();};
+
+     /// Get minimum GID of degree of freedom row map
+     virtual int MinAllGID() const
+     {return sourcedofset_->MinAllGID();};
+
+     /// Get Max of all GID assigned in the DofSets in front of current one in the list #static_dofsets_
+     virtual int MaxGIDinList(const Epetra_Comm& comm) const
+     {return sourcedofset_->MaxGIDinList(comm);};
+
+     /// are the dof maps already initialized?
+     virtual bool Initialized() const
+     {return sourcedofset_->Initialized();};
+
+     /// Get Number of Global Elements of degree of freedom row map
+     virtual int NumGlobalElements() const
+     {return sourcedofset_->NumGlobalElements();};
 
   private:
 
      //! get corresponding source node from source discretization
-     const DRT::Node* GetSourceNode(int targetLid) const
-     {
-       if(targetLid>targetlidtosourcegidmapping_->MyLength())
-         dserror("Target Lid %i not found in discretization!",targetLid);
-       int sourcegid = (*targetlidtosourcegidmapping_)[targetLid];
+     const DRT::Node* GetSourceNode(int targetLid) const;
 
-       if(sourcegid==-1)
-         return NULL;
-       if(not sourcedis_->HaveGlobalNode(sourcegid))
-         dserror("Master Gid %i not found in source discretization!",sourcegid);
-       return sourcedis_->gNode(sourcegid);
-     }
+     // dofset
+     Teuchos::RCP<DofSetInterface> sourcedofset_;
 
     //! map containing the mapping of the target node GID to the corresponding source node GID (value)
      Teuchos::RCP<Epetra_IntVector>  targetlidtosourcegidmapping_;
 
-    //! underlying actual dofset
-    Teuchos::RCP<DofSet> dofset_;
-
     //! source discretization
-    const Teuchos::RCP<const DRT::Discretization> sourcedis_;
+    Teuchos::RCP<const DRT::Discretization> sourcedis_;
 
     //! condition string defining the coupling
     const std::string couplingcond_;
 
     //! ID of condition the dofset is build from
     const std::set<int> condids_;
-  };
-}
+
+    /// filled flag
+    bool filled_;
+  }; // DofSetDefinedMappingWrapper
+} // namespace DRT
 
 
 

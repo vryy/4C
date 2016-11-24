@@ -42,7 +42,7 @@ int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization&
   // conditions and using the independent dofset's ADOF
   int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
-  myMaxGID_ = DRT::DofSetBase::MaxAllGID();
+  myMaxGID_ = DRT::DofSet::MaxAllGID();
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
   // remark: the previously assigned dofs of slave nodes are overwritten here

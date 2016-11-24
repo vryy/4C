@@ -24,6 +24,7 @@
 #include "../drt_adapter/adapter_lubrication.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_lubrication/lubrication_timint_implicit.H"
 
@@ -176,11 +177,15 @@ void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string 
   const int ndofperelement_lubrication = 0;
   const int ndofpernode_struct = structdis->NumDof(0, structdis->lRowNode(0));
   const int ndofperelement_struct = 0;
-  if (structdis->BuildDofSetAuxProxy(ndofpernode_lubrication,
-      ndofperelement_lubrication, 0, true) != 1)
+
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux_lubrication =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndofpernode_lubrication,ndofperelement_lubrication, 0, true));
+  if ( structdis->AddDofSet(dofsetaux_lubrication)!= 1 )
     dserror("unexpected dof sets in structure field");
-  if (lubricationdis->BuildDofSetAuxProxy(ndofpernode_struct,
-      ndofperelement_struct, 0, true) != 1)
+
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux_struct =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct,ndofperelement_struct, 0, true));
+  if ( lubricationdis->AddDofSet(dofsetaux_struct)!= 1 )
     dserror("unexpected dof sets in lubrication field");
 
   //call AssignDegreesOfFreedom also for auxiliary dofsets

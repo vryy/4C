@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch.H"
@@ -63,7 +64,8 @@ void sti_dyn(
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   // add dofset for velocity-related quantities to scatra discretization
-  if(scatradis->BuildDofSetAuxProxy(problem->NDim()+1,0,0,true) != 1)
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim()+1,0,0,true));
+  if(scatradis->AddDofSet(dofsetaux) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize scatra discretization
@@ -77,7 +79,8 @@ void sti_dyn(
   Teuchos::RCP<DRT::Discretization> thermodis = problem->GetDis("thermo");
 
   // add dofset for velocity-related quantities to thermo discretization
-  if (thermodis->BuildDofSetAuxProxy(problem->NDim()+1,0,0,true) != 1)
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim()+1,0,0,true));
+  if (thermodis->AddDofSet(dofsetaux) != 1)
     dserror("Thermo discretization has illegal number of dofsets!");
 
   // equip thermo discretization with noderowmap for subsequent safety check
@@ -90,12 +93,15 @@ void sti_dyn(
 
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo interaction
   DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis,thermodis);
-  thermodis->FillComplete(true,true,true);
+  thermodis->FillComplete(false,true,true);
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if(thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
     dserror("Thermo discretization has illegal number of dofsets!");
   if(scatradis->AddDofSet(thermodis->GetDofSetProxy()) != 2)
     dserror("Scatra discretization has illegal number of dofsets!");
+
+  thermodis->FillComplete(true,false,false);
+  scatradis->FillComplete(true,false,false);
 
   // add material of scatra elements to thermo elements and vice versa
   for(int i=0; i<scatradis->NumMyColElements(); ++i)

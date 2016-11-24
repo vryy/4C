@@ -25,6 +25,7 @@
 
 #include "../drt_lib/drt_assemblestrategy.H"
 
+#include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -80,7 +81,8 @@ void SCATRA::TimIntHDG::Setup()
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
-  if (discret_->BuildDofSetAuxProxy(0,eledofs,0,false) != 2)
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0,eledofs,0,false));
+  if (discret_->AddDofSet(dofsetaux) != 2)
     dserror("Scatra discretization has illegal number of dofsets!");
   discret_->FillComplete();
 
@@ -825,9 +827,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<DRT::Element::LocationArray> la_old;
 
-  // create new local dofsets for the old face dofs and the old interior element dofs
-  Teuchos::RCP<DRT::DofSet> facedofs_old = Teuchos::rcp(new DRT::DofSet(*discret_->GetDofSetProxy(0)->Clone()));
-  Teuchos::RCP<DRT::DofSet> eledofs_old = Teuchos::rcp(new DRT::DofSet(*discret_->GetDofSetProxy(nds_intvar_)->Clone()));
+  // copy the old face dof map and the old interior element dof map
+  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::rcp( new Epetra_Map(*discret_->DofColMap(0)) );
+  Teuchos::RCP<Epetra_Map> eledofs_old = Teuchos::rcp( new Epetra_Map(*discret_->DofColMap(nds_intvar_)) );
 
   // set action
   Teuchos::ParameterList eleparams;
@@ -921,7 +923,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
-  Teuchos::RCP<DRT::DofSetAuxProxy> eledofs_new = Teuchos::rcp(new DRT::DofSetAuxProxy(&*discret_->GetDofSetProxy(),0,eledofs,0,false));
+  Teuchos::RCP<DRT::DofSetPredefinedDoFNumber> eledofs_new = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0,eledofs,0,false));
   // replace old interior element dofs with the new created dofset
   discret_->ReplaceDofSet(nds_intvar_,eledofs_new,false);
 
@@ -931,16 +933,16 @@ void SCATRA::TimIntHDG::AdaptDegree()
   output_->ClearMapCache();
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the projection
-  Teuchos::RCP<Epetra_Vector> phin_old = LINALG::CreateVector(*facedofs_old->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> phin_old = LINALG::CreateVector(*facedofs_old,true);
   LINALG::Export(*phin_,*phin_old);
 
-  Teuchos::RCP<Epetra_Vector> intphin_old = LINALG::CreateVector(*eledofs_old->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> intphin_old = LINALG::CreateVector(*eledofs_old,true);
   LINALG::Export(*intphin_,*intphin_old);
 
-  Teuchos::RCP<Epetra_Vector> phinp_old = LINALG::CreateVector(*facedofs_old->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> phinp_old = LINALG::CreateVector(*facedofs_old,true);
   LINALG::Export(*phinp_,*phinp_old);
 
-  Teuchos::RCP<Epetra_Vector> intphinp_old = LINALG::CreateVector(*eledofs_old->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> intphinp_old = LINALG::CreateVector(*eledofs_old,true);
   LINALG::Export(*intphinp_,*intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
@@ -973,8 +975,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
       nds_var_old,
       nds_intvar_old,
       la_old,
-      eledofs_old->DofRowMap(),
-      facedofs_old->DofRowMap());
+      eledofs_old,
+      facedofs_old);
 
   AdaptVariableVector(
       phinp_,
@@ -984,8 +986,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
       nds_var_old,
       nds_intvar_old,
       la_old,
-      eledofs_old->DofRowMap(),
-      facedofs_old->DofRowMap());
+      eledofs_old,
+      facedofs_old);
 
 //  // end time measurement for element
 //  double dtproject=Teuchos::Time::wallTime()-tcproject;
@@ -1022,8 +1024,8 @@ void SCATRA::TimIntHDG::AdaptVariableVector(
     int                                        nds_var_old,
     int                                        nds_intvar_old,
     std::vector<DRT::Element::LocationArray>   la_old,
-    const Epetra_Map*                          dofrowmap_old,
-    const Epetra_Map*                          intdofrowmap_old
+    const Teuchos::RCP<Epetra_Map>&            dofrowmap_old,
+    const Teuchos::RCP<Epetra_Map>&            intdofrowmap_old
     )
 {
 

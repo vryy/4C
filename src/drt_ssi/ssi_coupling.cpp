@@ -27,7 +27,9 @@
 #include "../drt_volmortar/volmortar_utils.H"
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_dofset_subproxy.H"
 #include "../drt_lib/drt_dofset_mapped_proxy.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
@@ -43,9 +45,9 @@ void SSI::SSICouplingMatchingVolume::Init(
   SetIsSetup(false);
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset = scatradis->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
   // check if scatra field has 2 discretizations, so that coupling is possible
   if (scatradis->AddDofSet(structdofset)!=1)
@@ -157,9 +159,12 @@ void SSI::SSICouplingNonMatchingBoundary::Init(
   const int ndofperelement_scatra  = 0;
   const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
   const int ndofperelement_struct = 0;
-  if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+  if (structdis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in structure field");
-  if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_struct, ndofperelement_struct, 0, true ));
+  if (scatradis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in scatra field");
 
   //call AssignDegreesOfFreedom also for auxiliary dofsets
@@ -281,9 +286,12 @@ void SSI::SSICouplingNonMatchingVolume::Init(
   const int ndofperelement_scatra  = 0;
   const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
   const int ndofperelement_struct = 0;
-  if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+  if (structdis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in structure field");
-  if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_struct, ndofperelement_struct, 0, true ));
+  if (scatradis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in scatra field");
 
   //call AssignDegreesOfFreedom also for auxiliary dofsets
@@ -406,8 +414,17 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(
     for (unsigned i=0; i<conds_struct.size(); ++i)
       couplingids.insert(conds_struct[i]->GetInt("coupling id"));
 
-      Teuchos::RCP<DRT::DofSet> newdofset_scatra =
-          Teuchos::rcp(new DRT::DofSetMappedProxy(structdis->GetDofSetProxy(),structdis,"SSICouplingSolidToScatra",couplingids));
+    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structgidmatchingdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+            structdis,
+            structdis->GetDofSetProxy()));
+
+      Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_scatra =
+          Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+              structgidmatchingdofset,
+              structdis,
+              "SSICouplingSolidToScatra",
+              couplingids));
 
       // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
       if (scatradis->AddDofSet(newdofset_scatra)!=1)
@@ -431,13 +448,22 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(
     for (unsigned i=0; i<conds_struct.size(); ++i)
       couplingids.insert(conds_struct[i]->GetInt("coupling id"));
 
+    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatragidmatchingdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(
+            scatradis,
+            scatradis->GetDofSetProxy()));
+
     for (std::set<int>::iterator it=couplingids.begin(); it!=couplingids.end(); ++it)
     {
       std::set<int> tempset;
       tempset.insert(*it);
 
-      Teuchos::RCP<DRT::DofSet> newdofset_struct =
-          Teuchos::rcp(new DRT::DofSetMappedProxy(scatradis->GetDofSetProxy(),scatradis,"SSICouplingScatraToSolid",tempset));
+      Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_struct =
+          Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+              scatragidmatchingdofset,
+              scatradis,
+              "SSICouplingScatraToSolid",
+              tempset));
 
       structdis->AddDofSet(newdofset_struct);
     }

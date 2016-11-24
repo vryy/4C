@@ -31,7 +31,6 @@ namespace DRT
 {
 
 class Discretization;
-class DofSetProxy;
 
 /*!
 \brief A set of degrees of freedom
@@ -102,19 +101,12 @@ reason to deep copy any of the local map and vector variables.
 */
 class DofSet: public DofSetBase
 {
-  friend class DofSetProxy;
 public:
 
-  /*!
-  \brief Standard Constructor
-
-  */
+  /// Standard Constructor
   DofSet();
 
-  /*!
-  \brief Destructor
-
-  */
+  /// Destructor
   virtual ~DofSet();
 
   /// create a copy of this object
@@ -284,11 +276,19 @@ public:
     }
   }
 
-  /*!
-  \brief Print this class
-  */
+  /// are the dof maps already initialized?
+  virtual bool Initialized() const;
+
+  /// Get degree of freedom row map
+  virtual const Epetra_Map* DofRowMap() const;
+
+  /// Get degree of freedom column map
+  virtual const Epetra_Map* DofColMap() const;
+
+  //! Print this class
   virtual void Print(std::ostream& os) const ;
 
+  //! Return true if \ref AssignDegreesOfFreedom was called
   virtual bool Filled() const { return filled_; }
 
   //@}
@@ -303,18 +303,23 @@ public:
 
   //@}
 
-private:
-
   //! @name Proxy management
   /// Proxies need to know about changes to the DofSet.
 
-  /// Register new proxy to notify
-  void RegisterProxy(DofSetProxy* proxy);
-
-  /// Remove proxy from list
-  void UnregisterProxy(DofSetProxy* proxy);
+  /// our original DofSet dies
+  virtual void Disconnect(DofSetInterface* dofset) {return;};
 
   //@}
+
+  /// Get Number of Global Elements of degree of freedom row map
+  virtual int NumGlobalElements() const;
+
+  /// Get maximum GID of degree of freedom row map
+  virtual int MaxAllGID() const;
+
+  /// Get minimum GID of degree of freedom row map
+  virtual int MinAllGID() const;
+
 
 protected:
 
@@ -346,24 +351,20 @@ protected:
     return element.NumDofPerFace(face);
   }
 
-  //! @name Proxy management
-
-  /// Notify proxies of new dofs
-  void NotifyAssigned();
-
-  /// Notify proxies of reset
-  void NotifyReset();
-
   ///Get Reserved Max Number Dofs per Node
   virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf){return;};
-
-  //@}
 
   /// filled flag
   bool filled_;
 
   /// position of dofset inside its discretization
   unsigned dspos_;
+
+  /// unique row map of degrees of freedom (node, face, and element dofs))
+  Teuchos::RCP<Epetra_Map> dofrowmap_;
+
+  /// unique column map of degrees of freedom (node, face, and element dofs)
+  Teuchos::RCP<Epetra_Map> dofcolmap_;
 
   /// number of dofs for each node
   Teuchos::RCP<Epetra_IntVector>                 numdfcolnodes_;
@@ -416,10 +417,6 @@ protected:
   Teuchos::RCP<Epetra_IntVector>                 shiftcolnodes_;
   //***************************************************************************
 
-private:
-
-  /// list of my proxies
-  std::list<DofSetProxy*> proxies_;
 }; // class DofSet
 } // namespace DRT
 

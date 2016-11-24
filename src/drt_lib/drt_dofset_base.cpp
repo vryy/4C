@@ -24,13 +24,15 @@
 
 #include "../linalg/linalg_utils.H"
 
+
 // list of all dof sets
-std::list<DRT::DofSetBase*> DRT::DofSetBase::static_dofsets_;
+std::list<DRT::DofSetInterface*> DRT::DofSetBase::static_dofsets_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSetBase::DofSetBase()
+    : DofSetInterface()
 {
   return;
 }
@@ -41,58 +43,14 @@ DRT::DofSetBase::DofSetBase()
  *----------------------------------------------------------------------*/
 DRT::DofSetBase::~DofSetBase()
 {
+  // disconnect from proxies
+  for (std::list<DofSetInterface*>::iterator i=registered_dofsets_.begin(); i!=registered_dofsets_.end(); ++i)
+  {
+    (*i)->Disconnect(this);
+  }
+  // remove dofset from static list if necessary
   static_dofsets_.remove(this);
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::DofSetBase::NumGlobalElements() const
-{
-  if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSetBase::NumGlobalElements(): dofrowmap_ not initialized, yet");
-  return dofrowmap_->NumGlobalElements();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::DofSetBase::MaxAllGID() const
-{
-  if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSetBase::MaxAllGID(): dofrowmap_ not initialized, yet");
-  return dofrowmap_->MaxAllGID();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::DofSetBase::MinAllGID() const
-{
-  if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSetBase::MinAllGID(): dofrowmap_ not initialized, yet");
-  return dofrowmap_->MinAllGID();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSetBase::DofRowMap() const
-{
-  if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSetBase::DofRowMap(): dofrowmap_ not initialized, yet");
-  return dofrowmap_.get();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSetBase::DofColMap() const
-{
-  if (dofcolmap_ == Teuchos::null)
-    dserror("DRT::DofSetBase::DofColMap(): dofcolmap_ not initialized, yet");
-  return dofcolmap_.get();
 }
 
 
@@ -110,9 +68,9 @@ void DRT::DofSetBase::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetBase> olddofset)
+void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset)
 {
-  std::list<DRT::DofSetBase*>::iterator iterold = std::find(static_dofsets_.begin(),static_dofsets_.end(),&(*olddofset));
+  std::list<DRT::DofSetInterface*>::iterator iterold = std::find(static_dofsets_.begin(),static_dofsets_.end(),&(*olddofset));
   if (iterold == static_dofsets_.end())
   {
     static_dofsets_.push_back(this);
@@ -128,21 +86,10 @@ void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetBase> olddofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::DofSetBase::Initialized() const
-{
-  if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
-    return false;
-  else
-    return true;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
 {
   int count = -1;
-  for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin();
+  for (std::list<DofSetInterface*>::const_iterator i=static_dofsets_.begin();
        i!=static_dofsets_.end();
        ++i)
   {
@@ -166,7 +113,7 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
   {
     std::vector<int> min;
     std::vector<int> max;
-    for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin(); i!=static_dofsets_.end(); ++i)
+    for (std::list<DofSetInterface*>::const_iterator i=static_dofsets_.begin(); i!=static_dofsets_.end(); ++i)
     {
       min.push_back((*i)->MinAllGID());
       max.push_back((*i)->MaxAllGID());
@@ -240,4 +187,44 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
     IO::cout << "> DofGID" << IO::endl;
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::Register(DofSetInterface* dofset)
+{
+  registered_dofsets_.push_back(dofset);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::Unregister(DofSetInterface* dofset)
+{
+  registered_dofsets_.remove(dofset);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::NotifyAssigned()
+{
+  for (std::list<DofSetInterface*>::iterator i=registered_dofsets_.begin(); i!=registered_dofsets_.end(); ++i)
+    (*i)->NotifyAssigned();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::NotifyReset()
+{
+  for (std::list<DofSetInterface*>::iterator i=registered_dofsets_.begin(); i!=registered_dofsets_.end(); ++i)
+    (*i)->NotifyReset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::Print(std::ostream& os) const
+{
+  dserror("Print() is not implemented in base class. Override Print() in subclass");
 }

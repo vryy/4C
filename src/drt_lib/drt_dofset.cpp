@@ -18,7 +18,6 @@
 #include <numeric>
 
 #include "drt_dofset.H"
-#include "drt_dofset_proxy.H"
 #include "drt_discret.H"
 #include "drt_discret_hdg.H"
 #include "drt_utils.H"
@@ -52,10 +51,6 @@ DRT::DofSet::DofSet()
  *----------------------------------------------------------------------*/
 DRT::DofSet::~DofSet()
 {
-  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
-  {
-    (*i)->Disconnect(this);
-  }
   return;
 }
 
@@ -127,6 +122,8 @@ void DRT::DofSet::Reset()
   numdfcolelements_ = Teuchos::null;
   idxcolnodes_ = Teuchos::null;
   idxcolelements_ = Teuchos::null;
+  shiftcolnodes_ = Teuchos::null;
+  dofscolnodes_ = Teuchos::null;
 
   filled_ = false;
 
@@ -827,36 +824,61 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   return count;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::DofSet::Initialized() const
+{
+  if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
+    return false;
+  else
+    return true;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSet::RegisterProxy(DofSetProxy* proxy)
+const Epetra_Map* DRT::DofSet::DofRowMap() const
 {
-  proxies_.push_back(proxy);
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSet::DofRowMap(): dofrowmap_ not initialized, yet");
+  return dofrowmap_.get();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSet::UnregisterProxy(DofSetProxy* proxy)
+const Epetra_Map* DRT::DofSet::DofColMap() const
 {
-  proxies_.remove(proxy);
+  if (dofcolmap_ == Teuchos::null)
+    dserror("DRT::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
+  return dofcolmap_.get();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSet::NumGlobalElements() const
+{
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->NumGlobalElements();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSet::NotifyAssigned()
+int DRT::DofSet::MaxAllGID() const
 {
-  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
-    (*i)->NotifyAssigned();
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->MaxAllGID();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSet::NotifyReset()
+int DRT::DofSet::MinAllGID() const
 {
-  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
-    (*i)->NotifyReset();
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->MinAllGID();
 }
+

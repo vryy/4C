@@ -23,6 +23,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -72,7 +73,9 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
-  const int nds_solidpressure = actdis->BuildDofSetAuxProxy(1,0,0,false);
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1,0,0,false));
+  const int nds_solidpressure = actdis->AddDofSet(dofsetaux);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

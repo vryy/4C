@@ -36,6 +36,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 //LINALG
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -232,6 +233,11 @@ void FS3I::PartFS3I::Init()
   if ( not (volume_coupling_objects_.size() == 2) )
     dserror("Unexpected size of volmortar object vector!");
 
+  fluiddis->FillComplete(true,false,false);
+  structdis->FillComplete(true,false,false);
+  fluidscatradis->FillComplete(true,false,false);
+  structscatradis->FillComplete(true,false,false);
+
   //Note: in the scatra fields we have now the following dof-sets:
   // structure dofset 0: structure dofset
   // structure dofset 1: structscatra dofset
@@ -353,9 +359,13 @@ Teuchos::RCP< ::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
   const int ndofperelement_scatra  = 0;
   const int ndofpernode_struct = masterdis->NumDof(0,masterdis->lRowNode(0));
   const int ndofperelement_struct = 0;
-  if (masterdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_scatra, ndofperelement_scatra, 0, true ));
+  if (masterdis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in structure field");
-  if (slavedis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( ndofpernode_struct, ndofperelement_struct, 0, true ));
+  if (slavedis->AddDofSet(dofsetaux) != 1)
     dserror("unexpected dof sets in scatra field");
 
   //call AssignDegreesOfFreedom also for auxiliary dofsets

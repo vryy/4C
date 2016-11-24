@@ -22,7 +22,6 @@
 #include "../linalg/linalg_utils.H"
 #include "drt_dofset_proxy.H"
 #include "drt_dofset_subproxy.H"
-#include "drt_dofset_aux_proxy.H"
 #include "drt_dofset_pbc.H"
 
 
@@ -520,7 +519,7 @@ const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
 /*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets)
+void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets)
 {
   dsassert(nds<dofsets_.size(),"undefined dof set");
   // if we already have our dofs here and we add a properly filled (proxy)
@@ -535,7 +534,7 @@ void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
+int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSetInterface> newdofset)
 {
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
@@ -547,45 +546,16 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(int nds)
+Teuchos::RCP<DRT::DofSetInterface> DRT::Discretization::GetDofSetProxy(int nds)
 {
   dsassert(nds<(int)dofsets_.size(),"undefined dof set");
   return Teuchos::rcp(new DofSetProxy(&*dofsets_[nds]));
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, int numdofperface, bool uniqueGIDs)
-{
-  Teuchos::RCP<DofSetAuxProxy> dofsetauxproxy =
-      Teuchos::rcp(new DofSetAuxProxy(&*dofsets_[0],numdofpernode,numdofperelement,numdofperface,uniqueGIDs));
-
-  return AddDofSet(dofsetauxproxy);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool uniqueGIDs)
-{
-  Teuchos::RCP<DofSetAuxProxy> dofsetauxproxy =
-      Teuchos::rcp(new DofSetAuxProxy(&*dofsets_[0],numdofpernode,numdofperelement,numdofperface,uniqueGIDs));
-
-  return AddDofSet(dofsetauxproxy);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetSubProxy(int nds)
-{
-  dsassert(nds<(int)dofsets_.size(),"undefined dof set");
-  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[nds],nodecolmap_,elecolmap_));
-}
-
-
-/*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets)
+void DRT::Discretization::ReplaceDofSet(Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets)
 {
   dsassert(dofsets_.size()==1,"expect just one dof set");
   havedof_ = false;
@@ -594,7 +564,6 @@ void DRT::Discretization::ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool rep
   dofsets_[0] = newdofset;
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | get master to slave coupling for periodic domains    rasthofer 04/14 |

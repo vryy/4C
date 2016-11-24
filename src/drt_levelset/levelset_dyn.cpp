@@ -16,6 +16,7 @@
 #include "levelset_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include <Epetra_MpiComm.h>
@@ -57,7 +58,9 @@ void levelset_dyn(int restart)
     dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  if (scatradis->BuildDofSetAuxProxy(problem->NDim()+1, 0, 0, true ) != 1)
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+  if ( scatradis->AddDofSet(dofsetaux)!= 1 )
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize discretization

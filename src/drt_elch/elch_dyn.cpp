@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch.H"
@@ -87,11 +88,11 @@ void elch_dyn(int restart)
       dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
     // add proxy of velocity related degrees of freedom to scatra discretization
-    if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
+    if ( scatradis->AddDofSet(dofsetaux)!= 1 )
       dserror("Scatra discretization has illegal number of dofsets!");
 
-    // finalize discretization
-    scatradis->FillComplete(true, false, false);
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -110,6 +111,8 @@ void elch_dyn(int restart)
         DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
     // now me may redistribute or ghost the scatra discretization
+    // finalize discretization
+    scatradis->FillComplete(true, true, true);
 
     // only now we must call Setup() on the base algorithm.
     // all objects relying on the parallel distribution are
@@ -169,15 +172,11 @@ void elch_dyn(int restart)
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
-    // add proxy of fluid degrees of freedom to scatra discretization
-    if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-      dserror("Scatra discretization has illegal number of dofsets!");
-
     // support for turbulent flow statistics
     const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
 
     Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-    if (!aledis->Filled()) aledis->FillComplete();
+    if (!aledis->Filled()) aledis->FillComplete(false,false,false);
     // is ALE needed or not?
     const INPAR::ELCH::ElchMovingBoundary withale
       = DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY");
@@ -190,6 +189,7 @@ void elch_dyn(int restart)
         // clone ALE discretization from fluid discretization
         DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
 
+        aledis->FillComplete(false,true,false);
         // setup material in every ALE element
         Teuchos::ParameterList params;
         params.set<std::string>("action", "setup_material");
@@ -197,6 +197,10 @@ void elch_dyn(int restart)
       }
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
+
+      // add proxy of fluid degrees of freedom to scatra discretization
+      if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+        dserror("Scatra discretization has illegal number of dofsets!");
 
       // add proxy of ALE degrees of freedom to scatra discretization
       if(scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
@@ -220,10 +224,12 @@ void elch_dyn(int restart)
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
+      scatradis->FillComplete();
+      fluiddis->FillComplete();
+      aledis->FillComplete();
 
       // now we can call Setup() on the scatra time integrator
       elch->Setup();
-
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -253,13 +259,26 @@ void elch_dyn(int restart)
       // create an ELCH::Algorithm instance
       Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol,scatradyn,fdyn,problem->SolverParams(linsolvernumber)));
 
+      // add proxy of fluid degrees of freedom to scatra discretization
+      if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+        dserror("Scatra discretization has illegal number of dofsets!");
+
       // now we must call Init()
       // NOTE : elch reads time parameters from scatra dynamic section !
       elch->Init(
           scatradyn,
           scatradyn,
           problem->SolverParams(linsolvernumber));
+
+      // NOTE : At this point we may redistribute and/or
+      //        ghost our discretizations at will.
+      scatradis->FillComplete();
+      fluiddis->FillComplete();
+      aledis->FillComplete();
+
+      // discretizations are done, now we can call Setup() on the algorithm
       elch->Setup();
+
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);

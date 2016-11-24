@@ -33,8 +33,9 @@
 #include "../drt_so3/so3_thermo.H"
 #include "../drt_so3/so3_ssn_plast.H"
 
+#include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_lib/drt_discret.H"
-
 #include "../drt_lib/drt_periodicbc.H"
 
 #include "../drt_volmortar/volmortar_utils.H"
@@ -146,7 +147,7 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
 void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structdis;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
@@ -158,7 +159,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   }
 
   // access the thermo discretization
-  Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> thermdis;
   thermdis = DRT::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->FillComplete();
 
@@ -202,17 +203,18 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // TSI must know the other discretization
     // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = structdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> thermodofset
-      = thermdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
 
     // check if ThermoField has 2 discretizations, so that coupling is possible
     if (thermdis->AddDofSet(structdofset)!=1)
       dserror("unexpected dof sets in thermo field");
     if (structdis->AddDofSet(thermodofset)!=1)
       dserror("unexpected dof sets in structure field");
+
+    structdis->FillComplete(true,true,true);
+    thermdis ->FillComplete(true,true,true);
 
     TSI::UTILS::SetMaterialPointersMatchingGrid(structdis,thermdis);
   }
@@ -231,9 +233,12 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     const int ndofperelement_thermo  = 0;
     const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo, ndofperelement_thermo, 0, true ) != 1)
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndofpernode_thermo, ndofperelement_thermo, 0, true ));
+    if (structdis->AddDofSet(dofsetaux) != 1)
       dserror("unexpected dof sets in structure field");
-    if (thermdis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
+    if (thermdis->AddDofSet(dofsetaux) != 1)
       dserror("unexpected dof sets in thermo field");
 
     //call AssignDegreesOfFreedom also for auxiliary dofsets

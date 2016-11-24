@@ -7,10 +7,9 @@
 
  \level 2
 
- \maintainer Anh-Tu Vuong
-             vuong@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15251
+ \maintainer  Andreas Rauch
+              rauch@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 
@@ -26,29 +25,61 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetMergedProxy::DofSetMergedProxy( Teuchos::RCP<DofSet>  dofset,
-                                          const Teuchos::RCP<const DRT::Discretization>& sourcedis,
-                                          const std::string& couplingcond_master,
-                                          const std::string& couplingcond_slave)
-  : DofSetProxy(&(*dofset)),
+DRT::DofSetMergedWrapper::DofSetMergedWrapper(
+    Teuchos::RCP<DofSetInterface>  sourcedofset,
+    Teuchos::RCP<const DRT::Discretization> sourcedis,
+    const std::string& couplingcond_master,
+    const std::string& couplingcond_slave)
+  : DofSetBase(),
     master_nodegids_col_layout_(Teuchos::null),
-    dofset_(dofset),
+    sourcedofset_(sourcedofset),
     sourcedis_(sourcedis),
     couplingcond_master_(couplingcond_master),
-    couplingcond_slave_(couplingcond_slave)
+    couplingcond_slave_(couplingcond_slave),
+    filled_(false)
 {
-  NotifyAssigned();
+  if(sourcedofset_ == Teuchos::null)
+    dserror("Source dof set is null pointer.");
+  if(sourcedis_ == Teuchos::null)
+    dserror("Source discretization is null pointer.");
+
+  sourcedofset_->Register(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+DRT::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
-  // make sure the real dofset gets the dofmaps
-  DofSetProxy::AssignDegreesOfFreedom(dis,dspos,start);
+  if (sourcedofset_!=Teuchos::null)
+    sourcedofset_->Unregister(this);
+}
 
-  // copy communicator
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( sourcedis_->Comm().Clone());
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DofSetMergedWrapper::DofRowMap() const
+{
+  // the merged dofset does not add new dofs. So we can just return the
+  // originial dof map here.
+  return sourcedofset_->DofRowMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DofSetMergedWrapper::DofColMap() const
+{
+  // the merged dofset does not add new dofs. So we can just return the
+  // originial dof map here.
+  return sourcedofset_->DofColMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+{
+  if(sourcedofset_==Teuchos::null)
+    dserror("No source dof set assigned to merged dof set!");
+  if(sourcedis_==Teuchos::null)
+    dserror("No source discretization assigned to mapping dof set!");
 
   // get nodes to be coupled
   std::vector<int> masternodes;
@@ -69,7 +100,7 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
     dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
-        "DofSetMergedProxy requires matching slave and master meshes!",
+        "DofSetMergedWrapper requires matching slave and master meshes!",
             masternodes.size(), coupling.size());
 
   // initialize final mapping
@@ -129,7 +160,7 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
     dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
-        "DofSetMergedProxy requires matching slave and master meshes!",
+        "DofSetMergedWrapper requires matching slave and master meshes!",
             masternodes.size(), coupling.size());
 
   // initialize final mapping
@@ -166,13 +197,40 @@ int DRT::DofSetMergedProxy::AssignDegreesOfFreedom(const Discretization& dis, co
   // export to column map
   LINALG::Export(*my_slave_nodegids_row_layout,*slave_nodegids_col_layout_);
 
+  // set filled flag true
+  filled_=true;
+
+  // tell the proxies
+  NotifyAssigned();
+
   return start;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetMergedProxy::NotifyAssigned()
+void DRT::DofSetMergedWrapper::Reset()
 {
-  // make sure the real dofset gets the dofmaps
-  DofSetProxy::NotifyAssigned();
+  master_nodegids_col_layout_ = Teuchos::null;
+  slave_nodegids_col_layout_ = Teuchos::null;
+
+  // set filled flag
+  filled_=false;
+
+  NotifyReset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
+{
+  if (dofset==sourcedofset_.get())
+  {
+    sourcedofset_ = Teuchos::null;
+    sourcedis_ = Teuchos::null;
+  }
+  else
+    dserror("cannot disconnect from non-connected DofSet");
+
+  // clear my Teuchos::rcps.
+  Reset();
 }

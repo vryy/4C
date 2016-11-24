@@ -70,7 +70,7 @@ void FS3I::PartFS3I_2WC::Init()
 
   // generate proxy of dof set for structure-based scalar transport
   // problem to be used by structure field
-  Teuchos::RCP<DRT::DofSet> structurescatradofset = structurescatra_->ScaTraField()->Discretization()->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> structurescatradofset = structurescatra_->ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check number of dof sets in structure field
   if (fsi_->StructureField()->Discretization()->AddDofSet(structurescatradofset)!=1)
