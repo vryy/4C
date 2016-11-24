@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
 \file meshtying_lagrange_strategy.cpp
 
+\brief strategy handling mesh tying problems with Lagrange multipliers
+
+\level 1
+
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+\maintainer Alexander Seitz, Philipp Farah
+            {seitz,farah}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15271
 </pre>
 
 *-----------------------------------------------------------------------*/
@@ -201,6 +205,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(
 
     // always transform column GIDs of constraint matrix
     conmatrix_ = MORTAR::MatrixColTransformGIDs(temp, glmdofrowmap_);
+    conmatrix_->Scale(1.-alphaf_);
   }
 
   // time measurement
@@ -821,9 +826,6 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
         new LINALG::SparseMatrix(*glmdofrowmap_, 100, false, true));
     trconstrmt->Add(*constrmt, true, 1.0, 0.0);
     trconstrmt->Complete(*ProblemDofs(), *glmdofrowmap_);
-
-    // scale constrmt with 1-alphaf
-    constrmt->Scale(1.0 - alphaf_);
 
     // apply Dirichlet conditions to (0,1) block
     Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(
