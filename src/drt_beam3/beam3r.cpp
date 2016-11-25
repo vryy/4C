@@ -17,6 +17,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -1375,8 +1376,9 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Treffirst() const
  | Calculates the element length                                                   meier 01/16|
  *--------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*nnode,1>& disp_totlag_centerline,
-                                                const double                              tolerance)
+void DRT::ELEMENTS::Beam3r::Calculate_reflength(
+    const LINALG::TMatrix<double,3*vpernode*nnode,1>& disp_totlag_centerline,
+    const double                                      tolerance)
 {
   // nnode: number of nodes
   // vpernode: interpolated values per node (2: Hermite, i.e. value + derivative of value)
@@ -1640,123 +1642,267 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(LINALG::Matrix<3,3>&      triad,
 
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
-    LINALG::TMatrix<double,6,12>& Ivar,
-    const double&                 xi) const
+    LINALG::SerialDenseMatrix& Ivar,
+    const double&              xi) const
 {
-  const unsigned int nnodecl=2;
-  //const unsigned int nnodetriad=2;
-  const unsigned int vpernode=1;
+  const unsigned int vpernode = this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodetriad = this->NumNode();
 
-  LINALG::Matrix<1,2> H_i;
+  // safety check
+  if ( (unsigned int) Ivar.M() != 6 or
+       (unsigned int) Ivar.N() != 3*vpernode*nnodecl+3*nnodetriad )
+    dserror("size mismatch! expected %dx%d matrix and got %dx%d",
+        6,3*vpernode*nnodecl+3*nnodetriad,Ivar.M(),Ivar.N() );
 
-  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
-
-  const unsigned int assembly[6][12] = {{1,0,0,0,0,0,2,0,0,0,0,0},
-                                        {0,1,0,0,0,0,0,2,0,0,0,0},
-                                        {0,0,1,0,0,0,0,0,2,0,0,0},
-                                        {0,0,0,1,0,0,0,0,0,2,0,0},
-                                        {0,0,0,0,1,0,0,0,0,0,2,0},
-                                        {0,0,0,0,0,1,0,0,0,0,0,2}};
-
-  for (unsigned int row=0; row<6; ++row)
-    for (unsigned int col=0; col<12; ++col)
+  switch(nnodetriad)
+  {
+    case 2:
     {
-      if (assembly[row][col]==0)
-        Ivar(row,col) = 0.0;
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,12> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<2,2,1>(Ivar_fixedsize,xi);
+      }
       else
-        Ivar(row,col) = H_i(assembly[row][col]-1);
+      {
+        LINALG::TMatrix<double,6,18> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<2,2,2>(Ivar_fixedsize,xi);
+      }
+      break;
     }
+    case 3:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,18> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<3,3,1>(Ivar_fixedsize,xi);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,21> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<3,2,2>(Ivar_fixedsize,xi);
+      }
+      break;
+    }
+    case 4:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,24> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<4,4,1>(Ivar_fixedsize,xi);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,24> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<4,2,2>(Ivar_fixedsize,xi);
+      }
+      break;
+    }
+    case 5:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,30> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<5,5,1>(Ivar_fixedsize,xi);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,27> Ivar_fixedsize(&Ivar(0,0),true);
+        GetGeneralizedInterpolationMatrixVariationsAtXi<5,2,2>(Ivar_fixedsize,xi);
+      }
+      break;
+    }
+    default:
+      dserror("Beam3r: no valid number of nodes specified");
+  }
+
 }
 
-void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
-    LINALG::TMatrix<double,6,12>& Iinc,
-    const double&                 xi,
-    const std::vector<double>&    disp) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
+    LINALG::TMatrix<double,6,3*vpernode*nnodecl+3*nnodetriad>& Ivar,
+    const double&                                              xi) const
 {
-  const unsigned int nnodecl=2;
-  const unsigned int nnodetriad=2;
-  const unsigned int vpernode=1;
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
-  LINALG::Matrix<1,2> H_i;
+  // these shape functions are used for the interpolation of the triad field
+  // (so far always Lagrange polynomials of order 1...5)
+  LINALG::Matrix<1,nnodetriad> I_i;
+  // these shape functions are used for the interpolation of the beam centerline
+  // (either cubic Hermite or Lagrange polynomials of order 1...5)
+  LINALG::Matrix<1,vpernode*nnodecl> H_i;
 
+  EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
   EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
 
-  std::vector<LINALG::TMatrix<double,3,1> > nodal_rotvecs(nnodetriad);
+  Ivar.Clear();
 
-  /* we assume that either the full disp vector of this element or only
-   * values for nodal rotation vectors are passed in this function call */
-  if (disp.size() == 3*nnodetriad)
+  for (unsigned int idim=0; idim<3; ++idim)
   {
-    for (unsigned int node=0; node<nnodetriad; ++node)
-      for (unsigned int i=0; i<3; ++i)
-        nodal_rotvecs[node](i) = disp[node*3+i];
-  }
-  else if (disp.size() == 3*vpernode*nnodecl+3*nnodetriad)
-  {
-    ExtractRotVecDofValues(disp,nodal_rotvecs);
-  }
-  else
-  {
-    dserror("size mismatch: expected either %d values for psi (rotation vecs) or "
-        "%d values for for full disp state vector of this element and got %d",
-        3*nnodetriad,3*vpernode*nnodecl+3*nnodetriad,disp.size());
+    for (unsigned int inode=0; inode<nnodecl; ++inode)
+    {
+      Ivar(idim,dofpercombinode*inode+idim) = H_i(vpernode*inode);
+      Ivar(3+idim,dofpercombinode*inode+3+idim) = I_i(inode);
+      if (vpernode==2)
+        Ivar(idim,dofpercombinode*inode+6+idim) = H_i(vpernode*inode+1);
+    }
+    // this loop is only entered in case of nnodetriad>nnodecl
+    for (unsigned int inode=nnodecl; inode<nnodetriad; ++inode)
+    {
+      Ivar(3+idim,dofperclnode*nnodecl+dofpertriadnode*inode+idim) = I_i(inode);
+    }
   }
 
-  // nodal triads
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      LINALG::SerialDenseMatrix&  Iinc,
+      const double&               xi,
+      const std::vector<double>&  disp) const
+{
+  const unsigned int vpernode = this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodetriad = this->NumNode();
+
+  // safety check
+  if ( (unsigned int) Iinc.M() != 6 or
+       (unsigned int) Iinc.N() != 3*vpernode*nnodecl+3*nnodetriad )
+    dserror("size mismatch! expected %dx%d matrix and got %dx%d",
+        6,3*vpernode*nnodecl+3*nnodetriad,Iinc.M(),Iinc.N() );
+
+  switch(nnodetriad)
+  {
+    case 2:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,12> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<2,2,1>(Iinc_fixedsize,xi,disp);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,18> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<2,2,2>(Iinc_fixedsize,xi,disp);
+      }
+      break;
+    }
+    case 3:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,18> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<3,3,1>(Iinc_fixedsize,xi,disp);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,21> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<3,2,2>(Iinc_fixedsize,xi,disp);
+      }
+      break;
+    }
+    case 4:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,24> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<4,4,1>(Iinc_fixedsize,xi,disp);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,24> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<4,2,2>(Iinc_fixedsize,xi,disp);
+      }
+      break;
+    }
+    case 5:
+    {
+      if (vpernode==1)
+      {
+        LINALG::TMatrix<double,6,30> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<5,5,1>(Iinc_fixedsize,xi,disp);
+      }
+      else
+      {
+        LINALG::TMatrix<double,6,27> Iinc_fixedsize(&Iinc(0,0),true);
+        GetGeneralizedInterpolationMatrixIncrementsAtXi<5,2,2>(Iinc_fixedsize,xi,disp);
+      }
+      break;
+    }
+    default:
+      dserror("Beam3r: no valid number of nodes specified");
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
+    LINALG::TMatrix<double,6,3*vpernode*nnodecl+3*nnodetriad>& Iinc,
+    const double&                                              xi,
+    const std::vector<double>&                                 disp) const
+{
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  // these shape functions are used for the interpolation of the triad field
+  // (so far always Lagrange polynomials of order 1...5)
+  LINALG::Matrix<1,nnodetriad> I_i;
+  // these shape functions are used for the interpolation of the beam centerline
+  // (either cubic Hermite or Lagrange polynomials of order 1...5)
+  LINALG::Matrix<1,vpernode*nnodecl> H_i;
+
+  EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
+  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
+
+  // nodal triads in form of quaternions
   std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
 
-  GetNodalTriadsFromDispTheta<2,double>(nodal_rotvecs,Qnode);
-
-
-
-  // reference triad Lambda_r and corresponding quaternion Q_r
-  LINALG::TMatrix<double,3,3> Lambda_r(true);
-  LINALG::TMatrix<double,4,1> Q_r(true);
-
-  // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::TMatrix<double,3,1> Phi_IJ(true);
-
-  // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
-  LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
-
-  // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
-  std::vector<LINALG::TMatrix<double,3,1> > Psi_li(nnodetriad);
-
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
-
-  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
-  LINALG::TMatrix<double,3,1> Psi_l;
-
-  Calc_Psi_l<nnodetriad,double>(Psi_li, H_i, Psi_l);
-
-
-
-
+  GetNodalTriadsFromFullDispVecOrFromDispTheta<nnodetriad,double>(
+      disp,
+      Qnode);
 
   // vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
   // function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
   std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+  ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<nnodetriad,double>(
+      Qnode,
+      I_i,
+      Itilde);
 
-  computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,H_i);
+  Iinc.Clear();
 
+  for (unsigned int idim=0; idim<3; ++idim)
+  {
+    for (unsigned int inode=0; inode<nnodecl; ++inode)
+    {
+      Iinc(idim,dofpercombinode*inode+idim) = H_i(vpernode*inode);
 
-  double vals[6][12] = {{H_i(0),0,0,0,0,0,H_i(1),0,0,0,0,0},
-                        {0,H_i(0),0,0,0,0,0,H_i(1),0,0,0,0},
-                        {0,0,H_i(0),0,0,0,0,0,H_i(1),0,0,0},
-                        {0,0,0,Itilde[0](0,0),Itilde[0](0,1),Itilde[0](0,2),0,0,0,Itilde[1](0,0),Itilde[1](0,1),Itilde[1](0,2)},
-                        {0,0,0,Itilde[0](1,0),Itilde[0](1,1),Itilde[0](1,2),0,0,0,Itilde[1](1,0),Itilde[1](1,1),Itilde[1](1,2)},
-                        {0,0,0,Itilde[0](2,0),Itilde[0](2,1),Itilde[0](2,2),0,0,0,Itilde[1](2,0),Itilde[1](2,1),Itilde[1](2,2)}};
+      for (unsigned int jdim=0; jdim<3; ++jdim)
+        Iinc(3+idim,dofpercombinode*inode+3+jdim) = Itilde[inode](idim,jdim);
 
-
-  for (unsigned int i=0; i<6; ++i)
-    for (unsigned int j=0; j<12; ++j)
-      Iinc(i,j) = vals[i][j];
+      if (vpernode==2)
+        Iinc(idim,dofpercombinode*inode+6+idim) = H_i(vpernode*inode+1);
+    }
+    // this loop is only entered in case of nnodetriad>nnodecl
+    for (unsigned int inode=nnodecl; inode<nnodetriad; ++inode)
+    {
+      for (unsigned int jdim=0; jdim<3; ++jdim)
+        Iinc(3+idim,dofperclnode*nnodecl+dofpertriadnode*inode+jdim) = Itilde[inode](idim,jdim);
+    }
+  }
 
 }
-
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
@@ -1972,6 +2118,72 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(const std::vector<LINALG
 
 }
 
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, typename T>
+void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta(
+    const std::vector<T>&                 dispvec,
+    std::vector<LINALG::TMatrix<T,4,1> >& Qnode) const
+{
+  const unsigned int vpernode = this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl = this->NumCenterlineNodes();
+
+  std::vector<LINALG::TMatrix<double,3,1> > nodal_rotvecs(nnodetriad);
+
+  /* we assume that either the full disp vector of this element or only
+   * values for nodal rotation vectors are passed in this function call */
+  if (dispvec.size() == 3*nnodetriad)
+  {
+    for (unsigned int node=0; node<nnodetriad; ++node)
+      for (unsigned int i=0; i<3; ++i)
+        nodal_rotvecs[node](i) = dispvec[node*3+i];
+  }
+  else if (dispvec.size() == 3*vpernode*nnodecl+3*nnodetriad)
+  {
+    ExtractRotVecDofValues(dispvec,nodal_rotvecs);
+  }
+  else
+  {
+    dserror("size mismatch: expected either %d values for psi (rotation vecs) or "
+        "%d values for for full disp state vector of this element and got %d",
+        3*nnodetriad,3*vpernode*nnodecl+3*nnodetriad,dispvec.size());
+  }
+
+  GetNodalTriadsFromDispTheta<nnodetriad,double>(nodal_rotvecs,Qnode);
+}
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, typename T>
+void DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads(
+    const std::vector<LINALG::TMatrix<T,4,1> >& Qnode,
+    const LINALG::TMatrix<T,1,nnodetriad>&      I_i,
+    std::vector<LINALG::TMatrix<T,3,3> >&       Itilde) const
+{
+  // reference triad Lambda_r and corresponding quaternion Q_r
+  LINALG::TMatrix<double,3,3> Lambda_r(true);
+  LINALG::TMatrix<double,4,1> Q_r(true);
+
+  // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
+  LINALG::TMatrix<double,3,1> Phi_IJ(true);
+
+  // compute reference triad Lambda_r according to (3.9), Jelenic 1999
+  CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
+  LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
+
+  // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,1> > Psi_li(nnodetriad);
+
+  for (unsigned int node=0; node<nnodetriad; ++node)
+    CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
+
+  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+  LINALG::TMatrix<double,3,1> Psi_l;
+
+  Calc_Psi_l<nnodetriad,double>(Psi_li, I_i, Psi_l);
+
+  computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i);
+}
 
 // explicit template instantations (some compilers do not export symboles defined above)
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,1>(const std::vector<double>&,
@@ -2029,3 +2241,27 @@ template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<4,double>(const
                                                                            std::vector<LINALG::TMatrix<double,4,1> >&) const;
 template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<5,double>(const std::vector<LINALG::TMatrix<double,3,1> >&,
                                                                            std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta<2,double>(const std::vector<double>&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta<3,double>(const std::vector<double>&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta<4,double>(const std::vector<double>&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta<5,double>(const std::vector<double>&,
+                                                                           std::vector<LINALG::TMatrix<double,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<2,double>(
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    const LINALG::TMatrix<double,1,2>&,
+    std::vector<LINALG::TMatrix<double,3,3> >&) const;
+template void DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<3,double>(
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    const LINALG::TMatrix<double,1,3>&,
+    std::vector<LINALG::TMatrix<double,3,3> >&) const;
+template void DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<4,double>(
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    const LINALG::TMatrix<double,1,4>&,
+    std::vector<LINALG::TMatrix<double,3,3> >&) const;
+template void DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<5,double>(
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    const LINALG::TMatrix<double,1,5>&,
+    std::vector<LINALG::TMatrix<double,3,3> >&) const;

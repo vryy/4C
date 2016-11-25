@@ -77,6 +77,13 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // Shifting to periodic boundary configuration is done here. From now on the
   // global displacement vector always contains the shifted configuration.
   // -------------------------------------------------------------------------
+
+  // check whether the underlying assumption of shifting procedure is fulfilled
+  // (at least initially, i.e. here in the setup)
+  if (IsAnyBeamElementLengthLargerThanHalfPeriodLength())
+    dserror("The reference length of one of your beam elements is larger than half"
+        "of the periodic box length. Shifting algorithm will fail!");
+
   BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDis(
       GStatePtr()->GetMutableDisN(),                            // disn
       eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength(),
@@ -793,3 +800,25 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
   return;
 } // BrownianDynManager::GenerateGaussianRandomNumbers()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanHalfPeriodLength() const
+{
+  const int numroweles = Discret().NumMyRowElements();
+  const std::vector<double>& periodlengthvec =
+      *eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength();
+  const double halfofminimalperiodlength =
+      0.5 * (*std::min_element(periodlengthvec.begin(), periodlengthvec.end()) );
+
+  for (int elelid=0; elelid<numroweles; ++elelid)
+  {
+    const DRT::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
+
+    if (beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength)
+      return true;
+  }
+
+  return false;
+}

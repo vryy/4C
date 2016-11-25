@@ -422,14 +422,14 @@ namespace TIMINT {
     };
 
     /// distance between the two binding domains of a linker
-    const double& RLink() const
+    const double& LinkerLength() const
     {
       CheckInitSetup();
       return r_link_;
     };
 
-    /// deviation from r_link
-    const double& DeltaRLink() const
+    /// tolerance for linker length in the sense: length +- tolerance
+    const double& LinkerLengthTolerance() const
     {
       CheckInitSetup();
       return deltar_link_;
@@ -491,15 +491,15 @@ namespace TIMINT {
      return corient_;
     };
 
-    /// preferred binding angle betw. two filaments
-    const double& PhiZero() const
+    /// preferred binding angle enclosed by two filaments' axes in radians
+    const double& LinkerAngle() const
     {
      CheckInitSetup();
      return phizero_;
     };
 
-    /// deviation from phi0
-    const double& PhiZeroDev() const
+    /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
+    const double& LinkerAngleTolerance() const
     {
      CheckInitSetup();
      return phizerodev_;

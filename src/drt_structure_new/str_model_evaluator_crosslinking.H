@@ -54,6 +54,8 @@ namespace MAT
 } //namespace MATERIAL
 namespace LINALG {
   class SparseMatrix;
+  class SerialDenseVector;
+  class SerialDenseMatrix;
 } // namespace LINALG
 namespace PARTICLE
 {
@@ -218,6 +220,7 @@ namespace MODELEVALUATOR{
     //       the whole corresponding binstrategy
     //! @{
 
+    /// reset positions and triads in existing BeamToBeamLinkage objects
     virtual void ResetStateOfElementPairs();
 
     /// set random initial position of crosslinker
@@ -298,7 +301,7 @@ namespace MODELEVALUATOR{
     /// check if crosslink of adjacent elements on same filament
     virtual bool CheckCrosslinkOfAdjacentElements(
         DRT::Element* nbbeam,
-        const std::vector<std::pair<int, int> >& bnodegids
+        const std::pair<int, int>& occbspot_bnodegids
     ) const;
 
     /// decide by asking other procs who is allowed to set specific crosslinker,
@@ -461,19 +464,39 @@ namespace MODELEVALUATOR{
         Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
 
+    /// apply force on binding spots and corresponding linearizations to parent elements
+    //  and get discrete element force vectors and stiffness matrices
+    void ApplyBpotForceStiffToParentElements(
+        const DRT::Discretization&                             discret,
+        const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
+        const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
+        const LINALG::SerialDenseVector& bspotforce1,
+        const LINALG::SerialDenseVector& bspotforce2,
+        const LINALG::SerialDenseMatrix& bspotstiff11,
+        const LINALG::SerialDenseMatrix& bspotstiff12,
+        const LINALG::SerialDenseMatrix& bspotstiff21,
+        const LINALG::SerialDenseMatrix& bspotstiff22,
+        LINALG::SerialDenseVector*       ele1force,
+        LINALG::SerialDenseVector*       ele2force,
+        LINALG::SerialDenseMatrix*       ele11stiff,
+        LINALG::SerialDenseMatrix*       ele12stiff,
+        LINALG::SerialDenseMatrix*       ele21stiff,
+        LINALG::SerialDenseMatrix*       ele22stiff
+        ) const;
+
     /// assemble element force vector and stiffness matrix into system vector and matrix
     virtual void AssembleEleForceStiffIntoSystemVectorMatrix(
-        const DRT::Discretization&       discret,
-        const int                        elegid1,
-        const int                        elegid2,
-        const Epetra_SerialDenseVector&  elevec1,
-        const Epetra_SerialDenseVector&  elevec2,
-        const Epetra_SerialDenseMatrix&  elemat11,
-        const Epetra_SerialDenseMatrix&  elemat12,
-        const Epetra_SerialDenseMatrix&  elemat21,
-        const Epetra_SerialDenseMatrix&  elemat22,
-        Teuchos::RCP<Epetra_Vector>                   sysvec,
-        Teuchos::RCP<LINALG::SparseMatrix>            sysmat
+        const DRT::Discretization&         discret,
+        const int                          elegid1,
+        const int                          elegid2,
+        const Epetra_SerialDenseVector&    elevec1,
+        const Epetra_SerialDenseVector&    elevec2,
+        const Epetra_SerialDenseMatrix&    elemat11,
+        const Epetra_SerialDenseMatrix&    elemat12,
+        const Epetra_SerialDenseMatrix&    elemat21,
+        const Epetra_SerialDenseMatrix&    elemat22,
+        Teuchos::RCP<Epetra_Vector>        sysvec,
+        Teuchos::RCP<LINALG::SparseMatrix> sysmat
       ) const;
 
     /// assemble element force vector and stiffness matrix received from other procs into system vector and matrix
@@ -496,6 +519,22 @@ namespace MODELEVALUATOR{
     virtual void VerifyNeighbors(
         DRT::Element* currele,
         std::set<DRT::Element*>& neighbors
+    ) const;
+
+    /// check whether distance of two points is out of given range
+    bool IsDistanceOutOfBindingRange(
+        const LINALG::Matrix<3,1>& pos1,
+        const LINALG::Matrix<3,1>& pos2,
+        const double& lowerbound,
+        const double& upperbound
+    ) const;
+
+    /// check whether enclosed angle of two beam centerline tangents is out of given range
+    bool IsEnclosedAngleOfBSpotTangentsOutOfRange(
+        const LINALG::Matrix<3,1>& direction1,
+        const LINALG::Matrix<3,1>& direction2,
+        const double& lowerbound,
+        const double& upperbound
     ) const;
 
     /// send data T to rank= mapkey
@@ -642,6 +681,7 @@ namespace MODELEVALUATOR{
     std::vector<BeamData> beam_data_;
 
     //! double bonded crosslinker that exert forces on network
+    // Todo what is the key?
     std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > doublebondcl_;
 
 

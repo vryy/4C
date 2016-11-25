@@ -35,6 +35,11 @@
 
 #include "beam3_base.H"
 
+// forward declaration ...
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 //#define BEAM3RAUTOMATICDIFF  //default: off  //Decide whether automatic differentiation via Sacado is used or not for linearization of f_int
 
@@ -278,22 +283,24 @@ public:
                             const double&              xi,
                             const std::vector<double>& psi_totlag) const;
 
-  /** \brief
+  /** \brief get generalized interpolation matrix which yields the variation of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF variations
    *
    *  \author grill
    *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
-      LINALG::TMatrix<double,6,12>& Ivar,
-      const double&                 xi) const;
+      LINALG::SerialDenseMatrix& Ivar,
+      const double&              xi) const;
 
-  /** \brief
+  /** \brief get generalized interpolation matrix which yields the increments of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF increments
    *
    *  \author grill
    *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
-      LINALG::TMatrix<double,6,12>& Iinc,
-      const double&                 xi,
-      const std::vector<double>&    disp) const;
+      LINALG::SerialDenseMatrix&  Iinc,
+      const double&               xi,
+      const std::vector<double>&  disp) const;
 
   /** \brief get unit tangent vector in reference configuration at i-th node of beam element (element-internal numbering)
    *
@@ -722,8 +729,9 @@ private:
    \brief Get centerline position at given parameter coordinate xi
   */
   template<unsigned int nnodecl, unsigned int vpernode>
-  LINALG::Matrix<3,1> GetPosAtXi(const double& xi,
-                                 const LINALG::Matrix<3*nnodecl*vpernode,1>& disp_totlag) const
+  LINALG::Matrix<3,1> GetPosAtXi(
+      const double& xi,
+      const LINALG::TMatrix<double,3*nnodecl*vpernode,1>& disp_totlag) const
   {
     LINALG::Matrix<3,1> r;
     LINALG::Matrix<1,vpernode*nnodecl> N_i;
@@ -796,6 +804,27 @@ private:
     return triad;
   }
 
+  /** \brief get generalized interpolation matrix which yields the variation of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF variations
+   *
+   *  \author grill
+   *  \date 11/16 */
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      LINALG::TMatrix<double,6,3*vpernode*nnodecl+3*nnodetriad>& Ivar,
+      const double&                                              xi) const;
+
+  /** \brief get generalized interpolation matrix which yields the increments of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF increments
+   *
+   *  \author grill
+   *  \date 11/16 */
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      LINALG::TMatrix<double,6,3*vpernode*nnodecl+3*nnodetriad>& Iinc,
+      const double&                                              xi,
+      const std::vector<double>&                                 disp) const;
+
   //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic 1999
   template<typename T>
   void CalcRefQuaternion(const LINALG::TMatrix<T,4,1>&  Q_nodeI,
@@ -842,7 +871,7 @@ private:
   //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
   template<unsigned int nnode, typename T>
   void Calc_Psi_l(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
-                  const LINALG::Matrix<1,nnode>&              func,
+                  const LINALG::TMatrix<T,1,nnode>&           func,
                   LINALG::TMatrix<T,3,1>&                     Psi_l) const
   {
     Psi_l.Clear();
@@ -855,6 +884,8 @@ private:
   }
 
   //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
+  // Todo maybe find better solution. so far, we need this method because compiler throws error:
+  //      ‘std::vector<LINALG::Matrix<3u, 1u> >’ is not derived from ‘const std::vector<LINALG::TMatrix<T, 3u, 1u> >’
   template<unsigned int nnode>
   void Calc_Psi_l(const std::vector<LINALG::Matrix<3,1> >& Psi_li,
                   const LINALG::Matrix<1,nnode>&           func,
@@ -872,7 +903,7 @@ private:
   //!compute derivative of interpolated local relative rotation \Psi^l with respect to reference arc-length parameter s according to (3.11), Jelenic 1999
   template<unsigned int nnode, typename T>
   void Calc_Psi_l_s(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
-                  const LINALG::Matrix<1,nnode>&                deriv,
+                  const LINALG::TMatrix<T,1,nnode>&             deriv,
                   const double&                                 jacobi,
                   LINALG::TMatrix<T,3,1>&                       Psi_l_s) const
   {
@@ -936,7 +967,7 @@ private:
   template <typename T>
   void computeK(const LINALG::TMatrix<T,3,1>&      Psi_l,
                      const LINALG::TMatrix<T,3,1>& Psi_l_s,
-                     const LINALG::Matrix<3,1>&    Kref,
+                     const LINALG::TMatrix<T,3,1>& Kref,
                      LINALG::TMatrix<T,3,1>&       K) const
   {
     K.Clear();
@@ -959,7 +990,7 @@ private:
   template <typename T>
   void computeGamma(const LINALG::TMatrix<T,3,1>& r_s,
                     const LINALG::TMatrix<T,3,3>& Lambda,
-                    const LINALG::Matrix<3,1>&    Gammaref,
+                    const LINALG::TMatrix<T,3,1>& Gammaref,
                     LINALG::TMatrix<T,3,1>&       Gamma) const
   {
     Gamma.Clear();
@@ -1000,7 +1031,7 @@ private:
                      const LINALG::TMatrix<double,3,1>&               phiIJ,
                      const LINALG::TMatrix<double,3,3>&               Lambdar,
                      const std::vector<LINALG::TMatrix<double,3,1> >& Psili,
-                     const LINALG::Matrix<1,nnode>&                   funct) const
+                     const LINALG::TMatrix<double,1,nnode>&           funct) const
   {
     /* note: Itilde is always be of type double because it is only needed for computation of analytical stiffness/mass matrix
      *       thus no need to template for FADordouble here*/
@@ -1070,7 +1101,7 @@ private:
                      const LINALG::TMatrix<FAD,3,1>&               phiIJ,
                      const LINALG::TMatrix<FAD,3,3>&               Lambdar,
                      const std::vector<LINALG::TMatrix<FAD,3,1> >& Psili,
-                     const LINALG::Matrix<1,nnode>&                funct) const
+                     const LINALG::TMatrix<double,1,nnode>&        funct) const
   {
     /* note: Itilde should always be of type double because it is only needed for computation of analytical stiffness/mass matrix
      * therefore no templated function used here; cast pre-calculated FAD values to double and call 'regular' function afterwards*/
@@ -1096,8 +1127,8 @@ private:
                           const LINALG::TMatrix<T,3,1>&               phiIJ,
                           const LINALG::TMatrix<T,3,3>&               Lambdar,
                           const std::vector<LINALG::TMatrix<T,3,1> >& Psili,
-                          const LINALG::Matrix<1,nnode>&              funct,
-                          const LINALG::Matrix<1,nnode>&              deriv,
+                          const LINALG::TMatrix<T,1,nnode>&           funct,
+                          const LINALG::TMatrix<T,1,nnode>&           deriv,
                           const double&                               jacobi) const
   {
     // auxiliary matrices for storing intermediate results
@@ -1221,11 +1252,11 @@ private:
   //! calculation of nonlinear stiffness and mass matrix
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
   void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&   params,
-                                                 std::vector<double>&      disp,
-                                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                                 Epetra_SerialDenseMatrix* massmatrix,
-                                                 Epetra_SerialDenseVector* force,
-                                                 Epetra_SerialDenseVector* inertia_force);
+                                            std::vector<double>&      disp,
+                                            Epetra_SerialDenseMatrix* stiffmatrix,
+                                            Epetra_SerialDenseMatrix* massmatrix,
+                                            Epetra_SerialDenseVector* force,
+                                            Epetra_SerialDenseVector* inertia_force);
 
   //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
@@ -1268,6 +1299,21 @@ private:
   void GetNodalTriadsFromDispTheta(const std::vector<LINALG::TMatrix<T,3,1> >& disptheta,
                                    std::vector<LINALG::TMatrix<T,4,1> >&       Qnode) const;
 
+  //! compute nodal triads either from current nodal rotation vectors ("displacement", i.e. relative rotations)
+  //  or from full displacement state vector of the element (decision based on size of given STL vector)
+  template<unsigned int nnodetriad, typename T>
+  void GetNodalTriadsFromFullDispVecOrFromDispTheta(
+      const std::vector<T>&                 dispvec,
+      std::vector<LINALG::TMatrix<T,4,1> >& Qnode) const;
+
+  //! compute vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
+  //  function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
+  template<unsigned int nnodetriad, typename T>
+  void ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads(
+      const std::vector<LINALG::TMatrix<T,4,1> >& Qnode,
+      const LINALG::TMatrix<T,1,nnodetriad>&      I_i,
+      std::vector<LINALG::TMatrix<T,3,3> >&       Itilde) const;
+
   //! lump mass matrix
   template<unsigned int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -1277,8 +1323,8 @@ private:
 
   //! calculates the element length in reference configuration
   template<unsigned int nnode, unsigned int vpernode>
-  void Calculate_reflength(const LINALG::Matrix<3*vpernode*nnode,1>& disp_totlag_centerline,
-                           const double                              tolerance);
+  void Calculate_reflength(const LINALG::TMatrix<double,3*vpernode*nnode,1>& disp_totlag_centerline,
+                           const double                                      tolerance);
 
   //@}
 

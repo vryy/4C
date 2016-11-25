@@ -12,14 +12,15 @@
 #ifndef BEAMTOBEAMLINKAGE_H
 #define BEAMTOBEAMLINKAGE_H
 
-#include <Teuchos_RCP.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
+//#include <Teuchos_RCP.hpp>
+
 // forward declarations
-class Epetra_Vector;
-class Epetra_SerialDenseMatrix;
+//class Epetra_Vector;
+//class Epetra_SerialDenseMatrix;
 namespace DRT {
   class Element;
   class PackBuffer;
@@ -28,9 +29,9 @@ namespace ELEMENTS {
   class Beam3r;
 }
 }
-
 namespace LINALG {
-  class SparseMatrix;
+  class SerialDenseVector;
+  class SerialDenseMatrix;
 }
 
 namespace BEAMINTERACTION
@@ -49,20 +50,6 @@ private:
   static BeamToBeamLinkageType instance_;
 };
 
-class Beam3rLin2LinkageType: public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const {return "Beam3rLin2LinkageType";};
-
-  static Beam3rLin2LinkageType & Instance(){return instance_;};
-
-  virtual DRT::ParObject* Create(const std::vector<char> & data);
-
-private:
-
-  static Beam3rLin2LinkageType instance_;
-};
 
 /*!
  \brief element for interaction of two 3D beam elements via a mechanical linkage
@@ -80,10 +67,6 @@ public:
 
   //! Initialization
   virtual void Init(
-//      DRT::ELEMENTS::Beam3Base*  element1,
-//      DRT::ELEMENTS::Beam3Base*  element2,
-//      const double&  xi1,
-//      const double&  xi2,
       const int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
@@ -175,28 +158,28 @@ public:
   \brief Evaluate forces
   */
   virtual bool EvaluateForce(
-      LINALG::TMatrix<double,6,1>& forcevec1,
-      LINALG::TMatrix<double,6,1>& forcevec2) = 0;
+      LINALG::SerialDenseVector& forcevec1,
+      LINALG::SerialDenseVector& forcevec2) = 0;
 
   /*!
   \brief Evaluate stiffness contribution
   */
   virtual bool EvaluateStiff(
-      LINALG::TMatrix<double,6,6>& stiffmat11,
-      LINALG::TMatrix<double,6,6>& stiffmat12,
-      LINALG::TMatrix<double,6,6>& stiffmat21,
-      LINALG::TMatrix<double,6,6>& stiffmat22) = 0;
+      LINALG::SerialDenseMatrix& stiffmat11,
+      LINALG::SerialDenseMatrix& stiffmat12,
+      LINALG::SerialDenseMatrix& stiffmat21,
+      LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
   /*!
   \brief Evaluate forces and stiffness contribution
   */
   virtual bool EvaluateForceStiff(
-      LINALG::TMatrix<double,6,1>& forcevec1,
-      LINALG::TMatrix<double,6,1>& forcevec2,
-      LINALG::TMatrix<double,6,6>& stiffmat11,
-      LINALG::TMatrix<double,6,6>& stiffmat12,
-      LINALG::TMatrix<double,6,6>& stiffmat21,
-      LINALG::TMatrix<double,6,6>& stiffmat22) = 0;
+      LINALG::SerialDenseVector& forcevec1,
+      LINALG::SerialDenseVector& forcevec2,
+      LINALG::SerialDenseMatrix& stiffmat11,
+      LINALG::SerialDenseMatrix& stiffmat12,
+      LINALG::SerialDenseMatrix& stiffmat21,
+      LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
   /*
   \brief Update position and triad of both connection sites (a.k.a. binding spots)
@@ -233,6 +216,8 @@ protected:
       dserror("Call Init() and Setup() first!");
   }
 
+  void Print(std::ostream& out) const;
+
 protected:
   //! @name member variables
 
@@ -243,20 +228,13 @@ protected:
   bool issetup_;
 
 private:
-//  //! first element of pair
-//  Teuchos::RCP<const DRT::ELEMENTS::Beam3Base> element1_;
-//
-//  //! second element of pair
-//  Teuchos::RCP<const DRT::ELEMENTS::Beam3Base> element2_;
-
-  //! position of link (in parameter space [-1,1]) on first/second element
-//  double xi1_;
-//  double xi2_;
 
   //! a unique global id
-  int                                      id_;
+  int id_;
+
   //! elegid and local binding spot number of first [0] and second [1] element
-  std::vector<std::pair<int, int> >        eleids_;
+  std::vector<std::pair<int, int> > eleids_;
+
   //! involved procs
   std::set<int> involvedprocs_;
 
@@ -274,108 +252,6 @@ private:
   LINALG::Matrix<3,3> Lambdarel2_;
 
   //@}
-};
-
-/*!
- \brief element for link between two 3D beam elements via a linear (2 noded) Simo-Reissner beam element
- */
-class Beam3rLin2Linkage: public BEAMINTERACTION::BeamToBeamLinkage
-{
-public:
-
-  //! @name Friends
-  //no friend classes defined
-  //@}
-
-  //! @name Constructors and destructors and related methods
-  /*!
-  \brief Standard Constructor
-  */
-  Beam3rLin2Linkage();
-
-  /*!
-  \brief Destructor
-  */
-  virtual ~Beam3rLin2Linkage() {};
-
-  //! Setup [derived]
-  virtual void Setup();
-
-  /*!
-  \brief Return unique ParObject id
-
-  Every class implementing ParObject needs a unique id defined at the
-  top of drt_parobject.H
-  */
-  virtual int UniqueParObjectId() const { return Beam3rLin2LinkageType::Instance().UniqueParObjectId(); };
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const std::vector<char>& data);
-
-  //@}
-
-
-  //! @name Access methods
-
-  //@}
-
-  //! @name Public evaluation methods
-
-  /*!
-  \brief Evaluate forces and stiffness contribution [derived]
-  */
-  virtual bool EvaluateForce(
-      LINALG::TMatrix<double,6,1>& forcevec1,
-      LINALG::TMatrix<double,6,1>& forcevec2);
-
-  /*!
-  \brief Evaluate stiffness contribution [derived]
-  */
-  virtual bool EvaluateStiff(
-      LINALG::TMatrix<double,6,6>& stiffmat11,
-      LINALG::TMatrix<double,6,6>& stiffmat12,
-      LINALG::TMatrix<double,6,6>& stiffmat21,
-      LINALG::TMatrix<double,6,6>& stiffmat22);
-
-  /*!
-  \brief Evaluate forces and stiffness contribution [derived]
-  */
-  virtual bool EvaluateForceStiff(
-      LINALG::TMatrix<double,6,1>& forcevec1,
-      LINALG::TMatrix<double,6,1>& forcevec2,
-      LINALG::TMatrix<double,6,6>& stiffmat11,
-      LINALG::TMatrix<double,6,6>& stiffmat12,
-      LINALG::TMatrix<double,6,6>& stiffmat21,
-      LINALG::TMatrix<double,6,6>& stiffmat22);
-
-
-  //@}
-private:
-
-  //! @name member variables
-
-  //! new connecting element
-  Teuchos::RCP<DRT::ELEMENTS::Beam3r> linkele_;
-
-  //@}
-
-  //! @name Private evaluation methods
-
-  //@}
-
 };
 
 } // namespace BEAMINTERACTION

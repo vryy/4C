@@ -31,17 +31,17 @@ RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
 DIVERCONT              stop            // Continue even if results are divergent
 TIMESTEP               0.0001                  // step size
-NUMSTEP                30             // total number of steps  //rumpf2.txt end
+NUMSTEP                100             // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
-TOLDISP                1.0E-12               // 5.5e-05 1.0E-06
+TOLDISP                1.0E-10               // 5.5e-05 1.0E-06
 TOLRES                 1.0E-08
 MAXITER                25
 NEGLECTINERTIA         yes
 MASSLIN                rotations
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   3
+CUTOFF_RADIUS                   5
 BOUNDINGBOX                     0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1                     // header_01 end
@@ -69,13 +69,15 @@ BINSPOTINTERVAL          1                   // every n-th binding spot is avail
 //============ CROSSLINKER MODEL ============
 LINKERMODEL            std                   // set linker model: none, std, bellseq, active, stdintpol
 ACTIVELINKERFRACTION   0                     // fraction of crosslinkers which is active
-NUMCROSSLINK           1000                    // number of crosslinkers in the simulated volume
-R_LINK                 1.0                   // distance between the two binding domains of a linker
-DeltaR_LINK            0.4                  // deviation from r_link
+NUMCROSSLINK           2000                    // number of crosslinkers in the simulated volume
+R_LINK                 0.5                   // distance between the two binding domains of a linker
+DeltaR_LINK            0.2                 // deviation from r_link
 ALINK                  4.751658e-06          // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
 ILINK                  4.4918e-11            // Must set ilink=0.0 ->TRUSS!
 IPLINK                 8.9836e-11            // 2xilink
 ELINK                  2560000               // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
+PHIZERO                0.0                   // preferred binding angle enclosed by two filament axes in radians
+PHIZERODEV             0.392699081698724     // binding angle tolerance in radians
 -----------------------------------------------------SOLVER 1  // header_02 begin
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -87,21 +89,25 @@ Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
+NDPOINT 3
 NDLINE  2
 NDSURF  0
 NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-//E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -1.0 0.2 0.0 0.0 0.0 0.0 CURVE 1 1 none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 3.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 CURVE 1 1 none none none none FUNCT 0 0 0 0 0 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT                          2
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 0 0 0 0 0 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 0 0 0 0 0 FUNCT 0 0 0 0 0 0 Live Mid
 --------------------------------------------------FILAMENT NUMBERS
 DLINE 2
 E 1 - 0
 E 2 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
-NODE      12 DNODE 1  // this is first double-bonded node of upper filament
-NODE      16 DNODE 2  // this is a double-bonded node in middle of upper filament
+NODE      16 DNODE 1
+NODE       1 DNODE 2
+NODE      12 DNODE 3
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1
@@ -132,7 +138,7 @@ NODE            3     COORD 4.500000000000000e+00     2.500000000000000e+00     
 NODE            4     COORD 5.500000000000000e+00     2.500000000000000e+00     7.500000000000000e+00
 NODE            5     COORD 6.500000000000000e+00     2.500000000000000e+00     7.500000000000000e+00
 NODE            6     COORD 7.500000000000000e+00     2.500000000000000e+00     7.500000000000000e+00
-NODE            7     COORD 8.500000000000000e+00     2.500000000000000e+00     7.500000000000000e+00
+NODE            7     COORD 8.500000000000000e+00     2.500000000000000e+00     7.500000000000002e+00
 NODE            8     COORD 9.500000000000000e+00     2.500000000000000e+00     7.500000000000000e+00
 NODE            9     COORD 1.050000000000000e+01     2.500000000000000e+00     7.500000000000000e+00
 NODE           10     COORD 1.150000000000000e+01     2.500000000000000e+00     7.500000000000000e+00
@@ -175,7 +181,7 @@ MAT 2 MAT_Crosslinker              YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09
 ---------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  1.52730200152218970e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  3.63281735904278036e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  2.86214801597366106e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.41234775631989073e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.30093489811913776e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -2.63000964008763376e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END

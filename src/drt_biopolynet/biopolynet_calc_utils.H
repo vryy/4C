@@ -4,7 +4,7 @@
 
 \brief utils for biopolymer network business
 
-\maintainer Jonas Eichinger
+\maintainer Jonas Eichinger, Maximilian Grill
 
 \date August, 2016
 
@@ -28,6 +28,85 @@ namespace BIOPOLYNET
 */
 namespace UTILS
 {
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline void PeriodicBoundaryShift1D(
+    double&       val,
+    const double& periodlength,
+    const double& initval = 0.0)
+{
+  // in case we want to manipulate the displacement only, we add the
+  // constant reference value here and leave it untouched
+  const double abspos = val + initval;
+
+  if (periodlength>0.0)
+  {
+    /* add or subtract the period length sufficiently often
+     * to lie again in the domain [0,periodlength] */
+    if (abspos < 0.0)
+      val -= periodlength * std::floor(abspos/periodlength);  // minus sign because abspos is negative
+    else if (abspos > periodlength)
+      val -= periodlength * std::floor(abspos/periodlength);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline void PeriodicBoundaryUnShift1D(
+    double&       val,
+    const double& abspos_refpoint,
+    const double& periodlength,
+    const double& initval = 0.0)
+{
+  // in case we want to manipulate the displacement only, we add the
+  // constant reference value here and leave it untouched
+  const double abspos = val + initval;
+
+  /* Check the distance to a reference point position (e.g. node of the
+   * same element). If the distance is larger than half of the period
+   * length, the point position has been shifted before.
+   *
+   * Warning: This assumes that the distance between point and reference
+   *          point is not larger than half of the period length unless we
+   *          shift it. For beam elements, this restricts the element length
+   *          to be smaller than this value throughout the entire simulation.
+   *          So far, we only check this once in the beginning.
+   *
+   * Note: this should be equivalent to the previously applied criterion
+   *       that the distance between given point and reference point
+   *       decreases by either adding or subtracting the period length. */
+  if (periodlength>0.0)
+  {
+    if (abspos - abspos_refpoint < -0.5 * periodlength)
+      val += periodlength;
+
+    else if(abspos - abspos_refpoint > 0.5 * periodlength)
+      val -= periodlength;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline void PeriodicBoundaryShift(
+    LINALG::Matrix<3,1>&       pos,
+    const std::vector<double>& periodlength)
+{
+  for (unsigned int idim=0; idim<3; ++idim)
+    PeriodicBoundaryShift1D(pos(idim),periodlength[idim]);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline void PeriodicBoundaryUnShift(
+    LINALG::Matrix<3,1>&       pos,
+    const LINALG::Matrix<3,1>& pos_refpoint,
+    const std::vector<double>& periodlength)
+{
+  for (unsigned int idim=0; idim<3; ++idim)
+    PeriodicBoundaryUnShift1D(pos(idim),pos_refpoint(idim),periodlength[idim]);
+}
 
 /*----------------------------------------------------------------------------*
  | Shift dis according to periodic boundary conditions         eichinger 08/16|
@@ -65,25 +144,8 @@ inline void PeriodicBoundaryConsistentDis(Teuchos::RCP<Epetra_Vector> dis,
 
     for (int j=ndim-1; j>-1; j--)
     {
-      if ( (*periodlength)[j] > 0.0)
-      {
-        int doflid = dis->Map().LID(dofnode[j]);
-        //current coordinate value
-        double xcurr = node->X()[j] + (*dis)[doflid];
-
-        /*if node currently has coordinate value greater than periodlength, it is
-         *shifted by -periodlength sufficiently often to lie again in the domain*/
-        if (xcurr > (*periodlength)[j])
-        {
-          (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
-        }
-        /*if node currently has coordinate value smaller than zero, it is shifted
-         * by periodlength sufficiently often to lie again in the domain*/
-        else if (xcurr < 0.0)
-        {
-          (*dis)[doflid] -= (*periodlength)[j]*floor(xcurr/(*periodlength)[j]);
-        }
-      }
+      int doflid = dis->Map().LID(dofnode[j]);
+      PeriodicBoundaryShift1D((*dis)[doflid],(*periodlength)[j],node->X()[j]);
     }
   }
 

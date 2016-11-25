@@ -13,6 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_biopolynet/biopolynet_calc_utils.H"
 
 #include "../drt_inpar/inpar_statmech.H"
 
@@ -294,28 +295,11 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
   for(unsigned int i=1;i<nnode;i++)
     for(int dof= ndim - 1; dof > -1; dof--)
     {
-      /* if the distance in some coordinate direction between some node and the
-       * first node becomes smaller by adding or subtracting the period length,
-       * the respective node has obviously been shifted due to periodic boundary
-       * conditions and should be shifted back for evaluation of element
-       * matrices and vectors; this way of detecting shifted nodes works as long
-       * as the element length is smaller than half the periodic length*/
-      if(std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) +
-                   periodlength[dof] - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
-         std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
-                   (Nodes()[0]->X()[dof] + disp[numdof*0+dof]))
-      )
-      {
-        disp[numdof*i+dof] += periodlength[dof];
-      }
-      else if(std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
-                        periodlength[dof] - (Nodes()[0]->X()[dof]+disp[numdof*0+dof])) <
-              std::fabs((Nodes()[i]->X()[dof]+disp[numdof*i+dof]) -
-                        (Nodes()[0]->X()[dof] + disp[numdof*0+dof]))
-      )
-      {
-        disp[numdof*i+dof] -= periodlength[dof];
-      }
+      BIOPOLYNET::UTILS::PeriodicBoundaryUnShift1D(
+          disp[numdof*i+dof],
+          Nodes()[0]->X()[dof] + disp[numdof*0+dof],
+          periodlength[dof],
+          Nodes()[i]->X()[dof]);
     }
 
   // that's it
@@ -344,16 +328,7 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>&       po
   GetPosAtXi(pos,xi,disp);
 
   // check if xi lies outside the periodic box, if it does, shift it back in
-  for(int dim=0; dim<3; ++dim)
-  {
-    if(periodlength[dim]>0)
-    {
-      if(pos(dim) < 0)
-        pos(dim) += periodlength[dim];
-      else if(pos(dim) > periodlength[dim])
-        pos(dim) -= periodlength[dim];
-    }
-  }
+  BIOPOLYNET::UTILS::PeriodicBoundaryShift(pos,periodlength);
 
   // that is it
   return;

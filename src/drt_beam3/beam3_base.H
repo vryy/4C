@@ -15,8 +15,6 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_elementtype.H"
@@ -32,6 +30,12 @@
 #define BEAMSVTUVISUALSUBSEGMENTS 10
 
 // forward declaration ...
+namespace LINALG
+{
+  class SerialDenseVector;
+  class SerialDenseMatrix;
+}
+
 namespace STR {
 namespace ELEMENTS {
   class ParamsInterface;
@@ -236,17 +240,27 @@ public:
     dserror("not implemented");
   }
 
+  /** \brief get generalized interpolation matrix which yields the variation of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF variations
+   *
+   *  \author grill
+   *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
-      LINALG::TMatrix<double,6,12>& Ivar,
-      const double&                 xi) const
+      LINALG::SerialDenseMatrix& Ivar,
+      const double&              xi) const
   {
     dserror("not implemented");
   }
 
+  /** \brief get generalized interpolation matrix which yields the increments of the position and
+   *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF increments
+   *
+   *  \author grill
+   *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
-      LINALG::TMatrix<double,6,12>& Iinc,
-      const double&                 xi,
-      const std::vector<double>&    disp) const
+      LINALG::SerialDenseMatrix&  Iinc,
+      const double&               xi,
+      const std::vector<double>&  disp) const
   {
     dserror("not implemented");
   }

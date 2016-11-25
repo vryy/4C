@@ -168,8 +168,7 @@
 #include "../drt_mat/maxwell_0d_acinus_DoubleExponential.H"
 #include "../drt_mat/maxwell_0d_acinus_Ogden.H"
 #include "../drt_inv_analysis/particle_data.H"
-#include "../drt_beamcontact/beam3tobeamlinkage.H"
-
+#include "../drt_beamcontact/beam3r_lin2_linkage.H"
 
 std::string DRT::ParObjectList()
 {

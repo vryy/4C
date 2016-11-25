@@ -158,6 +158,9 @@ namespace MODELEVALUATOR{
     //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
     void GenerateGaussianRandomNumbers();
 
+    //! \brief safety check whether this condition is fulfilled
+    bool IsAnyBeamElementLengthLargerThanHalfPeriodLength() const;
+
   private:
 
     //! statmech evaluation data container

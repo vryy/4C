@@ -886,6 +886,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3tobeampotential.cpp
   src/drt_beamcontact/beam3tospherepotential.cpp
   src/drt_beamcontact/beam3tobeamlinkage.cpp
+  src/drt_beamcontact/beam3r_lin2_linkage.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp

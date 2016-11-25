@@ -28,6 +28,8 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_discret.H"
@@ -169,8 +171,6 @@ void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  // get current displacement state and export to interaction discretization dofmap
-  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
   ResetStateOfElementPairs();
 
   // Zero out force and stiffness contributions
@@ -194,13 +194,23 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
   std::vector<CommForceStiff> recvforcestiff;
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  LINALG::TMatrix<double,6,1> bspotforce1(true);
-  LINALG::TMatrix<double,6,1> bspotforce2(true);
+  LINALG::SerialDenseVector bspotforce1(6);
+  LINALG::SerialDenseVector bspotforce2(6);
 
   // resulting discrete element force vectors of the two parent elements
-  Epetra_SerialDenseVector ele1force(12);
-  Epetra_SerialDenseVector ele2force(12);
+  LINALG::SerialDenseVector ele1force;
+  LINALG::SerialDenseVector ele2force;
+
   Epetra_SerialDenseMatrix dummystiff(0,0);
+
+  // transformation from row to column (after extended ghosting)
+  // Todo maybe get rid of this, because transformation of force vectors is (so far)
+  //      not displacement dependent; but we need the number of DoFs of parent
+  //      elements (= eledisp.size() )
+  Teuchos::RCP<Epetra_Vector> ia_discolnp =
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *ia_discolnp);
+
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
@@ -208,48 +218,31 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
 
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    bspotforce1.Clear();
-    bspotforce2.Clear();
+    // zero out variables
+    bspotforce1.Zero();
+    bspotforce2.Zero();
 
     // evaluate beam linkage object to get forces and moments on binding spots
     elepairptr->EvaluateForce(bspotforce1,bspotforce2);
 
-
-    // ********************** Interpolation *******************************
-    DRT::Element* ele1 = ia_discret_->gElement(elepairptr->GetEleGid(0));
-    DRT::Element* ele2 = ia_discret_->gElement(elepairptr->GetEleGid(1));
-
-    DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
-    DRT::ELEMENTS::Beam3Base* beamele2 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
-
-    LINALG::TMatrix<double,6,12> trafomat(true);
-
-    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
-
-    LINALG::TMatrix<double,12,1> eleforce;
-
-    eleforce.MultiplyTN(trafomat,bspotforce1);
-
-    for (unsigned int i=0; i<12; ++i)
-      ele1force(i) = eleforce(i);
-
-
-    trafomat.Clear();
-    eleforce.Clear();
-
-    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
-
-    eleforce.MultiplyTN(trafomat,bspotforce2);
-
-    for (unsigned int i=0; i<12; ++i)
-      ele2force(i) = eleforce(i);
-    // ********************** end: Interpolation *******************************
+    // apply forces on binding spots to parent elements
+    // and get their discrete element force vectors
+    ApplyBpotForceStiffToParentElements(
+        *ia_discret_,
+        ia_discolnp,
+        elepairptr,
+        bspotforce1,
+        bspotforce2,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        &ele1force,
+        &ele2force,
+        NULL,
+        NULL,
+        NULL,
+        NULL);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -311,23 +304,23 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  LINALG::TMatrix<double,6,6> bspotstiff11(true);
-  LINALG::TMatrix<double,6,6> bspotstiff12(true);
-  LINALG::TMatrix<double,6,6> bspotstiff21(true);
-  LINALG::TMatrix<double,6,6> bspotstiff22(true);
+  LINALG::SerialDenseMatrix bspotstiff11(6,6);
+  LINALG::SerialDenseMatrix bspotstiff12(6,6);
+  LINALG::SerialDenseMatrix bspotstiff21(6,6);
+  LINALG::SerialDenseMatrix bspotstiff22(6,6);
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
+  LINALG::SerialDenseMatrix ele11stiff;
+  LINALG::SerialDenseMatrix ele12stiff;
+  LINALG::SerialDenseMatrix ele21stiff;
+  LINALG::SerialDenseMatrix ele22stiff;
+
   Epetra_SerialDenseVector dummyforce(0);
-  Epetra_SerialDenseMatrix ele11stiff(12,12);
-  Epetra_SerialDenseMatrix ele12stiff(12,12);
-  Epetra_SerialDenseMatrix ele21stiff(12,12);
-  Epetra_SerialDenseMatrix ele22stiff(12,12);
 
-  ia_stiff_crosslink_->UnComplete();     // Todo check if needed or can be avoided
+  // uncomplete sparse matrix before values of individual linkage elements are assembled
+  ia_stiff_crosslink_->UnComplete();
 
-
-  // Todo needed?
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> ia_discolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -340,99 +333,36 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    bspotstiff11.Clear();
-    bspotstiff12.Clear();
-    bspotstiff21.Clear();
-    bspotstiff22.Clear();
+    // zero out variables
+    bspotstiff11.Zero();
+    bspotstiff12.Zero();
+    bspotstiff21.Zero();
+    bspotstiff22.Zero();
 
-    // evaluate beam linkage object to get forces and moments on binding spots
+    // evaluate beam linkage object to get linearizations of forces and moments on binding spots
     elepairptr->EvaluateStiff(
         bspotstiff11,
         bspotstiff12,
         bspotstiff21,
         bspotstiff22);
 
-    // ********************** Interpolation *******************************
-    DRT::Element* ele1 = ia_discret_->gElement(elepairptr->GetEleGid(0));
-    DRT::Element* ele2 = ia_discret_->gElement(elepairptr->GetEleGid(1));
-
-    DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
-    DRT::ELEMENTS::Beam3Base* beamele2 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
-
-
-    std::vector<double> eledisp;
-    GetCurrentElementDis(ele1,ia_discolnp,eledisp);
-
-    LINALG::TMatrix<double,6,12> trafomat(true);
-
-    LINALG::TMatrix<double,12,6> ele11stifftmp;
-    LINALG::TMatrix<double,12,6> ele12stifftmp;
-    LINALG::TMatrix<double,6,12> ele21stifftmp;
-    LINALG::TMatrix<double,6,12> ele22stifftmp;
-    LINALG::TMatrix<double,12,12> ele11stifftmp2;
-    LINALG::TMatrix<double,12,12> ele12stifftmp2;
-    LINALG::TMatrix<double,12,12> ele21stifftmp2;
-    LINALG::TMatrix<double,12,12> ele22stifftmp2;
-
-
-
-    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
-
-    ele11stifftmp.MultiplyTN(trafomat,bspotstiff11);
-    ele12stifftmp.MultiplyTN(trafomat,bspotstiff12);
-
-    trafomat.Clear();
-
-
-    beamele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomat,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
-        eledisp);
-
-    ele11stifftmp2.Multiply(ele11stifftmp,trafomat);
-
-    ele21stifftmp.Multiply(bspotstiff21,trafomat);
-
-    GetCurrentElementDis(ele2,ia_discolnp,eledisp);
-
-    trafomat.Clear();
-
-    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomat,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
-        eledisp);
-
-    ele12stifftmp2.Multiply(ele12stifftmp,trafomat);
-    ele22stifftmp.Multiply(bspotstiff22,trafomat);
-
-    trafomat.Clear();
-
-    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
-
-    ele21stifftmp2.MultiplyTN(trafomat,ele21stifftmp);
-    ele22stifftmp2.MultiplyTN(trafomat,ele22stifftmp);
-
-
-
-    // Apply point force to parent elements
-    for (unsigned int i=0; i<12; ++i)
-      for (unsigned int j=0; j<12; ++j)
-      {
-        ele11stiff(i,j) = ele11stifftmp2(i,j);
-        ele12stiff(i,j) = ele12stifftmp2(i,j);
-
-        ele21stiff(i,j) = ele21stifftmp2(i,j);
-        ele22stiff(i,j) = ele22stifftmp2(i,j);
-      }
-
-    // ********************** End: Interpolation *******************************
-
+    // apply linearizations to parent elements and get their discrete element stiffness matrices
+    ApplyBpotForceStiffToParentElements(
+        *ia_discret_,
+        ia_discolnp,
+        elepairptr,
+        dummyforce,
+        dummyforce,
+        bspotstiff11,
+        bspotstiff12,
+        bspotstiff21,
+        bspotstiff22,
+        NULL,
+        NULL,
+        &ele11stiff,
+        &ele12stiff,
+        &ele21stiff,
+        &ele22stiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -497,48 +427,47 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
   std::vector<CommForceStiff> recvforcestiff;
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  LINALG::TMatrix<double,6,1> bspotforce1(true);
-  LINALG::TMatrix<double,6,1> bspotforce2(true);
-  // corresponding linearizations, i.e. stiffness contributions
-  LINALG::TMatrix<double,6,6> bspotstiff11(true);
-  LINALG::TMatrix<double,6,6> bspotstiff12(true);
-  LINALG::TMatrix<double,6,6> bspotstiff21(true);
-  LINALG::TMatrix<double,6,6> bspotstiff22(true);
+  LINALG::SerialDenseVector bspotforce1(6);
+  LINALG::SerialDenseVector bspotforce2(6);
+
+  /* linearizations, i.e. stiffness contributions due to forces on the two
+   * connection sites due to the mechanical connection */
+  LINALG::SerialDenseMatrix bspotstiff11(6,6);
+  LINALG::SerialDenseMatrix bspotstiff12(6,6);
+  LINALG::SerialDenseMatrix bspotstiff21(6,6);
+  LINALG::SerialDenseMatrix bspotstiff22(6,6);
 
   // resulting discrete element force vectors of the two parent elements
-  Epetra_SerialDenseVector ele1force(12);
-  Epetra_SerialDenseVector ele2force(12);
+  LINALG::SerialDenseVector ele1force;
+  LINALG::SerialDenseVector ele2force;
+
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
-  Epetra_SerialDenseMatrix ele11stiff(12,12);
-  Epetra_SerialDenseMatrix ele12stiff(12,12);
-  Epetra_SerialDenseMatrix ele21stiff(12,12);
-  Epetra_SerialDenseMatrix ele22stiff(12,12);
+  LINALG::SerialDenseMatrix ele11stiff;
+  LINALG::SerialDenseMatrix ele12stiff;
+  LINALG::SerialDenseMatrix ele21stiff;
+  LINALG::SerialDenseMatrix ele22stiff;
 
-  ia_stiff_crosslink_->UnComplete();     // Todo check if needed or can be avoided
+  ia_stiff_crosslink_->UnComplete();
 
-
-
-  // Todo needed?
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> ia_discolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_disnp_, *ia_discolnp);
 
 
-
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
   {
-
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    bspotforce1.Clear();
-    bspotforce2.Clear();
-    bspotstiff11.Clear();
-    bspotstiff12.Clear();
-    bspotstiff21.Clear();
-    bspotstiff22.Clear();
+    // zero out variables
+    bspotforce1.Zero();
+    bspotforce2.Zero();
+    bspotstiff11.Zero();
+    bspotstiff12.Zero();
+    bspotstiff21.Zero();
+    bspotstiff22.Zero();
 
     // evaluate beam linkage object to get forces and moments on binding spots
     elepairptr->EvaluateForceStiff(bspotforce1,
@@ -548,114 +477,24 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
                                    bspotstiff21,
                                    bspotstiff22);
 
-
-    // ********************** Interpolation *******************************
-    DRT::Element* ele1 = ia_discret_->gElement(elepairptr->GetEleGid(0));
-    DRT::Element* ele2 = ia_discret_->gElement(elepairptr->GetEleGid(1));
-
-
-    DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
-    DRT::ELEMENTS::Beam3Base* beamele2 =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
-
-
-    std::vector<double> eledisp;
-    GetCurrentElementDis(ele1,ia_discolnp,eledisp);
-
-    LINALG::TMatrix<double,6,12> trafomat(true);
-
-    LINALG::TMatrix<double,12,1> ele1forcetmp;
-    LINALG::TMatrix<double,12,1> ele2forcetmp;
-
-    LINALG::TMatrix<double,12,6> ele11stifftmp;
-    LINALG::TMatrix<double,12,6> ele12stifftmp;
-    LINALG::TMatrix<double,6,12> ele21stifftmp;
-    LINALG::TMatrix<double,6,12> ele22stifftmp;
-    LINALG::TMatrix<double,12,12> ele11stifftmp2;
-    LINALG::TMatrix<double,12,12> ele12stifftmp2;
-    LINALG::TMatrix<double,12,12> ele21stifftmp2;
-    LINALG::TMatrix<double,12,12> ele22stifftmp2;
-
-
-
-    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
-
-    ele1forcetmp.MultiplyTN(trafomat,bspotforce1);
-
-    ele11stifftmp.MultiplyTN(trafomat,bspotstiff11);
-    ele12stifftmp.MultiplyTN(trafomat,bspotstiff12);
-
-    trafomat.Clear();
-
-
-    // ************* DEBUG **************************************
-//    std::cout << "\neledisp:";
-//    for (unsigned int i=0; i<eledisp.size(); ++i)
-//      std::cout << " " << eledisp[i];
-//    std::cout << "\n";
-    // **********************************************************
-
-
-    beamele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomat,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
-        eledisp);
-
-    ele11stifftmp2.Multiply(ele11stifftmp,trafomat);
-
-    ele21stifftmp.Multiply(bspotstiff21,trafomat);
-
-
-    // ************** DEBUG *************************************
-//    std::cout << "\nxi= "<< beamele1->GetBindingSpotXi(locbspotnum1) << ", trafomat: ";
-//    trafomat.Print(std::cout);
-    // **********************************************************
-
-    GetCurrentElementDis(ele2,ia_discolnp,eledisp);
-
-    trafomat.Clear();
-
-    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomat,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
-        eledisp);
-
-    ele12stifftmp2.Multiply(ele12stifftmp,trafomat);
-    ele22stifftmp.Multiply(bspotstiff22,trafomat);
-
-    trafomat.Clear();
-
-    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomat,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
-
-    ele2forcetmp.MultiplyTN(trafomat,bspotforce2);
-
-    ele21stifftmp2.MultiplyTN(trafomat,ele21stifftmp);
-    ele22stifftmp2.MultiplyTN(trafomat,ele22stifftmp);
-
-
-
-    // Apply point force to parent elements
-    for (unsigned int i=0; i<12; ++i)
-    {
-      ele1force(i) = ele1forcetmp(i);
-      ele2force(i) = ele2forcetmp(i);
-
-      for (unsigned int j=0; j<12; ++j)
-      {
-        ele11stiff(i,j) = ele11stifftmp2(i,j);
-        ele12stiff(i,j) = ele12stifftmp2(i,j);
-
-        ele21stiff(i,j) = ele21stifftmp2(i,j);
-        ele22stiff(i,j) = ele22stifftmp2(i,j);
-      }
-    }
-
-    // ********************** End: Interpolation *******************************
+    // apply forces on binding spots and corresponding linearizations to parent elements
+    // and get their discrete element force vectors and stiffness matrices
+    ApplyBpotForceStiffToParentElements(
+        *ia_discret_,
+        ia_discolnp,
+        elepairptr,
+        bspotforce1,
+        bspotforce2,
+        bspotstiff11,
+        bspotstiff12,
+        bspotstiff21,
+        bspotstiff22,
+        &ele1force,
+        &ele2force,
+        &ele11stiff,
+        &ele12stiff,
+        &ele21stiff,
+        &ele22stiff);
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -931,6 +770,14 @@ void STR::MODELEVALUATOR::Crosslinking::ResetStateOfElementPairs()
 
       GetPosAndTriadOfBindingSpot(ele, ia_discolnp,locbspotnum,pos[i],triad[i]);
     }
+
+    // unshift one of the positions if both are separated by a periodic boundary
+    // condition, i.e. have been shifted before
+    BIOPOLYNET::UTILS::PeriodicBoundaryUnShift(
+        pos[1],
+        pos[0],
+        *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
+
     // finally reset state
     elepairptr->ResetState(pos,triad);
   }
@@ -1350,12 +1197,13 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
   // get standard deviation and mean value for crosslinker that are free to
   // diffuse
-  double standarddev = sqrt(eval_statmech_ptr_->GetDataSMDynPtr()->KT() /
-                       (2*M_PI * eval_statmech_ptr_->GetDataSMDynPtr()->Eta()
-                       * eval_statmech_ptr_->GetDataSMDynPtr()->RLink())
+  double standarddev = std::sqrt(2.0 * eval_statmech_ptr_->GetDataSMDynPtr()->KT() /
+                       (3.0*M_PI * eval_statmech_ptr_->GetDataSMDynPtr()->Eta()
+                       * eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLength())     // Todo check the scalar factor
                        * (*GState().GetDeltaTime())[0]);
   double meanvalue = 0.0;
   // Set mean value and standard deviation of normal distribution
+  // FixMe standard deviation = sqrt(variance) check this for potential error !!!
   DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue,standarddev);
 
   // transformation from row to column (after extended ghosting)
@@ -1465,16 +1313,19 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         ele->GetPosOfBindingSpot(bbspotpostwo,eledisp,cldata_i.clbspots[1].second,
             *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
 
-        // fixme: this is wrong if on binding partner leaves the periodic bounding box
+        BIOPOLYNET::UTILS::PeriodicBoundaryUnShift(
+            bbspotpostwo,
+            bbspotposone,
+            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
+
         // cl gets current mid position between the filament binding spots it is attached to
         cldata_i.clpos.Update(0.5,bbspotposone,0.5,bbspotpostwo);
+
+        BIOPOLYNET::UTILS::PeriodicBoundaryShift(
+            cldata_i.clpos,
+            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
+
         SetCrosslinkerPosition(crosslinker_i, cldata_i.clpos);
-        //fixme:
-        static LINALG::Matrix<3,1> dist_vec;
-        dist_vec.Update(1.0, bbspotposone, -1.0, cldata_i.clpos);
-        const double distance = dist_vec.Norm2();
-        if(abs(distance)>0.3*(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()->at(0)))
-          dserror("You should have fixed this a long time ago (one binding partner left the domain");
 
         break;
       }
@@ -1689,13 +1540,40 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
   // -------------------------------------------------------------------------
   if(cldata_i.clnumbond==2) return;
 
-  // spherical shell around crosslinker center where binding spots have to lie
-  // for potential binding event
+  // if crosslinker is singly bound, we fetch the orientation vector of the
+  // filament axis at the already occupied binding spot for the orientation
+  // criterion (enclosed angle) to be checked later on
+  LINALG::Matrix<3,1> occ_bindingspot_beam_tangent(true);
+  // we reuse the occupied binding spot number later on
+  int occbspotid = -1;
+
+  if(cldata_i.clnumbond==1)
+  {
+    GetOccupiedClBspot(occbspotid, cldata_i.bnodegids_);
+
+    // Todo move this to new method GetOccupiedClBSpotBeamTangent()
+    const int elegid = cldata_i.clbspots[occbspotid].first;
+    const int elecollid = ia_discret_->ElementColMap()->LID(elegid);
+    const int locbspotnum = cldata_i.clbspots[occbspotid].second;
+
+    // note: we use first base vector instead of tangent vector here
+    for (unsigned int idim=0; idim<3; ++idim)
+      occ_bindingspot_beam_tangent(idim) =
+          beam_data_[elecollid].bbspottriad.at(locbspotnum)(idim,0);
+  }
+
+
+  // minimum and maximum distance at which a double-bond crosslink can be established
   // todo: this needs to go crosslinker material
-  double rmin = (eval_statmech_ptr_->GetDataSMDynPtr()->RLink()
-               - eval_statmech_ptr_->GetDataSMDynPtr()->DeltaRLink()) / 2.0;
-  double rmax = (eval_statmech_ptr_->GetDataSMDynPtr()->RLink()
-               + eval_statmech_ptr_->GetDataSMDynPtr()->DeltaRLink()) / 2.0;
+  double linkdistmin = eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLength()
+                      - eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLengthTolerance();
+  double linkdistmax = eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLength()
+                      + eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLengthTolerance();
+
+  double linkanglemin = eval_statmech_ptr_->GetDataSMDynPtr()->LinkerAngle()
+                      - eval_statmech_ptr_->GetDataSMDynPtr()->LinkerAngleTolerance();
+  double linkanglemax = eval_statmech_ptr_->GetDataSMDynPtr()->LinkerAngle()
+                      + eval_statmech_ptr_->GetDataSMDynPtr()->LinkerAngleTolerance();
   // probability with which a crosslinker is established between crosslink
   // molecule and neighbor binding spot
   const double konstart = eval_statmech_ptr_->GetDataSMDynPtr()->KOnStart();
@@ -1727,12 +1605,12 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
     // -----------------------------------------------------------------------
     const BeamData& beamdata_i = beam_data_[nbbeam->LID()];
 
-    // 2. criterion:
-    // exclude binding of a single bonded crosslinker in close proximity on the
-    // same filament (i.e. element cloud of old element binding partner is excluded)
     if(cldata_i.clnumbond==1)
     {
-      if(CheckCrosslinkOfAdjacentElements(nbbeam, cldata_i.bnodegids_))
+      // 2. criterion:
+      // exclude binding of a single bonded crosslinker in close proximity on the
+      // same filament (i.e. element cloud of old element binding partner is excluded)
+      if(CheckCrosslinkOfAdjacentElements(nbbeam, cldata_i.bnodegids_[occbspotid]))
         continue;
     }
 
@@ -1744,6 +1622,14 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
       // get local number of binding spot in element
       const int locnbspot = *rbspotiter;
 
+      // get current position and tangent vector of filament axis at free binding spot
+      const LINALG::Matrix<3,1>& currbbspos = beamdata_i.bbspotpos.at(locnbspot);
+
+      LINALG::Matrix<3,1> curr_bindingspot_beam_tangent(true);
+      // note: we use first base vector instead of tangent vector here
+      for (unsigned int idim=0; idim<3; ++idim)
+        curr_bindingspot_beam_tangent(idim) = beamdata_i.bbspottriad.at(locnbspot)(idim,0);
+
       // -----------------------------------------------------------------------
       // we are now doing some checks if a binding event could happen
       // -----------------------------------------------------------------------
@@ -1754,19 +1640,31 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
         if(beamdata_i.bbspotstatus.at(locnbspot) != -1)
           continue;
 
-        // 4. criterion:
-        // if binding spot not in binding range, continue with next binding spot
-        // compute distance between current binding spot and center (if free) or one
-        // end (if single bonded) of crosslinker i
-        const LINALG::Matrix<3,1> currbbspos = beamdata_i.bbspotpos.at(locnbspot);
-        static LINALG::Matrix<3,1> dist_vec;
-        dist_vec.Update(1.0, currbbspos, -1.0, cldata_i.clpos);
-        const double distance = dist_vec.Norm2();
+        // 4. criterion: check RELEVANT distance criterion
+        // if free:
+        // distance between crosslinker center and current beam binding spot
+        // if singly bound:
+        // distance between already bound bspot of crosslinker and current beam binding spot
+        // note: as we set the crosslinker position to coincide with beam bspot position if singly bound,
+        //       we can also use cldata_i.clpos in the second case
 
-        if(distance>rmax || distance<rmin)
+        if( (cldata_i.clnumbond==0 and
+             IsDistanceOutOfBindingRange(cldata_i.clpos,currbbspos,0.5*linkdistmin,0.5*linkdistmax)) or
+            (cldata_i.clnumbond==1 and
+             IsDistanceOutOfBindingRange(cldata_i.clpos,currbbspos,linkdistmin,linkdistmax)) )
           continue;
 
-        // 5. criterion:
+        // 5. criterion: orientation of centerline tangent vectors at binding spots
+        // a crosslink (double-bonded crosslinker) will only be established if the
+        // enclosed angle is in the specified range
+        if(cldata_i.clnumbond==1 and
+           IsEnclosedAngleOfBSpotTangentsOutOfRange(occ_bindingspot_beam_tangent,
+                                                    curr_bindingspot_beam_tangent,
+                                                    linkanglemin,
+                                                    linkanglemax) )
+          continue;
+
+        // 6. criterion:
         // a crosslink is set if and only if it passes a probability check
         if(DRT::Problem::Instance()->Random()->Uni() > plink)
           continue;
@@ -1810,17 +1708,14 @@ void STR::MODELEVALUATOR::Crosslinking::PrepareBinding(
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Crosslinking::CheckCrosslinkOfAdjacentElements(
     DRT::Element* nbbeam,
-    const std::vector<std::pair<int, int> >& bnodegids) const
+    const std::pair<int, int>& occbspot_bnodegids) const
 {
   CheckInit();
 
-  int occbspotid = 0;
-  GetOccupiedClBspot(occbspotid, bnodegids);
-
   // check if two considered eles share nodes
   for (int i=0; i<2; i++)
-    if(nbbeam->NodeIds()[i]==bnodegids[occbspotid].first ||
-       nbbeam->NodeIds()[i]==bnodegids[occbspotid].second)
+    if(nbbeam->NodeIds()[i]==occbspot_bnodegids.first ||
+       nbbeam->NodeIds()[i]==occbspot_bnodegids.second)
       return true;
 
   // that is it
@@ -2205,8 +2100,9 @@ void STR::MODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCrosslinker(
 {
   CheckInit();
 
-  //generate vector in random direction of length R_LINK to "reset" crosslink
-  // molecule position: it may now reenter or leave the bonding proximity
+  //generate vector in random direction
+  // of length half the linking length to "reset" crosslink molecule position: it may now
+  // reenter or leave the bonding proximity
   // todo: does this make sense?
   LINALG::Matrix<3,1> cldeltapos_i;
   std::vector<double> randunivec(3);
@@ -2214,7 +2110,7 @@ void STR::MODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCrosslinker(
   DRT::Problem::Instance()->Random()->Uni(randunivec, count);
   for (int dim=0; dim<3; ++dim)
     cldeltapos_i(dim) = randunivec[dim];
-  cldeltapos_i.Scale(eval_statmech_ptr_->GetDataSMDynPtr()->RLink() / cldeltapos_i.Norm2());
+  cldeltapos_i.Scale(0.5*eval_statmech_ptr_->GetDataSMDynPtr()->LinkerLength() / cldeltapos_i.Norm2());
 
   clpos.Update(1.0,cldeltapos_i,1.0);
   SetCrosslinkerPosition(crosslinker, clpos);
@@ -2738,16 +2634,12 @@ void STR::MODELEVALUATOR::Crosslinking::GetOccupiedClBspot(
 {
   CheckInit();
 
-  occbspotid = 0;
-  // check, which clbspot is free
-  if(clbspots[0].first < 0)
-    occbspotid  = 1;
-
-#ifdef DEBUG
-    // safety check
-  if(clbspots[occbspotid].first < 0)
-    dserror("determined binding spot for singly bonded crosslinker is not occupied");
-#endif
+  if(clbspots[0].first > -1)
+    occbspotid = 0;
+  else if(clbspots[1].first > -1)
+    occbspotid = 1;
+  else
+    dserror("numbond=1 but both binding spots store invalid element GID!");
 
   // that's it
   return;
@@ -3213,6 +3105,55 @@ void STR::MODELEVALUATOR::Crosslinking::VerifyNeighbors(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::IsDistanceOutOfBindingRange(
+    const LINALG::Matrix<3,1>& pos1,
+    const LINALG::Matrix<3,1>& pos2,
+    const double& lowerbound,
+    const double& upperbound
+    ) const
+{
+  LINALG::Matrix<3,1> dist_vec(true);
+  dist_vec.Update(1.0, pos1, -1.0, pos2);
+
+  const double distance = dist_vec.Norm2();
+
+  if (distance < lowerbound or distance > upperbound)
+    return true;
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::IsEnclosedAngleOfBSpotTangentsOutOfRange(
+    const LINALG::Matrix<3,1>& direction1,
+    const LINALG::Matrix<3,1>& direction2,
+    const double& lowerbound,
+    const double& upperbound
+    ) const
+{
+  // cosine of angle is scalar product of vectors divided by their norms
+  // direction vectors should be unit vectors since they come from triads, but anyway ...
+  double cos_angle = direction1.Dot(direction2) / direction1.Norm2() / direction2.Norm2();
+
+  if (cos_angle>1.0)
+    dserror("cos(angle) = %f > 1.0 ! restrict this to exact 1.0 to avoid NaN in "
+        "following call to std::acos",cos_angle);
+
+  double angle = std::acos(cos_angle);
+
+  // acos returns angle \in [0,\pi] but we always want the acute angle here
+  if (angle > 0.5*M_PI)
+    angle = M_PI - angle;
+
+  if (angle < lowerbound or angle > upperbound)
+    return true;
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::UpdateMaps()
 {
   CheckInit();
@@ -3263,6 +3204,175 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateDofMapOfVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::ApplyBpotForceStiffToParentElements(
+    const DRT::Discretization&                             discret,
+    const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
+    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
+    const LINALG::SerialDenseVector& bspotforce1,
+    const LINALG::SerialDenseVector& bspotforce2,
+    const LINALG::SerialDenseMatrix& bspotstiff11,
+    const LINALG::SerialDenseMatrix& bspotstiff12,
+    const LINALG::SerialDenseMatrix& bspotstiff21,
+    const LINALG::SerialDenseMatrix& bspotstiff22,
+    LINALG::SerialDenseVector*       ele1force,
+    LINALG::SerialDenseVector*       ele2force,
+    LINALG::SerialDenseMatrix*       ele11stiff,
+    LINALG::SerialDenseMatrix*       ele12stiff,
+    LINALG::SerialDenseMatrix*       ele21stiff,
+    LINALG::SerialDenseMatrix*       ele22stiff
+    ) const
+{
+  // apply force on binding spots and corresponding linearizations to parent elements
+  // and get discrete element force vectors and stiffness matrices
+
+  /* Of course, the underlying idea is much more general:
+   * Consider some kind of abstract interaction between two points \xi_1,\xi_2 \in [-1,1]
+   * on two beam elements (or the same beam element).
+   * We computed a discrete force/moment exerted on each of the two points; in addition,
+   * we computed the linearizations with respect to the position/rotation vector of
+   * this point and also the linearizations with respect to the position/rotation vector
+   * of the other point (in general, the forces/moments depend on position/rotation
+   * vector of both points).
+   * Starting from here, we calculate the generalized interpolation matrices for
+   * variations and increments of the position/rotation vectors at the two points
+   * by expressing their dependency on the primary nodal DoFs of the corresponding
+   * element (this is element specific, of course). Finally, we can 'transform' the
+   * force vectors and stiffness matrices to discrete element force vectors and
+   * stiffness matrices */
+
+  DRT::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
+  DRT::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
+
+  DRT::ELEMENTS::Beam3Base* beamele1 =
+      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
+  DRT::ELEMENTS::Beam3Base* beamele2 =
+      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+
+  // get current element displacements
+  std::vector<double> ele1disp;
+  GetCurrentElementDis(ele1,disp_np_col,ele1disp);
+  const int numdof_ele1 = ele1disp.size();
+
+  std::vector<double> ele2disp;
+  GetCurrentElementDis(ele2,disp_np_col,ele2disp);
+  const int numdof_ele2 = ele2disp.size();
+
+
+  // transformation matrix, will be resized and reused for various needs
+  LINALG::SerialDenseMatrix trafomatrix;
+
+  // auxiliary matrices required to store intermediate results after first of two
+  // consecutive matrix-matrix products for each of four stiffness matrices
+  LINALG::SerialDenseMatrix auxmat11;
+  LINALG::SerialDenseMatrix auxmat12;
+  LINALG::SerialDenseMatrix auxmat21;
+  LINALG::SerialDenseMatrix auxmat22;
+
+  // zero out and set correct size of transformation matrix
+  trafomatrix.Shape(6,numdof_ele1);
+
+
+  // element 1: I_variations
+  beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
+      trafomatrix,
+      beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
+
+  if (ele1force != NULL)
+  {
+    ele1force->Size(numdof_ele1);
+    ele1force->Multiply('T','N',1.0,trafomatrix,bspotforce1,0.0);
+  }
+
+  if (ele11stiff != NULL)
+  {
+    auxmat11.Shape(numdof_ele1,6);
+    auxmat11.Multiply('T','N',1.0,trafomatrix,bspotstiff11,0.0);
+  }
+
+  if (ele12stiff != NULL)
+  {
+    auxmat12.Shape(numdof_ele1,6);
+    auxmat12.Multiply('T','N',1.0,trafomatrix,bspotstiff12,0.0);
+  }
+
+
+  // element 1: I_increments
+  if (ele11stiff != NULL or ele21stiff != NULL)
+  {
+    trafomatrix.Shape(6,numdof_ele1);
+
+    beamele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomatrix,
+        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        ele1disp);
+
+
+    if (ele11stiff != NULL)
+    {
+      ele11stiff->Shape(numdof_ele1,numdof_ele1);
+      ele11stiff->Multiply('N','N',1.0,auxmat11,trafomatrix,0.0);
+    }
+
+    if (ele21stiff != NULL)
+    {
+      auxmat21.Shape(6,numdof_ele1);
+      auxmat21.Multiply('N','N',1.0,bspotstiff21,trafomatrix,0.0);
+    }
+  }
+
+
+  // element 2: I_variations
+  trafomatrix.Shape(6,numdof_ele2);
+
+  beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
+      trafomatrix,
+      beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
+
+  if (ele2force != NULL)
+  {
+    ele2force->Size(numdof_ele2);
+    ele2force->Multiply('T','N',1.0,trafomatrix,bspotforce2,0.0);
+  }
+
+  if (ele21stiff != NULL)
+  {
+    ele21stiff->Shape(numdof_ele2,numdof_ele1);
+    ele21stiff->Multiply('T','N',1.0,trafomatrix,auxmat21,0.0);
+  }
+
+  if (ele22stiff != NULL)
+  {
+    auxmat22.Shape(numdof_ele2,6);
+    auxmat22.Multiply('T','N',1.0,trafomatrix,bspotstiff22,0.0);
+  }
+
+  // element 2: I_increments
+  if (ele11stiff != NULL or ele21stiff != NULL)
+  {
+    trafomatrix.Shape(6,numdof_ele2);
+
+    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+        trafomatrix,
+        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        ele2disp);
+
+    if (ele12stiff != NULL)
+    {
+      ele12stiff->Shape(numdof_ele1,numdof_ele2);
+      ele12stiff->Multiply('N','N',1.0,auxmat12,trafomatrix,0.0);
+    }
+
+    if (ele22stiff != NULL)
+    {
+      ele22stiff->Shape(numdof_ele2,numdof_ele2);
+      ele22stiff->Multiply('N','N',1.0,auxmat22,trafomatrix,0.0);
+    }
+  }
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::AssembleEleForceStiffIntoSystemVectorMatrix(
   const DRT::Discretization&         discret,
   const int                          elegid1,
@@ -3277,10 +3387,11 @@ void STR::MODELEVALUATOR::Crosslinking::AssembleEleForceStiffIntoSystemVectorMat
   Teuchos::RCP<LINALG::SparseMatrix> sysmat
   ) const
 {
-  // the entries of elevec1 belong to the Dofs of this element
-  DRT::Element* ele1 = discret.gElement(elegid1);
-  // the entries of elevec2 belong to the Dofs of this element
-  DRT::Element* ele2 = discret.gElement(elegid2);
+  // the entries of elevecX  belong to the Dofs of the element with GID elegidX
+  // the rows    of elematXY belong to the Dofs of the element with GID elegidX
+  // the columns of elematXY belong to the Dofs of the element with GID elegidY
+  const DRT::Element* ele1 = discret.gElement(elegid1);
+  const DRT::Element* ele2 = discret.gElement(elegid2);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
