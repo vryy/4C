@@ -61,6 +61,8 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   fast_(DRT::INPUT::IntegralValue<bool>(params->sublist("PARTICLE"),"FAST_CHECK")),
   delete_more_(params->sublist("PARTICLE").get<double>("DELETE_CRITICAL_PARTICLES"))
 {
+  if(transfer_every_ != 1)
+    dserror("TRANSFER_EVERY is not used, set it to one");
 
   Init(false);
 

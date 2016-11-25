@@ -846,10 +846,11 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::list<Teuchos::RCP
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
+Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList");
   const int numproc = bindis_->Comm().NumProc();
+  Teuchos::RCP<std::list<int> > removedparticles = Teuchos::rcp(new std::list<int>(0));
   if(numproc == 1)
   {
     if(homelessparticles.size())
@@ -858,12 +859,14 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::R
       std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
       for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
       {
-        bindis_->DeleteNode((*hlp)->Id());
+        const int removeid = (*hlp)->Id();
+        removedparticles->push_back(removeid);
+        bindis_->DeleteNode(removeid);
       }
       homelessparticles.clear();
     }
 
-    return;
+    return removedparticles;
   }
 
   // parallel case
@@ -903,7 +906,6 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::R
   // ---- pack data for sending -----
   std::map<int, std::vector<char> > sdata;
   std::vector<int> targetprocs(numproc,0);
-  int counter=0;
   int iter=0;
   for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
   {
@@ -923,13 +925,15 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::R
     }
     else
     {
-      ++counter;
-      bindis_->DeleteNode(iterhomelessparticle->Id());
+      const int removeid = iterhomelessparticle->Id();
+      removedparticles->push_back(removeid);
+      bindis_->DeleteNode(removeid);
+
     }
     ++iter;
   }
-  if(counter)
-    std::cout << " There are " << counter << " particles which have left the computational domain on rank " << myrank_ << std::endl;
+  if(removedparticles->size() != 0)
+    std::cout << " There are " << removedparticles->size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
   homelessparticles.clear();
 
   // ---- prepare receiving procs -----
@@ -990,7 +994,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::R
 
   bindis_->Comm().Barrier(); // I feel better this way ;-)
 
-  return;
+  return removedparticles;
 }
 
 
@@ -1418,23 +1422,20 @@ void PARTICLE::Algorithm::BuildBinColMap(
 /*----------------------------------------------------------------------*
  | particles are checked and transferred if necessary       ghamm 10/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::TransferParticles(const bool updatestates,
+Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool updatestates,
                                             const bool ghosting)
 {
-  if(Step()%transfer_every_ != 0)
-    return;
-
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // leave here in case nothing to do
   if(particles_->Radiusn()->GlobalLength() == 0)
-    return;
+    return Teuchos::rcp(new std::list<int>(0));
 
   // Get current displacements
   Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
 
   // transfer particles to new bins
-  TransferParticles(disnp);
+  Teuchos::RCP<std::list<int> > deletedparticles = TransferParticles(disnp);
 
   // check whether all procs have a filled bindis_,
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
@@ -1460,13 +1461,13 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates,
     UpdateStates();
   }
 
-  return;
+  return deletedparticles;
 }
 
 /*----------------------------------------------------------------------*
  | particles are checked and transferred if necessary       ghamm 10/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
+Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 {
   // set of homeless particles
   std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
@@ -1520,6 +1521,8 @@ void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
         // get the first gid of a node and convert it into a LID
         const int gid = bindis_->Dof(currnode, 0);
         const int lid = disnp->Map().LID(gid);
+        if(lid<0)
+          dserror("displacement for node %d not stored on this proc: %d",gid,myrank_);
 
         // we need to adapt the state vector consistent with periodic boundary conditions
         if(havepbc_)
@@ -1576,9 +1579,9 @@ void PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 #endif
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
-  FillParticlesIntoBinsRemoteIdList(homelessparticles);
+  Teuchos::RCP<std::list<int> > deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
 
-  return;
+  return deletedparticles;
 }
 
 /*----------------------------------------------------------------------*
@@ -2280,8 +2283,11 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateConnectivity()
 {
-  // transfer particles into their correct bins
-  TransferParticles(true);
+  if(Step()%transfer_every_ == 0)
+  {
+    // transfer particles into their correct bins
+    TransferParticles(true);
+  }
   // update heat sources
   UpdateHeatSourcesConnectivity(false);
 }

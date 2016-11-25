@@ -596,6 +596,9 @@ namespace CAVITATION
     Teuchos::RCP<const Epetra_Vector> storemass_;
     Teuchos::RCP<const Epetra_Vector> storeinertia_;
     Teuchos::RCP<const Epetra_Vector> storedtsub_;
+    Teuchos::RCP<const Epetra_Vector> storerad0_;
+    Teuchos::RCP<const Epetra_Vector> storepg0_;
+    std::list<int> deletedparticlesduringsubcycling_;
 
     //@}
 

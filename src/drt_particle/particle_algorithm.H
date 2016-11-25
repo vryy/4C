@@ -116,12 +116,12 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary, update states and do ghosting if needed
-    virtual void TransferParticles(const bool updatestates,
+    virtual Teuchos::RCP<std::list<int> > TransferParticles(const bool updatestates,
                                    const bool ghosting = true);
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual void TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
+    virtual Teuchos::RCP<std::list<int> > TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
 
     /// shift current particle positions in case periodic boundary conditions are applied
     virtual void ApplyPBCToParticles(double& currpos, int dim);
@@ -247,7 +247,7 @@ namespace PARTICLE
     virtual void BinSizeSafetyCheck(const double dt);
 
     /// fill particles into their correct bin on according proc
-    virtual void FillParticlesIntoBinsRemoteIdList(
+    virtual Teuchos::RCP<std::list<int> > FillParticlesIntoBinsRemoteIdList(
       std::list<Teuchos::RCP<DRT::Node> >& homelessparticles   ///< set of homeless particles
       );
 

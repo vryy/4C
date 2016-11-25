@@ -97,7 +97,9 @@ CAVITATION::Algorithm::Algorithm(
   storeraddot_(Teuchos::null),
   storemass_(Teuchos::null),
   storeinertia_(Teuchos::null),
-  storedtsub_(Teuchos::null)
+  storedtsub_(Teuchos::null),
+  storerad0_(Teuchos::null),
+  storepg0_(Teuchos::null)
 {
   const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
   // setup fluid time integrator
@@ -241,6 +243,9 @@ CAVITATION::Algorithm::Algorithm(
   if(moving_walls_)
     dserror("moving walls do not (yet) work for cavitation problems");
 
+  if(transfer_every_ != 1)
+    dserror("TRANSFER_EVERY is not used, set it to one");
+
   return;
 }
 
@@ -354,7 +359,8 @@ void CAVITATION::Algorithm::TimeloopIterStaggered()
       if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || havepbc_ == true)
       {
         ++count_;
-        TransferParticles(true);
+        Teuchos::RCP<std::list<int> > deletedparticles = TransferParticles(true);
+        deletedparticlesduringsubcycling_.insert(deletedparticlesduringsubcycling_.end(), deletedparticles->begin(), deletedparticles->end());
       }
 
       // update displacements, velocities, accelerations
@@ -646,6 +652,10 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::SaveParticleData()
 {
+  // transfer particles to correct processor to ensure that assigning works well in case of
+  // resetting everything when particles have left during subcycling
+  TransferParticles(true);
+
   storecount_ = count_;
   // save states of explicit particle time integrator
   // care about time and step
@@ -669,8 +679,13 @@ void CAVITATION::Algorithm::SaveParticleData()
   if(computeradiusRPbased_)
   {
     storeraddot_ = Teuchos::rcp(new Epetra_Vector(*particles_->RadiusDot()));
+    storerad0_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius0()));
     storedtsub_ = Teuchos::rcp(new Epetra_Vector(*dtsub_));
+    storepg0_ = Teuchos::rcp(new Epetra_Vector(*pg0_));
   }
+
+  // clear temporary storage for new subcycling
+  deletedparticlesduringsubcycling_.clear();
 
   return;
 }
@@ -685,17 +700,69 @@ void CAVITATION::Algorithm::ResetParticleData()
   // reset everything in explicit particle time integrator
   // time and step have already been reset in time loop
 
-  // reset layout of particles --> DOES NOT WORK WHEN BUBBLES HAVE LEFT THE DOMAIN
-  if(storedis_->GlobalLength() != particles_->Dispnp()->GlobalLength())
-    dserror("bubbles left the domain in outer loop of iteratively staggered scheme -> not yet implemented");
-  LINALG::Export(*storedis_, *particles_->WriteAccessDispnp());
-  TransferParticles(true);
+  // reset layout of particles
+  if(storedis_->GlobalLength() == particles_->Dispnp()->GlobalLength())
+  {
+    LINALG::Export(*storedis_, *particles_->WriteAccessDispnp());
+    TransferParticles(true);
+  }
+  else // recover old layout in case particles have left the domain
+  {
+    // remove particles from bins first
+    for(int lid=0; lid<bindis_->NumMyColNodes(); ++lid)
+    {
+      DRT::Node* currparticle = bindis_->lColNode(lid);
+      dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currparticle->Elements()[0])->DeleteNode(currparticle->Id());
+    }
+    // delete all particles in a second step
+    bindis_->DeleteNodes();
+
+    // add old particles instead
+    std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
+    double pos[3];
+    const Epetra_BlockMap& oldnoderowmap = storerad_->Map();
+    for(int lid=0; lid<oldnoderowmap.NumMyElements(); ++lid)
+    {
+      const int oldnodeid = oldnoderowmap.GID(lid);
+      // assumption of identical order of dof and node based vector contents!
+      for(int d=0; d<dim_; ++d)
+        pos[d] = (*storedis_)[lid*3+d];
+      Teuchos::RCP<DRT::Node> oldparticle = Teuchos::rcp(new PARTICLE::ParticleNode(oldnodeid, &pos[0], myrank_));
+      PlaceNodeCorrectly(oldparticle, pos, homelessparticles);
+    }
+    if(homelessparticles.size() != 0)
+      dserror("%d row nodes could not be placed correctly", (int)homelessparticles.size());
+
+    // setup ghosting and fill discret
+    bindis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
+
+    // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
+    bool rebuildwallpointer = true;
+    if(moving_walls_)
+      rebuildwallpointer = false;
+    BuildElementToBinPointers(rebuildwallpointer);
+
+    // state vectors are updated to the old layout
+    particles_->UpdateStatesAfterParticleTransfer();
+    UpdateStates();
+
+    // reset values to initial value for those particles which left during subcycling
+    for(std::list<int>::const_iterator it=deletedparticlesduringsubcycling_.begin(); it!=deletedparticlesduringsubcycling_.end(); ++it)
+    {
+      const int lid = bindis_->NodeRowMap()->LID(*it);
+      (*couplingradius_)[lid] = (*storerad_)[lid];
+      (*radius_i_)[lid] = (*storerad_)[lid];
+    }
+  }
+
+  // reset data container for next subcycling step
+  deletedparticlesduringsubcycling_.clear();
 
   // care about state vectors
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Dispn())->Update(1.0, *storedis_, 0.0);
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Veln())->Update(1.0, *storevel_, 0.0);
   Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Accn())->Update(1.0, *storeacc_, 0.0);
-  // dispnp already reset in LINALG::Export above
+  particles_->WriteAccessDispnp()->Update(1.0, *storedis_, 0.0);
   particles_->WriteAccessVelnp()->Update(1.0, *storevel_, 0.0);
   particles_->WriteAccessAccnp()->Update(1.0, *storeacc_, 0.0);
 
@@ -713,11 +780,9 @@ void CAVITATION::Algorithm::ResetParticleData()
   if(computeradiusRPbased_)
   {
     particles_->WriteAccessRadiusDot()->Update(1.0, *storeraddot_, 0.0);
+    particles_->WriteAccessRadius0()->Update(1.0, *storerad0_, 0.0);
     dtsub_->Update(1.0, *storedtsub_, 0.0);
-    // export pg0_ as this vector is not stored
-    Teuchos::RCP<Epetra_Vector> old = pg0_;
-    pg0_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
-    LINALG::Export(*old, *pg0_);
+    pg0_->Update(1.0, *storepg0_, 0.0);
   }
 
   return;
@@ -1171,10 +1236,7 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
     }
     case INPAR::CAVITATION::TwoWayFull_strong:
     {
-      // make sure particles reside in their correct bin in order to
-      // distribute the void fraction properly to the underlying fluid elements
-      if(timestepsizeratio_ > 10)
-        TransferParticles(true);
+      // during data saving for outer loops, TransferParticles has already been called
       // coupling radius has already been set in Prepare Relaxation
       CalculateFluidFraction(couplingradius_);
       SetFluidFraction();
@@ -1329,6 +1391,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     static LINALG::Matrix<3,1> particleposition(false);
     std::vector<int> lm_b = bindis_->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
+    if(posx<0)
+      dserror("displacement for node %d not stored on this proc: %d",currparticle->Id(),myrank_);
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
 
@@ -2240,12 +2304,6 @@ void CAVITATION::Algorithm::ComputeRadius()
   {
     DRT::Node* currparticle = bindis_->lRowNode(i);
 
-    if(latestinflowbubbles_.find(currparticle->Id()) != latestinflowbubbles_.end())
-    {
-      // inflow bubble which is in blending phase does not need radius adaption here
-      continue;
-    }
-
     // fill particle position
     static LINALG::Matrix<3,1> particleposition;
     std::vector<int> lm_b = bindis_->Dof(currparticle);
@@ -2256,7 +2314,19 @@ void CAVITATION::Algorithm::ComputeRadius()
     // compute pressure at bubble position and skip computation in case no underlying fluid element was found
     const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
     if(fluidelefound == false)
+    {
+      // fill dummy entry in cache
+      const size_t i   = currparticle->LID();
+      underlyingelecache_[i].ele = NULL;
+
       continue;
+    }
+
+    if(latestinflowbubbles_.find(currparticle->Id()) != latestinflowbubbles_.end())
+    {
+      // inflow bubble which is in blending phase does not need radius adaption here
+      continue;
+    }
 
     const double pfluidn = elevec1[0]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
     const double pfluidnp = elevec1[1]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
@@ -2504,7 +2574,7 @@ void CAVITATION::Algorithm::IntegrateRadius(
 
     // exit if local truncation error is not satisfied although minimum time step is reached
     if (dtsub <= dt_min and localtruncerr > epsilon)
-      dserror("with given dtMin pretended local truncation error cannot be achieved");
+      dserror("with given dtMin requested local truncation error cannot be achieved for bubble id: %d", bubbleid);
 
     // stop if itermax is reached
     if (iter == itermax)
