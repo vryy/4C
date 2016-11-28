@@ -113,6 +113,7 @@ namespace MAT
       //! create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+
     };  // class SuperElasticSMA
 
   }  // namespace PAR
@@ -241,6 +242,12 @@ namespace MAT
       const int eleGID
       );
 
+    /// evaluate strain energy function
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                              double& psi,
+                              const int eleGID);
+
+
     //@}
 
   private:
@@ -286,6 +293,7 @@ namespace MAT
     //! indicator if #Initialize routine has been called
     bool isinit_;
 
+    double strainenergy_;
   };  // class SuperElasticSMA
 
 }  // namespace MAT

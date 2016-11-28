@@ -214,6 +214,7 @@ void MAT::SuperElasticSMA::Pack(DRT::PackBuffer& data) const
 void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
+  strainenergy_=0.0;
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
@@ -712,6 +713,15 @@ void MAT::SuperElasticSMA::Evaluate(
   (*stress)(4) = 0.5 * (PK2(1,2) + PK2(2,1));
   (*stress)(5) = 0.5 * (PK2(2,0) + PK2(0,2));
 
+  //compute strain energy
+  if (gp==0)
+    strainenergy_=0.0;
+  //volumetric enenrgy
+  double volenergy=0.5*matdata.bulk * ( logarithmic_strain_volumetric - 3.0 * matdata.alpha * matdata.epsilon_L * xi_S )* ( logarithmic_strain_volumetric - 3.0 * matdata.alpha * matdata.epsilon_L * xi_S );
+  //deviatoric energy
+  double devenergy=2.0 * matdata.shear * ( logarithmic_strain_deviatoric_norm - matdata.epsilon_L * xi_S )* ( logarithmic_strain_deviatoric_norm - matdata.epsilon_L * xi_S );
+  strainenergy_+=(volenergy+devenergy);
+
   /*
    **********************************************************
    * Step 7 * Compute algorithmic tangent for the global    *
@@ -1021,6 +1031,18 @@ bool MAT::SuperElasticSMA::VisData(
   return false;
 
 }  // VisData()
+
+
+/*----------------------------------------------------------------------*
+ |  calculate strain energy                                hemmler 11/16|
+ *----------------------------------------------------------------------*/
+void MAT::SuperElasticSMA::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                          double& psi, const int eleGID)
+{
+  psi=strainenergy_;
+  return;
+}
+
 
 /*---------------------------------------------------------------------*
  | return Kronecker delta (public)                    hemmler 09/16 |
