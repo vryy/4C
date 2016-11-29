@@ -940,16 +940,16 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   if (assvec1 or assvec2 or assvec4 or assvec5)
   {
     //extract values of dof vector at t_{n+1}
-    q_vin_l_np = (*sysvec4)[0];
-    p_at_l_np = (*sysvec4)[1];
+    p_at_l_np = (*sysvec4)[0];
+    q_vin_l_np = (*sysvec4)[1];
     q_vout_l_np = (*sysvec4)[2];
     p_v_l_np = (*sysvec4)[3];
     p_ar_sys_np = (*sysvec4)[4];
     q_ar_sys_np = (*sysvec4)[5];
     p_ven_sys_np = (*sysvec4)[6];
     q_ven_sys_np = (*sysvec4)[7];
-    q_vin_r_np = (*sysvec4)[8];
-    p_at_r_np = (*sysvec4)[9];
+    p_at_r_np = (*sysvec4)[8];
+    q_vin_r_np = (*sysvec4)[9];
     q_vout_r_np = (*sysvec4)[10];
     p_v_r_np = (*sysvec4)[11];
     p_ar_pul_np = (*sysvec4)[12];
@@ -1032,29 +1032,29 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     switch (atrium_model_)
     {
       case INPAR::CARDIOVASCULAR0D::elastance_0d:
-        wkstiff(0,1) = 1./(E_at_l_np*ts_size);
-        wkstiff(8,9) = 1./(E_at_r_np*ts_size);
+        wkstiff(0,0) = 1./(E_at_l_np*ts_size);
+        wkstiff(8,8) = 1./(E_at_r_np*ts_size);
       break;
       case INPAR::CARDIOVASCULAR0D::structure_3d:
-        wkstiff(0,1) = 0.;
-        wkstiff(8,9) = 0.;
+        wkstiff(0,0) = 0.;
+        wkstiff(8,8) = 0.;
       break;
     }
 
     //atrium - left
-    wkstiff(0,0) = theta;
+    wkstiff(0,1) = theta;
     wkstiff(0,15) = -theta;
 
     //atrioventricular valve - mitral
-    wkstiff(1,0) = -theta;
-    if (p_v_l_np < p_at_l_np) wkstiff(1,1) = theta/R_atvalve_min_l;
-    if (p_v_l_np >= p_at_l_np) wkstiff(1,1) = theta/R_atvalve_max_l;
+    wkstiff(1,1) = -theta;
+    if (p_v_l_np < p_at_l_np) wkstiff(1,0) = theta/R_atvalve_min_l;
+    if (p_v_l_np >= p_at_l_np) wkstiff(1,0) = theta/R_atvalve_max_l;
     if (p_v_l_np < p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_min_l;
     if (p_v_l_np >= p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_max_l;
 
     //ventricular mass balance - left
     wkstiff(2,2) = theta;
-    wkstiff(2,0) = -theta;
+    wkstiff(2,1) = -theta;
 
     //semilunar valve - aortic
     if (p_v_l_np < p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_max_l;
@@ -1082,23 +1082,23 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     //venous linear momentum balance - systemic
     wkstiff(7,7) = L_ven_sys/(R_ven_sys*ts_size) + theta;
     wkstiff(7,6) = -theta/R_ven_sys;
-    wkstiff(7,9) = theta/R_ven_sys;
+    wkstiff(7,8) = theta/R_ven_sys;
 
 
     //atrium - right
-    wkstiff(8,8) = theta;
+    wkstiff(8,9) = theta;
     wkstiff(8,7) = -theta;
 
     //atrioventricular valve - tricuspid
-    wkstiff(9,8) = -theta;
-    if (p_v_r_np < p_at_r_np) wkstiff(9,9) = theta/R_atvalve_min_r;
-    if (p_v_r_np >= p_at_r_np) wkstiff(9,9) = theta/R_atvalve_max_r;
+    wkstiff(9,9) = -theta;
+    if (p_v_r_np < p_at_r_np) wkstiff(9,8) = theta/R_atvalve_min_r;
+    if (p_v_r_np >= p_at_r_np) wkstiff(9,8) = theta/R_atvalve_max_r;
     if (p_v_r_np < p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_min_r;
     if (p_v_r_np >= p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_max_r;
 
     //ventricular mass balance - right
     wkstiff(10,10) = theta;
-    wkstiff(10,8) = -theta;
+    wkstiff(10,9) = -theta;
 
     //semilunar valve - pulmonary
     if (p_v_r_np < p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_max_r;
@@ -1126,7 +1126,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     //venous linear momentum balance - pulmonary
     wkstiff(15,15) = L_ven_pul/(R_ven_pul*ts_size) + theta;
     wkstiff(15,14) = -theta/R_ven_pul;
-    wkstiff(15,1) = theta/R_ven_pul;
+    wkstiff(15,0) = theta/R_ven_pul;
 
 
     sysmat1->UnComplete();
@@ -1481,8 +1481,8 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
             const std::string* conditiontype = cardiovascular0dcond_[j]->Get<std::string>("type");
             if (*conditiontype == "ventricle_left") colvec[0]=gindex_syspulcoupled[3];
             if (*conditiontype == "ventricle_right") colvec[0]=gindex_syspulcoupled[11];
-            if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulcoupled[1];
-            if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulcoupled[9];
+            if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulcoupled[0];
+            if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulcoupled[8];
           }
         }
       }
@@ -1742,16 +1742,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
   const double p_ven_pul_0 = artvensyspulpar.get("p_ven_pul_0",0.0);
   const double q_ven_pul_0 = artvensyspulpar.get("q_ven_pul_0",0.0);
 
-  int err1 = sysvec2->SumIntoGlobalValues(1,&q_v_in_l_0,&gindex[0]);
-  int err2 = sysvec2->SumIntoGlobalValues(1,&p_at_l_0,&gindex[1]);
+  int err1 = sysvec2->SumIntoGlobalValues(1,&q_v_in_l_0,&gindex[1]);
+  int err2 = sysvec2->SumIntoGlobalValues(1,&p_at_l_0,&gindex[0]);
   int err3 = sysvec2->SumIntoGlobalValues(1,&q_v_out_l_0,&gindex[2]);
   int err4 = sysvec2->SumIntoGlobalValues(1,&p_v_l_0,&gindex[3]);
   int err5 = sysvec2->SumIntoGlobalValues(1,&p_ar_sys_0,&gindex[4]);
   int err6 = sysvec2->SumIntoGlobalValues(1,&q_ar_sys_0,&gindex[5]);
   int err7 = sysvec2->SumIntoGlobalValues(1,&p_ven_sys_0,&gindex[6]);
   int err8 = sysvec2->SumIntoGlobalValues(1,&q_ven_sys_0,&gindex[7]);
-  int err9 = sysvec2->SumIntoGlobalValues(1,&q_v_in_r_0,&gindex[8]);
-  int err10 = sysvec2->SumIntoGlobalValues(1,&p_at_r_0,&gindex[9]);
+  int err9 = sysvec2->SumIntoGlobalValues(1,&q_v_in_r_0,&gindex[9]);
+  int err10 = sysvec2->SumIntoGlobalValues(1,&p_at_r_0,&gindex[8]);
   int err11 = sysvec2->SumIntoGlobalValues(1,&q_v_out_r_0,&gindex[10]);
   int err12 = sysvec2->SumIntoGlobalValues(1,&p_v_r_0,&gindex[11]);
   int err13 = sysvec2->SumIntoGlobalValues(1,&p_ar_pul_0,&gindex[12]);

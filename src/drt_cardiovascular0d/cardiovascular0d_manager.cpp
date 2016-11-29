@@ -459,8 +459,8 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
               cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition()[j]->Get<std::string>("type");
           if (*conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (*conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
-          if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[1];
-          if (*conditiontype == "atrium_right") newval[0] = -(*actpres)[9];
+          if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
+          if (*conditiontype == "atrium_right") newval[0] = -(*actpres)[8];
         }
       }
     }
@@ -556,8 +556,8 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
 
     if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
     {
-      printf("q_vin_l: %10.16e \n",(*cv0ddof_m_red)[0]);
-      printf("p_at_l: %10.16e \n",(*cv0ddof_m_red)[1]);
+      printf("p_at_l: %10.16e \n",(*cv0ddof_m_red)[0]);
+      printf("q_vin_l: %10.16e \n",(*cv0ddof_m_red)[1]);
       printf("q_vout_l: %10.16e \n",(*cv0ddof_m_red)[2]);
       printf("p_v_l: %10.16e \n",(*cv0ddof_m_red)[3]);
       printf("p_ar_sys: %10.16e \n",(*cv0ddof_m_red)[4]);
@@ -565,8 +565,8 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
       printf("p_ven_sys: %10.16e \n",(*cv0ddof_m_red)[6]);
       printf("q_ven_sys: %10.16e \n",(*cv0ddof_m_red)[7]);
       printf("V_v_l: %10.16e \n",(*v_m_red)[2]);
-      printf("q_vin_r: %10.16e \n",(*cv0ddof_m_red)[8]);
-      printf("p_at_r: %10.16e \n",(*cv0ddof_m_red)[9]);
+      printf("p_at_r: %10.16e \n",(*cv0ddof_m_red)[8]);
+      printf("q_vin_r: %10.16e \n",(*cv0ddof_m_red)[9]);
       printf("q_vout_r: %10.16e \n",(*cv0ddof_m_red)[10]);
       printf("p_v_r: %10.16e \n",(*cv0ddof_m_red)[11]);
       printf("p_ar_pul: %10.16e \n",(*cv0ddof_m_red)[12]);
