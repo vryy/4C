@@ -52,6 +52,7 @@ PENALTY_START                   250.0
 ECM_FIBER_RADIUS                3.5
 -------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
+INT_STRATEGY                    Standard
 TOLDISP                         1e-06
 NORM_DISP                       Abs
 TOLRES                          1e-06
@@ -180,6 +181,17 @@ YOUNG_IS_TEMP_DEPENDENT         No
 GEOMETRY                        full
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   2

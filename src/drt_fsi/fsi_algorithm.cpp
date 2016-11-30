@@ -61,7 +61,6 @@ void FSI::Algorithm::Setup()
 
   // build and register fsi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> fsi_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedFSI());
-  fsidyn.set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",fsi_model_ptr);
 
   // todo FIX THIS !!!!
   // Decide whether to use old structural time integration or new structural time integration.
@@ -76,6 +75,7 @@ void FSI::Algorithm::Setup()
   {
     adapterbase_ptr_= ADAPTER::STR::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model",fsi_model_ptr);
     adapterbase_ptr_->Setup();
     structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(adapterbase_ptr_->StructureField());
 

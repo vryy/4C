@@ -18,10 +18,13 @@
 #define FSI_STRUCTURE_WRAPPER_IMMERSED_H
 
 #include "ad_str_fpsiwrapper.H"
+#include "../drt_structure_new/str_dbc.H"
 
 // forward declarations
 namespace STR
 {
+  class Dbc;
+
   namespace AUX
   {
     class MapExtractor;
@@ -60,6 +63,20 @@ namespace ADAPTER
     /// until new structure is plugged to cell migration
     void ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                                              Teuchos::RCP<Epetra_Vector> iforce_immersed);
+
+    /// Get mutable reference to DBC object
+    STR::Dbc& GetMutableDBC();
+
+    /// expand dirichlet bc map
+    void AddDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    /// contract dirichlet bc map
+    void RemoveDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+    /// set the state of the nox group and the global state data container
+    void SetState(const Teuchos::RCP<Epetra_Vector>& x);
 
     /// @name Apply interface forces
 

@@ -20,6 +20,7 @@
 
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -57,7 +58,13 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
 
   // get pointer to cell structure
-  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
+  Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
+      params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
+
+  if(multiphysicswrapper == Teuchos::null)
+    dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
+
+  cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");

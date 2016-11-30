@@ -19,8 +19,7 @@
 #include "../drt_poroelast/poro_scatra_base.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-
-
+#include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
 
 
 IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
@@ -39,10 +38,22 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const T
   currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
 
   // get pointer to cell structure
-  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
+  Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
+      params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
+
+  if(multiphysicswrapper == Teuchos::null)
+    dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
+
+  cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
+
+  // create instance of poroelast subproblem
+  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
+
+  // set pointer to poro fpsi structure
+  porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
 
   // check object pointers
   if(fluid_SearchTree_==Teuchos::null)
@@ -81,13 +92,6 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const T
     std::cout<<"\n Coupling variable for partitioned Cell-ECM Confinement scheme :  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
     std::cout<<"\n Coupling variable for partitioned Cell-ECM Confinement scheme :  Force "<<std::endl;
-
-  // get pointer to cell structure
-  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
-  // create instance of poroelast subproblem
-  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
-  // set pointer to poro fpsi structure
-  porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
 
   // vector of penalty traction on cell bdry int points integrated over cell surface
   cell_penalty_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));

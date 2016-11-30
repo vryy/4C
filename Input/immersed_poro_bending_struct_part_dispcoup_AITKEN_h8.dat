@@ -55,6 +55,7 @@ PENALTY_START                   1000
 -------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
+INT_STRATEGY                    Standard
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -105,6 +106,17 @@ NLNSOL                          fullnewton
 DAMPING                         Material // mandatory for poro!
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ------------------------------------------------------POROELASTICITY DYNAMIC
 LINEAR_SOLVER                   2
 COUPALGO                        poro_monolithic

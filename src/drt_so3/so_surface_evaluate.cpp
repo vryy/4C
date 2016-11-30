@@ -1820,15 +1820,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     }
 
-//    // DEBUG output
-//    for(int lm_it=0;lm_it<lm.size();lm_it++)
-//    {
-//      if(lm[lm_it]>80231 and lm[lm_it]<80244)
-//      {
-//        std::cout<<"PROC "<<backgrddis->Comm().MyPID()<<": Bdry Ele with GID="<<this->Id()<<" owner="<<this->Owner()<<"peleid="<<this->ParentElementId()<<" peleowner="<<this->ParentElement()->Owner()<<" has dof="<<lm[lm_it]<<" at pos of node 0=["<<xcurr(0,0)<<" "<<xcurr(1,0)<<" "<<xcurr(2,0)<<"]"<<std::endl;
-//      }
-//    }
-
     // get coordinates of gauss points w.r.t. local parent coordinate system
     LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad,globdim);
     Epetra_SerialDenseMatrix derivtrafo(3,3);

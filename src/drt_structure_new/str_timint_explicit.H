@@ -47,6 +47,9 @@ namespace TIMINT {
     //!  Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
+    /// set the state of the nox group and the global state data container
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x);
+
     /*! Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have
      *  been set. */

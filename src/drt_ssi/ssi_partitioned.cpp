@@ -47,13 +47,14 @@ int SSI::SSI_Part::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
   returnvar =
-      SSI::SSI_Base::Init(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname);
+      SSI::SSI_Base::Init(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname,isAle);
 
   return returnvar;
 }

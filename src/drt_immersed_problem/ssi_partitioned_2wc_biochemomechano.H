@@ -49,7 +49,7 @@ namespace SSI
     virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
 
     /*!
-    \brief Setup this object
+    \brief Initialize this object
 
      Initializes members and performs problem specific setup.
 
@@ -61,15 +61,18 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
-    //! special setup entry method for this class
-    bool Init(const Epetra_Comm& comm,
+    //! special init entry method for this class
+    bool Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& params,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
@@ -77,7 +80,7 @@ namespace SSI
         const std::string struct_disname,
         const std::string scatra_disname);
 
-    //! initializ this class
+    //! setup this class
     virtual void Setup();
 
 

@@ -24,6 +24,9 @@ namespace Teuchos{
   class ParameterList;
 } // namespace Teuchos
 namespace STR{
+namespace MODELEVALUATOR{
+  class Generic;
+} // namespace MODELEVALUATOR
 namespace TIMINT{
   class Base;
 } // namespace TIMINT
@@ -518,10 +521,19 @@ namespace ADAPTER {
     /// setup
     virtual void Setup();
 
+    /** \brief Register an externally created model evaluator.
+     *
+     *  This can be used e.g. by coupled problems.
+     *
+     *  \date 11/16 */
+    void RegisterModelEvaluator(
+        const std::string name,
+        Teuchos::RCP< ::STR::MODELEVALUATOR::Generic> me );
+
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return str_wrapper_; }
 
-  protected:
+  public:
 
     inline const bool& IsInit() const { return isinit_; };
 

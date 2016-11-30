@@ -255,6 +255,13 @@ int STR::TIMINT::LOCAContinuation::IntegrateStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::LOCAContinuation::SetState(const Teuchos::RCP<Epetra_Vector> & x)
+{
+  dserror("Not supported!");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::LOCAContinuation::Solve()
 {
   CheckInitSetup();

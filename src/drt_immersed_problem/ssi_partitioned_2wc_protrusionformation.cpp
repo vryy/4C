@@ -18,6 +18,7 @@
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
@@ -44,7 +45,8 @@
 /*----------------------------------------------------------------------*
  | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epetra_Comm& comm,
+SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams)
 : SSI_Part2WC(comm, globaltimeparams),
   omega_(-1.0),
@@ -68,13 +70,14 @@ int SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
   returnvar =
-      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname, isAle);
 
   // check if scatra in cell is set up with ale description
   if(not ScaTraField()->ScaTraField()->IsALE())
@@ -95,7 +98,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   // initialize pointer to structure
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+    dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->SSIControlParams(), DRT::Problem::Instance()->GetDis("ale")));

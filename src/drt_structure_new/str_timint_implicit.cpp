@@ -26,6 +26,8 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
+#include <NOX_Abstract_Group.H>
+
 // factories
 #include "str_predict_factory.H"
 #include "str_nln_solver_factory.H"
@@ -88,6 +90,15 @@ void STR::TIMINT::Implicit::Setup()
   issetup_ = true;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector> & x)
+{
+  IntegratorPtr()->SetState(*x);
+  NOX::Epetra::Vector x_nox(x, NOX::Epetra::Vector::CreateView);
+  NlnSolver().SolutionGroup().setX(x_nox);
 }
 
 /*----------------------------------------------------------------------------*

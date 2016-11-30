@@ -17,6 +17,7 @@
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -43,13 +44,14 @@ int SSI::SSI_Part1WC::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
   returnvar =
-      SSI::SSI_Part::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+      SSI::SSI_Part::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname,isAle);
 
   return returnvar;
 }
@@ -177,12 +179,13 @@ int SSI::SSI_Part1WC_SolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
-  returnvar = SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+  returnvar = SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname,isAle);
 
   //do some checks
   {
@@ -237,18 +240,20 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part1WC_ScatraToSolid::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part1WC_ScatraToSolid::Init(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
   returnvar =
-      SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname);
+      SSI::SSI_Part1WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname,isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");

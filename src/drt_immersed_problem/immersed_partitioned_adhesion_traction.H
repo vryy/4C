@@ -235,16 +235,16 @@ private:
                               };
 
   /// get immersed nodes and determine their dofs
-  void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
-                              Teuchos::RCP<Epetra_Map>& dirichmap,
-                              const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
-                              int dofsetnum);
+  void BuildImmersedDirichMap(
+      Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<const Epetra_Map>& dirichmap_orig,
+      Teuchos::RCP<Epetra_Map>& dirichmap,
+      std::map<int, int>& adh_nod_backgrd_ele_mapping);
 
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
                                Teuchos::RCP<Epetra_Vector> dirichvals,
                                Teuchos::RCP<const Epetra_Map> dbcmap);
-
 
   /// reset immersed information like e.g.: IsImmersed()
   void ResetImmersedInformation();

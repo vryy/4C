@@ -31,7 +31,7 @@ public:
   virtual ~SSI_Part(){};
 
   /*!
-  \brief Setup this object
+  \brief Initialize this object
 
    Initializes members and performs problem specific setup.
 
@@ -43,15 +43,17 @@ public:
   \date 08/16
   \author rauch
   */
-  virtual int Init(const Epetra_Comm& comm,
+  virtual int Init(
+      const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
       const std::string struct_disname,
-      const std::string scatra_disname);
+      const std::string scatra_disname,
+      bool isAle);
 
   /*!
-  \brief Init vectors and pointers
+  \brief Setup vectors and pointers
 
    Initializes members.
 

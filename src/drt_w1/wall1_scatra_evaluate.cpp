@@ -1,11 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file wall1_scatra_evaluate.H
+ \file wall1_scatra_evaluate.cpp
 
- \brief
+ \brief wall1 scatra evaluate
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+ \level 2
+
+ </pre>
+
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -17,6 +20,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_mat/material.H"
+
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
@@ -102,14 +107,22 @@ int DRT::ELEMENTS::Wall1_Scatra::Evaluate(Teuchos::ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  // start with "none"
-  Wall1::ActionType act = Wall1::calc_none;
+  SetParamsInterfacePtr(params);
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
- // else if (action=="calc_struct_multidofsetcoupling")   act = Wall1_Scatra::calc_struct_multidofsetcoupling;
-  else if (action=="postprocess_stress")   act = Wall1::postprocess_stress;
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="postprocess_stress")   act = ELEMENTS::struct_postprocess_stress;
+  }
 
   // what should the element do
   switch(act)

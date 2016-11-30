@@ -51,6 +51,7 @@ SOLVER                          UMFPACK
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
+INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.0
 M_DAMP                          0.0

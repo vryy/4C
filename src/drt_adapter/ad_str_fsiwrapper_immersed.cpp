@@ -20,6 +20,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure/stru_aux.H"
+#include "../drt_structure_new/str_timint_base.H"
+#include "../drt_structure_new/str_timint_implicit.H"
 
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
@@ -34,7 +36,7 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   // immersed_ale fsi part
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  vecSpaces.push_back(interface_->FSICondMap()); // fsi
+  vecSpaces.push_back(interface_->FSICondMap());      // fsi
   vecSpaces.push_back(interface_->IMMERSEDCondMap()); // immersed
 
   combinedmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -43,7 +45,10 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   LINALG::MultiMapExtractor blockrowdofmap;
   blockrowdofmap.Setup(*combinedmap_, vecSpaces);
 
-  combinedinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*combinedmap_,interface_->FSICondMap(),interface_->IMMERSEDCondMap()));
+  combinedinterface_ =
+      Teuchos::rcp(new LINALG::MapExtractor(
+          *combinedmap_,interface_->FSICondMap(),
+          interface_->IMMERSEDCondMap()) );
 }
 
 /*----------------------------------------------------------------------*/
@@ -268,4 +273,34 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(bool forced_writerestart, cons
       structure_->DiscWriter()->WriteVector("acceleration", structure_->Accnp());
     }
   } // write extra output
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetMutableDBC()
+{
+  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_,true)->GetMutableDBC();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  GetMutableDBC().AddDirichDofs(maptoremove);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapperImmersed::RemoveDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  GetMutableDBC().RemoveDirichDofs(maptoremove);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapperImmersed::SetState(const Teuchos::RCP<Epetra_Vector>& x)
+{
+  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_,true)->SetState(x);
 }

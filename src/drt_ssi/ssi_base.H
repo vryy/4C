@@ -26,9 +26,11 @@
 
 namespace ADAPTER
 {
-  class ScaTraBaseAlgorithm;
   class Structure;
   class ScaTraTimIntImpl;
+  class SSIStructureWrapper;
+  class ScaTraBaseAlgorithm;
+  class StructureBaseAlgorithmNew;
 }
 
 namespace SSI
@@ -54,6 +56,26 @@ namespace SSI
 
     /// virtual destructor
     virtual ~SSI_Base(){};
+
+    /*! \brief Allows to set structure adapter base from outside (multiphysics).
+     *
+    \date 11/16
+    \author rauch  */
+    virtual void SetStructureAdapterBase(
+        Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr);
+
+    /*! \brief Allows to set structure wrapper from outside (multiphysics).
+     *
+     *  In case of multiphysics it is not always possible to make a problem type
+     *  based unique decision for a special structure wrapper. The wrapper is
+     *  constructed in \ref ADAPTER::StructureBaseAlgorithmNew::CreateWrapper .
+     *  In case of e.g. cell migration (prb_immersed_cell), we need more than
+     *  one type of wrapper
+     *
+    \date 11/16
+    \author rauch  */
+    virtual void SetStructureWrapper(
+        Teuchos::RCP<ADAPTER::Structure> struct_adapterbase_ptr);
 
     /*! \brief Initialize this object
 
@@ -81,7 +103,8 @@ namespace SSI
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname) = 0;
+        const std::string scatra_disname,
+        bool isAle) = 0;
 
     /*! \brief Setup all class internal objects and members
 
@@ -142,7 +165,7 @@ namespace SSI
     void ReadRestartfromTime( double restarttime );
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField() const {return structure_;};
+    const Teuchos::RCP< ::ADAPTER::SSIStructureWrapper>& StructureField() const {return structure_;};
 
     //! access to scatra field
     const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField() const {return scatra_;};
@@ -162,10 +185,13 @@ namespace SSI
     /// interpolate scatra quantity to a structure one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> ScatraToStructure(const Teuchos::RCP<const Epetra_Vector> scatravector) const;
 
-    /// underlying structure of the SSI problem
-    Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+    /// ptr to the underlying structure problem base algorithm
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
-    /// underlying scatra problem of the SSI problem
+    /// ptr to underlying structure
+    Teuchos::RCP< ::ADAPTER::SSIStructureWrapper> structure_;
+
+    /// ptr underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
   private:
@@ -178,6 +204,12 @@ namespace SSI
 
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
+
+
+  protected:
+    //! Temporary flag to indicate whether old strutural time integration is used.
+    //! todo Remove as soon as structural elements are adapted to new structure.
+    bool use_old_structure_;
 
   private:
 
@@ -198,15 +230,13 @@ namespace SSI
     //! flag indicating if class is initialized
     bool isinit_;
 
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+
   protected:
-
-    //! returns true if Setup() was called and is still valid
-    bool IsSetup()
-    {return issetup_;};
-
-    //! returns true if Init(..) was called and is still valid
-    bool IsInit()
-    {return isinit_;};
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
@@ -218,12 +248,13 @@ namespace SSI
 
   public:
 
-    //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup()
+    {return issetup_;};
 
-    //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
-
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit()
+    {return isinit_;};
 
   }; //SSI_Base
 

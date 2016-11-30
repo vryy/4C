@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_adhesion_traction.cpp
-\level 2
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
+\level 2
+
 \maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
 
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_adhesion_traction.H"
@@ -15,7 +13,10 @@
 #include "../drt_structure/stru_aux.H"
 #include "../drt_poroelast/poro_scatra_base.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_structure_new/str_dbc.H"
+#include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
@@ -38,7 +39,13 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
 
   // get pointer to cell structure
-  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
+  Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
+      params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
+
+  if(multiphysicswrapper == Teuchos::null)
+    dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
+
+  cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
@@ -162,7 +169,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
-    //PrepareImmersedOp();
     Teuchos::RCP<Epetra_Vector> idispnp =
         ImmersedOp(Teuchos::null, fillFlag);
 
@@ -185,7 +191,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
-    //PrepareImmersedOp();
     ImmersedOp(Teuchos::null, fillFlag);
 
     int err = F.Update(1.0, *Freact_cell_, -1.0, *cell_reactforcen, 0.0);
@@ -268,7 +273,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
-                                                       const FillType fillFlag)
+                                                          const FillType fillFlag)
 {
   IMMERSED::ImmersedPartitioned::ImmersedOp(bdry_traction,fillFlag);
 
@@ -279,12 +284,23 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
   }
   else
   {
-    if(IterationCounter()[0]>1)
-      cellstructure_->PreparePartitionStep();
-
     // prescribe dirichlet values at cell adhesion nodes
     CalcAdhesionDisplacements();
-    DoImmersedDirichletCond(cellstructure_->WriteAccessDispnp(),cell_adhesion_disp_, cellstructure_->GetDBCMapExtractor()->CondMap());
+    Teuchos::RCP<Epetra_Map> dirichmap_immersed;
+    Teuchos::RCP<const Epetra_Map> dirichmap_original = cellstructure_->GetDBCMapExtractor()->CondMap();
+
+    // build map of immersed adhesion nodes to be subjected to dirichlet conditions
+    BuildImmersedDirichMap(immerseddis_,dirichmap_original,dirichmap_immersed,adh_nod_backgrd_ele_mapping_);
+    // add adhesion dofs to dbc map
+    cellstructure_->AddDirichDofs(dirichmap_immersed);
+    // write dirichlet values to displacement vector
+    DoImmersedDirichletCond(
+        cellstructure_->WriteAccessDispnp(),
+        cell_adhesion_disp_,
+        cellstructure_->GetDBCMapExtractor()->CondMap());
+
+    // set state in nox and gobal state object
+    cellstructure_->SetState(cellstructure_->WriteAccessDispnp());
 
      //solve cell
     if (Comm().MyPID()==0)
@@ -292,6 +308,9 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
       std::cout<<"\n****************************************\n          ADHESION FORMATION\n****************************************\n";
     }
     cellscatra_subproblem_->OuterLoop();
+
+    // remove dirichlet conditions from current adhesion nodes (set may change)
+    cellstructure_->RemoveDirichDofs(dirichmap_immersed);
 
     return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
@@ -814,37 +833,30 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedAdhesionTraction::BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
-                                                                        Teuchos::RCP<Epetra_Map>& dirichmap,
-                                                                        const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
-                                                                        int dofsetnum)
+void IMMERSED::ImmersedPartitionedAdhesionTraction::BuildImmersedDirichMap(
+    Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<const Epetra_Map>& dirichmap_orig,
+    Teuchos::RCP<Epetra_Map>& dirichmap,
+    std::map<int, int>& adh_nod_backgrd_ele_mapping)
 {
-  const Epetra_Map* elerowmap = dis->ElementRowMap();
+  std::map<int, int>::iterator iter;
   std::vector<int> mydirichdofs(0);
 
-  for(int i=0; i<elerowmap->NumMyElements(); ++i)
+  for(iter=adh_nod_backgrd_ele_mapping.begin(); iter!=adh_nod_backgrd_ele_mapping.end(); iter++)
   {
-    // dynamic_cast necessary because virtual inheritance needs runtime information
-    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elerowmap->GID(i)));
-    if(immersedele->HasProjectedDirichlet())
+    DRT::Node* node = dis->gNode(iter->first);
+    if(node==NULL)
+      dserror("Could not get node with id %d from discretization %s",iter->first,dis->Name());
+
+    std::vector<int> dofs = dis->Dof(0,node);
+
+    for (int dim=0;dim<3;++dim)
     {
-      DRT::Node** nodes = immersedele->Nodes();
-      for (int inode=0; inode<(immersedele->NumNode()); inode++)
-      {
-        if(static_cast<IMMERSED::ImmersedNode* >(nodes[inode])->IsMatched() and nodes[inode]->Owner()==myrank_)
-        {
-          std::vector<int> dofs = dis->Dof(dofsetnum,nodes[inode]);
-
-          for (int dim=0;dim<3;++dim)
-          {
-            if(dirichmap_original->LID(dofs[dim]) == -1) // if not already in original dirich map
-              mydirichdofs.push_back(dofs[dim]);
-          }
-
-        }
-      }
+      // if not already in original dirich map
+      if(dirichmap_orig->LID(dofs[dim]) == -1)
+        mydirichdofs.push_back(dofs[dim]);
     }
-  }
+  } // for all nodes in provided map
 
   int nummydirichvals = mydirichdofs.size();
   dirichmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
@@ -855,7 +867,10 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BuildImmersedDirichMap(Teuch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<const Epetra_Map> dbcmap)
+void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(
+    Teuchos::RCP<Epetra_Vector> statevector,
+    Teuchos::RCP<Epetra_Vector> dirichvals,
+    Teuchos::RCP<const Epetra_Map> dbcmap)
 {
   int mynumvals = dbcmap->NumMyElements();
   double* myvals = dirichvals->Values();
@@ -882,7 +897,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(Teuc
 #endif
 
   }
-
   return;
 }
 

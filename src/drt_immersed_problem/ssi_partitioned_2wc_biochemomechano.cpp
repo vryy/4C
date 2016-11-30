@@ -20,6 +20,7 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
@@ -46,27 +47,30 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
 /*----------------------------------------------------------------------*
  | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
+int SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
-    const std::string scatra_disname)
+    const std::string scatra_disname,
+    bool isAle)
 {
   int returnvar=0;
 
   // call setup of base class
   returnvar =
-      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+      SSI::SSI_Part2WC::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname,isAle);
 
   return returnvar;
 }
 
 
 /*----------------------------------------------------------------------*
- | Setup this specific object                               rauch 08/16 |
+ | Initialize this specific object                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
+bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
@@ -78,7 +82,7 @@ bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(const Epetra_Comm& comm,
 
   // call standard setup
   returnvar =
-      Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname);
+      Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname,true);
 
   // get pointer poroelast-scatra interaction subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");

@@ -21,6 +21,7 @@
 
 // forward declaration ...
 class Epetra_Vector;
+class Epetra_Map;
 namespace DRT {
   class Discretization;
 namespace UTILS {
@@ -101,6 +102,14 @@ namespace TIMINT {
     const Epetra_Vector& GetZeros() const;
     Teuchos::RCP<const Epetra_Vector> GetZerosPtr() const;
     //!@}
+
+    //! Allows to expand dbc map with provided maptoadd
+    void AddDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    //! Allows to contract dbc map with provided maptoremove
+    void RemoveDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoremove);
 
   protected:
     //! Returns the initialization status

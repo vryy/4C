@@ -476,6 +476,7 @@ namespace ADAPTER {
     /// In partitioned solution schemes, it is better to keep the current
     /// solution instead of evaluating the initial guess (as the predictor)
     /// does.
+    //! will be obsolete after switch to new structural timint.
     virtual void PreparePartitionStep() = 0;
 
     //@}

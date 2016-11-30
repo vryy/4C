@@ -422,6 +422,32 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
   return zeros_ptr_;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::Dbc::AddDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(dbcmap_ptr_->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmap_ptr_ = LINALG::MapExtractor(*(discret_ptr_->DofRowMap()), condmerged);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::Dbc::RemoveDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(maptoremove);
+  othermaps.push_back(dbcmap_ptr_->OtherMap());
+  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmap_ptr_ = LINALG::MapExtractor(*(discret_ptr_->DofRowMap()), othermerged, false);
+  return;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::LinSystem::PrePostOp::Dbc::Dbc(
@@ -447,4 +473,3 @@ void NOX::NLN::LinSystem::PrePostOp::Dbc::runPreApplyJacobianInverse(
   // apply the dirichlet condition and rotate the system if desired
   dbc_ptr_->ApplyDirichletToLocalSystem(jac_ptr,rhs_ptr);
 }
-

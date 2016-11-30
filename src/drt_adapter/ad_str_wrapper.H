@@ -399,6 +399,7 @@ namespace ADAPTER
     { structure_->SetForceInterface(iforce); }
 
     //! specific method for iterative staggered partitioned TSI
+    //! will be obsolete after switch to new structural timint.
     virtual void PreparePartitionStep()
     { structure_->PreparePartitionStep(); }
 

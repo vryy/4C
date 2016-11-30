@@ -697,6 +697,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_redairway.cpp
   src/drt_adapter/ad_str_timint_adaptive.cpp
   src/drt_adapter/ad_str_wrapper.cpp
+  src/drt_adapter/ad_str_ssiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
@@ -716,6 +717,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
   src/drt_adapter/ad_porofluidmultiphase.cpp
+  src/drt_adapter/ad_str_multiphysicswrapper_cellmigration.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
@@ -1737,6 +1739,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_browniandyn.cpp
   src/drt_structure_new/str_model_evaluator_crosslinking.cpp
   src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
+  src/drt_structure_new/str_model_evaluator_multiphysics.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -2342,6 +2345,7 @@ src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp
 src/drt_ssi/ssi_utils.cpp
+src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 )
 
 set(OBJS_DRT_IMMERSED_LIB
@@ -2349,6 +2353,7 @@ src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
+src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM

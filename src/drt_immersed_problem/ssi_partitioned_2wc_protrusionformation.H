@@ -103,7 +103,7 @@ public:
   virtual ~SSI_Part2WC_PROTRUSIONFORMATION(){};
 
   /*!
-  \brief Setup this object
+  \brief Initialize this object
 
    Initializes members and performs problem specific setup.
 
@@ -120,12 +120,11 @@ public:
       const Teuchos::ParameterList& scatraparams,
       const Teuchos::ParameterList& structparams,
       const std::string struct_disname,
-      const std::string scatra_disname);
+      const std::string scatra_disname,
+      bool isAle);
 
   /*!
-  \brief Init vectors and pointers
-
-   Initializes members.
+  \brief Setup vectors and pointers
 
   \note Must only be called after parallel (re-)distribution of discretizations is finished !
         Otherwise, vectors may have wrong maps.

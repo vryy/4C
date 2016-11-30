@@ -69,6 +69,15 @@ void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector> & x)
+{
+  dserror("All coupled problems work with implicit time "
+      "integration schemes. Thus, calling SetState() in an explicit scheme "
+      "is not possible.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
 {
   CheckInitSetup();

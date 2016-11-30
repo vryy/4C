@@ -27,44 +27,58 @@
 #include "immersed_partitioned_protrusion_formation.H"
 #include "immersed_partitioned_flow_cell_interaction.H"
 #include "immersed_partitioned_fsi_dirichletneumann_ale.H"
+#include "str_model_evaluator_multiphysics_cellmigration.H"
 
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_inpar/inpar_immersed.H"
 #include "../drt_inpar/inpar_cell.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_heterogeneous_reaction_strategy.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_dofset_merged_proxy.H"
+
 
 
 void immersed_problem_drt()
 {
+  ///////////////////////////////////////////////////////////////////////
+  // General declarations and variables
+  ///////////////////////////////////////////////////////////////////////
+  // declare general ParameterList that can be handed into Algorithm
+  Teuchos::ParameterList params;
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
   // get communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Get Parameters
+  ///////////////////////////////////////////////////////////////////////
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
   // choose algorithm
   int coupling = DRT::INPUT::IntegralValue<int>(immersedmethodparams,"COUPALGO");
   int scheme   = DRT::INPUT::IntegralValue<int>(immersedmethodparams,"SCHEME");
-  // declare general ParameterList that can be handed into Algorithm
-  Teuchos::ParameterList params;
 
 
+  ///////////////////////////////////////////////////////////////////////
+  // Query algorithms
+  ///////////////////////////////////////////////////////////////////////
   switch (coupling)
   {
   case INPAR::IMMERSED::partitioned:
@@ -74,8 +88,8 @@ void immersed_problem_drt()
     case prb_immersed_fsi:
     {
       // fill discretizations
-      problem->GetDis("structure")->FillComplete();
-      problem->GetDis("fluid")    ->FillComplete();
+      problem->GetDis("structure")->FillComplete(false,false,false);
+      problem->GetDis("fluid")    ->FillComplete(false,false,false);
 
       // SAFETY FIRST
       {
@@ -148,12 +162,13 @@ void immersed_problem_drt()
 
       break;
     }// case prb_immersed_fsi
+
     case prb_immersed_ale_fsi:
     {
       // fill discretizations
-      problem->GetDis("structure")->FillComplete();
-      problem->GetDis("fluid")    ->FillComplete();
-      problem->GetDis("ale")      ->FillComplete();
+      problem->GetDis("structure")->FillComplete(false,false,false);
+      problem->GetDis("fluid")    ->FillComplete(false,false,false);
+      problem->GetDis("ale")      ->FillComplete(false,false,false);
 
       // SAFETY FIRST
       {
@@ -247,12 +262,14 @@ void immersed_problem_drt()
 
       break;
     }// case prb_immersed_fsi
+
     case prb_immersed_cell:
     {
       CellMigrationControlAlgorithm();
 
       break;
     }// case prb_cell_migration
+
     default:
     {
       dserror("no valid problem type specified");
@@ -277,28 +294,46 @@ void immersed_problem_drt()
 /*----------------------------------------------------------------------*/
 void CellMigrationControlAlgorithm()
 {
+  ///////////////////////////////////////////////////////////////////////
+  // General declarations and variables
+  ///////////////////////////////////////////////////////////////////////
+  // declare general ParameterList that can be handed into Algorithm
+  Teuchos::ParameterList params;
+  // declare pointer to field cell structure
+  Teuchos::RCP< ::ADAPTER::MultiphysicsStructureWrapperCellMigration>
+      cellstructure = Teuchos::null;
+  // declare model evaluator
+  Teuchos::RCP<STR::MODELEVALUATOR::CellMigration>
+      multiphysics_model_evaluator_cellmigration = Teuchos::null;
+  // declare pointer to cell subproblem (structure-scatra interaction)
+  Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
+
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
-
   // get communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
+  ///////////////////////////////////////////////////////////////////////
+  // Get Parameters
+  ///////////////////////////////////////////////////////////////////////
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
-
-  // declare general ParameterList that can be handed into Algorithm
-  Teuchos::ParameterList params;
-
-  // get parameterlist for cell migration
+  // get parameter list for cell migration
   const Teuchos::ParameterList& cellmigrationparams = problem->CellMigrationParams();
-
+  // get parameter list for cell structure
+  const Teuchos::ParameterList& cellstructureparams = cellmigrationparams.sublist("STRUCTURAL DYNAMIC");
   // extract the simulation type
   int simtype = DRT::INPUT::IntegralValue<int>(cellmigrationparams,"SIMTYPE");
+  // decides if cell is constructed as pure structure or SSI algorithm
+  bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
 
   // use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
   POROELAST::UTILS::SetupPoroScatraDiscretizations
   <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
 
+  ///////////////////////////////////////////////////////////////////////
+  // Safety check
+  ///////////////////////////////////////////////////////////////////////
   {
     // check if INODE is defined in input file
     int gid = problem->GetDis("porofluid")->ElementRowMap()->GID(0);
@@ -313,24 +348,57 @@ void CellMigrationControlAlgorithm()
     }
   }
 
-  // pointer to field cell structure
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure = Teuchos::null;
-
-  // pointer to cell subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
-
-  // assign degrees of freedom, initialize elements and do boundary conditions on cell
+  ///////////////////////////////////////////////////////////////////////
+  // Initial FillComplete() just creates basic connectivity
+  ///////////////////////////////////////////////////////////////////////
   problem->GetDis("cell")->FillComplete(false,false,false);
   problem->GetDis("cellscatra")->FillComplete(false,false,false);
 
-  // check if cell is supposed to have intracellular biochchemical signaling capabilities
-  bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Construct the cell structure
+  ///////////////////////////////////////////////////////////////////////
+  // construct base algorithm
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew>
+      struct_adapterbase_ptr = ADAPTER::STR::BuildStructureAlgorithm(cellstructureparams);
+  // initialize structure base algorithm
+  struct_adapterbase_ptr->Init(
+      cellmigrationparams,
+      const_cast<Teuchos::ParameterList&>(cellstructureparams),
+      problem->GetDis("cell"));
+
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Construct model evaluators for cell migration
+  ///////////////////////////////////////////////////////////////////////
+  // construct model evaluator for cell migration
+  multiphysics_model_evaluator_cellmigration =
+      Teuchos::rcp(new STR::MODELEVALUATOR::CellMigration());
+
+  // register model evaluator in adapter structure base object
+  struct_adapterbase_ptr -> RegisterModelEvaluator(
+      "Partitioned Coupling Model",
+      multiphysics_model_evaluator_cellmigration );
+
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Construct cell
+  ///////////////////////////////////////////////////////////////////////
+  // check if cell is supposed to be constructed as SSI algo,
+  // i.e., with intracellular biochchemical signaling
   if(ssi_cell)
   {
+    // we need ssi with ale formulation, since our cell is a deforming domain
+    bool isale = true;
+
     // get coupling algorithm from ---SSI CONTROL section
     const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
 
+    // construct specific SSI type
     switch(coupling)
     {
     case INPAR::SSI::ssi_IterStagg:
@@ -344,26 +412,47 @@ void CellMigrationControlAlgorithm()
       break;
     }
 
+    // set the pointer to the structure base algo in SSI object
+    cellscatra_subproblem->SetStructureAdapterBase(struct_adapterbase_ptr);
+
     // It is time to call Init().
     // "ale" dis is cloned and filled inside.
     // SSI coupling object is constructed inside.
+    // Returns true if redistribution is required.
     int redistribute =
     cellscatra_subproblem->Init(comm,
         problem->CellMigrationParams(),
         problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
         problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
         "cell",
-        "cellscatra");
+        "cellscatra",
+        isale);
 
+    // Redistribute discretizations if necessary
     if(redistribute)
     {
-      DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
-          *problem->GetDis("cell"),
-          *problem->GetDis("cellscatra"));
-      DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
-          *problem->GetDis("cell"),
-          *problem->GetDis("ale"));
-    }
+      // first we bin the scatra discretization
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      dis.push_back(problem->GetDis("cellscatra"));
+      DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+
+      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+          *problem->GetDis("cellscatra"),
+          *problem->GetDis("cellscatra"),
+          "ScatraHeteroReactionMaster",
+          "ScatraHeteroReactionSlave" );
+
+      // now we redistribute the structure dis to match the scatra dis
+      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
+          *problem->GetDis("cellscatra"),
+          *problem->GetDis("cell") );
+
+      // now we redistribute the ale dis to match the scatra dis
+      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+        DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
+            *problem->GetDis("cellscatra"),
+            *problem->GetDis("ale") );
+    } // end redistribution
 
     // ghost cell discretizations on each proc (for search algorithm)
     if(comm.NumProc() > 1)
@@ -374,21 +463,38 @@ void CellMigrationControlAlgorithm()
         DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cellscatra"));
       if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
         DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("ale"));
-    }
+    } // end ghosting
+
 
     // now we call the final fill complete on our discretizations.
     // FillComplete for ale dis is called deeper in the code.
-    problem->GetDis("cell")->FillComplete(true,false,true);
-    problem->GetDis("cellscatra")->FillComplete(true,false,true);
-    problem->GetDis("ale")->FillComplete(true,false,true);
+    problem->GetDis("cell")->FillComplete(true,true,true);
+    problem->GetDis("cellscatra")->FillComplete(true,true,true);
+    problem->GetDis("ale")->FillComplete(true,true,true);
 
-    // parallel redistriution is finished. Let us call Setup()
+
+
+    // parallel redistribution is finished. Let us call Setup()
     // here all state vectors are constructed.
     // now we are sure, that all maps fit the actual distribution.
-    cellscatra_subproblem->Setup();
+    //(wrapper is created inside)
+    struct_adapterbase_ptr -> Setup();
 
-    // set pointer to adapter
-    cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField(),true);
+    // extract the problem specific wrapper
+    cellstructure =
+        Teuchos::rcp_dynamic_cast<ADAPTER::MultiphysicsStructureWrapperCellMigration>(
+            struct_adapterbase_ptr->StructureField(),true);
+    // set pointer to model evaluator in ssi specific wrapper
+    cellstructure->GetSSIStructureWrapperPtr()->
+        SetModelEvaluatorPtr(
+            Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedSSI>(
+            multiphysics_model_evaluator_cellmigration->GetModelEvaluatorFromMap(STR::MODELEVALUATOR::mt_ssi),
+            true) );
+    // set the ssi specific wrapper in SSI object
+    cellscatra_subproblem -> SetStructureWrapper(cellstructure->GetSSIStructureWrapperPtr());
+
+    // now setup cellscatra (ssi) subproblem
+    cellscatra_subproblem->Setup();
 
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
@@ -396,30 +502,53 @@ void CellMigrationControlAlgorithm()
   }
   else // cell has no intracellular biochemistry -> just create usual structure
   {
-    // construct base algorithm ( time integrator is initiaized inside)
-    cellstructure = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
-                                                                     problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
-                                                                     problem->GetDis("cell")))
-                                                              ->StructureField(),true);
+    // build and register ssi model evaluator
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
+        Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI());
 
-    cellstructure->Setup();
+    struct_adapterbase_ptr -> RegisterModelEvaluator("Partitioned Coupling Model",ssi_model_ptr);
 
-    if(comm.MyPID()==0)
-      std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
+    // setup structure (wrapper is created)
+    struct_adapterbase_ptr -> Setup();
+    cellstructure =
+        Teuchos::rcp_dynamic_cast<ADAPTER::MultiphysicsStructureWrapperCellMigration>(
+            struct_adapterbase_ptr->StructureField(),true);
+    cellscatra_subproblem -> SetStructureWrapper(cellstructure->GetSSIStructureWrapperPtr());
 
     if(comm.NumProc() > 1)
     {
       DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cell"));
       problem->GetDis("cell")->FillComplete(true,false,true);
     }
-  }
 
-  // set pointer to structure inside SSI subproblem
+    if(comm.MyPID()==0)
+      std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
+
+  } // finish construction of cell
+
+  ///////////////////////////////////////////////////////////////////////
+  // Safety check
+  ///////////////////////////////////////////////////////////////////////
   if(cellstructure==Teuchos::null)
-    dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+    dserror("dynamic cast from Structure to MultiphysicsStructureWrapperCellMigration failed");
 
+  // set pointer to model evaluator in ssi specific wrapper
+  cellstructure->GetFSIStructureWrapperPtr()->
+      SetModelEvaluatorPtr(
+          Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedFSI>(
+          multiphysics_model_evaluator_cellmigration->GetModelEvaluatorFromMap(STR::MODELEVALUATOR::mt_fsi),
+          true) );
+
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Construct the poro-scatra subproblem for the extracellular matrix
+  ///////////////////////////////////////////////////////////////////////
   // create instance of poroelast subproblem
-  Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem = POROELAST::UTILS::CreatePoroScatraAlgorithm(problem->CellMigrationParams(),comm);
+  Teuchos::RCP<POROELAST::PoroScatraBase>
+      poroscatra_subproblem = POROELAST::UTILS::CreatePoroScatraAlgorithm(
+          problem->CellMigrationParams(),
+          comm);
 
   // setup of poro monolithic algorithm
   poroscatra_subproblem->SetupSystem();
@@ -427,10 +556,12 @@ void CellMigrationControlAlgorithm()
     std::cout<<" Created Field PoroScatra ... \n"<<std::endl;
 
 
-  //////////////////////////////////////////////
-  // setup the immersed discretization
-  //////////////////////////////////////////////
-  std::map<int,LINALG::Matrix<3,1> > currpositions_cell; //!< map of vectors for search tree containing current structural positions
+
+  ///////////////////////////////////////////////////////////////////////
+  // Setup the immersed discretization
+  ///////////////////////////////////////////////////////////////////////
+  // map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> > currpositions_cell;
 
   // construct 3D search tree for cell domain
   Teuchos::RCP<GEO::SearchTree> cell_SearchTree = Teuchos::rcp(new GEO::SearchTree(5));
@@ -465,10 +596,13 @@ void CellMigrationControlAlgorithm()
     std::cout<<"\n Build Cell SearchTree ... "<<std::endl;
 
 
-  //////////////////////////////////////////////
-  // setup background discretization
-  //////////////////////////////////////////////
-  std::map<int,LINALG::Matrix<3,1> > currpositions_ECM;  //!< pointer to map of vectors for search tree containing current fluid positions
+
+  ///////////////////////////////////////////////////////////////////////
+  // Setup background discretization
+  ///////////////////////////////////////////////////////////////////////
+  // pointer to map of vectors for search tree containing current ECM positions
+  std::map<int,LINALG::Matrix<3,1> > currpositions_ECM;
+
 
   // construct 3D search tree for fluid domain
   Teuchos::RCP<GEO::SearchTree> fluid_SearchTree = Teuchos::rcp(new GEO::SearchTree(5));
@@ -495,9 +629,11 @@ void CellMigrationControlAlgorithm()
 
 
 
-  // write pointers to previously created objects into ParameterList in order to make them
-  // accessible in subproblems
-  params.set<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure",cellstructure);
+  ///////////////////////////////////////////////////////////////////////
+  // provide pointers to previously created objects to ParameterList
+  // in order to make them accessible in subproblems.
+  ///////////////////////////////////////////////////////////////////////
+  params.set<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure",cellstructure);
   params.set<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra",poroscatra_subproblem);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree",cell_SearchTree);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
@@ -505,9 +641,12 @@ void CellMigrationControlAlgorithm()
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM",&currpositions_ECM);
   params.set<Teuchos::RCP<SSI::SSI_Part2WC> >("RCPToCellScatra",cellscatra_subproblem);
 
-  //////////////////////////////////////////////
-  // query simulation type
-  //////////////////////////////////////////////
+
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Query simulation type
+  ///////////////////////////////////////////////////////////////////////
   if(simtype==INPAR::CELL::sim_type_pureFSI)
   {
     Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> algo =
@@ -544,6 +683,7 @@ void CellMigrationControlAlgorithm()
     DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureFSI
+
   else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
   {
     params.set<bool>("IsPureAdhesionSimulation", true);
@@ -582,6 +722,7 @@ void CellMigrationControlAlgorithm()
     DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureAdhesion
+
   else if (simtype==INPAR::CELL::sim_type_pureConfinement)
   {
     params.set<bool>("IsPureConfinementSimulation", true);
@@ -620,6 +761,7 @@ void CellMigrationControlAlgorithm()
     DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureCompression
+
   else if (simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
   {
     params.set<bool>("IsPureProtrusionFormation", true);
@@ -660,6 +802,7 @@ void CellMigrationControlAlgorithm()
     DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureProtrusionFormation
+
   else if (simtype==INPAR::CELL::sim_type_pureContraction)
   {
     if(comm.MyPID()==0)
@@ -700,14 +843,17 @@ void CellMigrationControlAlgorithm()
     algo->TestResults(comm);
 
   }// sim_type_pureContraction
+
   else if (simtype==INPAR::CELL::sim_type_pureEndoExocytosis)
   {
     scatra_dyn(0);
-  }
+  }// sim_type_pureEndoExocytosis
+
   else if (simtype==INPAR::CELL::sim_type_multiphysics)
   {
     // here the global algo of the fully coupled cell migration will be implemented
-  }
+  }// sim_type_multiphysics
+
   else
     dserror("Unknown SIMTYPE set in ---CELL DYNAMIC section (default=pureFSI). Fix your .dat file.");
 

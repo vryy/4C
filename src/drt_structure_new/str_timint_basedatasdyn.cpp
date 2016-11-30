@@ -39,6 +39,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       dampm_(-1.0),
       masslintype_(INPAR::STR::ml_none),
       lumpmass_(false),
+      neglectinertia_(false),
       modeltypes_(Teuchos::null),
       eletechs_(Teuchos::null),
       coupling_model_ptr_(Teuchos::null),

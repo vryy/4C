@@ -564,6 +564,8 @@ namespace TIMINT {
     virtual void PrepareTimeStep() = 0;
     /// specific method for iterative staggered partitioned TSI (implicit and explicit)
     virtual void PreparePartitionStep() = 0;
+    /// set the state of the nox group and the global state data container (implicit only)
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
     /// update displacement and evaluate elements (implicit only)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
     /// Update routine for coupled problems with monolithic approach with time adaptivity (implicit only)
@@ -636,6 +638,13 @@ namespace TIMINT {
 
     /// return a reference to the Dirichlet Boundary Condition handler (read access)
     const STR::Dbc& GetDBC() const
+    {
+      CheckInitSetup();
+      return *dbc_ptr_;
+    }
+
+    /// return a reference to the Dirichlet Boundary Condition handler (write access)
+    STR::Dbc& GetMutableDBC()
     {
       CheckInitSetup();
       return *dbc_ptr_;

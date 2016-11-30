@@ -23,7 +23,9 @@
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
+#include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
+#include "ad_str_ssiwrapper.H"
 
 #include "../drt_structure/strtimada_create.H"
 
@@ -34,6 +36,7 @@
 #include "../drt_structure_new/str_timint_factory.H"
 #include "../drt_structure_new/str_solver_factory.H"
 #include "../drt_structure_new/str_timint_base.H"
+#include "../drt_structure_new/str_model_evaluator.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -127,6 +130,26 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   }
 
   issetup_ = true;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
+    const std::string name,
+    Teuchos::RCP< ::STR::MODELEVALUATOR::Generic> me )
+{
+  // safety checks
+  if(not IsInit())
+    dserror("Init(...) must be called before RegisterModelEvaluator(...) !");
+  if(IsSetup())
+    dserror("RegisterModelEvaluator(...) must be called before Setup() !");
+
+  // set RCP ptr to model evaluator in problem dynamic parameter list
+  const_cast<Teuchos::ParameterList&>(*prbdyn_).
+      set<Teuchos::RCP< ::STR::MODELEVALUATOR::Generic> >(name,me);
 
   return;
 }
@@ -425,6 +448,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_fsi:
     case prb_immersed_fsi:
     case prb_immersed_ale_fsi:
+    case prb_immersed_cell:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
@@ -626,6 +650,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
   xparams.set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
   sdyn_->set<double>("TIMESTEP", prbdyn_->get<double>("TIMESTEP"));
+  sdyn_->set<double>("MAXTIME",  prbdyn_->get<double>("MAXTIME"));
 
   // overrule certain parameters
   sdyn_->set<int>("NUMSTEP", prbdyn_->get<int>("NUMSTEP"));
@@ -840,6 +865,13 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
+    case prb_ssi:
+    {
+      if(problem->Restart())
+        ti_strategy->Setup();
+      str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
+      break;
+    }
     case prb_fsi_crack:
       str_wrapper_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))))));
       break;
@@ -851,7 +883,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
     case prb_fpsi:
     case prb_fps3i:
     case prb_fpsi_xfem:
-    case prb_immersed_cell:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -872,6 +903,13 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       {
           str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
       }
+      break;
+    }
+    case prb_immersed_cell:
+    {
+      str_wrapper_ = Teuchos::rcp(new MultiphysicsStructureWrapperCellMigration(ti_strategy));
+      Teuchos::rcp_dynamic_cast<MultiphysicsStructureWrapperCellMigration>(str_wrapper_,true)
+          ->Init(ti_strategy);
       break;
     }
     case prb_struct_ale:

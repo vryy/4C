@@ -19,12 +19,11 @@
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_io/io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_utils_parallel.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -50,14 +49,20 @@ void ssi_drt()
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams,"COUPALGO");
 
 
-  //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
+  //3.- Creation of Structure + Scalar_Transport problem.
   Teuchos::RCP<SSI::SSI_Base> ssi = Teuchos::null;
+
+  // by default we employ an ale formulation for our scatra
+  bool isale = true;
 
   //3.1 choose algorithm depending on solution type
   switch(coupling)
   {
   case INPAR::SSI::ssi_OneWay_ScatraToSolid:
+  {
     ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams));
+    isale = false;
+  }
     break;
   case INPAR::SSI::ssi_OneWay_SolidToScatra:
     ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams));
@@ -82,13 +87,23 @@ void ssi_drt()
     break;
   }
 
+  //3.1.1 initial FillComplete
   problem->GetDis("structure")->FillComplete(true,true,true);
   problem->GetDis("scatra")->FillComplete(true,true,true);
 
-  //3.1.1 init the chosen ssi algorithm
+  //3.1.2 init the chosen ssi algorithm
+  // Construct time integrators of subproblems inside.
   int redistribute = (int)SSI::none;
-  redistribute = ssi -> Init(comm, ssiparams, scatradyn, sdyn, "structure", "scatra");
+  redistribute = ssi -> Init(
+      comm,
+      ssiparams,
+      scatradyn,
+      sdyn,
+      "structure",
+      "scatra",
+      isale);
 
+  //3.1.3 Redistribute discretizations if necessary
   if (redistribute == (int)SSI::match)
   {
     // first we bin the scatra discretization
@@ -119,9 +134,12 @@ void ssi_drt()
   }
 
   // now we can finally fill our discretizations
+  // reinitialization of the structural elements is
+  // vital for parallelization here!
   problem->GetDis("structure")->FillComplete(true,true,true);
-  problem->GetDis("scatra")->FillComplete(true,true,true);
+  problem->GetDis("scatra")   ->FillComplete(true,false,true);
 
+  //3.1.4 Setup the coupled problem
   // now as we redistributed our discretizations we can construct all
   // objects relying on the parallel distribution
   ssi -> Setup();

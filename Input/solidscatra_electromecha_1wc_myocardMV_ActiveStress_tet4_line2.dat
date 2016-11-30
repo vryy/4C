@@ -46,6 +46,7 @@ CONTROLTYPE                     load
 DAMPING                         Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
+INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.5
 LINEAR_SOLVER                   1

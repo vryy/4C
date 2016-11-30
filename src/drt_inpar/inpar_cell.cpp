@@ -156,7 +156,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&celldyn);
   DoubleParameter("kBT",4.04530016e-6,"Thermal Energy (default [micrometer, mg, s] at 293K)",&celldyn);
 
-
+  BoolParameter("DIFFTIMESTEPSIZE","No","use different step size for scatra and solid",&celldyn);
 
 
   /* GIVE DOF IDs OF DIFFERENT CHEMICAL SPECIES */
@@ -798,8 +798,14 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&cellstructdyn);
 
   // Output type
+  IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&cellstructdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&cellstructdyn);
-
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&cellstructdyn);
+  // Time loop control
+  DoubleParameter("TIMESTEP",0.05,"time step size",&cellstructdyn);
+  IntParameter("NUMSTEP",200,"maximum number of steps",&cellstructdyn);
+  DoubleParameter("TIMEINIT",0.0,"initial time",&cellstructdyn);
+  DoubleParameter("MAXTIME",5.0,"maximum time",&cellstructdyn);
   // Damping
   setStringToIntegralParameter<int>("DAMPING","No",
                                "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements",
@@ -930,6 +936,10 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                   "tolerance in the constr error norm for the newton iteration",
                   &cellstructdyn);
 
+  DoubleParameter("TOLCONSTRINCR",1.0E-08,
+                  "tolerance in the constr lm incr norm for the newton iteration",
+                  &cellstructdyn);
+
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                &cellstructdyn);
@@ -969,6 +979,10 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                   divcont_rand_adapt_step_ele_err,
                                   divcont_repeat_simulation),
                                 &cellstructdyn);
+
+  IntParameter("MAXDIVCONREFINEMENTLEVEL",10,
+               "number of times timestep is halved in case nonlinear solver diverges",
+               &cellstructdyn);
 
   setStringToIntegralParameter<int>("NLNSOL","fullnewton","Nonlinear solution technique",
                                tuple<std::string>(
@@ -1059,6 +1073,9 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
              ml_rotations,ml_rotations),
              &cellstructdyn);
 
+  setStringToIntegralParameter<int>("NEGLECTINERTIA","No",
+                                    "Neglect inertia",
+                                    yesnotuple,yesnovalue,&cellstructdyn);
 
 // Since predicor "none" would be misleading, the usage of no predictor is called vague.
   setStringToIntegralParameter<int>("PREDICT","ConstDis","Type of predictor",

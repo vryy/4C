@@ -459,10 +459,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(Te
 
           for (int dim=0;dim<3;++dim)
           {
-            if(dirichmap_original->LID(dofs[dim]) == -1) // if not already in original dirich map
+            // if not already in original dirich map
+            if(dirichmap_original->LID(dofs[dim]) == -1)
               mydirichdofs.push_back(dofs[dim]);
           }
-
           // include also pressure dof if node does not belong to a boundary background element
           //if((nodes[inode]->IsBoundaryImmersed())==0)
           //  mydirichdofs.push_back(dofs[3]);

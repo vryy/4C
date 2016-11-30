@@ -53,12 +53,14 @@ namespace SSI
     \return int
     \date 08/16
     \author rauch  */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
     /*! \brief Setup all class internal objects and members
 
@@ -164,12 +166,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
   protected:
     //! perform iteration loop between fields with relaxed displacements
@@ -207,12 +211,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
   protected:
 
@@ -249,12 +255,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
   protected:
     //! perform iteration loop between fields with relaxed scalar
@@ -292,12 +300,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
   protected:
 

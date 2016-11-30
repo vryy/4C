@@ -42,12 +42,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
     //! actual time loop (implemented by derived class)
     virtual void Timeloop()=0;
@@ -90,12 +92,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
     //! actual time loop
     void Timeloop();
@@ -128,12 +132,14 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(const Epetra_Comm& comm,
+    virtual int Init(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string scatra_disname);
+        const std::string scatra_disname,
+        bool isAle);
 
     //! actual time loop
     void Timeloop();
