@@ -846,7 +846,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BuildImmersedDirichMap(
   {
     DRT::Node* node = dis->gNode(iter->first);
     if(node==NULL)
-      dserror("Could not get node with id %d from discretization %s",iter->first,dis->Name());
+      dserror("Could not get node with id %d",iter->first);
 
     std::vector<int> dofs = dis->Dof(0,node);
 
