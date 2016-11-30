@@ -1166,12 +1166,12 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   // set vector of compartment volumes - only for post-processing purposes!
   if (assvec4 and assvec5)
   {
-    p_at_l_np = (*sysvec4)[1];
+    p_at_l_np = (*sysvec4)[0];
     q_vout_l_np = (*sysvec4)[2];
     p_ar_sys_np = (*sysvec4)[4];
     p_ven_sys_np = (*sysvec4)[6];
 
-    p_at_r_np = (*sysvec4)[9];
+    p_at_r_np = (*sysvec4)[8];
     q_vout_r_np = (*sysvec4)[10];
     p_ar_pul_np = (*sysvec4)[12];
     p_ven_pul_np = (*sysvec4)[14];
@@ -1725,16 +1725,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
   Teuchos::ParameterList artvensyspulpar =
       DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED PARAMETERS");
 
-  const double q_v_in_l_0 = artvensyspulpar.get("q_v_in_l_0",0.0);
   const double p_at_l_0 = artvensyspulpar.get("p_at_l_0",0.0);
+  const double q_v_in_l_0 = artvensyspulpar.get("q_v_in_l_0",0.0);
   const double q_v_out_l_0 = artvensyspulpar.get("q_v_out_l_0",0.0);
   const double p_v_l_0 = artvensyspulpar.get("p_v_l_0",0.0);
   const double p_ar_sys_0 = artvensyspulpar.get("p_ar_sys_0",0.0);
   const double q_ar_sys_0 = artvensyspulpar.get("q_ar_sys_0",0.0);
   const double p_ven_sys_0 = artvensyspulpar.get("p_ven_sys_0",0.0);
   const double q_ven_sys_0 = artvensyspulpar.get("q_ven_sys_0",0.0);
-  const double q_v_in_r_0 = artvensyspulpar.get("q_v_in_r_0",0.0);
   const double p_at_r_0 = artvensyspulpar.get("p_at_r_0",0.0);
+  const double q_v_in_r_0 = artvensyspulpar.get("q_v_in_r_0",0.0);
   const double q_v_out_r_0 = artvensyspulpar.get("q_v_out_r_0",0.0);
   const double p_v_r_0 = artvensyspulpar.get("p_v_r_0",0.0);
   const double p_ar_pul_0 = artvensyspulpar.get("p_ar_pul_0",0.0);
@@ -1742,16 +1742,16 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
   const double p_ven_pul_0 = artvensyspulpar.get("p_ven_pul_0",0.0);
   const double q_ven_pul_0 = artvensyspulpar.get("q_ven_pul_0",0.0);
 
-  int err1 = sysvec2->SumIntoGlobalValues(1,&q_v_in_l_0,&gindex[1]);
-  int err2 = sysvec2->SumIntoGlobalValues(1,&p_at_l_0,&gindex[0]);
+  int err1 = sysvec2->SumIntoGlobalValues(1,&p_at_l_0,&gindex[0]);
+  int err2 = sysvec2->SumIntoGlobalValues(1,&q_v_in_l_0,&gindex[1]);
   int err3 = sysvec2->SumIntoGlobalValues(1,&q_v_out_l_0,&gindex[2]);
   int err4 = sysvec2->SumIntoGlobalValues(1,&p_v_l_0,&gindex[3]);
   int err5 = sysvec2->SumIntoGlobalValues(1,&p_ar_sys_0,&gindex[4]);
   int err6 = sysvec2->SumIntoGlobalValues(1,&q_ar_sys_0,&gindex[5]);
   int err7 = sysvec2->SumIntoGlobalValues(1,&p_ven_sys_0,&gindex[6]);
   int err8 = sysvec2->SumIntoGlobalValues(1,&q_ven_sys_0,&gindex[7]);
-  int err9 = sysvec2->SumIntoGlobalValues(1,&q_v_in_r_0,&gindex[9]);
-  int err10 = sysvec2->SumIntoGlobalValues(1,&p_at_r_0,&gindex[8]);
+  int err9 = sysvec2->SumIntoGlobalValues(1,&p_at_r_0,&gindex[8]);
+  int err10 = sysvec2->SumIntoGlobalValues(1,&q_v_in_r_0,&gindex[9]);
   int err11 = sysvec2->SumIntoGlobalValues(1,&q_v_out_r_0,&gindex[10]);
   int err12 = sysvec2->SumIntoGlobalValues(1,&p_v_r_0,&gindex[11]);
   int err13 = sysvec2->SumIntoGlobalValues(1,&p_ar_pul_0,&gindex[12]);

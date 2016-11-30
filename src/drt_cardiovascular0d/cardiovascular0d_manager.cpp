@@ -111,7 +111,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
   {
     // dof vector for 0D cardiovascular condition of this type:
-    // [q_vin_l  p_at_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  q_vin_r  p_at_r  q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
+    // [p_at_l  q_vin_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  p_at_r  q_vin_r  q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
     numCardiovascular0DID_ = 16;
   }
 
