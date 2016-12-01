@@ -109,8 +109,7 @@ namespace MODELEVALUATOR {
 
     //! derived
     virtual bool AssembleForce(Epetra_Vector& f,
-        const double & timefac_np) const
-    {return true;};
+        const double & timefac_np) const;
 
     //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
     virtual bool AssembleJacobian(
@@ -185,6 +184,9 @@ namespace MODELEVALUATOR {
     std::map<enum STR::MODELEVALUATOR::MultiphysicType,
              Teuchos::RCP<STR::MODELEVALUATOR::Generic> > me_map_;
 
+    //! currently active model evaluator type
+    STR::MODELEVALUATOR::MultiphysicType active_mt_;
+
     //! return reference to map containing the model evaluators
     std::map<enum STR::MODELEVALUATOR::MultiphysicType,
         Teuchos::RCP<STR::MODELEVALUATOR::Generic> >&
@@ -194,7 +196,7 @@ namespace MODELEVALUATOR {
 
     //! return RCP to model evaluator of specific MultiphysicType
     Teuchos::RCP<STR::MODELEVALUATOR::Generic>
-        GetModelEvaluatorFromMap(enum STR::MODELEVALUATOR::MultiphysicType mtype)
+        GetModelEvaluatorFromMap(enum STR::MODELEVALUATOR::MultiphysicType mtype) const
         {return me_map_.at(mtype);}
 
 

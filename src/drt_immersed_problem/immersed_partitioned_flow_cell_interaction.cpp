@@ -798,8 +798,6 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
   backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
   backgroundfluiddis_->SetState(0,"veln", poroscatra_subproblem_->FluidField()->Veln());
 
-  double normofstructbdrytraction=-1234.0;
-
   DRT::AssembleStrategy cell_fld_bdry_strategy(
       0,              // struct dofset for row
       0,              // struct dofset for column
@@ -816,6 +814,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
     std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
 
   }
+  double normofstructbdrytraction=-1234.0;
   EvaluateInterpolationCondition( immerseddis_, params, cell_fld_bdry_strategy, "IMMERSEDCoupling", -1 );
 
   cell_bdry_traction_->Norm2(&normofstructbdrytraction);

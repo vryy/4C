@@ -53,8 +53,9 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
-                                Teuchos::RCP<Epetra_Vector> iforce_immersed)
+void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(
+    Teuchos::RCP<Epetra_Vector> iforce_fsi,
+    Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
   FSIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
 
