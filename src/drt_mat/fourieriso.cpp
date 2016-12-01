@@ -1,16 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fourieriso.cpp
-\brief
+\brief heat condution according to fourier's law
 
 
 the input line should read
   MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
+
+\level 1
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 

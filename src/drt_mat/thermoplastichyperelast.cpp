@@ -19,12 +19,16 @@
          CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
          HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06
 
+         Seitz 11/16: There are still some linearizations for the plastic
+         heating terms missing, use with caution.
+
+\level 3
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*

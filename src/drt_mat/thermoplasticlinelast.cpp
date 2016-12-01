@@ -32,11 +32,13 @@
          THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 0.0
          SAMPLENUM 2 SIGMA_Y 0.1 0.2 EPSBAR_P 0.0 1.0 TOL 1.0e-6
 
+\level 2
+
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*
@@ -160,7 +162,7 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,Incstrainpl_->at(var));
     AddtoPack(data,strainelrate_->at(var));
   }
-  
+
   AddtoPack(data,plastic_step_);
 
   return;

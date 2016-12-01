@@ -28,12 +28,13 @@
          SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0
          DAMTHRESHOLD 1.0e-06 KINHARD 17 KINHARD_REC 21 TOL 1.0e-6
 
+\level 2
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*

@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_utils.cpp
+\file thr_aux.cpp
 \brief various auxiliar methods needed in thermal analysis
 
+\level 1
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15271
 
 </pre>
 */

@@ -4,12 +4,12 @@
 
 \brief Internal implementation of thermo elements
 
-\level 2
+\level 1
 
-   \maintainer  Alexander Seitz
-                seitz@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
-                089 - 289-15271
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 
 */
 

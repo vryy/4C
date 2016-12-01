@@ -39,13 +39,13 @@
   the thermal equation is neglected so far.
   --> Future topic: extend to fully TSI.
 
-\level 3
+\level 2
 
 <pre>
-\maintainer Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*

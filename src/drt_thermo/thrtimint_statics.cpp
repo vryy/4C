@@ -1,12 +1,12 @@
 /*!
 \file thrtimint_statics.cpp
 \brief Statics analysis
-
+\level 1
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15271
 </pre>
 */
 

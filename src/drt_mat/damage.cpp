@@ -7,7 +7,7 @@
        (St.Venant Kirchhoff).
 
        isotropic hardening
-       - describing the nonlinear (piecewise) hardening curve via \f$ sigma_y 
+       - describing the nonlinear (piecewise) hardening curve via \f$ sigma_y
           \ and \f$strainbar_p_ref \ from input file
 
        geometric linear, for small strains including isotropic ductile damage
@@ -15,12 +15,12 @@
 
        ductile isotropic damage
        - elasticity-damage coupling, cf. de Souza Neto Compuatational plasticity Chapt. 12
-       - Lemaitre's elastoplastic damage theory (simplified version without 
+       - Lemaitre's elastoplastic damage theory (simplified version without
          kinematic hardening)
        - isotropic hardening internal variable \f$ R\
        - damage variable \f$ D\
 
-       ductile isotropic damage according to the book of de Souza Neto et al 
+       ductile isotropic damage according to the book of de Souza Neto et al
        "Computational methods for plasticity", chapter 12
 
        example input line:
@@ -28,11 +28,13 @@
          SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0
          DAMTHRESHOLD 1.0e-06 KINHARD 17 KINHARD_REC 21 TOL 1.0e-6
 
+\level 2
+
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 
@@ -300,7 +302,7 @@ void MAT::Damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 
   isohardvarlast_->resize(numgp);
   isohardvarcurr_->resize(numgp);
-  
+
   damagelast_->resize(numgp);
   damagecurr_->resize(numgp);
 
@@ -1605,9 +1607,9 @@ void MAT::Damage::EvaluateFullLemaitre(
     // undamaged flow vector N_tilde according to Doghri
     // N_tilde^{trial} = 3/2 . (s_tilde^{trial} - beta_n) / sqrt{ 3/2 .
     //                   (s_tilde^{trial} - beta_n) : (s_tilde^{trial} - beta_n) }
-    //                 = 3/2 . (s_tilde^{trial} - beta_n) 
+    //                 = 3/2 . (s_tilde^{trial} - beta_n)
     //                   / ( sqrt{ 3/2 } . || (s_tilde^{trial} - beta_n) || )
-    //                 = sqrt{ 3/2 } . (s_tilde^{trial} - beta_n) 
+    //                 = sqrt{ 3/2 } . (s_tilde^{trial} - beta_n)
     //                   /  || (s_tilde^{trial} - beta_n) || = sqrt{ 3/2 } . Nbar
     N_tilde.Update( (sqrt(3.0 / 2.0)), Nbar);
 
@@ -2101,7 +2103,7 @@ void MAT::Damage::EvaluateFullLemaitre(
 
       // dNds_csb = - 3/2 . 1/qbar_tilde . 1/(1 + 3/2 . g) . bracket (50)
       LINALG::Matrix<NUM_STRESS_3D,1> dNds_csb(false);
-      double fac_dNds_csb = -3.0/2.0 * (1.0 / qbar_tilde) 
+      double fac_dNds_csb = -3.0/2.0 * (1.0 / qbar_tilde)
                             * (1.0 / (1.0 + 3.0/2.0 * g) );
       dNds_csb.Update(fac_dNds_csb, bracket);
 
@@ -2928,7 +2930,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
     // dPhi_dsigma_tilde_square : dy_dsigma_tilde
     LINALG::Matrix<NUM_STRESS_3D,1> dPhidsigma_dydsigma(false);
     dPhidsigma_dydsigma.Multiply(dPhi_dsigma_tilde_square, dy_dsigma_tilde);
-    double fac_n_alg_3 = 3.0 * G * std::pow( (Dgamma / omega), 3) 
+    double fac_n_alg_3 = 3.0 * G * std::pow( (Dgamma / omega), 3)
                          * std::pow( (2 * G), 2 ) / (1 + 3.0/2.0 * g);
     n_alg.Update(fac_n_alg_3, dPhidsigma_dydsigma, 1.0);
 
@@ -3133,13 +3135,13 @@ void MAT::Damage::VisNames(std::map<std::string,int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
-  
+
   std::string isohardeningvar = "isohardeningvar";
   names[isohardeningvar] = 1; // scalar
 
   std::string damage = "damage";
   names[damage] = 1; // scalar
-  
+
 }  // VisNames()
 
 

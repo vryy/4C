@@ -2,12 +2,12 @@
 /*!
 \file thrtimint_expleuler.H
 \brief Thermal time integration with forward Euler order (explicit)
-
+\level 3
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 

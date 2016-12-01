@@ -19,13 +19,13 @@
         H_FACT 1.67e16
       12.01.12 as first step only implement geometric non-linear case, i.e., total Lagrange
 
-\level 3
+\level 2
 
 <pre>
-\maintainer Caroline Danowski
-            danowski@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*/
