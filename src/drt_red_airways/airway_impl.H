@@ -206,7 +206,17 @@ namespace ELEMENTS
                           Epetra_SerialDenseVector&    epn,
                           Teuchos::ParameterList &     params,
                           double                       dt);
+    /*!
+      \brief Calculate Pextn and Pextnp
 
+      \param ele              (i) the element those matrix is calculated
+      \param epn              (i) nodal pressure at n
+      \param dt               (i) timestep
+      */
+    void ComputePext(RedAirway*                              ele,
+                     Teuchos::RCP<const Epetra_Vector>       pn,
+                     Teuchos::RCP<const Epetra_Vector>       pnp,
+                     Teuchos::ParameterList &                params);
     /*!
       \brief calculate element matrix and rhs
 
@@ -220,6 +230,7 @@ namespace ELEMENTS
       \param material         (i) airway material/dimesion
       \param time             (i) current simulation time
       \param dt               (i) timestep
+      \param compute_awacinter(i) computing airway-acinus interdependency
       */
     void Sysmat(RedAirway*                               ele,
                 Epetra_SerialDenseVector&                epnp,
@@ -230,7 +241,8 @@ namespace ELEMENTS
                 Teuchos::RCP<const MAT::Material>        material,
                 Teuchos::ParameterList &                          params,
                 double                                   time,
-                double                                   dt);
+                double                                   dt,
+                bool                                     compute_awacinter);
 
 
     virtual void EvaluateTerminalBC(RedAirway *                  ele,

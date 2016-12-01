@@ -70,6 +70,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   non_lin_tol_ = params_.get<double> ("tolerance");
   // solve scatra
   solveScatra_ = params_.get<bool> ("SolveScatra");
+  // solve scatra
+  compAwAcInter_ = params_.get<bool> ("CompAwAcInter");
 
   // calculate acini volume0 flag; option for acini volume adjustment via prestress
   calcV0PreStress_ = params_.get<bool>("CalcV0PreStress");
@@ -126,6 +128,16 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
   // State of airway
   open_       = LINALG::CreateVector(*elementcolmap,true);
+
+  // Neighbouring acinus
+  airway_acinus_dep_= LINALG::CreateVector(*elementcolmap,true);
+
+  // External pressure
+  p_extnp_       = LINALG::CreateVector(*elementcolmap,true);
+  p_extn_        = LINALG::CreateVector(*elementcolmap,true);
+
+  pnp_colmap_       = LINALG::CreateVector(*elementcolmap,true);
+  pn_colmap_        = LINALG::CreateVector(*elementcolmap,true);
 
   // Outlet volumetric flow rates at time n+1, n and n-1
   qout_np_      = LINALG::CreateVector(*elementcolmap,true);
@@ -336,6 +348,12 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
        }
       }
     }
+  if (compAwAcInter_)
+  //Routine compute nearest acinus for each airway
+  {
+     ComputeNearestAcinus();
+     //ele->Nodes()[0])->X();
+  }
 
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("RedAirwayScatraExchangeCond",conds);
@@ -455,6 +473,104 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
   }
 }
 
+/*-----------------------------------------------------------------------------*
+ |                                                                roth 02/2016 |
+ *-----------------------------------------------------------------------------*/
+void AIRWAY::RedAirwayImplicitTimeInt::ComputeNearestAcinus()
+{
+  //Loop over all airways contained on this proc
+  for (int j=0; j< (discret_->NumMyColElements()); j++)
+  {
+    // check if element j is an airway
+    if( ((*generations_)[j]!=-1) and ((*generations_)[j]!=-2) )
+    {
+
+      int GID1 = discret_->ElementColMap()->GID(j); //global element ID airway
+
+      const DRT::ElementType& ele_type = discret_->gElement(GID1)->ElementType();
+      if (ele_type == DRT::ELEMENTS::RedAirwayType::Instance())
+      {
+          double diff_norm = 1e3;
+          double min_norm = 1e3;
+          int min_index = 0;
+
+          // dynamic cast to airway element, since Elements base class does not have the functions getParams and setParams
+          DRT::ELEMENTS::RedAirway * ele_aw = dynamic_cast<DRT::ELEMENTS::RedAirway *>( discret_->gElement(GID1) );
+
+          //Get coordinates for airway center point
+          double node_coords1[3];
+          node_coords1[0] = ele_aw->Nodes()[0]->X()[0];
+          node_coords1[1] = ele_aw->Nodes()[0]->X()[1];
+          node_coords1[2] = ele_aw->Nodes()[0]->X()[2];
+
+          double node_coords2[3];
+          node_coords2[0] = ele_aw->Nodes()[1]->X()[0];
+          node_coords2[1] = ele_aw->Nodes()[1]->X()[1];
+          node_coords2[2] = ele_aw->Nodes()[1]->X()[2];
+
+
+          double node_coords_center[3];
+          for(int p =0; p< 3;p++)
+              node_coords_center[p] = (node_coords1[p] + node_coords2[p])/2;
+
+          //Loop over all acinus elements (on processor)
+          for (int i=0; i< (discret_->NumMyColElements()); i++)
+          {
+
+                  //Check if element is an acinus
+                  if((*generations_)[i]==-1)
+                  {
+
+                         int GID2 = discret_->ElementColMap()->GID(i); //global element ID
+
+
+                          // check if element is an acinus
+                          const DRT::ElementType& ele_type2 = discret_->gElement(GID2)->ElementType();
+                          if (ele_type2 == DRT::ELEMENTS::RedAcinusType::Instance())
+                          {
+                                  // dynamic cast to acinus element, since Elements base class does not have the functions getParams and setParams
+                                  DRT::ELEMENTS::RedAcinus * ele_ac = dynamic_cast<DRT::ELEMENTS::RedAcinus *>( discret_->gElement(GID2) );
+
+                                  // Get coordinates of acini
+                                  double ac_coords[3];
+                                  ac_coords[0] = ele_ac->Nodes()[1]->X()[0];
+                                  ac_coords[1] = ele_ac->Nodes()[1]->X()[1];
+                                  ac_coords[2] = ele_ac->Nodes()[1]->X()[2];
+
+                                  double diff_vec[3]; // = ac_coords - airway_node_coords_center;
+                                  for(int k=0; k< 3;k++)
+                                      diff_vec[k] = ac_coords[k] - node_coords_center[k];
+                                  double accum=0;
+
+                                  for (int m = 0; m < 3; m++)
+                                   accum += diff_vec[m] * diff_vec[m];
+                                  diff_norm = sqrt(accum);
+
+                                  if (diff_norm < min_norm)
+                                  {
+                                    min_norm=diff_norm;
+                                    min_index = i;
+                                  }
+                          }
+                 }
+        }
+
+          int GID3 = discret_->ElementColMap()->GID(min_index); //global element ID
+          // dynamic cast to acinus element, since Elements base class does not have the functions getParams and setParams
+
+          DRT::ELEMENTS::RedAcinus * ele_acinus = dynamic_cast<DRT::ELEMENTS::RedAcinus *>( discret_->gElement(GID3) );
+          //int acinus_node = 1; // ele_acinus->NodeIds()[1];
+
+          int local_id =  (ele_acinus->Nodes()[1])->LID();
+
+
+          (*airway_acinus_dep_)[j] = local_id;
+
+      }
+    }
+  }
+
+}
 
 /*----------------------------------------------------------------------*
  | Time loop for red_airway problems                                    |
@@ -748,6 +864,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("x_n" ,x_n_);
     eleparams.set("open",open_);
 
+    eleparams.set("airway_acinus_dep",airway_acinus_dep_);
+    eleparams.set("p_extnp",p_extnp_);
+    eleparams.set("p_extn" ,p_extn_);
+    eleparams.set("compute_awacinter",compAwAcInter_);
+
     eleparams.set("acinar_vn" ,acini_e_volumen_);
     eleparams.set("acinar_vnp",acini_e_volumenp_);
 
@@ -844,6 +965,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
 
+    eleparams.set("airway_acinus_dep",airway_acinus_dep_);
+    eleparams.set("p_extnp",p_extnp_);
+    eleparams.set("p_extn" ,p_extn_);
+
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
@@ -873,6 +998,18 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->ClearState();
 
   } // end of solving terminal BCs
+
+  /*std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
+  Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  if (A_debug != Teuchos::null)
+  {
+     (A_debug->EpetraMatrix())->Print(std::cout);
+  }
+   //               std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+  std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
+
+  std::cout << "rhs_ = " << std::endl;
+  rhs_->Print(std::cout);*/
 
   //double norm_bc_tog = 0.0;
   //rhs_->Norm1(&norm_bc_tog);
@@ -948,6 +1085,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("x_n",x_n_);
     eleparams.set("x_np",x_np_);
     eleparams.set("open",open_);
+    eleparams.set("airway_acinus_dep",airway_acinus_dep_);
+    eleparams.set("p_extnp",p_extnp_);
+    eleparams.set("p_extn" ,p_extn_);
+    eleparams.set("compute_awacinter",compAwAcInter_);
+
 
     //Call standard loop over all elements
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1010,7 +1152,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("x_n",x_n_);
     eleparams.set("x_np",x_np_);
     eleparams.set("open",open_);
-
+    eleparams.set("airway_acinus_dep",airway_acinus_dep_);
+    eleparams.set("p_extnp",p_extnp_);
+    eleparams.set("p_extn" ,p_extn_);
+    eleparams.set("compute_awacinter",compAwAcInter_);
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
 
@@ -1693,6 +1838,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("x_np",qexp_);
     LINALG::Export(*open_,*qexp_);
     output_.WriteVector("open",qexp_);
+    LINALG::Export(*p_extnp_,*qexp_);
+    output_.WriteVector("p_extnp",qexp_);
+    LINALG::Export(*p_extn_,*qexp_);
+    output_.WriteVector("p_extn",qexp_);
+    LINALG::Export(*airway_acinus_dep_,*qexp_);
+    output_.WriteVector("airway_acinus_dep",qexp_);
 
     LINALG::Export(*elemVolumenm_,*qexp_);
     output_.WriteVector("elemVolumenm",qexp_);
@@ -1846,6 +1997,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("x_np",qexp_);
     LINALG::Export(*open_,*qexp_);
     output_.WriteVector("open",qexp_);
+    LINALG::Export(*p_extnp_,*qexp_);
+    output_.WriteVector("p_extnp",qexp_);
+    LINALG::Export(*p_extn_,*qexp_);
+    output_.WriteVector("p_extn",qexp_);
+    LINALG::Export(*airway_acinus_dep_,*qexp_);
+    output_.WriteVector("airway_acinus_dep",qexp_);
 
     LINALG::Export(*elemVolumenm_,*qexp_);
     output_.WriteVector("elemVolumenm",qexp_);
@@ -2108,6 +2265,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   LINALG::Export(*qexp_,*x_np_);
   reader.ReadVector(qexp_ , "open" );
   LINALG::Export(*qexp_,*open_);
+  reader.ReadVector(qexp_, "p_extn");
+  LINALG::Export(*qexp_,*p_extn_);
+  reader.ReadVector(qexp_, "p_extnp");
+  LINALG::Export(*qexp_,*p_extnp_);
+  reader.ReadVector(qexp_, "airway_acinus_dep");
+  LINALG::Export(*qexp_,*airway_acinus_dep_);
 
 
   // read the previously written elements including the history data
@@ -2192,6 +2355,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     eleparams.set("x_np",x_np_);
     eleparams.set("x_n" ,x_n_);
     eleparams.set("open",open_);
+    eleparams.set("airway_acinus_dep",airway_acinus_dep_);
+    eleparams.set("p_extnp",p_extnp_);
+    eleparams.set("p_extn" ,p_extn_);
+    eleparams.set("compute_awacinter",compAwAcInter_);
 
     eleparams.set("elemVolumen",elemVolumen_);
     eleparams.set("elemVolumenp",elemVolumenp_);

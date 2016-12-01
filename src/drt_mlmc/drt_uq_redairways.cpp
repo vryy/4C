@@ -2,9 +2,10 @@
  \file  drt_uq_redairways.cpp
  \brief Class for performing UQ with redairway problems
 
+ \level 2
 
  <pre>
- Maintainer: Jonas Biehler
+ \maintainer Jonas Biehler
           biehler@lnm.mw.tum.de
           http://www.lnm.mw.tum.de
           089 - 289-15276
@@ -158,6 +159,12 @@ void UQ::UQ_REDAIRWAYS::Integrate()
     airwaystimeparams.set ("SolveScatra" ,true);
     else
     airwaystimeparams.set ("SolveScatra" ,false);
+
+    // compute Interdependency
+    if (rawdyn.get<std::string>("COMPAWACINTER")=="yes")
+    airwaystimeparams.set ("CompAwAcInter" ,true);
+    else
+    airwaystimeparams.set ("CompAwAcInter" ,false);
 
     //prestress parameters
     //Adjust acini volume with pre-stress condition

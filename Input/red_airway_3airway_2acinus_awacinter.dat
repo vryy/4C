@@ -1,0 +1,81 @@
+//
+// Maintainer: Christian Roth
+// roth@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-25255
+//
+-----------------------------------------------------------------------TITLE
+2-generation bifurcating airway-tree consisting of 3 airways and 2 acini.
+The pressure prevailing at the inlet of element 1 is driven sinusoidally from
+0 cmH2O to 30 cmH2O. One-tenth of this pressure is prescribed at the outside
+of one acinus (element 4) and a fifth of this pressure is prevailing at the
+outside of the other acinus (element 5). These pressures are mapped as external
+pressures to the airways (element 1-3) according to the airway acinus interdependency.
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        5
+NODES                           6
+DIM                             3
+MATERIALS                       1
+NUMDF                           1
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      ReducedDimensionalAirWays
+RESTART                         0
+--------------------------------------------------------------------------IO
+-----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      OneStepTheta
+NUMSTEP                         5000
+TIMESTEP                        0.01
+RESULTSEVRY                     10000
+RESTARTEVRY                     10000
+SOLVERTYPE                      Nonlinear
+MAXITERATIONS                   40
+TOLERANCE                       1E-7
+COMPAWACINTER                   yes
+--------------------------------------------------------------------SOLVER 1
+NAME                            Reduced_dimensional_Airways_Solver
+SOLVER                          UMFPACK
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         3
+NDLINE                          0
+NDSURF                          0
+NDVOL                           0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 0.04 DENSITY 0.000001176 GAMMA 1.0
+MAT 2 MAT_0D_MAXWELL_ACINUS_EXPONENTIAL Stiffness1 1.0e-3 Stiffness2 1.0e-3 Viscosity1 1.0e-3 Viscosity2 1.0e-3
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 15*(sin(pi*t/50-pi/2)+1) t1 0.0 t2 100.0
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+-------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
+DPOINT                          3
+E 1 - pressure 1.0 1 none none
+E 2 - pressure 0.1 1 none none
+E 3 - pressure 0.2 1 none none
+--------------------------------------------------REDUCED D AIRWAYS ELEMENTS
+1 RED_AIRWAY LINE2  1  2 MAT 1 ElemSolvingType NonLinear TYPE ConvectiveViscoElasticRLC Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 500.0 PoissonsRatio 0.4 ViscousTs 2.0 ViscousPhaseShift 0.13 WallThickness 0.1 Area 1.0 Generation 0
+2 RED_AIRWAY LINE2  2  3 MAT 1 ElemSolvingType NonLinear TYPE ConvectiveViscoElasticRLC Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 500.0 PoissonsRatio 0.4 ViscousTs 2.0 ViscousPhaseShift 0.13 WallThickness 0.1 Area 1.0 Generation 1
+3 RED_AIRWAY LINE2  2  4 MAT 1 ElemSolvingType NonLinear TYPE ConvectiveViscoElasticRLC Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 500.0 PoissonsRatio 0.4 ViscousTs 2.0 ViscousPhaseShift 0.13 WallThickness 0.1 Area 1.0 Generation 1
+4 RED_ACINUS LINE2  3  5 MAT 2 TYPE Exponential AcinusVolume 1.0 AlveolarDuctVolume 1.0 E1_0 8.0  E1_LIN 1.0 E1_EXP 0.022 TAU 7 Area 1.0
+5 RED_ACINUS LINE2  4  6 MAT 2 TYPE Exponential AcinusVolume 1.0 AlveolarDuctVolume 1.0 E1_0 8.0  E1_LIN 1.0 E1_EXP 0.022 TAU 7 Area 1.0
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.000 0.000 0.000
+NODE 2 COORD 10.00 0.000 0.000
+NODE 3 COORD 15.00 2.000 0.000
+NODE 4 COORD 15.00 -2.000 0.000
+NODE 5 COORD 17.50 2.000 0.000
+NODE 6 COORD 17.00 -2.000 0.000
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 5 DNODE 2
+NODE 6 DNODE 3
+----------------------------------------------------------RESULT DESCRIPTION
+RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 2.98312234825225673e+01 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE 2.98138524514133003e+01 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE 2.98120941584596046e+01 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway ELEMENT 4 QUANTITY acini_volume VALUE 1.96461794699882031e+00 TOLERANCE 1.0e-9
+RED_AIRWAY DIS red_airway ELEMENT 5 QUANTITY acini_volume VALUE 1.94385144810809329e+00 TOLERANCE 1.0e-9
+-------------------------------------------------------------------------END
+//                              END

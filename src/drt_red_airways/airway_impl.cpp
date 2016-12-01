@@ -116,6 +116,11 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Teuchos::RCP<Epetra_Vector> x_np = params.get<Teuchos::RCP<Epetra_Vector> >("x_np");
   Teuchos::RCP<Epetra_Vector> open = params.get<Teuchos::RCP<Epetra_Vector> >("open");
 
+  Teuchos::RCP<Epetra_Vector> p_extn  = params.get<Teuchos::RCP<Epetra_Vector> >("p_extn");
+  Teuchos::RCP<Epetra_Vector> p_extnp = params.get<Teuchos::RCP<Epetra_Vector> >("p_extnp");
+  Teuchos::RCP<Epetra_Vector> airway_acinus_dep = params.get<Teuchos::RCP<Epetra_Vector> >("airway_acinus_dep");
+  bool compute_awacinter = params.get<bool>("compute_awacinter");
+
   Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector> >("qout_np");
   Teuchos::RCP<Epetra_Vector> qout_n  = params.get<Teuchos::RCP<Epetra_Vector> >("qout_n");
   Teuchos::RCP<Epetra_Vector> qout_nm = params.get<Teuchos::RCP<Epetra_Vector> >("qout_nm");
@@ -178,6 +183,16 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   elem_params.set<double>("lungVolume_n",params.get<double>("lungVolume_n"));
   elem_params.set<double>("lungVolume_nm",params.get<double>("lungVolume_nm"));
 
+  //Routine for computing pextn and pextnp
+  if (compute_awacinter){
+   ComputePext(ele,
+               pn,
+               pnp,
+               params);
+    elem_params.set<double>("p_extn",(*p_extn)[ele->LID()]);
+    elem_params.set<double>("p_extnp",(*p_extnp)[ele->LID()]);}
+
+
   //Routine for open/collapsed decision
   double airwayColl=0.0;
   ele->getParams("AirwayColl",airwayColl);
@@ -199,7 +214,8 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
          mat,
          elem_params,
          time,
-         dt);
+         dt,
+         compute_awacinter);
 
   return 0;
 }
@@ -463,6 +479,36 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
     open->ReplaceGlobalValues(1,&opennp,&gid);
 }
 
+/*----------------------------------------------------------------------*
+ |  Neighbour search for computing pressure prevailing on the outside   |
+ |  of an airway.                                                       |
+ |                                                         roth 02/2016 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(
+                 RedAirway*                               ele,
+                 Teuchos::RCP<const Epetra_Vector>        pn,
+                 Teuchos::RCP<const Epetra_Vector>        pnp,
+                 Teuchos::ParameterList&                  params)
+{
+
+    Teuchos::RCP<Epetra_Vector> p_extn  = params.get<Teuchos::RCP<Epetra_Vector> >("p_extn");
+    Teuchos::RCP<Epetra_Vector> p_extnp = params.get<Teuchos::RCP<Epetra_Vector> >("p_extnp");
+    Teuchos::RCP<Epetra_Vector> airway_acinus_dep = params.get<Teuchos::RCP<Epetra_Vector> >("airway_acinus_dep");
+
+    //get node-Id of nearest acinus
+    int node_id = (*airway_acinus_dep)[ele->LID()];
+
+    //Set pextn and pextnp
+    double pextnp= (*pnp)[node_id];
+    double pextn= (*pn)[node_id];
+
+
+    int gid = ele->Id();
+    p_extnp->ReplaceGlobalValues(1,&pextnp,&gid);
+    p_extn->ReplaceGlobalValues(1,&pextn,&gid);
+}
+
 
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
@@ -479,7 +525,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   Teuchos::RCP<const MAT::Material>        material,
   Teuchos::ParameterList &                 params,
   double                                   time,
-  double                                   dt)
+  double                                   dt,
+  bool                                     compute_awacinter)
 {
   double dens = 0.0;
   double visc = 0.0;
@@ -811,6 +858,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
                             "ExternalPressure",
                             time);
     pextnp+= pextVal/double(ele->NumNode());
+  }
+
+    //Routine to compute pextnp andd pextn from neighbourung acinus pressure
+    //ComputePext() analog zu EvaluateCollapse()
+  //bool compute_awacinter = params.get<bool>("compute_awacinter");
+  if(compute_awacinter)
+  {
+    pextn = params.get<double>("p_extn");
+    pextnp = params.get<double>("p_extnp");
   }
 
   if(ele->Type() == "Resistive")
@@ -1297,6 +1353,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   Teuchos::RCP<Epetra_Vector> x_np = params.get<Teuchos::RCP<Epetra_Vector> >("x_np");
   Teuchos::RCP<Epetra_Vector> open = params.get<Teuchos::RCP<Epetra_Vector> >("open");
 
+  Teuchos::RCP<Epetra_Vector> p_extn  = params.get<Teuchos::RCP<Epetra_Vector> >("p_extn");
+  Teuchos::RCP<Epetra_Vector> p_extnp = params.get<Teuchos::RCP<Epetra_Vector> >("p_extnp");
+  bool compute_awacinter = params.get<bool>("compute_awacinter");
   if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
@@ -1357,6 +1416,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   elem_params.set<double>("x_n"  ,(*x_n  )[ele->LID()]);
   elem_params.set<double>("open" ,(*open )[ele->LID()]);
 
+  elem_params.set<double>("p_extn",(*p_extn)[ele->LID()]);
+  elem_params.set<double>("p_extnp",(*p_extnp)[ele->LID()]);
+
   Epetra_SerialDenseMatrix sysmat (elemVecdim, elemVecdim,true);
   Epetra_SerialDenseVector  rhs (elemVecdim);
 
@@ -1373,7 +1435,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
          material,
          elem_params,
          time,
-         dt);
+         dt,
+         compute_awacinter);
 
   double qinnp = -1.0*(sysmat(0,0)*epnp(0) + sysmat(0,1)*epnp(1) - rhs(0));
   double qoutnp=  1.0*(sysmat(1,0)*epnp(0) + sysmat(1,1)*epnp(1) - rhs(1));

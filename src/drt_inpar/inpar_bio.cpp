@@ -499,6 +499,18 @@ void INPAR::REDAIRWAYS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
                                       "solve scatra"),
                                     tuple<int>(0,1),
                                     &redawdyn);
+  // Compute airway-acinus interdependency flag
+   setStringToIntegralParameter<int>("COMPAWACINTER",
+                                     "no",
+                                     "Flag to (de)activate computation of airway-acinus interdependency ",
+                                     tuple<std::string>(
+                                       "no",
+                                       "yes"),
+                                     tuple<std::string>(
+                                       "do not compute interdependency",
+                                       "compute interdependency"),
+                                     tuple<int>(0,1),
+                                     &redawdyn);
  // Re-calculate initial acini volume flag
  setStringToIntegralParameter<int>("CALCV0PRESTRESS",
                                    "no",

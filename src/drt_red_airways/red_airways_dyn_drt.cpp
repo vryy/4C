@@ -3,15 +3,15 @@
 \brief Main control routine for reduced dimensional airways network
  (time) integration.
 
+\level 2
 
-<pre>
-Maintainer: Christian Roth
+\maintainer Christian Roth
             roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
-</pre>
 
 *----------------------------------------------------------------------*/
+
 #include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
@@ -119,6 +119,11 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     airwaystimeparams.set                  ("SolveScatra" ,true);
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
+  // compute Interdependency
+  if (rawdyn.get<std::string>("COMPAWACINTER")=="yes")
+  airwaystimeparams.set ("CompAwAcInter" ,true);
+  else
+  airwaystimeparams.set ("CompAwAcInter" ,false);
 
   //Adjust acini volume with pre-stress condition
   if (rawdyn.get<std::string>("CALCV0PRESTRESS")=="yes")

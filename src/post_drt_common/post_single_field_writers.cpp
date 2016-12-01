@@ -92,6 +92,9 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("qout_np", "flow_out", elementbased, 1);
   writer_->WriteResult("x_np", "x_np", elementbased, 1);
   writer_->WriteResult("open", "open", elementbased, 1);
+  writer_->WriteResult("p_extnp", "p_extnp", elementbased, 1);
+  writer_->WriteResult("p_extn", "p_extn", elementbased, 1);
+  writer_->WriteResult("airway_acinus_dep", "airway_acinus_dep", elementbased, 1);
   writer_->WriteResult("generations", "generations", elementbased, 1);
   writer_->WriteResult("elemVolumenp", "airway_volume", elementbased, 1);
   writer_->WriteResult("elemVolume0", "airway_volume0", elementbased, 1);

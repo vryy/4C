@@ -208,6 +208,12 @@ public:
   void ComputeVol0ForPreStress();
 
   /*!
+  \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
+
+  */
+  void ComputeNearestAcinus();
+
+  /*!
   \brief Assembling of the RHS Vector and the LHS Matrix
 
   */
@@ -371,6 +377,16 @@ protected:
   //! @state of airway open or closed
   Teuchos::RCP<Epetra_Vector>          open_;
 
+  //! @neighbouring acinus of airway
+  Teuchos::RCP<Epetra_Vector>          airway_acinus_dep_;
+
+  //! @external pressure of airway
+  Teuchos::RCP<Epetra_Vector>          p_extnp_;
+  Teuchos::RCP<Epetra_Vector>          p_extn_;
+  // p vector in colmap format for computing p_extnp_ and p_extn_
+  Teuchos::RCP<Epetra_Vector>          pnp_colmap_;
+  Teuchos::RCP<Epetra_Vector>          pn_colmap_;
+
   //! @name outlet volumetric flow rates at time n+1, n and n-1
   Teuchos::RCP<Epetra_Vector>          qout_np_;
   Teuchos::RCP<Epetra_Vector>          qout_n_;
@@ -446,6 +462,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>          cfls_;
 
   bool                        solveScatra_;
+  bool                        compAwAcInter_;
 
   //@}
 

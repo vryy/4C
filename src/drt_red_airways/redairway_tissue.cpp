@@ -509,6 +509,11 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
     airwaystimeparams.set                  ("SolveScatra" ,true);
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
+  // compute Interdependency
+  if (rawdyn.get<std::string>("COMPAWACINTER")=="yes")
+    airwaystimeparams.set ("CompAwAcInter" ,true);
+  else
+    airwaystimeparams.set ("CompAwAcInter" ,false);
   //Adjust acini volume with pre-stress condition
   if (rawdyn.get<std::string>("CALCV0PRESTRESS")=="yes")
   {
