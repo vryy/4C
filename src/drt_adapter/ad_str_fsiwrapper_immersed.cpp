@@ -53,25 +53,6 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::RCP<Epetra_Vector> iforce_fsi,
-                                Teuchos::RCP<Epetra_Vector> iforce_immersed)
-{
-  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
-
-  if(iforce_fsi!=Teuchos::null)
-    interface_->AddFSICondVector(iforce_fsi, fifc);
-  if(iforce_immersed!=Teuchos::null)
-    interface_->AddIMMERSEDCondVector(iforce_immersed, fifc);
-
-  SetForceInterface(fifc);
-
-  PreparePartitionStep();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                 Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
@@ -285,9 +266,9 @@ STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetMutableDBC()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
-    const Teuchos::RCP<const Epetra_Map> maptoremove)
+    const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
-  GetMutableDBC().AddDirichDofs(maptoremove);
+  GetMutableDBC().AddDirichDofs(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/

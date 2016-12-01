@@ -254,7 +254,7 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedOp(Teuchos::RCP<Epetra_Vector>
   else
   {
     // prescribe neumann values at structural boundary dofs
-    cellstructure_->ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::null,bdry_traction);
+    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,bdry_traction);
 
      //solve cell
     cellstructure_->Solve();

@@ -117,6 +117,8 @@ Outer Iteration StatusTest      = No
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 ------------------------------------------------------POROELASTICITY DYNAMIC
 LINEAR_SOLVER                   2
 COUPALGO                        poro_monolithic

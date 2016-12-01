@@ -60,10 +60,6 @@ namespace ADAPTER
     /// Predictor for interface displacements at immersed and fsi interface
     Teuchos::RCP<Epetra_Vector> PredictFullInterfaceDispnp();
 
-    /// until new structure is plugged to cell migration
-    void ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::RCP<Epetra_Vector> iforce_fsi,
-                                                             Teuchos::RCP<Epetra_Vector> iforce_immersed);
-
     /// Get mutable reference to DBC object
     STR::Dbc& GetMutableDBC();
 

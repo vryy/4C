@@ -64,6 +64,7 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   if(multiphysicswrapper == Teuchos::null)
     dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
 
+  // get the fsi specific structure wrapper
   cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
   // create instance of poroelast subproblem
@@ -473,7 +474,7 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedOp(Teuchos::RCP<Epetra
   else
   {
     // prescribe neumann values at structural boundary dofs
-    cellstructure_->ApplyImmersedInterfaceForcesTemporaryImplementation(Teuchos::null,bdry_traction);
+    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,bdry_traction);
 
     // solve cell
     cellstructure_->Solve();

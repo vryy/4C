@@ -484,12 +484,14 @@ void CellMigrationControlAlgorithm()
     cellstructure =
         Teuchos::rcp_dynamic_cast<ADAPTER::MultiphysicsStructureWrapperCellMigration>(
             struct_adapterbase_ptr->StructureField(),true);
+
     // set pointer to model evaluator in ssi specific wrapper
     cellstructure->GetSSIStructureWrapperPtr()->
         SetModelEvaluatorPtr(
             Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedSSI>(
             multiphysics_model_evaluator_cellmigration->GetModelEvaluatorFromMap(STR::MODELEVALUATOR::mt_ssi),
             true) );
+
     // set the ssi specific wrapper in SSI object
     cellscatra_subproblem -> SetStructureWrapper(cellstructure->GetSSIStructureWrapperPtr());
 
@@ -502,24 +504,20 @@ void CellMigrationControlAlgorithm()
   }
   else // cell has no intracellular biochemistry -> just create usual structure
   {
-    // build and register ssi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
-        Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI());
-
-    struct_adapterbase_ptr -> RegisterModelEvaluator("Partitioned Coupling Model",ssi_model_ptr);
-
-    // setup structure (wrapper is created)
-    struct_adapterbase_ptr -> Setup();
-    cellstructure =
-        Teuchos::rcp_dynamic_cast<ADAPTER::MultiphysicsStructureWrapperCellMigration>(
-            struct_adapterbase_ptr->StructureField(),true);
-    cellscatra_subproblem -> SetStructureWrapper(cellstructure->GetSSIStructureWrapperPtr());
-
+    // ghosting
     if(comm.NumProc() > 1)
     {
       DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cell"));
-      problem->GetDis("cell")->FillComplete(true,false,true);
+      problem->GetDis("cell")->FillComplete(true,true,true);
     }
+
+    // setup structure (wrapper is created)
+    struct_adapterbase_ptr -> Setup();
+
+    // extract the problem specific wrapper
+    cellstructure =
+        Teuchos::rcp_dynamic_cast<ADAPTER::MultiphysicsStructureWrapperCellMigration>(
+            struct_adapterbase_ptr->StructureField(),true);
 
     if(comm.MyPID()==0)
       std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;

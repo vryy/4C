@@ -63,4 +63,7 @@ void STR::MODELEVALUATOR::CellMigration::Init(
 void STR::MODELEVALUATOR::CellMigration::Setup()
 {
   STR::MODELEVALUATOR::Multiphysics::Setup();
+
+  GetModelEvaluatorFromMap(mt_fsi)->Setup();
+  GetModelEvaluatorFromMap(mt_ssi)->Setup();
 }
