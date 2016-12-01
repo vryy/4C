@@ -1740,6 +1740,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_crosslinking.cpp
   src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
+  src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -2353,7 +2354,6 @@ src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
-src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
 )
 
 set(OBJS_DRT_IMMERSED_PROBLEM
