@@ -18,11 +18,10 @@
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
+#include "../drt_lib/drt_dofset_merged_wrapper.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
-
-#include "../drt_lib/drt_dofset_merged_proxy.H"
-#include "../drt_lib/drt_dofset_subproxy.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"

@@ -27,10 +27,9 @@
 #include "../drt_volmortar/volmortar_utils.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_dofset_subproxy.H"
-#include "../drt_lib/drt_dofset_mapped_proxy.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
+#include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 

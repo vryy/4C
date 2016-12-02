@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_aux_proxy.H
+ \file drt_dofset_predefineddofnumber.H
 
  \brief A dofset that owns a predefined number of dofs
 
@@ -13,8 +13,8 @@
  </pre>
  *----------------------------------------------------------------------*/
 
-#ifndef DRT_DOFSET_AUX_PROXY_H_
-#define DRT_DOFSET_AUX_PROXY_H_
+#ifndef drt_dofset_predefineddofnumber_H_
+#define drt_dofset_predefineddofnumber_H_
 
 #include "drt_dofset.H"
 
@@ -137,4 +137,4 @@ private:
 } // namespace DRT
 
 
-#endif /* DRT_DOFSET_AUX_PROXY_H_ */
+#endif /* drt_dofset_predefineddofnumber_H_ */

@@ -16,13 +16,13 @@
 #include "fluid_timint_hdg.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
 #include "../drt_fluid_turbulence/turbulence_hit_initial_field.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

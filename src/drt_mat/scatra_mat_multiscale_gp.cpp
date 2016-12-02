@@ -18,10 +18,9 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_scatra/scatra_timint_ost.H"
 
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"

@@ -22,10 +22,9 @@
 
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_lubrication.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_lubrication/lubrication_timint_implicit.H"
 
 #include "../linalg/linalg_utils.H"

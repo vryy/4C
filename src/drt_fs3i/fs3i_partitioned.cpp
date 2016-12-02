@@ -36,8 +36,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-//LINALG
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 //INPAR
@@ -57,6 +55,7 @@
 #include "../drt_scatra_ele/scatra_ele.H"
 //FOR WSS CALCULATIONS
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_structure/stru_aux.H"
 
 

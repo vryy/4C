@@ -27,8 +27,8 @@
 #include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include <Epetra_Time.h>
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_merged_proxy.H
+ \file drt_dofset_merged_wrapper.H
 
  \brief A dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not yet to elements).
@@ -12,8 +12,8 @@
               http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_LIB_DRT_DOFSET_MERGED_PROXY_H_
-#define SRC_DRT_LIB_DRT_DOFSET_MERGED_PROXY_H_
+#ifndef SRC_DRT_LIB_DRT_DOFSET_MERGED_WRAPPER_H_
+#define SRC_DRT_LIB_DRT_DOFSET_MERGED_WRAPPER_H_
 
 
 #include "drt_dofset_proxy.H"
@@ -274,4 +274,4 @@ namespace DRT
 }
 
 
-#endif /* SRC_DRT_LIB_DRT_DOFSET_MERGED_PROXY_H_ */
+#endif /* SRC_DRT_LIB_DRT_DOFSET_MERGED_WRAPPER_H_ */

@@ -21,7 +21,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_volmortar/volmortar_coupling.H"
 #include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -31,6 +30,7 @@
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_io/io_gmsh.H"
 #include"../drt_inpar/inpar_volmortar.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|

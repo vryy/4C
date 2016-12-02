@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_mapped_proxy.H
+ \file drt_dofset_definedmapping_wrapper.H
 
  \brief A dofset that does not rely on same GID/LID numbers but uses
          a defined node mapping instead (not implemented for element DOFs).
@@ -12,8 +12,8 @@
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_LIB_DRT_DOFSET_MAPPED_PROXY_H_
-#define SRC_DRT_LIB_DRT_DOFSET_MAPPED_PROXY_H_
+#ifndef SRC_DRT_LIB_DRT_DOFSET_DEFINEDMAPPING_WRAPPER_H_
+#define SRC_DRT_LIB_DRT_DOFSET_DEFINEDMAPPING_WRAPPER_H_
 
 #include "drt_dofset_base.H"
 
@@ -351,4 +351,4 @@ the BACI 'Input' folder.
 
 
 
-#endif /* SRC_DRT_LIB_DRT_DOFSET_MAPPED_PROXY_H_ */
+#endif /* SRC_DRT_LIB_DRT_DOFSET_DEFINEDMAPPING_WRAPPER_H_ */

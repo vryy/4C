@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_subproxy.H
+ \file drt_dofset_gidbased_wrapper.H
 
  \brief subproxy functionality to dofsets
 

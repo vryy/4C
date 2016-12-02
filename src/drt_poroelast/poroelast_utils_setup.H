@@ -18,6 +18,8 @@
 #ifndef POROELAST_UTILS_SETUP_H_
 #define POROELAST_UTILS_SETUP_H_
 
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "poroelast_utils.H"
 #include "poro_utils_clonestrategy.H"
 
@@ -28,8 +30,6 @@
 
 #include "../drt_lib/drt_utils_parallel.H"
 
-#include "../drt_lib/drt_dofset_subproxy.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 namespace POROELAST
 {

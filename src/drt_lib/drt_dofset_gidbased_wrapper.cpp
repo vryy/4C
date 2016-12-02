@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_subproxy.cpp
+ \file drt_dofset_gidbased_wrapper.cpp
 
  \brief Implementation of a dofset using a GID based mapping
 
@@ -13,7 +13,8 @@
  </pre>
  *----------------------------------------------------------------------*/
 
-#include "drt_dofset_subproxy.H"
+#include "drt_dofset_gidbased_wrapper.H"
+
 #include "drt_dofset_proxy.H"
 #include "drt_discret.H"
 

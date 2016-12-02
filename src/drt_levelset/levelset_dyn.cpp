@@ -16,7 +16,6 @@
 #include "levelset_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include <Epetra_MpiComm.h>
@@ -25,6 +24,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

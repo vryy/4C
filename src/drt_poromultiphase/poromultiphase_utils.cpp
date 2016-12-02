@@ -13,6 +13,8 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_utils.H"
+
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "poromultiphase_utils_clonestrategy.H"
 
 #include "poromultiphase_partitioned.H"
@@ -22,7 +24,6 @@
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |

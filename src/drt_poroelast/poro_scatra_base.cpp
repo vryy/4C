@@ -35,7 +35,7 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_inpar/inpar_scatra.H"
 
-#include "../drt_lib/drt_dofset_subproxy.H"
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |

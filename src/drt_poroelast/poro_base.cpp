@@ -48,6 +48,7 @@
 
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 
@@ -64,7 +65,6 @@
 //for coupling of nonmatching meshes
 #include "../drt_volmortar/volmortar_utils.H"
 
-#include "../drt_lib/drt_dofset_subproxy.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                    vuong 01/12  |

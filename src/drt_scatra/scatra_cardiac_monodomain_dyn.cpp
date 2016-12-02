@@ -20,8 +20,6 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_particle/binning_strategy.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -32,6 +30,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "scatra_algorithm.H"
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_merged_proxy.cpp
+ \file drt_dofset_merged_wrapper.cpp
 
  \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not implemented for element DOFs).
@@ -13,14 +13,13 @@
  *----------------------------------------------------------------------*/
 
 
-#include "drt_dofset_merged_proxy.H"
-
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Export.h>
+#include "drt_dofset_merged_wrapper.H"
 
 
 /*----------------------------------------------------------------------*

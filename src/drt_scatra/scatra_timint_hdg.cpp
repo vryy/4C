@@ -26,9 +26,8 @@
 #include "../drt_lib/drt_assemblestrategy.H"
 
 #include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

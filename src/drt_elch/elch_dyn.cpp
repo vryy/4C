@@ -19,8 +19,6 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -33,6 +31,7 @@
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
 #include "elch_dyn.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/

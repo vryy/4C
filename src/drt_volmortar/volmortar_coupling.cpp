@@ -27,7 +27,6 @@
 #include "../drt_inpar/inpar_volmortar.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_multiply.H"
@@ -53,6 +52,7 @@
 
 #include "../headers/pairedvector.H"
 #include <Teuchos_Time.hpp>
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

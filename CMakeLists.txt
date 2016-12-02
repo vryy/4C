@@ -475,9 +475,9 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset.cpp
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
-  src/drt_lib/drt_dofset_subproxy.cpp
-  src/drt_lib/drt_dofset_merged_proxy.cpp
-  src/drt_lib/drt_dofset_mapped_proxy.cpp
+  src/drt_lib/drt_dofset_gidbased_wrapper.cpp
+  src/drt_lib/drt_dofset_merged_wrapper.cpp
+  src/drt_lib/drt_dofset_definedmapping_wrapper.cpp
   src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_dofset_transparent_independent.cpp
   src/drt_lib/drt_dofset_pbc.cpp

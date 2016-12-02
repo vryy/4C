@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_mapped_proxy.cpp
+ \file drt_dofset_definedmapping_wrapper.cpp
 
  \brief  A dofset that does not rely on same GID/LID numbers but uses
          a defined node mapping instead (not implemented for element DOFs).
@@ -13,7 +13,8 @@
  *----------------------------------------------------------------------*/
 
 
-#include "drt_dofset_mapped_proxy.H"
+#include "drt_dofset_definedmapping_wrapper.H"
+
 #include "drt_dofset_base.H"
 
 #include "../linalg/linalg_utils.H"

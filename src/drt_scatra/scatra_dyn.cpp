@@ -17,8 +17,6 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_lib/drt_utils_parallel.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -33,6 +31,7 @@
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_dyn.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*

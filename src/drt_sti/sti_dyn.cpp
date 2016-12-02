@@ -22,10 +22,9 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch.H"
 

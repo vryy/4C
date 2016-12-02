@@ -24,7 +24,6 @@
 #include "pat_imagereconstruction.H"
 #include "acou_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
 #include "../drt_inpar/inpar_acou.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_discret_hdg.H"
@@ -34,6 +33,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 void printacoulogo()

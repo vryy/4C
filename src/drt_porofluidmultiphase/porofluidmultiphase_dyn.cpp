@@ -23,13 +23,12 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
-
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
 
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 /*-------------------------------------------------------------------------------*
  | Main control routine for poro fluid multiphase problems           vuong 08/16 |

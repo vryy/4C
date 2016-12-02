@@ -34,7 +34,7 @@
 #include "../drt_so3/so3_ssn_plast.H"
 
 #include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_dofset_aux_proxy.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_periodicbc.H"
 
