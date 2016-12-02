@@ -4,13 +4,10 @@
 
 \brief Krylov projector
 
-<pre>
 \level 1
 
-\maintainer Keijo Nissen
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
 
 *---------------------------------------------------------------------------*/
 

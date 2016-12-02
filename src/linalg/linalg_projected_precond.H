@@ -7,12 +7,9 @@
        a Krylov space krylovized to certain (for example rigid body
        or zero pressure) modes.
 
-<pre>
 \level 1
-\maintainer Keijo Nissen
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -234,4 +231,3 @@ private:
 } // namespace LINALG
 
 #endif // LINALG_PROJECTED_PRECOND_H_
-
