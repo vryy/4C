@@ -21,7 +21,6 @@
 #include "drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "drt_dofset_proxy.H"
-#include "drt_dofset_subproxy.H"
 #include "drt_dofset_pbc.H"
 
 
