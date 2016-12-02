@@ -592,7 +592,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       const int mypid = dis.Comm().MyPID();
       for (int i=0; i<numcolelements; ++i)
       {
-        DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
         // If no faces are found, continue...
         if (faces == NULL)
           continue;
@@ -608,7 +608,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
       for (int i=0; i<numcolelements; ++i)
       {
-        DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
         if (faces == NULL)
           continue;
         for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)

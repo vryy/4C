@@ -148,7 +148,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
   const int* nodeids = ele->NodeIds();
 
   DRT::Element* parent = ele->ParentElement();
-  DRT::FaceElement** faces = parent->Faces();
+  Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
   bool same = false;
   for(int i=0; i<parent->NumFace(); ++i)
   {

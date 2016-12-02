@@ -387,7 +387,7 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
       else
       {
         std::cout << "element id: " << ele.Id() << " " << ele.Neighbor(face)->Id() << std::endl;
-        const DRT::ELEMENTS::FluidIntFace* faceel = dynamic_cast<const DRT::ELEMENTS::FluidIntFace*>(ele.Faces()[face]);
+        const DRT::ELEMENTS::FluidIntFace* faceel = dynamic_cast<const DRT::ELEMENTS::FluidIntFace*>(ele.Faces()[face].getRawPtr());
         if (faceel != NULL)
         {
           std::vector<int> trafo = const_cast<DRT::ELEMENTS::FluidIntFace*>(faceel)->GetLocalTrafoMap();

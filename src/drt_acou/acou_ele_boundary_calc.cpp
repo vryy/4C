@@ -1,9 +1,10 @@
 /*!
 \file acou_ele_boundary_calc.cpp
 \brief
+\level 2
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -173,7 +174,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Evaluate(
     const int* nodeids = ele->NodeIds();
 
     DRT::Element* parent = ele->ParentElement();
-    DRT::FaceElement** faces = parent->Faces();
+    Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
     bool same = false;
     for(int i=0; i<parent->NumFace(); ++i)
     {
@@ -255,7 +256,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Evaluate(
     const int* nodeids = ele->NodeIds();
 
     DRT::Element* parent = ele->ParentElement();
-    DRT::FaceElement** faces = parent->Faces();
+    Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
     bool same = false;
     for(int i=0; i<parent->NumFace(); ++i)
     {

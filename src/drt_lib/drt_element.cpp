@@ -290,7 +290,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   node_.resize(0);
   if ( !face_.empty() )
   {
-    std::vector<DRT::FaceElement*> empty;
+    std::vector<Teuchos::RCP<DRT::FaceElement> > empty;
     std::swap(face_, empty);
   }
 
@@ -505,7 +505,7 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
       for (int i=0; i<NumFace(); ++i)
       {
         const int owner = face_[i]->Owner();
-        std::vector<int> dof = dis.Dof(dofset,face_[i]);
+        std::vector<int> dof = dis.Dof(dofset,face_[i].getRawPtr());
         if (dof.size())
           lmstride.push_back(dof.size());
         for (unsigned j=0; j<dof.size(); ++j)
@@ -626,7 +626,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
       for (int i=0; i<NumFace(); ++i)
       {
         const int owner = face_[i]->Owner();
-        std::vector<int> dof = dis.Dof(dofset,face_[i]);
+        std::vector<int> dof = dis.Dof(dofset,face_[i].getRawPtr());
         if (dof.size())
           lmstride.push_back(dof.size());
         for (unsigned j=0; j<dof.size(); ++j)
@@ -746,7 +746,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
     for (int i=0; i<NumFace(); ++i)
     {
       const int owner = face_[i]->Owner();
-      std::vector<int> dof = dis.Dof(0,face_[i]);
+      std::vector<int> dof = dis.Dof(0,face_[i].getRawPtr());
       if (dof.size())
         lmstride.push_back(dof.size());
       for (unsigned j=0; j<dof.size(); ++j)
@@ -827,7 +827,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
     for (int i=0; i<NumFace(); ++i)
     {
       const int owner = face_[i]->Owner();
-      std::vector<int> dof = dis.Dof(0,face_[i]);
+      std::vector<int> dof = dis.Dof(0,face_[i].getRawPtr());
       if (dof.size())
         lmstride.push_back(dof.size());
       for (unsigned j=0; j<dof.size(); ++j)
@@ -866,7 +866,7 @@ DRT::Element* DRT::Element::Neighbor(const int face) const
   if (face_.empty())
     return NULL;
   dsassert(face < NumFace(), "there is no face with the given index");
-  DRT::FaceElement* faceelement = face_[face];
+  DRT::FaceElement* faceelement = face_[face].getRawPtr();
   if (faceelement->ParentMasterElement() == this)
     return faceelement->ParentSlaveElement();
   else if (faceelement->ParentSlaveElement() == this)
@@ -882,11 +882,23 @@ void DRT::Element::SetFace(const int         faceindex,
 {
   const int nface = NumFace();
   if (face_.empty())
-    face_.resize(nface, NULL);
+    face_.resize(nface, Teuchos::null);
+  dsassert(faceindex < NumFace(), "there is no face with the given index");
+  face_[faceindex] = Teuchos::rcpFromRef<DRT::FaceElement>(*faceelement);
+}
+
+/*----------------------------------------------------------------------*
+ |  set faces (public)                                       seitz 12/16|
+ *----------------------------------------------------------------------*/
+void DRT::Element::SetFace(const int         faceindex,
+                           Teuchos::RCP<DRT::FaceElement> faceelement)
+{
+  const int nface = NumFace();
+  if (face_.empty())
+    face_.resize(nface, Teuchos::null);
   dsassert(faceindex < NumFace(), "there is no face with the given index");
   face_[faceindex] = faceelement;
 }
-
 
 
 /*----------------------------------------------------------------------*

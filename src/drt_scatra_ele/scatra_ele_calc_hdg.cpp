@@ -1689,7 +1689,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
 
 
       //shape values of old element degree
-      DRT::ELEMENTS::ScaTraHDGIntFace * hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(const_cast<DRT::FaceElement*>(ele->Faces()[face]));
+      DRT::ELEMENTS::ScaTraHDGIntFace * hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(const_cast<DRT::FaceElement*>(ele->Faces()[face].getRawPtr()));
       DRT::UTILS::ShapeValuesFaceParams svfparams_old(
           hdgeleface->DegreeOld(),
           usescompletepoly_,
@@ -1761,7 +1761,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ProjectField(
       shapesface_->EvaluateFace(*ele, face);
 
       //shape values of old element degree
-      DRT::ELEMENTS::ScaTraHDGIntFace * hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(const_cast<DRT::FaceElement*>(ele->Faces()[face]));
+      DRT::ELEMENTS::ScaTraHDGIntFace * hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(const_cast<DRT::FaceElement*>(ele->Faces()[face].getRawPtr()));
       DRT::UTILS::ShapeValuesFaceParams svfparams_old(
           hdgeleface->DegreeOld(),
           usescompletepoly_,

@@ -465,7 +465,7 @@ public:
   /*!
   \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
-  DRT::FaceElement** Faces()
+  Teuchos::RCP<DRT::FaceElement>* Faces()
   {
     return face_.empty() ? NULL : &face_[0];
   }
@@ -473,7 +473,7 @@ public:
   /*!
   \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
-  const DRT::FaceElement*const * Faces() const
+  Teuchos::RCP<DRT::FaceElement>const * Faces() const
   {
     return face_.empty() ? NULL : &face_[0];
   }
@@ -786,11 +786,29 @@ public:
   It allows, that elements and faces are created separately and be combined later
   on the way.
 
+  Faces, that are set via this method are created as non-owning (weak) RCPs in
+  the std::vector face_.
+
   \param faceindex   : index of the given face
   \param faceelement : face object
   */
   void SetFace(const int         faceindex,
                DRT::FaceElement* faceelement);
+
+  /*!
+  \brief Set a the face with index faceindex this element is connected to
+
+  Sets the face pointer of the face adjacent to this element, using NumFace() as
+  number of faces.
+
+  Faces, that are set via this method copy the incoming RCP so strong and weak
+  RCPs in the std::vector face_ can be created.
+
+  \param faceindex   : index of the given face
+  \param faceelement : face object
+  */
+  void SetFace(const int         faceindex,
+               Teuchos::RCP<DRT::FaceElement> faceelement);
 
   /// Set element material
   /*!
@@ -1235,7 +1253,7 @@ private:
   std::vector<DRT::Node*> node_;
 
   //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when using DiscretizationFaces
-  std::vector<DRT::FaceElement*> face_;
+  std::vector<Teuchos::RCP<DRT::FaceElement> > face_;
 
   //! \brief Some conditions e.g. BCs
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
