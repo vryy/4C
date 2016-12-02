@@ -4,12 +4,9 @@
 
 \brief pre_exodus bc-file reader
 
-<pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Here is everything related with reading a bc file
 */

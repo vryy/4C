@@ -4,13 +4,9 @@
   \brief Nurbs specific helper methods for ensight filter basis class
   Methods are declared in post_drt_ensight_writer header file.
 
-  <pre>
-  Maintainer: Peter Gamnitzer
-  gamnitzer@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de/Members/gammi
-  089 - 289-15235
-  </pre>
+  \maintainer Martin Kronbichler
 
+  \level 2
 */
 
 
@@ -3754,5 +3750,3 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   } // if (myrank_==0)
 
 } //EnsightWriter::WriteNodalResultStepForNurbs
-
-

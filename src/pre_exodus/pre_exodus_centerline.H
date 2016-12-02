@@ -1,4 +1,15 @@
-//"pre_exodus_centerline.H"
+/*----------------------------------------------------------------------*/
+/*!
+\file pre_exodus_centerline.H
+
+\brief pre_exodus centerline definition
+
+\level 1
+
+\maintainer Martin Kronbichler
+
+ */
+/*----------------------------------------------------------------------*/
 
 #ifndef PRE_EXODUS_CENTERLINE_H_
 #define PRE_EXODUS_CENTERLINE_H_
@@ -58,7 +69,7 @@ double scalar_product3d(std::vector<double> v1,std::vector<double> v2);
 void normalize3d(std::vector<double>&);
 //! creates local coordinate systems for each element and returns resulting map
 std::map<int,std::map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&);
-/// creates local coordinate systems for each element and returns resulting map 
+/// creates local coordinate systems for each element and returns resulting map
 ///different calculation method for element normals applied in this function
 std::map<int,std::map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&, std::set<int>& );
 
@@ -80,4 +91,3 @@ void PlotCosys(EXODUS::Centerline&,const EXODUS::Mesh&,const std::vector<int>&);
 }// of namespace EXODUS
 
 #endif /*PRE_EXODUS_CENTERLINE_H_*/
-

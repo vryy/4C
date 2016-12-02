@@ -4,12 +4,9 @@
 
 \brief solid-shell body creation by extruding surface
 
-<pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Here everything related with solid-shell body extrusion
 */
@@ -92,7 +89,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       //highestblock ++;
     }
   }
-  
+
   if(extrusioncounter==0)
   {
     // loop through all EBlocks to check for extrusion blocks
@@ -707,7 +704,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     highestns ++;
 
   } // end of extruding
-  
+
   //Won't work a second time if extruded in "wrong direction"! //TODO
   // create 2 NodeSets consisting of the inner extrusion face and the outer extrusion face respectively
   std::set<int> nodes_extrusion_base;

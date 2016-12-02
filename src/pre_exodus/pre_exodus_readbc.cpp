@@ -4,12 +4,9 @@
 
 \brief pre_exodus bc-file reader
 
-<pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Here is everything related with reading a bc file
 */
@@ -362,7 +359,7 @@ void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
   CorrectYZPlaneForPeriodicBoundaryConditions(mesh,condefs);
   CorrectXZPlaneForPeriodicBoundaryConditions(mesh,condefs);
   CorrectXYPlaneForPeriodicBoundaryConditions(mesh,condefs);
-  return; 
+  return;
 }
 
 
@@ -379,7 +376,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
   for(unsigned int i=0; i<condefs.size(); i++)
   {
     // yz plane : y and z coordinates of two matching nodes have to be equal
-    // yz plane:  x coordinates differ by a constant length 
+    // yz plane:  x coordinates differ by a constant length
     if( condefs[i].sec.find("PERIODIC BOUNDARY CONDITIONS") != std::string::npos &&
         condefs[i].desc.find("Master PLANE yz") != std::string::npos &&
         (condefs[i].desc.find("ANGLE 0.0") != std::string::npos ||
@@ -388,7 +385,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       // store master pbc
       const EXODUS::cond_def master_con = condefs[i];
       const int master_nodeset_id = master_con.id;
-      
+
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
       std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
@@ -396,7 +393,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
       string_mconditionidstream >> master_conditionID;
-  
+
       // find matching slave pbc node set
       EXODUS::cond_def slave_con;
       int slave_conditionID = -1;
@@ -414,7 +411,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
           // convert std::string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
-          
+
           if(slave_conditionID == master_conditionID)
             matchingIDfound = true;
         }
@@ -423,7 +420,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       }
       if (matchingIDfound == false) // this indicates that ANGLE != 0.0 for slave plane
          continue; // in this case do not proceed, but leave here!!
-      
+
       // read tolerance
       size_t start_tol = slave_con.desc.find("ABSTREETOL");
       size_t tol_length = std::string("ABSTREETOL").length();
@@ -433,26 +430,26 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
-      
+
       const int slave_nodeset_id = slave_con.id;
       const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
       const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
-      
+
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
       {
         std::cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
         std::cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
         dserror("num master nodes != num slave nodes before adjusting coords");
       }
-      
+
       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
       const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
-      
+
       // reference values for x on the master side and x on the slave side
       const double x_master = (mesh.GetNode(*master_nodeset_ids.begin()))[0];
       const double x_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[0];
-      
-      // loop over all master nodes 
+
+      // loop over all master nodes
       for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
             m_node_id != master_nodeset_ids.end();
             m_node_id++)
@@ -471,15 +468,15 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
           count_slavenodes++;
           // get master node coordinates
           std::vector<double> s_coord = mesh.GetNode(*s_node_id);
-            
+
           // compare coordinates
           bool equal = false;
-          if( (fabs(m_coord[1]-s_coord[1]) < abstol) && (fabs(m_coord[2]-s_coord[2]) < abstol) )  
+          if( (fabs(m_coord[1]-s_coord[1]) < abstol) && (fabs(m_coord[2]-s_coord[2]) < abstol) )
             equal = true;
 
           if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
             dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
-          
+
           if(!equal)
             continue;
           else
@@ -517,7 +514,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
   for(unsigned int i=0; i<condefs.size(); i++)
   {
     // xz plane : x and z coordinates of two matching nodes have to be equal
-    // xz plane:  y coordinates differ by a constant length 
+    // xz plane:  y coordinates differ by a constant length
     if( condefs[i].sec.find("PERIODIC BOUNDARY CONDITIONS") != std::string::npos &&
         condefs[i].desc.find("Master PLANE xz") != std::string::npos &&
         (condefs[i].desc.find("ANGLE 0.0") != std::string::npos ||
@@ -526,7 +523,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       // store master pbc
       const EXODUS::cond_def master_con = condefs[i];
       const int master_nodeset_id = master_con.id;
-      
+
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
       std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
@@ -539,7 +536,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       EXODUS::cond_def slave_con;
       int slave_conditionID = -1;
       bool matchingIDfound = false;
-   
+
       for(unsigned int i_slave=0; i_slave<condefs.size(); i_slave++)
       {
         slave_con = condefs[i_slave];
@@ -553,7 +550,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
           // convert std::string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
-        
+
           if(slave_conditionID == master_conditionID)
             matchingIDfound = true;
         }
@@ -572,26 +569,26 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
-      
+
       const int slave_nodeset_id = slave_con.id;
       const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
       const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
-      
+
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
       {
         std::cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
          std::cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
          dserror("xz num master nodes != num slave nodes before adjusting coords");
        }
-      
+
       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
       const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
-      
+
       // reference values for x on the master side and x on the slave side
       const double y_master = (mesh.GetNode(*master_nodeset_ids.begin()))[1];  // get y-coord
       const double y_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[1];  // get y-coord
 
-      // loop over all master nodes 
+      // loop over all master nodes
       for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
             m_node_id != master_nodeset_ids.end();
             m_node_id++)
@@ -610,21 +607,21 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
           count_slavenodes++;
           // get master node coordinates
           std::vector<double> s_coord = mesh.GetNode(*s_node_id);
-            
+
           // compare coordinates
           bool equal = false;
-          if( (fabs(m_coord[0]-s_coord[0]) < abstol) && (fabs(m_coord[2]-s_coord[2]) < abstol) )  
+          if( (fabs(m_coord[0]-s_coord[0]) < abstol) && (fabs(m_coord[2]-s_coord[2]) < abstol) )
             equal = true;
 
           if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
             dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
-          
+
           if(!equal)
             continue;
           else
           {
             // if equal copy x and z
-            s_coord[0] = m_coord[0]; 
+            s_coord[0] = m_coord[0];
             s_coord[1] = y_slave;
             s_coord[2] = m_coord[2];
             mesh.SetNode(*s_node_id, s_coord);
@@ -656,7 +653,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
    for(unsigned int i=0; i<condefs.size(); i++)
    {
      // xy plane : x and y coordinates of two matching nodes have to be equal
-     // xy plane:  z coordinates differ by a constant length 
+     // xy plane:  z coordinates differ by a constant length
      if( condefs[i].sec.find("PERIODIC BOUNDARY CONDITIONS") != std::string::npos &&
          condefs[i].desc.find("Master PLANE xy") != std::string::npos &&
          (condefs[i].desc.find("ANGLE 0.0") != std::string::npos ||
@@ -665,7 +662,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        // store master pbc
        const EXODUS::cond_def master_con = condefs[i];
        const int master_nodeset_id = master_con.id;
-       
+
        // get condition id for master pbc
        size_t end_m = master_con.desc.find("Master"); // master
        std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
@@ -691,7 +688,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
            // convert std::string to int
            std::istringstream string_sconditionidstream(string_sconditionid);
            string_sconditionidstream >> slave_conditionID;
-           
+
            if(slave_conditionID == master_conditionID)
              matchingIDfound = true;
          }
@@ -700,7 +697,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        }
        if (matchingIDfound == false) // this indicates that ANGLE != 0.0 for slave plane
           continue; // in this case do not proceed, but leave here!!
-       
+
        // read tolerance
        size_t start_tol = slave_con.desc.find("ABSTREETOL");
        size_t tol_length = std::string("ABSTREETOL").length();
@@ -710,26 +707,26 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        std::istringstream string_tolstream(string_tol);
        double abstol = -1.0;
        string_tolstream >> abstol;
-       
+
        const int slave_nodeset_id = slave_con.id;
        const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
        const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
-       
+
        if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
        {
           std::cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
           std::cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
           dserror("xy num master nodes != num slave nodes before adjusting coords");
         }
-       
+
        const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
        const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
-       
+
        // reference values for z on the master side and z on the slave side
        const double z_master = (mesh.GetNode(*master_nodeset_ids.begin()))[2];
        const double z_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[2];
-      
-       // loop over all master nodes 
+
+       // loop over all master nodes
        for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
              m_node_id != master_nodeset_ids.end();
              m_node_id++)
@@ -738,7 +735,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
          std::vector<double> m_coord = mesh.GetNode(*m_node_id);
          m_coord[2] = z_master;
          mesh.SetNode(*m_node_id, m_coord);
-       
+
          int count_slavenodes = 0;
          // loop over all slave nodes and find matching node
          for(  std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
@@ -748,20 +745,20 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
            count_slavenodes++;
            // get master node coordinates
            std::vector<double> s_coord = mesh.GetNode(*s_node_id);
-             
+
            // compare coordinates x and y
            bool equal = false;
-           if( (fabs(m_coord[0]-s_coord[0]) < abstol) && (fabs(m_coord[1]-s_coord[1]) < abstol) )  
+           if( (fabs(m_coord[0]-s_coord[0]) < abstol) && (fabs(m_coord[1]-s_coord[1]) < abstol) )
              equal = true;
 
            if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
              dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
-           
+
            if(!equal)
              continue;
            else
            {
-             // if equal copy x and y     
+             // if equal copy x and y
              s_coord[0] = m_coord[0];
              s_coord[1] = m_coord[1];
              s_coord[2] = z_slave;

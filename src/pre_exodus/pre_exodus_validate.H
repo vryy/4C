@@ -4,12 +4,9 @@
 
 \brief validate a given .dat-file
 
-<pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/bauer
-            089 - 289-15252
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Validate a given BACI input file (after all preprocessing steps)
 

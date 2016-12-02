@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_monitor.cpp
+\file post_drt_monitor.H
 
 \brief monitoring filter for one data
 
-<pre>
-Maintainer: Christiane FÃ¶rster
-            foerster@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/foerster
-            089 - 289-15262
-</pre>
+\maintainer Martin Kronbichler
+
+\level 2
 
 */
 /*----------------------------------------------------------------------*/

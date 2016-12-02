@@ -4,12 +4,9 @@
 
 \brief solid-shell body creation by extruding surface
 
-<pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Here everything related with solid-shell body extrusion
 */

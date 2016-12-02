@@ -4,11 +4,9 @@
 
   \brief postprocessing of thermal heatfluxes
 
-  <pre>
-  Maintainer: Caroline Danowski
-              danowski@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
-  </pre>
+  \maintainer Alexander Seitz
+
+  \level 1
 */
 
 /*----------------------------------------------------------------------*

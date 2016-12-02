@@ -4,15 +4,12 @@
 
 \brief pre_exodus .dat-file writer
 
-<pre>
-Maintainer: Moritz
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\level 1
+
+\maintainer Martin Kronbichler
 
 Here is everything related with writing a dat-file
-*/
+ */
 /*----------------------------------------------------------------------*/
 #ifndef PRE_EXODUS_WRITEDAT_H_
 #define PRE_EXODUS_WRITEDAT_H_

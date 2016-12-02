@@ -4,12 +4,9 @@
 
 \brief preprocessor reader for exodusII format
 
-<pre>
-Maintainer: Moritz & Georg
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.

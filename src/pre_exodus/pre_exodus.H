@@ -4,12 +4,9 @@
 
 \brief preprocessor for exodusII format
 
-<pre>
-Maintainer: Moritz & Georg
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089 - 289-15240
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Pre_exodus contains classes to open and preprocess exodusII files into the
 drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing
