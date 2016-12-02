@@ -2,11 +2,10 @@
 \file solver_muelucontactpreconditioner.cpp
 
 <pre>
-\brief Declaration
+\brief MueLu contact preconditioner class
 \level 1
-\maintainer Dr.-Ing. Francesc Verdugo
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15262
 </pre>
 
 Created on: Aug 2, 2012
@@ -60,8 +59,8 @@ Author: wiesner
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
-#include "muelu/muelu_ContactTransferFactory_decl.hpp"
-#include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
+#include "muelu/MueLu_ContactTransferFactory_decl.hpp"
+#include "muelu/MueLu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
 #include "solver_muelucontactpreconditioner.H"

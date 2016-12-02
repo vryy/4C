@@ -27,7 +27,7 @@
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#include "muelu/muelu_ContactSPAggregationFactory_fwd.hpp"
+#include "muelu/MueLu_ContactSPAggregationFactory_fwd.hpp"
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
 #include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
 

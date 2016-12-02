@@ -1,4 +1,11 @@
-// header
+/*!----------------------------------------------------------------------
+\file MueLu_BaciFactoryFactory.cpp
+
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 

@@ -4,9 +4,8 @@
 <pre>
 \brief Declaration
 \level 1
-\maintainer Dr.-Ing. Francesc Verdugo
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15262
 </pre>
 
 Created on: Sep 7, 2012
@@ -72,8 +71,8 @@ Author: wiesner
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
-#include "muelu/muelu_ContactAFilterFactory_decl.hpp"
-#include "muelu/muelu_ContactTransferFactory_decl.hpp"
+#include "muelu/MueLu_ContactAFilterFactory_decl.hpp"
+#include "muelu/MueLu_ContactTransferFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_IterationAFactory_decl.hpp"
 #include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
@@ -1015,4 +1014,3 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 }
 
 #endif // #ifdef HAVE_MueLu
-

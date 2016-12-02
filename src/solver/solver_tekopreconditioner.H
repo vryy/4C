@@ -1,12 +1,15 @@
-/*!-----------------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file solver_tekopreconditioner.H
 
-\brief Declaration
+\brief Preconditioner class using Trilinos TEKOS framework
 
 \level 2
 
 \maintainer Martin Kronbichler
-*-----------------------------------------------------------------------------*/
+            http://www.lnm.mw.tum.de
+
+Created on: Jul 13, 2011
+*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_TEKOPRECONDITIONER_H_
 #define SOLVER_TEKOPRECONDITIONER_H_
@@ -77,4 +80,3 @@ namespace LINALG
 
 #endif /* HAVE_TEKO */
 #endif /* SOLVER_TEKOPRECONDITIONER_H_ */
-

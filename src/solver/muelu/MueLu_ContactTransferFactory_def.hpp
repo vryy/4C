@@ -1,16 +1,18 @@
-/*
- * muelu_ContactTransferFactory_def.hpp
- *
- *  Created on: Jan 24, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactTransferFactory_def.hpp
+
+\brief MueLu transfer factory class for contact
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTTRANSFERFACTORY_DEF_HPP_
 #define MUELU_CONTACTTRANSFERFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
 
-#include "muelu_ContactTransferFactory_decl.hpp"
+#include "MueLu_ContactTransferFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>

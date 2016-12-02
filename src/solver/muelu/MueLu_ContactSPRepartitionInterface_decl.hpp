@@ -1,13 +1,11 @@
-/*----------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
 \file MueLu_ContactSPRepartitionInterface_decl.hpp
 
+\brief MueLu repartition algorithm for contact
 \level 2
+\maintainer Martin Kronbichler
 
-\brief Declaration
-
-\maintainer Tobias Wiesner
-*/
+*----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 

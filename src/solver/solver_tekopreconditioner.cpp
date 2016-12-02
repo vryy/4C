@@ -1,9 +1,15 @@
-/*
- * solver_tekopreconditioner.cpp
- *
- *  Created on: Jul 11, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_tekopreconditioner.cpp
+
+\brief Preconditioner class using Trilinos TEKOS framework
+
+\level 2
+
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+
+Created on: Jul 13, 2011
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_TEKO
 

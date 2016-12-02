@@ -1,9 +1,11 @@
-/*
- * MueLu_IterationAFactory.cpp
- *
- *  Created on: Jan 10, 2013
- *      Author: tobias
- */
+/*!----------------------------------------------------------------------
+\file MueLu_IterationAFactory.cpp
+
+\brief MueLu iteration factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
@@ -33,5 +35,3 @@ template class MueLu::IterationAFactory<std::complex<double>, int, int, KokkosSe
 # endif
 #endif
 #endif // HAVE_MueLu
-
-

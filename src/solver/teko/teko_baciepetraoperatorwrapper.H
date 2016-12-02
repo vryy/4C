@@ -1,9 +1,11 @@
-/*
- * teko_baciepetraoperatorwrapper.H
- *
- *  Created on: Jul 25, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file teko_baciepetraoperatorwrapper.H
+
+\brief wrapper class around the epetra operator in baci for use with teko
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef TEKO_BACIEPETRAOPERATORWRAPPER_H_
 #define TEKO_BACIEPETRAOPERATORWRAPPER_H_

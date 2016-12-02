@@ -1,9 +1,17 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactAFilterFactory.cpp
+
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_NodeDefinition.hpp"
-#include "muelu_ContactAFilterFactory_def.hpp"
+#include "MueLu_ContactAFilterFactory_def.hpp"
 
 template class MueLu::ContactAFilterFactory<double, int, int, KokkosSerialNode>;
 

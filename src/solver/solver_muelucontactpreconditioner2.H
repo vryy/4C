@@ -26,7 +26,7 @@
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#include "muelu/muelu_ContactAFilterFactory_fwd.hpp"
+#include "muelu/MueLu_ContactAFilterFactory_fwd.hpp"
 
 namespace LINALG
 {

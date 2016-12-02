@@ -1,9 +1,11 @@
-/*
- * muelu_ContactSPAggregationFactory_decl.hpp
- *
- *  Created on: Sep 28, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactSPAggregationFactory_decl.hpp
+
+\brief MueLu contact aggregation factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_

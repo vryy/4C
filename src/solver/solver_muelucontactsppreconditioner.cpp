@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Tobias Wiesner
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
@@ -84,9 +84,9 @@
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
-#include "muelu/muelu_ContactTransferFactory_decl.hpp"
-#include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
-#include "muelu/muelu_ContactSPAggregationFactory_decl.hpp"
+#include "muelu/MueLu_ContactTransferFactory_decl.hpp"
+#include "muelu/MueLu_ContactASlaveDofFilterFactory_decl.hpp"
+#include "muelu/MueLu_ContactSPAggregationFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_decl.hpp"
 #include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"

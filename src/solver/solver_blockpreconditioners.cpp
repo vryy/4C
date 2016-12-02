@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Tobias Wiesner
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_dserror.H"

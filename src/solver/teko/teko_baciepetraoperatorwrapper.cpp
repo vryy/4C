@@ -1,9 +1,11 @@
-/*
- * teko_baciepetraoperatorwrapper.cpp
- *
- *  Created on: Jul 25, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file teko_baciepetraoperatorwrapper.cpp
+
+\brief wrapper class around the epetra operator in baci for use with teko
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_TEKO
 
@@ -127,5 +129,3 @@ Teuchos::RCP<const Thyra::EpetraLinearOp > LINALG::SOLVER::TEKO::Teko_BACIEpetra
 }
 
 #endif /* HAVE_TEKO */
-
-

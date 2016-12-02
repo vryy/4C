@@ -1,4 +1,11 @@
-// header
+/*!----------------------------------------------------------------------
+\file MueLu_BaciFactoryFactory_decl.hpp
+
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_BACIFACTORYFACTORY_DECL_HPP
 #define MUELU_BACIFACTORYFACTORY_DECL_HPP
@@ -13,8 +20,8 @@
 #include "MueLu_SingleLevelFactoryBase.hpp"
 
 #include "MueLu_NodeDefinition.hpp"
-#include "muelu_ContactAFilterFactory_decl.hpp"
-#include "muelu_ContactSPAggregationFactory_decl.hpp"
+#include "MueLu_ContactAFilterFactory_decl.hpp"
+#include "MueLu_ContactSPAggregationFactory_decl.hpp"
 #include "MueLu_SelectiveSaPFactory_decl.hpp"
 #include "MueLu_IterationAFactory_decl.hpp"
 #include "MueLu_MyTrilinosSmoother_decl.hpp"

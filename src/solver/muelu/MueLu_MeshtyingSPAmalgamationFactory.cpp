@@ -1,3 +1,12 @@
+/*!----------------------------------------------------------------------
+\file MueLu_MeshtyingSPAmalgamationFactory.cpp
+
+\brief MueLu amalgamation factory for meshtying
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
+
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"

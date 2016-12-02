@@ -1,22 +1,17 @@
 /*!----------------------------------------------------------------------
-\file muelu_ContactAFilterFactory_def.hpp
+\file MueLu_ContactAFilterFactory_def.hpp
 
-<pre>
-Maintainer: Dr.-Ing. Francesc Verdugo
-            verdugo@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
 
-Created on: Jan 16, 2012
-Author: wiesner
 *----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
 
-#include "muelu_ContactAFilterFactory_decl.hpp"
+#include "MueLu_ContactAFilterFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_Matrix.hpp>

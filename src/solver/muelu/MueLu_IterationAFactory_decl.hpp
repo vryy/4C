@@ -1,9 +1,11 @@
-/*
- * MueLu_IterationAFactory_decl.hpp
- *
- *  Created on: Jan 10, 2013
- *      Author: tobias
- */
+/*!----------------------------------------------------------------------
+\file MueLu_IterationAFactory_decl.hpp
+
+\brief MueLu iteration factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_ITERATIONAFACTORY_DECL_HPP_
 #define MUELU_ITERATIONAFACTORY_DECL_HPP_

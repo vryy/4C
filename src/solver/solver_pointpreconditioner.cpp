@@ -1,9 +1,15 @@
-/*
- * solver_pointpreconditioner.cpp
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_pointpreconditioner.cpp
+
+<pre>
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
@@ -189,5 +195,3 @@ void LINALG::SOLVER::SymDiagPreconditioner::Finish( Epetra_Operator * matrix,
   lp_.RightScale(*diag_);
   diag_ = Teuchos::null;
 }
-
-

@@ -1,9 +1,17 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactSPAggregationFactory.cpp
+
+\brief MueLu contact aggregation factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_NodeDefinition.hpp"
-#include "muelu_ContactSPAggregationFactory_def.hpp"
+#include "MueLu_ContactSPAggregationFactory_def.hpp"
 
 template class MueLu::ContactSPAggregationFactory<double, int, int, KokkosSerialNode>;
 

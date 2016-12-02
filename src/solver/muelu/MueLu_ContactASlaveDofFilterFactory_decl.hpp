@@ -1,9 +1,11 @@
-/*
- * muelu_ContactASlaveDofFilter_decl.hpp
- *
- *  Created on: Aug 2, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactASlaveDofFilterFactory_decl.hpp
+
+\brief MueLu contact filter factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_

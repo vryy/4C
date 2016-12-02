@@ -1,9 +1,11 @@
-/*
- * MueLu_SelectiveSaPFactory_fwd.hpp
- *
- *  Created on: Jan 17, 2013
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_SelectiveSaPFactory_fwd.hpp
+
+\brief Factory class for MueLu
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_SELECTIVESAPFACTORY_FWD_HPP_
 #define MUELU_SELECTIVESAPFACTORY_FWD_HPP_

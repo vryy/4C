@@ -1,9 +1,15 @@
-/*
- * solver_stratimikossolver.H
- *
- *  Created on: Jul 13, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_stratimikossolver.H
+
+\brief Solver class using Trilinos STRATIMIKOS framework
+
+\level 1
+
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+
+Created on: Jul 13, 2011
+*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_STRATIMIKOSSOLVER_H_
 #define SOLVER_STRATIMIKOSSOLVER_H_

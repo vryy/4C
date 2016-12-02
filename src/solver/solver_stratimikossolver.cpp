@@ -1,9 +1,15 @@
-/*
- * solver_stratimikossolver.cpp
- *
- *  Created on: Jul 13, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_stratimikossolver.cpp
+
+\brief Solver class using Trilinos STRATIMIKOS framework
+
+\level 1
+
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+
+Created on: Jul 13, 2011
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_Stratimikos
 

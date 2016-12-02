@@ -1,9 +1,15 @@
-/*
- * solver_belossolver.cpp
- *
- *  Created on: Jul 5, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_belossolver.cpp
+
+<pre>
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 

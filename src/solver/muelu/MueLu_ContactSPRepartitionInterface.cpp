@@ -1,12 +1,11 @@
-/*
- * MueLu_ContactSPRepartitionInterface.cpp
- *
- *  Created on: 11 Sep 2013
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactSPRepartitionInterface.cpp
 
+\brief MueLu repartition algorithm class for contact
+\level 2
+\maintainer Martin Kronbichler
 
-
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 

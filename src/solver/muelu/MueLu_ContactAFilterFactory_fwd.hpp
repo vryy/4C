@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactAFilterFactory_fwd.hpp
+
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTAFILTERFACTORY_FWD_HPP
 #define MUELU_CONTACTAFILTERFACTORY_FWD_HPP
 

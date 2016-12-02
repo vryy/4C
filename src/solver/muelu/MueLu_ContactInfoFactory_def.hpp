@@ -1,16 +1,18 @@
-/*
- * muelu_ContactInfoFactory_def.hpp
- *
- *  Created on: Feb 16, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactInfoFactory_def.hpp
+
+\brief MueLu contact info factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTINFOFACTORY_DEF_HPP_
 #define MUELU_CONTACTINFOFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
 
-#include "muelu_ContactInfoFactory_decl.hpp"
+#include "MueLu_ContactInfoFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>

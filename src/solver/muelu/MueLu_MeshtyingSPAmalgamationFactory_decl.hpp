@@ -1,9 +1,11 @@
-/*
- * MueLu_MeshtyingSPAmalgamationFactory_decl.hpp
- *
- *  Created on: 18.03.2013
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_MeshtyingSPAmalgamationFactory_decl.hpp
+
+\brief MueLu amalgamation factory for meshtying
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_

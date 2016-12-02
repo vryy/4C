@@ -1,8 +1,17 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactTransferFactory.cpp
+
+\brief MueLu transfer factory class for contact
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
+
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
-#include "muelu_ContactTransferFactory_def.hpp"
+#include "MueLu_ContactTransferFactory_def.hpp"
 #include "MueLu_NodeDefinition.hpp"
 
 template class MueLu::ContactTransferFactory<double, int, int, KokkosSerialNode>;
@@ -25,4 +34,3 @@ template class MueLu::ContactTransferFactory<double, int, long long int, KokkosS
 //#endif
 
 #endif // HAVE_MueLu
-

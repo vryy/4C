@@ -1,9 +1,17 @@
-/*
- * nox_nln_group_prepostoperator.cpp
- *
- *  Created on: Oct 19, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_group_prepostoperator.cpp
+
+\brief wrapper class for a user derived NOX PrePostOperator
+
+\maintainer Michael Hiermeier
+
+\date Oct 19, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "nox_nln_group_prepostoperator.H"
 
@@ -75,4 +83,3 @@ NOX::NLN::GROUP::PrePostOperator::Map& NOX::NLN::GROUP::PrePostOp::
 
   return *mapptr;
 }
-

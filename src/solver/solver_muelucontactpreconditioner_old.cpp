@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Tobias Wiesner
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 

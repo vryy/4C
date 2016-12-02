@@ -1,9 +1,17 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactInfoFactory.cpp
+
+\brief MueLu contact info factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_NodeDefinition.hpp"
-#include "muelu_ContactInfoFactory_def.hpp"
+#include "MueLu_ContactInfoFactory_def.hpp"
 
 template class MueLu::ContactInfoFactory<double, int, int, KokkosSerialNode>;
 
@@ -25,5 +33,3 @@ template class MueLu::ContactInfoFactory<double, int, long long int, KokkosSeria
 //#endif
 
 #endif // HAVE_MueLu
-
-

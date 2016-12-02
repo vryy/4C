@@ -1,9 +1,11 @@
-/*
- * MueLu_ContactSPRepartitionInterface_def.hpp
- *
- *  Created on: 11 Sep 2013
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactSPRepartitionInterface_def.hpp
+
+\brief MueLu repartition algorithm for contact
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTSPREPARTITIONINTERFACE_DEF_HPP_
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DEF_HPP_

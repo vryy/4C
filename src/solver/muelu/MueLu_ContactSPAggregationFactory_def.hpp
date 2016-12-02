@@ -1,16 +1,18 @@
-/*
- * muelu_ContactSPAggregationFactory_def.hpp
- *
- *  Created on: Sep 28, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactSPAggregationFactory_def.hpp
+
+\brief MueLu contact aggregation factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
 
-#include "muelu_ContactSPAggregationFactory_decl.hpp"
+#include "MueLu_ContactSPAggregationFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>

@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Tobias Wiesner
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
@@ -49,8 +49,8 @@
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
-#include "muelu/muelu_ContactAFilterFactory_decl.hpp"
-#include "muelu/muelu_ContactTransferFactory_decl.hpp"
+#include "muelu/MueLu_ContactAFilterFactory_decl.hpp"
+#include "muelu/MueLu_ContactTransferFactory_decl.hpp"
 
 #include "solver_muelucontactpenaltypreconditioner.H"
 
@@ -531,4 +531,3 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 }
 
 #endif
-

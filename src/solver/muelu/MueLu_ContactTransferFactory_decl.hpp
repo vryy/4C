@@ -1,9 +1,11 @@
-/*
- * muelu_ContactTransferFactory_decl.hpp
- *
- *  Created on: Jan 24, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactTransferFactory_decl.hpp
+
+\brief MueLu transfer factory class for contact
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTTRANSFERFACTORY_DECL_HPP_
 #define MUELU_CONTACTTRANSFERFACTORY_DECL_HPP_

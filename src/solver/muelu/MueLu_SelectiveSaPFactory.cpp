@@ -1,10 +1,11 @@
-/*
- * MueLu_SelectiveSaPFactory.cpp
- *
- *  Created on: Jan 17, 2013
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_SelectiveSaPFactory.cpp
 
+\brief Factory class for MueLu
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
@@ -33,4 +34,3 @@ template class MueLu::SelectiveSaPFactory<double, int, long long int, KokkosSeri
 //#endif
 
 #endif // HAVE_MueLu
-

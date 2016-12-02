@@ -1,10 +1,11 @@
-/*
- * MueLu_NodeDefinition.hpp
- *
- * Maintainer: Martin Kronbichler
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15235
- */
+/*!----------------------------------------------------------------------
+\file MueLu_NodeDefinition.hpp
+
+\brief Definition of the serial node type for MueLu
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_NODEDEFINITION_HPP_
 

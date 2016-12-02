@@ -1,8 +1,16 @@
+/*!----------------------------------------------------------------------
+\file MueLu_ContactASlaveDofFilterFactory.cpp
+
+\brief MueLu contact filter factory class
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
-#include "muelu_ContactASlaveDofFilterFactory_def.hpp"
+#include "MueLu_ContactASlaveDofFilterFactory_def.hpp"
 #include "MueLu_NodeDefinition.hpp"
 
 template class MueLu::ContactASlaveDofFilterFactory<double, int, int, KokkosSerialNode>;

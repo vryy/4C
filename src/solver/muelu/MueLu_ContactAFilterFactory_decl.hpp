@@ -1,9 +1,11 @@
-/*
- * MueLu_ContactAFilterFactory_decl.hpp
- *
- *  Created on: Jan 16, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactAFilterFactory_decl.hpp
+
+\brief MueLu factory class for BACI
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
