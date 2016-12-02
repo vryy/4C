@@ -1382,9 +1382,6 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint_expl.cpp
   src/drt_thermo/thrtimint_expleuler.cpp
 )
-set(OBJS_POST_GID_TXT
-  src/post_gid/gid_out_txt.c
-)
 set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
@@ -1482,9 +1479,6 @@ set(OBJS_DRT_CONSTRAINT_LIB
   src/drt_constraint/constraint_element2_evaluate.cpp
   src/drt_constraint/constraint_element3.cpp
   src/drt_constraint/constraint_element3_evaluate.cpp
-)
-set(OBJS_POST_DRT_GID
-  src/post_gid/post_drt_gid.cpp
 )
 set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_fem_general/drt_utils_bspline.cpp
@@ -2672,7 +2666,6 @@ add_library(drt_error ${OBJS_DRT_ERROR})
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
 add_library(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
-add_library(post_drt_gid_lib ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
 add_library(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
 
 # linear algebra objects
@@ -2740,7 +2733,7 @@ set(FILTER_LIBRARIES
   ${LIBRARIES}
   drt_error)
 
-target_link_libraries (post_processor post_drt_ensight_lib post_drt_gid_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
+target_link_libraries (post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
@@ -2752,7 +2745,6 @@ ADD_CUSTOM_TARGET(baci DEPENDS ${baciname})
 ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor)
 ADD_CUSTOM_TARGET(post_drt_ensight DEPENDS post_processor)
 ADD_CUSTOM_TARGET(post_drt_vtk DEPENDS post_processor)
-ADD_CUSTOM_TARGET(post_drt_gid DEPENDS post_processor)
 ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post)
 ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test)
 

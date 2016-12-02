@@ -15,7 +15,6 @@
 
 #include "post_writer_base.H"
 #include "post_single_field_writers.H"
-#include "../post_gid/post_drt_gid.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -884,7 +883,7 @@ namespace
   {
     Teuchos::CommandLineProcessor clp(false, false, false);
     std::string filter ("ensight");
-    clp.setOption("filter",&filter,"filter to run [ensight, gid, vtu, vti]");
+    clp.setOption("filter",&filter,"filter to run [ensight, vtu, vti]");
     // ignore warnings about unrecognized options.
     std::ostringstream warning;
     clp.parse(argc, argv, &warning);
@@ -915,10 +914,8 @@ int main(
 
     if (filter == "ensight" || filter == "vtu" || filter == "vti")
       runEnsightVtuFilter(problem);
-    else if (filter == "gid")
-      PostGid::runGidFilter(problem);
     else
-      dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti|gid]", filter.c_str());
+      dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
 
   } // try
   catch ( std::runtime_error & err )
@@ -949,4 +946,3 @@ int main(
 
   return 0;
 }
-
