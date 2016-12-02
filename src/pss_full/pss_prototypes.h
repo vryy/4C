@@ -1,13 +1,10 @@
 /*!---------------------------------------------------------------------
-\file
-\brief
+\file pss_prototypes.h
+\brief Prototype classes
 
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 ---------------------------------------------------------------------*/
 

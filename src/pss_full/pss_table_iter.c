@@ -1,17 +1,14 @@
-/*!
-\file
+/*!---------------------------------------------------------------------
+\file pss_table_iter.c
 \brief Iterators for the symbol table.
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 Iterate the symbol table and visit all entries.
 
-*/
+---------------------------------------------------------------------*/
 
 #include "pss_table_iter.h"
 #include "pss_prototypes.h"
@@ -95,7 +92,7 @@ INT next_map_node(MAP_ITERATOR* iterator)
   /* if the map is empty there is nothing to iterate */
   if (iterator->map!=NULL)
   {
-    
+
   /*first call of this iterator*/
   if (iterator->stack.head.map_node==NULL)
   {

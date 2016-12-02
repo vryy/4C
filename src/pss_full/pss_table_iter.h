@@ -1,14 +1,12 @@
-/*!
-\file
+/*!---------------------------------------------------------------------
+\file pss_table_iter.h
 \brief Iterators for the symbol table.
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
-</pre>
-*/
+\maintainer Martin Kronbichler
+
+\level 1
+
+---------------------------------------------------------------------*/
 
 #ifndef PSS_TABLE_ITER_H
 #define PSS_TABLE_ITER_H

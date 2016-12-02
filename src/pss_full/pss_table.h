@@ -1,13 +1,13 @@
-/*!
-\file
+/*!---------------------------------------------------------------------
+\file pss_table.h
 \brief A very simple symbol table implementation.
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
+
+---------------------------------------------------------------------*/
+/*!
 
 ccarat writes control files that describe its binary output. Those
 files are meant to be human readable and very flexible but still must

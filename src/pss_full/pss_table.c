@@ -1,14 +1,13 @@
-/*!
-\file
+/*!---------------------------------------------------------------------
+\file pss_table.c
 \brief A very simple symbol table implementation.
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
-</pre>
+\maintainer Martin Kronbichler
 
+\level 1
+
+---------------------------------------------------------------------*/
+/*!
 ccarat writes control files that describe its binary output. Those
 files are meant to be human readable and very flexible but still must
 be read back. To accomplish this we need a small parser and a way to
@@ -545,8 +544,8 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         node->rhs->key = key;
         node->rhs->symbol = symbol;
         node->rhs->count = 1;
-	node->rhs->lhs = NULL;
-	node->rhs->rhs = NULL;
+        node->rhs->lhs = NULL;
+        node->rhs->rhs = NULL;
         map->count++;
         goto end;
       }
@@ -560,8 +559,8 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         node->lhs->key = key;
         node->lhs->symbol = symbol;
         node->lhs->count = 1;
-	node->lhs->lhs = NULL;
-	node->lhs->rhs = NULL;
+        node->lhs->lhs = NULL;
+        node->lhs->rhs = NULL;
         map->count++;
         goto end;
       }
@@ -1758,7 +1757,7 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
   data.file_buffer[data.file_size] = '\0';
 
   fclose(file);
-    
+
   parse_definitions(&data, map);
   destroy_parser_data(&data);
 }

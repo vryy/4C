@@ -1,15 +1,12 @@
-/*!
-\file
+/*!---------------------------------------------------------------------
+\file pss_cpp.h
 \brief Proper access to legacy parser module written in C.
 
-<pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/bauer
-            089 - 289-15252
-</pre>
+\maintainer Martin Kronbichler
 
-*/
+\level 1
+
+---------------------------------------------------------------------*/
 
 #ifndef PSS_CPP_H
 #define PSS_CPP_H

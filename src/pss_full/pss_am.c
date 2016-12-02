@@ -1,13 +1,10 @@
 /*!---------------------------------------------------------------------
-\file
+\file pss_am.c
 \brief contains memory managing functions
 
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 
 ---------------------------------------------------------------------*/
 
@@ -387,12 +384,12 @@ case newIV:/*---------------------------------------------new typ is IV */
       if (newfdim==1) {
           size1 = IMIN(newsdim,copyarray.sdim);
           for (i=0; i<size1; ++i)
-	    a->a.iv[i]=copyarray.a.ia[0][i];
+            a->a.iv[i]=copyarray.a.ia[0][i];
       }
       else {
           size1 = IMIN(newfdim,copyarray.fdim);
           for (i=0; i<size1; ++i)
-	    a->a.iv[i]=copyarray.a.ia[i][0];
+            a->a.iv[i]=copyarray.a.ia[i][0];
       }
       amdel(&copyarray);
    goto end;
@@ -413,11 +410,11 @@ case newIA:/*---------------------------------------------new typ is IA */
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
          for (i=0; i<size1; ++i)
-	   a->a.ia[0][i]=copyarray.a.iv[i];
+           a->a.ia[0][i]=copyarray.a.iv[i];
       }
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
-	 for (i=0; i<size1; ++i)
+         for (i=0; i<size1; ++i)
            a->a.ia[i][0]=copyarray.a.iv[i];
       }
       amdel(&copyarray);
@@ -466,12 +463,12 @@ case newDV:/*---------------------------------------------new typ is DV */
       if (newfdim==1){
           size1 = IMIN(newsdim,copyarray.sdim);
           for (i=0; i<size1; ++i)
-	    a->a.dv[i]=copyarray.a.da[0][i];
+            a->a.dv[i]=copyarray.a.da[0][i];
       }
       else{
           size1 = IMIN(newfdim,copyarray.fdim);
           for (i=0; i<size1; ++i)
-	    a->a.dv[i]=copyarray.a.da[i][0];
+            a->a.dv[i]=copyarray.a.da[i][0];
       }
       amdel(&copyarray);
    goto end;
@@ -491,12 +488,12 @@ case newDA:/*---------------------------------------------new typ is DA */
       if (copyarray.fdim==1){
          size1 = IMIN(newsdim,copyarray.sdim);
          for (i=0; i<size1; ++i)
-	   a->a.da[0][i]=copyarray.a.dv[i];
+           a->a.da[0][i]=copyarray.a.dv[i];
       }
       else{
          size1 = IMIN(newfdim,copyarray.fdim);
          for (i=0; i<size1; ++i)
-	   a->a.da[i][0]=copyarray.a.dv[i];
+           a->a.da[i][0]=copyarray.a.dv[i];
       }
       amdel(&copyarray);
    goto end;
@@ -1559,4 +1556,3 @@ return;
 
 
 /*! @} (documentation module close)*/
-
