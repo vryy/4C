@@ -690,7 +690,7 @@ set(OBJS_DRT_ADAPT
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_adapter/ad_str_factory.cpp
   src/drt_adapter/ad_str_structure_new.cpp
-  src/drt_adapter/ad_str_loca.cpp  
+  src/drt_adapter/ad_str_loca.cpp
   src/drt_adapter/ad_str_loca_wrapper.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
@@ -1293,7 +1293,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond_sti_thermo.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_electrode.cpp
-  src/drt_scatra_ele/scatra_ele_calc_elch_electrode_sti_thermo.cpp 
+  src/drt_scatra_ele/scatra_ele_calc_elch_electrode_sti_thermo.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_ls.cpp
@@ -1543,7 +1543,7 @@ set(OBJS_DRT_CAVITATION
   src/drt_particle/cavitation_algorithm.cpp
   src/drt_particle/cavitation_service.cpp
   src/drt_particle/particle_dyn.cpp
-)  
+)
 
 set(OBJS_DRT_TWO_PHASE
   src/drt_two_phase_flow/two_phase_algorithm.cpp
@@ -1853,11 +1853,11 @@ set(OBJS_SOLVER
   src/solver/solver_aztecsolver_projectedresidual.cpp
   src/solver/solver_stratimikossolver.cpp
   src/solver/teko/teko_baciepetraoperatorwrapper.cpp
-  src/solver/muelu/muelu_ContactAFilterFactory.cpp
-  src/solver/muelu/muelu_ContactTransferFactory.cpp
-  src/solver/muelu/muelu_ContactInfoFactory.cpp
-  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp
-  src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
+  src/solver/muelu/MueLu_ContactAFilterFactory.cpp
+  src/solver/muelu/MueLu_ContactTransferFactory.cpp
+  src/solver/muelu/MueLu_ContactInfoFactory.cpp
+  src/solver/muelu/MueLu_ContactASlaveDofFilterFactory.cpp
+  src/solver/muelu/MueLu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
   src/solver/muelu/MueLu_IterationAFactory.cpp
   src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
