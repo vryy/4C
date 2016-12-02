@@ -35,8 +35,6 @@
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoyeoh.H"
-#include "../drt_matelast/elast_isoquad.H"
-#include "../drt_matelast/elast_isocub.H"
 #include "../drt_matelast/elast_iso1pow.H"
 #include "../drt_matelast/elast_iso2pow.H"
 #include "../drt_matelast/elast_coup1pow.H"
@@ -710,24 +708,6 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j+2] = params2->c3_;
                 break;
               }
-              case INPAR::MAT::mes_isoquad:
-              {
-                filename_=filename_+"_isoquad";
-                const MAT::ELASTIC::PAR::IsoQuad* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+1);
-                p_[j]   = params2->c_;
-                break;
-              }
-              case INPAR::MAT::mes_isocub:
-              {
-                filename_=filename_+"_isocub";
-                const MAT::ELASTIC::PAR::IsoCub* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+1);
-                p_[j]   = params2->c_;
-                break;
-              }
               case INPAR::MAT::mes_iso1pow:
               {
                 filename_=filename_+"_iso1pow";
@@ -923,24 +903,6 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j+2] = params2->c3_;
                 break;
               }
-              case INPAR::MAT::mes_isoquad:
-              {
-                filename_=filename_+"_isoquad";
-                const MAT::ELASTIC::PAR::IsoQuad* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+1);
-                p_[j]   = params2->c_;
-                break;
-              }
-              case INPAR::MAT::mes_isocub:
-              {
-                filename_=filename_+"_isocub";
-                const MAT::ELASTIC::PAR::IsoCub* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+1);
-                p_[j]   = params2->c_;
-                break;
-              }
               case INPAR::MAT::mes_iso1pow:
               {
                 filename_=filename_+"_iso1pow";
@@ -1062,8 +1024,6 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_coupblatzko:
         case INPAR::MAT::mes_isoneohooke:
         case INPAR::MAT::mes_isoyeoh:
-        case INPAR::MAT::mes_isoquad:
-        case INPAR::MAT::mes_isocub:
         case INPAR::MAT::mes_iso1pow:
         case INPAR::MAT::mes_iso2pow:
         case INPAR::MAT::mes_coup1pow:
@@ -1213,22 +1173,6 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               params2->SetC2(abs(p_cur(j+1)));
               params2->SetC3(abs(p_cur(j+2)));
               j = j+3;
-              break;
-            }
-            case INPAR::MAT::mes_isoquad:
-            {
-              MAT::ELASTIC::PAR::IsoQuad* params2 =
-                dynamic_cast<MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
-              params2->SetC(abs(p_cur(j)));
-              j = j+1;
-              break;
-            }
-            case INPAR::MAT::mes_isocub:
-            {
-              MAT::ELASTIC::PAR::IsoCub* params2 =
-                dynamic_cast<MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
-              params2->SetC(abs(p_cur(j)));
-              j = j+1;
               break;
             }
             case INPAR::MAT::mes_iso1pow:
@@ -1404,22 +1348,6 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               params2->SetC2(abs(p_cur(j+1)));
               params2->SetC3(abs(p_cur(j+2)));
               j = j+3;
-              break;
-            }
-            case INPAR::MAT::mes_isoquad:
-            {
-              MAT::ELASTIC::PAR::IsoQuad* params2 =
-                dynamic_cast<MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
-              params2->SetC(abs(p_cur(j)));
-              j = j+1;
-              break;
-            }
-            case INPAR::MAT::mes_isocub:
-            {
-              MAT::ELASTIC::PAR::IsoCub* params2 =
-                dynamic_cast<MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
-              params2->SetC(abs(p_cur(j)));
-              j = j+1;
               break;
             }
             case INPAR::MAT::mes_iso1pow:

@@ -129,7 +129,8 @@ GENAVG                          TrLike
 MAT 1   MAT_ViscoElastHyper   NUMMAT 4 MATIDS 2 3 4 5 DENS 0.0002
 MAT 2   ELAST_VolOgden KAPPA 8.198272e+04 BETA -2.0
 MAT 3   ELAST_IsoNeoHooke MUE 3.939437e+03
-MAT 4   ELAST_IsoCub C 2.591038e+04
+MAT 4   ELAST_Iso1Pow C 2.591038e+04 D 3
+//MAT 4   ELAST_IsoCub C 2.591038e+04
 MAT 5   VISCO_GenMax TAU 0.1 BETA 1
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.479155e+00 1.817528e+00 0.000000e+00

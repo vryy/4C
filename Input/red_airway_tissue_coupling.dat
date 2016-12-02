@@ -85,7 +85,8 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 2 4 5 DENS 0.0002
 MAT 2 ELAST_VolOgden KAPPA 30000 BETA -2.0
 MAT 4 ELAST_IsoNeoHooke MUE 10000
-MAT 5 ELAST_IsoCub C 10000
+MAT 5 ELAST_Iso1Pow C 10000 D 3
+//MAT 5 ELAST_IsoCub C 10000
 MAT 3 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1000*(1-cos(3*pi*t/3)) t1 0.000 t2 3.0

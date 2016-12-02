@@ -609,12 +609,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupneohooke.cpp
   src/drt_matelast/elast_coupvarga.cpp
   src/drt_matelast/elast_isoanisoexpo.cpp
-  src/drt_matelast/elast_isocub.cpp
   src/drt_matelast/elast_isoexpopow.cpp
   src/drt_matelast/elast_coupmooneyrivlin.cpp
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isoneohooke.cpp
-  src/drt_matelast/elast_isoquad.cpp
   src/drt_matelast/elast_iso1pow.cpp
   src/drt_matelast/elast_iso2pow.cpp
   src/drt_matelast/elast_coup1pow.cpp

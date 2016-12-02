@@ -2,14 +2,15 @@
 /*!
 \file inpar_material.H
 
-\brief bla bla bla
+\brief list of valid materials
 
 \level 1
 
 <pre>
-\maintainer Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 */
 
@@ -165,11 +166,9 @@ namespace INPAR
       mes_iso1pow,                             ///< isochoric general power hyperelastic potential summand for modinv I
       mes_iso2pow,                             ///< isochoric general power hyperelastic potential summand for modiinv II
       mes_isoanisoexpo,                        ///< isochoric anisotropic single fiber material
-      mes_isocub,                              ///< isochoric cubic hyperelastic potential summand
       mes_isoexpopow,                          ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,                     ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isoneohooke,                         ///< isochoric Neo-Hooke hyperelastic potential summand
-      mes_isoquad,                             ///< isochoric quadratic hyperelastic potential summand
       mes_isoratedep,                          ///< isotropic isochoric frequency dependent viscous potential summand
       mes_isotestmaterial,                     ///< material to test the elasthyper-toolbox
       mes_isovarga,                            ///< isotropic isochoric Varga material
