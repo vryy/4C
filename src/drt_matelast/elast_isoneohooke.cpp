@@ -1,15 +1,22 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoneohooke.cpp
-\brief the input line should read
+
+
+\brief
+This file contains the isochoric routines required for logarithmic neo-Hooke material
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
+element analysis", Cambridge, 1997.
+The input line should read
   MAT 1 ELAST_IsoNeoHooke MUE 100
 
-\level 1
+\level 2
 
 <pre>
-\maintainer Sophie Rausch & Thomas Kloeppel
-            rausch,kloeppel@lnm.mw.tum.de
-            089/289 15255
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 

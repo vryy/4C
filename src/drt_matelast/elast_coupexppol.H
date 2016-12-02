@@ -1,10 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupexppol.H
-\brief This file contains the routines required for a strain energy function,
+
+\brief
+This file contains the routines required for a strain energy function,
 which is exponential according to Weickenmeier_2014 and contains a linear
-(in I_1 and J) polynom in the exponent. This SEF is able to describe the
-compressible lung parenchyma.
+(in I_1 and J) polynom in the exponent.
+The input line should read
+  MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
 
 \level 1
 

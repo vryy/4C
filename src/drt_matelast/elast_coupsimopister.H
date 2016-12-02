@@ -1,14 +1,22 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupsimopister.H
+
 \brief
 This file contains the routines required to calculate the Simo and Pister
-material model. (U(J) is not implemented)
+material model. (U(J) is not implemented).
+Always use in combination with at least one other material model of the
+Elasthyper Toolbox.
+The input line should read
+  MAT 1 ELAST_CoupSimoPister MUE 1000
+
+\level 1
 
 <pre>
 \maintainer Anna Birzle
-             birzle@lnm.mw.tum.de
-             089/289 15255
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -1,11 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file visco_coupmyocard.H
+
 \brief
 Isochoric coupled viscous material with pseudo-potential representing the collagen and
 elastin matrix surrounding the myocardial fiber (chappelle12)
+The input line should read
+  MAT 1 VISCO_CoupMyocard N 1
+
+\level 2
+
 <pre>
-Maintainer: Martin Pfaller
+\maintainer Martin Pfaller
             pfaller@lnm.mw.tum.de
 </pre>
 

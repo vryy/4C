@@ -1,8 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isotestmaterial.cpp
-\brief This file contains the routines required to calculate the isochoric contribution
-of a Material, which is not realistic, but contains all possible Derivatives of invariants.
+
+\brief
+This file contains the routines required to calculate the isochoric contribution
+of a Material, which is not realistic, but contains all possible derivatives of invariants.
 With this material in combination with volsussmannbathe, it is possible to test all
 isochoric parts of the Elasthyper-Toolbox.
 
@@ -11,7 +13,8 @@ isochoric parts of the Elasthyper-Toolbox.
 <pre>
 \maintainer Anna Birzle
             birzle@lnm.mw.tum.de
-            089/289 15255
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

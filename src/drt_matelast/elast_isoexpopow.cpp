@@ -1,17 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoexpopow.cpp
-\brief This file contains the routines required to calculate the isochoric contribution
-of an exponential  material
+
+\brief
+This file contains the routines required to calculate the isochoric contribution
+of an exponential material.
+The input line should read
 MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
 C = Exponent D
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 

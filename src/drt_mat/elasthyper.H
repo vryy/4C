@@ -2,16 +2,20 @@
 /*!
 \file elasthyper.H
 
-\brief This file contains the hyperelastic toolbox. It allows summing up several summands
+\brief
+This file contains the hyperelastic toolbox. It allows summing up several summands
 of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic
 strain energy function.
 
 The input line should read
-MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
-
-\maintainer Anna Birzle, Burkhard Bornemann
+MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 \level 1
+
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 
 */
 /*-----------------------------------------------------------*/

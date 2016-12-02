@@ -1,15 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coup1pow.H
-\brief This file contains the routines required to calculate the isochoric contribution
+
+\brief This file contains the routines required to calculate the contribution
 of a general power-type material.
+The input line should read
+  MAT 1 ELAST_Coup1Pow C 1 D 1
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

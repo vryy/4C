@@ -1,7 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_couplogmixneohooke.cpp
-\brief the input line should read either
+
+\brief
+This file contains the routines required for mixed-logarithmic neo-Hooke material
+according to example 1 in Stupkiewicz "An ALE formulation for implicit time integration of quasi-
+steady state wear problems" Comput. Methods Appl. Mech. Engrg. 260, 2013.
+The input line should read either
   MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.044E7 C2 0.3
   ( C1 = Young, c2 = nue)
 or

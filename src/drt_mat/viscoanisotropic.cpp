@@ -1,12 +1,18 @@
 /*!----------------------------------------------------------------------
 \file viscoanisotropic.cpp
+
 \brief
+Anisotropic viscohyperelastic material
+The input line should read
+MAT 1 MAT_VISCOANISO KAPPA 1.6667E04 MUE 33.3556 DENS 0.0000000001 K1 100.0 K2 1.0 GAMMA 20.0 BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
+
+\level 2
 
 <pre>
-Maintainer: Moritz Frenzel & Thomas Kloeppel
-            frenzel@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15255
 </pre>
 *----------------------------------------------------------------------*/
 

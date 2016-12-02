@@ -1,7 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_volpow.cpp
-\brief the input line should read
+
+\brief
+This file contains the routines for a volumetric power law.
+The resultant pressure depends on the prefactor and pressure.
+Should be combined with non-stiff volumetric law (eg. Ogden).
+The input line should read
   MAT 1 ELAST_VolPow A 100 EXPON 5
 
 \level 1
@@ -9,7 +14,8 @@
 <pre>
 \maintainer Anna Birzle
             birzle@lnm.mw.tum.de
-            089/289 15255
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 

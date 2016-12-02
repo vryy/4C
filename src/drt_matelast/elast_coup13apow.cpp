@@ -1,10 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coup13apow.cpp
-\brief the input line should read
+
+\brief
+This file contains the routines required to calculate the coupled
+power-type material in invariant 1 multiplicative invariant 3^(-a).
+The input line should read
   MAT 1 ELAST_Coup13aPow C 1 D 1 A 0.1
 
-\level 2
+\level 1
 
 <pre>
 \maintainer Anna Birzle

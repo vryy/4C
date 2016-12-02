@@ -1,16 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_volpenalty.H
-\brief This file contains the routines required for the volumetic function
-as afore used in the lungpenaly material for more details see
-[Roernbauer2008]
+
+\brief
+This file contains the routines required for the volumetic function
+of a penalty material
+For more details see Roernbauer2008 (student thesis)
+The input line should read
+  MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1.
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

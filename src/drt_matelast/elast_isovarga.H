@@ -1,14 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isovarga.H
+
 \brief
 This file contains the routines required for Varga's material
+The input line should read
+  MAT 1 ELAST_IsoVarga MUE 200.0
+
+\level 2
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15255
 </pre>
 */
 

@@ -1,14 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file visco_coupmyocard.cpp
+
 \brief
-
-
-the input line should read
+Isochoric coupled viscous material with pseudo-potential representing the collagen and
+elastin matrix surrounding the myocardial fiber (chappelle12)
+The input line should read
   MAT 1 VISCO_CoupMyocard N 1
 
+\level 2
+
 <pre>
-Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
+\maintainer Martin Pfaller
+            pfaller@lnm.mw.tum.de
 </pre>
 */
 

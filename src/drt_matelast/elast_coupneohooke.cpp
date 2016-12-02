@@ -1,16 +1,22 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupneohooke.cpp
-\brief the input line should read
+
+\brief
+This file contains the routines required to calculate the isochoric
+contribution of a CoupNeoHookean material material.
+The input line should read
   MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
-</pre>
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
+<pre>
+
 */
 
 /*----------------------------------------------------------------------*/

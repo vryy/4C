@@ -2,15 +2,19 @@
 /*!
 \file elast_isoyeoh.cpp
 
-\brief the input line should read
+\brief
+This file contains the routines required to calculate the isochoric contribution
+of a Yeoh-type material.
+The input line should read
   MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch & Thomas Kloeppel
-            rausch,kloeppel@lnm.mw.tum.de
-            089/289 15257
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 

@@ -2,15 +2,16 @@
 /*!
 \file elast_summand.H
 
-\brief Interface class for complex materials at Gauss points
+\brief
+Interface class for materials of (visco)elasthyper toolbox.
 
 \level 1
 
 <pre>
-\maintainer Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/

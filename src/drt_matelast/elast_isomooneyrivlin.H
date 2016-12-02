@@ -1,15 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isomooneyrivlin.H
-\brief This file contains the routines required to calculate the isochoric contribution
-of a Mooney-Rivlin-type material
+
+\brief
+This file contains the routines required to calculate the isochoric contribution
+of a Mooney-Rivlin-type material.
+The input line should read
+MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch & Thomas Kloeppel
-            rausch,kloeppel@lnm.mw.tum.de
-            089/289 15255
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

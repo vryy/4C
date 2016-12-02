@@ -1,12 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file visco_isoratedep.H
+
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a viscous rate dependent material law, modified from Pioletti,1997
+The input line should read
+  MAT 1 VISCO_IsoRateDep N 1
+
+\level 2
 
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255

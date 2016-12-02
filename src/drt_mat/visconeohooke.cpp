@@ -1,12 +1,19 @@
 /*!----------------------------------------------------------------------
 \file visconeohooke.cpp
+
 \brief
+Viscohyperelastic material model containing the following parts:
+IsoNeohooke + VolSussmannBathe with Generalized Maxwell (just on isochoric part).
+The input line should read
+MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0 RELAX 10.0 THETA 0.5
+
+\level 2
 
 <pre>
-Maintainer: Moritz Frenzel & Thomas Kloeppel
-            frenzel@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15255
 </pre>
 *----------------------------------------------------------------------*/
 

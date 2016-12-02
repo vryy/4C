@@ -1,16 +1,23 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupvarga.H
+
 \brief
-This file contains the routines required for Varga's material
+This file contains the routines required for Varga's material.
+The input line should read
+  MAT 1 ELAST_CoupVarga MUE 200.0 BETA 1.0
+
+\level 2
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15255
 </pre>
 */
+/*----------------------------------------------------------------------*/
+
 #ifndef ELAST_COUPVARGA_H_
 #define ELAST_COUPVARGA_H_
 

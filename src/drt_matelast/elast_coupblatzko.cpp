@@ -1,14 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupblatzko.cpp
-\brief the input line should read
+
+This file contains the routines required for Blatz and Ko material model
+according to Holzapfel, "Nonlinear solid mechanics", 2001.
+The input line should read
   MAT 1 ELAST_CoupBlatzKo MUE 1.044E7 NUE 0.3 F 0.5
 
 \level 1
 
 <pre>
-\maintainer Sophie Rausch
-            rausch@lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
 </pre>
