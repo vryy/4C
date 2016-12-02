@@ -4,12 +4,14 @@
 \brief Within this file all geometry typedefs shall be defined. Thus they can
 be used from outside in header files without including the according geometry
 header file
+--> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE BACI SOON
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\level 3
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 

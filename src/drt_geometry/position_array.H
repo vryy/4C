@@ -3,7 +3,15 @@
 
 \brief collection of service methods for intersection computations
 
- *----------------------------------------------------------------------*/
+\level 2
+
+<pre>
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+</pre>
+*----------------------------------------------------------------------*/
 #ifndef POSITION_ARRAY_H
 #define POSITION_ARRAY_H
 

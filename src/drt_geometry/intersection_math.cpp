@@ -5,12 +5,17 @@
 
     ML      math library for the interface computation
 
+    !WARNING: Except Tolerances not used at the moment
+    (remove this comment and change level as soon as this functionality is tested again!)
+
+
+\level 3
 
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289 15249
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -106,7 +111,7 @@ void GEO::test_svdcmp(
     }
     printf("\n");
 
-}  
+}
 
 void GEO::svdcmpSerialDense(
          Epetra_SerialDenseMatrix&  A,
@@ -116,13 +121,13 @@ void GEO::svdcmpSerialDense(
   {
    //Dimensionen der Matrix A herausfinden
    const int n=A.N();
-   const int m=A.M();   	  
-   	  
-   	  //Prüfen ob die W und V entsprechend richtige Dimension haben
-   	  if (!((W.M()==n) && (V.M()==n && V.N()==n)))
-   		dserror("Dimensionen der Matrizen nicht korrekt");  
+   const int m=A.M();
 
-   	  LINALG::SerialDenseMatrix rv1(n,1);
+      //Prüfen ob die W und V entsprechend richtige Dimension haben
+      if (!((W.M()==n) && (V.M()==n && V.N()==n)))
+     dserror("Dimensionen der Matrizen nicht korrekt");
+
+      LINALG::SerialDenseMatrix rv1(n,1);
 
            //Householder reduction to bidiagonal form.
          double g = 0.0;
@@ -375,6 +380,6 @@ void GEO::svdcmpSerialDense(
                    rv1(k,0)=f;
                    W(k,0)=x;
                }
-           }  
+           }
   }
 

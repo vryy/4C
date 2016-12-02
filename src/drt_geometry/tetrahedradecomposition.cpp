@@ -3,11 +3,14 @@
 
   \brief tetrahedralization procedure based on level set function
 
+--> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE BACI SOON
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\level 3
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -80,7 +83,7 @@ void GEO::TetrahedraDecomposition::DecomposeIntoTetrahedra(std::vector<GEO::Doma
   LINALG::SerialDenseMatrix tet_pcoords(3, num_nodes);
 
   // There are multiple ways to do that, this is one example
-  const int tetindex[6][4] = { 	{0, 5, 7, 4},
+  const int tetindex[6][4] = {  {0, 5, 7, 4},
       {0, 1, 7, 5},
       {1, 6, 7, 5},
       {0, 7, 2, 3},

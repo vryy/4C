@@ -4,13 +4,14 @@
 \brief  InterfacePoint stores and delivers all data a point lying on the
         intersection interface has to know
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\level 2
 
+<pre>
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+</pre>
 *----------------------------------------------------------------------*/
 
 
@@ -267,7 +268,7 @@ void GEO::InterfacePoint::setCoordZ(
  |  set single coordinates of the interface point            u.may 07/08|
  *----------------------------------------------------------------------*/
 void GEO::InterfacePoint::setSingleCoord(
-      const int	      index,
+      const int       index,
       const double    coord
       )
 {

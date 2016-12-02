@@ -4,11 +4,13 @@
 \brief computes coordinate transformation between current and element
        domains (both ways)
 
+\level 2
+
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289 15249
 </pre>
 *----------------------------------------------------------------------*/
 

@@ -3,14 +3,18 @@
 
 \brief collection of math tools for the interface computation of two
        curved meshes
+       !WARNING: Except Tolerances not used at the moment
+       (remove this comment and change level as soon as this functionality is tested again!)
+
+\level 3
 
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289 15249
 </pre>
-*/
+*----------------------------------------------------------------------*/
 
 
 #ifndef INTERSECTION_MATH_H_
@@ -61,9 +65,9 @@ namespace GEO
     {
         return (b >= 0.0 ? fabs(a) : -fabs(a));
     }
-    
- 
-  
+
+
+
 
     /*!
     \brief calculate a*a
@@ -146,9 +150,9 @@ namespace GEO
     }
 
 
-  
+
 /*-------------------------------------------------------------------*
-| 	VON MIR GESCHRIEBEN                                             |
+|  VON MIR GESCHRIEBEN                                               |
 *--------------------------------------------------------------------*/
 
     /*!
@@ -163,7 +167,7 @@ namespace GEO
         \param W    (out)           : diagonal matrix stored in a vector
         \param V    (out)           : V matrix (not its transpose)
         */
-    
+
     //Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
 
  void svdcmpSerialDense(
@@ -172,7 +176,7 @@ namespace GEO
      Epetra_SerialDenseMatrix&  V
          );
 
-  
+
   /*!
   \brief  Tests the singular value decomposition
 
