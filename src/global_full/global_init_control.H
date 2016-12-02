@@ -2,12 +2,11 @@
 /*!
 \file global_init_control.H
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief general initialization routine of BACI
+
+\maintainer Martin Kronbichler
+
+\level 0
 */
 /*----------------------------------------------------------------------*/
 #ifndef GLOBAL_INIT_CONTROL_H

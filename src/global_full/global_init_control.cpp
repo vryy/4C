@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_init_control.cpp
+\file global_init_control.cpp
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief general initialization routine of BACI
+
+\maintainer Martin Kronbichler
+
+\level 0
 */
 /*----------------------------------------------------------------------*/
 
@@ -189,4 +188,3 @@ void ntaini_ccadiscret(
 
   return;
 }
-

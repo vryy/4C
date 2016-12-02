@@ -5,6 +5,8 @@
 \maintainer Martin Kronbichler
 
 \brief Main routine
+
+\level 0
 */
 /*----------------------------------------------------------------------*/
 
