@@ -2,16 +2,19 @@
 /*!
 \file xfluidresulttest.H
 
-\brief testing of fluid calculation results
+\brief xfem based fluid result tests
+
+\level 0
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
-*/
+ */
 /*----------------------------------------------------------------------*/
+
 #ifndef XFLUIDRESULTTEST_H_
 #define XFLUIDRESULTTEST_H_
 

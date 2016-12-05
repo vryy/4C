@@ -6,12 +6,13 @@
 
 \level 3
 
+<pre>
 \maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-
-*/
+</pre>
+ */
 /*----------------------------------------------------------------------*/
 
 #ifndef XFLUID_LEVELSET_ALGORITHM_H

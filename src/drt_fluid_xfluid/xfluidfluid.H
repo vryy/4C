@@ -1,16 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluidfluid.H
+
 \brief Control routine for fluid-fluid (in)stationary solvers with XFEM
 
 \level 2
 
 <pre>
-\maintainer  Raffaela Kruse
-             kruse@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
-*----------------------------------------------------------------------*/
+ */
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUIDFLUID_H_
 #define XFLUIDFLUID_H_

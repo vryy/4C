@@ -1,14 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_outputservice.cpp
+
 \brief Service class for XFluid-related output.
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse
-             kruse@lnm.mw.tum.de
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15249
+             089 - 289-15241
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "xfluid_outputservice.H"
 #include "xfluid_state_creator.H"

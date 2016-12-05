@@ -1,16 +1,19 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*!
 \file xfem_edgestab.H
 
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
 
-<pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
-*------------------------------------------------------------------------------------------------*/
+\level 1
 
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef XFEM_EDGESTAB_H_
 #define XFEM_EDGESTAB_H_

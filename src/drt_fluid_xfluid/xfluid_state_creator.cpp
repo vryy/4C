@@ -1,17 +1,20 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_state_creator.cpp
+
 \brief Creates a state object for (in)stationary XFEM fluid problems
 
-\level 2
+\level 0
 
 <pre>
 \maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15241
 </pre>
+*/
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 
 #include "xfluid_state_creator.H"
 

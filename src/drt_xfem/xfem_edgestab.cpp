@@ -1,16 +1,19 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file xfem_edgestab.cpp
 
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
 
+\level 1
+
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
 </pre>
 */
-
+/*----------------------------------------------------------------------*/
 
 
 
@@ -28,8 +31,6 @@ Maintainer: Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-
-#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 

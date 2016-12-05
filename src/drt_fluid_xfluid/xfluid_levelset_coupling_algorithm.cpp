@@ -6,12 +6,13 @@
 
 \level 3
 
+<pre>
 \maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915245
-
-*/
+</pre>
+ */
 /*----------------------------------------------------------------------*/
 
 #include "../drt_levelset/levelset_algorithm.H"

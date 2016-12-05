@@ -2,9 +2,9 @@
 /*!
 \file xfluidresulttest.cpp
 
-\brief testing of fluid calculation results
+\brief xfem based fluid result tests
 
-\level 2
+\level 0
 
 <pre>
 \maintainer Benedikt Schott
@@ -12,9 +12,8 @@
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
-*/
+ */
 /*----------------------------------------------------------------------*/
-
 
 #include <string>
 

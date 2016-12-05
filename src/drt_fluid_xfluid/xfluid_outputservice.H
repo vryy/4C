@@ -1,18 +1,25 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_outputservice.H
+
 \brief Service class for XFluid-related output.
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse
-             kruse@lnm.mw.tum.de
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15249
+             089 - 289-15241
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUID_OUTPUTSERVICE_H_
 #define XFLUID_OUTPUTSERVICE_H_
 
+
+/*! header inclusions */
 #include "Epetra_Vector.h"
 
 #include "../drt_inpar/inpar_xfem.H"

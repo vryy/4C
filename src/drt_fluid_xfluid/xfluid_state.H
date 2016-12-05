@@ -1,15 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_state.H
+
 \brief State class for (in)stationary XFEM fluid problems
 
-<pre>
-Maintainer:  Raffaela Kruse and Benedikt Schott
-             [kruse,schott]@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+\level 0
 
-*----------------------------------------------------------------------*/
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+ */
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUID_STATE_H_
 #define XFLUID_STATE_H_

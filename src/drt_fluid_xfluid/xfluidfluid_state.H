@@ -1,16 +1,20 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluidfluid_state.H
+
 \brief State class for (in)stationary XFEM fluid problems involving embedded
 fluid meshes
 
-<pre>
-Maintainer:  Raffaela Kruse
-             kruse@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ */
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUIDFLUID_STATE_H_
 #define XFLUIDFLUID_STATE_H_

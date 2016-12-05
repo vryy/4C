@@ -1,5 +1,7 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid.cpp
+
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded interface
 
@@ -7,14 +9,13 @@
 
 <pre>
 \maintainer Benedikt Schott
-             schott@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
+ */
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-#include "xfluid_defines.H"
 #include "xfluid.H"
 #include "xfluid_state_creator.H"
 #include "xfluid_state.H"

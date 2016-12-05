@@ -1,18 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
- \file xfluid_functions.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file xfluid_functions.cpp
 
- \brief Managing and evaluating of spatial functions for Xfluid problems
-
-  detailed description in header file combust_interface.H
+\brief Managing and evaluating of spatial functions for Xfluid problems
 
 \level 3
 
+<pre>
 \maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
+</pre>
+ */
+/*----------------------------------------------------------------------*/
 
- *------------------------------------------------------------------------------------------------*/
 
 #include "xfluid_functions.H"
 #include "../drt_lib/drt_discret.H"

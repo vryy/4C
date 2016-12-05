@@ -1,15 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_utils.H
+
 \brief Utils routines for xfluid state class
 
+\level 0
+
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
 </pre>
-
-*----------------------------------------------------------------------*/
+ */
+/*----------------------------------------------------------------------*/
 
 
 #ifndef XFLUID_UTILS_H_

@@ -1,5 +1,7 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid.H
+
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded interface
 
@@ -7,15 +9,32 @@
 
 <pre>
 \maintainer Benedikt Schott
-             schott@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
-
-*----------------------------------------------------------------------*/
+ */
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUID_H
 #define XFLUID_H
+
+/*==========================================================================*/
+// Style guide                                                    nis Mar12
+/*==========================================================================*/
+
+  /*--- set, prepare, and predict ------------------------------------------*/
+
+  /*--- calculate and update -----------------------------------------------*/
+
+  /*--- query and output ---------------------------------------------------*/
+
+
+
+/*==========================================================================*/
+// header inclusions
+/*==========================================================================*/
+
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
@@ -25,6 +44,10 @@
 #include "../drt_fluid/fluidimplicitintegration.H"
 
 #include "xfluid_state.H"
+
+/*==========================================================================*/
+// forward declarations
+/*==========================================================================*/
 
 namespace DRT
 {

@@ -1,15 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_state_creator.H
+
 \brief Creates a state object for (in)stationary XFEM fluid problems
 
-<pre>
-Maintainer:  Raffaela Kruse and Benedikt Schott
-             [kruse,schott]@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15240
-</pre>
+\level 0
 
-*----------------------------------------------------------------------*/
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef XFLUID_STATE_CREATOR_H_
 #define XFLUID_STATE_CREATOR_H_
