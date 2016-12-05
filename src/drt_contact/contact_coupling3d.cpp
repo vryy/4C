@@ -1636,9 +1636,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = { 0.0, 0.0};
-          MORTAR::MortarProjector::Impl(Coupling()[bs_test]->SlaveIntElement(),
+          MORTAR::MortarProjector::Impl(SlaveElement(),
               Coupling()[bs_test]->MasterIntElement())->ProjectGaussPoint3D(SlaveElement(),
-                  sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+                  sxi_test,Coupling()[bs_test]->MasterIntElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterIntElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
