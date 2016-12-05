@@ -1,4 +1,9 @@
-// Maintainer : Sudhakar
+//
+// Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
+//
 // Solves beltrami flow over cube with spherical embedded cut
 // Volume and boundary cell gauss points by Tessellation
 ==================================================================

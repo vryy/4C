@@ -1,5 +1,8 @@
 //
 // Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // compressible structure, solved monolithically via XFEM, tests the general monolithic process with BGS2x2 solver and infnormscaling
 ==================================================================

@@ -1,7 +1,9 @@
 //
 // Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
-// necessary defines: D_FLUID3 D_SOLID3 BINIO
 //
 // Both volumecell and boundarycell points by Tessellation
 ==================================================================

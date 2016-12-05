@@ -1,7 +1,8 @@
 //
 // Maintainer: Benedikt Schott
-//
-// necessary defines: D_FLUID3 D_SOLID3 BINIO
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // Volumecell Gauss points by DirectDivergence
 ==================================================================

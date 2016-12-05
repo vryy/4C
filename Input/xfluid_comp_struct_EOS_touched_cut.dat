@@ -1,5 +1,8 @@
 //
 // Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // flow around a ball, based on the XFSI testcase comp_struct
 // tests the ghost-penalty stabilization in case that an element is just touched at a single point/edge

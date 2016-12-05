@@ -1,7 +1,8 @@
 //
-// Maintainer: Sudhakar Yogaray
-//
-// necessary defines: D_FLUID3 D_SOLID3 BINIO
+// Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // sliver cut (small critical cut), stationary interface, but instationary computation
 // stabilization on whole domain can lead to unstable results and divergence over time

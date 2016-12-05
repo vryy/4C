@@ -1,13 +1,11 @@
 //
 // Maintainer: Christoph Ager
 //
-// necessary defines: D_FLUID3 D_SOLID3 BINIO
-//
 // Both volumecell and boundarycell Gauss points by Tessellation
 // Tests xFluid Ale
 // For the timesteps in the calculation the Tessilation gives
 // hex8 volumecells, which results in an exact integration!
-
+//
 //if this testcase is continued, tesselation will lead to an
 //error (as directdivergence does) - an therefore test will fail!
 ==================================================================

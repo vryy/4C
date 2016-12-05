@@ -1,8 +1,8 @@
 //
 // Maintainer: Benedikt Schott
-//
-//
-// necessary defines: D_FLUID3 D_SOLID3 BINIO
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // flow around two obstacles, edge-oriented stabilization on the whole element for cut elements
 // should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|

@@ -1,5 +1,8 @@
 //
 // Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
 //
 // Test of Edge-based pressure stabilization (pEOS) for stretched hex8 elements, ratio 125:8:8
 //
