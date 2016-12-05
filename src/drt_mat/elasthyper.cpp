@@ -1588,7 +1588,7 @@ void MAT::ElastHyper::CheckPolyconvexity(
   LINALG::Matrix<3,3> CoFacF (true); //Cof(F) in Matrix-Notation
   LINALG::Matrix<9,1> CofF (true); // Cof(F) in Voigt-Notation
   CoFacF.Invert(defgrd);
-  CoFacF.Update(J,CoFacF);
+  CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
   CofF(0,0) = CoFacF(0,0);
   CofF(1,0) = CoFacF(1,1);
