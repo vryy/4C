@@ -1,22 +1,17 @@
-/*----------------------------------------------------------------------*/
-/*!
-\file fsi_monolithic_nonox.cpp
+/*!----------------------------------------------------------------------
+\file fsi_monolithic_nonox.H
 \brief Base class for monolithic fluid-fluid-fsi algorithm
  using XFEM (without NOX)
 
-<pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
+\level 2
 
-            Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
 </pre>
-*/
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_NONOX_H
 #define FSI_MONOLITHIC_NONOX_H

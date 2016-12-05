@@ -1,19 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fsi_fluidfluidmonolithic_structuresplit.H
-\brief Control routine for monolithic fluid-fluid-fsi (structuresplit)
- using XFEM and NOX
+\brief Control routine for monolithic fluid-fluid-fsi
+(structuresplit) using XFEM and NOX
+
+\level 2
 
 <pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
-
-            Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/

@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
-\brief Control routine for monolithic fluid-fluid-fsi using XFEM
+\brief Control routine for monolithic fluid-fluid-fsi (structuresplit)
+using XFEM
 
 \level 3
 
 <pre>
-\maintainer  Shadan Shahmiri
-             shahmiri@lnm.mw.tum.de
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15265
+             089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -2,15 +2,17 @@
 /*!
 \file ad_fld_fluid_fluid_xfsi.H
 
-\brief Fluid field adapter for XFSI allowing multiple fluid discretizationss
+\brief Fluid field adapter for XFSI allowing multiple fluid discretizations
 
 Can only be used in conjunction with XFluidFluid!
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse
-             kruse@lnm.mw.tum.de
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15249
+             089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/

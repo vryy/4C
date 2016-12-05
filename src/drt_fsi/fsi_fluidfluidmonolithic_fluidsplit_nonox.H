@@ -3,16 +3,13 @@
 \brief Control routine for monolithic fluid-fluid-fsi (fluidsplit)
 using XFEM
 
-<pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
+\level 3
 
-            Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -1,3 +1,17 @@
+/*!----------------------------------------------------------------------
+\file fsi_monolithic_nonox.cpp
+\brief Base class for monolithic fluid-fluid-fsi algorithm
+ using XFEM (without NOX)
+
+\level 2
+
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>

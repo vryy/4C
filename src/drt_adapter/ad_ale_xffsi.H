@@ -1,19 +1,20 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_xffsi.H
+\file ad_ale_xffsi.H
 
- \brief Wrapper for the ALE time integration
+\brief Wrapper for the ALE time integration
 
- <pre>
- Maintainer: Raffaela Kruse
-             kruse@lnm.mw.tum.de
+\level 2
+
+<pre>
+\maintainer  Benedikt Schott
+             schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
- */
+             089 - 289-15241
+</pre>
+*/
 /*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------*/
 
 #ifndef AD_ALE_XFFSI_H_
 #define AD_ALE_XFFSI_H_

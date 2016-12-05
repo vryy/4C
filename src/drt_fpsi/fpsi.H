@@ -1,4 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fpsi.H
 
+\level 2
+
+<pre>
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+</pre>
+*/
 
 #ifndef FPSI_H
 #define FPSI_H

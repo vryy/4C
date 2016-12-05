@@ -1,4 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_xfem_fluid.H
 
+\brief ...
+
+\level 2
+
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+*/
 
 #ifndef FSI_FLUID_XFEM_H
 #define FSI_FLUID_XFEM_H
