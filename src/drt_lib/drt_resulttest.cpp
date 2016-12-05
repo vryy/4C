@@ -489,6 +489,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition cardiovascular0d;
+  cardiovascular0d
+    .AddTag("CARDIOVASCULAR0D")
+    .AddNamedString("DIS")
+    .AddTag("SPECIAL")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid_node);
@@ -513,6 +524,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particle);
   lines->Add(acou);
   lines->Add(invacou);
+  lines->Add(cardiovascular0d);
 
   return lines;
 }

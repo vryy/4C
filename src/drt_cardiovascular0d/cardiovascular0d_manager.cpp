@@ -32,6 +32,7 @@
 #include "../drt_lib/drt_condition.H"
 #include "cardiovascular0d.H"
 
+#include "cardiovascular0d_resulttest.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
@@ -232,6 +233,13 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 
     strparams_ = strparams;
     cv0dparams_ = cv0dparams;
+
+    //Create resulttest
+    Teuchos::RCP<DRT::ResultTest> resulttest = Teuchos::rcp(new Cardiovascular0DResultTest(*this,actdisc_));
+
+    //Resulttest for 0D problem and testing
+    DRT::Problem::Instance()->AddFieldTest(resulttest);
+//    DRT::Problem::Instance()->TestAll(actdisc_->Comm());
 
   }
 
@@ -461,6 +469,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
           if (*conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
           if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
           if (*conditiontype == "atrium_right") newval[0] = -(*actpres)[8];
+          if (*conditiontype == "dummy") newval[0] = 0.;
         }
       }
     }

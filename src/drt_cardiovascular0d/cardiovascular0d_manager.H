@@ -243,6 +243,22 @@ namespace UTILS
     };
 
     /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Epetra_Vector> Get0D_dof_n() const
+    {
+      return cv0ddof_n_;
+    };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Epetra_Vector> Get0D_dof_m() const
+    {
+      return cv0ddof_m_;
+    };
+
+    /*!
       \brief Return vol vector
     */
     Teuchos::RCP<Epetra_Vector> Get0D_vol_np() const
@@ -250,13 +266,6 @@ namespace UTILS
       return v_np_;
     };
 
-    /*!
-      \brief Return dof vector of last converged step
-    */
-    Teuchos::RCP<Epetra_Vector> Get0D_dof_n() const
-    {
-      return cv0ddof_n_;
-    };
 
     Teuchos::RCP<Epetra_Vector> Get0D_df_np() const
     {
@@ -372,6 +381,20 @@ namespace UTILS
       const Teuchos::RCP<Epetra_Vector> rhsstandard  ///< standard right hand side
     );
 
+    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DWindkesselOnly()
+    {
+      return cardvasc0d_windkesselonly_;
+    }
+
+    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DArterialProxDist()
+    {
+      return cardvasc0d_arterialproxdist_;
+    }
+
+    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DArterialVenousSysPulCoupled()
+    {
+      return cardvasc0d_arterialvenoussyspulcoupled_;
+    }
 
   private:
 

@@ -75,15 +75,30 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    "0D",
                                    "3D"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::structure_3d),
+                                   INPAR::CARDIOVASCULAR0D::atr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::atr_structure_3d),
                                  &cardvasc0dartvensyspulcoupled);
-  IntParameter("Atrium_act_curve_l",1,"left atrium activation curve",&cardvasc0dartvensyspulcoupled);
-  IntParameter("Atrium_act_curve_r",2,"right atrium activation curve",&cardvasc0dartvensyspulcoupled);
-  DoubleParameter("E_at_max_l",0.0,"maximum left atrial elastance",&cardvasc0dartvensyspulcoupled);
-  DoubleParameter("E_at_min_l",0.0,"baseline left atrial elastance",&cardvasc0dartvensyspulcoupled);
-  DoubleParameter("E_at_max_r",0.0,"maximum right atrial elastance",&cardvasc0dartvensyspulcoupled);
-  DoubleParameter("E_at_min_r",0.0,"baseline right atrial elastance",&cardvasc0dartvensyspulcoupled);
+  IntParameter("Atrium_act_curve_l",-1,"0D left atrium activation curve",&cardvasc0dartvensyspulcoupled);
+  IntParameter("Atrium_act_curve_r",-1,"0D right atrium activation curve",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_at_max_l",0.0,"0D maximum left atrial elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_at_min_l",0.0,"0D baseline left atrial elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_at_max_r",0.0,"0D maximum right atrial elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_at_min_r",0.0,"0D baseline right atrial elastance",&cardvasc0dartvensyspulcoupled);
+
+  setStringToIntegralParameter<int>("VENTRICLE_MODEL","3D","",
+                                 tuple<std::string>(
+                                   "3D",
+                                   "0D"),
+                                 tuple<int>(
+                                   INPAR::CARDIOVASCULAR0D::ventr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::ventr_elastance_0d),
+                                 &cardvasc0dartvensyspulcoupled);
+  IntParameter("Ventricle_act_curve_l",-1,"0D left ventricular activation curve",&cardvasc0dartvensyspulcoupled);
+  IntParameter("Ventricle_act_curve_r",-1,"0D right ventricular activation curve",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_v_max_l",0.0,"0D maximum left ventricular elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_v_min_l",0.0,"0D baseline left ventricular elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_v_max_r",0.0,"0D maximum right ventricular elastance",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("E_v_min_r",0.0,"0D baseline right ventricular elastance",&cardvasc0dartvensyspulcoupled);
 
   DoubleParameter("C_ar_sys",0.0,"systemic arterial compliance",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("R_ar_sys",0.0,"systemic arterial resistance",&cardvasc0dartvensyspulcoupled);
@@ -121,9 +136,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   DoubleParameter("q_ven_pul_0",0.0,"initial pulmonary venous flux",&cardvasc0dartvensyspulcoupled);
   // volumes - only for postprocessing matters!
   DoubleParameter("V_at_l_0",0.0,"initial volume of left 0D atrium - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("V_v_l_0",0.0,"initial volume of left 0D ventricle - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("V_ar_sys_0",0.0,"initial volume of systemic arteries and capillaries - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("V_ven_sys_0",0.0,"initial volume of systemic veins - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("V_at_r_0",0.0,"initial volume of right 0D atrium - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
+  DoubleParameter("V_v_r_0",0.0,"initial volume of right 0D ventricle - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("V_ar_pul_0",0.0,"initial volume of pulmonary arteries and capillaries - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
   DoubleParameter("V_ven_pul_0",0.0,"initial volume of pulmonary veins - only for postprocessing matters!",&cardvasc0dartvensyspulcoupled);
 
@@ -207,8 +224,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(std::vector<Teuchos::RCP<DRT::I
   AddNamedInt(cardiovascular0darterialvenoussyspulcoupledcond,"id");
   cardiovascular0darterialvenoussyspulcoupledcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("TYPE")));
   cardiovascular0darterialvenoussyspulcoupledcond->AddComponent(Teuchos::rcp(new StringConditionComponent("type", "ventricle_left",
-                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right"),
-                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right"),
+                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right","dummy"),
+                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right","dummy"),
                                                                                        false)));
 
   condlist.push_back(cardiovascular0darterialvenoussyspulcoupledcond);

@@ -76,6 +76,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     Teuchos::ParameterList artvensyspulpar =
         DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED PARAMETERS");
     atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
+    ventricle_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(artvensyspulpar,"VENTRICLE_MODEL");
 
     std::vector<int> wkID(cardiovascular0dcond_.size());
     for (unsigned int i=0; i<cardiovascular0dcond_.size(); i++)
@@ -91,7 +92,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       {
         condtype[i] = cardiovascular0dcond_[i]->Get<std::string>("type");
 
-        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::elastance_0d)
+        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d)
         {
           if (*condtype[i] == "atrium_left" or *condtype[i] == "atrium_right")
             dserror("Set ATRIUM_MODEL to '3D' if you want to couple the 0D vascular system to a 3D atrial structure!");
@@ -100,22 +101,38 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
       switch (atrium_model_)
       {
-        case INPAR::CARDIOVASCULAR0D::elastance_0d:
+        case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
         {
-          if (cardiovascular0dcond_.size() == 2)
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_structure_3d)
           {
+            if (cardiovascular0dcond_.size() == 2)
+            {
 
-            if (*condtype[0] != "ventricle_left" and *condtype[1] != "ventricle_left")
-              dserror("No left/right ventricle type of condition specified!");
-            if (*condtype[0] != "ventricle_right" and *condtype[1] != "ventricle_right")
-              dserror("No left/right ventricle type of condition specified!");
+              if (*condtype[0] != "ventricle_left" and *condtype[1] != "ventricle_left")
+                dserror("No left/right ventricle type of condition specified!");
+              if (*condtype[0] != "ventricle_right" and *condtype[1] != "ventricle_right")
+                dserror("No left/right ventricle type of condition specified!");
+            }
+            else
+              dserror("You need 2 conditions (left + right ventricle)!");
           }
-          else
-            dserror("You need 2 conditions (left + right ventricle)!");
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+          {
+            if (cardiovascular0dcond_.size() == 1)
+            {
+              if (*condtype[0] != "dummy")
+                dserror("Only specify 1 dummy condition!");
+            }
+            else
+              dserror("You're only allowed to specify 1 (dummy) condition!");
+          }
         }
         break;
-        case INPAR::CARDIOVASCULAR0D::structure_3d:
+        case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
         {
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+            dserror("You cannot use 3D atria with 0D ventricles!");
+
           if (cardiovascular0dcond_.size() == 4)
           {
             if (*condtype[0] != "atrium_left" and *condtype[1] != "atrium_left" and *condtype[2] != "atrium_left" and *condtype[3] != "atrium_left")
@@ -134,9 +151,8 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
         break;
         default:
           dserror("Unknown ATRIUM_MODEL!");
-      }
-
-    }
+      } // end of switch
+    } // end if (cardiovascular0dtype_ == cardvasc0d_arterialvenoussyspulcoupled)
 
     std::vector<int> coupcondID(cardiovascular0dstructcoupcond_.size());
     //set Neumann line to condition
@@ -865,10 +881,16 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   const double R_atvalve_min_r = artvensyspulpar.get("R_atvalve_min_r",0.0);
   const int Atrium_act_curve_l = artvensyspulpar.get("Atrium_act_curve_l",-1);
   const int Atrium_act_curve_r = artvensyspulpar.get("Atrium_act_curve_r",-1);
+  const int Ventricle_act_curve_l = artvensyspulpar.get("Ventricle_act_curve_l",-1);
+  const int Ventricle_act_curve_r = artvensyspulpar.get("Ventricle_act_curve_r",-1);
   const double E_at_max_l = artvensyspulpar.get("E_at_max_l",0.0);
   const double E_at_min_l = artvensyspulpar.get("E_at_min_l",0.0);
   const double E_at_max_r = artvensyspulpar.get("E_at_max_r",0.0);
   const double E_at_min_r = artvensyspulpar.get("E_at_min_r",0.0);
+  const double E_v_max_l = artvensyspulpar.get("E_v_max_l",0.0);
+  const double E_v_min_l = artvensyspulpar.get("E_v_min_l",0.0);
+  const double E_v_max_r = artvensyspulpar.get("E_v_max_r",0.0);
+  const double E_v_min_r = artvensyspulpar.get("E_v_min_r",0.0);
   const double C_ar_sys = artvensyspulpar.get("C_ar_sys",0.0);
   const double R_ar_sys = artvensyspulpar.get("R_ar_sys",0.0);
   const double L_ar_sys = artvensyspulpar.get("L_ar_sys",0.0);
@@ -884,24 +906,37 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   const double R_ven_pul = artvensyspulpar.get("R_ven_pul",0.0);
   const double L_ven_pul = artvensyspulpar.get("L_ven_pul",0.0);
 
+  const double V_v_l_0 = artvensyspulpar.get("V_v_l_0",0.0);
   const double V_at_l_0 = artvensyspulpar.get("V_at_l_0",0.0);
   const double V_ar_sys_0 = artvensyspulpar.get("V_ar_sys_0",0.0);
   const double V_ven_sys_0 = artvensyspulpar.get("V_ven_sys_0",0.0);
+  const double V_v_r_0 = artvensyspulpar.get("V_v_r_0",0.0);
   const double V_at_r_0 = artvensyspulpar.get("V_at_r_0",0.0);
   const double V_ar_pul_0 = artvensyspulpar.get("V_ar_pul_0",0.0);
   const double V_ven_pul_0 = artvensyspulpar.get("V_ven_pul_0",0.0);
 
   // find out whether we will use a time curve and get the factor
-
+  // 0D atrial activation
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
   if (Atrium_act_curve_l>=0 && usetime)
     y_at_l_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_l-1).f(tim);
   if (Atrium_act_curve_r>=0 && usetime)
     y_at_r_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_r-1).f(tim);
-
+  // 0D time-varying atrial elastance - NOT used when we have 3D atria!
   double E_at_l_np = (E_at_max_l-E_at_min_l)*y_at_l_np + E_at_min_l;
   double E_at_r_np = (E_at_max_r-E_at_min_r)*y_at_r_np + E_at_min_r;
+
+  // 0D ventricular activation
+  double y_v_l_np = 0.0;
+  double y_v_r_np = 0.0;
+  if (Ventricle_act_curve_l>=0 && usetime)
+    y_v_l_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_l-1).f(tim);
+  if (Ventricle_act_curve_r>=0 && usetime)
+    y_v_r_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_r-1).f(tim);
+  // 0D time-varying ventricular elastance - NOT used when we have 3D ventricles!
+  double E_v_l_np = (E_v_max_l-E_v_min_l)*y_v_l_np + E_v_min_l;
+  double E_v_r_np = (E_v_max_r-E_v_min_r)*y_v_r_np + E_v_min_r;
 
   // Cardiovascular0D stiffness
   Epetra_SerialDenseMatrix wkstiff(16,16);
@@ -966,13 +1001,13 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
 
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
       {
         df_np[0]  = p_at_l_np/E_at_l_np;
         df_np[8]  = p_at_r_np/E_at_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::structure_3d:
+      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
       {
         df_np[0]  = V_at_l_np;
         df_np[8]  = V_at_r_np;
@@ -980,8 +1015,23 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
       break;
     }
 
+    switch (ventricle_model_)
+    {
+      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      {
+        df_np[2]  = V_v_l_np;
+        df_np[10]  = V_v_r_np;
+      }
+      break;
+      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
+      {
+        df_np[2]  = p_v_l_np/E_v_l_np;
+        df_np[10]  = p_v_r_np/E_v_r_np;
+      }
+      break;
+    }
+
     df_np[1]  = 0.;
-    df_np[2]  = V_v_l_np;
     df_np[3]  = 0.;
     df_np[4]  = C_ar_sys * (p_ar_sys_np - Z_ar_sys * q_vout_l_np);
     df_np[5]  = (L_ar_sys/R_ar_sys) * q_ar_sys_np;
@@ -989,7 +1039,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     df_np[7]  = (L_ven_sys/R_ven_sys) * q_ven_sys_np;
 
     df_np[9]  = 0.;
-    df_np[10] = V_v_r_np;
     df_np[11] = 0.;
     df_np[12] = C_ar_pul * (p_ar_pul_np - Z_ar_pul * q_vout_r_np);
     df_np[13] = (L_ar_pul/R_ar_pul) * q_ar_pul_np;
@@ -1031,13 +1080,26 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
     //atrium - left and right
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
         wkstiff(0,0) = 1./(E_at_l_np*ts_size);
         wkstiff(8,8) = 1./(E_at_r_np*ts_size);
       break;
-      case INPAR::CARDIOVASCULAR0D::structure_3d:
+      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
         wkstiff(0,0) = 0.;
         wkstiff(8,8) = 0.;
+      break;
+    }
+
+    //ventricle - left and right
+    switch (ventricle_model_)
+    {
+      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+        wkstiff(2,3) = 0.;
+        wkstiff(10,11) = 0.;
+      break;
+      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
+        wkstiff(2,3) = 1./(E_v_l_np*ts_size);
+        wkstiff(10,11) = 1./(E_v_r_np*ts_size);
       break;
     }
 
@@ -1168,20 +1230,29 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
   {
     p_at_l_np = (*sysvec4)[0];
     q_vout_l_np = (*sysvec4)[2];
+    p_v_l_np = (*sysvec4)[3];
     p_ar_sys_np = (*sysvec4)[4];
     p_ven_sys_np = (*sysvec4)[6];
 
     p_at_r_np = (*sysvec4)[8];
     q_vout_r_np = (*sysvec4)[10];
+    p_v_r_np = (*sysvec4)[11];
     p_ar_pul_np = (*sysvec4)[12];
     p_ven_pul_np = (*sysvec4)[14];
 
-    if (atrium_model_ == INPAR::CARDIOVASCULAR0D::elastance_0d)
+    if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d)
     {
-      // left atrial volume
+      // 0D left atrial volume
       (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_0;
-      // right atrial volume
+      // 0D right atrial volume
       (*sysvec5)[8] = p_at_r_np/E_at_r_np + V_at_r_0;
+    }
+    if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+    {
+      // 0D left ventricular volume
+      (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_0;
+      // 0D right ventricular volume
+      (*sysvec5)[10] = p_v_r_np/E_v_r_np + V_v_r_0;
     }
     // systemic arterial compartment volume
     (*sysvec5)[4] = C_ar_sys * (p_ar_sys_np - Z_ar_sys * q_vout_l_np) + V_ar_sys_0;
@@ -1246,7 +1317,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
       // assembly
       int eid = curr->second->Id();
 
-      if (assmat2)
+      if (assmat2 and *conditiontype != "dummy")
       {
         // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
@@ -1259,7 +1330,7 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
 
-      if (assvec3)
+      if (assvec3 and *conditiontype != "dummy")
       {
         // assemble the current volume of the enclosed surface of the cardiovascular0d condition
         std::vector<int> cardiovascular0dlm;
@@ -1483,6 +1554,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
             if (*conditiontype == "ventricle_right") colvec[0]=gindex_syspulcoupled[11];
             if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulcoupled[0];
             if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulcoupled[8];
+            if (*conditiontype == "dummy") colvec[0]=gindex_syspulcoupled[0];
           }
         }
       }
@@ -1815,7 +1887,7 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
       if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
       if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[8]);
       cardiovascular0downer.push_back(curr->second->Owner());
-      if (assvec1) LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
+      if (assvec1 and *conditiontype != "dummy") LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
 
     }
 

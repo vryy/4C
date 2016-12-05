@@ -85,7 +85,7 @@ namespace UTILS
      */
     ~Cardiovascular0D()
     {
-        return;
+      return;
     };
 
     /*!
@@ -93,7 +93,7 @@ namespace UTILS
     */
     bool HaveCardiovascular0D()
     {
-        return cardiovascular0dtype_!=none;
+      return cardiovascular0dtype_!=none;
     };
 
     /// Set state of the underlying discretization
@@ -148,6 +148,7 @@ namespace UTILS
     std::vector<DRT::Condition*> cardiovascular0dstructcoupcond_; ///< 0D cardiovascular structure coupling conditions
     Cardiovascular0DType cardiovascular0dtype_; ///< Cardiovascular0D type
     INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel atrium_model_;
+    INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
     std::map<int,double>  inittimes_; ///< map with times at which Cardiovascular0D is supposed to become active
     std::map<int,bool> activecons_; ///< map with indicator if Cardiovascular0Ds are active
     //! gaussian integration to be used

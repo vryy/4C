@@ -1939,6 +1939,7 @@ set(OBJS_DRT_CARDIOVASCULAR0D
   src/drt_cardiovascular0d/cardiovascular0d.cpp
   src/drt_cardiovascular0d/cardiovascular0d_manager.cpp
   src/drt_cardiovascular0d/cardiovascular0d_dofset.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_resulttest.cpp
 )
 
 set(OBJS_DRT_CONSTRAINT

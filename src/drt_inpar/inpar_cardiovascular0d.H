@@ -34,8 +34,14 @@ namespace CARDIOVASCULAR0D
 
   enum Cardvasc0DAtrimModel
   {
-    elastance_0d,
-    structure_3d
+    atr_elastance_0d,
+    atr_structure_3d
+  };
+
+  enum Cardvasc0DVentricleModel
+  {
+    ventr_elastance_0d,
+    ventr_structure_3d
   };
 
   /// set the 0Dcardiovascular parameters
