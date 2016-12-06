@@ -23,6 +23,7 @@
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
+#include "ad_str_structalewrapper.H"
 #include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
 #include "ad_str_ssiwrapper.H"
@@ -342,7 +343,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy
   // ---------------------------------------------------------------------------
-  SetStructureWrapper(*ioflags,*sdyn_,*xparams,*taflags,modeltypes,ti_strategy);
+  SetStructureWrapper(*ioflags,*sdyn_,*xparams,*taflags,ti_strategy);
 
   // see you
   return;
@@ -737,7 +738,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
-    const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // create a adaptive wrapper
@@ -745,7 +745,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(
 
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null())
-    CreateWrapper(modeltypes,ti_strategy);
+    CreateWrapper(ti_strategy);
 
   if (str_wrapper_.is_null())
     dserror("No proper time integration found!");
@@ -807,7 +807,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
-    const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
