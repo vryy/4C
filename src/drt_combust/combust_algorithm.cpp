@@ -7,7 +7,12 @@
 
 \level 2
 
-\maintainer Magnus Winter
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
 
  *------------------------------------------------------------------------------------------------*/
 

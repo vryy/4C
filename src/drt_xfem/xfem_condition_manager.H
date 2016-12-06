@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*!
 \file xfem_condition_manager.H
 
 \brief manages the different types of mesh and level-set based coupling conditions and thereby builds the bridge between the
@@ -12,7 +13,8 @@ xfluid class and the cut-library
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 
 #ifndef XFEM_CONDITION_MANAGER_H_

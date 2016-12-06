@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file combust_utils_time_integration.cpp
 \brief routines for fluid (in)stationary time-integration,
 
      including instationary formulations
@@ -11,11 +11,13 @@
 
      and ale displacement.
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/

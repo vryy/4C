@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file time_integration_element.H
+\file combust_time_integration_element.H
 \brief routines for fluid (in)stationary time-integration,
 
      including instationary formulations
@@ -9,11 +9,13 @@
      o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/

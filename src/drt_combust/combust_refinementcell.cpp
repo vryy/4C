@@ -3,13 +3,14 @@
 
  \brief
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\level 2
 
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
  *------------------------------------------------------------------------------------------------*/
 
 #include "combust_refinementcell.H"
@@ -511,25 +512,25 @@ void COMBUST::RefinementCell::RefineCell() // input: a refinement cell; output: 
   std::vector<double> actrefinevertexcoord(3);// problem dimension = 3
   const int numvertex = 28;
   for (int inode = 0; inode<numnode; inode++)
-	  refinevertexcoord.push_back(vertexcoord_[inode]);
+    refinevertexcoord.push_back(vertexcoord_[inode]);
   for(int ivertex = numnode; ivertex < numvertex; ++ivertex)
   {
-	// get vertex coordinate of refinement cell in the coordinate system of the refinement cell
-	for (int k = 0; k < 3; ++k)
+ // get vertex coordinate of refinement cell in the coordinate system of the refinement cell
+ for (int k = 0; k < 3; ++k)
     {
       actrefinevertexcoord[k] = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ivertex][k];
     }
-	// evaluate shape function at the coordinates of the current refinement cell vertex
-	Epetra_SerialDenseVector funct(numnode);
-	DRT::UTILS::shape_function_3D(funct,actrefinevertexcoord[0],actrefinevertexcoord[1],actrefinevertexcoord[2],DRT::Element::hex8);
+ // evaluate shape function at the coordinates of the current refinement cell vertex
+ Epetra_SerialDenseVector funct(numnode);
+ DRT::UTILS::shape_function_3D(funct,actrefinevertexcoord[0],actrefinevertexcoord[1],actrefinevertexcoord[2],DRT::Element::hex8);
     // compute the coordinates of the actual refinement cell vertex in element coordinates
-	std::vector<double> actvertexcoord(3);
+ std::vector<double> actvertexcoord(3);
     for (int k = 0; k < 3; ++k)
     {
-    	actvertexcoord[k] = 0.0;
+     actvertexcoord[k] = 0.0;
         for (int inode = 0; inode < numnode; inode++)
         {
-    	     actvertexcoord[k] += vertexcoord_[inode][k] * funct(inode);
+          actvertexcoord[k] += vertexcoord_[inode][k] * funct(inode);
         }
     }
     refinevertexcoord.push_back(actvertexcoord);
@@ -720,7 +721,7 @@ void COMBUST::RefinementCell::RootCellToGmsh() const
       LINALG::Matrix<3,1> pos;
       for (size_t k=0; k<point.size(); k++)
          pos(k) = point[k];
-      
+
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
     }
     gmshfilecontent << "};\n";

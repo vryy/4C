@@ -5,13 +5,17 @@
 
 this is related to the physics of the fluid problem and therefore should not be part of the standard xfem routines
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
- */
+
+\warning this combustion module related file will be deleted within the next time!!!
+ *------------------------------------------------------------------------------------------------*/
 
 
 #include "xdofmapcreation_combust.H"
@@ -88,15 +92,15 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     static LINALG::Matrix<3,numnode> xyze;
     GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
     const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
-    
+
     // get phi values for nodes
     std::vector<double> phinp_;
-    
+
     // extract local (element level) G-function values from global vector
     DRT::UTILS::ExtractMyNodeBasedValues(xfemele, phinp_, *phinp);
-    
+
     if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
-    
+
     unsigned nodecount = 0;
     // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
     for (int inode = 0; inode<numnodes; ++inode)
@@ -378,7 +382,7 @@ void XFEM::createDofMapCombust(
     // remark: - for any regular call of DofManager the flame front exists (ih.FlameFront() != Teuchos::null),
     //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
     //           flame front does not exist yet (ih.FlameFront() == Teuchos::null)
-    //         - special option for two-phase flow: suppress one or both enrichments 
+    //         - special option for two-phase flow: suppress one or both enrichments
      const INPAR::COMBUST::SelectedEnrichment selectedEnrichment=DRT::INPUT::get<INPAR::COMBUST::SelectedEnrichment>(params, "SELECTED_ENRICHMENT");
 
     if (phinp != NULL) // TODO works this???

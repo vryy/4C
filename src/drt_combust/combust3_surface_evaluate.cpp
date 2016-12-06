@@ -5,11 +5,13 @@
 Integrate a Surface Neumann boundary condition on a given boundary
 element (tri or quad)
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -986,13 +988,13 @@ void  DRT::ELEMENTS::Combust3Surface::ComputeMetricTensorForSurface(
   |
   |
   |                                     +-            -+
-  |  	   	    	    	        | dx   dy   dz |
-  |  	   	    	    	        | --   --   -- |
-  | 	   	   	   	        | dr   dr   dr |
-  | 	yields               dxyzdrs =  |              |
-  |  	   	    	    	        | dx   dy   dz |
-  |  	   	    	    	        | --   --   -- |
-  | 	   	   	   	        | ds   ds   ds |
+  |                         | dx   dy   dz |
+  |                         | --   --   -- |
+  |                      | dr   dr   dr |
+  |  yields               dxyzdrs =  |              |
+  |                         | dx   dy   dz |
+  |                         | --   --   -- |
+  |                      | ds   ds   ds |
   |                                     +-            -+
   |
   */

@@ -1,16 +1,20 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_transparent_independent.H
+/*----------------------------------------------------------------------*/
+/*!
+\file xfem_dofset_transparent_independent.H
 
-\brief A set of degrees of freedom special for contact
+\brief transparent independent dofset
+
+\level 1
 
 <pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15241
 </pre>
+*/
+/*----------------------------------------------------------------------*/
 
- *----------------------------------------------------------------------*/
 #ifndef XFEMTRANSPARENTINDEPENDENTDOFSET_H
 #define XFEMTRANSPARENTINDEPENDENTDOFSET_H
 

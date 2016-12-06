@@ -5,13 +5,15 @@
 \brief system matrix standard FEM terms
        for premixed combustion and two-phase flow problems / 3D combustion element
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
-*/
+ */
 /*----------------------------------------------------------------------*/
 
 #ifndef COMBUST3_SYSMAT_STANDARD_H
@@ -35,9 +37,9 @@ namespace COMBUST
   - scaling has to be performed with quantities (density, viscosity) from corresponding time step (n, n+1)
  */
 template <DRT::Element::DiscretizationType DISTYPE,
-          XFEM::AssemblyType ASSTYPE,
-          size_t NUMDOF,
-          size_t shpVecSize>
+XFEM::AssemblyType ASSTYPE,
+size_t NUMDOF,
+size_t shpVecSize>
 void BuildStandardDomainIntegrals(
     COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
     const XFEM::ApproxFunc<2,shpVecSize>& shpvel,      // shape functions and their derivatives (velocity)
@@ -83,13 +85,13 @@ void BuildStandardDomainIntegrals(
   if (instationary)
   {
     // inertia term (contribution to mass matrix)
-      /*
+    /*
                                    /           \
                                   |             |
                                   | roh Du , v  |
                                   |             |
                                    \           /
-       */
+     */
     assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.d0, densfac, shpvel.d0);
     assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.d0, densfac, shpvel.d0);
     assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.d0, densfac, shpvel.d0);
@@ -125,25 +127,25 @@ void BuildStandardDomainIntegrals(
   assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
 
   assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(0,0)
-                                                            +velnp(1)*vderxy(0,1)
-                                                            +velnp(2)*vderxy(0,2)));
+      +velnp(1)*vderxy(0,1)
+      +velnp(2)*vderxy(0,2)));
   assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(1,0)
-                                                            +velnp(1)*vderxy(1,1)
-                                                            +velnp(2)*vderxy(1,2)));
+      +velnp(1)*vderxy(1,1)
+      +velnp(2)*vderxy(1,2)));
   assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(2,0)
-                                                            +velnp(1)*vderxy(2,1)
-                                                            +velnp(2)*vderxy(2,2)));
+      +velnp(1)*vderxy(2,1)
+      +velnp(2)*vderxy(2,2)));
 
   if (newton)
   {
     // convection term, reactive part
-      /*
+    /*
                      /                             \
                     |         /          \   n+1   |
                     | v ,roh | Du o nabla | u      |
                     |         \          /   (i)   |
                      \                             /
-       */
+     */
     assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.d0, denstimefacfac*vderxy(0,0), shpvel.d0);
     assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.d0, denstimefacfac*vderxy(0,1), shpvel.d0);
     assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac*vderxy(0,2), shpvel.d0);
@@ -265,7 +267,7 @@ void BuildStandardDomainIntegrals(
                              | roh Du , nabla q  |
                              |                   |
                               \                 /
-      */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstauMp, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstauMp, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstauMp, shpvel.d0);
@@ -287,13 +289,13 @@ void BuildStandardDomainIntegrals(
 
     if (newton)
     {
-        /*  pressure stabilisation: convection, reactive part
+      /*  pressure stabilisation: convection, reactive part
                         /                                \
                        |              /          \   n+1  |
                        | grad q , roh| Du o nabla | u     |
                        |              \          /   (i)  |
                         \                                /
-         */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
@@ -372,7 +374,7 @@ void BuildStandardDomainIntegrals(
                             | roh Du , roh| u   o nabla | v - rho*(tau_M*R_M o nabla)v |
                             |              \ (i)       /           subgrid velocity    |
                              \                                    reynolds-stress     /
-      */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
@@ -382,13 +384,13 @@ void BuildStandardDomainIntegrals(
         if (genalpha)
         {
           /* supg stabilisation: inertia, linearisation of testfunction  */
-            /*
+          /*
                                    /                                  \
                                   |     .n+am         /          \     |
                                   | roh u      , roh | Du o nabla | v  |
                                   |      (i)          \          /     |
                                    \                                   /
-             */
+           */
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstimetauMu*accam(0), shpvel.d0);
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstimetauMu*accam(0), shpvel.d0);
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstimetauMu*accam(0), shpvel.d0);
@@ -402,13 +404,13 @@ void BuildStandardDomainIntegrals(
         else
         {
           /* supg stabilisation: inertia, linearisation of testfunction  */
-            /*
+          /*
                                    /                                  \
                                   |      n+1          /          \     |
                                   | roh u      , roh | Du o nabla | v  |
                                   |      (i)          \          /     |
                                    \                                   /
-             */
+           */
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
           assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
@@ -565,15 +567,15 @@ void BuildStandardDomainIntegrals(
 
 #ifdef COMBUST_SUPG_BODYFORCE
       {
-      /* supg stabilisation: bodyforce part, linearisation of test function */
-      /*
+        /* supg stabilisation: bodyforce part, linearisation of test function */
+        /*
                               /                                \
                              |                 /          \     |
                            - |  rhsint   , roh| Du o nabla | v  |
                              |                 \          /     |
                               \                                /
 
-       */
+         */
         double tmpfac = 0.0;
         if (genalpha)
           tmpfac = denstimetauMu;
@@ -648,9 +650,9 @@ void BuildStandardDomainIntegrals(
   - scaling has to be performed with quantities (density, viscosity) from corresponding time step (n, n+1)
  */
 template <DRT::Element::DiscretizationType DISTYPE,
-          XFEM::AssemblyType ASSTYPE,
-          size_t NUMDOF,
-          size_t shpVecSize>
+XFEM::AssemblyType ASSTYPE,
+size_t NUMDOF,
+size_t shpVecSize>
 void BuildStandardDomainIntegralsStab(
     COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
     const XFEM::ApproxFunc<2,shpVecSize>& shpvel,      // shape functions and their derivatives (velocity)
@@ -683,8 +685,8 @@ void BuildStandardDomainIntegralsStab(
     const double& tau_stab_C                           // BV   stabilization parameter
 )
 {
-	if (genalpha)
-		dserror("BuildStandardDomainIntegralsSTAB does not work with genalpha.");
+  if(genalpha)
+    dserror("BuildStandardDomainIntegralsSTAB does not work with genalpha.");
   double rhstimefacfac = timefacfac;
   if (genalpha)
     rhstimefacfac /= alphaM;
@@ -706,7 +708,7 @@ void BuildStandardDomainIntegralsStab(
                              | roh Du , nabla q  |
                              |                   |
                               \                 /
-      */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstauMp, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstauMp, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstauMp, shpvel.d0);
@@ -729,13 +731,13 @@ void BuildStandardDomainIntegralsStab(
 
     if (newton)
     {
-        /*  pressure stabilisation: convection, reactive part
+      /*  pressure stabilisation: convection, reactive part
                         /                                \
                        |              /          \   n+1  |
                        | grad q , roh| Du o nabla | u     |
                        |              \          /   (i)  |
                         \                                /
-         */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
@@ -814,7 +816,7 @@ void BuildStandardDomainIntegralsStab(
                             | roh Du , roh| u   o nabla | v - rho*(tau_M*R_M o nabla)v |
                             |              \ (i)       /           subgrid velocity    |
                              \                                    reynolds-stress     /
-      */
+       */
       assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
       assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
@@ -822,14 +824,14 @@ void BuildStandardDomainIntegralsStab(
       if (newton)
       {
         /* supg stabilisation: inertia, linearisation of testfunction  */
-          /*
+        /*
                                  /                                  \
                                 |      n+1          /          \     |
                                 | roh u      , roh | Du o nabla | v  |
                                 |      (i)          \          /     |
                                  \                                   /
 
-           */
+         */
         assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
         assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
         assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);

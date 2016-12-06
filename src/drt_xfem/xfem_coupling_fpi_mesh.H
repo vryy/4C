@@ -1,3 +1,4 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file xfem_coupling_fpi_mesh.H
 
@@ -13,6 +14,7 @@ xfluid class and the cut-library
             089 - 289-15249
 </pre>
 */
+/*----------------------------------------------------------------------*/
 
 #ifndef XFEM_COUPLING_FPI_MESH_H_
 #define XFEM_COUPLING_FPI_MESH_H_

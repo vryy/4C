@@ -1,16 +1,19 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_transparent_independent.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file xfem_dofset_transparent_independent.cpp
 
 \brief transparent independent dofset
 
-<pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\level 1
 
-*----------------------------------------------------------------------*/
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include "xfem_dofset_transparent_independent.H"
 

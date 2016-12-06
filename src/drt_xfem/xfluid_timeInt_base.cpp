@@ -1,15 +1,20 @@
-/*!------------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*!
 \file xfluid_timeInt_base.cpp
 
 \brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "../drt_bele3/bele3.H"

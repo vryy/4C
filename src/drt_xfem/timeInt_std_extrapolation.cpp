@@ -1,14 +1,18 @@
 /*!------------------------------------------------------------------------------------------------*
-\file startvalues.cpp
+\file timeInt_std_extrapolation.cpp
 
 \brief provides the Extrapolation class
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\warning this combustion module related file will be deleted within the next time!!!
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -186,9 +190,9 @@ void XFEM::ExtrapolationOld::extrapolationMain(
     velendpoint[index].Update(c1,velstartpoint[index],c2,velmidpoint[index]);
     presendpoint[index] = c1*presstartpoint[index] + c2*presmidpoint[index];
 
-    //	if (index == 0)
-    //		std::cout << "final pressure is " << presendpoint[index] <<
-    //				" and final velocity is " << velendpoint[index];
+    //if (index == 0)
+    //std::cout << "final pressure is " << presendpoint[index] <<
+    //" and final velocity is " << velendpoint[index];
 
   } // loop over vectors to be set
 
@@ -411,9 +415,9 @@ void XFEM::ExtrapolationOld::bisection(
   curr_max_iter = crit_max_iter;
 
   // search for midpoint with bisection of the straight line:
-  //	distances p1-p2 and p2-pend as even as possible
-  //	-> p2 near midpoint of p1 and pend as far as possible
-  //	gives back either a point between pend and p1 or p2 = p1
+  //distances p1-p2 and p2-pend as even as possible
+  //-> p2 near midpoint of p1 and pend as far as possible
+  //gives back either a point between pend and p1 or p2 = p1
   for (int i=iter;i<=curr_max_iter;i++)
   {
 //    std::cout << "potential midpoint is " << pointTmp;

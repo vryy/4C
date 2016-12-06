@@ -1,14 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_stabilization.cpp
+\file combust3_stabilization.cpp
 
 \brief compute stabilization paramters
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/

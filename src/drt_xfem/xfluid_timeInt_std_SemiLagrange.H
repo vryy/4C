@@ -1,16 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file xfluid_timeinnt_std_SemiLagrange.H
+/*----------------------------------------------------------------------*/
+/*!
+\file xfluid_timeInt_std_SemiLagrange.H
 
 \brief provides the SemiLagrangean class
 
+\level 3
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
-
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #ifndef XFLUID_TIMEINT_STD_SEMILAGRANGE_H_

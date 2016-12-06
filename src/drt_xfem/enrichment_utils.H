@@ -3,12 +3,16 @@
 
 \brief describes the enrichment types and classes
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
+
+\warning this combustion module related file will be deleted within the next time!!!
 */
 
 
@@ -328,10 +332,10 @@ namespace XFEM
      * \brief compute enrichment value at one side of an embedded interface for boundary integration cell
      *
      * constructor called for evaluation of boundary integrals in two-phase-flow problems (jump and kink !!!! enrichment)
-     * used for two phase flow with surface tension with kink enrichments in velocity and jump enrichments in pressure 
+     * used for two phase flow with surface tension with kink enrichments in velocity and jump enrichments in pressure
      * call jump enrichments with approachdirection, not with level-set
      * but kink enrichments need the level-set field
-     * 
+     *
      * schott May 12, 2010
      */
     template<class V1, class M1, class M2>
@@ -1404,7 +1408,7 @@ void InterpolateCellValuesFromElementValuesLevelSetKink(
 
 /*! \brief for output, interpolate field to integration cells
  * schott
- * 
+ *
  * interpolate field from element node values to cell node values based
  * on a level-set field
  * remark: function used for modified kink enrichment strategy with jumps in pressure and kinks in velocity

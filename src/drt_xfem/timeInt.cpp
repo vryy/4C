@@ -3,12 +3,16 @@
 
 \brief provides the basic time integration classes "TimeInt", "TimeIntStd", "TimeIntEnr"
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\warning this combustion module related file will be deleted within the next time!!!
  *------------------------------------------------------------------------------------------------*/
 
 

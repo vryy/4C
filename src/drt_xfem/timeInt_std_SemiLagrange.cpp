@@ -1,14 +1,18 @@
 /*!------------------------------------------------------------------------------------------------*
-\file startvalues.cpp
+\file timeInt_std_SemiLagrange.cpp
 
 \brief provides the SemiLagrange class
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\warning this combustion module related file will be deleted within the next time!!!
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -1621,7 +1625,7 @@ void XFEM::SemiLagrange::exportIterData(
         break;
       }
       }
-      
+
       timeIntData_->push_back(TimeIntData(
           node,
           vel,

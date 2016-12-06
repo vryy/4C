@@ -3,12 +3,16 @@
 
 \brief provides the basic time integration classes "TimeInt", "TimeIntStd", "TimeIntEnr"
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\warning this combustion module related file will be deleted within the next time!!!
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -391,8 +395,8 @@ protected:
 
   /*!
   \brief This class holds data for a node that will get some new values,
-		 either standard or enrichment values. For every type of computation
-		 and status within a special computation an explicit constructor exists.
+   either standard or enrichment values. For every type of computation
+   and status within a special computation an explicit constructor exists.
    */
   class TimeIntData
   {
@@ -610,22 +614,22 @@ protected:
      * data of the StartpointData subclass *
      *----------------------------------------------*/
 
-    DRT::Node 						node_; // node according to startpoint
-    LINALG::Matrix<3,1> 			vel_; // velocity at point x (=x_Lagr(t^n+1))
-    std::vector<LINALG::Matrix<3,3> > 	velDeriv_; // velocity gradient at point x (=x_Lagr(t^n+1))
-    std::vector<LINALG::Matrix<1,3> > 	presDeriv_; // pressure gradient at point x (=x_Lagr(t^n+1))
-    LINALG::Matrix<3,1> 			startpoint_; // startpoint approximation
-    double 							phiValue_; // phi-value according to the analysed node at time t^n+1
-    int 							searchedProcs_; // searched procnumber if point lies in
-    int 							counter_; // newton iteration counters for the points
+    DRT::Node       node_; // node according to startpoint
+    LINALG::Matrix<3,1>    vel_; // velocity at point x (=x_Lagr(t^n+1))
+    std::vector<LINALG::Matrix<3,3> >  velDeriv_; // velocity gradient at point x (=x_Lagr(t^n+1))
+    std::vector<LINALG::Matrix<1,3> >  presDeriv_; // pressure gradient at point x (=x_Lagr(t^n+1))
+    LINALG::Matrix<3,1>    startpoint_; // startpoint approximation
+    double        phiValue_; // phi-value according to the analysed node at time t^n+1
+    int        searchedProcs_; // searched procnumber if point lies in
+    int        counter_; // newton iteration counters for the points
     std::vector<int>       near_procs_; // processors near to current startpoint
-    std::vector<int> 					startGid_; // nearest node for a moving node lying in an "interface element"
-    std::vector<int> 					startOwner_; // nearest nodes owner
-    double 							dMin_; // minimal distance in initialization
-    std::vector<LINALG::Matrix<3,1> > 	velValues_; // computed velocity for a node
-    std::vector<double> 					presValues_; // computed pressure for a node
-    std::vector<LINALG::Matrix<2,4> > 	jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
-    std::vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
+    std::vector<int>      startGid_; // nearest node for a moving node lying in an "interface element"
+    std::vector<int>      startOwner_; // nearest nodes owner
+    double        dMin_; // minimal distance in initialization
+    std::vector<LINALG::Matrix<3,1> >  velValues_; // computed velocity for a node
+    std::vector<double>      presValues_; // computed pressure for a node
+    std::vector<LINALG::Matrix<2,4> >  jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
+    std::vector<LINALG::Matrix<1,4> >  kinkValues_; // computed kink values for a node's kink enrichment dof
     state state_; // status for both the used special algorithm and the state within the algorithm
     type type_; // basic computation type due to FGI and FRS
 

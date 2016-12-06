@@ -1,15 +1,22 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file xfem_neumann.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file xfem_neumann.H
 
 \brief base XFEM Neumann boundary conditions
 
+\level 2
+
 <pre>
-Maintainer: Dipl.-Math. Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+\warning think about removing these routines!!!
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #ifndef XFEM_NEUMANN_H_

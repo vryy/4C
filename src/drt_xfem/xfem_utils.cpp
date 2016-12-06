@@ -1,16 +1,20 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file xfem_utils.cpp
 \brief Basic tools used in XFEM routines
 
-\level 2
+\level 3
 
 <pre>
 \maintainer Magnus Winter
-             winter@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
-*----------------------------------------------------------------------*/
+
+\warning this file should be cleaned up
+*/
+/*----------------------------------------------------------------------*/
 
 #include "xfem_utils.H"
 

@@ -3,14 +3,17 @@
 
 \brief defines unknowns based on the intersection pattern from the xfem intersection
 
+\level 2
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
-*/
+
+\warning this combustion module related file will be deleted within the next time!!!
+ *------------------------------------------------------------------------------------------------*/
 
 
 #ifndef XDOFMAPCREATION_COMBUST_H
@@ -43,7 +46,7 @@ namespace XFEM
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
-  
+
   //! apply nodal enrichments to touched element: used for combustion and Nitsche problem
   bool ApplyJumpEnrichmentToTouched(
       const COMBUST::InterfaceHandleCombust&    ih,
@@ -68,7 +71,7 @@ namespace XFEM
       const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
-  
+
   // schott Aug 3, 2010
   //! apply nodal enrichments to touched element: used for two phase problem with surface tension only
   bool ApplyKinkJumpEnrichmentToTouched(

@@ -1,15 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file timeInt.H
+/*----------------------------------------------------------------------*/
+/*!
+\file xfluid_timeInt_base.H
 
 \brief provides the basic time integration classes "TimeInt", "TimeIntStd", "TimeIntEnr"
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #ifndef XFLUID_TIMEINT_BASE_H_
