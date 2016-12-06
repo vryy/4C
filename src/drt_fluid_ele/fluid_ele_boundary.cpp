@@ -25,7 +25,6 @@ DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create( const std::vector<char> & data )
 {
-std::cout << __FILE__ << __LINE__ << std::endl;
   DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1,-1);
   object->Unpack(data);
   return object;
@@ -103,8 +102,6 @@ DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
 {
-std::cout << __FILE__ << __LINE__ << std::endl;
-
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
@@ -126,8 +123,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 {
-std::cout << __FILE__ << __LINE__ << std::endl;
-
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
@@ -195,8 +190,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces(
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // just give back this surface element (without ownership)
-   std::cout << __FILE__ << __LINE__ << std::endl;
-
   std::vector<Teuchos::RCP<DRT::Element> > surfaces(1);
   surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
