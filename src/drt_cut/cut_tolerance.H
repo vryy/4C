@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_tolerance.H
+
+\brief Central file for !all! Tolerances used in the cut
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_TOLERANCE_H
 #define CUT_TOLERANCE_H
 

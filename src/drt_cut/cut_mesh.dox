@@ -1,3 +1,19 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_mesh.dox
+
+\brief original documentation of the cut by u.kue - updates are welcome
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
 
 /// Collection of general purpose geometry manipulation tools
 namespace GEO

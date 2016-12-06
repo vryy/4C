@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_triangulateFacet.cpp
+
+\brief Class to triangulate facets
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "cut_facet.H"
 #include "cut_triangulateFacet.H"
 #include "cut_kernel.H"

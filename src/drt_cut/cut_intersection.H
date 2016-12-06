@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_intersection.H
+
+\brief here the intersection of a (plane) surface with a line is performed
+
+\level 2
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_INTERSECTION_H
 #define CUT_INTERSECTION_H
 

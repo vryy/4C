@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_utils.H
+
+\brief Utils Header defining ours sets of geometrical objects
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_UTILS_H
 #define CUT_UTILS_H
 

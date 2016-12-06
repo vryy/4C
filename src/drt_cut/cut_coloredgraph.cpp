@@ -1,3 +1,21 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_coloredgraph.cpp
+
+\brief colored graph to create volumecells from facets
+\warning do we still use this graph?
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include <fstream>
 #include <stack>
 #include <queue>

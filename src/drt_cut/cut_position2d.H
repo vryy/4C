@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_position2d.H
+
+\brief compute local coords(position) on 2d element and decide if the point is inside
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_POSITION2D_H
 #define CUT_POSITION2D_H
 

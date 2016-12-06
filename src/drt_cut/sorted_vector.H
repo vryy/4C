@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file sorted_vector.H
+
+\brief  sorted vector that emulates a set (and is supposed to be much more efficient)
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 /* STL-conforming "sorted vector" container
  *
  * (C) 2002 Martin Holzherr (holzherr@infobrain.com). All rights reserved.

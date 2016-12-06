@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_pointgraph.H
+
+\brief PointGraph, Graph Algorithm to create Facets from lines and edges
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_POINTGRAPH_H
 #define CUT_POINTGRAPH_H
 

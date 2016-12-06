@@ -1,3 +1,19 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_pointgraph.cpp
+
+\brief PointGraph, Graph Algorithm to create Facets from lines and edges
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <iterator>

@@ -4,14 +4,18 @@
 
 \brief All enumerators used in cut libraries
 
+\level 3
+
 <pre>
-Maintainer: sudhakar
-            sudhakar@lnm.mw.tum.de
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15249
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
+
 #ifndef CUT_ENUM_H
 #define CUT_ENUM_H
 

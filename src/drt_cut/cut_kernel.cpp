@@ -1,3 +1,23 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_kernel.cpp
+
+\brief the cut kernel computes basic geometric operation, implemeted are
+    - Intersection of Surface and line
+    - Calculate local coordinates inside an element
+    - Compute Distance from a point to a surface
+
+\level 2
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "cut_kernel.H"
 #include "cut_point.H"
 #include "cut_position2d.H"

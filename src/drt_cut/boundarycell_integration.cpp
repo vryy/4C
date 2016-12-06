@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file boundarycell_integration.cpp
+
+\brief used in boundary cell integration
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "boundarycell_integration.H"
 #include "least_squares.H"
 #include "base_vol.H"

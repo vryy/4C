@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_boundingbox.cpp
+
+\brief bounding box for cut
+
+\level 2
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "cut_boundingbox.H"
 #include "cut_element.H"
 #include "cut_volumecell.H"

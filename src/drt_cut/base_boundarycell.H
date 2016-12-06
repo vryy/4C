@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file base_boundarycell.H
+
+\brief used in direct divergence line integration
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef BASE_BOUNDARYCELL_H
 #define BASE_BOUNDARYCELL_H
 

@@ -1,15 +1,19 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*---------------------------------------------------------------------*/
+/*!
 \file cut_output.H
 
-\brief Handles file writing of all cut related stuff
+\brief Handles file writing of all cut related stuff (gmsh)
+
+\level 2
 
 <pre>
-Maintainer: Sudhakar
-            sudhakar@lnm.mw.tum.de
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15249
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+*----------------------------------------------------------------------*/
 
 #ifndef CUTOUTPUT_H_
 #define CUTOUTPUT_H_

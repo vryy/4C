@@ -1,3 +1,21 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_position.H
+
+\brief Class to check whether a point lies inside an element, and also to
+compute local coordinates of a point with respect to the element
+
+\level 3
+
+<pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_POSITION_H
 #define CUT_POSITION_H
 
@@ -8,10 +26,6 @@ namespace GEO
 {
 namespace CUT
 {
-/*!
-\brief Class to check whether a point lies inside an element, and also to
-compute local coordinates of a point with respect to the element
- */
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
 >
