@@ -460,6 +460,15 @@ STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
+    const INPAR::STR::ModelType& mt) const
+{
+  CheckInitSetup();
+  return ModelEval().Evaluator(mt);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Data& STR::Integrator::EvalData() const
 {
   CheckInit();

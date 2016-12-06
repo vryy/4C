@@ -123,6 +123,11 @@ namespace MODELEVALUATOR{
 
     //! @}
 
+  protected:
+
+    //! pre-operator for \ref EvaluateInternal
+    virtual void PreEvaluateInternal(){/* empty */};
+
   private:
     //! apply the internal force contributions
     bool ApplyForceInternal();

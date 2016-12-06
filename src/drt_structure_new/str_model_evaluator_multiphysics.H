@@ -52,8 +52,8 @@ namespace MODELEVALUATOR {
   enum MultiphysicType
   {
     mt_none = 0,  //!< none specific default value
-    mt_fsi =  1,  //!< multiphysic type fluid-structure-interaction
-    mt_ssi =  2   //!< multiphysic type structure-scalar-interaction
+    mt_fsi =  1,  //!< multiphysics type fluid-structure-interaction
+    mt_ssi =  2   //!< multiphysics type structure-scalar-interaction
   }; // MultiphysicType
 
 

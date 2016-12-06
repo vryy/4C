@@ -36,7 +36,7 @@ void STR::MODELEVALUATOR::Multiphysics::Init(
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
     const int& dof_offset)
 {
-  // so far only one case todo generaliztion will follow soon
+  // so far only one case
   active_mt_ = mt_fsi;
 
   STR::MODELEVALUATOR::Generic::Init(eval_data_ptr,gstate_ptr,gio_ptr,int_ptr,timint_ptr,dof_offset);

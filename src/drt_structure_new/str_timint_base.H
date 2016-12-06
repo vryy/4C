@@ -138,6 +138,14 @@ namespace TIMINT {
       return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
     }
 
+    //! Return the desired model evaluator (read-only)
+    virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype) const;
+
+    //! Return the desired model evaluator (read and write)
+    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype);
+
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;

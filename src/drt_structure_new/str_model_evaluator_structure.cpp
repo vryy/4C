@@ -552,9 +552,12 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
     Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
     Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
+  PreEvaluateInternal();
+
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface",
       EvalDataPtr());
+
   EvaluateInternal(p,eval_mat,eval_vec);
 }
 

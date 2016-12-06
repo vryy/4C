@@ -75,7 +75,7 @@ void SSI::SSI_Base::SetStructureAdapterBase(
 }
 
 /*----------------------------------------------------------------------*
- | Special Init in case adapter needs to be set from outside            |
+ | Special init in case adapter needs to be set from outside            |
  |                                                          rauch 11/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetStructureWrapper(

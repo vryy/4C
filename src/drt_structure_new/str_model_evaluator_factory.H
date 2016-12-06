@@ -43,6 +43,10 @@ namespace MODELEVALUATOR {
         const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
 
   private:
+
+    //! return the proper type for the standard structural model evaluator
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> BuildStructureModelEvaluator() const;
+
   };  // class Factory
 
   //! non-member function, which relates to the STR::MODELEVALUATOR::Factory

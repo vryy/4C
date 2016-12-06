@@ -162,8 +162,14 @@ namespace TIMINT {
     const STR::ModelEvaluator& ModelEval() const;
     Teuchos::RCP<const STR::ModelEvaluator> ModelEvalPtr() const;
 
+    //! Return the model evaluator control object (read-write)
+    STR::ModelEvaluator& ModelEval();
+
     //! Return the model evaluator object for the given model type
     STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt);
+
+    //! Return the model evaluator object for the given model type
+    const STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
     const STR::MODELEVALUATOR::Data& EvalData() const;
@@ -202,9 +208,6 @@ namespace TIMINT {
      *  determination of consistent accelerations is more intricate
      *  and not supported yet */
     bool CurrentStateIsEquilibrium(const double& tol);
-
-    //! Return the model evaluator control object
-    STR::ModelEvaluator& ModelEval();
 
     //! Return the structural dynamic data container
     STR::TIMINT::BaseDataSDyn& SDyn();

@@ -76,7 +76,8 @@ protected:
       const FillType fillFlag);
 
   /// immersed operator
-  Teuchos::RCP<Epetra_Vector> ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
+  Teuchos::RCP<Epetra_Vector> ImmersedOp(
+      Teuchos::RCP<Epetra_Vector> bdry_traction,
       const FillType fillFlag);
 
   /// preparation of background field solve

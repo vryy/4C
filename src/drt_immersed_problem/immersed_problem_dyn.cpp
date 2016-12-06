@@ -431,6 +431,12 @@ void CellMigrationControlAlgorithm()
     // Redistribute discretizations if necessary
     if(redistribute)
     {
+      problem->GetDis("cell")->FillComplete(false,false,false);
+      problem->GetDis("cellscatra")->FillComplete(false,false,false);
+
+      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+        problem->GetDis("ale")->FillComplete(false,false,false);
+
       // first we bin the scatra discretization
       std::vector<Teuchos::RCP<DRT::Discretization> > dis;
       dis.push_back(problem->GetDis("cellscatra"));
@@ -494,6 +500,11 @@ void CellMigrationControlAlgorithm()
 
     // set the ssi specific wrapper in SSI object
     cellscatra_subproblem -> SetStructureWrapper(cellstructure->GetSSIStructureWrapperPtr());
+
+    // set the struct-ale specific wrapper in SSI object for protruison formation
+    if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+      Teuchos::rcp_dynamic_cast<SSI::SSI_Part2WC_PROTRUSIONFORMATION>(cellscatra_subproblem)
+          -> SetStructAleWrapper(cellstructure->GetStructAleStructureWrapperPtr());
 
     // now setup cellscatra (ssi) subproblem
     cellscatra_subproblem->Setup();

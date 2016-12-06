@@ -17,8 +17,8 @@
 
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "../drt_adapter/ad_str_structalewrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
@@ -52,17 +52,17 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(
   omega_(-1.0),
   exchange_manager_(NULL),
   myrank_(comm.MyPID()),
-  numdof_actin_(-1)
+  numdof_actin_(-1),
+  ale_fluid_wrapper_(Teuchos::null),
+  ssi_wrapper_(Teuchos::null),
+  struct_ale_wrapper_(Teuchos::null)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // empty
 }
 
 
 /*----------------------------------------------------------------------*
- | Setup this object                                        rauch 08/16 |
+ | Initialize this object                                   rauch 08/16 |
  *----------------------------------------------------------------------*/
 int SSI::SSI_Part2WC_PROTRUSIONFORMATION::Init(
     const Epetra_Comm& comm,
@@ -95,15 +95,19 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   // call init in base class
   SSI::SSI_Part2WC::Setup();
 
+  // safety check
+  if(StructAle()==Teuchos::null)
+    dserror("No structure wrapper for struct-ale set!");
+
   // initialize pointer to structure
-  specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
-  if(specialized_structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
+  ssi_wrapper_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(StructureField());
+  if(ssi_wrapper_ == Teuchos::null)
+    dserror("cast from ADAPTER::Structure to ADAPTER::MultiphysicsStructureWrapperCellMigration failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->SSIControlParams(), DRT::Problem::Instance()->GetDis("ale")));
-  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
-  if(ale_ == Teuchos::null)
+  ale_fluid_wrapper_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
+  if(ale_fluid_wrapper_ == Teuchos::null)
     dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
   // create empty operator
   AleField()->CreateSystemMatrix();
@@ -144,7 +148,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   delta_ale_=Teuchos::rcp(new Epetra_Vector(AleField()->Dispnp()->Map(), true));
 
   // source/sink vector to be added to scatra rhs
-  sources_ = LINALG::CreateVector(*(scatra_->ScaTraField()->Discretization()->DofRowMap()),true);
+  sources_=LINALG::CreateVector(*(scatra_->ScaTraField()->Discretization()->DofRowMap()),true);
 
   // numdof actin
   numdof_actin_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
@@ -178,7 +182,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   if(myrank_==0)
     std::cout<<"\n  Use fixed relaxation parameter for protrusion formation omega = "<<omega_<<"\n"<<std::endl;
 
-  // build map
+  // build map todo replace FSICoupling by cell specific condition
   BuildConditionDofRowMap((StructureField()->Discretization())->GetCondition("FSICoupling"),StructureField()->Discretization(),conditiondofrowmap_);
 
   return;
@@ -377,7 +381,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
   StructureField()->Discretization()->SetState(0, "displacement", dispnp);
 
   // set state
-  StructureField()->Discretization()->SetState(0, "material_displacement",StructureField()->DispMat());
+  StructureField()->Discretization()->SetState(0, "material_displacement",StructAle()->GetMaterialDisplacementNpPtr());
 
   // calc difference between spatial structure deformation and ale deformation
   // disalenp = d_ale - d_struct
@@ -424,7 +428,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
 
   // apply material displacements to structural field
   // if advection map is not succesful --> use old xmat
-  StructureField()->ApplyDisMat(dismat);
+  StructAle()->UpdateMaterialDisplacements(dismat);
 
   return;
 }
@@ -666,31 +670,11 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
  | transform from structure to ale map                      rauch 01/16 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::StructureToAle(
-    Teuchos::RCP<Epetra_Vector> vec)
-{
-  return AleStruCoupling()->SlaveToMaster(vec);
-}
-
-
-/*----------------------------------------------------------------------*
- | transform from structure to ale map                      rauch 01/16 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::StructureToAle(
     Teuchos::RCP<const Epetra_Vector> vec)
 {
   if (AleStruCoupling()==Teuchos::null)
     dserror("RCP to Coupling object points to Teuchos::null");
   return AleStruCoupling()->SlaveToMaster(vec);
-}
-
-
-/*----------------------------------------------------------------------*
- | transform from ale to structure map                      rauch 01/16 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::AleToStructure(
-    Teuchos::RCP<Epetra_Vector> vec)
-{
-  return AleStruCoupling()->MasterToSlave(vec);
 }
 
 
@@ -912,9 +896,10 @@ bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
 /*------------------------------------------------------------------------*
  | BuildConditionDofRowMap                                    rauch 03/16 |
  *------------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildConditionDofRowMap(const DRT::Condition* condition,
-                                                                   const Teuchos::RCP<const DRT::Discretization> dis,
-                                                                   Teuchos::RCP<Epetra_Map>& conddofmap)
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildConditionDofRowMap(
+    const DRT::Condition* condition,
+    const Teuchos::RCP<const DRT::Discretization> dis,
+    Teuchos::RCP<Epetra_Map>& conddofmap)
 {
   const std::vector<int>* conditionednodes = condition->Nodes();
   std::vector<int> mydirichdofs(0);

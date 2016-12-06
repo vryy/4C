@@ -238,8 +238,9 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::BackgroundOp(Teuchos::RCP
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
-                                                       const FillType fillFlag)
+IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedOp(
+    Teuchos::RCP<Epetra_Vector> bdry_traction,
+    const FillType fillFlag)
 {
   IMMERSED::ImmersedPartitioned::ImmersedOp(bdry_traction,fillFlag);
 
@@ -251,14 +252,14 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedOp(Teuchos::RCP<Epetra
   else
   {
 
-     //solve cell
+     // solve cell
     if (Comm().MyPID()==0)
     {
       std::cout<<"\n****************************************\n          PROTRUSION FORMATION\n****************************************\n";
     }
     cellscatra_subproblem_->OuterLoop();
 
-    return Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem_->StructureField())->ExtractImmersedInterfaceDispnp();
+    return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
 
 }

@@ -13,7 +13,9 @@
 
 #include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_fsiwrapper_immersed.H"
+#include "ad_str_structalewrapper.H"
 #include "ad_str_ssiwrapper.H"
+
 
 
 /*----------------------------------------------------------------------*/
@@ -25,6 +27,7 @@ ADAPTER::MultiphysicsStructureWrapperCellMigration::MultiphysicsStructureWrapper
 : StructureWrapper(structure),
   ssi_structure_wrapper_(Teuchos::null),
   fsi_structure_wrapper_(Teuchos::null),
+  struct_ale_structure_wrapper_(Teuchos::null),
   issetup_(false),
   isinit_(false)
 {
@@ -38,8 +41,13 @@ int ADAPTER::MultiphysicsStructureWrapperCellMigration::Init(
   // reset the setup flag
   SetIsSetup(false);
 
-  ssi_structure_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
-  fsi_structure_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
+  // construct the individual structural wrappers
+  ssi_structure_wrapper_        =
+      Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
+  fsi_structure_wrapper_        =
+      Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
+  struct_ale_structure_wrapper_ =
+      Teuchos::rcp(new StructAleWrapper(ti_strategy));
 
   // set isinit_ flag true
   SetIsInit(true);

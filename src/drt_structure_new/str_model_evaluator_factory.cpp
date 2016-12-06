@@ -26,8 +26,10 @@
 #include "str_model_evaluator_beaminteraction.H"
 #include "str_model_evaluator_browniandyn.H"
 #include "str_model_evaluator_crosslinking.H"
+#include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
 
-
+// problem types
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -54,7 +56,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
     switch(*mt_iter)
     {
       case INPAR::STR::model_structure:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
+        (*model_map)[*mt_iter] = BuildStructureModelEvaluator();
         break;
       case INPAR::STR::model_springdashpot:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
@@ -92,6 +94,32 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
   }
 
   return model_map;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
+    BuildStructureModelEvaluator() const
+{
+  Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr =
+      Teuchos::null;
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  switch (probtype)
+  {
+    case prb_struct_ale:
+    case prb_immersed_cell:
+    {
+      structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::StructAle());
+      break;
+    }
+    default:
+    {
+      structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
+      break;
+    }
+  }
+  return structure_model_ptr;
 }
 
 

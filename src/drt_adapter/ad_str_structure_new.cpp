@@ -342,7 +342,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy
   // ---------------------------------------------------------------------------
-  SetStructureWrapper(*ioflags,*sdyn_,*xparams,*taflags,ti_strategy);
+  SetStructureWrapper(*ioflags,*sdyn_,*xparams,*taflags,modeltypes,ti_strategy);
 
   // see you
   return;
@@ -737,6 +737,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
+    const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // create a adaptive wrapper
@@ -744,7 +745,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(
 
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null())
-    CreateWrapper(ti_strategy);
+    CreateWrapper(modeltypes,ti_strategy);
 
   if (str_wrapper_.is_null())
     dserror("No proper time integration found!");
@@ -806,6 +807,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
+    const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
@@ -913,8 +915,11 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       break;
     }
     case prb_struct_ale:
-      str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy));
+    {
+      str_wrapper_ = Teuchos::rcp(new StructAleWrapper(ti_strategy));
+      dserror("prb_struct_ale not supported, yet");
       break;
+    }
     case prb_invana:
       str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
       break;

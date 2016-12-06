@@ -698,6 +698,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_ssiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
+  src/drt_adapter/ad_str_structalewrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
@@ -1728,6 +1729,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_browniandyn.cpp
   src/drt_structure_new/str_model_evaluator_crosslinking.cpp
   src/drt_structure_new/str_model_evaluator_beaminteraction.cpp

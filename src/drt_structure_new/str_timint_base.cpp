@@ -755,3 +755,19 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   // end of restarting
   isrestarting_ = false;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
+    const INPAR::STR::ModelType& mtype) const
+{
+  return Integrator().ModelEval().Evaluator(mtype);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
+    const INPAR::STR::ModelType& mtype)
+{
+  return Integrator().ModelEval().Evaluator(mtype);
+}

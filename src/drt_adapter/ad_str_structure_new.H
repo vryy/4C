@@ -275,6 +275,14 @@ namespace ADAPTER {
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
+    /// access the desired model evaluator (read-only)
+    virtual const ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype) const = 0;
+
+    /// access the desired model evaluator (read and write)
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype) = 0;
+
     /*!
     \brief Reset time step
 

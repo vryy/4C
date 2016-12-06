@@ -21,7 +21,8 @@
 /*==========================================================================*/
 namespace ADAPTER
 {
-  class FSIStructureWrapper;
+  class SSIStructureWrapper;
+  class StructAleWrapper;
   class AleFluidWrapper;
   class Coupling;
 }
@@ -102,8 +103,11 @@ public:
   //! virtual destructor
   virtual ~SSI_Part2WC_PROTRUSIONFORMATION(){};
 
-  /*!
-  \brief Initialize this object
+  //! set the struct-ale wrapper ptr
+  void SetStructAleWrapper(Teuchos::RCP< ::ADAPTER::StructAleWrapper> structalewrapper)
+  {struct_ale_wrapper_=structalewrapper;};
+
+  /*! \brief Initialize this object
 
    Initializes members and performs problem specific setup.
 
@@ -111,10 +115,9 @@ public:
         Otherwise, vectors may have wrong maps.
 
   \warning none
-  \return void
+  \return int
   \date 08/16
-  \author rauch
-  */
+  \author rauch     */
   virtual int Init(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
@@ -123,8 +126,7 @@ public:
       const std::string scatra_disname,
       bool isAle);
 
-  /*!
-  \brief Setup vectors and pointers
+  /*! \brief Setup vectors and pointers
 
   \note Must only be called after parallel (re-)distribution of discretizations is finished !
         Otherwise, vectors may have wrong maps.
@@ -132,12 +134,10 @@ public:
   \warning none
   \return void
   \date 08/16
-  \author rauch
-  */
+  \author rauch      */
   virtual void Setup();
 
-  /*!
-  \brief Setup discretizations and dofsets
+  /*! \brief Setup discretizations and dofsets
 
      Init coupling object \ref ssicoupling_ and
      other possible coupling objects in derived
@@ -145,17 +145,15 @@ public:
 
   \warning Parallel redistribution inside !
 
-  \return void
+  \return int
   \date 08/16
-  \author rauch
-  */
+  \author rauch     */
   virtual int InitFieldCoupling(
       const Epetra_Comm& comm,
       const std::string& struct_disname,
       const std::string& scatra_disname);
 
-  /*!
-  \brief Setup discretizations
+  /*! \brief Setup discretizations
 
    Clone ale discretization.
 
@@ -164,15 +162,24 @@ public:
 
   \return void
   \date 08/16
-  \author rauch
-  */
+  \author rauch    */
   virtual void InitDiscretizations(
       const Epetra_Comm& comm,
       const std::string& struct_disname,
       const std::string& scatra_disname);
 
+  //! @name Access to field wrappers
+  //@{
   //! access to ale field
-  const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
+  const Teuchos::RCP<ADAPTER::AleFluidWrapper>&
+      AleField(){return ale_fluid_wrapper_;};
+  //! access to scatra field
+  const Teuchos::RCP< ::ADAPTER::SSIStructureWrapper>&
+      SSIStructureField(){return ssi_wrapper_;};
+  //! access to scatra field
+  const Teuchos::RCP< ::ADAPTER::StructAleWrapper>&
+      StructAle(){return struct_ale_wrapper_;};
+  //@}
 
   //! update time step and print to screen
   virtual void UpdateAndOutput();
@@ -189,14 +196,10 @@ protected:
   //! solve the scatra partition and set the new state in the structure field
   virtual void DoScatraStep();
 
-  //! access to scatra field
-  const Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>&  SpecStructureField(){return specialized_structure_;};
-
   //! return coupling object
   Teuchos::RCP< ::ADAPTER::Coupling> AleStruCoupling(){return coupalestru_; };
 
-  /*!
-    \brief parameter space mapping between configurations
+  /*! \brief parameter space mapping between configurations
 
     \param Xtarget           (out) : new material coordinate of considered node (spatialtomaterial=true), or
                                      new spatial  coordinate of considered node (spatialtomaterial=false)
@@ -204,8 +207,7 @@ protected:
     \param ElementPtr        (in)  : pointer to elements adjacent to considered node
     \param numelements       (in)  : number of elements adjacent to considered node
     \param spatialtomaterial (in)  : true if considered node already has correct spatial coordinate
-                                     and corresponding material coordinate is to be determined
-   */
+                                     and corresponding material coordinate is to be determined        */
   void AdvectionMap(
       double* Xtarget,            // out
       double* Xsource,            // in
@@ -225,26 +227,17 @@ protected:
   //! update spatial configuration
   void UpdateSpatConf();
 
-  /*!
-    \brief build map containing row dofs of conditioned nodes
+  /*!  \brief build map containing row dofs of conditioned nodes
 
     \param condition  (in)  : condition to be considered
     \param dis        (in)  : discretization wearing the condition
-    \param conddofmap (out) : dofrowmap for conditioned nodes
-
-   */
+    \param conddofmap (out) : dofrowmap for conditioned nodes       */
   void BuildConditionDofRowMap(const DRT::Condition* condition,
                                const Teuchos::RCP<const DRT::Discretization> dis,
                                Teuchos::RCP<Epetra_Map>& conddofmap);
 
   //! transform from structure to ale dofs
-  virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<Epetra_Vector> vec);
-
-  //! transform from structure to ale dofs
   virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> vec);
-
-  //! transform from ale to structure dofs
-  virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> vec);
 
   //! transform from ale to structure dofs
   virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec);
@@ -259,7 +252,7 @@ protected:
 
 private:
 
-  //! relaxation parameter
+  //! relaxation parameter for growth
   double omega_;
 
   //! @name Pointers to Discretizations
@@ -309,12 +302,21 @@ private:
   Teuchos::RCP< ::ADAPTER::Coupling> coupalestru_;    //!< ale struct coupling
   //@}
 
-  //! underlying ALE
-  Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
+  //! @name Field wrapper objects
+  //@{
+  //! underlying ALE wrapper
+  Teuchos::RCP< ::ADAPTER::AleFluidWrapper> ale_fluid_wrapper_;
 
-  //! underlying structure of the SSI problem
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> specialized_structure_;
+  //! underlying structure wrapper for the SSI problem
+  Teuchos::RCP< ::ADAPTER::SSIStructureWrapper> ssi_wrapper_;
 
+  //! underlying structure wrapper for struct-ale
+  Teuchos::RCP< ::ADAPTER::StructAleWrapper> struct_ale_wrapper_;
+  //@}
+
+
+  //! @name Some mappings
+  //@{
   //! map associating structure to scatra (bdry) element ids
   Teuchos::RCP<std::map<int,int> > structscatraelemap_;
 
@@ -326,6 +328,7 @@ private:
 
   //! matched slave nodemap (with coupled node IDs)
   Teuchos::RCP<Epetra_Map> scatranodemap_;
+  //@}
 
 }; // class SSI_Part2WC_PROTRUSIONFORMATION
 
