@@ -6,8 +6,7 @@
 
 \level 2
 
-\maintainer Christoph Meier
-
+\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_BEAMCONTACT_H

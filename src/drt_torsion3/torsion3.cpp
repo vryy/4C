@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file torsion3.cpp
-\brief three dimensional total Lagrange truss element
 
-<pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\brief three dimensional torsion spring element
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
 #include "../drt_lib/drt_utils_nullspace.H"

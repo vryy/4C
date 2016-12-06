@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file rigidsphere.H
 
 \brief spherical particle element for brownian dynamics
 
-\maintainer Christoph Meier
-
 \level 3
-*----------------------------------------------------------------------*/
 
-//header file only included if not yet included!
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef RIGIDSPHERE_H
 #define RIGIDSPHERE_H
 

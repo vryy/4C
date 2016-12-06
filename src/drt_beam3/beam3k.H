@@ -6,8 +6,11 @@
 
 \level 2
 
-\maintainer Christoph Meier
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------*/
 
+/*
 3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement of the Kirchhoff
 constraint and variant with strong enforcement of the Kirchhoff constraint. This variant with weak constraint enforcement is based
 on a rotation interpolation that is similar to beam3r. As the beam curve has to be C^1-continous, it is interpolated
@@ -31,8 +34,6 @@ can be interpreted as additive increments added to the initial values (i.e. if t
 Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3r,
 where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
 */
-/*----------------------------------------------------------------------*/
-
 
 //header file only included if not yet included!
 #ifndef BEAM3K_H

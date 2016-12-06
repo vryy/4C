@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_utils.cpp
 
 \brief A set of utility functions for beam contact
 
 \level 2
 
-\maintainer Christoph Meier
-
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contact_utils.H"
 #include "../drt_beam3/beam3.H"

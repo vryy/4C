@@ -1,0 +1,128 @@
+//
+// \maintainer Maximilian Grill
+//
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+3D beam3eb-to-rigidsphere (BTSPH) contact and electrostatic attraction
+----------------------------------------------------------------PROBLEM SIZE
+DIM                             3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+LINEAR_SOLVER                   1
+DYNAMICTYP                      GenAlpha
+RESULTSEVRY                     1
+RESTARTEVRY                     10
+NLNSOL                          fullnewton
+TIMESTEP                        0.01
+NUMSTEP                         100
+MAXTIME                         1
+DAMPING                         Material
+PREDICT                         ConstDis
+TOLRES                          1.0e-8
+TOLDISP                         1.0e-12
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
+MAXITER                         25
+LOADLIN                         Yes
+---------------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = Yes
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+RHO_INF                         0.9
+----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           0.0
+BEAMS_PENALTYLAW                LinPen
+BEAMS_OCTREE                    none
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    2.0
+BEAMS_BTSPH                     Yes
+BEAMS_BTSPH_PENALTYPARAM        1e3
+--------------------------------------------------------------BEAM POTENTIAL
+POT_LAW_PREFACTOR               4e-3
+POT_LAW_EXPONENT                1.0
+BEAMPOTENTIAL_TYPE              Surface
+BEAMPOT_OCTREE                  none
+CUTOFFRADIUS                    -1
+BEAMPOT_BTSPH                   Yes
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          Amesos_KLU_nonsym
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         3
+NDLINE                          2
+NDSURF                          0
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          3
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 CURVE none none 1 FUNCT 0 0 0
+------------------------DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS
+DPOINT                          1
+E 3 - POTLAW 1 VAL 1.0
+--------------------------------DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS
+DLINE                           1
+E 1 - POTLAW 1 VAL -1.0 FUNCT -1
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 5 DNODE 2
+NODE 6 DNODE 3
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 3 DLINE 1
+NODE 4 DLINE 1
+NODE 5 DLINE 1
+------------------------------------------------------------------NODE COORDS
+NODE 1 COORD -2.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 2 COORD -1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 3 COORD 0.0000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 4 COORD 1.0000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 5 COORD 2.0000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 6 COORD 2.000000000000000e-01 0.000000000000000e+00 5.000000000000000e-01
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 BEAM3EB LIN2 1 2 MAT 1 CROSS 0.00125663706144 MOMIN 1.25663706144e-07 MOMINPOL 2.51327412287e-07
+2 BEAM3EB LIN2 2 3 MAT 1 CROSS 0.00125663706144 MOMIN 1.25663706144e-07 MOMINPOL 2.51327412287e-07
+3 BEAM3EB LIN2 3 4 MAT 1 CROSS 0.00125663706144 MOMIN 1.25663706144e-07 MOMINPOL 2.51327412287e-07
+4 BEAM3EB LIN2 4 5 MAT 1 CROSS 0.00125663706144 MOMIN 1.25663706144e-07 MOMINPOL 2.51327412287e-07
+5 RIGIDSPHERE POINT1 6 RADIUS 0.2 DENSITY 1.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e4 NUE 0 DENS 0.001 THEXPANS 0.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 1.24990253708982084e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -3.43130542258021198e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE 2.35285522201739636e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -6.89680107410765908e-01 TOLERANCE 1e-10
+-------------------------------------------------------------------------END

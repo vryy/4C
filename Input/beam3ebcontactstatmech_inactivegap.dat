@@ -1,20 +1,12 @@
 //
-// Maintainer: Christoph Meier
-// meier@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15262
+// \maintainer Maximilian Grill
 //
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-ortho_b3ii_3fpl_pl20_lfil5_R0.1.dat
 ------------------------------------------------------PROBLEM SIZE
-//ELEMENTS          600 //  nfil=15  periodlength=[20 20 20] um  fiber_division=40  fiber_length=[5 5 5]um
-//NODES             615 //  ca=0.00562162uM  n=0mol  V=8e-12l  -->elementlength = 0.125 um
 DIM          3  //rumpf2.txt /begin
-MATERIALS    1
-NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   StatMech
 RESTART      0
@@ -24,7 +16,7 @@ NUMSTRUCDIS  1
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
-OUTPUT_BIN             Yes // toggles control file and error file creation
+OUTPUT_BIN             Yes
 STRUCT_DISP            No
 STRUCT_STRESS          No
 STRUCT_STRAIN          No
@@ -64,7 +56,7 @@ BEAMS_STRATEGY         Penalty
 BEAMS_BTBPENALTYPARAM  500  //, 4000, 100
 BEAMS_NEWGAP           Yes
 BEAMS_SMOOTHING        None
-BEAMS_PENALTYLAW       LinPen //Linpen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_PENALTYLAW       LinPen
 BEAMS_PENREGPARAM_G0   0.0
 BEAMS_PENREGPARAM_F0   0.0
 BEAMS_PENREGPARAM_C0   0.0
@@ -189,22 +181,17 @@ ML_SMOTIMES       0 0 0 0 1 // no. smoothing steps or polynomial order on each l
 ML_DAMPFINE       1.0       // damping fine grid
 ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid //header_02 end (settings by M. Gee)
-----------------------------------------------------SOLVER 2
-NAME              Contact_Solver
-SOLVER            Aztec_MSR //Amesos_KLU_nonsym
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  2
 NDSURF  0
 NDVOL   0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                         3
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0  CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -1.2 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 E 4 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -1.2 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 ----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                         1
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0  CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
@@ -251,7 +238,6 @@ NODE 11 COORD  0.4  0.1000000000000e+00  0.5e+00
 8 BEAM3EB LIN2 8  9 MAT 1 CROSS 1.9e-07 MOMIN 2.85e-11 MOMINPOL 5.7e-11
 9 BEAM3EB LIN2 10 11 MAT 1 CROSS 1.9e-07 MOMIN 2.85e-11 MOMINPOL 5.7e-11
 ---------------------------------------------------------MATERIALS
-// MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e+09 NUE 0.3 DENS 1.384e-09 THEXPANS 0.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
@@ -261,4 +247,3 @@ STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -9.02761104685315466e-03 TOL
 STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.24286106607974109e-01 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 ---------------------------------------------------------------END
-// END

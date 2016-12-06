@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3eb_input.cpp
-\brief
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\brief three dimensional nonlinear torsionless rod based on a C1 curve
 
+\level 2
 
-*-----------------------------------------------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
 #include "../drt_lib/drt_linedefinition.H"

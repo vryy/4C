@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_utils.H
 
 \brief A set of utility functions for beam contact
 
 \level 2
 
-\maintainer Christoph Meier
-
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_UTILS_H
 #define BEAM3CONTACT_UTILS_H
 

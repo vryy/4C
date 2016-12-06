@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file truss3_input.cpp
-\brief three dimensional total Lagrange truss element
+/*----------------------------------------------------------------------------*/
+/*!
+\file torsion3_input.cpp
 
-<pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\brief three dimensional torsion spring element
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -25,11 +24,11 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string&          eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-  
+
   // read type of bending potential
   std::string buffer;
   linedef->ExtractString("BENDINGPOTENTIAL",buffer);
-  
+
   // bending potential E_bend = 0.5*SPRING*\theta^2
   if (buffer=="quadratic")
     bendingpotential_ = quadratic;
@@ -37,10 +36,10 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string&          eletype,
   // bending potential E_bend = SPRING*(1 - \cos(\theta^2) )
   else if (buffer=="cosine")
     bendingpotential_ = cosine;
-  
+
   else
     dserror("Reading of Torsion3 element failed because of unknown potential type!");
-  
+
   return true;
 }
 

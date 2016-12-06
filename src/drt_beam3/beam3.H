@@ -2,11 +2,11 @@
 /*!
 \file beam3.H
 
-\brief three dimensional nonlinear Reissner beam element
+\brief three dimensional nonlinear corotational Reissner beam element
 
 \level 2
 
-\maintainer Christoph Meier
+\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------------*/
 

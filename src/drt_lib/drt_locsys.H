@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file drt_locsys.H
 
 \brief Local coordinate systems and transformations for all types of objects
 
-<pre>
 \level 1
-\maintainer Christoph Meier
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+
+\maintainer Michael Hiermeier
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 #ifndef DRT_LOCSYS_H
 #define DRT_LOCSYS_H
 

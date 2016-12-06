@@ -1,0 +1,141 @@
+//
+// \maintainer Maximilian Grill
+//
+==================================================================
+                        General Data File CCARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Test case for small-angle-contact with analytical solution
+------------------------------------------------------PROBLEM SIZE
+DIM                3
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+RESTART      0
+----------------------------------------------------DISCRETISATION
+NUMFLUIDDIS  0
+NUMSTRUCDIS  1
+NUMALEDIS    0
+NUMTHERMDIS  0
+----------------------------------------------------------------IO
+OUTPUT_BIN             Yes
+STRUCT_DISP            Yes
+STRUCT_STRESS          No
+STRUCT_STRAIN          No
+FLUID_SOL              No
+FLUID_STRESS           No
+FLUID_VIS              No
+THERM_TEMPERATURE      No
+THERM_HEATFLUX         No
+FILESTEPS              1000
+------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+NLNSOL                          noxnln
+DIVERCONT                       stop
+TIMESTEP                        0.5
+NUMSTEP                         10
+MAXTIME                         5
+DAMPING                         No
+M_DAMP                          0
+K_DAMP                          0
+PREDICT                         ConstDis
+LOADLIN                         Yes
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = beam3eb_static_contact_penalty_linpen_limitdispperiter_twobeamstwisting.xml
+-----------------------------------------------STRUCT NOX/Direction
+Method                          = Newton
+---------------------------------------------STRUCT NOX/Line Search
+Method                          = Backtrack
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, none (default)
+BEAMS_BTBPENALTYPARAM           0.0  //Penalty parameter for beam-to-beam contact
+BEAMS_BTBLINEPENALTYPARAM       4.6845279809533553e+04 //Penalty parameter for small-angle beam-to-beam contact
+BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)
+BEAMS_SEGCON                    Yes //Apply segment-based contact (beam3contact.cpp) or element-based contact (beam3contactnew.cpp)
+BEAMS_DEBUG                     Yes
+BEAMS_ENDPOINTPENALTY           No
+BEAMS_PERPSHIFTANGLE1           89 //Lower shift angle (in degrees) for penalty scaling of large-angle-contact
+BEAMS_PERPSHIFTANGLE2           90 //Upper shift angle (in degrees) for penalty scaling of large-angle-contact
+BEAMS_PARSHIFTANGLE1            89 //Lower shift angle (in degrees) for penalty scaling of small-angle-contact
+BEAMS_PARSHIFTANGLE2            90 //Upper shift angle (in degrees) for penalty scaling of small-angle-contact
+BEAMS_SEGANGLE                  1.0 //Maximal angle deviation needed for contact search segmentation
+BEAMS_NUMINTEGRATIONINTERVAL    1  //Number of integration intervals per element
+BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3r elements)
+BEAMS_PENALTYLAW                LinPen //Penalty Law: LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_MAXDELTADISSCALEFAC       3.0 //limit maximal displacement per time step to BEAMS_MAXDELTADISSCALEFAC*Cross-section_radius (Default: -1.0=off)
+BEAMS_OCTREE                    octree_spherical //octree search
+BEAMS_ADDITEXT                  Yes //Application of additive bounding box extrusion factor (Default: Yes); No -> Multiplicative extrision factor
+BEAMS_EXTVAL                    0.02 //Extrusion factor of bounding boxes
+-------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  0
+NDSURF  0
+NDVOL   0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 4
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0        CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0        CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL -9.4999999999999998e-03 9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 CURVE 1 2 3 none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 9.4999999999999998e-03 -9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 CURVE 1 2 3 none none none FUNCT 0 0 0 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE       1 DNODE 1
+NODE       9 DNODE 2
+NODE       10 DNODE 3
+NODE       18 DNODE 4
+-------------------------------------------------------NODE COORDS
+NODE            1    COORD 0.0095     0     0
+NODE            2    COORD 0.0095     0     0.625
+NODE            3    COORD 0.0095     0     1.25
+NODE            4    COORD 0.0095     0     1.875
+NODE            5    COORD 0.0095     0     2.5
+NODE            6    COORD 0.0095     0     3.125
+NODE            7    COORD 0.0095     0     3.75
+NODE            8    COORD 0.0095     0     4.375
+NODE            9    COORD 0.0095     0     5
+NODE            10    COORD -0.0095     0     0
+NODE            11    COORD -0.0095     0     0.625
+NODE            12    COORD -0.0095     0     1.25
+NODE            13    COORD -0.0095     0     1.875
+NODE            14    COORD -0.0095     0     2.5
+NODE            15    COORD -0.0095     0     3.125
+NODE            16    COORD -0.0095     0     3.75
+NODE            17    COORD -0.0095     0     4.375
+NODE            18    COORD -0.0095     0     5
+------------------------------------------------STRUCTURE ELEMENTS
+1 BEAM3EB   LIN2       1      2 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+2 BEAM3EB   LIN2       2      3 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+3 BEAM3EB   LIN2       3      4 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+4 BEAM3EB   LIN2       4      5 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+5 BEAM3EB   LIN2       5      6 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+6 BEAM3EB   LIN2       6      7 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+7 BEAM3EB   LIN2       7      8 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+8 BEAM3EB   LIN2       8      9 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+9 BEAM3EB   LIN2       10      11 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+10 BEAM3EB   LIN2       11      12 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+11 BEAM3EB   LIN2       12      13 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+12 BEAM3EB   LIN2       13      14 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+13 BEAM3EB   LIN2       14      15 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+14 BEAM3EB   LIN2       15      16 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+15 BEAM3EB   LIN2       16      17 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+16 BEAM3EB   LIN2       17      18 MAT 1 CROSS 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1e+09 NUE 0.0 DENS 0.001 THEXPANS 0.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 1.0-cos(0.25*2*pi*(t-1.0)/1.0) t1 1.0 t2 5.0
+----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC sin(0.25*2*pi*(t-1.0)/1.0) t1 1.0 t2 5.0
+----------------------------------------------------------------------CURVE3
+CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+CURVE3 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.0 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+//Results with ANS and 4 GP
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.90042359362107387e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 2.48236113049173195e-02 TOLERANCE 1e-8
+---------------------------------------------------------------END

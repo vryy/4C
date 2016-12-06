@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Christoph Meier
+\maintainer Maximilian Grill
  *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3_base.H"

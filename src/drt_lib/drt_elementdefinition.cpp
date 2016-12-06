@@ -91,9 +91,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLIDP5");
   PrintElementLines(stream,"SOLIDP5FBAR");
   PrintElementLines(stream,"SOLIDW6SCATRA");
-  PrintElementLines(stream,"TORSION2");
   PrintElementLines(stream,"TORSION3");
-  PrintElementLines(stream,"TRUSS2");
   PrintElementLines(stream,"TRUSS3");
   PrintElementLines(stream,"WALL");
   PrintElementLines(stream,"WALLQ4PORO");

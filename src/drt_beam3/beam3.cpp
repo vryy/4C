@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3.cpp
-\brief three dimensional nonlinear corotational Timoshenko beam element
+
+\brief three dimensional nonlinear corotational Reissner beam element
 
 \level 2
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *------------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3.H"
 #include "beam3r.H"

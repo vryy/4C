@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_octtree.cpp
 
 \brief Octree for beam contact search
 
 \level 2
 
-\maintainer Kei Müller
-            mueller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contact_octtree.H"
 #include "beam3contact_defines.H"

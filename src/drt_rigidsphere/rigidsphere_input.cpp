@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file rigidsphere_input.cpp
 
 \brief spherical particle element for brownian dynamics
 
-\maintainer Christoph Meier
-
 \level 3
-*----------------------------------------------------------------------*/
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "rigidsphere.H"
 #include "../drt_lib/drt_linedefinition.H"

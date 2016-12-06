@@ -1349,11 +1349,6 @@ set(OBJS_DRT_STI
   src/drt_sti/sti_clonestrategy.cpp
   src/drt_sti/sti_dyn.cpp
 )
-set(OBJS_DRT_T2_LIB
-  src/drt_truss2/truss2.cpp
-  src/drt_truss2/truss2_evaluate.cpp
-  src/drt_truss2/truss2_input.cpp
-)
 set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust3.cpp
@@ -1458,11 +1453,6 @@ set(OBJS_DRT_FLUID_XFLUID
   src/drt_fluid_xfluid/xfluid_state_creator.cpp
   src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
   src/drt_fluid_xfluid/xfluid_outputservice.cpp
-)
-set(OBJS_DRT_TO2_LIB
-  src/drt_torsion2/torsion2.cpp
-  src/drt_torsion2/torsion2_evaluate.cpp
-  src/drt_torsion2/torsion2_input.cpp
 )
 set(OBJS_PRE_EXODUS
   src/pre_exodus/pre_exodus.cpp
@@ -2464,11 +2454,9 @@ add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
 add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
-add_library(ele_t2 ${OBJS_DRT_T2_LIB})
 add_library(ele_t3 ${OBJS_DRT_T3_LIB})
 add_library(ele_t3cl ${OBJS_DRT_T3CL_LIB})
 add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
-add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
 add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
@@ -2491,11 +2479,9 @@ set(ELEMENT_LIBRARIES
   ele_sp3
   ele_meshfree_scatra
   ele_so
-  ele_t2
   ele_t3
   ele_t3cl
   ele_thermo
-  ele_to2
   ele_to3
   ele_w1
   ele_acou

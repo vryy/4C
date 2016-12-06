@@ -1,15 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contactvariables.cpp
+
 \brief One beam contact segment living on an element pair
 
+\level 2
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-
-*-----------------------------------------------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contact.H"
 #include "beam3contactvariables.H"

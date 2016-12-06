@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3_input.cpp
 
+\brief three dimensional nonlinear corotational Reissner beam element
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\level 2
 
- *-----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3.H"
 #include "../drt_lib/drt_linedefinition.H"

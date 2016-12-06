@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3r_input.cpp
 
 \brief input related methods of 3D nonlinear Reissner beam element
 
 \level 2
 
-\maintainer Christoph Meier
-*-----------------------------------------------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3r.H"
 #include "../drt_lib/drt_linedefinition.H"

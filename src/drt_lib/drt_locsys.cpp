@@ -1,19 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file drt_locsys.cpp
 
 \brief Class controlling local coordinate systems on points, lines and
 surfaces and supplying all necessary transformation methods for parallel
 vectors and matrices.
 
-<pre>
 \level 1
 
-\maintainer Christoph Meier
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-
-*----------------------------------------------------------------------*/
+\maintainer Michael Hiermeier
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "drt_locsys.H"
 #include "../drt_io/io_pstream.H"

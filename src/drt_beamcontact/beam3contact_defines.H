@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_defines.H
 
 \brief A set of preprocessor defines for beam contact methods
 
 \level 2
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_DEFINES_H
 #define BEAM3CONTACT_DEFINES_H
 

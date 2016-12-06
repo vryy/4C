@@ -1,0 +1,127 @@
+//
+// \maintainer Maximilian Grill
+//
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+test case that tests element segmentation in combination with large-angle-contact
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        4
+NODES                           6
+DIM                             3
+MATERIALS                       1
+NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+NLNSOL                          fullnewton
+DIVERCONT                       stop
+TIMESTEP                        0.1
+NUMSTEP                         18
+MAXTIME                         1.8
+DAMPING                         No
+M_DAMP                          0
+K_DAMP                          0
+PREDICT                         TangDis
+TOLRES                          1.0E-7
+TOLDISP                         1.0E-7
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
+MAXITER                         50
+LOADLIN                         Yes
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+BETA                            0.5
+GAMMA                           1.0
+ALPHA_M                         0.5
+ALPHA_F                         0.5
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, none (default)
+BEAMS_BTBPENALTYPARAM           10000.0 //Penalty parameter for large-angle beam-to-beam contact
+BEAMS_BTBLINEPENALTYPARAM       0.0 //Penalty parameter for small-angle beam-to-beam contact
+BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)
+BEAMS_SEGCON                    Yes //Apply segment-based contact (beam3contact.cpp) or element-based contact (beam3contactnew.cpp)
+BEAMS_DEBUG                     Yes //This flag can be used for testing purposes. When it is switched on, some sanity checks are not performed
+BEAMS_PERPSHIFTANGLE1           0.001 //Lower shift angle (in degrees) for penalty scaling of large-angle-contact
+BEAMS_PERPSHIFTANGLE2           0.01  //Upper shift angle (in degrees) for penalty scaling of large-angle-contact
+BEAMS_PARSHIFTANGLE1            0.19  //Lower shift angle (in degrees) for penalty scaling of small-angle-contact
+BEAMS_PARSHIFTANGLE2            0.20  //Upper shift angle (in degrees) for penalty scaling of small-angle-contact
+BEAMS_SEGANGLE                  1.0 //Maximal angle deviation needed for contact search segmentation
+BEAMS_NUMINTEGRATIONINTERVAL    10 //Number of integration intervals per element
+BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3r elements)
+BEAMS_PENALTYLAW                LinPosQuadPen //Penalty Law: LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_PENREGPARAM_G0            0.001
+BEAMS_PENREGPARAM_F0            0.0
+BEAMS_PENREGPARAM_C0            0.0
+BEAMS_MAXDISISCALEFAC           0.1 //limit maximal allowed iterative displacement increment (=residual displacement) to a value of BEAMS_MAXDISISCALEFAC*Cross-section_radius (Default: 1.0)
+BEAMS_MAXDELTADISSCALEFAC       500.0 //limit maximal displacement per time step to BEAMS_MAXDELTADISSCALEFAC*Cross-section_radius (Default: -1.0=off)
+BEAMS_OCTREE                    none //octree search
+BEAMS_ADDITEXT                  Yes //Application of additive bounding box extrusion factor (Default: Yes); No -> Multiplicative extrision factor
+BEAMS_EXTVAL                    2.0 //Extrusion factor of bounding boxes
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         4
+NDLINE                          0
+NDSURF                          0
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                         4
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL  0.5707 0.0 0.0 -1.0 0.0 1.0  CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL -0.5707 0.0 0.0 -1.0 0.0 -1.0  CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL  0.0 0.03 0.606 0.0 0.0 0.0 CURVE none 1 2 none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL  0.0 0.03 0.606 0.0 0.0 0.0 CURVE none 1 2 none none none FUNCT 0 0 0 0 0 0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 2 DNODE 2
+NODE 3 DNODE 3
+NODE 6 DNODE 4
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD  -1.570700000000e+00 0.00000000000000e+00 0.000000000000000e+00
+NODE 2 COORD  1.5707000000000e+00 0.00000000000000e+00 0.000000000000000e+00
+NODE 3 COORD  -2.00000000000e+00 -0.03 0.3e+00
+NODE 4 COORD  -0.66666666666e+00 -0.03 0.3e+00
+NODE 5 COORD   0.66666666666e+00 -0.03 0.3e+00
+NODE 6 COORD  2.00000000000e+00 -0.03 0.3e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 BEAM3EB LIN2 1 2 MAT 1 CROSS 3.1415926535897936e-06 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+2 BEAM3EB LIN2 3 4 MAT 1 CROSS 3.1415926535897936e-06 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+3 BEAM3EB LIN2 4 5 MAT 1 CROSS 3.1415926535897936e-06 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+4 BEAM3EB LIN2 5 6 MAT 1 CROSS 3.1415926535897936e-06 MOMIN  7.8539816339744844e-09 MOMINPOL  1.5707963267948969e-08
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+----------------------------------------------------------------------CURVE2
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 0.0 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+//Results with ANS and 4 GP
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -3.55280944801650341e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 1.20426718445148465e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 4.85139655877546760e-01 TOLERANCE 1e-12
+-------------------------------------------------------------------------END

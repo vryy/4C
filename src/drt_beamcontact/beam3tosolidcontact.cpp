@@ -1,16 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3tosolidcontact.cpp
 
 \brief One beam and solid contact pair (two elements)
 
 \level 3
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *-----------------------------------------------------------------------------------------------------------*/
+\maintainer Alexander Popp
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3tosolidcontact.H"
 #include "beam3contact_defines.H"

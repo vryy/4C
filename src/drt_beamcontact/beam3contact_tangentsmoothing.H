@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_tangentsmoothing.H
 
 \brief A set of utility functions for beam contact
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_TANGENTSMOOTHING_H
 #define BEAM3CONTACT_TANGENTSMOOTHING_H
 

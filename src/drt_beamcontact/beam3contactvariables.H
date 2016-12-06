@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contactvariables.H
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+\brief One beam contact segment living on an element pair
+
+\level 2
+
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef BEAM3CV_H
 #define BEAM3CV_H
 

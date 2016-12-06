@@ -1,13 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3_evaluate.cpp
 
-\brief three dimensional nonlinear Reissner beam element
+\brief three dimensional nonlinear corotational Reissner beam element
 
 \level 2
 
-\maintainer Christoph Meier
- *-----------------------------------------------------------------------------------------------------------*/
-
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 
 #include "beam3.H"

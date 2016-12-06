@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_octtree.H
 
 \brief Octtree for beam contact search
 
 \level 2
 
-\maintainer Kei Müller
-            mueller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef BEAM3OCTTREE_H
 #define BEAM3OCTTREE_H
 

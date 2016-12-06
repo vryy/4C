@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file torsion3.H
 
-\brief three dimensional torsion element
+\brief three dimensional torsion spring element
 
-<pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
-*----------------------------------------------------------------------*/
-// administrative line in order to make a difference between BACI and Ccarat files
+\level 2
 
-//header file only included if not yet included!
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef TORSION3_H
 #define TORSION3_H
 
