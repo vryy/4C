@@ -2,10 +2,15 @@
 \file so_surface.H
 
 \brief class for evaluation of equations on the structural surface
-
-\maintainer Michael Gee
-
 \level 1
+
+<pre>
+\maintainer Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
@@ -29,6 +34,8 @@ public:
 
   static StructuralSurfaceType & Instance();
 
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
@@ -51,6 +58,9 @@ common types of loads currently demanded in baci
 class StructuralSurface : public DRT::FaceElement
 {
 public:
+
+  //! @name Friends
+  friend class StructuralSurfaceType;
 
   /*!
   \brief Standard Constructor
@@ -129,7 +139,7 @@ public:
   separately.
   */
   inline virtual int NumDofPerNode(const DRT::Node& node) const
-  {return ParentMasterElement()->NumDofPerNode(node);}
+  { return numdofpernode_; }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -260,6 +270,12 @@ protected:
   StructuralSurface& operator = (const StructuralSurface& old);
 
   // variables
+
+  //! discretization type
+  DRT::Element::DiscretizationType distype_;
+
+  //! numdofpernode
+  int numdofpernode_;
 
   //! gaussian integration to be used
   DRT::UTILS::GaussRule2D     gaussrule_;
@@ -413,6 +429,17 @@ protected:
   void CalculateSurfacePorosity(Teuchos::ParameterList& params,
                                 DRT::Discretization&      discretization,
                                 LocationArray&            la);
+
+private:
+
+  //! Private Constructor to be called from StructuralSurfaceType
+  explicit StructuralSurface(int id, int owner);
+
+  //! Set Discretization Type of the Surface Element
+  void SetDistype();
+
+  //! Set Gaussrule dependent on shape of the structural surface
+  void SetGaussrule();
 }; // class StructuralSurface : public DRT::Element
 
 

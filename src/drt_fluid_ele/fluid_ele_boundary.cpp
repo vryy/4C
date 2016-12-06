@@ -2,9 +2,11 @@
 \file fluid_ele_boundary.cpp
 \brief
 
+\level 1
+
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
 </pre>
@@ -19,6 +21,14 @@ DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance()
 {
   return instance_;
+}
+
+DRT::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create( const std::vector<char> & data )
+{
+std::cout << __FILE__ << __LINE__ << std::endl;
+  DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1,-1);
+  object->Unpack(data);
+  return object;
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create( const int id, const int owner )
@@ -36,11 +46,33 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Fluid* parent,
                               const int lsurface) :
-DRT::FaceElement(id,owner)
+DRT::FaceElement(id,owner),
+distype_(DRT::Element::dis_none),
+numdofpernode_(-1)
 {
   SetParentMasterElement(parent,lsurface);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  distype_ = DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+
+  numdofpernode_= ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
+  //Safety check if all nodes have the same number of dofs!
+  for (int nlid = 1; nlid < NumNode(); ++nlid)
+  {
+    if (numdofpernode_ !=  ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
+      dserror("You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)", numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
+ *-----------------------------------------------------------------------*/
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner) :
+DRT::FaceElement(id,owner),
+distype_(DRT::Element::dis_none),
+numdofpernode_(-1)
+{
   return;
 }
 
@@ -48,9 +80,11 @@ DRT::FaceElement(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old) :
-DRT::FaceElement(old)
+DRT::FaceElement(old),
+distype_(old.distype_),
+numdofpernode_(old.numdofpernode_)
 {
-  return;
+ return;
 }
 
 /*----------------------------------------------------------------------*
@@ -64,32 +98,52 @@ DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          u.kue 03/07 |
- *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::FluidBoundary::Shape() const
-{
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
-}
-
-/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
 {
-  dserror("this FluidBoundary element does not support communication");
+std::cout << __FILE__ << __LINE__ << std::endl;
 
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class Element
+  FaceElement::Pack(data);
+  // Discretisation type
+  AddtoPack(data,distype_);
+  //add numdofpernode_
+  AddtoPack(data,numdofpernode_);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 {
-  dserror("this FluidBoundary element does not support communication");
+std::cout << __FILE__ << __LINE__ << std::endl;
+
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+  // extract base class Element
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  FaceElement::Unpack(basedata);
+  // distype
+  distype_ = static_cast<DRT::Element::DiscretizationType>( ExtractInt(position,data) );
+  // numdofpernode_
+  numdofpernode_ = ExtractInt(position,data);
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
 
@@ -130,7 +184,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                             gammi 04/07|
+ |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
@@ -140,9 +194,11 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces(
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
-  // so we have to allocate new surface elements:
-  dserror("Surfaces of FluidBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  // just give back this surface element (without ownership)
+   std::cout << __FILE__ << __LINE__ << std::endl;
+
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(1);
+  surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
 }
 

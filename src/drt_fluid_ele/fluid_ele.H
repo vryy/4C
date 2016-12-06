@@ -11,9 +11,11 @@ and Gauss point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
+\level 1
+
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
 </pre>
@@ -442,6 +444,8 @@ public:
 
   static FluidBoundaryType & Instance();
 
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
   virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
@@ -460,6 +464,9 @@ class FluidBoundary : public DRT::FaceElement
 {
 public:
 
+  //! @name Friends
+  friend class FluidBoundaryType;
+
   //! @name Constructors and destructors and related methods
 
   //! number of space dimensions
@@ -474,7 +481,7 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+  explicit FluidBoundary(int id, int owner, int nnode, const int* nodeids,
              DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface);
 
   /*!
@@ -497,7 +504,10 @@ public:
   /*!
   \brief Get shape type of element
   */
-  virtual DiscretizationType Shape() const;
+  virtual DiscretizationType Shape() const
+  {
+  return distype_;
+  };
 
   /*!
   \brief Return number of lines of this element
@@ -564,7 +574,6 @@ public:
 
   //! @name Acess methods
 
-
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
@@ -576,7 +585,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return ParentMasterElement()->NumDofPerNode(node);
+    return numdofpernode_;
   }
 
   /*!
@@ -711,7 +720,17 @@ public:
                               Teuchos::ParameterList& params
                               ) const;
 
+protected:
+
+  //! discretization type
+  DRT::Element::DiscretizationType distype_;
+
+  //! numdofpernode
+  int numdofpernode_;
+
 private:
+
+  explicit FluidBoundary(int id, int owner);
 
   // don't want = operator
   FluidBoundary& operator = (const FluidBoundary& old);
