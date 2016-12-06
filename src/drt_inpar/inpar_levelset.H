@@ -4,13 +4,14 @@
 
 \brief Input parameters for level-set problems
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */
-
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_LEVELSET_H
 #define INPAR_LEVELSET_H

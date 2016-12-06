@@ -5,12 +5,13 @@
        of a certain size in order to reserve space for fields that vary
        in size, i.e. XFEM fluid. PBC version!
 
-<pre>
 \level 1
 
-\maintainer Ursula Rasthofer
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 
 *----------------------------------------------------------------------*/

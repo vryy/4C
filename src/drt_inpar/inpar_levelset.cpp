@@ -4,13 +4,14 @@
 
 \brief Input parameters for level set
 
+\level 2
+
 <pre>
-Maintainer: Magnus Winter
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 

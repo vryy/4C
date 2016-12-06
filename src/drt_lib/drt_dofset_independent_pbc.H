@@ -1,18 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file drt_dofset_independent_pbc.H
 
 \brief A modified set of degrees of freedom. This class inherits from
        both the independent dofset as well as the pbc dofset.
 
-<pre>
 \level 2
 
-\maintainer Ursula Rasthofer
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\maintainer Martin Kronbichler
+*/
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 #ifndef DOFSET_INDEPENDENT_PBC_H
 #define DOFSET_INDEPENDENT_PBC_H
 

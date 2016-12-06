@@ -3,15 +3,16 @@
 
 \brief A class to manage specialized discretizations for combustion problems
 
-<pre>
 \level 2
 
-\maintainer Ursula Rasthofer
+<pre>
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef DISCRET_COMBUST_H
 #define DISCRET_COMBUST_H
 

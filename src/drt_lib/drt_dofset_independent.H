@@ -8,13 +8,9 @@
        class is intended to be used for xfem approaches. It provides a
        dofset without xfem dofs for output routines.
 
-<pre>
 \level 2
 
-\maintainer Ursula Rasthofer
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef DOFSET_INDEPENDENT_H

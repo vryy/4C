@@ -4,13 +4,15 @@
 
 \brief Input parameters for combustion
 
+\level 3
+
 <pre>
-Maintainer: Magnus Winter
-            winter@lnm.mw.tum.de
+\maintainer Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 
