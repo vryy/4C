@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file myocard_tools.H
-\brief
+\brief myocard tools
 
 <pre>
-Maintainer: Cristobal Bertogloi
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>

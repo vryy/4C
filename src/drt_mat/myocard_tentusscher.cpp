@@ -1,9 +1,12 @@
 /*!----------------------------------------------------------------------
-\file Myocard_TenTusscher.cpp
+\file myocard_tentusscher.cpp
+\brief ten tusscher myocard material model
 
 <pre>
-Maintainer: Cristobal Bertogloi
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>

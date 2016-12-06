@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file Myocard_SAN_Garny.H
-\brief
+\file myocard_san_garny.H
+\brief san garny myocard material model
 
 <pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
