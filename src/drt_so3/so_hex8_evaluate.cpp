@@ -1772,6 +1772,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       xdisp(i,2) = disp[i*NODDOF_SOH8+2];
     }
   }
+
   double elediagonallength = 0.0;
   if(!analyticalmaterialtangent_)
     elediagonallength = sqrt(pow(xrefe(0,0)-xrefe(6,0),2)+pow(xrefe(0,1)-xrefe(6,1),2)+pow(xrefe(0,2)-xrefe(6,2),2));
@@ -2267,8 +2268,20 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 
     params.set<int>("gp",gp);
 
+    // needed for biochemo-mechano activefiber material.
+    // FixMe This has to vanish at latest with the elements
+    // for the new structural time integration.
+    // todo temporary hack ! (rauch 12/2016)
+    if(DRT::Problem::Instance()->ProblemType()==prb_immersed_cell and
+        IsParamsInterface())
+    {
+      params.set<double>("total time",ParamsInterface().GetTotalTime());
+      params.set<double>("delta time",ParamsInterface().GetDeltaTime());
+    } // if prb_immersed_cell
+    // if output is requested only active stresses are written.
+    params.set<int>("iostress", iostress);
+
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    params.set<int>("iostress", iostress); // needed for activefiber material; if output is requested only active stresses are written
     so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

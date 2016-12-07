@@ -21,6 +21,7 @@
 #include "immersed_partitioned_confine_cell.H"
 #include "immersed_partitioned_cellmigration.H"
 #include "ssi_partitioned_2wc_biochemomechano.H"
+#include "immersed_partitioned_cellcontraction.H"
 #include "immersed_partitioned_adhesion_traction.H"
 #include "ssi_partitioned_2wc_protrusionformation.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
@@ -351,8 +352,8 @@ void CellMigrationControlAlgorithm()
   ///////////////////////////////////////////////////////////////////////
   // Initial FillComplete() just creates basic connectivity
   ///////////////////////////////////////////////////////////////////////
-  problem->GetDis("cell")->FillComplete(false,false,false);
-  problem->GetDis("cellscatra")->FillComplete(false,false,false);
+  problem->GetDis("cell")->FillComplete(true,true,true);
+  problem->GetDis("cellscatra")->FillComplete(true,true,true);
 
 
 
@@ -406,7 +407,12 @@ void CellMigrationControlAlgorithm()
         cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
       else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
         cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
-      break;
+      else if (simtype==INPAR::CELL::sim_type_pureContraction)
+      {
+        cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm,problem->CellMigrationParams()));
+        params.set<bool>("IsPureContraction", true);
+      }
+        break;
     default:
       dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
       break;
@@ -419,54 +425,61 @@ void CellMigrationControlAlgorithm()
     // "ale" dis is cloned and filled inside.
     // SSI coupling object is constructed inside.
     // Returns true if redistribution is required.
-    int redistribute =
-    cellscatra_subproblem->Init(comm,
-        problem->CellMigrationParams(),
-        problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
-        problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
-        "cell",
-        "cellscatra",
-        isale);
+      int redistribute =
+      cellscatra_subproblem->Init(
+          comm,
+          problem->CellMigrationParams(),
+          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
+          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+          "cell",
+          "cellscatra",
+          isale);
 
     // Redistribute discretizations if necessary
     if(redistribute)
     {
-      problem->GetDis("cell")->FillComplete(false,false,false);
-      problem->GetDis("cellscatra")->FillComplete(false,false,false);
+      if( redistribute== (int)SSI::match)
+      {
+        problem->GetDis("cell")->FillComplete(true,true,true);
+        problem->GetDis("cellscatra")->FillComplete(true,true,true);
 
-      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
-        problem->GetDis("ale")->FillComplete(false,false,false);
+        if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+          problem->GetDis("ale")->FillComplete(true,true,true);
 
-      // first we bin the scatra discretization
-      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-      dis.push_back(problem->GetDis("cellscatra"));
-      DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+        // first we bin the scatra discretization
+        std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+        dis.push_back(problem->GetDis("cellscatra"));
+        DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
 
-      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
-          *problem->GetDis("cellscatra"),
-          *problem->GetDis("cellscatra"),
-          "ScatraHeteroReactionMaster",
-          "ScatraHeteroReactionSlave" );
+        DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+            *problem->GetDis("cellscatra"),
+            *problem->GetDis("cellscatra"),
+            "ScatraHeteroReactionMaster",
+            "ScatraHeteroReactionSlave" );
 
-      // now we redistribute the structure dis to match the scatra dis
-      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
-          *problem->GetDis("cellscatra"),
-          *problem->GetDis("cell") );
-
-      // now we redistribute the ale dis to match the scatra dis
-      if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+        // now we redistribute the structure dis to match the scatra dis
         DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
             *problem->GetDis("cellscatra"),
-            *problem->GetDis("ale") );
+            *problem->GetDis("cell") );
+
+        // now we redistribute the ale dis to match the scatra dis
+        if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+          DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
+              *problem->GetDis("cell"),
+              *problem->GetDis("ale") );
+      }
+      else
+        dserror("Only matching discretizatiosn are supported.");
+
     } // end redistribution
+
 
     // ghost cell discretizations on each proc (for search algorithm)
     if(comm.NumProc() > 1)
     {
       // fill complete inside
       DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cell"));
-      if(ssi_cell)
-        DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cellscatra"));
+      DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("cellscatra"));
       if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
         DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("ale"));
     } // end ghosting
@@ -814,23 +827,16 @@ void CellMigrationControlAlgorithm()
 
   else if (simtype==INPAR::CELL::sim_type_pureContraction)
   {
-    if(comm.MyPID()==0)
-      std::cout<<"\n Simulation Type : Pure Biochemo-Mechano Coupled Cell Contraction  \n"<<std::endl;
+    params.set<bool>("IsPureContractionSimulation", true);
 
-    params.set<bool>("IsPureContraction", true);
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedCellContraction> algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedCellContraction(params,comm));
 
-    Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> algo =
-        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm,problem->CellMigrationParams()));
+    // init algo
+    algo->Init(params);
 
-    algo -> Init(comm,
-        params,
-        problem->CellMigrationParams(),
-        problem->ScalarTransportDynamicParams(),
-        problem->StructuralDynamicParams(),
-        "cell",
-        "cellscatra");
-
-    algo -> Setup();
+    // setup algo
+    algo->Setup();
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -840,7 +846,7 @@ void CellMigrationControlAlgorithm()
     }
 
     // run the problem
-    algo->Timeloop();
+    algo -> Timeloop(algo);
 
     if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
     {
@@ -848,8 +854,11 @@ void CellMigrationControlAlgorithm()
       Teuchos::TimeMonitor::zeroOutTimers();
     }
 
-    // perform the result test
-    algo->TestResults(comm);
+    // create result tests for single fields
+    DRT::Problem::Instance()->AddFieldTest(cellscatra_subproblem->ScaTraField()->CreateScaTraFieldTest());
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureContraction
 

@@ -1,67 +1,72 @@
 //
-// Maintainer: Andreas Rauch
-// rauch@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15240
+// \maintainer Andreas Rauch
+//             rauch@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15240
 //
--------------------------------------------------------------TITLE
+-------------------------------------------------------------------TITLE
 BioChemo-Mechano Coupled Model for Active Cell Contractibility.
 Basic Pseudo2D test.
 Square Cell fixed inbetween two dashpots in the middle of upper
 and lower cell surfaces.
-------------------------------------------------------PROBLEM SIZE
+
+Note: in ---STRUCTURAL DYNAMIC we have to set :
+MATERIALTANGENT                 finitedifferences
+Because in so_hex8_evaluate this parameter is only read from the
+standard structural section and not from ---CELL DYNAMIC/STRUCTURAL DYN.
+------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    625
 //NODES       1352
 DIM           3
------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------------IO
 STRUCT_STRESS                   Cauchy
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Immersed_CellMigration
 RESTART                         0
---------------------------------------------------------CELL DYNAMIC
+------------------------------------------------------------CELL DYNAMIC
 MIGRATIONTYPE                   ameboid
 PSEUDO2D                        yes
 SIMTYPE                         pureContraction
 SSI_CELL                        yes
 ECM_INTERACTION                 no
 FLUID_INTERACTION               no
-ADHESION_DYNAMICS               no
+ADHESION_DYNAMICS               yes
 RESULTSEVRY                     1
 RESTARTEVRY                     100
 NUMSTEP                         2
 TIMESTEP                        0.5
 MAXTIME                         2.0
-----------------------------------CELL DYNAMIC/SCALAR TRANSPORT DOF IDS
+-----------------------------------CELL DYNAMIC/SCALAR TRANSPORT DOF IDS
 ACTIN_MONOMER                    8
 ROCK                             6
 RhoGEF                           3
--------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
+-----------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DIVERCONT                       continue
 DYNAMICTYP                      OneStepTheta
+INT_STRATEGY                    Standard
 ITERNORM                        L2
 MATERIALTANGENT                 finitedifferences
 MINITER                         0
 NLNSOL                          fullnewton
 MAXITER                         20
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-PREDICT                         ConstVel //ConstDis
-TOLCONSTR                       1.0e-07
+PREDICT                         ConstVel
 TOLDISP                         1.0e-06
 TOLRES                          1.0e-07
-------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA
+----------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
----------------------------------------CELL DYNAMIC/SCALAR TRANSPORT
+-----------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+-------------------------------------------CELL DYNAMIC/SCALAR TRANSPORT
 CONVFORM                        conservative
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
@@ -72,14 +77,14 @@ SOLVERTYPE                      nonlinear
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 VELOCITYFIELD                   Navier_Stokes
------------------------------CELL DYNAMIC/SCALAR TRANSPORT/NONLINEAR
+---------------------------------CELL DYNAMIC/SCALAR TRANSPORT/NONLINEAR
 ABSTOLRES                       1e-14
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     no
 ITEMAX                          10
--------------------------CELL DYNAMIC/SCALAR TRANSPORT/STABILIZATION
+-----------------------------CELL DYNAMIC/SCALAR TRANSPORT/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -88,7 +93,7 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
-----------------------------------------------------IMMERSED METHOD
+---------------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
 PROJECTION                      shapefunctions
@@ -103,7 +108,7 @@ STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125
 CORRECT_BOUNDARY_VELOCITIES     no
 TIMESTATS                       endofsim // everyiter
--------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
+--------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
 COUPVARIABLE_FSI                Force //Force //Displacement
@@ -114,16 +119,16 @@ CONVTOL                         1e-02
 RELAX                           1.0
 MAXOMEGA                        0
 ITEMAX                          25
------------------------------------------SSI CONTROL
+-------------------------------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStagg
 ITEMAX                          30
 SCATRATYPE                      Advanced_Reaction
---------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------------SSI CONTROL/PARTITIONED
 MAXOMEGA                        10
 MINOMEGA                        0.1
 STARTOMEGA                      1
 CONVTOL                         1e-04
--------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      1
@@ -135,14 +140,14 @@ SOLVERTYPE                      nonlinear
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 VELOCITYFIELD                   Navier_Stokes
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-14
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     no
 ITEMAX                          10
------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -151,23 +156,21 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DAMPING                         Material
-DIVERCONT                       continue
+DAMPING                         Material // mandatory for poro!!
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
 MATERIALTANGENT                 finitedifferences
+INT_STRATEGY                    Old
+ITERNORM                        L2
+MAXITER                         50
 MINITER                         0
 NLNSOL                          fullnewton
-MAXITER                         20
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-PREDICT                         ConstVel //ConstDis
-TOLDISP                         1.0e-06
-TOLRES                          1.0e-07
-------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+PREDICT                         ConstDisVelAcc
+TOLDISP                         1e-09
+TOLRES                          1e-09
+-----------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
@@ -184,8 +187,22 @@ CONVTOL                         1e-07
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.001
 CONVCHECK                       L_2_norm
-STEADYSTEP                      -1
 ITEMAX                          10
+GRIDVEL                         BE
+---------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+CROSS-STRESS                    no_cross
+GRAD_DIV                        no
+DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+PSPG                            yes //yes no_pspg
+REYNOLDS-STRESS                 no_reynolds
+RSTAB                           rstab_gls //rstab_gls no_rstab
+STABTYPE                        residual_based //residual_based no_stabilization
+SUPG                            no
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
 LINEAR_SOLVER                   1
 COUPALGO                        poro_monolithic
@@ -209,7 +226,8 @@ VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 ----------------------------------------------------------POROSCATRA CONTROL
 LINEAR_SOLVER                   1
-COUPALGO                        two_way // monolithic scatra_to_solid solid_to_scatra two_way
+RESULTSEVRY                     1
+COUPALGO                        two_way
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 TOLRES_GLOBAL                   1e-08
@@ -217,9 +235,21 @@ TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra
---------------------------------------------------------------------SOLVER 1
+ITEMAX                          10
+ITEMIN                          1
+TOLRES_DISP                     1.000e-08
+TOLINC_DISP                     1.000e-08
+TOLRES_VEL                      1.000e-08
+TOLINC_VEL                      1.000e-08
+TOLRES_PRES                     1.000e-08
+TOLINC_PRES                     1.000e-08
+TOLRES_SCALAR                   1.000e-08
+TOLINC_SCALAR                   1.000e-08
+NORMCOMBI_RESFINC               And
+MATCHINGGRID                    Yes
+----------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------------MATERIALS
 // cell active material
 MAT 1 MAT_BIOCHEMOMECHANO DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 200.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3.183098862 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez
 // cell passive material
@@ -239,34 +269,34 @@ MAT 58 MAT_scatra DIFFUSIVITY 5.0e-02 //5.0e-07   //  Rac1 activated material: g
 MAT 59 MAT_scatra DIFFUSIVITY 5.0e-02
 
 // (RacGEFs/RhoGAPs) + Rac1-GDP -> Rac1-GTP
-MAT 61 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 61 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 1 0 0 0 0 0 0 0
 
 // (RhoGEFs/RacGAPs) + RhoA-GDP -> RhoA-GTP
-MAT 62 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -1 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 62 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -1 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 0 1 1 0 0 0 0
 
 // (RacGEFs/RhoGAPs) + RhoA-GTP -> RhoA-GDP
-MAT 63 MAT_scatra_reaction NUMSCAL 9 STOICH -1 0 0 0 1 -1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 63 MAT_scatra_reaction NUMSCAL 9 STOICH -1 0 0 0 1 -1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0 0 0 0 1 0 0 0
 
 // (RhoGEFs/RacGAPs) + Rac1-GTP -> Rac1-GDP
-MAT 64 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 -1 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 64 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 -1 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 1 1 0 0 0 0 0
 
 // RhoA-GTP -> ROCK + RhoA-GDP //- 0.5* RacGEFs and RhoGAPs
-MAT 65 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 1 -1 1 0 0 REACCOEFF 0.1 COUPLING simple_multiplicative
+MAT 65 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 1 -1 1 0 0 REACCOEFF 0.1 COUPLING simple_multiplicative ROLE 0 0 0 0 0 1 0 0 0
 
 // Rac1-GTP -> gamma + Rac1-GDP
-MAT 66 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 1 0 REACCOEFF 0.1 COUPLING simple_multiplicative
+MAT 66 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 1 0 REACCOEFF 0.1 COUPLING simple_multiplicative ROLE 0 0 1 0 0 0 0 0 0
 
 // Rac1-GTP -> Rac1-GDP
-MAT 67 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 0 0 REACCOEFF 0.2 COUPLING simple_multiplicative
+MAT 67 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 0 0 REACCOEFF 0.2 COUPLING simple_multiplicative ROLE 0 0 1 0 0 0 0 0 0
 
 // Rac1-GDP -> Rac1-GTP
-MAT 68 MAT_scatra_reaction NUMSCAL 9 STOICH 0 -1 1 0 0 0 0 0 0 REACCOEFF 0.08 COUPLING simple_multiplicative
+MAT 68 MAT_scatra_reaction NUMSCAL 9 STOICH 0 -1 1 0 0 0 0 0 0 REACCOEFF 0.08 COUPLING simple_multiplicative ROLE 0 1 0 0 0 0 0 0 0
 
 // RhoA-GTP -> Rho-GDP
-MAT 69 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 1 -1 0 0 0 REACCOEFF 0.8 COUPLING simple_multiplicative
+MAT 69 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 1 -1 0 0 0 REACCOEFF 0.8 COUPLING simple_multiplicative ROLE 0 0 0 0 0 1 0 0 0
 
 // RhoA-GDP -> Rho-GTP
-MAT 70 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 -1 1 0 0 0 REACCOEFF 0.08 COUPLING simple_multiplicative
+MAT 70 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 -1 1 0 0 0 REACCOEFF 0.08 COUPLING simple_multiplicative ROLE 0 0 0 0 1 0 0 0 0
 
 //poro dummy
 MAT 7 MAT_StructPoro MATID 8 POROLAWID 100 INITPOROSITY 0.8
@@ -275,30 +305,30 @@ MAT 8 MAT_ElastHyper NUMMAT 1 MATIDS 9 DENS 5.0
 MAT 9 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.0
 MAT 1000 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-1 TYPE Darcy-Brinkman
 MAT 2000 MAT_scatra DIFFUSIVITY 0.0
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD cell SRC_MAT 1 TAR_FIELD cellscatra TAR_MAT 5
 SRC_FIELD structure SRC_MAT 7 TAR_FIELD porofluid TAR_MAT 1000
 SRC_FIELD structure SRC_MAT 7 TAR_FIELD scatra TAR_MAT 2000
-----------------------------------------------------------------------CURVE1
+------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(1+cos((t/(40)*pi))) t1 0.0 t2 30
 CURVE1 on EXPR FUNC 0.5*(1+cos((30/(40)*pi))) t1 30.0 t2 40
 CURVE1 on EXPR FUNC 0.5*(1+cos((30/(40)*pi)))-0.5*(1+cos((30/(40)*pi)))*(t-40)/20 t1 40.0 t2 60
 CURVE1 on EXPR FUNC 0.0 t1 60 t2 100
-----------------------------------------------------------------------CURVE2
+------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC 1.0 t1 0 t2 1
 CURVE2 on EXPR FUNC 0.0 t1 1 t2 200
-----------------------------------------------------------------------CURVE3
+------------------------------------------------------------------CURVE3
 CURVE3 on EXPR FUNC 0.0 t1 0 t2 10
 CURVE3 on EXPR FUNC 0.6*1.0*0.5*(1-cos(((t-10)/(40-10)*pi))) t1 10 t2 40
 CURVE3 on EXPR FUNC 0.6*1.0 t1 40 t2 50
 CURVE3 on EXPR FUNC 0.6*1.0*0.5*(1+cos(((t-50)/(25)*pi))) t1 50.0 t2 75
 CURVE3 on EXPR FUNC 0.0 t1 75 t2 100
-----------------------------------------------------------------------CURVE4
+------------------------------------------------------------------CURVE4
 CURVE4 on EXPR FUNC 0.5*(1-cos(((t)/(5)*pi))) t1 0 t2 5
 CURVE4 on EXPR FUNC 1.0 t1 5 t2 20
 CURVE4 on EXPR FUNC 0.5*(1+cos(((t-20)/(10)*pi))) t1 20.0 t2 30
 CURVE4 on EXPR FUNC 0.0 t1 30 t2 200
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------------FUNCT1
 FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.2
 FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.8//0.6 //0.5 // 0.5
 FUNCT 1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
@@ -308,11 +338,11 @@ FUNCT 1 COMPONENT 5 EXPR 0 0 0 FUNCTION 0.0
 FUNCT 1 COMPONENT 6 EXPR 0 0 0 FUNCTION 0.0
 FUNCT 1 COMPONENT 7 EXPR 0 0 0 FUNCTION 0.0
 FUNCT 1 COMPONENT 8 EXPR 0 0 0 FUNCTION 1.0
--------------------------------------------------------------FUNCT2
+------------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0.0 0.0 0.0 FUNCTION 0.8
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
--------------------------------------------------RESULT DESCRIPTION
+------------------------------------------------------------------FUNCT3
+------------------------------------------------------------------FUNCT4
+------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS cellscatra NODE 675 QUANTITY  phi VALUE 1.07673549159712861e-01 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi2 VALUE 6.82128574668862342e-01 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi3 VALUE 1.17838370901993950e-01 TOLERANCE 1e-5
@@ -353,10 +383,16 @@ E 13 - NUMDOF 3 ONOFF 1 1 1 STIFF 15.0e2 15.0e2 15.0e2 VISCO 0.0 0.0 0.0 DISPLOF
 DSURF 1
 // middle_5_eles
 E 12 - 1
+--------------------------DESIGN IMMERSED COUPLING SURF CONDITIONS
+DSURF  1
+// middle_5_eles
+E 12 -  1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // cell_backside
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// FA_middle_of_cell
+//E 14 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // bottom_corner_point_down_left

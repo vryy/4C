@@ -89,7 +89,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
-  exchange_manager_->SetIsPureAdhesionSimulation(params.get<bool>("IsPureAdhesionSimulation")==true);
+  exchange_manager_->SetIsPureAdhesionSimulation(true);
 
   // get coupling variable
   displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_ADHESION") == "Displacement";

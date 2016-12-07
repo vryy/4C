@@ -21,8 +21,6 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_poroelast/poro_scatra_base.H"
 
@@ -31,21 +29,23 @@
 /*----------------------------------------------------------------------*
  | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams)
   : SSI_Part2WC(comm, globaltimeparams),
     myrank_(comm.MyPID()),
-    exchange_manager_(NULL)
+    ssi_wrapper_(Teuchos::null),
+    exchange_manager_(NULL),
+    ratesactin_(Teuchos::null),
+    rates_(Teuchos::null),
+    phi_(Teuchos::null)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call he setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // empty
 }
 
 
 /*----------------------------------------------------------------------*
- | Setup this object                                        rauch 08/16 |
+ | Initialize this object                                   rauch 08/16 |
  *----------------------------------------------------------------------*/
 int SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(
     const Epetra_Comm& comm,
@@ -67,38 +67,15 @@ int SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(
 
 
 /*----------------------------------------------------------------------*
- | Initialize this specific object                          rauch 08/16 |
- *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::Init(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& params,
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams,
-    const std::string struct_disname,
-    const std::string scatra_disname)
-{
-  int returnvar=0;
-
-  // call standard setup
-  returnvar =
-      Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname,true);
-
-  // get pointer poroelast-scatra interaction subproblem
-  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
-
-  return returnvar;
-}
-
-
-
-/*----------------------------------------------------------------------*
- | Initialize this class                                    rauch 08/16 |
+ | Setup this object                                        rauch 08/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup()
 {
-  specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
-  if(specialized_structure_ == Teuchos::null)
+  // call init in base class
+  SSI::SSI_Part2WC::Setup();
+
+  ssi_wrapper_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(StructureField());
+  if(ssi_wrapper_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   Teuchos::RCP<Epetra_MultiVector> phinp = scatra_->ScaTraField()->Phinp();
@@ -109,38 +86,25 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::Setup()
   // Construct vectors for exchange between Structure --> Scatra
   const Epetra_Map* elementcolmap = scatra_->ScaTraField()->Discretization()->ElementColMap();
 
+  // hard coded for elements with 8 integration points
   ratesactin_ = LINALG::CreateVector(*elementcolmap,true);
   ratesactin_.reset(new Epetra_MultiVector(*elementcolmap,8));
 
+  // hard coded for elements with 8 integration points
   rates_ = LINALG::CreateVector(*elementcolmap,true);
   rates_.reset(new Epetra_MultiVector(*elementcolmap,8));
 
   // get pointer to the ImmersedFieldExchangeManager
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
 
-  // Set pointers to multivectors for the rates
+  // set pointers to multivectors for the rates
   exchange_manager_->SetPointerToRates(rates_);
   exchange_manager_->SetPointerToRatesActin(ratesactin_);
 
-  // Set pointer to the concentrations
+  // set pointer to the concentrations
   exchange_manager_->SetPointerToPhinps(phi_);
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
-| update time step and print to screen                      rauch 01/16 |
-------------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_BIOCHEMOMECHANO::UpdateAndOutput()
-{
-  SSI::SSI_Part2WC::UpdateAndOutput();
-
-  // also for dummy poroscatra problem
-  poroscatra_subproblem_->PrepareTimeStep(false);
-  poroscatra_subproblem_->PrepareOutput();
-  poroscatra_subproblem_->Update();
-  poroscatra_subproblem_->Output();
 }
 
 
@@ -176,13 +140,13 @@ bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::ConvergenceCheck(int itnum)
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   scaincnp_->Update(1.0,*(scatra_->ScaTraField()->Phinp()),-1.0);
-  dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
+  dispincnp_->Update(1.0,*(ssi_wrapper_->Dispnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
   scatra_->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  structure_->Dispnp()->Norm2(&dispnorm_L2);
+  ssi_wrapper_->Dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
@@ -267,7 +231,7 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::DoStructStep()
   }
 
   // Newton-Raphson iteration
-  structure_-> Solve();
+  ssi_wrapper_-> Solve();
 }
 
 
@@ -301,9 +265,9 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::PrepareTimeStep(bool printheader)
     PrintHeader();
 
   SetScatraSolution(scatra_->ScaTraField()->Phin());
-  structure_-> PrepareTimeStep();
+  ssi_wrapper_-> PrepareTimeStep();
 
-  SetStructSolution(structure_->Dispn(),structure_->Veln());
+  SetStructSolution(ssi_wrapper_->Dispn(),ssi_wrapper_->Veln());
   scatra_->ScaTraField()->PrepareTimeStep();
 
   UpdateScalars();

@@ -16,15 +16,17 @@
 
 #include "../drt_ssi/ssi_partitioned_2wc.H"
 
+/*==========================================================================*/
+// forward declarations
+/*==========================================================================*/
 namespace POROELAST
 {
-  //class Monolithic;
   class PoroScatraBase;
 }
 
 namespace ADAPTER
 {
-  class FSIStructureWrapper;
+  class SSIStructureWrapper;
 }
 
 namespace DRT
@@ -42,25 +44,23 @@ namespace SSI
   public:
 
     //! constructor
-    SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+    SSI_Part2WC_BIOCHEMOMECHANO(
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);
 
     //!virtual destructor
     virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
 
-    /*!
-    \brief Initialize this object
+    /*! \brief Initialize this object
 
      Initializes members and performs problem specific setup.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
           Otherwise, vectors may have wrong maps.
 
-    \warning none
-    \return void
+    \return int
     \date 08/16
-    \author rauch
-    */
+    \author rauch      */
     virtual int Init(
         const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
@@ -70,18 +70,11 @@ namespace SSI
         const std::string scatra_disname,
         bool isAle);
 
-    //! special init entry method for this class
-    bool Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& params,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname);
-
     //! setup this class
     virtual void Setup();
+
+    //! prepare time step for single fields
+    virtual void PrepareTimeStep(bool printheader = true);
 
 
   protected:
@@ -95,25 +88,16 @@ namespace SSI
     //! perform iteration step of biochemo scatra field
     virtual void DoScatraStep();
 
-    //! prepare time step for single fields
-    virtual void PrepareTimeStep(bool printheader = true);
-
-    //! update time step and print to screen
-    virtual void UpdateAndOutput();
-
     //! check convergence (absolute OR relative increments)
     virtual bool ConvergenceCheck(int itnum);
 
   private:
 
-    //! pointer to poroelast subproblem (poro-scatra interaction)
-    Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
-
     //! communicator
     int myrank_;
 
     //! underlying structure of the SSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    specialized_structure_;
+    Teuchos::RCP< ::ADAPTER::SSIStructureWrapper> ssi_wrapper_;
 
     //! pointer to ImmersedFieldExchangeManager singleton object
     DRT::ImmersedFieldExchangeManager* exchange_manager_ ;

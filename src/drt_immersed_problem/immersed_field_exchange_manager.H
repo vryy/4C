@@ -291,7 +291,7 @@ public:
 
 protected:
 
-  /// private Constructor since we are a Singleton.
+  /// protected constructor since we are a Singleton.
   ImmersedFieldExchangeManager();
 
   /// declaration of the static instance

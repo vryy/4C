@@ -77,11 +77,6 @@ SCATRATYPE                      ConvectionDiffusion
 FIELDCOUPLING                   volumeboundary_matching
 -----------------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1.000e-02
-----------------------------------------------------------VOLMORTAR COUPLING
-COUPLINGTYPE                    consint
-INTTYPE                         segments
-MESH_INIT                       no
-KEEP_EXTENDEDGHOSTING           no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

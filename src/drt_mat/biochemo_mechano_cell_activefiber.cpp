@@ -2,20 +2,11 @@
 \file biochemo_mechano_cell_activefiber.cpp
 
 \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
-       Micro-Macro Approach (Volume Averaging) for Angular Stress Fiber Distribution.
-       Active Stress is Additive to Passive Stress Modeled by Arbitrary Law.
-       Interacts with Transport and Reaction of Scalar Quantities.
 
- example input line
+\level 3
 
-MAT 1 MAT_BIOCHEMOMECHANO DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 10.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez
+\maintainer Andreas Rauch
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "biochemo_mechano_cell_activefiber.H"
@@ -27,10 +18,7 @@ Maintainer: Andreas Rauch
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_factory.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -65,7 +53,7 @@ MAT::PAR::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber(
     dserror("Material 'BioChemoMechanoCellActiveFiber' is only available in problems of type Immersed_CellMigration.\n"
             "If you want to use it in a different context, have a look at the necessary setup in immersed_problem_dyn.cpp.");
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"MATERIALTANGENT"))
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),"MATERIALTANGENT"))
     analyticalmaterialtangent_ = false;
   else
     analyticalmaterialtangent_ = true;
@@ -1915,8 +1903,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Dissociation(
      |_____|_______|__________|_________ rate
                 ratemax     0
   */
-  //std::cout<<"rate  "<<rate<<std::endl;
-  //std::cout<<"ratemax "<<ratemax<<std::endl;
+
   if (rate>ratemax/2.0)
       D=0.0;
   else if (ratemax<rate and rate<=ratemax/2.0)
@@ -2112,7 +2099,7 @@ void MAT::BioChemoMechanoCellActiveFiber::DefGradAtBrdyGP(
 
 
 /*----------------------------------------------------------------------*
-| Calculation of cROCKused at Boundary GP                   |
+| Calculation of cROCKused at Boundary GP                               |
 *----------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellActiveFiber::cROCKlastAtBrdyGP(
         double& cROCKlast,
@@ -2402,7 +2389,7 @@ void MAT::BioChemoMechanoCellActiveFiber::VisNames(std::map<std::string,int>& na
   names[cellcontr] = 1; // scalar
   matpassive_->VisNames(names);
 
-}  //VisNames()
+} // VisNames()
 
 
 /*----------------------------------------------------------------------*
@@ -2419,15 +2406,6 @@ bool MAT::BioChemoMechanoCellActiveFiber::VisData(const std::string& name, std::
         temp += Nfil_()->at(iter);
       data[0] = temp/numgp;
     }
-//  else if (name == "Contraction Rate")
-//  {
-//    if ((int)data.size()!=1)
-//      dserror("size mismatch");
-//    double temp = 0.0;
-//    for (int iter=0; iter<numgp; iter++)
-//      temp += etalast_()->at(iter);
-//    data[0] = temp/numgp;
-//  }
   else if (name == "RateAverage")
     {
       if ((int)data.size()!=1)

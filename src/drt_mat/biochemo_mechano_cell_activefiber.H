@@ -2,20 +2,11 @@
 \file biochemo_mechano_cell_activefiber.H
 
 \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
-       Micro-Macro Approach (Volume Averaging) for Angular Stress Fiber Distribution.
-       Active Stress is Additive to Passive Stress Modeled by Arbitrary Law.
-       Interacts with Transport and Reaction of Scalar Quantities.
 
- Exemplary Input Line:
+\level 3
 
- MAT 1 MAT_CELLCONTRACTION DENS 1.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 10.0 NMAX 1.0 KSTRESS 1.0
+\maintainer Andreas Rauch
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef BIOCHEMO_MECHANO_CELL_ACTIVEFIBER_H_
@@ -26,8 +17,11 @@ Maintainer: Andreas Rauch
 #include "../drt_lib/drt_parobjectfactory.H"
 
 #define option3
-#define nphi 20 // total (!) number of integration points, i.e. in 3D we have nphi/ntheta integration points in phi direction
-#define ntheta 4 // in case of 3D integration: number of integration points in theta direction
+
+// total (!) number of integration points, i.e. in 3D we have nphi/ntheta integration points in phi direction
+#define nphi 20
+// in case of 3D integration: number of integration points in theta direction
+#define ntheta 4
 
 
 namespace MAT
@@ -36,8 +30,11 @@ namespace MAT
   namespace PAR
   {
 
-    /*----------------------------------------------------------------------*/
-    /// material parameters
+  /*! \brief Material parameters for biochemo-mechano cell contractibility model.
+   *
+   * \date 12/2016
+   * \author rauch (rauch@lnm.mw.tum.de)
+  */
     class BioChemoMechanoCellActiveFiber : public Parameter
     {
     public:
@@ -54,34 +51,42 @@ namespace MAT
       //@{
       /// density
       const double density_;
-      /// decay constant of activation signal
-//      const double decayconst_;
-//      /// elastic material number
+      /// elastic material number
       const int idmatpassive_;
       /// non-dimensional parameter governing the rate of formation of stress fibers
       const double kforwards_;
       /// non-dimensional parameter governing the rate of dissociation of stress fibers
       const double kbackwards_;
+      /// todo description
       const double kRockEta_;
+      /// todo description
       const double kActin_;
-      //const double DissCoupling_;
+      /// todo description
       const double ratemax_;
+      /// todo description
       const double nmax_;
+      /// todo description
       const double kstress_;
+      /// constant for sensitivity of GEF shedding in response to stress
       const double sourceconst_;
+      /// integration method for integral over sphere
       const std::string myintmethod_;
-
-//      /// build analytical constitutive matrix
+      /// build analytical constitutive matrix
       bool analyticalmaterialtangent_;
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class ActiveFiber
-
+    };  // class BioChemoMechanoCellActiveFiber
   }  // namespace PAR
 
+
+  /*! \brief Type BioChemoMechanoCellActiveFiberType.
+   *
+   * \date 12/2016
+   * \author rauch (rauch@lnm.mw.tum.de)
+  */
   class BioChemoMechanoCellActiveFiberType : public DRT::ParObjectType
   {
   public:
@@ -97,8 +102,21 @@ namespace MAT
     static BioChemoMechanoCellActiveFiberType instance_;
   }; //class ActiveFiberType
 
-  /*----------------------------------------------------------------------*/
-  /// Wrapper for active fiber material
+
+  /*! \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
+   *
+   *  Micro-Macro Approach (Volume Averaging) for Angular Stress Fiber Distribution.
+   *  Active Stress is Additive to Passive Stress Modeled by Arbitrary Law.
+   *  Interacts with Transport and Reaction of Scalar Quantities.
+   *
+   *   Exemplary Input Line:
+   *
+   *    MAT 1 MAT_CELLCONTRACTION DENS 1.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 10.0 NMAX 1.0 KSTRESS 1.0
+   *
+   *
+   * \date 12/2016
+   * \author rauch (rauch@lnm.mw.tum.de)
+  */
   class BioChemoMechanoCellActiveFiber : public So3Material
   {
   public:
@@ -110,7 +128,7 @@ namespace MAT
     explicit BioChemoMechanoCellActiveFiber(MAT::PAR::BioChemoMechanoCellActiveFiber* params);
 
     //! @name Packing and Unpacking
-
+    //@{
     /*!
       \brief Return unique ParObject id
 
@@ -160,7 +178,7 @@ namespace MAT
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new BioChemoMechanoCellActiveFiber( *this ) ); }
 
-    //! check if history variables are already initialized
+    /// check if history variables are already initialized
     bool Initialized() const
     {
       return ( isinit_ and (histdefgrdcurr_ != Teuchos::null) );
@@ -189,9 +207,6 @@ namespace MAT
     /// Return density
     virtual double Density() const {return params_->density_;}
 
-    /// Return elastic material
-    //Teuchos::RCP<MAT::Material> Matpassive() const { return matpassive_; }
-
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -213,12 +228,10 @@ namespace MAT
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > etacurr_;
     /// fiber activation level of old timestep (last converged state)
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > etalast_;
-//#ifdef option3
     Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etalastphi_;
     Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etalastphisurf_;
     Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etacurrphi_;
     Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etacurrphisurf_;
-//#endif
     /// average intensity level at every point of the cytoplasm
     Teuchos::RCP<std::vector<double> > Nfil_;
     Teuchos::RCP<std::vector<double> > Nfillast_;
@@ -262,7 +275,7 @@ namespace MAT
     );
 
 
-
+    /// Calc Dissociation
     void Dissociation(
       double rate,
       double& D,
@@ -270,11 +283,13 @@ namespace MAT
       double ratemax
       );
 
+    /// Calculation of Nodal values from GP values
     void GPtoNodes(
         LINALG::Matrix<8,1> invalue,
         LINALG::Matrix<8,1>& outvalue
         );
 
+    /// Calculation of Nodal values from GP values for eta
     void EtaGPtoNodes(
         LINALG::Matrix<nphi,1>& node1,
         LINALG::Matrix<nphi,1>& node2,
@@ -286,24 +301,31 @@ namespace MAT
         LINALG::Matrix<nphi,1>& node8
         );
 
+    /// Calculation of eta at specific Boundary GP xsi from Scatra Brdy calc
     void EtaAtBrdyGP(
             LINALG::Matrix<nphi,1>& outvalue,
             Teuchos::ParameterList& params
             );
+
+    /// Calculation of cROCKused at Boundary GP
     void cROCKlastAtBrdyGP(
             double& cROCKused,
              Teuchos::ParameterList& params
             );
+
+    /// Calculation of cROCKlast at Boundary GP
     void cROCKusedAtBrdyGP(
             double& cROCKused,
              Teuchos::ParameterList& params
             );
 
+    /// Calculation of deformation gradient at specific Boundary GP xsi
     void DefGradAtBrdyGP(
             LINALG::Matrix<6,1>& outvalue,
             Teuchos::ParameterList& params
             );
 
+    /// Calculation of Nodal values from GP values for Deformation Gradient
     void DefGradGPtoNodes(
             LINALG::Matrix<6,1>& node1,
             LINALG::Matrix<6,1>& node2,
@@ -346,8 +368,8 @@ namespace MAT
     );
 
 
-  };  //class BioChemoMechanoCellActiveFiber
-  }  // namespace MAT
+  }; //class BioChemoMechanoCellActiveFiber
+  } // namespace MAT
 
 
 #endif /*BIOCHEMO_MECHANO_CELL_ACTIVEFIBER_H_*/

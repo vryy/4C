@@ -172,7 +172,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   exchange_manager_->SetPointerToPhins(phin);
 
   // set pointers to multivectors for the rates
-  exchange_manager_->SetPointerToRates(sources_); // rates of polymerized actin monomers, barbed ends, and branches
+  exchange_manager_->SetPointerToRates(sources_);
 
   // mapping from struct bdry ele gids to scatra bdry ele gids
   structscatraelemap_=Teuchos::rcp(new std::map<int,int> );
