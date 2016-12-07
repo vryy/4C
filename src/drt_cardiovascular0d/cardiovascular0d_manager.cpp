@@ -31,6 +31,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition.H"
 #include "cardiovascular0d.H"
+#include "cardiovascular0d_windkesselonly.H"
+#include "cardiovascular0d_arterialproxdist.H"
+#include "cardiovascular0d_arterialvenoussyspulcoupled.H"
 
 #include "cardiovascular0d_resulttest.H"
 
@@ -92,25 +95,29 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   Cardiovascular0DID_=0;
   offsetID_=10000;
 
+  cardvasc0d_model_=Teuchos::rcp(new Cardiovascular0DWindkesselOnly(actdisc_,"",currentID));
   //Check what kind of Cardiovascular0D boundary conditions there are
-  cardvasc0d_windkesselonly_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DWindkesselOnlyStructureCond",currentID));
-  cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",currentID));
-  cardvasc0d_arterialvenoussyspulcoupled_=Teuchos::rcp(new Cardiovascular0D(actdisc_,"Cardiovascular0DArterialVenousSysPulCoupledStructureCond",currentID));
+  cardvasc0d_windkesselonly_=Teuchos::rcp(new Cardiovascular0DWindkesselOnly(actdisc_,"Cardiovascular0DWindkesselOnlyStructureCond",currentID));
+  cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0DArterialProxDist(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",currentID));
+  cardvasc0d_arterialvenoussyspulcoupled_=Teuchos::rcp(new Cardiovascular0DArterialVenousSysPulCoupled(actdisc_,"Cardiovascular0DArterialVenousSysPulCoupledStructureCond",currentID));
 
   havecardiovascular0d_ = (cardvasc0d_windkesselonly_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D());
 
   if (cardvasc0d_windkesselonly_->HaveCardiovascular0D())
   {
+    cardvasc0d_model_ = cardvasc0d_windkesselonly_;
     // dof vector for ONE 0D cardiovascular condition of this type: [p  q  s]^T
     numCardiovascular0DID_ = 3 * cardvasc0d_windkesselonly_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
   {
+    cardvasc0d_model_ = cardvasc0d_arterialproxdist_;
     // dof vector for ONE 0D cardiovascular condition of this type: [p_v  p_arp  q_arp  p_ard]^T
     numCardiovascular0DID_ = 4 * cardvasc0d_arterialproxdist_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
   {
+    cardvasc0d_model_ = cardvasc0d_arterialvenoussyspulcoupled_;
     // dof vector for 0D cardiovascular condition of this type:
     // [p_at_l  q_vin_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  p_at_r  q_vin_r  q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
     numCardiovascular0DID_ = 16;
@@ -202,9 +209,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     Teuchos::RCP<Epetra_Vector> cv0ddof_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
     //initialize everything
-    cardvasc0d_windkesselonly_->Initialize(p,v_n_red,cv0ddof_n_red);
-    cardvasc0d_arterialproxdist_->Initialize(p,v_n_red,cv0ddof_n_red);
-    cardvasc0d_arterialvenoussyspulcoupled_->Initialize(p,v_n_red,cv0ddof_n_red);
+    cardvasc0d_model_->Initialize(p,v_n_red,cv0ddof_n_red);
 
     v_n_->PutScalar(0.0);
     v_n_->Export(*v_n_red,*cardvasc0dimpo_,Add);
@@ -217,9 +222,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     // evaluate initial 0D right-hand side at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-    cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
-    cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
-    cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
+    cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, cardvasc0d_df_n_red, cardvasc0d_f_n_red, Teuchos::null, cv0ddof_n_red, v_n_red2);
 
     // insert compartment volumes into vol vector
     v_n_->Export(*v_n_red2,*cardvasc0dimpo_,Insert);
@@ -289,9 +292,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   actdisc_->SetState("displacement",disp);
 
   // evaluate current volume only
-  cardvasc0d_windkesselonly_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
-  cardvasc0d_arterialproxdist_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
-  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
+  cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
 
   // import into vol vector at end-point
   v_np_->PutScalar(0.0);
@@ -307,9 +308,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   LINALG::Export(*v_np_,*v_np_red2);
 
   // assemble Cardiovascular0D stiffness and offdiagonal coupling matrices as well as rhs contributions
-  cardvasc0d_windkesselonly_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
-  cardvasc0d_arterialproxdist_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
-  cardvasc0d_arterialvenoussyspulcoupled_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
+  cardvasc0d_model_->Evaluate(p, cardiovascular0dstiffness_, mat_dcardvasc0d_dd_, mat_dstruct_dcv0ddof_, cardvasc0d_df_np_red, cardvasc0d_f_np_red, Teuchos::null, cv0ddof_np_red, v_np_red2);
 
   // insert compartment volumes into vol vector
   v_np_->Export(*v_np_red2,*cardvasc0dimpo_,Insert);

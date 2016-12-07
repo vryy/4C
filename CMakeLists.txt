@@ -1932,6 +1932,9 @@ set(OBJS_DRT_CARDIOVASCULAR0D
   src/drt_cardiovascular0d/cardiovascular0d_manager.cpp
   src/drt_cardiovascular0d/cardiovascular0d_dofset.cpp
   src/drt_cardiovascular0d/cardiovascular0d_resulttest.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_windkesselonly.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_arterialproxdist.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_arterialvenoussyspulcoupled.cpp
 )
 
 set(OBJS_DRT_CONSTRAINT
