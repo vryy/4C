@@ -21,7 +21,7 @@ DIM                             3
 PROBLEMTYP                      Fluid_XFEM_LevelSet
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 OUTPUT_GMSH                     No
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
@@ -101,7 +101,7 @@ EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf  //COMBUST! othe
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No                            //Yes
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    yes
+GMSH_SOL_OUT                    No
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
@@ -152,10 +152,6 @@ OUTPUT_GMSH                     no
 STABTYPE                        SUPG                          //SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 SUGRVEL                         no
-//                                                             // -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-//                                                             // REINITIALIZATION Signed_Distance_Function
-//                                                             // REINITINTERVAL 1
-//                                                             // REINIT_INITIAL yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
@@ -185,12 +181,6 @@ NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
-// ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DPOINT 2
-// // inflow points
-// E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// // outflow points
-// E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // inflow points
@@ -203,8 +193,6 @@ E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-//DLINE                         0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 2 //6
 // surface top

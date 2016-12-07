@@ -76,6 +76,7 @@
 
 // If the area of boundarycell is less than this value, then it is eliminated from boundary integration
 // Such small area can lead to zero or a very small negative value in the boundary cell mapping's Jacobian
+// This is only for the case of Direct Divergence!
 #define REF_AREA_BCELL 1e-13 //Make it viable for GLOBAL!!!
 
 // If the distance of the line between the main Gauss points and its projected point is less than

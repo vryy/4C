@@ -622,11 +622,11 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(
   {
     double penscaling_s = 0.0;
     GetPenaltyScalingSlave(coup_ele,penscaling_s);
-    std::cout << "penscaling_s " << penscaling_s << std::endl;
+    //std::cout << "penscaling_s " << penscaling_s << std::endl;
     penscaling += penscaling_s*kappa_s;
   }
 
-  std::cout << "kappa_m " << kappa_m<< "kappa_s " << kappa_s<< "penscaling " << penscaling << std::endl;
+  //std::cout << "kappa_m " << kappa_m<< "kappa_s " << kappa_s<< "penscaling " << penscaling << std::endl;
 
   XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
       xfele->Shape(),

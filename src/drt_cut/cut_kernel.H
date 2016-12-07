@@ -246,7 +246,8 @@ namespace GEO
       /*!
       \brief Get area of triangle in 3D space
        */
-      double getAreaTri( std::vector<Point*> & poly );
+      double getAreaTri(const std::vector<Point*> & poly,
+                        LINALG::Matrix<3,1>* normalvec = NULL);
 
       /*!
       \brief Get area of convex Quad in 3D space

@@ -2,7 +2,7 @@
 /*!
 \file cut_boundarycell.H
 
-\brief cut boundary cell
+\brief cut boundary cell header file
 
 \level 3
 
@@ -14,12 +14,13 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #ifndef CUT_BOUNDARYCELL_H
 #define CUT_BOUNDARYCELL_H
 
 #include "cut_cycle.H"
 #include "cut_element.H"
+#include "cut_kernel.H"
+
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -162,8 +163,18 @@ public:
       LINALG::Matrix<2,2> metrictensor(false);
 
       DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
-      DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+
+      if(celldistype != DRT::Element::tri3)
+      {
+        DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
+        DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+      }
+      else
+      {
+        //For Tri's this method of determining the area and thus the gp-weights is more robust.
+        //  It is needed for TRI's which are small/ill-conditioned but large enough to affect the simulation.
+        drs = 2.0*(CUT::KERNEL::getAreaTri(this->Points(), &normal));
+      }
 
       x_gp_lin.Multiply(xyze, funct);
 
@@ -300,58 +311,11 @@ public:
 
   double MyAreaTri()
   {
-    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-
     const std::vector<Point*> points = this->Points();
+    //double area=CUT::KERNEL::getAreaTri(points);
 
-    // create planes consisting of 3 nodes each
-    LINALG::Matrix<numnodes,1> p0( points[0]->X() );
-    LINALG::Matrix<numnodes,1> p1( points[1]->X() );
-    LINALG::Matrix<numnodes,1> p2( points[2]->X() );
-
-    LINALG::Matrix<numnodes,1> v01;
-    LINALG::Matrix<numnodes,1> v02;
-    LINALG::Matrix<numnodes,1> v12;
-
-    v01.Update( 1, p1, -1, p0, 0 );
-    v02.Update( 1, p2, -1, p0, 0 );
-    v12.Update( 1, p1, -1, p2, 0 );
-
-
-    double a=v01.Norm2();
-    double b=v02.Norm2();
-    double c=v12.Norm2();
-
-    //Herons formula:
-//    sqrt((a+(b+c))(c-(a-b))(c+(a-b))(a+(b-c)))/4
-//    double s=0.5*(v01.Norm2() + v02.Norm2() + v12.Norm2());
-//    double area = sqrt( s*(s-v01.Norm2())*(s-v02.Norm2())*(s-v12.Norm2()) );
-
-    double areasqr = (a+(b+c))*(c-(a-b))*(c+(a-b))*(a+(b-c));
-    if(areasqr<0.0)
-    {
-      std::ofstream file( "Invalid_boundary_cell.pos" );
-
-      //Write BCs for outside VolumeCell:
-      file << "View \"BoundaryCells\" {\n";
-
-      DumpGmsh(file);
-
-      file << "};\n";
-
-      file << "View \"BoundaryCellsNormal\" {\n";
-
-      DumpGmshNormal(file);
-
-      file << "};\n";
-      dserror("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
-    }
-    double area = 0.25*sqrt(areasqr);
-
-    // Alternative options:
-    //  - cross-product (see cut_tetmesh.cpp in IsValidTet())
-
-    return area;
+    //Get the Area of this Tri through calculation with cross product.
+    return CUT::KERNEL::getAreaTri(points);
   }
 
 protected:

@@ -54,6 +54,7 @@ public:
       active_( active ),
       sides_( sides ),
       nodes_( nodes ),
+      quadshape_(DRT::Element::dis_none),
       eleinttype_(INPAR::CUT::EleIntType_Undecided)
   {
     for ( std::vector<Side*>::const_iterator i=sides.begin();
@@ -360,6 +361,7 @@ public:
   \brief Transform the scalar variable either from local coordinates to the global coordinates or the other way specified by
   TransformType which can be "LocalToGlobal" or "GlobalToLocal".
   If set shadow = true, then the mapping is done w.r to the parent Quad element from which this shadow element is derived
+       DO NOT USED ON ELEMENTS WHICH ARE DEFORMED (I.E. FOR ALE ELEMENTS)!!!!!
    */
   template <DRT::Element::DiscretizationType distype>
   double ScalarFromLocalToGlobal( double scalar, std::string transformType, bool shadow = false )
@@ -367,7 +369,9 @@ public:
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     LINALG::Matrix<3,nen> xyze;
     LINALG::Matrix<3,1> xei;
-    xei = 0.1; //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
+    xei = 0.1; //the determinant of the Jacobian is independent of the considered point
+               //(true only for quads and hexs which are parallelepipeds,
+               // and for higher order eles the inner point is in the middle of the element.)
 
     // get coordiantes of parent Quad element
     if( shadow )

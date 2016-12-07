@@ -799,31 +799,144 @@ std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector
 /*------------------------------------------------------------------------------*
  * Calculate area of triangle in 3D                                     sudhakar 11/14
  *------------------------------------------------------------------------------*/
-double GEO::CUT::KERNEL::getAreaTri( std::vector<Point*> & poly )
+double GEO::CUT::KERNEL::getAreaTri(const std::vector<Point*> & poly,
+                                    LINALG::Matrix<3,1>* normalvec)
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
 
   if( poly.size() != 3 )
     dserror("expecting a triangle");
 
-  double a[3]={0.0,0.0,0.0},b[3]={0.0,0.0,0.0},c[3]={0.0,0.0,0.0};
-  poly[0]->Coordinates(a);
-  poly[1]->Coordinates(b);
-  poly[2]->Coordinates(c);
+  const int numnodes = 3;
+  // create planes consisting of 3 nodes each
+  LINALG::Matrix<numnodes,1> p0( poly[0]->X() );
+  LINALG::Matrix<numnodes,1> p1( poly[1]->X() );
+  LINALG::Matrix<numnodes,1> p2( poly[2]->X() );
 
-  double ab[3]={0.0,0.0,0.0},ac[3]={0.0,0.0,0.0};
-  for( int i=0; i<3; i++ )
+  LINALG::Matrix<numnodes,1> v01;
+  LINALG::Matrix<numnodes,1> v02;
+
+  v01.Update( 1, p1, -1, p0, 0 );
+  v02.Update( 1, p2, -1, p0, 0 );
+
+  double doubleareacrossprod;
+  //Cross product way:
+  if (normalvec == NULL){
+    LINALG::Matrix<3,1> crossprod;
+    crossprod.CrossProduct(v01, v02);               //Cross prod between two vectors of the triangle
+    doubleareacrossprod  = crossprod.Norm2();
+  }
+  else
   {
-    ab[i] = b[i] - a[i];
-    ac[i] = c[i] - a[i];
+    normalvec->CrossProduct(v01, v02);               //Cross prod between two vectors of the triangle
+    doubleareacrossprod  = normalvec->Norm2();
+    normalvec->Scale(1.0/doubleareacrossprod);       // Scale to unit normal
   }
 
-  double term = pow(( ab[1]*ac[2] - ab[2]*ac[1] ),2);
-  term += pow(( ab[2]*ac[0] - ab[0]*ac[2] ),2);
-  term += pow(( ab[0]*ac[1] - ab[1]*ac[0] ),2);
+#if DEBUG
+  LINALG::Matrix<numnodes,1> v12;
+  v12.Update( 1, p1, -1, p2, 0 );
 
-  double area = 0.5 * sqrt( term );
-  return area;
+  double areacrossprod = 0.5*doubleareacrossprod;
+  //Cross referencing!
+  LINALG::Matrix<3,1> crossprod2;
+  crossprod2.CrossProduct(v01, v12);
+  double areacrossprod2 = 0.5*crossprod2.Norm2();
+
+  LINALG::Matrix<3,1> crossprod3;
+  crossprod3.CrossProduct(v02, v12);
+  double areacrossprod3 = 0.5*crossprod3.Norm2();
+
+  if(areacrossprod>REF_AREA_BCELL)
+  {
+    if( fabs(areacrossprod-areacrossprod2)>REF_AREA_BCELL
+        or fabs(areacrossprod-areacrossprod3)>REF_AREA_BCELL)
+    {
+      std::cout << "     SIGNIFICANT DIFFERENCE IN AREA!!!!!!!       " << std::endl;
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+      std::cout << "    areacrossprod: "  << areacrossprod << std::endl;
+      std::cout << "    areacrossprod2: " << areacrossprod2 << std::endl;
+      std::cout << "    areacrossprod3: " << areacrossprod3 << std::endl;
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+
+      std::cout << "p0:" << std::endl;
+      std::cout << "p0_0=mpf('" << std::setprecision(32) << p0(0,0) << "')" <<  std::endl;
+      std::cout << "p0_1=mpf('" << std::setprecision(32) << p0(1,0) << "')" << std::endl;
+      std::cout << "p0_2=mpf('" << std::setprecision(32) << p0(2,0) << "')" << std::endl;
+
+      std::cout << "p1:" << std::endl;
+      std::cout << "p1_0=mpf('" << std::setprecision(32) << p1(0,0) << "')" << std::endl;
+      std::cout << "p1_1=mpf('" << std::setprecision(32) << p1(1,0) << "')" << std::endl;
+      std::cout << "p1_2=mpf('" << std::setprecision(32) << p1(2,0) << "')" << std::endl;
+
+      std::cout << "p2:" << std::endl;
+      std::cout << "p2_0=mpf('" << std::setprecision(32) << p2(0,0) << "')" << std::endl;
+      std::cout << "p2_1=mpf('" << std::setprecision(32) << p2(1,0) << "')" << std::endl;
+      std::cout << "p2_2=mpf('" << std::setprecision(32) << p2(2,0) << "')" << std::endl;
+
+      dserror("The area is not the same for the different cross product implementations. Something might be wrong with this TRI.");
+    }
+  }
+
+#endif
+
+
+  //Herons formula:
+  // This method of calculating the area is valid as long as b \approx c -> this leads to TRIs
+  //  which are ill-suited for this algorithm. It was found that the cross-product is more robust
+  //  for smaller TRIs.
+  // The implementation is tested and works if it's needed again.
+#if (0)
+
+  double a=v01.Norm2();
+  double b=v02.Norm2();
+  double c=v12.Norm2();
+
+  // Sort for numerical robustness: a > b > c, |v01| > |v02| > |v12|
+  // According to: Miscalculating Area and Angles of a Needle-like Triangle
+  // ( from Lecture Notes for Introductory Numerical Analysis Classes )
+  // https://www.cs.unc.edu/~snoeyink/c/c205/Triangle.pdf
+  // Ensures -> positive areas and test for feasibility of triangle geometry!
+  if(a < b)
+  {
+    std::swap(a,b);
+  }
+  if(a < c)
+  {
+    std::swap(a,c);
+  }
+  if(b < c)
+  {
+    std::swap(b,c);
+  }
+
+  //          sqrt((a+(b+c))(c-(a-b))(c+(a-b))(a+(b-c)))/4
+  double areasqr = (a+(b+c))*(c-(a-b))*(c+(a-b))*(a+(b-c));
+
+  double tol = a*1e-16;
+  //Check feasibility.
+  // If this does not hold -> triangle is not valid!!!! For instance: a=5, b=4, c at least has to be >1
+  //   as this would be the minimal distance if a and b sides are parallel.
+  if( ( ( c-(a-b) < tol ) and ( (c-(a-b)) > 0.0) ))
+  {
+    areasqr=0.0;
+    //dserror("Sides are not a triangle! FATAL, THIS BoundaryCell SHOULD NOT EXIST!");
+  }
+  else if (c-(a-b) < 0.0)
+    areasqr=0.0;
+
+  if(areasqr<0.0)
+  {
+    areametric=0.0;
+    areasqr=0.0;
+    //dserror("Area squared not positive! FATAL ERROR (should not occur with this algorithm!!!).");
+  }
+
+  double areaheron = 0.25*sqrt(areasqr);
+
+#endif
+
+  return 0.5*doubleareacrossprod;
 
 }
 

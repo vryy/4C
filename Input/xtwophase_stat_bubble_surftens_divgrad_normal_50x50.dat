@@ -24,7 +24,7 @@ DIM           3
 PROBLEMTYP                      Fluid_XFEM_LevelSet
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 OUTPUT_GMSH                     no
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
@@ -103,10 +103,10 @@ EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf    //COMBUST! ot
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No //Yes
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    yes
+GMSH_SOL_OUT                    No
 GMSH_EOS_OUT                    no
-GMSH_DISCRET_OUT                yes
-GMSH_CUT_OUT                    yes
+GMSH_DISCRET_OUT                No
+GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
@@ -154,10 +154,6 @@ OUTPUT_GMSH                     no
 STABTYPE                        SUPG //SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 SUGRVEL                         no
-// -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-// REINITIALIZATION                Signed_Distance_Function
-// REINITINTERVAL                  1
-// REINIT_INITIAL                  yes
 -----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
@@ -193,8 +189,6 @@ DPOINT                          2
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // outflow points
 E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-//DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2 //6
 // surface top
@@ -19266,18 +19260,18 @@ NODE 5202 COORD 5.00000000e-01 5.00000000e-01 2.50000004e-02
 // node 1146: in the middle of lower left corner
 XFLUID DIS fluid NODE 3113 QUANTITY velx VALUE -7.18795473546408666e-09 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 3113 QUANTITY vely VALUE  4.88485522098195792e-09 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 3113 QUANTITY pressure VALUE 1.75030637371358488e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 3113 QUANTITY pressure VALUE 1.75030637371358488e-01 TOLERANCE 1e-13
 
 XFLUID DIS fluid NODE 626 QUANTITY velx VALUE -5.46339523523908272e-07 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 626 QUANTITY vely VALUE -5.46339523607046991e-07 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 626 QUANTITY pressure VALUE 3.07590241643743824e-06 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 626 QUANTITY pressure VALUE 3.07590241643743824e-06 TOLERANCE 1e-13
 // spurious velocities, pressure at interface
 XFLUID DIS fluid NODE 562 QUANTITY velx VALUE 4.48734208881506116e-07 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 562 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 562 QUANTITY pressure VALUE -4.54512885086727635e-06 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 562 QUANTITY pressure VALUE -4.54512885086727635e-06 TOLERANCE 1e-13
 
 XFLUID DIS fluid NODE 1146 QUANTITY velx VALUE -1.02254512324922658e-06 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 1146 QUANTITY vely VALUE -1.02254512333336448e-06 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.75040480206539756e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.75040480206539756e-01 TOLERANCE 1e-13
 -------------------------------------------------------------------------END
 //                              END

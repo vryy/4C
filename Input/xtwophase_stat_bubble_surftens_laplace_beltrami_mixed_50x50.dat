@@ -22,8 +22,8 @@ DIM                             3
 PROBLEMTYP                      Fluid_XFEM_LevelSet
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
-OUTPUT_GMSH                     Yes
+OUTPUT_BIN                      No
+OUTPUT_GMSH                     No
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
@@ -103,7 +103,7 @@ EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No                            //Yes
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    Yes
+GMSH_SOL_OUT                    No
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
@@ -19266,16 +19266,16 @@ NODE 5202 COORD 5.00000000e-01 5.00000000e-01 2.50000004e-02
 // node 1146: in the middle of lower left corner
 XFLUID DIS fluid NODE 3113 QUANTITY velx VALUE  1.86879406618099025e-08 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 3113 QUANTITY vely VALUE -1.18738189641116503e-08 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 3113 QUANTITY pressure VALUE  1.75027542429162797e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 3113 QUANTITY pressure VALUE  1.75027542429162797e-01 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 626 QUANTITY velx VALUE -3.54813171936014447e-07 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 626 QUANTITY vely VALUE -3.54813171546888993e-07 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 626 QUANTITY pressure VALUE  2.88578773482281473e-06 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 626 QUANTITY pressure VALUE  2.88578773482281473e-06 TOLERANCE 1e-13
 // spurious velocities, pressure at interface
 XFLUID DIS fluid NODE 562 QUANTITY velx VALUE -7.66515569724914518e-08 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 562 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 562 QUANTITY pressure VALUE -4.68890428582628349e-06 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 562 QUANTITY pressure VALUE -4.68890428582628349e-06 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 1146 QUANTITY velx VALUE -6.48329641425202232e-07 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 1146 QUANTITY vely VALUE -6.48329641079633330e-07 TOLERANCE 1e-14
-XFLUID DIS fluid NODE 1146 QUANTITY pressure VALUE  1.75058056545492224e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 1146 QUANTITY pressure VALUE  1.75058056545492224e-01 TOLERANCE 1e-13
 -------------------------------------------------------------------------END
 //                              END
