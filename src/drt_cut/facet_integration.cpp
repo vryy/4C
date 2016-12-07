@@ -1,9 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*---------------------------------------------------------------------*/
+/*!
 \file facet_integration.cpp
 
 \brief Integrates base functions over the facet for both volumecell facets and for boundarycells
 equations
- *------------------------------------------------------------------------------------------------*/
+
+\level 2
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 #include "line_integration.H"
 #include "boundarycell_integration.H"
 

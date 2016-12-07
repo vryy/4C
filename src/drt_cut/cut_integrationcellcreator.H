@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_integrationcellcreator.H
+
+\brief Create and handle integrationcells for the Tessellation routine
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_INTEGRATIONCELLCREATOR_H
 #define CUT_INTEGRATIONCELLCREATOR_H
 

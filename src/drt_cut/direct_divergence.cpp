@@ -1,10 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*---------------------------------------------------------------------*/
+/*!
 \file direct_divergence.cpp
 
 \brief Generate main Gauss points when using "DirectDivergence" approach.
 
-\maintainer Sudhakar Yogaraj
- *------------------------------------------------------------------------------------------------*/
+\level 2
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
 
 #include "direct_divergence.H"
 #include "facet_integration.H"

@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_integrationcell.H
+
+\brief Create and handle integrationcells
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_INTEGRATIONCELL_H
 #define CUT_INTEGRATIONCELL_H
 

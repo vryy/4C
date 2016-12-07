@@ -1,3 +1,19 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_tetmesh.cpp
+
+\brief Tessellate the element by means of a Delauney triangulation
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include <stack>
 

@@ -1,3 +1,20 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file least_squares.cpp
+
+\brief Implementation of least squares by Sudhakar for Moment-fitting
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "least_squares.H"
 #include <iostream>
 #include <cmath>
