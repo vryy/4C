@@ -324,7 +324,7 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(
 #ifdef DEBUG
   if (not mv->Map().PointSameAs(P21_->RowMap()))
     dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap()))
+  if (not sv->Map().PointSameAs(P12_->RowMap()))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
@@ -415,7 +415,7 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(
 #ifdef DEBUG
   if (not mv->Map().PointSameAs(P12_->RowMap()))
     dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P12_->RowMap()))
+  if (not sv->Map().PointSameAs(P21_->RowMap()))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());

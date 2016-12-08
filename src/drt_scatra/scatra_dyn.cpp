@@ -236,6 +236,10 @@ void scatra_dyn(int restart)
         DRT::UTILS::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
 
+        // build the element and node maps
+        scatradis->FillComplete(false,false,false);
+        fluiddis->FillComplete(false,false,false);
+
         //build auxiliary dofsets, i.e. pseudo dofs on each discretization
         const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
         const int ndofperelement_scatra  = 0;
