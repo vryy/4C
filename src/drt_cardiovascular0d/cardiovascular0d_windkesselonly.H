@@ -92,7 +92,7 @@ namespace UTILS
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateCardiovascular0D routine is called
-    void Evaluate
+    virtual void Evaluate
     (
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
