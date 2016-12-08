@@ -103,7 +103,7 @@ public:
       const DRT::Discretization&         sourcedis,    ///< discretization with condition
       const std::string&                 condname,     ///< name of the condition, by which the derived discretization is identified
       const std::string&                 discret_name, ///< name of the new discretization
-      const std::string&                 element_name, ///< name/type of the elements to be created
+      const std::string&                 element_name, ///< name/type of the elements to be created, if set to "" the natural element will be created (e.g. Fluid-->FluidBoundary,...)
       const std::vector<std::string>&    conditions_to_copy, ///< list of conditions that will be copied to the new discretization
       const int                          label = -1    ///< consider only conditions with specified label
       )
@@ -131,7 +131,7 @@ public:
       const DRT::Discretization&                         sourcedis,      ///< discretization with condition
       const std::map<int, Teuchos::RCP<DRT::Element> >&  sourceelements, ///< element map/geometry of the condition
       const std::string&                                 discret_name,   ///< name of the new discretization
-      const std::string&                                 element_name,   ///< name/type of the elements to be created
+      const std::string&                                 element_name,   ///< name/type of the elements to be created, if set to "" the natural element will be created (e.g. Fluid-->FluidBoundary,...)
       const std::vector<std::string>&                    conditions_to_copy ///< list of conditions that will be copied to the new discretization
   )
   {
@@ -177,13 +177,22 @@ public:
       // discretization itself.
       if (sourceele->Owner()==myrank)
       {
-        // create an element with the same global element id
-        Teuchos::RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
-        // set the same global node ids to the new element
-        condele->SetNodeIds(nids.size(), &nids[0]);
-        // add element
-        targetdis->AddElement(condele);
-        roweleset_.insert(sourceele->Id());
+        Teuchos::RCP<DRT::Element> condele;
+        if (element_name == "")
+        {
+          // copy the source ele (created in fill complete of the discretization)
+          condele = Teuchos::rcp(sourceele->Clone(),true);
+        }
+        else
+        {
+          // create an element with the same global element id
+          condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+          // set the same global node ids to the new element
+          condele->SetNodeIds(nids.size(), &nids[0]);
+        }
+          // add element
+          targetdis->AddElement(condele);
+          roweleset_.insert(sourceele->Id());
       }
       coleleset_.insert(sourceele->Id());
     } // loop over all source elements
