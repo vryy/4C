@@ -2,7 +2,7 @@
 /*!
 \file beam3contact_tangentsmoothing.H
 
-\brief A set of utility functions for beam contact
+\brief A set of functions in order to calculate a smooth tangent field
 
 \level 2
 

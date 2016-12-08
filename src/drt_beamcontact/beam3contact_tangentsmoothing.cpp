@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact_tangentsmoothing.cpp
 
 \brief A set of functions in order to calculate a smooth tangent field
 
-<pre>
-Maintainer: Christoh Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contact_tangentsmoothing.H"
 #include "../drt_lib/drt_node.H"
