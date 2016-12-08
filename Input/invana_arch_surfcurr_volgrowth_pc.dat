@@ -1,3 +1,4 @@
+// Maintainer: Sebastian Kehl
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -34,13 +35,13 @@ ITERTOPC                        0
 LBFGSINITSCAL                   yes
 RESTARTEVRY                     0
 PARAMLIST                       4 THETARATE
-MAXITER                         30
+MAXITER                         100
 STEPSIZE                        1.0
-CONVTOL                         1.0e-8
+CONVTOL                         1.0e-6
 PARAMETRIZATION                 elementwise
 REGULARIZATION                  totalvariation
-REG_WEIGHT                      0.001
-TVD_EPS                         1.0e-3
+REG_WEIGHT                      20
+TVD_EPS                         1.0e-2
 OBJECTIVEFUNCT                  surfcurr
 OBJECTIVEFUNCTSCAL              yes
 TARGETDISCRETIZATION            invana_arch_surfcurr_volgrowth_target.dat
@@ -789,7 +790,7 @@ NODE 204      COORD    1.8500000000000000e+01    0.0000000000000000e+00    5.000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-INVANA SPECIAL QUANTITY gradient VALUE 4.79758368919344628e-05 TOLERANCE 1e-10
-INVANA SPECIAL QUANTITY error VALUE 1.69395622304257081e-02 TOLERANCE 1e-10
+INVANA SPECIAL QUANTITY gradient VALUE 4.72900030470345864e-07 TOLERANCE 1e-9
+INVANA SPECIAL QUANTITY error VALUE 9.74388095801789061e-03 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

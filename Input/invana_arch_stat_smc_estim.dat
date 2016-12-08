@@ -1,3 +1,4 @@
+// Maintainer: Sebastian Kehl
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -34,7 +35,7 @@ LBFGSINITSCAL                   yes
 ITERTOPC                        100000
 RESTARTEVRY                     5
 PARAMLIST                       1 YOUNG
-MAXITER                         0
+MAXITER                         10
 STEPSIZE                        1.0
 CONVTOL                         1.0e-6
 INIT_TYPE                       map
@@ -49,13 +50,13 @@ TARGETDISCRETIZATION            invana_arch_stat_target.dat
 SIZESTORAGE                     50
 METAPARAMS                      exp
 KERNELSCALE                     0.5
-MEASVARESTIM                    0.05
+MEASVARESTIM                    0.01
 SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
 NUM_PARTICLES                   6
 MAP_COV_SCALE                   0.1
 MAP_COV_FILL                    1.0
-MAP_RESTART                     28
+MAP_RESTART                     42
 MAP_RESTARTFILE                 xxx
 SMC_ESS_REDUCTION               0.05
 MH_ACCADAPT_EVRY                2

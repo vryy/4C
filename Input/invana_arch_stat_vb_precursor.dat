@@ -1,3 +1,4 @@
+// Maintainer: Sebastian Kehl
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -41,7 +42,7 @@ INIT_TYPE                       dat
 PARAMETRIZATION                 elementwise
 NUM_PATCH_LEVELS                2
 REGULARIZATION                  totalvariation
-REG_WEIGHT                      1.0e-2
+REG_WEIGHT                      10.0
 TVD_EPS                         0.01
 OBJECTIVEFUNCT                  surfcurr
 OBJECTIVEFUNCTSCAL              yes
@@ -49,7 +50,7 @@ TARGETDISCRETIZATION            invana_arch_stat_target.dat
 SIZESTORAGE                     50
 METAPARAMS                      exp
 KERNELSCALE                     0.5
-MEASVARESTIM                    0.05
+MEASVARESTIM                    0.01
 SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
 NUM_PARTICLES                   12
