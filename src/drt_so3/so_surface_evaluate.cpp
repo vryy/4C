@@ -2690,23 +2690,18 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     if (dispnp == Teuchos::null)
       dserror("Cannot get displacement vector of structure");
 
-    // get pointer to immersedmanager
-    DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
-    if(immersedmanager==NULL)
-      dserror("failed to get immersed data manager");
-
-    // get phinp pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phinp = immersedmanager->GetPointerToPhinps();
-    if(phinp == Teuchos::null)
-      dserror("phinp = Teuchos::null");
-    // get phin pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phin = immersedmanager->GetPointerToPhins();
-    if (phin == Teuchos::null)
-      dserror("phin = Teuchos::null");
-    // get rates from scatra
-    Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
-    if (rates == Teuchos::null)
-      dserror("rates = Teuchos::null");
+    // get phinp state
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1,"phinp");
+    if (phinp == Teuchos::null)
+      dserror("Cannot get phinp vector of structure");
+    // get phin state
+    Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState(1,"phin");
+    if (phinp == Teuchos::null)
+      dserror("Cannot get phin vector of structure");
+    // get phinp state
+    Teuchos::RCP<const Epetra_Vector> rates = discretization.GetState(1,"rates");
+    if (phinp == Teuchos::null)
+      dserror("Cannot get rates vector of structure");
 
 
     //////////////////////////////////////////////////////////////

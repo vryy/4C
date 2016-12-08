@@ -255,14 +255,6 @@ private:
   //! relaxation parameter for growth
   double omega_;
 
-  //! @name Pointers to Discretizations
-  //@{
-  Teuchos::RCP<DRT::Discretization> backgroundstructuredis_; //!< background ecm discretisation
-  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;     //!< background interstitial flow discretisation
-  Teuchos::RCP<DRT::Discretization> celldis_;                //!< immersed cell discretisation
-  Teuchos::RCP<DRT::Discretization> cellscatradis_;          //!< immersed cell scatra discretisation
-  //@}
-
   //! @name Data Management
   //@{
   DRT::ImmersedFieldExchangeManager* exchange_manager_ ; //!< manager for data exchange between fields
@@ -317,17 +309,9 @@ private:
 
   //! @name Some mappings
   //@{
-  //! map associating structure to scatra (bdry) element ids
-  Teuchos::RCP<std::map<int,int> > structscatraelemap_;
 
   //! map containing the dofs of conditioned growth nodes
   Teuchos::RCP<Epetra_Map> conditiondofrowmap_;
-
-  //! matched master nodemap (with coupled node IDs)
-  Teuchos::RCP<Epetra_Map> structnodemap_;
-
-  //! matched slave nodemap (with coupled node IDs)
-  Teuchos::RCP<Epetra_Map> scatranodemap_;
   //@}
 
 }; // class SSI_Part2WC_PROTRUSIONFORMATION

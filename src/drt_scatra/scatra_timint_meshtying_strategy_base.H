@@ -151,6 +151,30 @@ class MeshtyingStrategyBase
         )
       {dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");};
 
+    /*!
+    \brief Set state on an discretization hidden in any MeshtyingStrategy.
+
+     This method should encapsulate a standard SetState(...) of the discretizations
+     you want to consider. See \ref HeterogeneousReactionStrategy for an example.
+
+    \param nds (in): number of dofset
+    \param name (in): Name of data
+    \param state (in): vector of some data
+
+    \return void
+    \date 12/16
+    \author rauch
+    */
+    virtual void SetState(
+        unsigned nds,
+        const std::string& name,
+        Teuchos::RCP<const Epetra_Vector> state
+        )
+      {dserror("SetState(...) is not implemented in MeshtyingStrategyBase.\n"
+               "SetState(...) allows to set states on discretizations held within any\n"
+               "specific MeshtyingStrategy. See e.g. HeterogeneousReactionStrategy for\n"
+               "an example implementation.");};
+
   protected:
 
     //! instantiate strategy for Newton-Raphson convergence check

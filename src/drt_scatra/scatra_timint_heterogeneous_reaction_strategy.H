@@ -98,6 +98,26 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
           const int condid
         );
 
+    /*!
+    \brief Set state on an discretization hidden in any MeshtyingStrategy.
+
+     This method should encapsulate a standard SetState(...) of the discretizations
+     you want to consider. See \ref HeterogeneousReactionStrategy for an example.
+
+    \param nds (in): number of dofset
+    \param name (in): Name of data
+    \param state (in): vector of some data
+
+    \return void
+    \date 12/16
+    \author rauch
+    */
+    virtual void SetState(
+        unsigned nds,
+        const std::string& name,
+        Teuchos::RCP<const Epetra_Vector> state
+        );
+
   private:
 
     //! the discretization for the reaction

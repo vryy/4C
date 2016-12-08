@@ -867,16 +867,12 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     // integration points and weights
     const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-    // get pointer to immersed data manager
-    DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
-    // get phinp pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phinp = immersedmanager->GetPointerToPhinps();
-    if(phinp == Teuchos::null)
-      dserror("phinp = Teuchos::null");
-    //get phin pointer from scatra
-    Teuchos::RCP<Epetra_MultiVector> phin = immersedmanager->GetPointerToPhins();
-    if (phin == Teuchos::null)
-      dserror("phin = Teuchos::null");
+    Teuchos::RCP<const Epetra_MultiVector> phinp = discretization.GetState(0,"phinp");
+    if (phinp==Teuchos::null)
+      dserror("Cannot get state vector 'phinp'");
+    Teuchos::RCP<const Epetra_MultiVector> phin = discretization.GetState(0,"phin");
+    if (phin==Teuchos::null)
+      dserror("Cannot get state vector 'phin'");
 
 
     /////////////////////////////////////////////////////////////////////////////////

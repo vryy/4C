@@ -174,9 +174,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
   // set pointers to multivectors for the rates
   exchange_manager_->SetPointerToRates(sources_);
 
-  // mapping from struct bdry ele gids to scatra bdry ele gids
-  structscatraelemap_=Teuchos::rcp(new std::map<int,int> );
-
   // relaxation
   omega_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("RELAX_GROWTH");
   if(myrank_==0)
@@ -312,7 +309,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector>
   // application of interface displacements as dirichlet conditions
   AleField()->ApplyInterfaceDisplacements(growthincrement);
 
-  // solve time step
+  // solve time step todo remove auxiliary use of fsi stuff
   AleField()->TimeStep(ALE::UTILS::MapExtractor::dbc_set_part_fsi);
 
   return;
@@ -708,6 +705,10 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateSources()
   // add time step size
   params.set<double>("dt",Dt());
 
+  // set states
+  scatra_->ScaTraField()->Strategy()->SetState(0,"phinp",scatra_->ScaTraField()->Phinp());
+  scatra_->ScaTraField()->Strategy()->SetState(0,"phin",scatra_->ScaTraField()->Phin());
+
   // add action for growth evaluation
   params.set<int>("action",SCATRA::calc_cell_growth_sourcesandsinks);
   // evaluate condition on auxiliary discretization in strategy
@@ -744,18 +745,13 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
   //////////////////////////////////////////////////////////////////////////////////////
   Teuchos::ParameterList params;
 
-//  // add master (structure) nodemap to parameterlist
-//  params.set<Teuchos::RCP<Epetra_Map> >("masternodemap",structnodemap_);
-//  // add slave (scatra) nodemap to parameterlist
-//  params.set<Teuchos::RCP<Epetra_Map> >("slavenodemap",scatranodemap_);
   // add action for growth evaluation
   params.set<std::string>("action","calc_cell_growth");
-//  // add scatra discretization
-//  params.set<std::string>("scatradisname", "cellscatra");
-//  // add rcp to struct<->scatra brdy ele map to parameterlist
-//  params.set<Teuchos::RCP<std::map<int,int> > >("structscatraelemap",structscatraelemap_);
   // add timestep to parameterlit
   params.set<double>("dt",Dt());
+
+  if(not conditiondofrowmap_->UniqueGIDs())
+    dserror("conditiondofrowmap_ is not unique! Something went wrong!");
 
   // least squares system-matrix
   Teuchos::RCP<LINALG::SparseOperator> leastsquares_matrix =
@@ -765,7 +761,12 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
   // least squares error optimal nodal growth vector
   Teuchos::RCP<Epetra_Vector> leastsquares_growth = LINALG::CreateVector(*conditiondofrowmap_,true);
 
-  // evaluate least squares growth
+  // set states
+  StructureField()->Discretization()->SetState(1,"phinp",scatra_->ScaTraField()->Phinp());
+  StructureField()->Discretization()->SetState(1,"phin",scatra_->ScaTraField()->Phin());
+  StructureField()->Discretization()->SetState(1,"rates",sources_);
+
+  // evaluate least squares growth todo remove auxiliary use of FSICoupling condition
   StructureField()->Discretization()->EvaluateCondition(params,
       leastsquares_matrix,
       Teuchos::null,
@@ -801,7 +802,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
   solver->Solve(leastsquares_matrix->EpetraOperator(), leastsquares_growth, leastsquares_rhs, refactor, reset);
 
   // find growth values on growth surface
-  int numdof = conditiondofrowmap_->NumGlobalElements();
+  int numdof = conditiondofrowmap_->NumMyElements();
   int numdofgrowth = growth_step_->MyLength();
   if (numdof != numdofgrowth)
     dserror("size of growth surface not matching");
@@ -907,13 +908,18 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildConditionDofRowMap(
   for(int i=0; i<(int)conditionednodes->size(); ++i)
   {
     DRT::Node* currnode = dis->gNode(conditionednodes->at(i));
-    std::vector<int> dofs = dis->Dof(0,currnode);
 
-    for (int dim=0;dim<3;++dim)
+    // if node is owned by calling proc
+    if(dis->NodeRowMap()->LID(currnode->Id()) != -1)
     {
-      mydirichdofs.push_back(dofs[dim]);
-    }
-  }
+      std::vector<int> dofs = dis->Dof(0,currnode);
+
+      for (int dim=0;dim<3;++dim)
+      {
+        mydirichdofs.push_back(dofs[dim]);
+      }
+    }// if node owned by calling proc
+  } // loop over all conditioned nodes
 
   int nummydirichvals = mydirichdofs.size();
   conddofmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );

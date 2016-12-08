@@ -216,4 +216,16 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateCondition
 }
 
 
+/*----------------------------------------------------------------------*
+ | Set state on auxiliary discretization                    rauch 12/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::HeterogeneousReactionStrategy::SetState(
+    unsigned nds,
+    const std::string& name,
+    Teuchos::RCP<const Epetra_Vector> state
+    )
+{
+  discret_->SetState(nds,name,state);
+  return;
+}
 
