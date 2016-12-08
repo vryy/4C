@@ -243,18 +243,6 @@ void FLD::XFluidFluid::PrepareXFEMSolve()
 
   xff_state_->xffluidsplitter_->InsertXFluidVector(xff_state_->veln_, xff_state_->xffluidveln_);
   xff_state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Veln(), xff_state_->xffluidveln_);
-
-  if (mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
-      and nitsche_evp_)
-  {
-    if (ale_embfluid_)
-      mc_xff_->EstimateNitscheTraceMaxEigenvalue(embedded_fluid_->Dispnp());
-    else if (step_ == 1)
-    {
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*embedded_fluid_->DofRowMap(),true);
-      mc_xff_->EstimateNitscheTraceMaxEigenvalue(zeros);
-    }
-  }
 }
 
 void FLD::XFluidFluid::Evaluate(
@@ -280,6 +268,12 @@ void FLD::XFluidFluid::Evaluate(
     // update embedded fluid solution by increment
     embedded_fluid_->UpdateIterIncrementally(
       xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
+  }
+
+  if (mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided and nitsche_evp_)
+  {
+    mc_xff_->ResetEvaluatedTraceEstimates();
+    if (ale_embfluid_) embedded_fluid_->Discretization()->SetState("dispnp",embedded_fluid_->Dispnp());
   }
 
   // evaluation of background fluid (new cut for full Newton approach)

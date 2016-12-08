@@ -687,7 +687,12 @@ public:
       double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
       );
 
-/// set material pointer for volume
+  /// get the estimation of the penalty scaling in Nitsche's method from the trace inequality for a specific coupling side
+  double Get_TraceEstimate_MaxEigenvalue(
+      const int coup_sid                                  ///< the overall global coupling side id
+  );
+
+  /// set material pointer for volume
   void GetVolumeCellMaterial(
     DRT::Element* actele,
     Teuchos::RCP<MAT::Material> & mat,

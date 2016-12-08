@@ -3441,7 +3441,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       // char. length defined by local eigenvalue problem
       if (fldparaxfem_->ViscStabTracEstimate() == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
       {
-        inv_hk = fldparaxfem_->Get_TraceEstimate_MaxEigenvalue(coup_sid);
+        inv_hk = cond_manager->Get_TraceEstimate_MaxEigenvalue(coup_sid);
 #if(0)
         std::cout.precision(15);
         std::cout << "C_T/hk (formula): "
@@ -4628,9 +4628,11 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     // REMARK: this is quite slow, however at the moment the easiest way to get the local id
     //         here is space for improvement
 
-    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
-        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling("XFEMSurfFluidFluid"));;
-    const int lid = mc_ff->GetFaceLidOfEmbeddedElement(face->Id());
+    const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
+    Teuchos::RCP<XFEM::MeshVolCoupling> mc_vol = Teuchos::rcp_dynamic_cast<XFEM::MeshVolCoupling>(cond_manager->GetCouplingByIdx(coup_idx));
+    if (mc_vol == Teuchos::null) dserror("ComputeCharEleLength-ViscStab_hk_ele_vol_div_by_ele_surf: Cast to MeshVolCoupling failed!");
+
+    const int lid = mc_vol->GetFaceLidOfEmbeddedElement(face->Id());
     //---------------------------------------------------
 
     // compute the uncut element's surface measure

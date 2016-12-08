@@ -17,8 +17,6 @@ xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "xfem_coupling_base.H"
@@ -612,25 +610,22 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(
     )
 {
   double penscaling = 0.0;
+  if (GetAveragingStrategy() != INPAR::XFEM::Embedded_Sided)
   {
     double visc_m = 0.0;
     GetViscosityMaster(xfele,visc_m); //As long as mastersided we just have a fluid, directly use this ...
-    penscaling = visc_m*kappa_m;
+    penscaling = visc_m*kappa_m*inv_h_k;
   }
 
   if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
   {
     double penscaling_s = 0.0;
     GetPenaltyScalingSlave(coup_ele,penscaling_s);
-    //std::cout << "penscaling_s " << penscaling_s << std::endl;
-    penscaling += penscaling_s*kappa_s;
+    penscaling += penscaling_s*kappa_s*inv_h_k;
   }
-
-  //std::cout << "kappa_m " << kappa_m<< "kappa_s " << kappa_s<< "penscaling " << penscaling << std::endl;
 
   XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
       xfele->Shape(),
-      inv_h_k,
       penscaling,
       params->NITStabScaling(),
       params->IsPseudo2D(),

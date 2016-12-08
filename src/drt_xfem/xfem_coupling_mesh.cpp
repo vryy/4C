@@ -31,9 +31,12 @@ xfluid class and the cut-library
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
 
 #include "../linalg/linalg_utils.H"
 
+//Needed for crack XFSI --> should go to xfem_coulpling_mesh_fsicrack
 #include "../drt_crack/crackUtils.H"
 
 #include "../drt_io/io.H"
@@ -41,7 +44,7 @@ xfluid class and the cut-library
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
-//Needed for Slave Fluid
+//Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
 #include "../drt_mat/newtonianfluid.H"
 
 /*--------------------------------------------------------------------------*
@@ -124,7 +127,7 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
       *cond_dis_,               ///< discretization with condition
       cond_name_,               ///< name of the condition, by which the derived discretization is identified
       cutterdis_name,           ///< name of the new discretization
-      GetBELEName(cond_dis_),   ///< name/type of the elements to be created
+      "",
       conditions_to_copy_,      ///< list of conditions that will be copied to the new discretization
       coupling_id_              ///< coupling id, only elements conditioned with this coupling id are considered
   );
@@ -312,6 +315,8 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
 
     // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
     CreateAuxiliaryDiscretization();
+
+    ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int,double> ());
   }
   return;
 }
@@ -520,6 +525,44 @@ void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+double XFEM::MeshVolCoupling::Get_EstimateNitscheTraceMaxEigenvalue(
+    DRT::Element* ele)
+{
+  if (ele_to_max_eigenvalue_->find(ele->Id()) == ele_to_max_eigenvalue_->end())
+    EstimateNitscheTraceMaxEigenvalue(ele);
+
+  return ele_to_max_eigenvalue_->at(ele->Id());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::EstimateNitscheTraceMaxEigenvalue(
+    DRT::Element* ele)
+{
+  Teuchos::ParameterList params;
+  DRT::Element::LocationArray la(1);
+  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
+  Epetra_SerialDenseMatrix      dummyelemat;
+  Epetra_SerialDenseVector      dummyelevec;
+  DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+  if (!faceele) dserror("Cast to faceele failed!"); //todo change to dsassert
+
+  faceele->SetParentMasterElement(coupl_dis_->gElement(faceele->ParentElementId()), faceele->FaceParentNumber());
+  faceele->LocationVector(*coupl_dis_,la,false);
+
+  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(faceele)->EstimateNitscheTraceMaxEigenvalue(
+      faceele,
+      params,
+      *coupl_dis_,
+      la[0].lm_,
+      dummyelemat,
+      dummyelevec);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
@@ -632,53 +675,6 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
     aux_coup_dis_->ReplaceDofSet(newdofset,false); // do not call this with true (no replacement in static dofsets intended)
     aux_coup_dis_->FillComplete(true,true,true);
   }
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshVolCoupling::EstimateNitscheTraceMaxEigenvalue(
-    const Teuchos::RCP<const Epetra_Vector> & dispnp) //const
-{
-  Teuchos::ParameterList params;
-
-  // set action for elements
-  params.set<int>("action",FLD::estimate_Nitsche_trace_maxeigenvalue_);
-
-  Teuchos::RCP<Epetra_Vector> aux_coup_dispnp = LINALG::CreateVector(*GetAuxiliaryDiscretization()->DofRowMap(),true);
-  LINALG::Export(*dispnp,*aux_coup_dispnp);
-
-  GetAuxiliaryDiscretization()->SetState("dispnp", aux_coup_dispnp);
-
-  /// map of embedded element ID to the value of it's Nitsche parameter
-  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue =  Teuchos::rcp(new std::map<int,double> ());
-  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue);
-
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
-
-  // Evaluate the general eigenvalue problem Ax = lambda Bx for local for the elements of aux_coup_dis_
-  GetAuxiliaryDiscretization()->EvaluateCondition(  params,
-                                     systemmatrixA,
-                                     systemmatrixB,
-                                     Teuchos::null,
-                                     Teuchos::null,
-                                     Teuchos::null,
-                                     "XFEMSurfFluidFluid");
-
-  // gather the information form all processors
-  Teuchos::RCP<std::map<int,double> > tmp_map = params.get<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map");
-
-  // information how many processors work at all
-  std::vector<int> allproc(GetAuxiliaryDiscretization()->Comm().NumProc());
-
-  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i = 0; i < GetAuxiliaryDiscretization()->Comm().NumProc(); ++ i) allproc[i] = i;
-
-  // gather the information from all procs
-  LINALG::Gather<int,double>(*tmp_map,*ele_to_max_eigenvalue,(int)GetAuxiliaryDiscretization()->Comm().NumProc(),&allproc[0], GetAuxiliaryDiscretization()->Comm());
-
-  // update the estimate of the maximal eigenvalues in the parameter list to access on element level
-  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Update_TraceEstimate_MaxEigenvalue(ele_to_max_eigenvalue);
 }
 
 //! constructor

@@ -912,3 +912,21 @@ void XFEM::ConditionManager::Get_ViscPenalty_Stabfac(
 
   return;
 }
+
+/*--------------------------------------------------------------------------------
+* get the estimation of the penalty scaling in Nitsche's method from the trace inequality for a specific coupling side
+ *--------------------------------------------------------------------------------*/
+double XFEM::ConditionManager::Get_TraceEstimate_MaxEigenvalue(
+const int coup_sid                                  ///< the overall global coupling side id
+)
+{
+  // get the mesh coupling object index
+  const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+  // compute the side id w.r.t the cutter discretization the side belongs to
+  const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
+  // get the boundary discretization, the side belongs to
+  Teuchos::RCP<MeshVolCoupling> mvolcoupling = Teuchos::rcp_dynamic_cast<MeshVolCoupling>(mesh_coupl_[mc_idx]);
+  if (mvolcoupling == Teuchos::null) dserror("Cast to MeshVolCoupling failed!");
+
+  return mvolcoupling->Get_EstimateNitscheTraceMaxEigenvalue(mvolcoupling->GetSide(cutterdis_sid));
+}

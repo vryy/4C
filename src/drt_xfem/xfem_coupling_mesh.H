@@ -189,30 +189,8 @@ private:
 
   void SetConditionsToCopy();
 
-  /// return the name of the boundary element type to be created from the coupling discretization
-  std::string GetBELEName(Teuchos::RCP<DRT::Discretization> dis)
-  {
-    const int ndim = DRT::Problem::Instance()->NDim();
-
-    if(ndim != 3 ) dserror("only three-dimensional XFEM applications supported!");
-
-    if(dis->NumMyColNodes() == 0) dserror("discretization does not have col nodes?!");
-    const int numdof = dis->NumDof(0,dis->lColNode(0));
-
-    switch(numdof)
-    {
-    case 3: {return "BELE3_3"; break;}   // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well
-    case 4: {return "BELE3_4"; break;}   // use always 4 dofs on the fluid surface
-    default: dserror("coupling dis currently has %i dofs", numdof); break;
-    }
-
-    return "";
-  }
-
   //! create cutting discretization from condition
   virtual void CreateCutterDisFromCondition(std::string suffix);
-
-
 
 protected:
 
@@ -313,9 +291,13 @@ public:
     return aux_coup_dis_;
   }
 
-  //! estimate the penalty scaling in Nitsche's method from the trace inequality
+  //! reset all evaluated trace estimates, next time the are required will be calculated again!
+  void ResetEvaluatedTraceEstimates()
+  { ele_to_max_eigenvalue_->clear(); }
+
+  //! get the estimation of the penalty scaling in Nitsche's method from the trace inequality for a specific face element
   //! via solving a local eigenvalue problem
-  void EstimateNitscheTraceMaxEigenvalue(const Teuchos::RCP<const Epetra_Vector> & dispnp); //const;
+  double Get_EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
 protected:
   //! create map from cutting surface element id to embedded element id
@@ -323,6 +305,10 @@ protected:
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
   void RedistributeEmbeddedDiscretization();
+
+  //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific face element
+  //! via solving a local eigenvalue problem
+  void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
   //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
   void CreateAuxiliaryDiscretization();
@@ -353,6 +339,9 @@ private:
 
   //! bool to indicate if volume coupling is initialized
   bool init_volcoupling_;
+
+  //! map stores max eigenvalues of trace estimate of the elements
+  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue_;
 };
 
 /*!

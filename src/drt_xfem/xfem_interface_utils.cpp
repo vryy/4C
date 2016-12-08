@@ -51,8 +51,7 @@ void XFEM::UTILS::GetStdAverageWeights(const INPAR::XFEM::AveragingStrategy aver
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
     const DRT::Element::DiscretizationType ele_distype,                   ///< the discretization type of the element w.r.t which the stabilization factor is computed
-    const double& inv_h_k,                                                ///< the inverse characteristic element length h_k
-    const double& penscaling,                                             ///< material dependent penalty scaling (e.g. visceff)
+    const double& penscaling,                                             ///< material dependent penalty scaling (e.g. visceff) divided by h
     const double& NIT_stabscaling,                                        ///< basic nit penalty stab scaling
     const bool& is_pseudo_2D,                                             ///< is pseudo 2d
     const INPAR::XFEM::ViscStab_TraceEstimate& visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
@@ -105,7 +104,7 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
   // 1 // to be filled viscous part of Nitsche's penalty term scaling for Nitsche's method
   // 2 // scale the viscous part of the penalty scaling with the effective viscosity of both sides
   // 3 // scale the viscous part of the penalty scaling with the dimensionless user defined Nitsche-parameter gamma
-  NIT_visc_stab_fac = inv_h_k*penscaling*NIT_stabscaling;
+  NIT_visc_stab_fac = penscaling*NIT_stabscaling;
 
   // compute the final viscous scaling part of Nitsche's penalty term
   if(visc_stab_trace_estimate == INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk)

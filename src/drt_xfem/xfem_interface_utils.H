@@ -47,8 +47,7 @@ namespace XFEM
      */
     void NIT_Compute_ViscPenalty_Stabfac(
         const DRT::Element::DiscretizationType ele_distype,                   ///< the discretization type of the element w.r.t which the stabilization factor is computed
-        const double& inv_h_k,                                                ///< the inverse characteristic element length h_k
-        const double& penscaling,                                             ///< material dependent penalty scaling (e.g. visceff)
+        const double& penscaling,                                             ///< material dependent penalty scaling (e.g. visceff) divided by h
         const double& NIT_stabscaling,                                        ///< basic nit penalty stab scaling
         const bool& is_pseudo_2D,                                             ///< is pseudo 2d
         const INPAR::XFEM::ViscStab_TraceEstimate& visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
