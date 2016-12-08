@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3tobeamlinkage.H
+\file beam_to_beam_linkage.H
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 
@@ -63,7 +63,7 @@ public:
   BeamToBeamLinkage();
 
   //! Destructor
-  virtual ~BeamToBeamLinkage() {};
+  virtual ~BeamToBeamLinkage() {}
 
   //! Initialization
   virtual void Init(
@@ -109,25 +109,26 @@ public:
   virtual inline int Id() const { return id_; }
 
   /*!
-  \brief Return gid of element one
+  \brief Return gid of first/second element (specified via given local element number 0/1)
   */
   virtual inline const int& GetEleGid(const int& elenum) const {
-    return eleids_[elenum].first; }
+    return bspotIds_[elenum].first; }
 
   /*!
-  \brief Return gid of element one
+  \brief Return element-local binding spot number of first/second element
+         (specified via given local element number 0/1)
   */
   virtual inline const int& GetLocBSpotNum(const int& elenum) const {
-    return eleids_[elenum].second; }
+    return bspotIds_[elenum].second; }
 
   /*!
-  \brief Return gid of element one
+  \brief Return involved processor IDs
   */
   virtual inline const std::set<int>& GetInvolvedProcs() const {
     return involvedprocs_; }
 
   /*!
-  \brief Return gid of element one
+  \brief Set class variable storing involved processor IDs
   */
   virtual inline void SetInvolvedProcs(std::set<int>& involvedprocs) {
     involvedprocs_.clear();
@@ -232,8 +233,9 @@ private:
   //! a unique global id
   int id_;
 
-  //! elegid and local binding spot number of first [0] and second [1] element
-  std::vector<std::pair<int, int> > eleids_;
+  //! unique identifiers for first [0] and second [1] binding spot:
+  // each is a pair of element GID and local binding spot number
+  std::vector<std::pair<int, int> > bspotIds_;
 
   //! involved procs
   std::set<int> involvedprocs_;

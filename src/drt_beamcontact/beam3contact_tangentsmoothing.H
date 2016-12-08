@@ -27,19 +27,19 @@ namespace CONTACT
   class B3CNeighbor
   {
     public:
-    B3CNeighbor(DRT::Element* left_neighbor, DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right);                     // standard constructor
+    B3CNeighbor(const DRT::Element* left_neighbor, const DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right);                     // standard constructor
 
     virtual ~B3CNeighbor() {};        // destructor
 
-    DRT::Element* GetLeftNeighbor(){return left_neighbor_;};
-    DRT::Element* GetRightNeighbor(){return right_neighbor_;};
+    const DRT::Element* GetLeftNeighbor(){return left_neighbor_;};
+    const DRT::Element* GetRightNeighbor(){return right_neighbor_;};
     int GetLeftConNode(){return connecting_node_left_;};
     int GetRightConNode(){return connecting_node_right_;};
 
 
     private:
-    DRT::Element* left_neighbor_;      // pointer to the Element on the left side (eta=-1)
-    DRT::Element* right_neighbor_;     // pointer to the Element on the right side (eta=1)
+    const DRT::Element* left_neighbor_;      // pointer to the Element on the left side (eta=-1)
+    const DRT::Element* right_neighbor_;     // pointer to the Element on the right side (eta=1)
     int connecting_node_left_;         // local node-ID of the connecting node of the left neighbor
     int connecting_node_right_;        // local node-ID of the connecting node of the right neighbor
   }; // class B3CNeighbor
@@ -47,7 +47,7 @@ namespace CONTACT
   namespace B3TANGENTSMOOTHING
   {
     //determine the neighbour elements of an element
-    Teuchos::RCP<B3CNeighbor> DetermineNeigbors(DRT::Element* element1);
+    Teuchos::RCP<B3CNeighbor> DetermineNeigbors(const DRT::Element* element1);
 
     void GetBoundaryNode(int& nright,int nnode);
 

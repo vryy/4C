@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3tobeamlinkage.cpp
+\file beam_to_beam_linkage.cpp
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 
@@ -10,7 +10,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "beam3tobeamlinkage.H"
 #include "beam3r_lin2_linkage.H"
 
 #include "../drt_fem_general/largerotations.H"
@@ -21,6 +20,8 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include "beam_to_beam_linkage.H"
 
 BEAMINTERACTION::BeamToBeamLinkageType BEAMINTERACTION::BeamToBeamLinkageType::instance_;
 
@@ -54,7 +55,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   issetup_ = false;
 
   id_ = id;
-  eleids_ = eleids;
+  bspotIds_ = eleids;
 
   bspotpos1_ = initpos[0];
   bspotpos2_ = initpos[1];
@@ -172,7 +173,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,id);
 
   // add eleids_
-  AddtoPack(data,eleids_);
+  AddtoPack(data,bspotIds_);
   // add involved procs
   AddtoPack(data,involvedprocs_);
   // bspotpos1_
@@ -209,7 +210,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,id_);
 
   // eleids_
-  ExtractfromPack(position,data,eleids_);
+  ExtractfromPack(position,data,bspotIds_);
   // involved procs
   ExtractfromPack(position,data,involvedprocs_);
   // bspotpos1_
@@ -257,21 +258,23 @@ void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
   currenttriad.Multiply(bspottriad[1],Lambdarel2_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad,bspottriad2_);
 
+//  std::cout << "\nResetState: ";
+//  this->Print(std::cout);
 
   // safety check until code is better tested for potential problems with periodic boundary conditions
   // **************************** DEBUG ****************************************
-//  LINALG::Matrix<3,1> dist;
-//  dist.Update(1.0,bspotpos1,-1.0,bspotpos2);
-//  for (unsigned int i=0; i<3; ++i)
-//  {
-//    if (std::abs(dist(i)) > 5.0)
-//    {
-//      this->Print(std::cout);
-//      dserror("You are trying to set the binding spot positions of this crosslinker "
-//          "in at least one direction at a distance larger than 5.0 (which is "
-//          "hard-coded here as half of the period length)");
-//    }
-//  }
+  LINALG::Matrix<3,1> dist;
+  dist.Update(1.0,bspotpos[0],-1.0,bspotpos[1]);
+  for (unsigned int i=0; i<3; ++i)
+  {
+    if (std::abs(dist(i)) > 5.0)
+    {
+      this->Print(std::cout);
+      dserror("You are trying to set the binding spot positions of this crosslinker "
+          "in at least one direction at a distance larger than 5.0 (which is "
+          "hard-coded here as half of the period length)");
+    }
+  }
   // ********************** END DEBUG ****************************************
 }
 
@@ -288,7 +291,14 @@ BEAMINTERACTION::BeamToBeamLinkage::Create()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamLinkage::Print(std::ostream& out) const
 {
-  out << "\nBeamToBeamLinkage:";
+  CheckInit();
+
+  out << "\nBeamToBeamLinkage (ID " << id_ << "):";
+  out << "\nbspotIds_[0] = ";
+  out << "EleGID " << bspotIds_[0].first << " locbspotnum " << bspotIds_[0].second;
+  out << "\nbspotIds_[1] = ";
+  out << "EleGID " << bspotIds_[1].first << " locbspotnum " << bspotIds_[0].second;
+  out << "\n";
   out << "\nbspotpos1_ = ";
   bspotpos1_.Print(out);
   out << "\nbspotpos2_ = ";

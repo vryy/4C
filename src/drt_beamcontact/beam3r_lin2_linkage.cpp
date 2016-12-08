@@ -11,8 +11,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "beam3r_lin2_linkage.H"
-#include "beam3tobeamlinkage.H"
-
 #include "../drt_beam3/beam3r.H"
 
 #include "../drt_fem_general/largerotations.H"
@@ -25,6 +23,8 @@
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include "beam_to_beam_linkage.H"
 
 BEAMINTERACTION::Beam3rLin2LinkageType BEAMINTERACTION::Beam3rLin2LinkageType::instance_;
 
@@ -102,6 +102,9 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Setup()
   }
 
   linkele_->SetUpReferenceGeometry<2,2,1>(refpos,refrotvec);
+
+//  std::cout << "\nSetup():";
+//  this->Print(std::cout);
 
   issetup_ = true;
 }

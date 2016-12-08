@@ -12,9 +12,8 @@
 #ifndef BEAM3RLIN2LINKAGE_H
 #define BEAM3RLIN2LINKAGE_H
 
-#include "beam3tobeamlinkage.H"
-
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "beam_to_beam_linkage.H"
 
 // forward declarations
 namespace LINALG

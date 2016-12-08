@@ -26,6 +26,7 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -42,7 +43,9 @@
 
 #include "../drt_particle/particle_algorithm.H"
 #include "../drt_beam3/beam3_base.H"
-#include "../drt_beamcontact/beam3tobeamlinkage.H"
+#include "../drt_beamcontact/beam_contact_params.H"
+#include "../drt_beamcontact/beam_to_beam_linkage.H"
+#include "../drt_beamcontact/beam_to_beam_interaction.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_biopolynet/crosslinker_node.H"
 
@@ -51,6 +54,7 @@
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Crosslinking::Crosslinking():
     eval_statmech_ptr_(Teuchos::null),
+    beam_contact_params_ptr_(Teuchos::null),
     myrank_(-1),
     numproc_(-1),
     ia_discret_(Teuchos::null),
@@ -81,6 +85,12 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // data
   // todo: this container belongs to browndyn
   eval_statmech_ptr_ = EvalData().StatMechPtr();
+
+#ifdef BEAMTOBEAMCONTACT
+  // get all beam interaction related input parameters
+  GetAndCheckBeamInteractionParameters();
+#endif
+
   // stiff
   stiff_crosslink_ = Teuchos::rcp(new
       LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
@@ -158,6 +168,24 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   beam_data_.resize(numcolbeams);
   PreComputeBeamData(numcolbeams);
 
+#ifdef BEAMTOBEAMCONTACT
+  // -------------------------------------------------------------------------
+  // fill map of spatially proximal elements to be used for evaluation of contact
+  // and other types of interactions based on spatial distance between the partners
+  // -------------------------------------------------------------------------
+  nearby_elements_map_.clear();
+  FindAndStoreNeighboringElements();
+  CreateBeamToBeamContactElementPairs();
+
+  // transformation from row to column (after extended ghosting)
+  Teuchos::RCP<Epetra_Vector> ia_discolnp =
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *ia_discolnp);
+
+  ResetStateOfBeamToBeamContactElementPairs(ia_discolnp);
+//  PrintAllBeamToBeamContactElementPairs(std::cout);
+#endif
+
   // set flag
   issetup_ = true;
 
@@ -167,11 +195,40 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::GetAndCheckBeamInteractionParameters()
+{
+  // Teuchos parameter list for beam contact
+  const Teuchos::ParameterList& beam_contact_params_list =
+      DRT::Problem::Instance()->BeamContactParams();
+
+  beam_contact_params_ptr_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
+
+  beam_contact_params_ptr_->Init(beam_contact_params_list);
+  beam_contact_params_ptr_->Setup();
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
 
-  ResetStateOfElementPairs();
+  // get current displacement state and export to interaction discretization dofmap
+  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
+
+  // transformation from row to column
+  Teuchos::RCP<Epetra_Vector> ia_discolnp =
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  LINALG::Export(*ia_disnp_, *ia_discolnp);
+
+  ResetStateOfDoubleBondCrosslinkers(ia_discolnp);
+
+#ifdef BEAMTOBEAMCONTACT
+  ResetStateOfBeamToBeamContactElementPairs(ia_discolnp);
+//  PrintAllBeamToBeamContactElementPairs(std::cout);
+#endif
 
   // Zero out force and stiffness contributions
   force_crosslink_->PutScalar(0.0);
@@ -186,6 +243,25 @@ void STR::MODELEVALUATOR::Crosslinking::Reset(const Epetra_Vector& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
+{
+  CheckInitSetup();
+
+  EvaluateCrosslinkingForce();
+
+#ifdef BEAMTOBEAMCONTACT
+  EvaluateBeamToBeamContactForce();
+#endif
+
+  // transformation from ia_discret to problem discret
+  TransformForceAndStiff(true, false);
+
+  // that is it
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateCrosslinkingForce()
 {
   CheckInitSetup();
 
@@ -215,7 +291,6 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
   {
-
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
     // zero out variables
@@ -285,16 +360,124 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForce()
 
   AssembleRecvEleForceStiffIntoSystemVectorMatrix(recvforcestiff,ia_force_crosslink_,Teuchos::null);
 
-  // transformation from ia_discret to problem discret
-  TransformForceAndStiff(true, false);
+  return true;
+}
 
-  // that is it
-return true;
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateBeamToBeamContactForce()
+{
+  CheckInitSetup();
+
+  // resulting discrete element force vectors of the two interacting elements
+  LINALG::SerialDenseVector ele1force;
+  LINALG::SerialDenseVector ele2force;
+
+  // resulting discrete force vectors (centerline DOFs only!) of the two interacting elements
+  LINALG::SerialDenseVector ele1force_centerlineDOFs;
+  LINALG::SerialDenseVector ele2force_centerlineDOFs;
+
+  Epetra_SerialDenseMatrix dummystiff(0,0);
+
+  // Todo generalize this
+  const unsigned int numdof_centerline_ele1 = 6;
+  const unsigned int numdof_centerline_ele2 = 6;
+
+  const unsigned int numdof_ele1 = 12;
+  const unsigned int numdof_ele2 = 12;
+
+
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  {
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+
+    ele1force_centerlineDOFs.Size(numdof_centerline_ele1);
+    ele2force_centerlineDOFs.Size(numdof_centerline_ele2);
+
+    elepairptr->Evaluate(
+        &ele1force_centerlineDOFs,
+        &ele2force_centerlineDOFs,
+        NULL,
+        NULL,
+        NULL,
+        NULL);
+
+    // resize and clear values
+    ele1force.Size(numdof_ele1);
+    ele2force.Size(numdof_ele2);
+
+    // assemble force vector and stiffness matrix affecting the centerline DoFs only
+    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
+    AssembleCenterlineDofForceStiffIntoElementForceStiff(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        ele1force_centerlineDOFs,
+        ele2force_centerlineDOFs,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        &ele1force,
+        &ele2force,
+        NULL,
+        NULL,
+        NULL,
+        NULL);
+
+    // Fixme
+    ele1force.Scale(-1.0);
+    ele2force.Scale(-1.0);
+
+    // assemble the contributions into force vector class variable
+    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleForceStiffIntoSystemVectorMatrix(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        ele1force,
+        ele2force,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        dummystiff,
+        ia_force_crosslink_,
+        Teuchos::null);
+
+  }
+
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
+{
+  CheckInitSetup();
+
+  ia_stiff_crosslink_->UnComplete();
+
+  EvaluateCrosslinkingStiff();
+
+#ifdef BEAMTOBEAMCONTACT
+  EvaluateBeamToBeamContactStiff();
+#endif
+
+  if (not ia_stiff_crosslink_->Filled())
+    ia_stiff_crosslink_->Complete();
+
+  TransformForceAndStiff(false, true);
+
+  if (not stiff_crosslink_->Filled())
+    stiff_crosslink_->Complete();
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateCrosslinkingStiff()
 {
   CheckInitSetup();
 
@@ -318,9 +501,6 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   Epetra_SerialDenseVector dummyforce(0);
 
-  // uncomplete sparse matrix before values of individual linkage elements are assembled
-  ia_stiff_crosslink_->UnComplete();
-
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> ia_discolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -330,7 +510,6 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
   {
-
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
     // zero out variables
@@ -405,13 +584,96 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   AssembleRecvEleForceStiffIntoSystemVectorMatrix(recvforcestiff,Teuchos::null,ia_stiff_crosslink_);
 
-  if (not ia_stiff_crosslink_->Filled())
-    ia_stiff_crosslink_->Complete();
+  return true;
+}
 
-  TransformForceAndStiff(false, true);
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateBeamToBeamContactStiff()
+{
+  CheckInitSetup();
 
-  if (not stiff_crosslink_->Filled())
-    stiff_crosslink_->Complete();
+  // linearizations
+  LINALG::SerialDenseMatrix ele11stiff;
+  LINALG::SerialDenseMatrix ele12stiff;
+  LINALG::SerialDenseMatrix ele21stiff;
+  LINALG::SerialDenseMatrix ele22stiff;
+
+  Epetra_SerialDenseVector dummyforce(0);
+
+  // linearizations (centerline DOFs only!)
+  LINALG::SerialDenseMatrix ele11stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele12stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele21stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele22stiff_centerlineDOFs;
+
+  // Todo generalize this
+  const unsigned int numdof_centerline_ele1 = 6;
+  const unsigned int numdof_centerline_ele2 = 6;
+
+  const unsigned int numdof_ele1 = 12;
+  const unsigned int numdof_ele2 = 12;
+
+
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  {
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+
+    ele11stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele1);
+    ele12stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele2);
+    ele21stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele1);
+    ele22stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele2);
+
+    elepairptr->Evaluate(
+        NULL,
+        NULL,
+        &ele11stiff_centerlineDOFs,
+        &ele12stiff_centerlineDOFs,
+        &ele21stiff_centerlineDOFs,
+        &ele22stiff_centerlineDOFs);
+
+    // resize and clear values
+    ele11stiff.Shape(numdof_ele1,numdof_ele1);
+    ele12stiff.Shape(numdof_ele1,numdof_ele2);
+    ele21stiff.Shape(numdof_ele2,numdof_ele1);
+    ele22stiff.Shape(numdof_ele2,numdof_ele2);
+
+    // assemble force vector and stiffness matrix affecting the centerline DoFs only
+    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
+    AssembleCenterlineDofForceStiffIntoElementForceStiff(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        dummyforce,
+        dummyforce,
+        ele11stiff_centerlineDOFs,
+        ele12stiff_centerlineDOFs,
+        ele21stiff_centerlineDOFs,
+        ele22stiff_centerlineDOFs,
+        NULL,
+        NULL,
+        &ele11stiff,
+        &ele12stiff,
+        &ele21stiff,
+        &ele22stiff);
+
+    // assemble the contributions into force vector class variable
+    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleForceStiffIntoSystemVectorMatrix(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        dummyforce,
+        dummyforce,
+        ele11stiff,
+        ele12stiff,
+        ele21stiff,
+        ele22stiff,
+        Teuchos::null,
+        ia_stiff_crosslink_);
+
+  }
 
   return true;
 }
@@ -419,6 +681,32 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateStiff()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
+{
+  CheckInitSetup();
+
+  ia_stiff_crosslink_->UnComplete();
+
+  EvaluateCrosslinkingForceStiff();
+
+#ifdef BEAMTOBEAMCONTACT
+  EvaluateBeamToBeamContactForceStiff();
+#endif
+
+  if (not ia_stiff_crosslink_->Filled())
+    ia_stiff_crosslink_->Complete();
+
+  TransformForceAndStiff();
+
+  if (not stiff_crosslink_->Filled())
+    stiff_crosslink_->Complete();
+
+  // that's it
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateCrosslinkingForceStiff()
 {
   CheckInitSetup();
 
@@ -447,8 +735,6 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
   LINALG::SerialDenseMatrix ele12stiff;
   LINALG::SerialDenseMatrix ele21stiff;
   LINALG::SerialDenseMatrix ele22stiff;
-
-  ia_stiff_crosslink_->UnComplete();
 
   // transformation from row to column (after extended ghosting)
   Teuchos::RCP<Epetra_Vector> ia_discolnp =
@@ -535,17 +821,122 @@ bool STR::MODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 
   CommunicateForceStiff(sendforcestiff, recvforcestiff);
 
-  AssembleRecvEleForceStiffIntoSystemVectorMatrix(recvforcestiff,ia_force_crosslink_,ia_stiff_crosslink_);
-
-  if (not ia_stiff_crosslink_->Filled())
-    ia_stiff_crosslink_->Complete();
-
-  TransformForceAndStiff();
-
-  if (not stiff_crosslink_->Filled())
-    stiff_crosslink_->Complete();
+  AssembleRecvEleForceStiffIntoSystemVectorMatrix(
+      recvforcestiff,
+      ia_force_crosslink_,
+      ia_stiff_crosslink_);
 
   // that's it
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Crosslinking::EvaluateBeamToBeamContactForceStiff()
+{
+  CheckInitSetup();
+
+  // resulting discrete element force vectors of the two interacting elements
+  LINALG::SerialDenseVector ele1force;
+  LINALG::SerialDenseVector ele2force;
+
+  // linearizations
+  LINALG::SerialDenseMatrix ele11stiff;
+  LINALG::SerialDenseMatrix ele12stiff;
+  LINALG::SerialDenseMatrix ele21stiff;
+  LINALG::SerialDenseMatrix ele22stiff;
+
+
+  // resulting discrete force vectors (centerline DOFs only!) of the two interacting elements
+  LINALG::SerialDenseVector ele1force_centerlineDOFs;
+  LINALG::SerialDenseVector ele2force_centerlineDOFs;
+
+  // linearizations (centerline DOFs only!)
+  LINALG::SerialDenseMatrix ele11stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele12stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele21stiff_centerlineDOFs;
+  LINALG::SerialDenseMatrix ele22stiff_centerlineDOFs;
+
+  // Todo generalize this
+  const unsigned int numdof_centerline_ele1 = 6;
+  const unsigned int numdof_centerline_ele2 = 6;
+
+  const unsigned int numdof_ele1 = 12;
+  const unsigned int numdof_ele2 = 12;
+
+
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  {
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+
+    ele1force_centerlineDOFs.Size(numdof_centerline_ele1);
+    ele2force_centerlineDOFs.Size(numdof_centerline_ele2);
+
+    ele11stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele1);
+    ele12stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele2);
+    ele21stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele1);
+    ele22stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele2);
+
+    elepairptr->Evaluate(
+        &ele1force_centerlineDOFs,
+        &ele2force_centerlineDOFs,
+        &ele11stiff_centerlineDOFs,
+        &ele12stiff_centerlineDOFs,
+        &ele21stiff_centerlineDOFs,
+        &ele22stiff_centerlineDOFs);
+
+    // resize and clear values
+    ele1force.Size(numdof_ele1);
+    ele2force.Size(numdof_ele2);
+
+    ele11stiff.Shape(numdof_ele1,numdof_ele1);
+    ele12stiff.Shape(numdof_ele1,numdof_ele2);
+    ele21stiff.Shape(numdof_ele2,numdof_ele1);
+    ele22stiff.Shape(numdof_ele2,numdof_ele2);
+
+    // assemble force vector and stiffness matrix affecting the centerline DoFs only
+    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
+    AssembleCenterlineDofForceStiffIntoElementForceStiff(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        ele1force_centerlineDOFs,
+        ele2force_centerlineDOFs,
+        ele11stiff_centerlineDOFs,
+        ele12stiff_centerlineDOFs,
+        ele21stiff_centerlineDOFs,
+        ele22stiff_centerlineDOFs,
+        &ele1force,
+        &ele2force,
+        &ele11stiff,
+        &ele12stiff,
+        &ele21stiff,
+        &ele22stiff);
+
+    // Fixme
+    ele1force.Scale(-1.0);
+    ele2force.Scale(-1.0);
+
+    // assemble the contributions into force vector class variable
+    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+    AssembleEleForceStiffIntoSystemVectorMatrix(
+        *ia_discret_,
+        elepairptr->Element1()->Id(),
+        elepairptr->Element2()->Id(),
+        ele1force,
+        ele2force,
+        ele11stiff,
+        ele12stiff,
+        ele21stiff,
+        ele22stiff,
+        ia_force_crosslink_,
+        ia_stiff_crosslink_);
+
+  }
+
+//  PrintActiveBeamToBeamContactSet(std::cout);
+
   return true;
 }
 
@@ -636,8 +1027,15 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateStepElement()
   // -------------------------------------------------------------------------
   UpdateCrosslinking();
 
-  return;
+#ifdef BEAMTOBEAMCONTACT
+  // fill map of spatially proximal elements to be used for evaluation of contact
+  // and other types of interactions based on spatial distance between the partners
+  nearby_elements_map_.clear();
+  FindAndStoreNeighboringElements();
+  CreateBeamToBeamContactElementPairs();
+#endif
 
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -741,17 +1139,10 @@ void STR::MODELEVALUATOR::Crosslinking::ResetStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::ResetStateOfElementPairs()
+void STR::MODELEVALUATOR::Crosslinking::ResetStateOfDoubleBondCrosslinkers(
+    const Teuchos::RCP<Epetra_Vector> ia_discolnp)
 {
   CheckInit();
-
-  // get current displacement state and export to interaction discretization dofmap
-  UpdateDofMapOfVector(ia_discret_, ia_disnp_, GState().GetMutableDisNp());
-
-  // transformation from row to column
-  Teuchos::RCP<Epetra_Vector> ia_discolnp =
-      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  LINALG::Export(*ia_disnp_, *ia_discolnp);
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
@@ -780,6 +1171,70 @@ void STR::MODELEVALUATOR::Crosslinking::ResetStateOfElementPairs()
 
     // finally reset state
     elepairptr->ResetState(pos,triad);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::ResetStateOfBeamToBeamContactElementPairs(
+    const Teuchos::RCP<Epetra_Vector> ia_discolnp)
+{
+  CheckInit();
+
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  {
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+
+    std::vector<double> ele1disp;
+    GetCurrentElementDis(elepairptr->Element1(),ia_discolnp,ele1disp);
+
+    const DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(elepairptr->Element1());
+
+    unsigned int numcenterlinenodes = beamele1->NumCenterlineNodes();
+    unsigned int numnodalvalues =
+        beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+
+    // Todo use LINALG::SerialDenseVector
+    Epetra_SerialDenseVector ele1_centerline_dofvec(3*numcenterlinenodes*numnodalvalues);
+
+    // ToDo safety check
+    if (numcenterlinenodes!= 2 or numnodalvalues != 1)
+      dserror("stop here and do your homework! generalize this method for all types of beams");
+
+    LINALG::Matrix<3,1> nodalpos;
+
+    for (unsigned int inode=0; inode<numcenterlinenodes; ++inode)
+    {
+      nodalpos.Clear();
+      beamele1->GetPosAtXi(nodalpos,-1.0+2*inode/(numcenterlinenodes-1),ele1disp);
+
+      for (unsigned int idim=0; idim<3; ++idim)
+        ele1_centerline_dofvec(3*numnodalvalues*inode+idim) = nodalpos(idim);
+    }
+
+    std::vector<double> ele2disp;
+    GetCurrentElementDis(elepairptr->Element2(),ia_discolnp,ele2disp);
+
+    const DRT::ELEMENTS::Beam3Base* beamele2 =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(elepairptr->Element2());
+
+    Epetra_SerialDenseVector ele2_centerline_dofvec(3*numcenterlinenodes*numnodalvalues);
+
+    for (unsigned int inode=0; inode<numcenterlinenodes; ++inode)
+    {
+      nodalpos.Clear();
+      beamele2->GetPosAtXi(nodalpos,-1.0+2*inode/(numcenterlinenodes-1),ele2disp);
+
+      for (unsigned int idim=0; idim<3; ++idim)
+        ele2_centerline_dofvec(3*numnodalvalues*inode+idim) = nodalpos(idim);
+    }
+
+    elepairptr->ResetState(ele1_centerline_dofvec,ele2_centerline_dofvec);
+
   }
 
   return;
@@ -1311,21 +1766,14 @@ void STR::MODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         LINALG::Matrix<3,1> bbspotpostwo;
         GetCurrentElementDis(ele,ia_discolnp,eledisp);
         ele->GetPosOfBindingSpot(bbspotpostwo,eledisp,cldata_i.clbspots[1].second,
-            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()));
-
-        BIOPOLYNET::UTILS::PeriodicBoundaryUnShift(
-            bbspotpostwo,
-            bbspotposone,
             *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
 
-        // cl gets current mid position between the filament binding spots it is attached to
-        cldata_i.clpos.Update(0.5,bbspotposone,0.5,bbspotpostwo);
-
-        BIOPOLYNET::UTILS::PeriodicBoundaryShift(
+        SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
+            crosslinker_i,
             cldata_i.clpos,
-            *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
-
-        SetCrosslinkerPosition(crosslinker_i, cldata_i.clpos);
+            bbspotposone,
+            bbspotpostwo
+            );
 
         break;
       }
@@ -1877,15 +2325,13 @@ void STR::MODELEVALUATOR::Crosslinking::BindMyCrosslinker(
         crosslinker_i->ClData()->SetNumberOfBonds(cldata_i.clnumbond);
 
         // update position
-        // fixme
-        cldata_i.clpos.Update(0.5,beamdata_i.bbspotpos.at(cldata_i.clbspots[freebspotid].second),0.5);
-        SetCrosslinkerPosition(crosslinker_i,cldata_i.clpos);
-
-        static LINALG::Matrix<3,1> dist_vec;
-        dist_vec.Update(1.0, beamdata_i.bbspotpos.at(cldata_i.clbspots[freebspotid].second), -1.0, cldata_i.clpos);
-        const double distance = dist_vec.Norm2();
-        if(abs(distance)>0.3*(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()->at(0)))
-          dserror("You should have fixed this a long time ago (one binding partner left the domain");
+        const LINALG::Matrix<3,1> occbspotpos_copy = cldata_i.clpos;
+        SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
+            crosslinker_i,
+            cldata_i.clpos,
+            occbspotpos_copy,
+            beamdata_i.bbspotpos.at(cldata_i.clbspots[freebspotid].second)
+            );
 
         // create double bond cl data
         NewDoubleBonds dbondcl;
@@ -1997,7 +2443,8 @@ void STR::MODELEVALUATOR::Crosslinking::BindMyElements(
       }
       default:
       {
-        dserror("You should not be here, crosslinker has to many bonds.");
+        dserror("You should not be here, crosslinker has unrealistic number "
+                "%i of bonds.", cldata_i.clnumbond);
         break;
       }
     }
@@ -2052,15 +2499,15 @@ void STR::MODELEVALUATOR::Crosslinking::SetupNewDoubleBonds(
     // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
     //      and introduce corresponding input parameter or even condition for mechanical
     //      links between beams in general
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr =
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> linkelepairptr =
       BEAMINTERACTION::BeamToBeamLinkage::Create();
 
     // finally initialize and setup object
-    elepairptr->Init(iter->first,newdoublebond_i.eleids,pos,triad);
-    elepairptr->Setup();
+    linkelepairptr->Init(iter->first,newdoublebond_i.eleids,pos,triad);
+    linkelepairptr->Setup();
 
     // add to my double bonds
-    doublebondcl_[elepairptr->Id()] = elepairptr;
+    doublebondcl_[linkelepairptr->Id()] = linkelepairptr;
   }
 
   // print some information
@@ -2117,6 +2564,37 @@ void STR::MODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCrosslinker(
 
   // that is it
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
+    DRT::Node* crosslinker,
+    LINALG::Matrix<3,1>& clpos,
+    const LINALG::Matrix<3,1>& bspot1pos,
+    const LINALG::Matrix<3,1>& bspot2pos
+) const
+{
+  /* the position of (the center) of a double-bonded crosslinker is defined as
+   * midpoint between the two given binding spot positions. (imagine a linker
+   * being a slender body with a binding domain at each of both ends) */
+
+  /* if the two binding spots are separated by a periodic boundary, we need to
+   * shift one position back to get the interpolation right */
+  clpos = bspot2pos;
+  BIOPOLYNET::UTILS::PeriodicBoundaryUnShift(
+      clpos,
+      bspot1pos,
+      *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
+
+  clpos.Update(0.5,bspot1pos,0.5,clpos);
+
+  // shift the interpolated position back in the periodic box if necessary
+  BIOPOLYNET::UTILS::PeriodicBoundaryShift(
+      clpos,
+      *(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()) );
+
+  SetCrosslinkerPosition(crosslinker,clpos);
 }
 
 /*----------------------------------------------------------------------------*
@@ -3021,7 +3499,7 @@ void STR::MODELEVALUATOR::Crosslinking::CommunicateCrosslinkerUnbinding(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
+void STR::MODELEVALUATOR::Crosslinking::FindAndStoreNeighboringElements()
 {
   CheckInit();
 
@@ -3067,7 +3545,8 @@ void STR::MODELEVALUATOR::Crosslinking::GetNeighboringEles()
     // sort out elements that should not be considered in contact evaluation
     VerifyNeighbors(currele, neighboring_elements);
 
-  } // loop over all row elements
+    nearby_elements_map_[elegid] = neighboring_elements;
+  }
 
   // that is it
   return;
@@ -3081,14 +3560,17 @@ void STR::MODELEVALUATOR::Crosslinking::VerifyNeighbors(
 {
   CheckInit();
 
+  // Todo
+  std::set<DRT::Element*> tobedeleted;
+
   // sort out elements that should not be considered in contact evaluation
   std::set<DRT::Element*>::const_iterator eiter;
   for(eiter=neighbors.begin(); eiter!=neighbors.end(); ++eiter)
   {
-    // 1) ensure each contact only evalutated once on myrank
+    // 1) ensure each contact only evaluated once on myrank
     if(not(currele->Id() < (*eiter)->Id()))
     {
-      neighbors.erase(*eiter);
+      tobedeleted.insert(*eiter);
       continue;
     }
 
@@ -3096,11 +3578,59 @@ void STR::MODELEVALUATOR::Crosslinking::VerifyNeighbors(
     for (int i=0; i<2; i++)
       for (int j=0; j<2; j++)
         if((*eiter)->NodeIds()[i]==currele->NodeIds()[j])
-          neighbors.erase(*eiter);
+          tobedeleted.insert(*eiter);
+  }
+
+  std::set<DRT::Element*>::const_iterator eiter2;
+  for(eiter2=tobedeleted.begin(); eiter2!=tobedeleted.end(); ++eiter2)
+  {
+    neighbors.erase(*eiter2);
   }
 
   // that is it
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::CreateBeamToBeamContactElementPairs()
+{
+  // Todo maybe keep existing pairs and reuse them ?
+  BTB_contact_elepairs_.clear();
+
+  std::map<int, std::set<DRT::Element*> >::const_iterator nearbyeleiter;
+
+  for (nearbyeleiter=nearby_elements_map_.begin(); nearbyeleiter!=nearby_elements_map_.end(); ++nearbyeleiter)
+  {
+    const int elegid = nearbyeleiter->first;
+    const DRT::Element* firsteleptr = ia_discret_->gElement(elegid);
+
+    std::set<DRT::Element*>::const_iterator secondeleiter;
+    for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
+    {
+      const DRT::Element* secondeleptr = *secondeleiter;
+
+      const unsigned int numnodes = 2;
+      const unsigned int numnodalvalues =1;
+
+      Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> newbeaminteractionpair =
+          BEAMINTERACTION::BeamToBeamInteraction::Create(numnodes,numnodalvalues);
+
+      newbeaminteractionpair->Init(
+          beam_contact_params_ptr_,
+          firsteleptr,
+          secondeleptr);
+
+      newbeaminteractionpair->Setup();
+
+      BTB_contact_elepairs_.push_back(newbeaminteractionpair);
+    }
+  }
+
+  IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
+  IO::cout(IO::standard) << "PID " << myrank_ << " currently monitors " <<
+      BTB_contact_elepairs_.size() << " beam contact pairs" << IO::endl;
+  IO::cout(IO::standard) <<"************************************************"<<IO::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -3458,6 +3988,81 @@ void STR::MODELEVALUATOR::Crosslinking::AssembleRecvEleForceStiffIntoSystemVecto
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+    const DRT::Discretization&      discret,
+    const int                       elegid1,
+    const int                       elegid2,
+    const Epetra_SerialDenseVector& ele1force_centerlineDOFs,
+    const Epetra_SerialDenseVector& ele2force_centerlineDOFs,
+    const Epetra_SerialDenseMatrix& ele11stiff_centerlineDOFs,
+    const Epetra_SerialDenseMatrix& ele12stiff_centerlineDOFs,
+    const Epetra_SerialDenseMatrix& ele21stiff_centerlineDOFs,
+    const Epetra_SerialDenseMatrix& ele22stiff_centerlineDOFs,
+    Epetra_SerialDenseVector*       ele1force,
+    Epetra_SerialDenseVector*       ele2force,
+    Epetra_SerialDenseMatrix*       ele11stiff,
+    Epetra_SerialDenseMatrix*       ele12stiff,
+    Epetra_SerialDenseMatrix*       ele21stiff,
+    Epetra_SerialDenseMatrix*       ele22stiff
+  ) const
+{
+  // Todo generalize this method and make the ifs nicer
+
+  // assemble centerline DOF values correctly into element DOFvec vectors/matrices
+  for (unsigned int idof=0; idof<3; ++idof)
+  {
+    if (ele1force != NULL)
+    {
+      (*ele1force)(idof) = ele1force_centerlineDOFs(idof);
+      (*ele1force)(6+idof) = ele1force_centerlineDOFs(3+idof);
+    }
+
+    if (ele2force != NULL)
+    {
+      (*ele2force)(idof) = ele2force_centerlineDOFs(idof);
+      (*ele2force)(6+idof) = ele2force_centerlineDOFs(3+idof);
+    }
+
+    for (unsigned int jdof=0; jdof<3; ++jdof)
+    {
+      if (ele11stiff != NULL)
+      {
+        (*ele11stiff)(idof,jdof) = ele11stiff_centerlineDOFs(idof,jdof);
+        (*ele11stiff)(6+idof,jdof) = ele11stiff_centerlineDOFs(3+idof,jdof);
+        (*ele11stiff)(idof,6+jdof) = ele11stiff_centerlineDOFs(idof,3+jdof);
+        (*ele11stiff)(6+idof,6+jdof) = ele11stiff_centerlineDOFs(3+idof,3+jdof);
+      }
+
+      if (ele11stiff != NULL)
+      {
+        (*ele12stiff)(idof,jdof) = ele12stiff_centerlineDOFs(idof,jdof);
+        (*ele12stiff)(6+idof,jdof) = ele12stiff_centerlineDOFs(3+idof,jdof);
+        (*ele12stiff)(idof,6+jdof) = ele12stiff_centerlineDOFs(idof,3+jdof);
+        (*ele12stiff)(6+idof,6+jdof) = ele12stiff_centerlineDOFs(3+idof,3+jdof);
+      }
+
+      if (ele11stiff != NULL)
+      {
+        (*ele21stiff)(idof,jdof) = ele21stiff_centerlineDOFs(idof,jdof);
+        (*ele21stiff)(6+idof,jdof) = ele21stiff_centerlineDOFs(3+idof,jdof);
+        (*ele21stiff)(idof,6+jdof) = ele21stiff_centerlineDOFs(idof,3+jdof);
+        (*ele21stiff)(6+idof,6+jdof) = ele21stiff_centerlineDOFs(3+idof,3+jdof);
+      }
+
+      if (ele11stiff != NULL)
+      {
+        (*ele22stiff)(idof,jdof) = ele22stiff_centerlineDOFs(idof,jdof);
+        (*ele22stiff)(6+idof,jdof) = ele22stiff_centerlineDOFs(3+idof,jdof);
+        (*ele22stiff)(idof,6+jdof) = ele22stiff_centerlineDOFs(idof,3+jdof);
+        (*ele22stiff)(6+idof,6+jdof) = ele22stiff_centerlineDOFs(3+idof,3+jdof);
+      }
+    }
+  }
+
+}
+
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff(
@@ -3765,6 +4370,32 @@ void STR::MODELEVALUATOR::Crosslinking::UnPack(
 
   // that is it
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::PrintAllBeamToBeamContactElementPairs(
+    std::ostream& out) const
+{
+  out << "\n\nCurrent BeamToBeamContactElementPairs: ";
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+    (*iter)->Print(out);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Crosslinking::PrintActiveBeamToBeamContactSet(
+    std::ostream& out) const
+{
+  out << "\n    Active BeamToBeam Contact Set:------------------------------------------------\n";
+  out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
+
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+    (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
+
+  out << std::endl;
 }
 
 /*----------------------------------------------------------------------------*

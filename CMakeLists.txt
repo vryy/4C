@@ -873,6 +873,10 @@ set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
 )
 set(OBJS_DRT_BEAMCONTACT_LIB
+  src/drt_beamcontact/beam_contact_params.cpp
+  src/drt_beamcontact/beam_to_beam_interaction.cpp
+  src/drt_beamcontact/beam_to_beam_contact.cpp
+  src/drt_beamcontact/beam_to_beam_contact_variables.cpp
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
   src/drt_beamcontact/beam3contactnew.cpp
@@ -886,7 +890,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3tosolidmeshtying.cpp
   src/drt_beamcontact/beam3tobeampotential.cpp
   src/drt_beamcontact/beam3tospherepotential.cpp
-  src/drt_beamcontact/beam3tobeamlinkage.cpp
+  src/drt_beamcontact/beam_to_beam_linkage.cpp
   src/drt_beamcontact/beam3r_lin2_linkage.cpp
 )
 set(OBJS_DRT_STRU_MULTI

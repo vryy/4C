@@ -26,6 +26,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_MpiComm.h>
 
+// Fixme get rid of this flag
+//#define BEAMTOBEAMCONTACT
 
 //forward declaration ...
 namespace ADAPTER
@@ -46,7 +48,7 @@ namespace DRT
 } // namespace DRT
 namespace CROSSLINKING
 {
- class CrosslinkerNode;
+  class CrosslinkerNode;
 } // namespace CROSSLINKING
 namespace MAT
 {
@@ -62,7 +64,9 @@ namespace PARTICLE
   class Algorithm;
 } // namespace PARTICLE
 namespace BEAMINTERACTION {
-class BeamToBeamLinkage;
+  class BeamContactParams;
+  class BeamToBeamLinkage;
+  class BeamToBeamInteraction;
 }
 
 namespace STR{
@@ -220,8 +224,33 @@ namespace MODELEVALUATOR{
     //       the whole corresponding binstrategy
     //! @{
 
+    void GetAndCheckBeamInteractionParameters();
+
+    //!
+    bool EvaluateCrosslinkingForce();
+
+    //!
+    bool EvaluateBeamToBeamContactForce();
+
+    //!
+    bool EvaluateCrosslinkingStiff();
+
+    //!
+    bool EvaluateBeamToBeamContactStiff();
+
+    //!
+    bool EvaluateCrosslinkingForceStiff();
+
+    //!
+    bool EvaluateBeamToBeamContactForceStiff();
+
     /// reset positions and triads in existing BeamToBeamLinkage objects
-    virtual void ResetStateOfElementPairs();
+    virtual void ResetStateOfDoubleBondCrosslinkers(
+        const Teuchos::RCP<Epetra_Vector> ia_discolnp);
+
+    /// reset positions and tangents in existing BeamToBeamInteraction objects
+    virtual void ResetStateOfBeamToBeamContactElementPairs(
+        const Teuchos::RCP<Epetra_Vector> ia_discolnp);
 
     /// set random initial position of crosslinker
     virtual void InitializeBinDiscret();
@@ -250,6 +279,13 @@ namespace MODELEVALUATOR{
     virtual void SetPositionOfNewlyFreeCrosslinker(
         DRT::Node* crosslinker,
         LINALG::Matrix<3,1>& clpos
+    ) const;
+
+    void SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
+        DRT::Node* crosslinker,
+        LINALG::Matrix<3,1>& clpos,
+        const LINALG::Matrix<3,1>& bspot1pos,
+        const LINALG::Matrix<3,1>& bspot2pos
     ) const;
 
     /// update bin, crosslinker and beam distribution
@@ -506,6 +542,27 @@ namespace MODELEVALUATOR{
       Teuchos::RCP<LINALG::SparseMatrix> sysmat
     ) const;
 
+    /// assemble force vector and stiffness matrix related to centerline DoFs only
+    //  (e.g. resulting from beam contact) into element force vector and stiffness matrix
+    //  (i.e. all DoFs of the element)
+    void AssembleCenterlineDofForceStiffIntoElementForceStiff(
+        const DRT::Discretization&      discret,
+        const int                       elegid1,
+        const int                       elegid2,
+        const Epetra_SerialDenseVector& ele1force_centerlineDOFs,
+        const Epetra_SerialDenseVector& ele2force_centerlineDOFs,
+        const Epetra_SerialDenseMatrix& ele11stiff_centerlineDOFs,
+        const Epetra_SerialDenseMatrix& ele12stiff_centerlineDOFs,
+        const Epetra_SerialDenseMatrix& ele21stiff_centerlineDOFs,
+        const Epetra_SerialDenseMatrix& ele22stiff_centerlineDOFs,
+        Epetra_SerialDenseVector*       ele1force,
+        Epetra_SerialDenseVector*       ele2force,
+        Epetra_SerialDenseMatrix*       ele11stiff,
+        Epetra_SerialDenseMatrix*       ele12stiff,
+        Epetra_SerialDenseMatrix*       ele21stiff,
+        Epetra_SerialDenseMatrix*       ele22stiff
+      ) const;
+
     /// transform force vector and stiffness matrix from Discret to ia_discret_
     virtual void TransformForceAndStiff(
         bool force = true,
@@ -513,13 +570,17 @@ namespace MODELEVALUATOR{
       );
 
     /// get neighbouring eles in discret
-    virtual void GetNeighboringEles();
+    virtual void FindAndStoreNeighboringElements();
 
     /// exclude certein neighbors from interaction evaluation
     virtual void VerifyNeighbors(
         DRT::Element* currele,
         std::set<DRT::Element*>& neighbors
     ) const;
+
+    /// create instances of class BeamToBeamInteraction that will be evaluated
+    //  to get force and stiffness contributions from beam interactions
+    virtual void CreateBeamToBeamContactElementPairs();
 
     /// check whether distance of two points is out of given range
     bool IsDistanceOutOfBindingRange(
@@ -613,6 +674,12 @@ namespace MODELEVALUATOR{
         CommForceStiff&   forcestiffdata
     ) const;
 
+    /// print
+    void PrintAllBeamToBeamContactElementPairs(std::ostream& out) const;
+
+    /// print
+    void PrintActiveBeamToBeamContactSet(std::ostream& out) const;
+
     /// print welcome to biopolymer network simulation
     virtual void Logo() const;
 
@@ -622,6 +689,9 @@ namespace MODELEVALUATOR{
 
     //! statmech evaluation data container
     Teuchos::RCP<STR::MODELEVALUATOR::StatMechData> eval_statmech_ptr_;
+
+    //! data container holding all beam contact related parameters
+    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
     //! myrank
     int myrank_;
@@ -684,7 +754,11 @@ namespace MODELEVALUATOR{
     // Todo what is the key?
     std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > doublebondcl_;
 
+    //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
+    std::map<int, std::set<DRT::Element*> > nearby_elements_map_;
 
+    //! interacting pairs of beam elements that might exert forces on each other
+    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> > BTB_contact_elepairs_;
 
   }; // class Crosslink
 

@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*
  |  Constructor of class B3CNeighbor                         meier 04/11|
  *----------------------------------------------------------------------*/
-  CONTACT::B3CNeighbor::B3CNeighbor(DRT::Element* left_neighbor, DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right):
+  CONTACT::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor, const DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right):
   left_neighbor_(left_neighbor),
   right_neighbor_(right_neighbor),
   connecting_node_left_(connecting_node_left),
@@ -32,11 +32,11 @@
 /*----------------------------------------------------------------------*
  |  Determine Neighbor Elements                              meier 04/11|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(DRT::Element* element1)
+Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(const DRT::Element* element1)
 {
 
-  DRT::Element* left_neighbor=NULL;
-  DRT::Element* right_neighbor=NULL;
+  const DRT::Element* left_neighbor=NULL;
+  const DRT::Element* right_neighbor=NULL;
   int connecting_node_left=0;
   int connecting_node_right=0;
 

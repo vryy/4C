@@ -811,13 +811,16 @@ bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanHalfPerio
   const double halfofminimalperiodlength =
       0.5 * (*std::min_element(periodlengthvec.begin(), periodlengthvec.end()) );
 
-  for (int elelid=0; elelid<numroweles; ++elelid)
+  if (halfofminimalperiodlength != 0.0)
   {
-    const DRT::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
+    for (int elelid=0; elelid<numroweles; ++elelid)
+    {
+      const DRT::ELEMENTS::Beam3Base* beamele =
+          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
 
-    if (beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength)
-      return true;
+      if (beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength)
+        return true;
+    }
   }
 
   return false;
