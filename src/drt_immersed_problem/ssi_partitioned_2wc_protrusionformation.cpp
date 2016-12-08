@@ -12,7 +12,6 @@
 
  *----------------------------------------------------------------------*/
 #include "ssi_partitioned_2wc_protrusionformation.H"
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_inpar/inpar_cell.H"
 
 #include "../drt_adapter/ad_ale_fluid.H"
@@ -50,7 +49,6 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(
     const Teuchos::ParameterList& globaltimeparams)
 : SSI_Part2WC(comm, globaltimeparams),
   omega_(-1.0),
-  exchange_manager_(NULL),
   myrank_(comm.MyPID()),
   numdof_actin_(-1),
   ale_fluid_wrapper_(Teuchos::null),
@@ -160,19 +158,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::Setup()
       std::cout<<"  Number of ARP2/3 Dof (Volume) in Scalar Transport System: "<<numdof_ARP23<<std::endl;
       std::cout<<"  Number of Barbed End Dof (Volume) in Scalar Transport System: "<<numdof_BarbedEnds<<"\n"<<std::endl;
   }
-
-  // get pointer to the ImmersedFieldExchangeManager
-  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
-
-  // set pointer to the concentrations at n+1
-  exchange_manager_->SetPointerToPhinps(scatra_->ScaTraField()->Phinp());
-
-  // initialize pointer to phin at n
-  Teuchos::RCP<Epetra_MultiVector> phin = scatra_->ScaTraField()->Phin();
-  exchange_manager_->SetPointerToPhins(phin);
-
-  // set pointers to multivectors for the rates
-  exchange_manager_->SetPointerToRates(sources_);
 
   // relaxation
   omega_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("RELAX_GROWTH");

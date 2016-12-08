@@ -255,11 +255,6 @@ private:
   //! relaxation parameter for growth
   double omega_;
 
-  //! @name Data Management
-  //@{
-  DRT::ImmersedFieldExchangeManager* exchange_manager_ ; //!< manager for data exchange between fields
-  //@}
-
   //! @name Information for parallelism
   //@{
   int myrank_; //!< processor id
