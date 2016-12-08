@@ -131,7 +131,7 @@ public:
       if (lid==-1)
         return 0;
       if (element->IsFaceElement())
-        return (*numdfcolfaces_)[lid];
+        return (numdfcolfaces_ != Teuchos::null) ? (*numdfcolfaces_)[lid] : 0;
       else
         return (*numdfcolelements_)[lid];
     }
@@ -155,7 +155,7 @@ public:
       if (lid==-1)
         return -1;
       if (element->IsFaceElement())
-        return (*numdfcolfaces_)[lid]+dof;
+        return (idxcolfaces_ != Teuchos::null) ? (*idxcolfaces_)[lid]+dof : -1;
       else
         return (*idxcolelements_)[lid]+dof;
     }
@@ -194,6 +194,10 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return std::vector<int>();
+
+      if (element->IsFaceElement() && idxcolfaces_ == Teuchos::null)
+        return std::vector<int>();
+
       int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
       std::vector<int> dof(element->IsFaceElement() ?
           (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid]);
@@ -247,6 +251,10 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return;
+
+      if (element->IsFaceElement() && idxcolfaces_ == Teuchos::null)
+        return;
+
       int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
       int size = element->IsFaceElement() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid];
       for (int i=0; i<size; ++i)
