@@ -4,9 +4,14 @@
 
 \brief Algorithm to control cavitation simulations
 
-\maintainer Ursula Rasthofer
-
 \level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef SCATRA_PARTICLE_COUPLING_H
