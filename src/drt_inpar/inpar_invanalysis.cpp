@@ -325,7 +325,6 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                       stat_inv_init_dat,
                                       stat_inv_init_map),
                                     &statinvp);
-
 }
 
 

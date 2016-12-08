@@ -101,8 +101,9 @@ public:
 
   //! Set advanced reaction terms and derivatives
   virtual void SetAdvancedReactionTerms(
-      const int                                 k,          //!< index of current scalar
-      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+      const int                                 k,           //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+      const double* gpcoord                                  //!< current Gauss-point coordinates
   );
 
   //! compute pore pressure

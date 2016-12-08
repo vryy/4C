@@ -31,9 +31,11 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
   numscal_(matdata->GetInt("NUMSCAL")),
   stoich_(matdata->Get<std::vector<int> >("STOICH")),
   reaccoeff_(matdata->GetDouble("REACCOEFF")),
+  distrfunctreaccoeffid_(matdata->GetInt("DISTRFUNCT")),
   coupling_(SetCouplingType(matdata)),
   couprole_(matdata->Get<std::vector<double> >("ROLE")),
   reacstart_(matdata->Get<std::vector<double> >("REACSTART")),
+  isdistrfunctreaccoeff_(distrfunctreaccoeffid_!=0),
   isreacstart_(false),
   isinit_(false)
 {
@@ -302,18 +304,38 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
+/*-------------------------------------------------------------------------------/
+ | return reaction coefficient at Gauss-point                 Brandstaeter 11/16 |
+/-------------------------------------------------------------------------------*/
+double MAT::ScatraReactionMat::ReacCoeff(
+    const double* gpcoord
+    ) const
+{
+  if(GetIsDistrFunctReacCoeff())
+  {
+    return (params_ ->reaccoeff_)*(DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1).Evaluate(0,gpcoord,0,NULL));
+  }
+  else
+  {
+    return params_ ->reaccoeff_;
+  }
+}
+
 /*----------------------------------------------------------------------/
  | calculate advanced reaction terms                        Thon 08/16 |
 /----------------------------------------------------------------------*/
 double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
     const int k,                         //!< current scalar id
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_phi,                    //!< scaling factor for scalar values (used for reference concentrations)
+    const double* gpcoord                //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  const double reaccoeff = ReacCoeff(gpcoord);
+
+  if ( Stoich()->at(k)!=0 and fabs(reaccoeff)>1.0e-14)
   {
-    return CalcReaBodyForceTerm(k,phinp,ReacCoeff()*Stoich()->at(k),scale_phi);// scalar at integration point np
+    return CalcReaBodyForceTerm(k,phinp,reaccoeff*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
@@ -326,12 +348,15 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
     const int k,                         //!< current scalar id
     std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_phi,                    //!< scaling factor for scalar values (used for reference concentrations)
+    const double* gpcoord                                  //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  const double reaccoeff = ReacCoeff(gpcoord);
+
+  if ( Stoich()->at(k)!=0 and fabs(reaccoeff)>1.0e-14)
   {
-    CalcReaBodyForceDeriv(k,derivs,phinp,ReacCoeff()*Stoich()->at(k),scale_phi);
+    CalcReaBodyForceDeriv(k,derivs,phinp,reaccoeff*Stoich()->at(k),scale_phi);
   }
 
   return;
@@ -358,7 +383,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
     std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                    //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
   params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,*Couprole(),scale_reac,scale_phi);
@@ -373,12 +398,15 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(
     const int k,                                                     //!< current scalar id
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-    const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_phi,                                                //!< scaling factor for scalar values (used for reference concentrations)
+    const double* gpcoord                                            //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  const double reaccoeff = ReacCoeff(gpcoord);
+
+  if ( Stoich()->at(k)!=0 and fabs(reaccoeff)>1.0e-14)
   {
-    return CalcReaBodyForceTerm(k,phinp,constants,ReacCoeff()*Stoich()->at(k),scale_phi);// scalar at integration point np
+    return CalcReaBodyForceTerm(k,phinp,constants,reaccoeff*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
@@ -392,12 +420,15 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
     std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-    const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+    double scale_phi,                                                //!< scaling factor for scalar values (used for reference concentrations)
+    const double* gpcoord                                            //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff())>1.0e-14)
+  const double reaccoeff = ReacCoeff(gpcoord);
+
+  if ( Stoich()->at(k)!=0 and fabs(reaccoeff)>1.0e-14)
   {
-    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeff()*Stoich()->at(k),scale_phi);
+    CalcReaBodyForceDeriv(k,derivs,phinp,constants,reaccoeff*Stoich()->at(k),scale_phi);
   }
 
   return;
@@ -440,12 +471,13 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
 double MAT::ScatraReactionMat::CalcPermInfluence(
     const int k,                         //!< current scalar id
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const double scale                   //!< scaling factor for reference concentrations
+    const double scale,                  //!< scaling factor for reference concentrations
+    const double* gpcoord                //!< Gauss-point coordinates
     ) const
 {
   if ( not (Stoich()->at(k) > 0) )
     dserror("You need to specify a positive STOICH entry for scalar %i",k);
-  if ( fabs(ReacCoeff()) > 1.0e-14 )
+  if ( fabs(ReacCoeff(gpcoord)) > 1.0e-14 )
     dserror("You need to set REACOEFF to 0.0!");
 
   return (CalcReaBodyForceTerm(k,phinp,Stoich()->at(k),scale));

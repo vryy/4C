@@ -92,6 +92,9 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(const
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
 
+  for(int i = 0; i<my::nsd_;++i)
+   gpcoord_[i]=0.0;
+
   // safety check
   if(not my::scatrapara_->TauGP())
     dserror("For advanced reactions, tau needs to be evaluated by integration-point evaluations!");
@@ -145,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
       //Note: order is important here!!
       Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
 
-      SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
+      SetAdvancedReactionTerms(k,actmat,GetGpCoord()); //every reaction calculation stuff happens in here!!
     }
   }
 
@@ -439,16 +442,16 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTerms(
-    const int                                 k,          //!< index of current scalar
-    const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+    const int                                 k,           //!< index of current scalar
+    const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+    const double* gpcoord                                  //!< current Gauss-point coordinates
     )
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp()) ,k );
+  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),gpcoord) ,k );
 
-  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),my::scatravarmanager_->Phinp());
-
+  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),my::scatravarmanager_->Phinp(),gpcoord);
 }
 
 /*----------------------------------------------------------------------*
@@ -465,6 +468,27 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::EvalShapeFuncAndDer
   return vol;
 
 } //ScaTraImpl::EvalShapeFuncAndDerivsAtEleCenter
+
+/*------------------------------------------------------------------------------*
+ | set internal variables                                          vuong 11/14  |
+ *------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetInternalVariablesForMatAndRHS()
+{
+  my::SetInternalVariablesForMatAndRHS();
+
+  // calculate current Gauss-point coordinates from node coordinates and shape functions
+  for (int i=0;i<my::nsd_;++i)
+  {
+    gpcoord_[i]=0.0;
+   for(int k=0;k<my::nen_;++k)
+   {
+     gpcoord_[i]+=my::xyze_(i,k)*my::funct_(k);
+   }
+  }
+
+  return;
+}
 
 
 // template classes

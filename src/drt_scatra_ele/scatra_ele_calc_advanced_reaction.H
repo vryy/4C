@@ -35,9 +35,9 @@ namespace ELEMENTS
 class ScaTraEleReaManagerAdvReac;
 
 /*
- This class calls all 'advanced reaction terms' calculations and applies them correctly. Therby, no assumption on
- the shape of the (potentially nonlinear) reaction term f(c_1,...,c_n) have to be made. The actuall calculations
- of the reaction term f(c_1,...,c_n) as well as all its linearisations \partial_c f(c) are done within the material
+ This class calls all 'advanced reaction terms' calculations and applies them correctly. Thereby, no assumption on
+ the shape of the (potentially nonlinear) reaction term f(c_1,...,c_n) have to be made. The actual calculations
+ of the reaction term f(c_1,...,c_n) as well as all its linearizations \partial_c f(c) are done within the material
  MAT_matlist_reactions and MAT_scatra_reaction
  */
 template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -66,6 +66,9 @@ public:
   virtual void Done();
 
 protected:
+
+  //! set internal variables
+  virtual void SetInternalVariablesForMatAndRHS();
 
   //! get the material parameters
   virtual void GetMaterialParams(
@@ -125,17 +128,28 @@ protected:
 
   //! Set advanced reaction terms and derivatives
   virtual void SetAdvancedReactionTerms(
-      const int                                 k,          //!< index of current scalar
-      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+      const int                                 k,           //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+      const double* gpcoord                                  //!< current Gauss-point coordinates
   );
 
   //! evaluate shape functions and their derivatives at element center
   virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
-  LINALG::Matrix<my::nen_,1> funct_elementcenter_;            //! array for shape function at element center
+  //! array for shape function at element center
+  LINALG::Matrix<my::nen_,1> funct_elementcenter_;
+
+  //! get current Gauss-point coordinates
+  virtual const double* GetGpCoord() const { return gpcoord_;}
 
   //! get reaction manager for advanced reaction
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> ReaManager(){return Teuchos::rcp_static_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);};
+
+private:
+
+  //! current Gauss-point coordinates
+  double gpcoord_[my::nsd_];
+
 }; //end ScaTraEleCalcAdvReac
 
 

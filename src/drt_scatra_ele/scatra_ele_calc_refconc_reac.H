@@ -54,8 +54,9 @@ protected:
 
   //! Set reac. body force, reaction coefficient and derivatives
   virtual void SetAdvancedReactionTerms(
-      const int                                 k,          //!< index of current scalar
-      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+      const int                                 k,           //!< index of current scalar
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+      const double* gpcoord                                  //!< current Gauss-point coordinates
   );
 
   //! calculation of convective element matrix: add conservative contributions

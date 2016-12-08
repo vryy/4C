@@ -21,7 +21,7 @@
  *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::PAR::REACTIONCOUPLING::ReactionInterface>
 MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
-    MAT::PAR::reaction_coupling couplingtype,  //!< coupling type definig reaction
+    MAT::PAR::reaction_coupling couplingtype,  //!< coupling type defining reaction
     bool isreacstart,                          //!< flag for reaction start feature
     const std::vector<double>& reacstart       //!< reaction start vector
     )

@@ -80,16 +80,16 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Done()
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
-      const int                                 k,          //!< index of current scalar
-      const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+    const int                                 k,           //!< index of current scalar
+    const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+    const double* gpcoord                                  //!< current Gauss-point coordinates
   )
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
 
-  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),1.0/J_)*J_ ,k );
+  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),gpcoord,1.0/J_)*J_ ,k );
 
-  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),my::scatravarmanager_->Phinp());
-
+  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),my::scatravarmanager_->Phinp(),gpcoord);
 }
 
 /*------------------------------------------------------------------------------------------*

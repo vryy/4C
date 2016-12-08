@@ -396,8 +396,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetInternalVariablesFor
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerms(
-    const int                                 k,          //!< index of current scalar
-    const Teuchos::RCP<MAT::MatListReactions> matreaclist //!< index of current scalar
+    const int                                 k,           //!< index of current scalar
+    const Teuchos::RCP<MAT::MatListReactions> matreaclist, //!< index of current scalar
+    const double* gpcoord                                  //!< current Gauss-point coordinates
     )
 {
   FillCouplingVector();
@@ -405,14 +406,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
 
   remanager->AddToReaBodyForce(
-      matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),couplingvalues_),
+      matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),couplingvalues_,gpcoord),
       k);
 
   matreaclist->CalcReaBodyForceDerivMatrix(
       k,
       remanager->GetReaBodyForceDerivVector(k),
       my::scatravarmanager_->Phinp(),
-      couplingvalues_);
+      couplingvalues_,
+      gpcoord);
 
 }
 

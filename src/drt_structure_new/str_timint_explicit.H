@@ -55,7 +55,7 @@ namespace TIMINT {
      *  been set. */
     virtual INPAR::STR::ConvergenceStatus Solve();
 
-    //! prepare partiton step
+    //! prepare partition step
     virtual void PreparePartitionStep();
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity

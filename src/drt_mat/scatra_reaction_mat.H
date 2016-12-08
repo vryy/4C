@@ -74,7 +74,7 @@ namespace MAT
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
   MAT 4 MAT_scatra DIFFUSIVITY 0.0
   MAT 5 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING simple_multiplicative ROLE 1 1 0
+  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACCOEFF 4.0 COUPLING simple_multiplicative ROLE 1 1 0
 
   Implementation of the reaction term hence f(c)=(-(4*1*B)*A;-(4*2*A)*B;4*3*A*B) and corresponding derivatives.
 
@@ -88,7 +88,7 @@ namespace MAT
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
   MAT 4 MAT_scatra DIFFUSIVITY 0.0
   MAT 5 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -1 1 REACOEFF 5.0 COUPLING michaelis_menten ROLE -1 3 0
+  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -1 1 REACCOEFF 5.0 COUPLING michaelis_menten ROLE -1 3 0
 
   The corresponding equations are
               \partial_t A = -5*A*(B/(3+B))
@@ -99,7 +99,7 @@ namespace MAT
   positive value 3.2: multiply by B/(B+3.2) ) and STOICH does describe on which scalar the reaction term should be applied.
   Here another example:
 
-  MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING michaelis_menten ROLE -1 0 1.2 3.0
+  MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACCOEFF 2.1 COUPLING michaelis_menten ROLE -1 0 1.2 3.0
 
   The corresponding equations are
              \partial_t A =  2*2.1*A*C/(C+1.2)*D/(D+3.0)
@@ -115,7 +115,7 @@ namespace MAT
 
   MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 1 REACIDS 3 END //collect Concentrations
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 1 STOICH 2 REACOEFF 5.0 COUPLING constant ROLE 1
+  MAT 3 MAT_scatra_reaction NUMSCAL 1 STOICH 2 REACCOEFF 5.0 COUPLING constant ROLE 1
 
   The corresponding equation is:
               \partial_t A = 5*2
@@ -142,7 +142,7 @@ namespace MAT
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
   MAT 4 MAT_scatra DIFFUSIVITY 0.0
   MAT 5 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING power_multiplicative ROLE 3 2 0
+  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACCOEFF 4.0 COUPLING power_multiplicative ROLE 3 2 0
 
 
   <h3>Kinetics Defined by Function</h3>
@@ -169,7 +169,7 @@ namespace MAT
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
   MAT 4 MAT_scatra DIFFUSIVITY 0.0
   MAT 5 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING by_function ROLE 1 1 0 0
+  MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACCOEFF 2.1 COUPLING by_function ROLE 1 1 0 0
   -------------------------------------------------------------FUNCT1
   FUNCT 1 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1*phi3/(phi3+1.2)*phi4/(phi4+3.0)
 
@@ -184,17 +184,50 @@ namespace MAT
   exceeds some threshold 2.0 another reaction starts A->3*C with reaction coefficient 4.0.
 
   The corresponding equations could be:
-              \partial_t A = -(-1.0)*A - 4.0*A*(B - 2.0)_{+} (first termn postive, since equivalent as reactant with negative reaction coefficient)
+              \partial_t A = -(-1.0)*A - 4.0*A*(B - 2.0)_{+} (first term positive, since equivalent as reactant with negative reaction coefficient)
               \partial_t B = 0
               \partial_t c = 3.0*4.0*A*(B - 2.0)_{+}   (positive since product)
 
   This equation is achieved in BACI via the boundary condition:
   MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 2 2 NUMREAC 2 REACIDS 3 4 END //collect Concentrations
   MAT 2 MAT_scatra DIFFUSIVITY 0.0
-  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACOEFF -1.0 COUPLING simple_multiplicative ROLE -1 0 0
-  MAT 4 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 3 REACOEFF 4.0 COUPLING simple_multiplicative ROLE -1 -1 0 REACSTART 0.0 2.0 0.0
+  MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE -1 0 0
+  MAT 4 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 3 REACCOEFF 4.0 COUPLING simple_multiplicative ROLE -1 -1 0 REACSTART 0.0 2.0 0.0
 
   \author thon (thon@mhpc.mw.tum.de)
+
+  <h3>DISTRFUNCT Feature</h3>
+
+  spatially varying reaction coefficient
+
+  The spatial distribution is defined by a function from the input file.
+  <CODE> DISTRFUNCT </CODE> defines the corresponding function ID.
+  Its default value is <CODE> DISTRFUNCT=0 </CODE>, which implies a spatially constant reaction coefficient.
+
+  Example:<BR>
+  Assume uncoupled harmonic oscillators \f$A(x,t)\f$ with spatially linearly varying frequency \f$w(x) \in [0.5\pi, 2\pi]\f$ on the spatial domain \f$x \in [-4,4]\f$.<BR>
+  The following PDEs describe the oscillators:<BR>
+             \f{eqnarray*}{ \partial_t A &=& B\\
+                            \partial_t B &=& -w(x)^2 A\\
+                             w(x) &=& 0.5\pi+1.5\pi\frac{x+4}{8}
+              \f}
+
+  This equation is achieved in BACI via the MAT_scatra_reaction material:
+
+  <CODE>
+          MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2  MATIDS 2 2 NUMREAC 2 REACIDS 4 5 END //collect Concentrations<BR>
+          MAT 2 MAT_scatra DIFFUSIVITY 0.0<BR>
+          MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH  1 0 REACCOEFF  1.0 DISTRFUNCT 0 COUPLING simple_multiplicative ROLE 0 1<BR>
+          MAT 5 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF -1.0 DISTRFUNCT 2 COUPLING simple_multiplicative ROLE 1 0<BR>
+          -------------------------------------------------------------FUNCT2<BR>
+          FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION (0.5*pi+(x+4)*1.5*pi/8)^2
+  </CODE>
+
+  Note: In <CODE> MAT 4 </CODE>, the value of <CODE>DISTRFUNCT=0</CODE> implies a spatially constant reaction coefficient.
+        Since zero is the default value, it is, however, not necessary to define explicitly define a reaction coefficient as spatially constant by stating <CODE>DISTRFUNCT 0</CODE>.
+        Stating <CODE>DISTRFUNCT 0</CODE> may be omitted.
+
+  \author Sebastian Brandstäter (brandstaeter@lnm.mw.tum.de)
   */
 
   /*----------------------------------------------------------------------*/
@@ -229,6 +262,9 @@ namespace MAT
     /// reaction coefficient
     const double reaccoeff_;
 
+    /// ID of function describing spatial distribution of reaction coefficient
+    const int distrfunctreaccoeffid_;
+
     /// type of coupling
     const MAT::PAR::reaction_coupling coupling_;
 
@@ -237,6 +273,9 @@ namespace MAT
 
     /// parameter to define start of reaction
     const std::vector<double>* reacstart_;
+
+    /// flag if there is a spatial distribution of reaction coefficient
+    const bool isdistrfunctreaccoeff_;
 
     /// flag if there is a reacstart value
     bool isreacstart_;
@@ -247,7 +286,7 @@ namespace MAT
     /// implementation of reaction coupling
     Teuchos::RCP<REACTIONCOUPLING::ReactionInterface> reaction_;
 
-  };  // class Scatra
+  };  // class ScatraReactionMat
 
   } // namespace PAR
 
@@ -264,7 +303,7 @@ namespace MAT
   private:
 
     static ScatraReactionMatType instance_;
-  };
+  }; // class ScatraReactionMatType
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
@@ -333,7 +372,8 @@ namespace MAT
     double CalcPermInfluence(
         const int k,                         //!< current scalar id
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const double scale                   //!< scaling factor for reference concentrations
+        const double scale,                  //!< scaling factor for reference concentrations
+        const double* gpcoord                //!< Gauss-point coordinates
         ) const;
 
     void CalcPermInfluenceDeriv(
@@ -344,9 +384,21 @@ namespace MAT
         ) const;
 
   protected:
+    /// return ID of function for spatial distribution of reaction coefficient
+    int DisFunctReacCoeffID() const { return params_->distrfunctreaccoeffid_; }
 
-    /// return reaction coefficient
-    virtual double ReacCoeff() const { return params_->reaccoeff_; }
+    //! Return reaction coefficient at Gauss-point
+    /*!
+         Depending on whether the reaction coefficient is defined as spatially varying
+         or not (see MAT::PAR::ScatraReactionMat::isdistrfunctreaccoeff_ ), the reaction coefficient defined by <CODE> REACCOEFF </CODE> (see MAT::PAR::ScatraReactionMat::reaccoeff_ )
+         is either updated by evaluating the distribution function <CODE> DISTRFUNCT </CODE> (see MAT::PAR::ScatraReactionMat::distrfunctreaccoeffid_ )
+         at the Gauss-point coodinates, or left as is.
+
+         \return reaction coefficient at Gauss-point (double)
+       */
+    virtual double ReacCoeff(
+        const double* gpcoord  //!< Gauss-point coordinates
+        ) const;
 
     /// return stoichometrie
     const std::vector<int>* Stoich() const { return params_->stoich_; }
@@ -363,6 +415,9 @@ namespace MAT
     /// return flag if there is a reacstart value
     bool IsReacStart() const { return params_->isreacstart_; }
 
+    /// return flag if there is a spatial distribution function for the reaction coefficient
+    bool GetIsDistrFunctReacCoeff() const { return params_->isdistrfunctreaccoeff_; }
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -370,7 +425,8 @@ namespace MAT
     double CalcReaBodyForceTerm(
         const int k,                         //!< current scalar id
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+        const double scale_phi,              //!< scaling factor for scalar values (used for reference concentrations)
+        const double* gpcoord                //!< Gauss-point coordinates
         ) const;
 
     /// calculate advanced reaction term derivatives
@@ -378,7 +434,8 @@ namespace MAT
         const int k,                         //!< current scalar id
         std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-        const double scale_phi               //!< scaling factor for scalar values (used for reference concentrations)
+        const double scale_phi,              //!< scaling factor for scalar values (used for reference concentrations)
+        const double* gpcoord                //!< Gauss-point coordinates
         ) const;
 
     /// calculate advanced reaction terms
@@ -386,7 +443,8 @@ namespace MAT
         const int k,                                                     //!< current scalar id
         const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-        const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+        const double scale_phi,                                          //!< scaling factor for scalar values (used for reference concentrations)
+        const double* gpcoord                                            //!< Gauss-point coordinates
         ) const;
 
     /// calculate advanced reaction term derivatives
@@ -395,7 +453,8 @@ namespace MAT
         std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-        const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
+        const double scale_phi,                                          //!< scaling factor for scalar values (used for reference concentrations)
+        const double* gpcoord                                            //!< Gauss-point coordinates
         ) const;
 
   private:
@@ -440,8 +499,8 @@ namespace MAT
 
     /// my material parameters
     MAT::PAR::ScatraReactionMat* params_;
-  };
+  }; // class ScatraReactionMat
 
-}
+} // namespace MAT
 
 #endif

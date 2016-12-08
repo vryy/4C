@@ -245,6 +245,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedIntVector(m,"STOICH","reaction stoichometrie list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
     AddNamedReal(m,"REACSCALE","scaling for reaction coefficient");
+    // reacscale could now be done by constant distribution function
+    AddNamedInt(m,"DISTRFUNCT","spatial distribution of reaction coefficient",0,true);
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL");
     AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
@@ -262,6 +264,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMSCAL","number of scalars for these elements");
     AddNamedIntVector(m,"STOICH","reaction stoichometrie list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
+    AddNamedInt(m,"DISTRFUNCT","spatial distribution of reaction coefficient",0,true);
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL");
     AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);

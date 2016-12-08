@@ -133,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
       //Note: order is important here!!
       advreac::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
 
-      advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
+      advreac::SetAdvancedReactionTerms(k,actmat,advreac::GetGpCoord()); //every reaction calculation stuff happens in here!!
     }
   }
 
@@ -168,7 +168,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
 
       //Note: order is important here!!
       my::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
-      advreac::SetAdvancedReactionTerms(k,actmat); //every reaction calculation stuff happens in here!!
+      advreac::SetAdvancedReactionTerms(k,actmat,advreac::GetGpCoord()); //every reaction calculation stuff happens in here!!
     }
   }
 
