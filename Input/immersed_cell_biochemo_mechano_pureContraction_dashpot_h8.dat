@@ -1,5 +1,5 @@
 //
-// \maintainer Andreas Rauch
+// Maintainer: Andreas Rauch
 //             rauch@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15240
@@ -35,7 +35,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     100
 NUMSTEP                         2
 TIMESTEP                        0.5
-MAXTIME                         2.0
+MAXTIME                         1.0
 -----------------------------------CELL DYNAMIC/SCALAR TRANSPORT DOF IDS
 ACTIN_MONOMER                    8
 ROCK                             6
@@ -115,7 +115,7 @@ COUPVARIABLE_FSI                Force //Force //Displacement
 COUPVARIABLE_ADHESION           Force //Force //Displacement
 COUPMETHOD                      immersed
 BASETOL                         0.001
-CONVTOL                         1e-02
+CONVTOL                         1e-00
 RELAX                           1.0
 MAXOMEGA                        0
 ITEMAX                          25
@@ -127,7 +127,7 @@ SCATRATYPE                      Advanced_Reaction
 MAXOMEGA                        10
 MINOMEGA                        0.1
 STARTOMEGA                      1
-CONVTOL                         1e-04
+CONVTOL                         1e-05
 ------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        conservative
 GAMMA                           0.5
@@ -349,7 +349,7 @@ SCATRA DIS cellscatra NODE 675 QUANTITY phi3 VALUE 1.17838370901993950e-01 TOLER
 SCATRA DIS cellscatra NODE 675 QUANTITY phi4 VALUE 8.80612639523403816e-05 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi5 VALUE 5.74470165344065031e-01 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi6 VALUE 2.55098786047762566e-02 TOLERANCE 1e-5
-SCATRA DIS cellscatra NODE 675 QUANTITY phi7 VALUE 1.40560685152901570e-03 TOLERANCE 1e-5
+SCATRA DIS cellscatra NODE 675 QUANTITY phi7 VALUE 1.41631786389974780e-03 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi8 VALUE 9.46742480403357962e-03 TOLERANCE 1e-5
 //
 SCATRA DIS cellscatra NODE 779 QUANTITY  phi VALUE 1.07671164326996527e-01 TOLERANCE 1e-5
@@ -358,7 +358,7 @@ SCATRA DIS cellscatra NODE 779 QUANTITY phi3 VALUE 1.17840210541646687e-01 TOLER
 SCATRA DIS cellscatra NODE 779 QUANTITY phi4 VALUE 8.57150343563293203e-05 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 779 QUANTITY phi5 VALUE 5.74474691799033321e-01 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 779 QUANTITY phi6 VALUE 2.55097589771080442e-02 TOLERANCE 1e-5
-SCATRA DIS cellscatra NODE 779 QUANTITY phi7 VALUE 1.40728164947271847e-03 TOLERANCE 1e-5
+SCATRA DIS cellscatra NODE 779 QUANTITY phi7 VALUE 1.41786820107294136e-03 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 779 QUANTITY phi8 VALUE 9.46832691927965500e-03 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
