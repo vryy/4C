@@ -56,9 +56,9 @@ private:
 
   Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
 
-  bool havecardio_windkesselonly_;
+  bool havecardio_4elementwindkessel_;
   bool havecardio_arterialproxdist_;
-  bool havecardio_arterialvenoussyspulcoupled_;
+  bool havecardio_syspulcirculation_;
 
 };
 

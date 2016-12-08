@@ -31,11 +31,10 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition.H"
 #include "cardiovascular0d.H"
-#include "cardiovascular0d_windkesselonly.H"
+#include "cardiovascular0d_4elementwindkessel.H"
 #include "cardiovascular0d_arterialproxdist.H"
-#include "cardiovascular0d_arterialvenoussyspulcoupled.H"
-
 #include "cardiovascular0d_resulttest.H"
+#include "cardiovascular0d_syspulcirculation.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
@@ -95,19 +94,19 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   Cardiovascular0DID_=0;
   offsetID_=10000;
 
-  cardvasc0d_model_=Teuchos::rcp(new Cardiovascular0DWindkesselOnly(actdisc_,"",currentID));
+  cardvasc0d_model_=Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"",currentID));
   //Check what kind of Cardiovascular0D boundary conditions there are
-  cardvasc0d_windkesselonly_=Teuchos::rcp(new Cardiovascular0DWindkesselOnly(actdisc_,"Cardiovascular0DWindkesselOnlyStructureCond",currentID));
+  cardvasc0d_4elementwindkessel_=Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"Cardiovascular0D4ElementWindkesselStructureCond",currentID));
   cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0DArterialProxDist(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",currentID));
-  cardvasc0d_arterialvenoussyspulcoupled_=Teuchos::rcp(new Cardiovascular0DArterialVenousSysPulCoupled(actdisc_,"Cardiovascular0DArterialVenousSysPulCoupledStructureCond",currentID));
+  cardvasc0d_syspulcirculation_=Teuchos::rcp(new Cardiovascular0DSysPulCirculation(actdisc_,"Cardiovascular0DSysPulCirculationStructureCond",currentID));
 
-  havecardiovascular0d_ = (cardvasc0d_windkesselonly_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D());
+  havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_syspulcirculation_->HaveCardiovascular0D());
 
-  if (cardvasc0d_windkesselonly_->HaveCardiovascular0D())
+  if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
   {
-    cardvasc0d_model_ = cardvasc0d_windkesselonly_;
+    cardvasc0d_model_ = cardvasc0d_4elementwindkessel_;
     // dof vector for ONE 0D cardiovascular condition of this type: [p  q  s]^T
-    numCardiovascular0DID_ = 3 * cardvasc0d_windkesselonly_->GetCardiovascular0DCondition().size();
+    numCardiovascular0DID_ = 3 * cardvasc0d_4elementwindkessel_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
   {
@@ -115,15 +114,15 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     // dof vector for ONE 0D cardiovascular condition of this type: [p_v  p_arp  q_arp  p_ard]^T
     numCardiovascular0DID_ = 4 * cardvasc0d_arterialproxdist_->GetCardiovascular0DCondition().size();
   }
-  if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+  if (cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
   {
-    cardvasc0d_model_ = cardvasc0d_arterialvenoussyspulcoupled_;
+    cardvasc0d_model_ = cardvasc0d_syspulcirculation_;
     // dof vector for 0D cardiovascular condition of this type:
     // [p_at_l  q_vin_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  p_at_r  q_vin_r  q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
     numCardiovascular0DID_ = 16;
   }
 
-  if (cardvasc0d_windkesselonly_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+  if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
   {
     cardiovascular0ddofset_ = Teuchos::rcp(new Cardiovascular0DDofSet());
     cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0);
@@ -449,20 +448,20 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
 
     DRT::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6,0.0);
-    if (cardvasc0d_windkesselonly_->HaveCardiovascular0D()) newval[0] = -(*actpres)[3*id_strcoupcond];
+    if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D()) newval[0] = -(*actpres)[3*id_strcoupcond];
     if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D()) newval[0] = -(*actpres)[4*id_strcoupcond];
 
-    if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+    if (cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
     {
-      for (unsigned int j = 0; j < cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition().size(); ++j)
+      for (unsigned int j = 0; j < cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition().size(); ++j)
       {
-        DRT::Condition& cond = *(cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition()[j]);
+        DRT::Condition& cond = *(cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]);
         int id_cardvasc0d = cond.GetInt("id");
 
         if (id_strcoupcond == id_cardvasc0d)
         {
           const std::string* conditiontype =
-              cardvasc0d_arterialvenoussyspulcoupled_->GetCardiovascular0DCondition()[j]->Get<std::string>("type");
+              cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]->Get<std::string>("type");
           if (*conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (*conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
           if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -537,7 +536,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
 
     for (unsigned int i=0; i<currentID.size(); ++i)
     {
-      if (cardvasc0d_windkesselonly_->HaveCardiovascular0D())
+      if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
       {
         printf("Cardiovascular0D output id%2d:\n",currentID[i]);
         printf("%2d p: %10.16e \n",currentID[i],(*cv0ddof_m_red)[i]);
@@ -561,7 +560,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
       }
     }
 
-    if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D())
+    if (cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
     {
       printf("p_at_l: %10.16e \n",(*cv0ddof_m_red)[0]);
       printf("q_vin_l: %10.16e \n",(*cv0ddof_m_red)[1]);

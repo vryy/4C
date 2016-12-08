@@ -374,17 +374,17 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
 
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
-  std::vector<DRT::Condition*> cardiovasc0dcond_windkesselonly(0);
+  std::vector<DRT::Condition*> cardiovasc0dcond_4elementwindkessel(0);
   std::vector<DRT::Condition*> cardiovasc0dcond_arterialproxdist(0);
-  std::vector<DRT::Condition*> cardiovasc0dcond_arterialvenoussyspulcoupled(0);
-  actdis_->GetCondition("Cardiovascular0DWindkesselOnlyStructureCond",cardiovasc0dcond_windkesselonly);
+  std::vector<DRT::Condition*> cardiovasc0dcond_syspulcirculation(0);
+  actdis_->GetCondition("Cardiovascular0D4ElementWindkesselStructureCond",cardiovasc0dcond_4elementwindkessel);
   actdis_->GetCondition("Cardiovascular0DArterialProxDistStructureCond",
       cardiovasc0dcond_arterialproxdist);
-  actdis_->GetCondition("Cardiovascular0DArterialVenousSysPulCoupledStructureCond",
-      cardiovasc0dcond_arterialvenoussyspulcoupled);
-  if (cardiovasc0dcond_windkesselonly.size() or
+  actdis_->GetCondition("Cardiovascular0DSysPulCirculationStructureCond",
+      cardiovasc0dcond_syspulcirculation);
+  if (cardiovasc0dcond_4elementwindkessel.size() or
       cardiovasc0dcond_arterialproxdist.size() or
-      cardiovasc0dcond_arterialvenoussyspulcoupled.size())
+      cardiovasc0dcond_syspulcirculation.size())
     modeltypes.insert(INPAR::STR::model_cardiovascular0d);
 
   // ---------------------------------------------------------------------------

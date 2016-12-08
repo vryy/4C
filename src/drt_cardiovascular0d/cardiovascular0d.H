@@ -52,9 +52,9 @@ namespace UTILS
     enum Cardiovascular0DType
     {
       none,
-      cardvasc0d_windkesselonly,
+      cardvasc0d_4elementwindkessel,
       cardvasc0d_arterialproxdist,
-      cardvasc0d_arterialvenoussyspulcoupled
+      cardvasc0d_syspulcirculation
     };
 
     /*!

@@ -72,9 +72,9 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
     //if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size()) dserror("Coupling conditions do not match cardiovascular0d conditions!");
 
-    // set model used for atria - just needed for CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED model
+    // set model used for atria - just needed for CARDIOVASCULAR 0D SYS-PUL CIRCULATION model
     Teuchos::ParameterList artvensyspulpar =
-        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED PARAMETERS");
+        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
     atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
     ventricle_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(artvensyspulpar,"VENTRICLE_MODEL");
 
@@ -85,7 +85,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     }
 
     // safety checks for closed-loop vascular model
-    if(cardiovascular0dtype_ == cardvasc0d_arterialvenoussyspulcoupled)
+    if(cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
     {
       std::vector<const std::string*> condtype(cardiovascular0dcond_.size());
       for (unsigned int i=0; i<cardiovascular0dcond_.size(); i++)
@@ -152,7 +152,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
         default:
           dserror("Unknown ATRIUM_MODEL!");
       } // end of switch
-    } // end if (cardiovascular0dtype_ == cardvasc0d_arterialvenoussyspulcoupled)
+    } // end if (cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
 
     std::vector<int> coupcondID(cardiovascular0dstructcoupcond_.size());
     //set Neumann line to condition
@@ -199,12 +199,12 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
  *-----------------------------------------------------------------------*/
 UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::GetCardiovascular0DType(const std::string& name)
 {
-  if (name=="Cardiovascular0DWindkesselOnlyStructureCond")
-    return cardvasc0d_windkesselonly;
+  if (name=="Cardiovascular0D4ElementWindkesselStructureCond")
+    return cardvasc0d_4elementwindkessel;
   else if (name=="Cardiovascular0DArterialProxDistStructureCond")
     return cardvasc0d_arterialproxdist;
-  else if (name=="Cardiovascular0DArterialVenousSysPulCoupledStructureCond")
-    return cardvasc0d_arterialvenoussyspulcoupled;
+  else if (name=="Cardiovascular0DSysPulCirculationStructureCond")
+    return cardvasc0d_syspulcirculation;
   return none;
 }
 
@@ -256,13 +256,13 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
   // choose action
   switch (cardiovascular0dtype_)
   {
-  case cardvasc0d_windkesselonly:
+  case cardvasc0d_4elementwindkessel:
     numdof_per_cond = 3;
     break;
   case cardvasc0d_arterialproxdist:
     numdof_per_cond = 4;
     break;
-  case cardvasc0d_arterialvenoussyspulcoupled:
+  case cardvasc0d_syspulcirculation:
     break;
   case none:
     return;
@@ -410,13 +410,13 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       // choose action
       switch (cardiovascular0dtype_)
       {
-      case cardvasc0d_windkesselonly:
+      case cardvasc0d_4elementwindkessel:
         colvec[0]=gindex[0];
         break;
       case cardvasc0d_arterialproxdist:
         colvec[0]=gindex[0];
         break;
-      case cardvasc0d_arterialvenoussyspulcoupled:
+      case cardvasc0d_syspulcirculation:
       {
         for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
         {

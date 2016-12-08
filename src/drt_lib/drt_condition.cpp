@@ -157,9 +157,9 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeMonitor_3D)              os << "Volume monitor condition: ";
   else if (Type()==AreaMonitor_3D)                os << "Area monitor condition: ";
   else if (Type()==AreaMonitor_2D)                os << "Area monitor condition: ";
-  else if (Type()==Cardiovascular0DWindkesselOnly_Structure) os << "Surface 0D cardiovascular windkessel condition: ";
+  else if (Type()==Cardiovascular0D4ElementWindkessel_Structure) os << "Surface 0D cardiovascular 4-element windkessel condition: ";
   else if (Type()==Cardiovascular0DArterialProxDist_Structure) os << "Surface 0D cardiovascular arterial prox dist condition: ";
-  else if (Type()==Cardiovascular0DArterialVenousSysPulCoupled_Structure) os << "Surface 0D cardiovascular arterial venous sys pul coupled condition: ";
+  else if (Type()==Cardiovascular0DSysPulCirculation_Structure) os << "Surface 0D cardiovascular sys-pul circulation condition: ";
   else if (Type()==Cardiovascular0DStructureCoupling)   os << "Surface 0D cardiovascular-structure coupling condition: ";
   else if (Type()==ImpedanceCond)                 os << "Impedance boundary condition: ";
   else if (Type()==Impedance_Calb_Cond)           os << "Impedance calibration boundary condition: ";

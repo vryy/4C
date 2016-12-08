@@ -327,9 +327,9 @@ namespace UTILS
       const Teuchos::RCP<Epetra_Vector> rhsstandard  ///< standard right hand side
     );
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DWindkesselOnly()
+    Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()
     {
-      return cardvasc0d_windkesselonly_;
+      return cardvasc0d_4elementwindkessel_;
     }
 
     Teuchos::RCP<Cardiovascular0D> GetCardvasc0DArterialProxDist()
@@ -337,9 +337,9 @@ namespace UTILS
       return cardvasc0d_arterialproxdist_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DArterialVenousSysPulCoupled()
+    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DSysPulCirculation()
     {
-      return cardvasc0d_arterialvenoussyspulcoupled_;
+      return cardvasc0d_syspulcirculation_;
     }
 
   private:
@@ -381,9 +381,9 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseMatrix> cardiovascular0dstiffness_;  ///< additional rectangular matrix
     bool havecardiovascular0d_;  ///< are there Cardiovascular0D bcs at all?
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_model_;
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_windkesselonly_;
+    Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialvenoussyspulcoupled_;
+    Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called

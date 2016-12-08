@@ -26,9 +26,9 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(UTILS::Cardiovascular0DMa
   : DRT::ResultTest("CARDIOVASCULAR0D"),
     actdisc_(discr),
     cardvasc0d_dof_(cardvasc0dman.Get0D_dof_m()), // cardiovascular 0D dofs at generalized mid-point t_{n+\theta}
-    havecardio_windkesselonly_(cardvasc0dman.GetCardvasc0DWindkesselOnly()->HaveCardiovascular0D()),
+    havecardio_4elementwindkessel_(cardvasc0dman.GetCardvasc0D4ElementWindkessel()->HaveCardiovascular0D()),
     havecardio_arterialproxdist_(cardvasc0dman.GetCardvasc0DArterialProxDist()->HaveCardiovascular0D()),
-    havecardio_arterialvenoussyspulcoupled_(cardvasc0dman.GetCardvasc0DArterialVenousSysPulCoupled()->HaveCardiovascular0D())
+    havecardio_syspulcirculation_(cardvasc0dman.GetCardvasc0DSysPulCirculation()->HaveCardiovascular0D())
 {
   //empty
 }
@@ -49,13 +49,13 @@ void Cardiovascular0DResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, in
 
   bool havegid = false;
 
-  if (havecardio_windkesselonly_)
-    dserror("Testing not implemented for WindkesselOnly model!");
+  if (havecardio_4elementwindkessel_)
+    dserror("Testing not implemented for 4ElementWindkessel model!");
 
   if (havecardio_arterialproxdist_)
     dserror("Testing not implemented for ArterialProxDist model!");
 
-  if (havecardio_arterialvenoussyspulcoupled_)
+  if (havecardio_syspulcirculation_)
   {
     // test for left atrial pressure
     if ( quantity == "p_at_l" )
