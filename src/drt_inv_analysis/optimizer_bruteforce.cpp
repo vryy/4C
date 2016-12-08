@@ -17,6 +17,7 @@
 
 #include "invana_base.H"
 #include "matpar_manager.H"
+#include "objective_funct.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <fstream>
@@ -44,11 +45,24 @@ void INVANA::OptimizerBruteForce::Integrate()
   // only the first vector has optimization parameters
   Epetra_Vector params(*(OptProb()->Matman()->InitialParams()(0)));
 
-  int nsamples=1000;
-
-  double rlower = -2.0;
+  // create linspace
+  double rlower = 0.0;
   double rupper = 1.0;
+  int nsamples = 100;
+  std::istringstream bflinspace(Teuchos::getNumericStringParameter(Inpar(),"BFLINSPACE"));
+  std::string word;
+  int wordi=0;
+  while (bflinspace >> word)
+  {
+    if (wordi == 0)
+      rlower = std::atof(word.c_str());
+    else if (wordi == 1)
+      rupper = std::atof(word.c_str());
+    else if (wordi == 2)
+      nsamples = std::atoi(word.c_str());
 
+    wordi+=1;
+  }
   double dr = (rupper-rlower)/nsamples;
 
   std::vector<double> func(nsamples);
@@ -56,28 +70,39 @@ void INVANA::OptimizerBruteForce::Integrate()
   double* p;
   params.ExtractView(&p);
 
-  std::cout << "sampling in the range " << p[0]+rlower << " - " << p[0]+rupper << std::endl;
+  if (OptProb()->Comm().MyPID()==0)
+  {
+    printf("Sampling a %d steps in the interval [%.2f,%.2f]\n", nsamples, rlower, rupper);
+    fflush(stdout);
+  }
 
-  double p0 = p[0]+rlower;
-  p[0] = p0;
+  double p0 = rlower;
+  if (OptProb()->Comm().MyPID()==0)
+    p[0] = p0;
 
+  double prob_scale_fac = OptProb()->ObjectiveFunct()->GetScaleFac();
   for (int i=0; i<nsamples; i++)
   {
     OptProb()->Evaluate(params,&func[i],Teuchos::null);
-    p[0] += dr;
+    func[i] /= prob_scale_fac;
+    if (OptProb()->Comm().MyPID()==0)
+      p[0] += dr;
   }
 
-  std::ofstream myfile ("sampling.txt");
-  if (myfile.is_open())
+  if (OptProb()->Comm().MyPID()==0)
   {
-    for (int i=0; i<nsamples; i++)
+    std::ofstream myfile ("sampling.txt");
+    if (myfile.is_open())
     {
-      myfile << p0 <<  " " << func[i] << "\n";
-      p0 += dr;
+      for (int i=0; i<nsamples; i++)
+      {
+        myfile << p0 <<  " " << func[i] << "\n";
+        p0 += dr;
+      }
+      myfile.close();
     }
-    myfile.close();
+    else std::cout << "Unable to open file";
   }
-  else std::cout << "Unable to open file";
 
   return;
 }

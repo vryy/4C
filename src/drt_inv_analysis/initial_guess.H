@@ -52,6 +52,17 @@ class InvanaBase;
 /*! \class InitialGuess
  * \brief Initial guess for optimization problems
  *
+ * By accessing the different parametrization classes of the
+ * INVANA::MatParManager, it provides a unique interface for
+ * the INVANA::Optimizer classes.
+ *
+ * It generally provides an initial guess point estimate, called
+ * "mean" and potentially an initial guess of a covariance matrix.
+ * The latter is only possible if the inverse analysis has a
+ * parametrization which needs a "maximum a posterior/variational
+ * bayes"-precursor simulation. This provides estimates of the
+ * posterior mean and covariance. The latter as INVANA::DcsMatrix.
+ *
  * \author kehl \date 08/2016
 */
 class InitialGuess
@@ -150,8 +161,9 @@ private:
    * return result.
    */
   void ProjecttoBasis(
-      const Epetra_CrsMatrix& projector, ///[in] projection matrix
-      DcsMatrix& toproject ///[in] matrix to be projected
+      const Epetra_CrsMatrix& projector, ///[in] R in RAP
+      DcsMatrix& toproject, ///[in] matrix to be projected A in RAP
+      const Epetra_CrsMatrix& prolongator ///[in] P in RAP
       );
   //@}
 

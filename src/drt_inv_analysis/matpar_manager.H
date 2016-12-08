@@ -23,7 +23,9 @@
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
+
 #include "../drt_inpar/inpar_statinvanalysis.H"
+#include "DcsMatrix.H"
 
 // forward declarations
 namespace DRT
@@ -53,23 +55,17 @@ class ConnectivityData
 
 public:
    // constructor
-  ConnectivityData(Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor, Teuchos::RCP<Epetra_CrsMatrix> graph)
+  ConnectivityData(Teuchos::RCP<Epetra_CrsMatrix> graph)
   {
-    mapextractor_=mapextractor;
     graph_=graph;
   }
 
   // destructor
   virtual ~ConnectivityData() {}
 
-  Teuchos::RCP<LINALG::MultiMapExtractor> MapExtractor() { return mapextractor_;}
-
   Teuchos::RCP<Epetra_CrsMatrix> AdjacencyMatrix() { return graph_;}
 
 private:
-
-  // maps of different blocks of parameters
-  Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor_;
 
   //! graph to hold the connectivity of parameters inside a vector of parameters
   Teuchos::RCP<Epetra_CrsMatrix> graph_;
@@ -230,6 +226,9 @@ public:
   //! Get 'raw' optimization parameters mapped to the elements
   Teuchos::RCP<Epetra_MultiVector> GetRawParams();
 
+  //! Get projected matrix diagonal from an INVANA::DcsMatrix
+  Teuchos::RCP<Epetra_MultiVector> GetMatrixDiagonal(DcsMatrix& matrix);
+
   //! Return vector index of a given material parameter <string> into loc
   int GetParameterLocation(int eleid, std::string name);
   //@}
@@ -252,9 +251,18 @@ protected:
   /*! \brief Get current material parameters
    *
    * Let a vector of element-wise row-layout be filled
-   * according to the actual parameterization.
+   * according to the projection of the of the actual
+   * optimization parameters
    */
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
+
+  /*! \brief Get current material parameters
+   *
+   * Let a vector of element-wise row-layout be filled
+   * according to the projection of the actual parametrization
+   * to an INVANA::DcsMatrix. And return the diagonal.
+   */
+  virtual void ApplyParametrization(DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals) = 0;
 
   //! Set material parameters to the discretization
   void SetParams();
@@ -335,6 +343,17 @@ protected:
 
   //! inidicates meta parametrization of the material parameters
   INVANA::MetaParametrization metaparams_;
+
+  //!@name  Communication utilities
+  //@{
+
+  //! The local problems communicator
+  const Epetra_Comm& Comm();
+
+  //! The overall global Communicator (e.g. in case of nested parallelity)
+  const Epetra_Comm& GComm();
+  //@}
+
 
   //! @name To go away
   //@{

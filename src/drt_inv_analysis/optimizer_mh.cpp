@@ -129,9 +129,14 @@ void INVANA::OptimizerMH::SetupParticles()
   particles_ = Teuchos::rcp(new INVANA::ParticleData());
   particles_->Init(SolLayoutMap());
 
-  // init results to zero
-  mean_ = Teuchos::rcp(new Epetra_Vector(SolLayoutMap()));
-  stddev_ = Teuchos::rcp(new Epetra_Vector(SolLayoutMap()));
+  // init statistical results
+  // (the results are elementwise projected visualizations of
+  //  the optimization parameters)
+  Teuchos::RCP<Epetra_MultiVector> visstate = OptProb()->Matman()->GetRawParams();
+  mean_ = Teuchos::rcp(new
+      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),false));
+  stddev_ = Teuchos::rcp(new
+      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),false));
 
   return;
 }
@@ -211,7 +216,7 @@ void INVANA::OptimizerMH::Integrate()
     std::cout << "(Group "<< mygroup_ << ") Particle initialized" << std::endl;
 
   // a dummy for the stddev update
-  Epetra_Vector dummy(SolLayoutMap());
+  Epetra_MultiVector dummy(stddev_->Map(),stddev_->NumVectors(),true);
 
   // scale for the mixture
   // (=1.0 for plain metropolis hastings!)
@@ -266,17 +271,26 @@ void INVANA::OptimizerMH::Integrate()
     // update statistic
     if (runc_>=burnin_)
     {
+      // get visualized elementwise parameters
+      Teuchos::RCP<Epetra_MultiVector> state;
+      state = OptProb()->Matman()->GetRawParams();
+
       // update mean
-      mean_->Update(1.0,particles_->GetState(),1.0);
+      mean_->Update(1.0,*state,1.0);
 
       // update standard deviation
-      double* vals;
-      dummy.Scale(1.0,particles_->GetState());
-      dummy.ExtractView(&vals);
-      for (int i=0; i<dummy.MyLength(); i++)
-        vals[i] = vals[i]*vals[i];
-
+      dummy.Scale(1.0,*state);
+      const int numvecs = dummy.NumVectors();
+      const int mylength = dummy.MyLength();
+      double** vals = dummy.Pointers();
+      for (int j=0; j<numvecs; j++)
+      {
+        double* const vecj = vals[j];
+        for (int i=0; i<mylength; i++)
+          vecj[i] = vecj[i]*vecj[i];
+      }
       stddev_->Update(1.0,dummy,1.0);
+
     }
 
     if (restartevry_)
@@ -298,108 +312,86 @@ void INVANA::OptimizerMH::Integrate()
   // -------- finalize groupwise statistic
   mean_->Scale(1.0/numsamples);
 
-  dummy.Scale(1.0, *mean_);
-  double* vals;
-  dummy.ExtractView(&vals);
-  for (int i=0; i<dummy.MyLength(); i++)
-    vals[i] = vals[i]*vals[i];
-
+  dummy.Scale(1.0,*mean_);
+  const int numvecs = dummy.NumVectors();
+  const int mylength = dummy.MyLength();
+  double** vals = dummy.Pointers();
+  for (int j=0; j<numvecs; j++)
+  {
+    double* const vecj = vals[j];
+    for (int i=0; i<mylength; i++)
+      vecj[i] = vecj[i]*vecj[i];
+  }
   stddev_->Update(-1.0, dummy, 1.0/numsamples);
   // -------- end
 
   // -------- communicate all to group 0
-  // use ParticleData to communicate stuff around
-  Teuchos::RCP<ParticleData> samplemean = Teuchos::rcp(new ParticleData());
-  samplemean->Init(SolLayoutMap());
-  samplemean->SetState(*mean_);
-
-  Teuchos::RCP<ParticleData> samplestdev = Teuchos::rcp(new ParticleData());
-  samplestdev->Init(SolLayoutMap());
-  samplestdev->SetState(*stddev_);
-
-  // put data into map
-  std::map<int, Teuchos::RCP<ParticleData> > data_mean;
-  std::map<int, Teuchos::RCP<ParticleData> > data_stdev;
-  data_mean[mygroup_] = samplemean;
-  data_stdev[mygroup_] = samplestdev;
-
-  // construct exporter
-  // particle ids
-  std::vector<int> mypgids(1,mygroup_);
-  std::vector<int> pgids(ngroups_);
-  pcomm_->IComm().GatherAll(&mypgids[0], &pgids[0],1);
-
-  // set up tomap and frommap
-  Epetra_Map frommap(-1,1,&mypgids[0],0,pcomm_->IComm());
-  Epetra_Map tomap(-1,ngroups_,&pgids[0],0,pcomm_->IComm());
-
-  //export
-  DRT::Exporter ex(frommap,tomap,pcomm_->IComm());
-  ex.Export(data_mean);
-  ex.Export(data_stdev);
-  // -------- end
-
-  // -------- average on group 0
-  dummy.Scale(0.0);
-  if (mygroup_ == 0)
+  for (int i=0; i<mean_->NumVectors(); i++)
   {
-    unsigned int size = data_mean.size();
+    // use ParticleData to communicate stuff around
+    Teuchos::RCP<ParticleData> samplemean = Teuchos::rcp(new ParticleData());
+    samplemean->Init(mean_->Map());
+    samplemean->SetState(*(*mean_)(i));
 
-    // average mean
-    std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
-    for (it=data_mean.begin(); it!=data_mean.end(); it++)
-      dummy.Update(1.0, it->second->GetState(), 1.0);
+    Teuchos::RCP<ParticleData> samplestdev = Teuchos::rcp(new ParticleData());
+    samplestdev->Init(stddev_->Map());
+    samplestdev->SetState(*(*stddev_)(i));
 
-    mean_->Scale(1.0/(size),dummy);
+    // put data into map
+    std::map<int, Teuchos::RCP<ParticleData> > data_mean;
+    std::map<int, Teuchos::RCP<ParticleData> > data_stdev;
+    data_mean[mygroup_] = samplemean;
+    data_stdev[mygroup_] = samplestdev;
 
-    dummy.Scale(0.0);
-    // average stdev
-    for (it=data_stdev.begin(); it!=data_stdev.end(); it++)
-      dummy.Update(1.0, it->second->GetState(), 1.0);
+    // construct exporter
+    // particle ids
+    std::vector<int> mypgids(1,mygroup_);
+    std::vector<int> pgids(ngroups_);
+    pcomm_->IComm().GatherAll(&mypgids[0], &pgids[0],1);
 
-    stddev_->Scale(1.0/(size),dummy);
+    // set up tomap and frommap
+    Epetra_Map frommap(-1,1,&mypgids[0],0,pcomm_->IComm());
+    Epetra_Map tomap(-1,ngroups_,&pgids[0],0,pcomm_->IComm());
 
-    stddev_->ExtractView(&vals);
-    for (int i=0; i<stddev_->MyLength(); i++)
-      vals[i] = sqrt(vals[i]);
-  }
+    //export
+    DRT::Exporter ex(frommap,tomap,pcomm_->IComm());
+    ex.Export(data_mean);
+    ex.Export(data_stdev);
+    // -------- end
+
+    // -------- average on group 0
+    if (mygroup_ == 0)
+    {
+      unsigned int size = data_mean.size();
+
+      Epetra_Vector dummy2(mean_->Map(),true);
+
+      // average mean
+      std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
+      for (it=data_mean.begin(); it!=data_mean.end(); it++)
+        dummy2.Update(1.0, it->second->GetState(), 1.0);
+
+      (*mean_)(i)->Scale(1.0/(size),dummy2);
+
+      dummy2.Scale(0.0);
+      // average stdev
+      for (it=data_stdev.begin(); it!=data_stdev.end(); it++)
+        dummy2.Update(1.0, it->second->GetState(), 1.0);
+
+      double* vals;
+      dummy2.ExtractView(&vals);
+      for (int i=0; i<dummy2.MyLength(); i++)
+        vals[i] = sqrt(vals[i]);
+
+      (*stddev_)(i)->Scale(1.0/(size),dummy);
+    }
   // -------- end
-
-  // mean and std from the variational approximation
-  Teuchos::RCP<Epetra_Vector> mean_vb = Teuchos::rcp(new
-      Epetra_Vector(mixture_->EvalPrior().Mean()));
-
-  double covscalefac = params_.get<double>("MAP_COV_SCALE");
-
-  Teuchos::RCP<Epetra_Vector> stdev_vb = Teuchos::rcp(new
-      Epetra_Vector(mean_vb->Map()));
-  mixture_->EvalPrior().Covariance().Matrix()->ExtractDiagonalCopy(*stdev_vb);
-
-  double* val;
-  stdev_vb->ExtractView(&val);
-  for (int i=0; i<stdev_vb->MyLength(); i++)
-    val[i] = sqrt(val[i]/covscalefac);
+  }
 
   if (mygroup_==0)
   {
-
-    Teuchos::RCP<Epetra_MultiVector> state;
-
-    OptProb()->Matman()->ReplaceParamsShallow(*mean_);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("mean_smc",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(*mean_vb);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("mean_vb",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(*stddev_);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("stdev_smc",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(*stdev_vb);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("stdev_vb",state);
+    Writer()->WriteNamedVectors("mean_smc",mean_);
+    Writer()->WriteNamedVectors("stdev_smc",stddev_);
   }
 
 
@@ -447,8 +439,8 @@ void INVANA::OptimizerMH::ReadRestart(int run)
   particles_->SetData(posterior,prior);
 
   // read accumulated statistic
-  reader.ReadVector(mean_,"mean");
-  reader.ReadVector(stddev_,"stddev");
+  reader.ReadMultiVector(mean_,"mean");
+  reader.ReadMultiVector(stddev_,"stddev");
 
   is_restart_=true;
 

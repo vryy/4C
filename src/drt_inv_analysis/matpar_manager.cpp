@@ -18,6 +18,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_element.H"
@@ -106,12 +107,6 @@ void INVANA::MatParManager::SetupMatOptMap(const Teuchos::ParameterList& invp)
   // the materials of the problem
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-  if (discret_->Comm().MyPID()==0)
-  {
-    std::cout << "STR::INVANA::MatParManager ... SETUP" << std::endl;
-    std::cout <<  "Optimizing material with ids: ";
-  }
-
   // parameters to be optimized
   std::string word2;
   std::istringstream pstream(Teuchos::getNumericStringParameter(invp,"PARAMLIST"));
@@ -123,7 +118,6 @@ void INVANA::MatParManager::SetupMatOptMap(const Teuchos::ParameterList& invp)
     matid = std::strtol(&word2[0],&pEnd,10);
     if (*pEnd=='\0') //if (matid != 0)
     {
-      if (discret_->Comm().MyPID()==0) std::cout << matid << " ";
       actmatid = matid;
       continue;
     }
@@ -151,10 +145,15 @@ void INVANA::MatParManager::SetupMatOptMap(const Teuchos::ParameterList& invp)
       dserror("Give the parameters for the respective materials");
   }
 
-  if (discret_->Comm().MyPID()==0)
+  if (Comm().MyPID()==0)
   {
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "MatParManager Initialization:" << std::endl;
+    std::cout << "  Optimizing materials: ";
+    for (std::map<int,std::vector<int> >::iterator it=paramap_.begin(); it!=paramap_.end(); it++)
+      std::cout << it->first << " ";
     std::cout << "" << std::endl;
-    std::cout << "the number of different material parameters is: " << numparams_ << std::endl;
+    std::cout << "  Total number of material parameters: " << numparams_ << std::endl;
   }
 
 }
@@ -223,6 +222,18 @@ Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetMatParams()
   metaparams_.Meta2Material(params_,tmp);
 
   return tmp;
+}
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector>
+INVANA::MatParManager::GetMatrixDiagonal(DcsMatrix& matrix)
+{
+  Teuchos::RCP<Epetra_MultiVector> diagonals = Teuchos::rcp(new
+      Epetra_MultiVector(*Discret()->ElementRowMap(),numparams_,true));
+
+  ApplyParametrization(matrix,diagonals);
+
+  return diagonals;
 }
 
 /*----------------------------------------------------------------------*/
@@ -328,7 +339,7 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManager::AddEvaluateFD(double time,Teuchos::RCP<Epetra_MultiVector> dfint)
 {
-  if (discret_->Comm().NumProc()>1) dserror("this does probably not run in parallel");
+  if (Comm().NumProc()>1) dserror("this does probably not run in parallel");
 
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
@@ -337,7 +348,7 @@ void INVANA::MatParManager::AddEvaluateFD(double time,Teuchos::RCP<Epetra_MultiV
   FillParameters(getparams);
 
   // export to column layout to be able to run column elements
-  discret_->Comm().Barrier();
+  Comm().Barrier();
   LINALG::Export(*getparams,*params_);
 
   // a backup copy
@@ -491,6 +502,19 @@ int INVANA::MatParManager::ElementOptMat(DRT::Element* ele)
 }
 
 /*----------------------------------------------------------------------*/
+const Epetra_Comm& INVANA::MatParManager::Comm()
+{
+  return discret_->Comm();
+}
+
+/*----------------------------------------------------------------------*/
+const Epetra_Comm& INVANA::MatParManager::GComm()
+{
+  Epetra_Comm& gcomm = *(DRT::Problem::Instance()->GetNPGroup()->GlobalComm());
+  return gcomm;
+}
+
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityData()
 {
   int maxbw=6;  // based on connectivity for hex8 elements
@@ -509,8 +533,8 @@ Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityDat
   diagonal->PutScalar(0.0);
   graph->ReplaceDiagonalValues(*diagonal);
 
-  // store maps and graph in a container
-  Teuchos::RCP<ConnectivityData> connectivity = Teuchos::rcp(new ConnectivityData(paramapextractor_,graph));
+  // store graph in a container
+  Teuchos::RCP<ConnectivityData> connectivity = Teuchos::rcp(new ConnectivityData(graph));
 
   return connectivity;
 }

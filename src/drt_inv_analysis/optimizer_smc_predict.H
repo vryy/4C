@@ -26,7 +26,7 @@ namespace INVANA
 class ParticleData;
 
 /*! \class PredictionSMC
- * \brief Prediction based Sequential monte carlo particles
+ * \brief Prediction based on Sequential monte carlo particles
  *
  * This class provides prediction in a statictical sense based
  * on particles. These MUST therefore be already provided. Since
@@ -36,7 +36,14 @@ class ParticleData;
  * as obtained from the SMC. So to be able to perform a prediction
  * this algorithm must actually be restarted from the output of the
  * SMC. The only thing it does is then evaluate the particles based
- * on each of their current states and do the statictics.
+ * on each of their current states and do the 'statictics'.
+ *
+ * The 'statistics' would be mean (output as solution_mean)and
+ * stdandard deviation (output as solution_std) of some
+ * forward problem output, i.e. function of the parameters.
+ * At the moment this is the primal variable of the forward
+ * problem since it can be handed back by the INVANA::InvanaBase
+ * by default.
  *
  * \author kehl \date 09/2016
  */

@@ -37,8 +37,9 @@ namespace INPAR
     {
       stat_inv_mp_none,                  // nothing defined
       stat_inv_mp_patchwise,             // patchwise parameter approximation
+      stat_inv_mp_tvsvd,                 // svd of total variation approximation
       stat_inv_mp_elementwise,           // parameters per element
-      stat_inv_mp_uniform                // uniform i.e spatially constant parameters
+      stat_inv_mp_uniform               // uniform i.e spatially constant parameters
     };
 
     /// Type of Inverse Analysis

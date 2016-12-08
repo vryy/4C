@@ -272,7 +272,7 @@ scalefac_(1.0)
   // want to scale the objective function eventually?
   scaling_ = DRT::INPUT::IntegralValue<bool>(statinvp, "OBJECTIVEFUNCTSCAL");
   if (scaling_)
-    scalefac_=1.0/(double)tri_target_->NumTris();
+    scalefac_=var_estim_/(double)tri_target_->NumTris();
 
   extract_type x_target = tri_target_->Points();
   int xsize=x_target.size();
@@ -301,7 +301,7 @@ scalefac_(1.0)
 
   double sum=0.0;
   Kokkos::parallel_reduce(xsize,Convolute<currents_type>(
-      c_target,n_target,c_target,n_target,sigmaW_,var_estim_),sum);
+      c_target,n_target,c_target,n_target,sigmaW_),sum);
 
   // since the work was done redundantly by all mpi-ranks
   // this value should be the same for all
@@ -387,14 +387,14 @@ double INVANA::SurfCurrentPair::WSpaceNorm()
   // Do the convolutions
   double sum=0.0;
   Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(
-      my_c_source,my_n_source,c_source,n_source,sigmaW_,var_estim_),sum);
+      my_c_source,my_n_source,c_source,n_source,sigmaW_),sum);
   double gsum=0.0;
   tri_source_->Comm()->SumAll(&sum,&gsum,1);
   val+=gsum;
 
   sum=0.0;
   Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(
-      my_c_source,my_n_source,c_target_,n_target_,sigmaW_,var_estim_),sum);
+      my_c_source,my_n_source,c_target_,n_target_,sigmaW_),sum);
   gsum=0.0;
   tri_source_->Comm()->SumAll(&sum,&gsum,1);
   val-=2*gsum;
@@ -464,13 +464,13 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
 
   int off = mychunk.first;
   Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(
-      my_c_source,my_dn_source,c_source,n_source,grad,off,sigmaW_,var_estim_,2.0));
+      my_c_source,my_dn_source,c_source,n_source,grad,off,sigmaW_,2.0));
   Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(
-      my_c_source,my_dn_source,c_target_,n_target_,grad,off,sigmaW_,var_estim_,-2.0));
+      my_c_source,my_dn_source,c_target_,n_target_,grad,off,sigmaW_,-2.0));
   Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(
-      my_c_source,my_n_source,c_source,n_source,grad,off,sigmaW_,var_estim_,1.0,true));
+      my_c_source,my_n_source,c_source,n_source,grad,off,sigmaW_,1.0,true));
   Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(
-      my_c_source,my_n_source,c_target_,n_target_,grad,off,sigmaW_,var_estim_,-2.0,false));
+      my_c_source,my_n_source,c_target_,n_target_,grad,off,sigmaW_,-2.0,false));
 
   // Bring back to host
   trimesh_host_type h_grad = Kokkos::create_mirror_view(grad);
@@ -867,10 +867,10 @@ void INVANA::Triangulation::ApplyNoise(const extract_type& normals, const extrac
     k++;
   }
 
-  // set up Covariance Matrix
-  Epetra_SerialSymDenseMatrix C;
-  C.Shape(size);
-  C.SetLower();
+  // set up Precision Matrix
+  Epetra_SerialSymDenseMatrix P;
+  P.Shape(size);
+  P.SetLower();
   int i=0;
   int j=0;
   double x1,x2,x3,y1,y2,y3;
@@ -890,26 +890,37 @@ void INVANA::Triangulation::ApplyNoise(const extract_type& normals, const extrac
       y1 = jt->second[0];
       y2 = jt->second[1];
       y3 = jt->second[2];
-      C(i,j) = kernel(x1,x2,x3,y1,y2,y3,lengthscale,variance);
+      P(i,j) = kernel(x1,x2,x3,y1,y2,y3,lengthscale)/variance;
       j++;
     }
     i++;
   }
 
-  // Factorize
+  // get the covariance as precision^-1 (in place)
+  {
+    Epetra_SerialSpdDenseSolver solver;
+    solver.SetMatrix(P);
+    solver.Invert();
+  }
+
+  // the same solver cannot call Factor() on an already
+  // inverted matrix; so get another one
+  // (P is completely filled now but still symmetric
+  // and hasn't lost its UPLO specification!)
   Epetra_SerialSpdDenseSolver solver;
-  solver.SetMatrix(C);
+  solver.SetMatrix(P);
   int err = solver.Factor();
 
   if (err)
-    dserror("Covariance matrix factorization failed!");
+    dserror("Surface current noise covariance factorization failed with err %d", err);
 
-  Epetra_SerialSymDenseMatrix* L = solver.SymFactoredMatrix();
+  // get the lower factor
+  Epetra_SerialDenseMatrix* L = solver.FactoredMatrix();
 
+
+  // correlate noise
   Epetra_SerialDenseMatrix n_blurred(size,3);
   L->Multiply(false,n_blur,n_blurred);
-
-  //n_blurred.Print(std::cout);
 
   // add noise to normals and put back to extract type format
   std::vector<double> n(3);

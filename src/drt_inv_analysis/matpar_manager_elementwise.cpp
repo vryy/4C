@@ -35,8 +35,6 @@ INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discr
 {}
 
 /*----------------------------------------------------------------------*/
-/* Setup                                                    keh 10/14   */
-/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::Setup()
 {
   // temp map to keep correspondence of parameter block position and eleids
@@ -86,7 +84,7 @@ void INVANA::MatParManagerPerElement::Setup()
   //build map eleGIDtoparamsLID_
   for (int i=0; i<(int)paramsLIDtoeleGID_.size(); i++)
   {
-    // the blocks are ordered so this just
+    // the blocks are ordered so this is simply
     eleGIDtoparamsLID_[paramsLIDtoeleGID_[i]].push_back(i);
   }
 
@@ -107,11 +105,30 @@ void INVANA::MatParManagerPerElement::Setup()
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
   optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
 
+  // set up restrictor and prolongator (identity matrices)
+  restrictor_ = Teuchos::rcp(new
+      Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
+  prolongator_ = Teuchos::rcp(new
+      Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
+
+  // insert ones onto the diagonal
+  for (int i=0; i<restrictor_->NumMyRows(); i++)
+  {
+    int gid = paramlayoutmapunique_->GID(i);
+    double values = 1.0;
+    int indices = gid;
+    restrictor_->InsertGlobalValues(gid,1,&values,&indices);
+    prolongator_->InsertGlobalValues(gid,1,&values,&indices);
+  }
+  restrictor_->FillComplete();
+  prolongator_->FillComplete();
+
   //initialize parameter vector from material parameters given in the input file
   InitParams();
 
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
   params->PutScalar(0.0);
@@ -129,6 +146,7 @@ void INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_MultiVe
   }
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::InitParameters(int parapos, double val)
 {
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*paramapextractor_->Map(parapos), false));
@@ -138,6 +156,7 @@ void INVANA::MatParManagerPerElement::InitParameters(int parapos, double val)
 
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                                             double val,
                                                             int elepos,
@@ -163,7 +182,28 @@ void INVANA::MatParManagerPerElement::Finalize(Teuchos::RCP<Epetra_MultiVector> 
 }
 
 /*----------------------------------------------------------------------*/
-/* build blockwise connectivity graphs                      keh 10/14   */
+void INVANA::MatParManagerPerElement::ApplyParametrization(
+    DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals)
+{
+  Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::rcp(new
+      Epetra_Vector(*paramlayoutmapunique_,true));
+  matrix.ExtractDiagonalCopy(*diagonal);
+
+  // loop the parameter blocks
+  for (int k=0; k<paramapextractor_->NumMaps(); k++)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(*diagonal,k);
+    for (int i=0; i< tmp->MyLength(); i++)
+    {
+      int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
+      int plid = paramlayoutmap_->LID(pgid);
+      diagonals->ReplaceGlobalValue(paramsLIDtoeleGID_[plid],k,(*tmp)[i]);
+    }
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
@@ -177,7 +217,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   {
     // the current element
     int pgid = paramrowmap.GID(i); // !! the local id of the partial map is not the local parameter id!!
-    int plid = paramlayoutmap_->LID(pgid);
+    int plid = paramapextractor_->FullMap()->LID(pgid);
     int elegid = paramsLIDtoeleGID_[plid];
     DRT::Element* ele=Discret()->gElement(elegid);
     if (ele == NULL) dserror("element not found here");
@@ -263,7 +303,6 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   {
   case INPAR::INVANA::stat_inv_graph_area:
   {
-    std::cout << "Computing Graph Weights from area" << std::endl;
     LINALG::GatherAll<std::vector<int>,double>(faceweight,paramrowmap.Comm());
     std::map<std::vector<int>, double>::iterator weightsit;
 
@@ -279,7 +318,6 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   break;
   case INPAR::INVANA::stat_inv_graph_unity:
   {
-    std::cout << "Computing Graph Weights to 1" << std::endl;
     std::map<std::vector<int>, double>::iterator weightsit;
     for (weightsit=faceweight.begin(); weightsit!=faceweight.end(); weightsit++)
       weightsit->second=1.0;
@@ -392,8 +430,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* set the action for the boundary evaluation          schoeder 09/15   */
+
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerElement::SetAction(Teuchos::ParameterList& p)
 {

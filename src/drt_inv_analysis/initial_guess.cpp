@@ -21,6 +21,7 @@
 #include "invana_base.H"
 #include "matpar_manager.H"
 #include "matpar_manager_patchwise.H"
+#include "matpar_manager_tvsvd.H"
 #include "objective_funct.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
@@ -104,9 +105,10 @@ void INVANA::InitialGuess::InitfromMap(Teuchos::RCP<DRT::Discretization> discret
 
   if (not discret->Comm().MyPID())
   {
-    std::cout << std::endl;
-    std::cout << "Reading MAP approximation as initial guess" << std::endl;
-    std::cout << "step " << map_restart_step << " from file: " << input->FileName() << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "InitialGuess Initialization:" << std::endl;
+    std::cout << "  Reading MAP approximation: ";
+    std::cout << "  step " << map_restart_step << " (from: " << input->FileName() << ")" << std::endl;
     std::cout << std::endl;
   }
 
@@ -122,10 +124,20 @@ void INVANA::InitialGuess::InitfromMap(Teuchos::RCP<DRT::Discretization> discret
     readmap = Teuchos::rcp(new Epetra_Map(*matman->ParamLayoutMapUnique()));
     break;
   case INPAR::INVANA::stat_inv_mp_patchwise:
+  {
     Teuchos::RCP<INVANA::MatParManagerPerPatch> patchman =
         Teuchos::rcp_dynamic_cast<INVANA::MatParManagerPerPatch>(matman,true);
 
     readmap = Teuchos::rcp(new Epetra_Map(*patchman->UnreducedMap()));
+  }
+    break;
+  case INPAR::INVANA::stat_inv_mp_tvsvd:
+  {
+    Teuchos::RCP<INVANA::MatParManagerTVSVD> tvman =
+        Teuchos::rcp_dynamic_cast<INVANA::MatParManagerTVSVD>(matman,true);
+
+    readmap = Teuchos::rcp(new Epetra_Map(*tvman->UnreducedMap()));
+  }
     break;
   }
 
@@ -166,14 +178,21 @@ void INVANA::InitialGuess::InitfromMap(Teuchos::RCP<DRT::Discretization> discret
   case INPAR::INVANA::stat_inv_mp_none:
   case INPAR::INVANA::stat_inv_mp_elementwise:
   case INPAR::INVANA::stat_inv_mp_uniform:
+    // beware of what you are doing in case of
+    // elementwise parameters!
     covariance_ = colmatrix.FillMatrix();
     break;
   case INPAR::INVANA::stat_inv_mp_patchwise:
-    Teuchos::RCP<INVANA::MatParManagerPerPatch> patchman =
-        Teuchos::rcp_dynamic_cast<INVANA::MatParManagerPerPatch>(matman,true);
+  case INPAR::INVANA::stat_inv_mp_tvsvd:
+  {
+    Teuchos::RCP<INVANA::MatParManagerPerElement> patchman =
+        Teuchos::rcp_dynamic_cast<INVANA::MatParManagerPerElement>(matman,true);
 
-    Teuchos::RCP<Epetra_CrsMatrix> projector=patchman->Projector();
-    ProjecttoBasis(*projector, colmatrix);
+    Teuchos::RCP<Epetra_CrsMatrix> projector=patchman->Restrictor();
+    Teuchos::RCP<Epetra_CrsMatrix> prolongator=patchman->Prolongator();
+
+    ProjecttoBasis(*projector, colmatrix,*prolongator);
+  }
     break;
   }
 
@@ -211,8 +230,8 @@ void INVANA::InitialGuess::ReadLBFGSStorage(const Epetra_Map& readmap,
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::InitialGuess::ProjecttoBasis(
-    const Epetra_CrsMatrix& projector, DcsMatrix& toproject)
+void INVANA::InitialGuess::ProjecttoBasis(const Epetra_CrsMatrix& projector,
+    DcsMatrix& toproject, const Epetra_CrsMatrix& prolongator)
 {
   const Epetra_Map& projmap = projector.RowMap();
 
@@ -257,8 +276,8 @@ void INVANA::InitialGuess::ProjecttoBasis(
   }
   interm->FillComplete(projector.ColMap(),projector.RangeMap());
 
-  //interm * projector^T
-  covariance_ = LINALG::Multiply(*interm,false,projector,true);
+  //interm * prolongator
+  covariance_ = LINALG::Multiply(*interm,false,prolongator,true);
 
   return;
 }

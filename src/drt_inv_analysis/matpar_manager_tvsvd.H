@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager_patchwise.H
-\brief Creating patches from an elementwise layout
+\file matpar_manager_tvsvd.H
+\brief Creating reduced basis from TV approximation
 
 <pre>
 \level 3
@@ -14,8 +14,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef MATPAR_MANAGER_PERPATCH_H
-#define MATPAR_MANAGER_PERPATCH_H
+#ifndef MATPAR_MANAGER_TVSVD_H
+#define MATPAR_MANAGER_TVSVD_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,21 +31,28 @@ namespace DRT
 namespace INVANA
 {
 
-/*! \class MatParManagerPerPatch
- *  \brief Class to have patchwise constant parameters
+/*! \class MatParManagerTVSVD
+ *  \brief Reduced basis parametetrization based on eigendecomposition
  *
- *  \author kehl \date 08/2016
+ *  In order to get a feasible amount of optimization parameters, basis
+ *  reduction is performed on a quadratic approximation of the total
+ *  variation functional, which is already used as regularization.
+ *
+ *  Up to now the approximation point is at the maximum a posterior
+ *  solution. But this can be changed.
+ *
+ *  \author kehl \date 12/2016
  */
-class MatParManagerPerPatch  : public MatParManagerPerElement
+class MatParManagerTVSVD  : public MatParManagerPerElement
 {
 
 public:
 
   //! constructor
-  MatParManagerPerPatch(Teuchos::RCP<DRT::Discretization> discret);
+  MatParManagerTVSVD(Teuchos::RCP<DRT::Discretization> discret);
 
   //! destructor
-  virtual ~MatParManagerPerPatch(){};
+  virtual ~MatParManagerTVSVD(){};
 
   //! Setup specific parametrization layout
   virtual void Setup();
@@ -88,32 +95,53 @@ private:
   //! Read elementwise parameter distribution from input
   void ReadMAPApproximation();
 
-  //! Create a dictionary of patch atoms for a specific number of patches
-  void CreateLevelDictionary(int patchlevel // [in] patchlevel to create atoms for
+  //! The full approximation linear operator
+  void SetupTVOperator();
+
+  //! Factorize linearized TV operator
+  void Factorize();
+
+  //! Solve the eigenproblem for the TV operator using Anasazi
+  void AnasaziEigenProblem(Teuchos::RCP<Epetra_CrsMatrix> A, ///[in] Matrix to decompose
+      Teuchos::RCP<Epetra_MultiVector> L, ///[out] eigenvectors
+      Teuchos::ParameterList params  ///[in] how to decompose
       );
+
+  //! Setup restriction and prolongation operators
+  void SetupRandP(int numvecs);
 
   //! check the approximation power of this dictionary
   double CheckApproximation();
 
-  //! find connectivities within levels
-  void FindLevelConnectivity(std::map<int, std::vector<int> >& neighbourhood, // [in] neighbourinformation
-      std::map<int, std::vector<int> >& patches // [out] patches within this level
-      );
+  //! number of patch levels
+  int max_num_levels_;
 
-  //! Make a histogram of the elementwise solution
-  void MakeHistogram();
+  /*! \brief random initialization of eigenproblem
+   *  In a nested parallel setup, one needs on each local proc
+   *  the same seed across the groups, otherwise the eigenvectors
+   *  come out scaled by -1.0 at random. But all groups must have
+   *  the same basisvectors!
+   *
+   * \author kehl \date 12/2016
+   */
+  int seed_;
 
-  //! Find bin with maximum number of entries
-  void FindHistogramMax(std::map<int,int>& hisbins, int& index);
+  //! Epetra_Util object for "random" drawing
+  Epetra_Util util_;
 
-  //! quality threshold for the approximation
+  /*! \brief Random multi vector
+   * Fill multivector randomly in the interval [-1,1], but
+   * do consitently accros potential nested parallel groups.
+   *
+   * \author kehl \date 12/2016
+   */
+  void Random(Epetra_MultiVector& randvec);
+
+  //! quality threshold
   double qthresh_;
 
-  //! histogram of the elementwise parameters
-  std::vector<double> histvalues_;
-
-  //! bins of the histogram
-  std::map<int,int> histbins_;
+  //! TV epsilon
+  double eps_;
 
   // file to read the map approximation from
   std::string map_restart_file_;
@@ -133,20 +161,18 @@ private:
 
   //! elementwise graph
   Teuchos::RCP<Epetra_CrsMatrix> graph_;
+
+  //! The linearized TV operator
+  Teuchos::RCP<Epetra_CrsMatrix> lintvop_;
   //@}
 
   //! @name Projection between sparse appoximation and full basis
   //@{
 
-  //! maps of the atoms of the final dictionary
-  Teuchos::RCP<LINALG::MultiMapExtractor> patchmap_;
+  //! Eigenvectors of the TV approximation
+  Teuchos::RCP<Epetra_MultiVector> evecs_;
+
   //@}
-
-  //! global optimization parameter id to patch id
-  std::map<int,int> pidtopatch_;
-
-  //! number of patch levels
-  int max_num_levels_;
 
 };
 }  // namespace INVANA

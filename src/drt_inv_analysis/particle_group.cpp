@@ -38,14 +38,6 @@
 #include <fenv.h>
 
 
-// an error handler for mpi
-void eh( MPI_Comm *comm, int *err, ... )
-{
-  std::cout << "error handler for mpi was invoked" << std::endl;
-  throw std::runtime_error("Error from the MPI handler");
-  return;
-};
-
 /*----------------------------------------------------------------------*/
 INVANA::ParticleGroup::ParticleGroup(const Teuchos::ParameterList& invp):
 particle_data_(),
@@ -126,7 +118,7 @@ void INVANA::ParticleGroup::InitializeParticleData()
   for (int i=0; i<lnumparticles_; i++)
   {
     int pgid = my_particle_gids_[i];
-    weights_[pgid] = 1.0;
+    weights_[pgid] = 1.0/gnumparticles_;
     Data()[pgid] = Teuchos::rcp(new INVANA::ParticleData());
     Data()[pgid]->Init(loglikemixture_->StateMap());
   }
@@ -774,6 +766,14 @@ void INVANA::ParticleGroup::ComputeMean(std::map<int, Teuchos::RCP<ParticleData>
 
   if (mygroup_==0)
   {
+    // check for normalization
+    double sum = 0.0;
+    for (std::map<int,double>::iterator it=weights.begin(); it!=weights.end(); it++)
+      sum+=it->second;
+
+    if (abs(sum-1.0)>1.0e-13)
+      dserror("weight is not normalized, but %.1f", sum);
+
     // mean
     mean.Scale(0.0);
     for (DATAITER it=data.begin(); it!=data.end(); it++)
@@ -788,7 +788,9 @@ void INVANA::ParticleGroup::ComputeMean(std::map<int, Teuchos::RCP<ParticleData>
     for (DATAITER it=data.begin(); it!=data.end(); it++)
     {
       // particle-mean
-      dummy.Update(1.0,it->second->GetState(),-1.0,mean,0.0);
+      dummy.Scale(1.0,it->second->GetState());
+      dummy.Update(-1.0,mean,1.0);
+
       // (particle-mean).^2
       double* val;
       dummy.ExtractView(&val);

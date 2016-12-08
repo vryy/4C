@@ -1,8 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file matpar_manager_uniform.H
-
-\brief Patch-wise uniform distribution of material parameters
+\brief Creating patches from inputfile
 
 <pre>
 \level 3
@@ -11,6 +10,8 @@
             089 - 289-10361
 </pre>
 */
+
+
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifndef MATPAR_MANAGER_UNIFORM_H
@@ -18,7 +19,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "matpar_manager.H"
+#include "matpar_manager_elementwise.H"
 
 
 // forward declarations
@@ -28,29 +29,26 @@ namespace DRT
 }
 
 namespace INVANA
+{
 
-{
 /*! \class MatParManagerUniform
- *  \brief Class to have blockwise constant material parameters
+ *  \brief Class to have patchwise constant parameters
  *
- *  This class handles optimization parameters which represent blockwise
- *  patches of material. The patches must be given by different input file
- *  materials. The final unique vector of parameters is kept on proc 0.
+ *  Patches are created as the material blocks given
+ *  in the input file.
  *
- *  For the parallel computation of derivatives, a completely redundant version
- *  of the parameters is used which is then later 'contracted' by INVANA::Finalize.
- *
- *  \author kehl \date somewhen2013
+ *  \author kehl \date 08/2016
  */
-class MatParManagerUniform  : public MatParManager
+class MatParManagerUniform  : public MatParManagerPerElement
 {
+
 public:
 
-  //! Constructor
+  //! constructor
   MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
-  //! Destructor
-  virtual ~MatParManagerUniform(){}
+  //! destructor
+  virtual ~MatParManagerUniform(){};
 
   //! Setup specific parametrization layout
   virtual void Setup();
@@ -60,13 +58,20 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
+  //! Access to the unreduced layout
+  Teuchos::RCP<Epetra_Map> UnreducedMap() {return elewise_map_;}
+
+
 protected:
 
   //! Get current material parameters
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
+  //! apply projection to INVANA::DcsMatrix and get diagonal
+  virtual void ApplyParametrization(DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
+
   //! Initialize optimization parameters
-  virtual void InitParameters(int parapos, double val);
+  virtual void InitParameters();
 
   //! Chain rule application
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
@@ -74,11 +79,30 @@ protected:
 
 private:
 
-  //! build a graph of elements in the optimization parameter vector
-  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
+  //! @name Setup the parametrization
+  //@{
+
+  //! Create projection to patch-wise atoms
+  void CreateProjection();
+  //@}
+
+  //! @name Parameters of the initial elementwise distribution
+  //@{
+
+  //! elementwise set of optimization parameters
+  Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
+
+  //! elementwise layout
+  Teuchos::RCP<Epetra_Map> elewise_map_;
+
+  //! elementwise graph
+  Teuchos::RCP<Epetra_CrsMatrix> graph_;
+  //@}
+
+  //! global optimization parameter id to patch id
+  std::map<int,int> pidtopatch_;
 
 };
 }  // namespace INVANA
 
-/*----------------------------------------------------------------------*/
 #endif

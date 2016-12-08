@@ -20,6 +20,7 @@
 #include "matpar_manager_uniform.H"
 #include "matpar_manager_elementwise.H"
 #include "matpar_manager_patchwise.H"
+#include "matpar_manager_tvsvd.H"
 #include "objective_funct.H"
 #include "objective_funct_disp.H"
 #include "objective_funct_surfcurr.H"
@@ -102,6 +103,11 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
       matman = Teuchos::rcp(new INVANA::MatParManagerPerPatch(actdis));
     }
     break;
+    case INPAR::INVANA::stat_inv_mp_tvsvd:
+    {
+      matman = Teuchos::rcp(new INVANA::MatParManagerTVSVD(actdis));
+    }
+    break;
     default:
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
@@ -113,22 +119,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
   Teuchos::RCP<InitialGuess> guess = Teuchos::rcp(new InitialGuess(invp));
   guess->Compute(actdis,matman,objfunct);
 
-
-//  // a convenience pointer
-//  DRT::Problem* problem = DRT::Problem::Instance();
-//
-//  for (int i=0; i<problem->GetNPGroup()->NumGroups(); i++)
-//  {
-//    if (problem->GetNPGroup()->GroupId() == i)
-//      guess->Compute(actdis,matman,objfunct);
-//
-//    // wait for all
-//    problem->GetNPGroup()->GlobalComm()->Barrier();
-//  }
-//  // wait for all
-//  problem->GetNPGroup()->GlobalComm()->Barrier();
-
-  // regularization!
+  // regularization
   Teuchos::RCP<INVANA::RegularizationBase> regman = Teuchos::null;
   switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvRegularization>(
       invp,"REGULARIZATION"))

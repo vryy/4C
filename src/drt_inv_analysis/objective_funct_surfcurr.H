@@ -47,8 +47,8 @@ class Triangulation;
 // the kernel
 inline double kernel(double x1, double x2, double x3,
                      double y1, double y2, double y3,
-                     double lscale, double vscale) {
-  return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/lscale)*vscale;}
+                     double lscale) {
+  return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/lscale);}
 
 
 /*!
@@ -253,20 +253,19 @@ struct Convolute {
   currents_type c2;
   currents_type n2;
   double lscale;
-  double vscale;
 
   // Constructor takes View by "value"; this does a shallow copy.
   Convolute (ViewType c1_, ViewType n1_,
              currents_type c2_, currents_type n2_,
-             double lscale_, double vscale_)
-  : c1(c1_), n1(n1_) ,c2(c2_), n2(n2_), lscale(lscale_) , vscale(vscale_)  {}
+             double lscale_)
+  : c1(c1_), n1(n1_) ,c2(c2_), n2(n2_), lscale(lscale_)  {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType::size_type i,double& sum) const {
     for (currents_type::size_type j=0; j<c2.dimension_0(); j++)
     {
       sum += (n1(i,0)*n2(j,0)+n1(i,1)*n2(j,1)+n1(i,2)*n2(j,2))*
-          kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale,vscale);
+          kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale);
     }
   }
 };
@@ -316,21 +315,20 @@ struct ConvoluteDN {
   trimesh_atomic_type g;
   int offset;
   double lscale;
-  double vscale;
   double fac;
 
   // Constructor takes View by "value"; this does a shallow copy.
   ConvoluteDN (ViewType1 c1_, ViewType2 dn1_,
                currents_type c2_, currents_type n2_, trimesh_atomic_type g_,
-               int offset_, double lscale_,double vscale_,double fac_)
+               int offset_, double lscale_,double fac_)
   : c1(c1_), dn1(dn1_), c2(c2_), n2(n2_), g(g_), offset(offset_),
-    lscale(lscale_), vscale(vscale_), fac (fac_) {}
+    lscale(lscale_), fac (fac_) {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType1::size_type i) const {
     for (currents_type::size_type j=0; j<c2.dimension_0(); j++)
     {
-      double ker = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale,vscale);
+      double ker = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),lscale);
 
       int ii=i+offset; // the global row to assemble
       g(ii,0) += (dn1(i,0)*n2(j,0)+dn1(i,1)*n2(j,1)+dn1(i,2)*n2(j,2))*ker;
@@ -356,16 +354,15 @@ struct ConvoluteDk {
   trimesh_atomic_type g;
   int of;
   double lscale;
-  double vscale;
   double fac;
   bool sym;
 
   // Constructor takes View by "value"; this does a shallow copy.
   ConvoluteDk (ViewType c1_, ViewType n1_,
       currents_type c2_, currents_type n2_, trimesh_atomic_type g_,
-      int of_, double lscale_, double vscale_, double fac_, bool sym_)
+      int of_, double lscale_, double fac_, bool sym_)
   : c1(c1_), n1(n1_), c2(c2_), n2(n2_), g(g_),
-    of(of_), lscale(lscale_), vscale(vscale_), fac(fac_), sym(sym_) {}
+    of(of_), lscale(lscale_), fac(fac_), sym(sym_) {}
 
   KOKKOS_INLINE_FUNCTION
   void operator() (const typename ViewType::size_type i) const {
@@ -373,7 +370,7 @@ struct ConvoluteDk {
     {
       double ker[3];
       double arg = fac*kernel(c1(i,0),c1(i,1),c1(i,2),c2(j,0),c2(j,1),c2(j,2),
-          lscale,vscale)*(-2.0/3.0)/lscale;
+          lscale)*(-2.0/3.0)/lscale;
       ker[0] =  arg*(c1(i,0)-c2(j,0));
       ker[1] =  arg*(c1(i,1)-c2(j,1));
       ker[2] =  arg*(c1(i,2)-c2(j,2));

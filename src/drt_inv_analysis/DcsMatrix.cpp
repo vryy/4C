@@ -97,6 +97,17 @@ int INVANA::DcsMatrix::ExtractGlobalColumnCopy(int Col, Epetra_Vector& column)
 }
 
 /*----------------------------------------------------------------------*/
+int INVANA::DcsMatrix::Apply(Epetra_Vector& vector) const
+{
+  if ( not column_->Map().PointSameAs(vector.Map()) )
+    dserror("maps for extraction don't agree");
+
+  twolooprecursion(vector);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
 void INVANA::DcsMatrix::Precompute()
 {
   // sstore'*ystore

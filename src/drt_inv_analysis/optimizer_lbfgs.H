@@ -83,6 +83,14 @@ private:
   //! compute new direction based on lbfgs formula
   void ComputeDirection();
 
+  //! @name Ouput routines
+  //@{
+
+  //! write binary output at the end
+  void WriteOutput();
+
+  //@}
+
   //! initial scaling for the LBFGS two loop recursion algorithm
   bool initscal_;
 

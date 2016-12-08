@@ -84,6 +84,9 @@ public:
   //! extract diagonal
   int ExtractDiagonalCopy(Epetra_Vector& diagonal) const;
 
+  //! apply matrix (inverse) to vector
+  int Apply(Epetra_Vector& vector) const;
+
 private:
 
   //! precompute some quantities

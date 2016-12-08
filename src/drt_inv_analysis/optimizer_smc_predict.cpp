@@ -18,6 +18,7 @@
 
 #include "particle_data.H"
 #include "particle_group.H"
+#include "particle_comm.H"
 #include "likelihood_evaluation.H"
 #include "invana_base.H"
 
@@ -55,14 +56,25 @@ void INVANA::PredictionSMC::Setup()
 /*----------------------------------------------------------------------*/
 void INVANA::PredictionSMC::Integrate()
 {
-  // first of all: check whether this is a restart
+  // particles must be initialized if not restarted
   if (not IsRestart())
-    dserror("PredicitionSMC must be restarted from an existing particle basis.");
+  {
+    Particles()->DrawInitialStates();
+
+    // inform user
+    if (Particles()->PComm().LComm().MyPID()==0)
+      std::cout << "(Group "<< MyGroup() << ") Particles initialized from Prior." << std::endl;
+  }
+  else
+    // inform user
+    if (Particles()->PComm().LComm().MyPID()==0)
+      std::cout << "(Group "<< MyGroup() << ") Particles initialized from existing "
+        "Particle basis" << std::endl;
 
   // run all the particles
   EvaluateParticles();
 
-  // do statistic
+  // do statistical evaluation of the forward problem solution
   Teuchos::RCP<Epetra_Vector> mean = Teuchos::rcp(new Epetra_Vector(solutions_->Map(),true));
   Teuchos::RCP<Epetra_Vector> stdev = Teuchos::rcp(new Epetra_Vector(solutions_->Map(),true));
   Particles()->ComputeMean(data_,*mean,*stdev);

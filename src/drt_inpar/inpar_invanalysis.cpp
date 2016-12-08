@@ -150,11 +150,13 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                     tuple<std::string>(
                                       "none",
                                       "patchwise",
+                                      "tvsvd",
                                       "elementwise",
                                       "uniform"),
                                     tuple<int>(
                                       stat_inv_mp_none,
                                       stat_inv_mp_patchwise,
+                                      stat_inv_mp_tvsvd,
                                       stat_inv_mp_elementwise,
                                       stat_inv_mp_uniform),
                                     &statinvp);
@@ -236,6 +238,10 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // stepsize for deterministic gradient based schemes
   DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);
+
+  // linspace for the BruteForce optimizer
+  setNumericStringParameter("BFLINSPACE","0.0 1.0 100",
+      "linear space (a,b,n) of n linearly spaced samples in the interval [a,b] ",&statinvp);
 
   // convergence criterion tolerance
   DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);

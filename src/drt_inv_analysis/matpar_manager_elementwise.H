@@ -37,9 +37,13 @@ namespace INVANA
  *  The chainrule application in the gradient evaluation reduces
  *  to a minimum.
  *
- *  The vector layout and the unique vector layout are identical.
+ *  It provides itself as a base class to all the reduced basis
+ *  implementation. So given the proper projections between
+ *  reduced basis and full (elemental) basis, optimization
+ *  parameters can be injected into the element-wise layout.
  *
- *  \author kehl \date somewhen2013
+ *
+ *  \author kehl \date 2013
  */
 class MatParManagerPerElement  : public MatParManager
 {
@@ -60,10 +64,24 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
+  //! @name Access projection operators
+  //@{
+
+  //! Access to the restrictor
+  Teuchos::RCP<Epetra_CrsMatrix> Restrictor() {return restrictor_;}
+
+  //! Access to the prolongator (use it transposed)
+  Teuchos::RCP<Epetra_CrsMatrix> Prolongator() {return prolongator_;}
+
+  //@}
+
 protected:
 
   //! Get current material parameters
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
+
+  //! apply projection to INVANA::DcsMatrix and get diagonal
+  virtual void ApplyParametrization(DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
 
   //! Initialize optimization parameters
   virtual void InitParameters(int parapos, double val);
@@ -75,6 +93,19 @@ protected:
   std::vector<int>& ParamsLIDtoeleGID() {return paramsLIDtoeleGID_;}
 
   std::map< int, std::vector<int> >& EleGIDtoparamsLID() {return eleGIDtoparamsLID_;}
+
+  /* @name Projections between sparse and full
+   * In here these will be just unit diagonals;
+   * Its more interesting for the specializations.
+   */
+  //@{
+
+  //! linear operator to project from the full signal to the sparse approximation
+  Teuchos::RCP<Epetra_CrsMatrix> restrictor_;
+
+  //! linear operator to project from the sparse approximation to the full signal
+  Teuchos::RCP<Epetra_CrsMatrix> prolongator_;
+  //@}
 
 private:
 
@@ -103,6 +134,7 @@ private:
    *
    */
   std::map< int, std::vector<int> > eleGIDtoparamsLID_;
+  //@}
 
 };
 }  // namespace INVANA

@@ -1,23 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file matpar_manager_uniform.cpp
-
-\brief Patch-wise uniform distribution of material parameters
-
+\brief Creating patches from inputfile
 <pre>
 \level 3
 \maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
-
 !*/
 
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "matpar_manager_uniform.H"
-
-#include "Epetra_Import.h"
 
 #include "invana_utils.H"
 #include "../linalg/linalg_utils.H"
@@ -25,6 +20,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_lib/drt_element.H"
@@ -33,65 +29,137 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
 
+#include <queue>
+
+typedef std::map<int, std::vector<int> > PATCHES;
+
+/*----------------------------------------------------------------------*/
 INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
-   :MatParManager(discret)
+   : MatParManagerPerElement(discret)
 {}
 
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::Setup()
 {
-  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(NumParams(),NumParams(),0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
-  int numeleperproc=0;
-  if (Discret()->Comm().MyPID()==0) numeleperproc = NumParams();
-  paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1,numeleperproc,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "MatParManager Setup:" << std::endl;
+  }
 
-  // build the mapextractor
-  // the partial maps (only one map in case of uniform material parameters)
-  std::vector< Teuchos::RCP<const Epetra_Map> > partials;
-  partials.push_back(paramlayoutmapunique_);
-  paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmapunique_,partials));
+  // call setup of the Base class to have all the
+  // layout of the elementwise distribution
+  MatParManagerPerElement::Setup();
+  optparams_elewise_ = Teuchos::rcp(new Epetra_MultiVector(*optparams_));
+  elewise_map_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
+  graph_ = GetConnectivityData()->AdjacencyMatrix();
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
-  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
+  // create projection from elements to patches
+  CreateProjection();
 
-  //initialize parameter vector from material parameters given in the input file
-  InitParams();
+  // initialize parameters
+  InitParameters();
+
+  // Some user information
+  if (Comm().MyPID() == 0)
+    std::cout << std::endl;
 }
 
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
-  // make optparams redundant on every proc
-  Teuchos::RCP<Epetra_MultiVector> optparams = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,false));
-  Epetra_Import importer(optparams->Map(), optparams_->Map());
-  int err = optparams->Import(*optparams_, importer, Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d", err);
+  params->PutScalar(0.0);
 
-  // now every proc can fill in the material parameters
-  for (int i=0; i<NumParams(); i++)
-    (*params)(i)->PutScalar((*(*optparams)(0))[i]);
+  // Inject into the elementwise solution space
+  int err = prolongator_->Multiply(true,*optparams_,*optparams_elewise_);
+  if (err!=0)
+    dserror("Application of prolongator failed.");
+
+  // loop the parameter blocks
+  for (int k=0; k<paramapextractor_->NumMaps(); k++)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(*(*optparams_elewise_)(0),k);
+    for (int i=0; i< tmp->MyLength(); i++)
+    {
+      int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
+      int plid = paramapextractor_->FullMap()->LID(pgid);
+      params->ReplaceGlobalValue(ParamsLIDtoeleGID()[plid],k,(*tmp)[i]);
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
+void INVANA::MatParManagerUniform::ApplyParametrization(
+    DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals)
 {
-  // only proc 0 is filled here from the input file material
-  optparams_->ReplaceGlobalValue(parapos,0,val);
+  // this is ok here since we have a sparse approximation
+  Teuchos::RCP<Epetra_CrsMatrix> fullmatrix = matrix.FillMatrix();
+
+  // matrix * restrictor_
+  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,restrictor_,false);
+  // prolongator*matrix*restrictor
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(prolongator_,true,mr,false);
+
+  Epetra_Vector diagonal(pmr->RowMap(),true);
+  pmr->ExtractDiagonalCopy(diagonal);
+
+  // loop the parameter blocks
+  for (int k=0; k<paramapextractor_->NumMaps(); k++)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(diagonal,k);
+    for (int i=0; i< tmp->MyLength(); i++)
+    {
+      int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
+      int plid = paramapextractor_->FullMap()->LID(pgid);
+      diagonals->ReplaceGlobalValue(ParamsLIDtoeleGID()[plid],k,(*tmp)[i]);
+    }
+  }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerUniform::InitParameters()
+{
+  // sanity checks
+  if ( not restrictor_->DomainMap().PointSameAs(optparams_elewise_->Map()))
+    dserror("Restrictor->DomainMap error.");
+
+  if ( not restrictor_->RangeMap().PointSameAs(optparams_->Map()))
+    dserror("Restrictor->RangeMap error");
+
+  // parameters are not initialized from input but
+  // from the elementwise layout
+  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  if (err!=0)
+    dserror("Application of restrictor failed.");
+
+  // set initial values
+  optparams_initial_->Scale(1.0,*optparams_);
+
 }
 
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-    double val, int elepos, int paraposglobal,int paraposlocal)
+                                                            double val,
+                                                            int elepos,
+                                                            int paraposglobal,
+                                                            int paraposlocal)
 {
-  // every proc can do the 'product rule' on his own
-  // summation can be done after the assembly is complete
-  dfint->SumIntoGlobalValue(paraposglobal,0,val);
+  if (EleGIDtoparamsLID().find(elepos) == EleGIDtoparamsLID().end())
+    dserror("proc %d, ele %d not in this map", Discret()->Comm().MyPID(), elepos);
 
-  return;
+  // parameter in the 'elementwise' (there can be multiple
+  // per element) parameter layout
+  int plid = EleGIDtoparamsLID()[elepos].at(paraposlocal);
 
+  // check to which patch it belongs
+  int patchid = pidtopatch_[plid];
+
+  int success = dfint->SumIntoMyValue(patchid,0,val);
+  if (success!=0) dserror("gid %d is not on this processor", plid);
 }
 
 /*----------------------------------------------------------------------*/
@@ -102,23 +170,74 @@ void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> sou
   std::vector<double> val(source->MyLength(),0.0);
   Discret()->Comm().SumAll((*source)(0)->Values(),&val[0],source->MyLength());
 
-  // put into the global gradient; procs who dont own
-  // the gid dont get contributions
-  for (int i=0; i<NumParams(); i++)
+  for (int i=0; i<target->MyLength(); i++)
     target->SumIntoGlobalValue(i,0,val[i]);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManagerUniform::FillAdjacencyMatrix(const Epetra_Map& paramrowmap,
-    Teuchos::RCP<Epetra_CrsMatrix> graph)
+void INVANA::MatParManagerUniform::CreateProjection()
 {
-  /* there is no particular connectivity for uniform distributions.
-   if you want a connectivity between the different patches, do it.
-   But for the moment the graph has just a diagonal with a value which is
-   zeroed out in the calling routine anyways. So the graph will be left
-   just empty here. */
+  // create optimization parameter maps anew
+  int numeleperproc=0;
+  if (Comm().MyPID()==0) numeleperproc = NumParams();
+  paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1,numeleperproc,0,Comm()));
+  paramlayoutmap_ = LINALG::AllreduceEMap(*paramlayoutmapunique_);
+
+  // build correspondence elewiseoptparam <-> patch
+  for (int i=0; i<paramapextractor_->NumMaps(); i++)
+  {
+    const Teuchos::RCP<const Epetra_Map>& map = paramapextractor_->Map(i);
+    int mylength = map->NumMyElements();
+    for (int j=0; j<mylength; j++)
+    {
+      int lid = paramapextractor_->FullMap()->LID(map->GID(j));
+      pidtopatch_[lid]=i;
+    }
+  }
+
+  //check bandwidth of restrictor and prolongator
+  int maxbw = 0;
+  for (int i=0; i<paramapextractor_->NumMaps(); i++)
+  {
+    int current = paramapextractor_->Map(i)->NumMyElements();
+    if (current > maxbw)
+      maxbw = current;
+  }
+
+  Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(*paramapextractor_->FullMap(),0);
+  restrictor_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
+  prolongator_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
+
+  // restrictor and prolongator will have a range only on proc 0
+  // but the partial maps might be distributed
+  // -> reduce them before inserting into restrictor and prolongator
+  std::vector<Teuchos::RCP<Epetra_Map> > maps;
+  for (int i=0; i<paramapextractor_->NumMaps(); i++)
+    maps.push_back(LINALG::AllreduceEMap(*paramapextractor_->Map(i),0));
+
+  for (int i=0; i<restrictor_->NumMyRows(); i++)
+  {
+    int numentries = maps[i]->NumMyElements();
+    std::vector<double> values(numentries, 1.0/numentries);
+    std::vector<double> ones(numentries,1.0);
+
+    int err = restrictor_->InsertGlobalValues(i,numentries,&values[0],maps[i]->MyGlobalElements());
+    int err2 = prolongator_->InsertGlobalValues(i,numentries,&ones[0],maps[i]->MyGlobalElements());
+    if (err < 0 or err2 < 0)
+      dserror("Restrictor/Prolongator insertion failed.");
+  }
+  int err = restrictor_->FillComplete(*paramapextractor_->FullMap(), *paramlayoutmapunique_,true);
+  int err2 = prolongator_->FillComplete(*paramapextractor_->FullMap(), *paramlayoutmapunique_,true);
+  if (err != 0 or err2!=0)
+    dserror("Restrictor/Prolongator FillComplete failed.");
+
+
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
+  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
 
   return;
 }
+
+

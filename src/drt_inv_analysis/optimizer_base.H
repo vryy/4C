@@ -181,6 +181,9 @@ protected:
   //! @name Access to input and output
   //@{
 
+  //! the input file parameters
+  const Teuchos::ParameterList& Inpar() {return inpar_;}
+
   //! a reference to the file to restart from
   const Teuchos::RCP<IO::InputControl> RestartFromFile(){return inputfile_;}
 
@@ -253,6 +256,9 @@ private:
 
   //! @name Input and output
   //@{
+
+  //! Input file parameters
+  const Teuchos::ParameterList& inpar_;
 
   //! output control
   Teuchos::RCP<IO::DiscretizationWriter> output_;

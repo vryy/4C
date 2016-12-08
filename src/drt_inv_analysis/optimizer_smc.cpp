@@ -142,7 +142,7 @@ void INVANA::OptimizerSMC::Integrate()
   double tn = ti_+dt_; // next time step
   bool doiter = true;
   double resamp_thresh = 0.5*gnumparticles_;
-  while (doiter)
+  while (doiter and runc_< maxiter_)
   {
     // get next time step and a suggestion for the next increment
     FindStep(ti_,tn,dt_);
@@ -179,47 +179,51 @@ void INVANA::OptimizerSMC::Integrate()
     WriteRestart();
   }
 
-  // ---------- Do final statistical evaluation
-  // mean and std from the variational approximation
-  double covscalefac = params_.get<double>("MAP_COV_SCALE");
-  Teuchos::RCP<Epetra_Vector> mean_vb = Teuchos::rcp(new
-      Epetra_Vector(particles_->Evaluator().EvalPrior().Mean()));
+  // ----------------------------------------------------------
+  // Statistical quantities
+  /* the visulization should be elementwise. So some potential
+   * linear transformation has to be applied to the optimization
+   * parameters before computing the statistics. (At least for the
+   * variance). The mean could also be transformed afterwards.
+   */
 
-  Teuchos::RCP<Epetra_Vector> stdev_vb = Teuchos::rcp(new
-      Epetra_Vector(mean_vb->Map()));
-  particles_->Evaluator().EvalPrior().Covariance().Matrix()->ExtractDiagonalCopy(*stdev_vb);
+  // Set up vectors to hold the statistical evaluation
+  Teuchos::RCP<Epetra_MultiVector> state = OptProb()->Matman()->GetRawParams();
+  Teuchos::RCP<Epetra_MultiVector> mean_smc = Teuchos::rcp(new
+      Epetra_MultiVector(state->Map(),state->NumVectors(),false));
+  Teuchos::RCP<Epetra_MultiVector> stdev_smc = Teuchos::rcp(new
+      Epetra_MultiVector(state->Map(),state->NumVectors(),false));
 
-  double* val;
-  stdev_vb->ExtractView(&val);
-  for (int i=0; i<stdev_vb->MyLength(); i++)
-    val[i] = sqrt(val[i]/covscalefac);
+  // Set up Particle data
+  std::map<int, Teuchos::RCP<INVANA::ParticleData> > data = Particles()->GetData();
+  // the data to be statistically evaluated for visualization
+  std::map<int, Teuchos::RCP<INVANA::ParticleData> > sdata;
+  std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
+  for (it=data.begin(); it!=data.end(); it++)
+  {
+    sdata[it->first] = Teuchos::rcp(new INVANA::ParticleData());
+    sdata[it->first]->Init(state->Map());
+  }
 
-  // mean and std from the smc algorithm
-  Epetra_Vector mean_smc(mean_vb->Map(),false);
-  Epetra_Vector stdev_smc(mean_vb->Map(),false);
-  particles_->ComputeMean(mean_smc, stdev_smc);
-  // ---------- end
+  for (int j=0; j<state->NumVectors(); j++)
+  {
+    std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
+    for (it=data.begin(); it!=data.end(); it++)
+    {
+      OptProb()->Matman()->ReplaceParamsShallow(data[it->first]->GetState());
+      state = OptProb()->Matman()->GetRawParams();
+      sdata[it->first]->SetState(*(*state)(j));
+    }
+    particles_->ComputeMean(sdata,*(*mean_smc)(j), *(*stdev_smc)(j));
+  }
+  // ----------------------------------------------------------
 
+
+  //
   if (mygroup_==0)
   {
-
-    Teuchos::RCP<Epetra_MultiVector> state;
-
-    OptProb()->Matman()->ReplaceParamsShallow(mean_smc);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("mean_smc",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(*mean_vb);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("mean_vb",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(stdev_smc);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("stdev_smc",state);
-
-    OptProb()->Matman()->ReplaceParamsShallow(*stdev_vb);
-    state = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("stdev_vb",state);
+    Writer()->WriteNamedVectors("mean_smc",mean_smc);
+    Writer()->WriteNamedVectors("stdev_smc",stdev_smc);
   }
 
   return;
@@ -245,7 +249,24 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
     essb = particles_->NewEffectiveSampleSize(tb,ta);
     fb = essb - (1-incscal)*essa;
     if (fb>0)
-      tb *= 2.0;
+    {
+      dt *= 2.0;
+      tb = ta + dt;
+    }
+
+    // no stepsize in [ta,1.0] can be found  that significantly
+    // decreases the ess -> the 2 distributions are similar
+    // enough and we are done
+    if ( tb>= 1.0 )
+    {
+      // tweak fb so that the bisection is not triggered
+      // and give some information
+      fb = 0.5*tol;
+      if (particles_->PComm().GComm().MyPID()==0)
+        std::cout << " No time step in ["<< ta << ",1.0] significantly"
+            "reduces the ess; setting tn=1.0" << std::endl;
+      break;
+    }
   }
 
   // bisection algorithm
@@ -275,7 +296,7 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
   if (j==maxiter)
   {
     if (particles_->PComm().GComm().MyPID()==0)
-      std::cout << "(Group " << mygroup_ << ") reached maxiter finding stepsize" << std::endl;
+      std::cout << "  reached maxiter finding stepsize" << std::endl;
   }
 
   if ( tc>1 )

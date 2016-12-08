@@ -1575,6 +1575,7 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/matpar_manager_uniform.cpp
   src/drt_inv_analysis/matpar_manager_elementwise.cpp
   src/drt_inv_analysis/matpar_manager_patchwise.cpp
+  src/drt_inv_analysis/matpar_manager_tvsvd.cpp
   src/drt_inv_analysis/regularization_base.cpp
   src/drt_inv_analysis/regularization_totalvariation.cpp
   src/drt_inv_analysis/regularization_tikhonov.cpp

@@ -160,10 +160,10 @@ private:
   //@{
 
   //! mean
-  Teuchos::RCP<Epetra_Vector> mean_;
+  Teuchos::RCP<Epetra_MultiVector> mean_;
 
   //! standard deviation
-  Teuchos::RCP<Epetra_Vector> stddev_;
+  Teuchos::RCP<Epetra_MultiVector> stddev_;
   //@}
 
 };

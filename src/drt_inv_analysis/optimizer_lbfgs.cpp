@@ -17,6 +17,9 @@
 #include "optimizer_lbfgs.H"
 #include "invana_base.H"
 #include "matpar_manager.H"
+#include "matpar_manager_elementwise.H"
+#include "DcsMatrix.H"
+#include "objective_funct.H"
 
 #include "../linalg/linalg_utils.H"
 #include "invana_utils.H"
@@ -139,8 +142,7 @@ void INVANA::OptimizerLBFGS::Integrate()
   // append solution to the last output (only if a step was made)
   if (runc_)
   {
-    Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams();
-    Writer()->WriteNamedVectors("mean_vb", result);
+    WriteOutput();
   }
 
   Evaluate(NULL,Teuchos::null); // set optimization parameters to the optproblem
@@ -405,9 +407,6 @@ void INVANA::OptimizerLBFGS::Summarize()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* Read restart                                               keh 03/14 */
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerLBFGS::ReadRestart(int run)
 {
@@ -440,9 +439,6 @@ void INVANA::OptimizerLBFGS::ReadRestart(int run)
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* Write restart                                              keh 03/14 */
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerLBFGS::WriteRestart()
 {
@@ -476,6 +472,25 @@ void INVANA::OptimizerLBFGS::WriteRestart()
     (*data)(i)->Scale(1.0,(*ystore_)[past+i]);
 
   Writer()->WriteNamedVector("ystore",data);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::OptimizerLBFGS::WriteOutput()
+{
+  // map estimate already projected on the elementwise layout
+  Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams();
+  Writer()->WriteNamedVectors("mean_vb", result);
+
+  // variance estimation in optimization parameter layout
+  double objfuncscal = OptProb()->ObjectiveFunct()->GetScaleFac();
+  DcsMatrix covmatrix(sstore_, ystore_, initscal_, true, objfuncscal, 1.0);
+
+  Teuchos::RCP<Epetra_MultiVector> stdev =
+      OptProb()->Matman()->GetMatrixDiagonal(covmatrix);
+
+  Writer()->WriteNamedVectors("stdev_vb", stdev);
 
   return;
 }

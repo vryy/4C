@@ -35,39 +35,53 @@ typedef std::map<int, std::vector<int> > PATCHES;
 
 /*----------------------------------------------------------------------*/
 INVANA::MatParManagerPerPatch::MatParManagerPerPatch(Teuchos::RCP<DRT::Discretization> discret)
-   :MatParManagerPerElement(discret),
+   : MatParManagerPerElement(discret),
+qthresh_(0.1),
 map_restart_file_("none"),
 map_restart_step_(-1),
-num_levels_(1)
+max_num_levels_(1)
 {}
 
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerPerPatch::Setup()
 {
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "MatParManager Setup:" << std::endl;
+  }
 
   const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
   map_restart_step_ = invp.get<int>("MAP_RESTART");
   map_restart_file_ = Teuchos::getNumericStringParameter(invp,"MAP_RESTARTFILE");
 
-  num_levels_ = invp.get<int>("NUM_PATCH_LEVELS");
+  max_num_levels_ = invp.get<int>("NUM_PATCH_LEVELS");
 
-  if (num_levels_<=1)
-    dserror("Choose at least NUM_PATCH_LEVELS = 2 for the patch creation!");
+  if (max_num_levels_<1)
+    dserror("Choose at least NUM_LEVELS = 1 for the patch creation!");
 
   // call setup of the Base class to have all the
   // layout of the elementwise distribution
   MatParManagerPerElement::Setup();
   optparams_elewise_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
   elewise_map_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
+  graph_ = GetConnectivityData()->AdjacencyMatrix();
 
   // read map approximation to perform the reduction on
   ReadMAPApproximation();
 
-  // reduce set of parameters
-  ReduceBasis();
+  // sort elementwise solution into histogram
+  MakeHistogram();
+
+  // create sparse approximation of the MAP solution
+  CreateProjection();
 
   // initialize parameters
   InitParameters();
+
+  // Some user information
+  if (Comm().MyPID() == 0)
+    std::cout << std::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -75,31 +89,54 @@ void INVANA::MatParManagerPerPatch::FillParameters(Teuchos::RCP<Epetra_MultiVect
 {
   params->PutScalar(0.0);
 
+  // Inject into the elementwise solution space
+  int err = prolongator_->Multiply(true,*optparams_,*optparams_elewise_);
+  if (err!=0)
+    dserror("Application of prolongator failed.");
+
   // loop the parameter blocks
   for (int k=0; k<paramapextractor_->NumMaps(); k++)
   {
-    Teuchos::RCP<Epetra_Vector> optparams = paramapextractor_->ExtractVector(*(*optparams_)(0),k);
-
-    // make optparams redundant on every proc
-    Teuchos::RCP<Epetra_Vector> optparams_allred = Teuchos::rcp(new Epetra_Vector(*paramlayoutmap_,false));
-    Epetra_Import importer(optparams_allred->Map(), optparams_->Map());
-    int err = optparams_allred->Import(*optparams_, importer, Insert);
-    if (err)
-      dserror("Export using exporter returned err=%d", err);
-
-    for (int i=0; i<patchmap_->NumMaps(); i++)
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(*(*optparams_elewise_)(0),k);
+    for (int i=0; i< tmp->MyLength(); i++)
     {
-      double val = (*optparams_allred)[i];
-
-      const Teuchos::RCP<const Epetra_Map> patch = patchmap_->Map(i);
-      for (int j=0; j<patch->NumMyElements(); j++)
-      {
-        int pgid = patch->GID(j);
-        int plid = patchmap_->FullMap()->LID(pgid);
-        params->ReplaceGlobalValue(ParamsLIDtoeleGID()[plid],k,val);
-      }
+      int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
+      int plid = paramapextractor_->FullMap()->LID(pgid);
+      params->ReplaceGlobalValue(ParamsLIDtoeleGID()[plid],k,(*tmp)[i]);
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerPerPatch::ApplyParametrization(
+    DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals)
+{
+  // this is ok here since we have a sparse approximation
+  Teuchos::RCP<Epetra_CrsMatrix> fullmatrix = matrix.FillMatrix();
+
+  // matrix * restrictor_
+  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,restrictor_,false);
+  // prolongator*matrix*restrictor
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(prolongator_,true,mr,false);
+
+  Epetra_Vector diagonal(pmr->RowMap(),true);
+  pmr->ExtractDiagonalCopy(diagonal);
+
+  // loop the parameter blocks
+  for (int k=0; k<paramapextractor_->NumMaps(); k++)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(diagonal,k);
+    for (int i=0; i< tmp->MyLength(); i++)
+    {
+      int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
+      int plid = paramapextractor_->FullMap()->LID(pgid);
+      diagonals->ReplaceGlobalValue(ParamsLIDtoeleGID()[plid],k,(*tmp)[i]);
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -170,8 +207,8 @@ void INVANA::MatParManagerPerPatch::ReadMAPApproximation()
 
   if (not Discret()->Comm().MyPID())
   {
-    std::cout << "Reading MAP approximation for parameter basis reduction ";
-    std::cout << "step " << map_restart_step_ << " from file: " << input->FileName() << std::endl;
+    std::cout << "  Reading MAP approximation: ";
+    std::cout << "  step " << map_restart_step_ << " (from: " << input->FileName() << ")" << std::endl;
   }
 
   reader.ReadMultiVector(optparams_elewise_,"solution");
@@ -181,30 +218,58 @@ void INVANA::MatParManagerPerPatch::ReadMAPApproximation()
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManagerPerPatch::ReduceBasis()
+void INVANA::MatParManagerPerPatch::CreateProjection()
+{
+  // create the orthogonal dictionary for each level
+  // and check the approximation power
+  double quality = 100.0;
+  int level=1;
+  while (quality > qthresh_ and level <= max_num_levels_)
+  {
+    CreateLevelDictionary(level);
+    quality = CheckApproximation();
+    level += 1;
+  }
+
+  // Some user information
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "  Reached approximation quality of " << quality << std::endl;
+    std::cout << "  using the first " << level - 1 << " maxima of the solution histogram" << std::endl;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
 {
   // for convenience
-  Teuchos::RCP<Epetra_CrsMatrix> adjacency = GetConnectivityData()->AdjacencyMatrix();
   Epetra_Vector* optparams = (*optparams_elewise_)(0);
 
-  const Epetra_Map& elemap = adjacency->RowMap();
+  const Epetra_Map& elemap = graph_->RowMap();
 
   if (not elemap.SameAs(optparams->Map()))
     dserror("Graph and solution map don't match. Fatal!");
 
-  // read from inputfile
-  int patchlevels = num_levels_;
-
-  // -------- define levels for patching
-  double patchmin;
-  double patchmax;
-  optparams->MinValue(&patchmin);
-  optparams->MaxValue(&patchmax);
-
+  // -------- define levels for patching according to the histogram
+  // the values of the patches
   std::vector<double> patchvalues;
-  double incr = (patchmax-patchmin)/(patchlevels-1);
-  for (int i=0; i<patchlevels; i++)
-    patchvalues.push_back(patchmin+(i*incr));
+  //copy the histogram for manipulation
+  std::map<int,int> histbins = histbins_;
+  for (int i=0; i<patchlevel; i++)
+  {
+    // find bin with maximum entries
+    int imax;
+    FindHistogramMax(histbins,imax);
+
+    // get mid point of this bin as patchvalue
+    double val = (histvalues_[imax]-histvalues_[imax+1])/2.0 + histvalues_[imax];
+    patchvalues.push_back(val);
+
+    // remove this bin from the histogram
+    histbins.erase(imax);
+  }
   // --------
 
   // -------- clustering the map solution according to the patchlevels
@@ -213,17 +278,21 @@ void INVANA::MatParManagerPerPatch::ReduceBasis()
   {
     int patchval = 0;
     double currval = (*optparams)[i];
-    for (int j=1; j<(int)patchvalues.size(); j++)
+    double dist = 1.0e10;
+    for (int j=0; j<(int)patchvalues.size(); j++)
     {
-      if (abs(currval-patchvalues[j]) < abs(currval-patchvalues[patchval]))
+      if (abs(currval-patchvalues[j]) < dist )
+      {
         patchval = j;
+        dist = abs(currval-patchvalues[j]);
+      }
     }
     levelgids[patchval].push_back(optparams->Map().GID(i));
   }
 
   // keep the different levels separated in a mapextractor
   std::vector< Teuchos::RCP<const Epetra_Map> > partials;
-  for (int i=0; i<patchlevels; i++)
+  for (int i=0; i<patchlevel; i++)
   {
     // this will create empty maps for levels not having any elements
     partials.push_back(Teuchos::rcp(new
@@ -259,12 +328,12 @@ void INVANA::MatParManagerPerPatch::ReduceBasis()
       int numcols;
       double* values;
       int* indices;
-      adjacency->ExtractMyRowView(lid,numcols,values,indices);
+      graph_->ExtractMyRowView(lid,numcols,values,indices);
 
       std::vector<int> myneighbours;
       for (int j=0; j<numcols; j++)
       {
-        int ngid = adjacency->ColMap().GID(indices[j]);
+        int ngid = graph_->ColMap().GID(indices[j]);
         int nlid = levelallred->LID(ngid);
         // dont make itself and off-level elements a neighbour
         if (ngid != egid and nlid != -1)
@@ -337,32 +406,58 @@ void INVANA::MatParManagerPerPatch::ReduceBasis()
   }
   Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(*patchmap_->FullMap(),0);
   restrictor_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
+  prolongator_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
 
   for (int i=0; i<restrictor_->NumMyRows(); i++)
   {
     int numentries = patches[i].size();
     std::vector<double> values(numentries, 1.0/numentries);
+    std::vector<double> ones(numentries,1.0);
 
     int err = restrictor_->InsertGlobalValues(i,numentries,&values[0],patches[i].data());
-    if (err < 0)
-      dserror("Restrictor insertion failed.");
+    int err2 = prolongator_->InsertGlobalValues(i,numentries,&ones[0],patches[i].data());
+    if (err < 0 or err2 < 0)
+      dserror("Restrictor/Prolongator insertion failed.");
   }
   int err = restrictor_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_,true);
-  if (err != 0)
-    dserror("Restrictor FillComplete failed.");
-
+  int err2 = prolongator_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_,true);
+  if (err != 0 or err2!=0)
+    dserror("Restrictor/Prolongator FillComplete failed.");
 
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
   optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
 
-  // todo: extend all the graph based stuff to multiple physical parameters
-  std::vector< Teuchos::RCP<const Epetra_Map> > tmp;
-  tmp.push_back(paramlayoutmapunique_);
-  paramapextractor_ = Teuchos::rcp(new
-      LINALG::MultiMapExtractor(*paramlayoutmapunique_,tmp));
-
-
   return;
+}
+
+/*----------------------------------------------------------------------*/
+double INVANA::MatParManagerPerPatch::CheckApproximation()
+{
+  // compute 'optimal' optimization parameters
+  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  if (err!=0)
+    dserror("Application of restrictor failed.");
+
+  // project to elementwise solution space
+  Teuchos::RCP<Epetra_MultiVector> projection = Teuchos::rcp(new
+      Epetra_MultiVector(*elewise_map_,1,false));
+  err = prolongator_->Multiply(true,*optparams_,*projection);
+  if (err!=0)
+    dserror("Application of restrictor failed.");
+
+  // compute metric
+  projection->Update(-1.0,*optparams_elewise_,1.0);
+  // projection->Print(std::cout);
+  double metric;
+  projection->Norm2(&metric);
+
+  double base;
+  optparams_elewise_->Norm2(&base);
+
+  // make metric relative
+  metric/=base;
+
+  return metric;
 }
 
 /*----------------------------------------------------------------------*/
@@ -423,3 +518,78 @@ void INVANA::MatParManagerPerPatch::FindLevelConnectivity(
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerPerPatch::MakeHistogram()
+{
+  // communicate solution to all procs
+  Teuchos::RCP<Epetra_Map> alllocal = LINALG::AllreduceEMap(*elewise_map_);
+  Epetra_Vector data(*alllocal,true);
+
+  // bring to every proc the same data
+  Epetra_Import importer(*alllocal,*elewise_map_);
+  int err = data.Import(*(*optparams_elewise_)(0), importer, Insert);
+  if (err)
+    dserror("import of data to every processor failed with code: %d",err);
+
+  // compute histogram bin values
+  histvalues_.clear();
+  int nbins = 10;
+  double min = 0.0;
+  data.MinValue(&min);
+  double max = 0.0;
+  data.MaxValue(&max);
+  histvalues_.push_back(min);
+  double dd = (max-min)/nbins;
+  for (int i=1; i<=nbins; i++)
+    histvalues_.push_back(min+i*dd);
+
+  // init bins
+  histbins_.clear();
+  for (int i=0; i<nbins; i++)
+    histbins_[i]=0;
+
+  // sort data
+  for (int j=0; j<data.MyLength(); j++)
+  {
+    for (int i=0; i<nbins ;i++)
+    {
+      if ((data[j] >= histvalues_[i]) && (data[j] < histvalues_[i+1]))
+        histbins_[i] += 1;
+    }
+  }
+
+#if 0
+  // print histogram
+  std::cout << "histogram: ";
+  for (int i=0; i<nbins; i++)
+    std::cout << histbins_[i] << ", ";
+  std::cout << std::endl;
+  for (int i=0; i<nbins; i++)
+    std::cout << histvalues_[i] << " " << histvalues_[i+1] << ", ";
+  std::cout << std::endl;
+#endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerPerPatch::FindHistogramMax(
+    std::map<int,int>& histbins,int& index)
+{
+  int max = -1;
+
+  std::map<int,int>::iterator it;
+  for (it = histbins.begin(); it!=histbins.end(); it++)
+  {
+    if (it->second > max)
+    {
+      max = it->second;
+      index = it->first;
+    }
+  }
+
+
+  return;
+}
+
