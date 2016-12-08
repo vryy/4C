@@ -40,7 +40,56 @@ UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Cardiovascular0DArterialVeno
     std::vector<int>& curID):
     Cardiovascular0D(discr,conditionname,curID)
 {
-  //empty
+
+  Teuchos::ParameterList artvensyspulpar =
+        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED PARAMETERS");
+
+  // set all 0D model parameters
+  R_arvalve_max_l_ = artvensyspulpar.get("R_arvalve_max_l",0.0);
+  R_arvalve_min_l_ = artvensyspulpar.get("R_arvalve_min_l",0.0);
+  R_atvalve_max_l_ = artvensyspulpar.get("R_atvalve_max_l",0.0);
+  R_atvalve_min_l_ = artvensyspulpar.get("R_atvalve_min_l",0.0);
+  R_arvalve_max_r_ = artvensyspulpar.get("R_arvalve_max_r",0.0);
+  R_arvalve_min_r_ = artvensyspulpar.get("R_arvalve_min_r",0.0);
+  R_atvalve_max_r_ = artvensyspulpar.get("R_atvalve_max_r",0.0);
+  R_atvalve_min_r_ = artvensyspulpar.get("R_atvalve_min_r",0.0);
+  Atrium_act_curve_l_ = artvensyspulpar.get("Atrium_act_curve_l",-1);
+  Atrium_act_curve_r_ = artvensyspulpar.get("Atrium_act_curve_r",-1);
+  Ventricle_act_curve_l_ = artvensyspulpar.get("Ventricle_act_curve_l",-1);
+  Ventricle_act_curve_r_ = artvensyspulpar.get("Ventricle_act_curve_r",-1);
+  E_at_max_l_ = artvensyspulpar.get("E_at_max_l",0.0);
+  E_at_min_l_ = artvensyspulpar.get("E_at_min_l",0.0);
+  E_at_max_r_ = artvensyspulpar.get("E_at_max_r",0.0);
+  E_at_min_r_ = artvensyspulpar.get("E_at_min_r",0.0);
+  E_v_max_l_ = artvensyspulpar.get("E_v_max_l",0.0);
+  E_v_min_l_ = artvensyspulpar.get("E_v_min_l",0.0);
+  E_v_max_r_ = artvensyspulpar.get("E_v_max_r",0.0);
+  E_v_min_r_ = artvensyspulpar.get("E_v_min_r",0.0);
+  C_ar_sys_ = artvensyspulpar.get("C_ar_sys",0.0);
+  R_ar_sys_ = artvensyspulpar.get("R_ar_sys",0.0);
+  L_ar_sys_ = artvensyspulpar.get("L_ar_sys",0.0);
+  Z_ar_sys_ = artvensyspulpar.get("Z_ar_sys",0.0);
+  C_ar_pul_ = artvensyspulpar.get("C_ar_pul",0.0);
+  R_ar_pul_ = artvensyspulpar.get("R_ar_pul",0.0);
+  L_ar_pul_ = artvensyspulpar.get("L_ar_pul",0.0);
+  Z_ar_pul_ = artvensyspulpar.get("Z_ar_pul",0.0);
+  C_ven_sys_ = artvensyspulpar.get("C_ven_sys",0.0);
+  R_ven_sys_ = artvensyspulpar.get("R_ven_sys",0.0);
+  L_ven_sys_ = artvensyspulpar.get("L_ven_sys",0.0);
+  C_ven_pul_ = artvensyspulpar.get("C_ven_pul",0.0);
+  R_ven_pul_ = artvensyspulpar.get("R_ven_pul",0.0);
+  L_ven_pul_ = artvensyspulpar.get("L_ven_pul",0.0);
+
+  V_v_l_0_ = artvensyspulpar.get("V_v_l_0",0.0);
+  V_at_l_0_ = artvensyspulpar.get("V_at_l_0",0.0);
+  V_ar_sys_0_ = artvensyspulpar.get("V_ar_sys_0",0.0);
+  V_ven_sys_0_ = artvensyspulpar.get("V_ven_sys_0",0.0);
+  V_v_r_0_ = artvensyspulpar.get("V_v_r_0",0.0);
+  V_at_r_0_ = artvensyspulpar.get("V_at_r_0",0.0);
+  V_ar_pul_0_ = artvensyspulpar.get("V_ar_pul_0",0.0);
+  V_ven_pul_0_ = artvensyspulpar.get("V_ven_pul_0",0.0);
+
+
 }
 
 
@@ -101,75 +150,28 @@ void UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Evaluate(
     havegid[j] = false;
   }
 
-  Teuchos::ParameterList artvensyspulpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED PARAMETERS");
-
-  const double R_arvalve_max_l = artvensyspulpar.get("R_arvalve_max_l",0.0);
-  const double R_arvalve_min_l = artvensyspulpar.get("R_arvalve_min_l",0.0);
-  const double R_atvalve_max_l = artvensyspulpar.get("R_atvalve_max_l",0.0);
-  const double R_atvalve_min_l = artvensyspulpar.get("R_atvalve_min_l",0.0);
-  const double R_arvalve_max_r = artvensyspulpar.get("R_arvalve_max_r",0.0);
-  const double R_arvalve_min_r = artvensyspulpar.get("R_arvalve_min_r",0.0);
-  const double R_atvalve_max_r = artvensyspulpar.get("R_atvalve_max_r",0.0);
-  const double R_atvalve_min_r = artvensyspulpar.get("R_atvalve_min_r",0.0);
-  const int Atrium_act_curve_l = artvensyspulpar.get("Atrium_act_curve_l",-1);
-  const int Atrium_act_curve_r = artvensyspulpar.get("Atrium_act_curve_r",-1);
-  const int Ventricle_act_curve_l = artvensyspulpar.get("Ventricle_act_curve_l",-1);
-  const int Ventricle_act_curve_r = artvensyspulpar.get("Ventricle_act_curve_r",-1);
-  const double E_at_max_l = artvensyspulpar.get("E_at_max_l",0.0);
-  const double E_at_min_l = artvensyspulpar.get("E_at_min_l",0.0);
-  const double E_at_max_r = artvensyspulpar.get("E_at_max_r",0.0);
-  const double E_at_min_r = artvensyspulpar.get("E_at_min_r",0.0);
-  const double E_v_max_l = artvensyspulpar.get("E_v_max_l",0.0);
-  const double E_v_min_l = artvensyspulpar.get("E_v_min_l",0.0);
-  const double E_v_max_r = artvensyspulpar.get("E_v_max_r",0.0);
-  const double E_v_min_r = artvensyspulpar.get("E_v_min_r",0.0);
-  const double C_ar_sys = artvensyspulpar.get("C_ar_sys",0.0);
-  const double R_ar_sys = artvensyspulpar.get("R_ar_sys",0.0);
-  const double L_ar_sys = artvensyspulpar.get("L_ar_sys",0.0);
-  const double Z_ar_sys = artvensyspulpar.get("Z_ar_sys",0.0);
-  const double C_ar_pul = artvensyspulpar.get("C_ar_pul",0.0);
-  const double R_ar_pul = artvensyspulpar.get("R_ar_pul",0.0);
-  const double L_ar_pul = artvensyspulpar.get("L_ar_pul",0.0);
-  const double Z_ar_pul = artvensyspulpar.get("Z_ar_pul",0.0);
-  const double C_ven_sys = artvensyspulpar.get("C_ven_sys",0.0);
-  const double R_ven_sys = artvensyspulpar.get("R_ven_sys",0.0);
-  const double L_ven_sys = artvensyspulpar.get("L_ven_sys",0.0);
-  const double C_ven_pul = artvensyspulpar.get("C_ven_pul",0.0);
-  const double R_ven_pul = artvensyspulpar.get("R_ven_pul",0.0);
-  const double L_ven_pul = artvensyspulpar.get("L_ven_pul",0.0);
-
-  const double V_v_l_0 = artvensyspulpar.get("V_v_l_0",0.0);
-  const double V_at_l_0 = artvensyspulpar.get("V_at_l_0",0.0);
-  const double V_ar_sys_0 = artvensyspulpar.get("V_ar_sys_0",0.0);
-  const double V_ven_sys_0 = artvensyspulpar.get("V_ven_sys_0",0.0);
-  const double V_v_r_0 = artvensyspulpar.get("V_v_r_0",0.0);
-  const double V_at_r_0 = artvensyspulpar.get("V_at_r_0",0.0);
-  const double V_ar_pul_0 = artvensyspulpar.get("V_ar_pul_0",0.0);
-  const double V_ven_pul_0 = artvensyspulpar.get("V_ven_pul_0",0.0);
-
   // find out whether we will use a time curve and get the factor
   // 0D atrial activation
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
-  if (Atrium_act_curve_l>=0 && usetime)
-    y_at_l_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_l-1).f(tim);
-  if (Atrium_act_curve_r>=0 && usetime)
-    y_at_r_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_r-1).f(tim);
+  if (Atrium_act_curve_l_>=0 && usetime)
+    y_at_l_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_l_-1).f(tim);
+  if (Atrium_act_curve_r_>=0 && usetime)
+    y_at_r_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_r_-1).f(tim);
   // 0D time-varying atrial elastance - NOT used when we have 3D atria!
-  double E_at_l_np = (E_at_max_l-E_at_min_l)*y_at_l_np + E_at_min_l;
-  double E_at_r_np = (E_at_max_r-E_at_min_r)*y_at_r_np + E_at_min_r;
+  double E_at_l_np = (E_at_max_l_-E_at_min_l_)*y_at_l_np + E_at_min_l_;
+  double E_at_r_np = (E_at_max_r_-E_at_min_r_)*y_at_r_np + E_at_min_r_;
 
   // 0D ventricular activation
   double y_v_l_np = 0.0;
   double y_v_r_np = 0.0;
-  if (Ventricle_act_curve_l>=0 && usetime)
-    y_v_l_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_l-1).f(tim);
-  if (Ventricle_act_curve_r>=0 && usetime)
-    y_v_r_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_r-1).f(tim);
+  if (Ventricle_act_curve_l_>=0 && usetime)
+    y_v_l_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_l_-1).f(tim);
+  if (Ventricle_act_curve_r_>=0 && usetime)
+    y_v_r_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_r_-1).f(tim);
   // 0D time-varying ventricular elastance - NOT used when we have 3D ventricles!
-  double E_v_l_np = (E_v_max_l-E_v_min_l)*y_v_l_np + E_v_min_l;
-  double E_v_r_np = (E_v_max_r-E_v_min_r)*y_v_r_np + E_v_min_r;
+  double E_v_l_np = (E_v_max_l_-E_v_min_l_)*y_v_l_np + E_v_min_l_;
+  double E_v_r_np = (E_v_max_r_-E_v_min_r_)*y_v_r_np + E_v_min_r_;
 
   // Cardiovascular0D stiffness
   Epetra_SerialDenseMatrix wkstiff(16,16);
@@ -266,43 +268,43 @@ void UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Evaluate(
 
     df_np[1]  = 0.;
     df_np[3]  = 0.;
-    df_np[4]  = C_ar_sys * (p_ar_sys_np - Z_ar_sys * q_vout_l_np);
-    df_np[5]  = (L_ar_sys/R_ar_sys) * q_ar_sys_np;
-    df_np[6]  = C_ven_sys * p_ven_sys_np;
-    df_np[7]  = (L_ven_sys/R_ven_sys) * q_ven_sys_np;
+    df_np[4]  = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np);
+    df_np[5]  = (L_ar_sys_/R_ar_sys_) * q_ar_sys_np;
+    df_np[6]  = C_ven_sys_ * p_ven_sys_np;
+    df_np[7]  = (L_ven_sys_/R_ven_sys_) * q_ven_sys_np;
 
     df_np[9]  = 0.;
     df_np[11] = 0.;
-    df_np[12] = C_ar_pul * (p_ar_pul_np - Z_ar_pul * q_vout_r_np);
-    df_np[13] = (L_ar_pul/R_ar_pul) * q_ar_pul_np;
-    df_np[14] = C_ven_pul * p_ven_pul_np;
-    df_np[15] = (L_ven_pul/R_ven_pul) * q_ven_pul_np;
+    df_np[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np);
+    df_np[13] = (L_ar_pul_/R_ar_pul_) * q_ar_pul_np;
+    df_np[14] = C_ven_pul_ * p_ven_pul_np;
+    df_np[15] = (L_ven_pul_/R_ven_pul_) * q_ven_pul_np;
 
     f_np[0] = -q_ven_pul_np + q_vin_l_np;
     //atrioventricular valve - mitral
-    if (p_v_l_np < p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_min_l - q_vin_l_np;
-    if (p_v_l_np >= p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_max_l - q_vin_l_np;
+    if (p_v_l_np < p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_min_l_ - q_vin_l_np;
+    if (p_v_l_np >= p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_max_l_ - q_vin_l_np;
     f_np[2] = -q_vin_l_np + q_vout_l_np;
     //semilunar valve - aortic
-    if (p_v_l_np < p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_max_l - q_vout_l_np;
-    if (p_v_l_np >= p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_min_l - q_vout_l_np;
+    if (p_v_l_np < p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_max_l_ - q_vout_l_np;
+    if (p_v_l_np >= p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_min_l_ - q_vout_l_np;
     f_np[4] = -q_vout_l_np + q_ar_sys_np;
-    f_np[5] = (p_ven_sys_np - p_ar_sys_np + Z_ar_sys * q_vout_l_np)/R_ar_sys + q_ar_sys_np;
+    f_np[5] = (p_ven_sys_np - p_ar_sys_np + Z_ar_sys_ * q_vout_l_np)/R_ar_sys_ + q_ar_sys_np;
     f_np[6] = -q_ar_sys_np + q_ven_sys_np;
-    f_np[7] = (p_at_r_np - p_ven_sys_np)/R_ven_sys + q_ven_sys_np;
+    f_np[7] = (p_at_r_np - p_ven_sys_np)/R_ven_sys_ + q_ven_sys_np;
 
     f_np[8] = -q_ven_sys_np + q_vin_r_np;
     //atrioventricular valve - tricuspid
-    if (p_v_r_np < p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_min_r - q_vin_r_np;
-    if (p_v_r_np >= p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_max_r - q_vin_r_np;
+    if (p_v_r_np < p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_min_r_ - q_vin_r_np;
+    if (p_v_r_np >= p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_max_r_ - q_vin_r_np;
     f_np[10] = -q_vin_r_np + q_vout_r_np;
     //semilunar valve - pulmonary
-    if (p_v_r_np < p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_max_r - q_vout_r_np;
-    if (p_v_r_np >= p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_min_r - q_vout_r_np;
+    if (p_v_r_np < p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_max_r_ - q_vout_r_np;
+    if (p_v_r_np >= p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_min_r_ - q_vout_r_np;
     f_np[12] = -q_vout_r_np + q_ar_pul_np;
-    f_np[13] = (p_ven_pul_np - p_ar_pul_np + Z_ar_pul * q_vout_r_np)/R_ar_pul + q_ar_pul_np;
+    f_np[13] = (p_ven_pul_np - p_ar_pul_np + Z_ar_pul_ * q_vout_r_np)/R_ar_pul_ + q_ar_pul_np;
     f_np[14] = -q_ar_pul_np + q_ven_pul_np;
-    f_np[15] = (p_at_l_np - p_ven_pul_np)/R_ven_pul + q_ven_pul_np;
+    f_np[15] = (p_at_l_np - p_ven_pul_np)/R_ven_pul_ + q_ven_pul_np;
 
   }
 
@@ -342,42 +344,42 @@ void UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Evaluate(
 
     //atrioventricular valve - mitral
     wkstiff(1,1) = -theta;
-    if (p_v_l_np < p_at_l_np) wkstiff(1,0) = theta/R_atvalve_min_l;
-    if (p_v_l_np >= p_at_l_np) wkstiff(1,0) = theta/R_atvalve_max_l;
-    if (p_v_l_np < p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_min_l;
-    if (p_v_l_np >= p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_max_l;
+    if (p_v_l_np < p_at_l_np) wkstiff(1,0) = theta/R_atvalve_min_l_;
+    if (p_v_l_np >= p_at_l_np) wkstiff(1,0) = theta/R_atvalve_max_l_;
+    if (p_v_l_np < p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_min_l_;
+    if (p_v_l_np >= p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_max_l_;
 
     //ventricular mass balance - left
     wkstiff(2,2) = theta;
     wkstiff(2,1) = -theta;
 
     //semilunar valve - aortic
-    if (p_v_l_np < p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_max_l;
-    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_min_l;
-    if (p_v_l_np < p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_max_l;
-    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_min_l;
+    if (p_v_l_np < p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_max_l_;
+    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_min_l_;
+    if (p_v_l_np < p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_max_l_;
+    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_min_l_;
     wkstiff(3,2) = -theta;
 
     //arterial mass balance - systemic
-    wkstiff(4,4) = C_ar_sys/ts_size;
-    wkstiff(4,2) = -theta - C_ar_sys*Z_ar_sys/ts_size;
+    wkstiff(4,4) = C_ar_sys_/ts_size;
+    wkstiff(4,2) = -theta - C_ar_sys_*Z_ar_sys_/ts_size;
     wkstiff(4,5) = theta;
 
     //arterial linear momentum balance - systemic
-    wkstiff(5,5) = L_ar_sys/(R_ar_sys*ts_size) + theta;
-    wkstiff(5,2) = Z_ar_sys * theta/R_ar_sys;
-    wkstiff(5,4) = -theta/R_ar_sys;
-    wkstiff(5,6) = theta/R_ar_sys;
+    wkstiff(5,5) = L_ar_sys_/(R_ar_sys_*ts_size) + theta;
+    wkstiff(5,2) = Z_ar_sys_ * theta/R_ar_sys_;
+    wkstiff(5,4) = -theta/R_ar_sys_;
+    wkstiff(5,6) = theta/R_ar_sys_;
 
     //venous mass balance - systemic
-    wkstiff(6,6) = C_ven_sys/ts_size;
+    wkstiff(6,6) = C_ven_sys_/ts_size;
     wkstiff(6,5) = -theta;
     wkstiff(6,7) = theta;
 
     //venous linear momentum balance - systemic
-    wkstiff(7,7) = L_ven_sys/(R_ven_sys*ts_size) + theta;
-    wkstiff(7,6) = -theta/R_ven_sys;
-    wkstiff(7,8) = theta/R_ven_sys;
+    wkstiff(7,7) = L_ven_sys_/(R_ven_sys_*ts_size) + theta;
+    wkstiff(7,6) = -theta/R_ven_sys_;
+    wkstiff(7,8) = theta/R_ven_sys_;
 
 
     //atrium - right
@@ -386,42 +388,42 @@ void UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Evaluate(
 
     //atrioventricular valve - tricuspid
     wkstiff(9,9) = -theta;
-    if (p_v_r_np < p_at_r_np) wkstiff(9,8) = theta/R_atvalve_min_r;
-    if (p_v_r_np >= p_at_r_np) wkstiff(9,8) = theta/R_atvalve_max_r;
-    if (p_v_r_np < p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_min_r;
-    if (p_v_r_np >= p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_max_r;
+    if (p_v_r_np < p_at_r_np) wkstiff(9,8) = theta/R_atvalve_min_r_;
+    if (p_v_r_np >= p_at_r_np) wkstiff(9,8) = theta/R_atvalve_max_r_;
+    if (p_v_r_np < p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_min_r_;
+    if (p_v_r_np >= p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_max_r_;
 
     //ventricular mass balance - right
     wkstiff(10,10) = theta;
     wkstiff(10,9) = -theta;
 
     //semilunar valve - pulmonary
-    if (p_v_r_np < p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_max_r;
-    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_min_r;
-    if (p_v_r_np < p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_max_r;
-    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_min_r;
+    if (p_v_r_np < p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_max_r_;
+    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_min_r_;
+    if (p_v_r_np < p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_max_r_;
+    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_min_r_;
     wkstiff(11,10) = -theta;
 
     //arterial mass balance - pulmonary
-    wkstiff(12,12) = C_ar_pul/ts_size;
-    wkstiff(12,10) = -theta - C_ar_pul*Z_ar_pul/ts_size;
+    wkstiff(12,12) = C_ar_pul_/ts_size;
+    wkstiff(12,10) = -theta - C_ar_pul_*Z_ar_pul_/ts_size;
     wkstiff(12,13) = theta;
 
     //arterial linear momentum balance - pulmonary
-    wkstiff(13,13) = L_ar_pul/(R_ar_pul*ts_size) + theta;
-    wkstiff(13,10) = Z_ar_pul * theta/R_ar_pul;
-    wkstiff(13,12) = -theta/R_ar_pul;
-    wkstiff(13,14) = theta/R_ar_pul;
+    wkstiff(13,13) = L_ar_pul_/(R_ar_pul_*ts_size) + theta;
+    wkstiff(13,10) = Z_ar_pul_ * theta/R_ar_pul_;
+    wkstiff(13,12) = -theta/R_ar_pul_;
+    wkstiff(13,14) = theta/R_ar_pul_;
 
     //venous mass balance - pulmonary
-    wkstiff(14,14) = C_ven_pul/ts_size;
+    wkstiff(14,14) = C_ven_pul_/ts_size;
     wkstiff(14,13) = -theta;
     wkstiff(14,15) = theta;
 
     //venous linear momentum balance - pulmonary
-    wkstiff(15,15) = L_ven_pul/(R_ven_pul*ts_size) + theta;
-    wkstiff(15,14) = -theta/R_ven_pul;
-    wkstiff(15,0) = theta/R_ven_pul;
+    wkstiff(15,15) = L_ven_pul_/(R_ven_pul_*ts_size) + theta;
+    wkstiff(15,14) = -theta/R_ven_pul_;
+    wkstiff(15,0) = theta/R_ven_pul_;
 
 
     sysmat1->UnComplete();
@@ -476,26 +478,26 @@ void UTILS::Cardiovascular0DArterialVenousSysPulCoupled::Evaluate(
     if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d)
     {
       // 0D left atrial volume
-      (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_0;
+      (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_0_;
       // 0D right atrial volume
-      (*sysvec5)[8] = p_at_r_np/E_at_r_np + V_at_r_0;
+      (*sysvec5)[8] = p_at_r_np/E_at_r_np + V_at_r_0_;
     }
     if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
     {
       // 0D left ventricular volume
-      (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_0;
+      (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_0_;
       // 0D right ventricular volume
-      (*sysvec5)[10] = p_v_r_np/E_v_r_np + V_v_r_0;
+      (*sysvec5)[10] = p_v_r_np/E_v_r_np + V_v_r_0_;
     }
     // systemic arterial compartment volume
-    (*sysvec5)[4] = C_ar_sys * (p_ar_sys_np - Z_ar_sys * q_vout_l_np) + V_ar_sys_0;
+    (*sysvec5)[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np) + V_ar_sys_0_;
     // systemic venous compartment volume
-    (*sysvec5)[6] = C_ven_sys * p_ven_sys_np + V_ven_sys_0;
+    (*sysvec5)[6] = C_ven_sys_ * p_ven_sys_np + V_ven_sys_0_;
 
     // pulmonary arterial compartment volume
-    (*sysvec5)[12] = C_ar_pul * (p_ar_pul_np - Z_ar_pul * q_vout_r_np) + V_ar_pul_0;
+    (*sysvec5)[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np) + V_ar_pul_0_;
     // pulmonary venous compartment volume
-    (*sysvec5)[14] = C_ven_pul * p_ven_pul_np + V_ven_pul_0;
+    (*sysvec5)[14] = C_ven_pul_ * p_ven_pul_np + V_ven_pul_0_;
 
   }
 

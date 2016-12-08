@@ -122,6 +122,52 @@ namespace UTILS
 
   private:
 
+    // parameters
+    double R_arvalve_max_l_; ///< maximum aortic valve resistance
+    double R_arvalve_min_l_; ///< minimum aortic valve resistance
+    double R_atvalve_max_l_; ///< maximum mitral valve resistance
+    double R_atvalve_min_l_; ///< minimum mitral valve resistance
+    double R_arvalve_max_r_; ///< maximum pulmonary valve resistance
+    double R_arvalve_min_r_; ///< minimum pulmonary valve resistance
+    double R_atvalve_max_r_; ///< maximum tricuspid valve resistance
+    double R_atvalve_min_r_; ///< minimum tricuspid valve resistance
+    int Atrium_act_curve_l_; ///< left atrial activation curve (for 0D atria)
+    int Atrium_act_curve_r_; ///< right atrial activation curve (for 0D atria)
+    int Ventricle_act_curve_l_; ///< left ventricular activation curve (for 0D ventricles)
+    int Ventricle_act_curve_r_; ///< right ventricular activation curve (for 0D ventricles)
+    double E_at_max_l_; ///< maximum left atrial elastance (for 0D atria)
+    double E_at_min_l_; ///< minimum left atrial elastance (for 0D atria)
+    double E_at_max_r_; ///< maximum right atrial elastance (for 0D atria)
+    double E_at_min_r_; ///< minimum right atrial elastance (for 0D atria)
+    double E_v_max_l_; ///< maximum left ventricular elastance (for 0D ventricles)
+    double E_v_min_l_; ///< minimum left ventricular elastance (for 0D ventricles)
+    double E_v_max_r_; ///< maximum right ventricular elastance (for 0D ventricles)
+    double E_v_min_r_; ///< minimum right ventricular elastance (for 0D ventricles)
+    double C_ar_sys_; ///< systemic arterial compliance
+    double R_ar_sys_; ///< systemic arterial resistance
+    double L_ar_sys_; ///< systemic arterial inertance
+    double Z_ar_sys_; ///< systemic arterial impedance
+    double C_ar_pul_; ///< pulmonary arterial compliance
+    double R_ar_pul_; ///< pulmonary arterial resistance
+    double L_ar_pul_; ///< pulmonary arterial inertance
+    double Z_ar_pul_; ///< pulmonary arterial impedance
+    double C_ven_sys_; ///< systemic venous compliance
+    double R_ven_sys_; ///< systemic venous resistance
+    double L_ven_sys_; ///< systemic venous inertance
+    double C_ven_pul_; ///< pulmonary venous compliance
+    double R_ven_pul_; ///< pulmonary venous resistance
+    double L_ven_pul_; ///< pulmonary venous inertance
+
+    // 0D volumes - for post-processing only, since all 0D equations are formulated in terms of fluxes!
+    double V_v_l_0_; ///< dead left ventricular volume (at zero pressure) (for 0D ventricles)
+    double V_at_l_0_; ///< dead left atrial volume (at zero pressure) (for 0D atria)
+    double V_ar_sys_0_; ///< initial systemic arterial volume
+    double V_ven_sys_0_; ///< initial systemic venous volume
+    double V_v_r_0_; ///< dead right ventricular volume (at zero pressure) (for 0D ventricles)
+    double V_at_r_0_; ///< dead right atrial volume (at zero pressure) (for 0D atria)
+    double V_ar_pul_0_; ///< initial pulmonary arterial volume
+    double V_ven_pul_0_; ///< initial pulmonary venous volume
+
     // don't want = operator, cctor and destructor
 
     Cardiovascular0DArterialVenousSysPulCoupled operator = (const Cardiovascular0DArterialVenousSysPulCoupled& old);
