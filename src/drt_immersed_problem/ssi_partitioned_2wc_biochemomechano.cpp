@@ -205,7 +205,7 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::UpdateScalars()
 
   const Epetra_Map* colmap = scatra_->ScaTraField()->Discretization()->DofColMap(0);
   // Get pointers to Phi
-  Teuchos::RCP<Epetra_MultiVector> pointstoPhinp = exchange_manager_->GetPointerToPhinps();
+  Teuchos::RCP<Epetra_MultiVector> pointstoPhinp = phi_;
   // Get current value of Phi
   Teuchos::RCP<Epetra_MultiVector> phinp = scatra_->ScaTraField()->Phinp();
   Teuchos::RCP<Epetra_MultiVector> tmp = LINALG::CreateVector(*colmap,true);
@@ -229,6 +229,9 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::DoStructStep()
     std::cout
         << "\n***********************\n CELL SOLVER \n***********************\n";
   }
+
+  // set state to be available in material evaluation of biochemo-mechano stress fiber material
+  //DRT::Problem::Instance()->GetDis("cell")->SetState(1,"phinp",scatra_->ScaTraField()->Phinp());
 
   // Newton-Raphson iteration
   ssi_wrapper_-> Solve();

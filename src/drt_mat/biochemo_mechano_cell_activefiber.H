@@ -197,12 +197,13 @@ namespace MAT
     virtual void ResetStep();
 
     /// Evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,  ///<green lagrange strain
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* stress,  ///< 2nd PK-stress
-                          LINALG::Matrix<6,6>* cmat,  ///< material stiffness matrix
-                          const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
+                          const LINALG::Matrix<6,1>* glstrain, ///< green lagrange strain
+                          Teuchos::ParameterList& params,      ///< parameter list
+                          LINALG::Matrix<6,1>* stress,         ///< 2nd PK-stress
+                          LINALG::Matrix<6,6>* cmat,           ///< material stiffness matrix
+                          const int eleGID                     ///< global id of element
+                          );
 
     /// Return density
     virtual double Density() const {return params_->density_;}

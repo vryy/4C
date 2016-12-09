@@ -103,6 +103,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   splitter_(Teuchos::null),
   errfile_(extraparams->get<FILE*>("err file")),
   strategy_(Teuchos::null),
+  additional_model_evaluator_(NULL),
   isale_(extraparams->get<bool>("isale")),
   solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   incremental_(true),
@@ -2456,14 +2457,31 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   // this needs to be done as final step for consistency
   strategy_->EvaluateMeshtying();
 
-  // evaluate Structure Solution Dependent Condition
-  EvaluateStructSolutionDependingConditions(rhs);
-
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
   EvaluateMacroMicroCoupling();
 
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions
+
+
+/*----------------------------------------------------------------------------*
+ | evaluate additional solution-depending models                  rauch 12/16 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+)
+{
+  // evaluate solution depending additional models
+  // this point is unequal NULL only if a scatra
+  // adapter has been constructed.
+  // see class AdapterScatraWrapperCellMigration for
+  // an example implementation.
+  if(additional_model_evaluator_ != NULL)
+    additional_model_evaluator_->EvaluateAdditionalSolutionDependingModels(systemmatrix,rhs);
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels
 
 
 /*----------------------------------------------------------------------------*
@@ -2495,43 +2513,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
 
   return;
 } // ScaTraTimIntImpl::EvaluateRobinBoundaryConditions
-
-
-/*----------------------------------------------------------------------*
- | compute contribution of mechanical state to eq. system   rauch 01/16 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateStructSolutionDependingConditions(Teuchos::RCP<Epetra_Vector> residual)
-{
-  // Evaluate biochemical transport and reaction at focal adhesion sites
-  DRT::Condition* FocalAdhesionCondition = discret_->GetCondition("CellFocalAdhesion");
-  if(FocalAdhesionCondition != NULL)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> nodalrates = LINALG::CreateVector(*dofrowmap,true);
-
-    Teuchos::ParameterList params;
-    params.set<int>("action",SCATRA::calc_cell_mechanotransduction);
-    params.set<int>("ndsdisp",nds_disp_);
-
-    // add element parameters and set state vectors according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
-    discret_->Evaluate(params,Teuchos::null,Teuchos::null,nodalrates,Teuchos::null,Teuchos::null);
-
-    /* -------------------------------------------------------------------------------------------*/
-
-    params.set<int>("action",SCATRA::bd_calc_mechanotransduction);
-
-    // add element parameters and set state vectors according to time-integration scheme
-    discret_->EvaluateCondition(params,Teuchos::null,Teuchos::null,residual,Teuchos::null,Teuchos::null,"CellFocalAdhesion",-1);
-
-
-    discret_->ClearState();
-    residual->Update(1.0,*nodalrates,1.0);
-
-  } // at focal adhesions
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -2664,6 +2645,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // evaluate solution-depending boundary and interface conditions
   EvaluateSolutionDependingConditions(sysmat_,residual_);
+
+  // evaluate solution-depending additional models
+  EvaluateAdditionalSolutionDependingModels(sysmat_,residual_);
 
   // finalize assembly of system matrix
   sysmat_->Complete();

@@ -29,11 +29,14 @@
 #ifndef SCATRA_TIMINT_IMPLICIT_H
 #define SCATRA_TIMINT_IMPLICIT_H
 
+#include "../drt_adapter/ad_scatra_wrapper.H"
+
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_scatra.H"
+
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -100,7 +103,7 @@ class OutputScalarsStrategyCondition;
  * \brief implicit time integration for scalar transport problems
  */
 
-class ScaTraTimIntImpl
+class ScaTraTimIntImpl : public ::ADAPTER::ScatraInterface
 {
   friend class HomIsoTurbInitialScalarField;
   friend class HomIsoTurbScalarForcing;
@@ -610,6 +613,10 @@ public:
   //! set scatra structure displacement vector due to biofilm growth
   void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
 
+  //! set ptr to wrapper of this time integrator
+  void SetModelEvaluatroPtr(ADAPTER::AdapterScatraWrapper* adapter_scatra_wrapper)
+  {additional_model_evaluator_=adapter_scatra_wrapper;};
+
 protected:
 
   /*========================================================================*/
@@ -748,9 +755,10 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
 
-  //! compute contribution of mechanical state to eq. system
-  void EvaluateStructSolutionDependingConditions(
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  //! compute contributions of additional solution-depending models to global system of equations
+  virtual void EvaluateAdditionalSolutionDependingModels(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
   /*--- query and output ---------------------------------------------------*/
@@ -912,6 +920,13 @@ protected:
 
   //! meshtying strategy (includes standard case without meshtying)
   Teuchos::RCP<SCATRA::MeshtyingStrategyBase> strategy_;
+
+  //! Ptr to time integration wrapper.
+  //! That wrapper holds a ptr to this time integrator in turn.
+  //! This Ptr is uneqal NULL only if a scatra adapter was constructed.
+  //! Class AdapterScatraWrapper sets this pointer during construction
+  //! by calling \ref SetModelEvaluatroPtr .
+  ADAPTER::AdapterScatraWrapper* additional_model_evaluator_;
 
   /*========================================================================*/
   //! @name flags and enums

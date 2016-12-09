@@ -37,7 +37,13 @@ namespace DRT
 
 namespace SSI
 {
-  //! specialized class to deal with partitioned 2WC SSI during cell contraction in cell migration.
+
+/*!
+\brief Specialized class to deal with partitioned 2WC SSI during cell contraction in cell migration.
+
+\date 12/2016
+\author rauch (rauch@lnm.mw.tum.de)
+*/
   class SSI_Part2WC_BIOCHEMOMECHANO : public SSI_Part2WC
   {
 

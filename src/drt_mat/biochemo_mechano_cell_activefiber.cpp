@@ -619,7 +619,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
                            LINALG::Matrix<6,6>* cmat,
                            const int eleGID)
 {
-  const Teuchos::ParameterList& strucdynparams =  DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& strucdynparams =  DRT::Problem::Instance()->CellMigrationParams().sublist("STRUCTURAL DYNAMIC");
 
   // Set source constant for Scatra Boundary Surface stress dependent calculation
   double sourceconst =   params_->sourceconst_;
@@ -647,6 +647,9 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
   if (analyticalmaterialtangent)
     dserror("no analytical material tangent calculation possible for this material at the moment.");
+
+
+//  Teuchos::RCP<const Epetra_MultiVector> testphi = DRT::Problem::Instance()->GetDis("cell")->GetState("phinp");
 
 
   DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();

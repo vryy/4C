@@ -43,6 +43,7 @@
 #include "../drt_adapter/ad_str_factory.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
+#include "../drt_adapter/ad_scatra_wrapper_cellmigration.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_poroelast/poroelast_utils.H"
@@ -308,6 +309,8 @@ void CellMigrationControlAlgorithm()
       multiphysics_model_evaluator_cellmigration = Teuchos::null;
   // declare pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
+  // declare pointer to scatra wrapper
+  Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> scatra_wrapper = Teuchos::null;
 
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -521,6 +524,10 @@ void CellMigrationControlAlgorithm()
 
     // now setup cellscatra (ssi) subproblem
     cellscatra_subproblem->Setup();
+
+    // create scatra cell migration wrapper
+    scatra_wrapper = Teuchos::rcp(new ADAPTER::AdapterScatraWrapperCellMigration(
+        cellscatra_subproblem->ScaTraField()->ScaTraField()));
 
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;

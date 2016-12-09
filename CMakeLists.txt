@@ -717,6 +717,9 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_xffsi.cpp
   src/drt_adapter/ad_porofluidmultiphase.cpp
   src/drt_adapter/ad_str_multiphysicswrapper_cellmigration.cpp
+  src/drt_adapter/ad_scatra_wrapper.cpp
+  src/drt_adapter/ad_scatra_wrapper_cellmigration.cpp
+  
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
