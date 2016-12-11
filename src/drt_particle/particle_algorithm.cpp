@@ -16,6 +16,7 @@
 #include "particle_utils.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure.H"
+#include "binning_strategy.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -54,10 +55,8 @@
 PARTICLE::Algorithm::Algorithm(
   const Epetra_Comm& comm,
   const Teuchos::ParameterList& params
-  ) : AlgorithmBase(comm,params),
-  BinningStrategy(comm),
+  ) : AlgorithmBase(comm,params), ParticleHandler(comm),
   particles_(Teuchos::null),
-  bincolmap_(Teuchos::null),
   writeresultsevery_(0),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
@@ -87,18 +86,18 @@ PARTICLE::Algorithm::Algorithm(
       gravity_acc_(dim) = value;
   }
 
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
   {
     gravity_acc_(2) = 0.0;
-    if(myrank_ == 0)
+    if(MyRank() == 0)
       IO::cout << "gravity in z-direction ignored as this is a pseudo-2D problem" << IO::endl;
   }
 
   // initial setup of particle discretization
-  bindis_ = DRT::Problem::Instance()->GetDis("particle");
+  BinStrategy()->BinDiscret() = DRT::Problem::Instance()->GetDis("particle");
   // new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
   Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
-  bindis_->ReplaceDofSet(independentdofset);
+  BinStrategy()->BinDiscret()->ReplaceDofSet(independentdofset);
 
   if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
   {
@@ -170,27 +169,27 @@ void PARTICLE::Algorithm::SetupSystem()
 void PARTICLE::Algorithm::Init(bool restarted)
 {
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
-  bindis_->FillComplete(false,false,false);
+  BinStrategy()->BinDiscret()->FillComplete(false,false,false);
 
   // extract noderowmap because it will be called Reset() after adding elements
-  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*BinStrategy()->BinDiscret()->NodeRowMap()));
 
   Teuchos::RCP<Epetra_Map> binrowmap;
   if(not restarted)
   {
-    CreateBins(bindis_);
+    BinStrategy()->CreateBins(BinStrategy()->BinDiscret());
     // setup pbcs after bins have been created
-    BuildPeriodicBC();
+    BinStrategy()->BuildPeriodicBC();
     binrowmap = DistributeBinsToProcs();
   }
   else
   {
     // setup pbcs after bins have been created
-    BuildPeriodicBC();
-    binrowmap = Teuchos::rcp(new Epetra_Map(*bindis_->ElementRowMap()));
+    BinStrategy()->BuildPeriodicBC();
+    binrowmap = Teuchos::rcp(new Epetra_Map(*BinStrategy()->BinDiscret()->ElementRowMap()));
   }
 
-  if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0 && myrank_ == 0)
+  if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0 && MyRank() == 0)
     IO::cout << "\n\n\n CAREFUL: Reduction of number of bins recommended! Performance might be deteriorated. Increase cutoff radius. \n\n\n" << IO::endl;
 
   //--------------------------------------------------------------------
@@ -199,7 +198,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
-    DRT::Node* node = bindis_->gNode(particlerowmap->GID(lid));
+    DRT::Node* node = BinStrategy()->BinDiscret()->gNode(particlerowmap->GID(lid));
     const double* currpos = node->X();
     PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
   }
@@ -254,7 +253,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
     // create time integrator based on structural time integration
     Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(particledyn, bindis_));
+        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(particledyn, BinStrategy()->BinDiscret()));
     particles_ = particles->ParticleField();
 
     writeresultsevery_ = particledyn.get<int>("RESULTSEVRY");
@@ -289,12 +288,39 @@ void PARTICLE::Algorithm::Init(bool restarted)
   }
 
   // some output
-  if (myrank_ == 0)
+  if (MyRank() == 0)
     IO::cout << "after ghosting of particles" << IO::endl;
-  DRT::UTILS::PrintParallelDistribution(*bindis_);
+  DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
   // update connectivity
   UpdateHeatSourcesConnectivity(true);
+}
+
+/*----------------------------------------------------------------------*
+| build connectivity from particle wall elements to bins    ghamm 04/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
+{
+  if(wallpointer == true)
+  {
+    // loop over column bins and fill wall elements
+    const int numcolbin = BinStrategy()->BinDiscret()->NumMyColElements();
+    for (int ibin=0; ibin<numcolbin; ++ibin)
+    {
+      DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
+      DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+      const int numwallele = actbin->NumAssociatedEle(bin_surfcontent_);
+      const int* walleleids = actbin->AssociatedEleIds(bin_surfcontent_);
+      std::vector<DRT::Element*> wallelements(numwallele);
+      for(int iwall=0; iwall<numwallele; ++iwall)
+      {
+        const int wallid = walleleids[iwall];
+        wallelements[iwall] = particlewalldis_->gElement(wallid);
+      }
+      actbin->BuildElePointers(bin_surfcontent_,&wallelements[0]);
+    }
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -409,13 +435,13 @@ void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
 
   // vector to be filled with forces
-  Teuchos::RCP<Epetra_Vector> particleforces = LINALG::CreateVector(*bindis_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> particleforces = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(),true);
 
   // mass of particles
   Teuchos::RCP<const Epetra_Vector> mass_p = particles_->Mass();
 
   // all row particles are evaluated
-  const int numrownodes = bindis_->NumMyRowNodes();
+  const int numrownodes = BinStrategy()->BinDiscret()->NumMyRowNodes();
   for (int i=0; i<numrownodes; ++i)
   {
     /*------------------------------------------------------------------*/
@@ -442,10 +468,10 @@ void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles");
 
   // vector to be filled with forces
-  Teuchos::RCP<Epetra_Vector> accelerations = LINALG::CreateVector(*bindis_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> accelerations = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(),true);
 
   // all row particles are evaluated
-  const int numrownodes = bindis_->NumMyRowNodes();
+  const int numrownodes = BinStrategy()->BinDiscret()->NumMyRowNodes();
 
   for (int i=0; i<numrownodes; ++i)
     for(int dim=0; dim<3; ++dim)
@@ -480,19 +506,19 @@ void PARTICLE::Algorithm::Update()
 void PARTICLE::Algorithm::ReadRestart(int restart)
 {
   // 1st) loop over bins and remove initial particle info
-  const int numrowbin = bindis_->NumMyColElements();
+  const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
   for (int ibin=0; ibin<numrowbin; ++ibin)
   {
-    DRT::Element* actele = bindis_->lColElement(ibin);
+    DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
     dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
   }
 
   // 2nd) initial particles need to be removed from bindis_
-  bindis_->DeleteNodes();
+  BinStrategy()->BinDiscret()->DeleteNodes();
 
   // read in particles for restart
   {
-    IO::DiscretizationReader reader(bindis_, restart);
+    IO::DiscretizationReader reader(BinStrategy()->BinDiscret(), restart);
     reader.ReadNodesOnly(restart);
   }
 
@@ -512,73 +538,6 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
 
 
 /*----------------------------------------------------------------------*
-| bins are distributed to the processors                    ghamm 09/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
-{
-  // create an initial equal distribution of row bins
-  Teuchos::RCP<Epetra_Map> rowbins = CreateLinearMapForNumbin(Comm());
-
-  const int maxband = 26;
-  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rowbins,maxband,false));
-
-  // fill all local entries into the graph
-  {
-    for (int lid=0; lid<rowbins->NumMyElements(); ++lid)
-    {
-      const int binId = rowbins->GID(lid);
-
-      std::vector<int> neighbors;
-      GetNeighborBinIds(binId,neighbors);
-
-      int err = graph->InsertGlobalIndices(binId,(int)neighbors.size(),&neighbors[0]);
-      if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,binId);
-    }
-  }
-
-  // finish graph
-  graph->FillComplete();
-  graph->OptimizeStorage();
-
-  Teuchos::ParameterList paramlist;
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  sublist.set("LB_APPROACH", "PARTITION");
-
-  Epetra_CrsGraph *balanced_graph = NULL;
-  try {
-    balanced_graph =
-      Isorropia::Epetra::createBalancedCopy(*graph, paramlist);
-
-  }
-  catch(std::exception& exc) {
-    std::cout << "Isorropia::createBalancedCopy threw "
-         << "exception '" << exc.what() << "' on proc "
-         << myrank_ << std::endl;
-    dserror("Error within Isorropia (graph balancing)");
-  }
-
-  // obtain the row map
-  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(balanced_graph);
-  rcp_balanced_graph->FillComplete();
-  rcp_balanced_graph->OptimizeStorage();
-  rowbins = Teuchos::rcp(new Epetra_Map(-1,
-      rcp_balanced_graph->RowMap().NumMyElements(),
-      rcp_balanced_graph->RowMap().MyGlobalElements(),0,Comm()));
-
-  // fill bins into discret
-  for(int i=0; i<rowbins->NumMyElements(); ++i)
-  {
-    const int gid = rowbins->GID(i);
-    Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
-    bindis_->AddElement(bin);
-  }
-
-  // return binrowmap
-  return rowbins;
-}
-
-
-/*----------------------------------------------------------------------*
 | dynamic load balancing for bin distribution               ghamm 08/13 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::DynamicLoadBalancing()
@@ -589,7 +548,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::DynamicLoadBalancing()");
 
-  const Epetra_Map* oldrowmap = bindis_->ElementRowMap();
+  const Epetra_Map* oldrowmap = BinStrategy()->BinDiscret()->ElementRowMap();
 
   Teuchos::RCP<const Epetra_CrsGraph> constgraph = CreateGraph();
 
@@ -600,7 +559,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   double* vals = vweights->Values();
   for(int i=0; i<oldrowmap->NumMyElements(); ++i)
   {
-    const int numnode = bindis_->lRowElement(i)->NumNode();
+    const int numnode = BinStrategy()->BinDiscret()->lRowElement(i)->NumNode();
     vals[i] = 1.0 + numnode*3 + numnode*numnode;
   }
 
@@ -624,7 +583,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // rebuild of the system with the new map
 
   // export elements to new layout
-  bindis_->ExportRowElements(*newelerowmap);
+  BinStrategy()->BinDiscret()->ExportRowElements(*newelerowmap);
 
   // export row nodes to new layout
   {
@@ -632,7 +591,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
     std::set<int> particles;
     for (int lid=0; lid<newelerowmap->NumMyElements(); ++lid)
     {
-      DRT::Element* bin = bindis_->gElement(newelerowmap->GID(lid));
+      DRT::Element* bin = BinStrategy()->BinDiscret()->gElement(newelerowmap->GID(lid));
       const int* particleids = bin->NodeIds();
       for(int iparticle=0; iparticle<bin->NumNode(); ++iparticle)
         particles.insert(particleids[iparticle]);
@@ -643,7 +602,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
     Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(-1,(int)rowparticles.size(),&rowparticles[0],0,Comm()));
 
     // place all nodes on the correct processor
-    bindis_->ExportRowNodes(*particlerowmap);
+    BinStrategy()->BinDiscret()->ExportRowNodes(*particlerowmap);
   }
 
   // ghost bins and particles according to the bins --> final FillComplete() call included
@@ -653,7 +612,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   if(particlewalldis_ != Teuchos::null)
   {
     if( not moving_walls_)
-      ExtendGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, bincolmap_, true, false, false, false);
+      BinStrategy()->ExtendGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, BinColMap(), true, false, false, false);
 
     BuildElementToBinPointers(true);
   }
@@ -664,39 +623,10 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // restart heat source map
   UpdateHeatSourcesConnectivity(true);
 
-  DRT::UTILS::PrintParallelDistribution(*bindis_);
+  DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| dynamic load balancing for bin distribution               ghamm 08/13 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::Algorithm::CreateGraph()
-{
-  const Epetra_Map* oldrowmap = bindis_->ElementRowMap();
-
-  const int maxband = 26;
-  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*oldrowmap,maxband,false));
-
-  // fill all local entries into the graph
-  {
-    for (int lid=0; lid<oldrowmap->NumMyElements(); ++lid)
-    {
-      const int binId = oldrowmap->GID(lid);
-
-      std::vector<int> neighbors;
-      GetNeighborBinIds(binId,neighbors);
-
-      int err = graph->InsertGlobalIndices(binId,(int)neighbors.size(),&neighbors[0]);
-      if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,binId);
-    }
-  }
-
-  return graph;
-}
-
 
 /*----------------------------------------------------------------------*
  | rough safety check for proper bin size                  ghamm 12/15  |
@@ -727,7 +657,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     }
     }
 
-    if(maxrad + transfer_every_*maxvel*dt > 0.5*cutoff_radius_)
+    if(maxrad + transfer_every_*maxvel*dt > 0.5*BinStrategy()->CutoffRadius())
     {
       int lid = -1;
       // find entry with max velocity
@@ -747,676 +677,10 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
       {
         const int gid = particles_->Veln()->Map().GID(lid);
         dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
-            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), cutoff_radius_, maxrad);
+            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), BinStrategy()->CutoffRadius(), maxrad);
       }
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*
-| fill particles into their correct bin on according proc   ghamm 09/12 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
-{
-  //--------------------------------------------------------------------
-  // -> 2) round robin loop
-
-  const int numproc = bindis_->Comm().NumProc();
-  const int myrank = bindis_->Comm().MyPID();       // me
-  const int torank = (myrank + 1) % numproc;             // to
-  const int fromrank = (myrank + numproc - 1) % numproc; // from
-
-  DRT::Exporter exporter(bindis_->Comm());
-
-  for (int irobin = 0; irobin < numproc; ++irobin)
-  {
-    std::vector<char> sdata;
-    std::vector<char> rdata;
-
-    // ---- pack data for sending -----
-    {
-      DRT::PackBuffer data;
-      for (std::list<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
-      {
-//        cout << " Id:" << (*currparticle)->Id() << " was packed on proc: " << myrank_ << endl;
-        (*currparticle)->Pack(data);
-      }
-      data.StartPacking();
-      for (std::list<Teuchos::RCP<DRT::Node> >::const_iterator currparticle=homelessparticles.begin(); currparticle != homelessparticles.end(); ++currparticle)
-      {
-        (*currparticle)->Pack(data);
-        bindis_->DeleteNode((*currparticle)->Id());
-      }
-      std::swap(sdata, data());
-    }
-
-
-    // ---- send ----
-    MPI_Request request;
-    exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
-
-
-    // ---- receive ----
-    int length = rdata.size();
-    int tag = -1;
-    int from = -1;
-    exporter.ReceiveAny(from,tag,rdata,length);
-    if (tag != 1234 or from != fromrank)
-      dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
-
-
-    // ---- unpack ----
-    {
-      // Put received nodes either into discretization or into list of homeless particles
-      homelessparticles.clear();
-      std::vector<char>::size_type index = 0;
-      while (index < rdata.size())
-      {
-        std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index,rdata,data);
-        // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
-        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
-
-        // process received particle
-        const double* currpos = node->X();
-        PlaceNodeCorrectly(node, currpos, homelessparticles);
-      }
-    }
-
-
-    // wait for all communication to finish
-    exporter.Wait(request);
-    bindis_->Comm().Barrier(); // I feel better this way ;-)
-  } // end for irobin
-
-  if(homelessparticles.size())
-  {
-    std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank << std::endl;
-    // erase everything that is left
-    homelessparticles.clear();
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
-| fill particles into their correct bin on according proc   ghamm 03/16 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList");
-  const int numproc = bindis_->Comm().NumProc();
-  Teuchos::RCP<std::list<int> > removedparticles = Teuchos::rcp(new std::list<int>(0));
-  if(numproc == 1)
-  {
-    if(homelessparticles.size())
-    {
-      std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
-      std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
-      for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
-      {
-        const int removeid = (*hlp)->Id();
-        removedparticles->push_back(removeid);
-        bindis_->DeleteNode(removeid);
-      }
-      homelessparticles.clear();
-    }
-
-    return removedparticles;
-  }
-
-  // parallel case
-  // ---- find new host procs for particles -----
-  const int fullsize = (int)homelessparticles.size();
-  std::vector<int> targetbinIdlist;
-  targetbinIdlist.reserve(fullsize);
-  std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
-  for(hlp=homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
-  {
-    const int binId = ConvertPosToGid((*hlp)->X());
-    targetbinIdlist.push_back(binId);
-  }
-
-  // get proc which will be the future host of homeless particles
-  std::vector<int> pidlist(fullsize);
-  {
-    // only unique id lists are accepted in RemoteIDList
-    // 1) make gid list unique
-    std::set<int> unique_targetbinIdlist(targetbinIdlist.begin(), targetbinIdlist.end());
-    std::vector<int> uniquevec_targetbinIdlist(unique_targetbinIdlist.begin(), unique_targetbinIdlist.end());
-    const int uniquesize = (int)unique_targetbinIdlist.size();
-
-    // 2) communication
-    std::vector<int> unique_pidlist(uniquesize);
-    int err = bindis_->ElementRowMap()->RemoteIDList(uniquesize,uniquevec_targetbinIdlist.data(),unique_pidlist.data(),NULL);
-    if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
-
-    // 3) build full pid list via lookup table
-    std::map<int,int> lookuptable;
-    for(int s=0; s<uniquesize; ++s)
-      lookuptable.insert(lookuptable.end(), std::pair<int,int>(uniquevec_targetbinIdlist[s], unique_pidlist[s]));
-    for(int s=0; s<fullsize; ++s)
-      pidlist[s] = lookuptable[targetbinIdlist[s]];
-  }
-
-  // ---- pack data for sending -----
-  std::map<int, std::vector<char> > sdata;
-  std::vector<int> targetprocs(numproc,0);
-  int iter=0;
-  for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
-  {
-    Teuchos::RCP<DRT::Node> iterhomelessparticle= *hlp;
-
-    // ---- pack data for sending -----
-    const int targetproc = pidlist[iter];
-    if(targetproc != -1)
-    {
-      DRT::PackBuffer data;
-      iterhomelessparticle->Pack(data);
-      data.StartPacking();
-      iterhomelessparticle->Pack(data);
-      bindis_->DeleteNode(iterhomelessparticle->Id());
-      sdata[targetproc].insert(sdata[targetproc].end(),data().begin(),data().end());
-      targetprocs[targetproc] = 1;
-    }
-    else
-    {
-      const int removeid = iterhomelessparticle->Id();
-      removedparticles->push_back(removeid);
-      bindis_->DeleteNode(removeid);
-
-    }
-    ++iter;
-  }
-  if(removedparticles->size() != 0)
-    std::cout << " There are " << removedparticles->size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
-  homelessparticles.clear();
-
-  // ---- prepare receiving procs -----
-  std::vector<int> summedtargets(numproc,0);
-  bindis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
-
-
-  // ---- send ----
-  DRT::Exporter exporter(bindis_->Comm());
-  const int length = sdata.size();
-  std::vector<MPI_Request> request(length);
-  int tag = 0;
-  for(std::map<int, std::vector<char> >::const_iterator p=sdata.begin(); p!=sdata.end(); ++p)
-  {
-    exporter.ISend(myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
-    ++tag;
-  }
-  if (tag != length) dserror("Number of messages is mixed up");
-
-  // ---- receive ----
-  for(int rec=0; rec<summedtargets[myrank_]; ++rec)
-  {
-    std::vector<char> rdata;
-    int length = 0;
-    int tag = -1;
-    int from = -1;
-    exporter.ReceiveAny(from,tag,rdata,length);
-    if (tag != 1234)
-      dserror("Received on proc %i data with wrong tag from proc %i", myrank_, from);
-
-    // ---- unpack ----
-    {
-      // Put received nodes into discretization
-      std::vector<char>::size_type index = 0;
-      while (index < rdata.size())
-      {
-        std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index,rdata,data);
-        // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
-        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
-
-        // process received particle
-        const double* currpos = node->X();
-        PlaceNodeCorrectly(node, currpos, homelessparticles);
-        if(homelessparticles.size())
-          dserror("particle (id: %i) was sent to proc %i but corresponding bin (gid: %i) is missing", node->Id(), myrank_, ConvertPosToGid(currpos));
-      }
-    }
-  }
-
-  // wait for all communications to finish
-  {
-    for (int i=0; i<length; ++i)
-      exporter.Wait(request[i]);
-  }
-
-  bindis_->Comm().Barrier(); // I feel better this way ;-)
-
-  return removedparticles;
-}
-
-
-/*----------------------------------------------------------------------*
-| node is placed into the correct row bin                   ghamm 09/12 |
- *----------------------------------------------------------------------*/
-bool PARTICLE::Algorithm::PlaceNodeCorrectly
-(Teuchos::RCP<DRT::Node> node,
-  const double* currpos,
-  std::list<Teuchos::RCP<DRT::Node> >& homelessparticles
-  )
-{
-//  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
-  const int binId = ConvertPosToGid(currpos);
-
-  // check whether the current node belongs into a bin on this proc
-  const bool found = bindis_->HaveGlobalElement(binId);
-
-  // either fill particle into correct bin on this proc or mark it as homeless
-  if(found == true)
-  {
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( bindis_->gElement(binId) );
-#ifdef DEBUG
-    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    // check whether it is a row bin
-    if(currbin->Owner() == myrank_) // row bin
-    {
-//      std::cout << "on proc: " << myrank_ << " for node " << node->Id() << " a row bin was found" << std::endl;
-      // node already exists (either row or ghost)
-      if( bindis_->HaveGlobalNode(node->Id()) == true)
-      {
-        DRT::Node* existingnode = bindis_->gNode(node->Id());
-        // existing node is a row node, this means that node is equal existingnode
-
-
-        if(existingnode->Owner() == myrank_)
-        {
-//          std::cout << "on proc: " << myrank_ << " existingnode row node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << std::endl;
-
-          // assign node to the correct bin
-          currbin->AddNode(existingnode);
-        }
-        else // ghost node becomes row node and node from outside is trashed
-        {
-//          std::cout << "on proc: " << myrank_ << " existingnode ghost node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << " after setting ownership" << std::endl;
-
-          // change owner of the node to this proc
-          existingnode->SetOwner(myrank_);
-
-          // received node is no longer needed, X() of former ghost node has to be updated for output reasons
-          {
-            std::vector<double> update(3,0.0);
-            const double* refposparticle = existingnode->X();
-            for(int dim=0; dim<3; dim++)
-              update[dim] = currpos[dim] - refposparticle[dim];
-            // change X() of existing node
-            existingnode->ChangePos(update);
-          }
-
-          // assign node to the correct bin
-          currbin->AddNode(existingnode);
-        }
-      }
-      else // fill newly received node into discretization
-      {
-        // change owner of the node to this proc and add it to the discretization
-        node->SetOwner(myrank_);
-        bindis_->AddNode(node);
-//        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to the discretization and assigned to element: " << currbin->Id() << std::endl;
-        // assign node to the correct bin
-        currbin->AddNode(node.get());
-      }
-      return true;
-    }
-    else // ghost bin
-    {
-      homelessparticles.push_back(node);
-//      std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because of becoming a future ghost node" << std::endl;
-      return false;
-    }
-  }
-  else // bin not found on this proc
-  {
-    homelessparticles.push_back(node);
-//    std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because bin is not on this proc " << std::endl;
-    return false;
-  }
-
-}
-
-/*-----------------------------------------------------------------------------*
-| extend ghosting according to bin distribution                eichinger 09/16 |
- *-----------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::ExtendBinGhosting(
-    Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<Epetra_Map>          rowbins,
-    Teuchos::RCP<Epetra_Vector>       disnp,
-    std::map<int, std::set<int> >&    extbintoelemap,
-    bool                              particle_ghosting,
-    bool                              eleghosting
-    )
-{
-  extbintoelemap.clear();
-
-  // ----------------------------------------------------------------------
-  // extended ghosting: Here this means the following: Each proc
-  // ghosts all elements whose XAABB cuts a bin that is next to a bin that is
-  // owned by a proc an not empty. All associated nodes are ghosted as well
-  // ----------------------------------------------------------------------
-  // here each proc assignes his owned elements in the means of a XAABB to
-  // the global binids that do not need be owned by this proc.
-  // binelemap on each proc than contains all bins (not neccesarily owned by
-  // this proc) that are cut by the procs row elements
-  std::map<int, std::set<int> > bintoelemap;
-  DistributeCutElesToBins(discret,bintoelemap,disnp);
-
-  // ghosting is extended to one layer (two layer ghosting is excluded as it
-  // is not needed, this case is covered by other procs then) around bins that
-  // actually contain elements.
-  // extbintoelemap[i] than contains all bins and its corresponding elements
-  // that need to be owned or ghosted to ensure correct interaction handling
-  // of the elements in the range of one layer
-  Teuchos::RCP<Epetra_Map> extendedelecolmap =
-      ExtendPartAndEleGhosting(discret->ElementColMap(),
-                               bintoelemap,
-                               extbintoelemap,
-                               rowbins,
-                               particle_ghosting,
-                               eleghosting);
-
-  // adapt layout to extended ghosting in discret
-  // first export the elements according to the processor local element column maps
-  discret->ExportColumnElements(*extendedelecolmap);
-
-  // get the node ids of the elements that are to be ghosted
-  // and create a proper node column map for their export
-  std::set<int> nodes;
-  for (int lid=0; lid<extendedelecolmap->NumMyElements(); ++lid)
-  {
-    DRT::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for(int inode=0; inode<ele->NumNode(); ++inode)
-      nodes.insert(nodeids[inode]);
-  }
-
-  std::vector<int> colnodes(nodes.begin(),nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,discret->Comm()));
-
-  // now ghost the nodes
-  discret->ExportColumnNodes(*nodecolmap);
-
-  // fillcomplete discret with extended ghosting
-  discret->FillComplete(true,false,false);
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------*
-| extend ghosting considering particles and other eles         eichinger 09/16 |
- *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendPartAndEleGhosting(
-  const Epetra_Map*              initial_elecolmap,
-  std::map<int, std::set<int> >& binelemap,
-  std::map<int, std::set<int> >& ext_bintoele_ghosting,
-  Teuchos::RCP<Epetra_Map>       rowbins,
-  bool                           particle_ghosting,
-  bool                           eleghosting)
-{
-  // safety check
-  if(!particle_ghosting && !eleghosting)
-    dserror("You should at least do one thing here.");
-
-  // do communication to gather all elements for extended ghosting
-  const int numproc = initial_elecolmap->Comm().NumProc();
-  for (int iproc = 0; iproc < numproc; ++iproc)
-  {
-    // gather set of bins that need to be ghosted by myrank
-    std::set<int> bins;
-    if(iproc == myrank_)
-    {
-      // store bins, which have already been examined
-      std::set<int> examinedbins;
-      // ----------------------------------------------------------------------
-      // get bins that need to be ghosted as they surround a bin that contains a
-      // particle (to enable correct crosslinker to beam interaction)
-      // ----------------------------------------------------------------------
-      if(particle_ghosting)
-      {
-        // loop over all particles (empty bin ghosting is decreased this way)
-        for(int i=0; i<bindis_->NodeRowMap()->NumMyElements(); ++i)
-        {
-          int binId = bindis_->lRowNode(i)->Elements()[0]->Id();
-
-          // if a bin has already been examined --> continue with next crosslinker
-          if(examinedbins.find(binId) != examinedbins.end())
-            continue;
-          //else: bin is examined for the first time --> new entry in examinedbins_
-          else
-            examinedbins.insert(binId);
-
-          std::vector<int> binvec;
-          // get neighboring bins
-          GetNeighborAndOwnBinIds(binId, binvec);
-          bins.insert(binvec.begin(), binvec.end());
-        }
-      }
-      // ----------------------------------------------------------------------
-      // get bins that need to be ghosted as they surround a bin that contains a
-      // element of another discret than bindis (to enable correct beam to beam
-      // interaction)
-      // ----------------------------------------------------------------------
-      // note: potential double layer ghosting is intended here to enable correct
-      //       interaction of crosslinker and beams (when two crosslinker want to
-      //       bind to same binding spots on different procs, with this ghosting
-      //       this can be managed by only allowing the owner of the beam to
-      //       occupy binding spots)
-      if(eleghosting)
-      {
-        for(std::map<int, std::set<int> >::const_iterator iter=binelemap.begin(); iter!=binelemap.end(); ++iter)
-        {
-          int binId = iter->first;
-          // if a bin has already been examined --> continue with next particle
-          if(examinedbins.find(binId) != examinedbins.end())
-            continue;
-          std::vector<int> binvec;
-          // get neighboring bins
-          GetNeighborAndOwnBinIds(binId, binvec);
-          bins.insert(binvec.begin(), binvec.end());
-        }
-      }
-    }
-    // copy set to vector in order to broadcast data, this vector contains all bins
-    // that myrank_ needs to own or ghost
-    std::vector<int> binids(bins.begin(),bins.end());
-
-    // first: proc i tells all procs how many bins it has
-    int numbin = binids.size();
-    initial_elecolmap->Comm().Broadcast(&numbin, 1, iproc);
-
-    // second: proc i tells all procs which bins it has
-    binids.resize(numbin);
-    initial_elecolmap->Comm().Broadcast(&binids[0], numbin, iproc);
-
-    // third: loop over all own bins and find requested ones, fill in elements to these bins
-    std::map<int, std::set<int> > sdata;
-    for(int i=0; i<numbin; ++i)
-    {
-      if(binelemap.find(binids[i]) != binelemap.end())
-        sdata[binids[i]].insert(binelemap[binids[i]].begin(),binelemap[binids[i]].end());
-    }
-
-    // fourth: proc i has to receive and store the data
-    std::map<int, std::set<int> > rdata;
-    LINALG::Gather<int>(sdata, rdata, 1, &iproc, initial_elecolmap->Comm());
-    if(iproc == myrank_)
-      ext_bintoele_ghosting = rdata;
-
-  } // loop over all procs
-
-  // reduce map of sets to one set and copy to a vector to create extended elecolmap
-  std::set<int> coleleset;
-  // insert extended ghosting
-  std::map<int, std::set<int> >::iterator iter;
-  for(iter=ext_bintoele_ghosting.begin(); iter!= ext_bintoele_ghosting.end(); ++iter)
-    coleleset.insert(iter->second.begin(),iter->second.end());
-
-  // insert standard ghosting
-  for(int lid=0; lid<initial_elecolmap->NumMyElements(); ++lid)
-    coleleset.insert(initial_elecolmap->GID(lid));
-
-  // vector
-  std::vector<int> colgids(coleleset.begin(),coleleset.end());
-
-  // return extended elecolmap
-  return Teuchos::rcp(new Epetra_Map(-1,(int)colgids.size(),&colgids[0],0,initial_elecolmap->Comm()));
-}
-
-
-/*----------------------------------------------------------------------*
-| setup ghosting of bins and particles                      ghamm 09/12 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
-{
-  // 1st step: ghosting of bins
-  {
-    // gather bins of rowmap and all its neighbors (row + ghost)
-    std::set<int> bins;
-    for (int lid=0; lid<binrowmap->NumMyElements(); ++lid)
-    {
-      int binId = binrowmap->GID(lid);
-      std::vector<int> binvec;
-      // get neighboring bins
-      GetNeighborAndOwnBinIds(binId, binvec);
-      bins.insert(binvec.begin(), binvec.end());
-    } // end for lid
-
-    // remove non-existing ghost bins from original bin set
-    {
-      // create copy of column bins
-      std::set<int> ghostbins(bins);
-      // find ghost bins and check for existence
-      for (int lid=0; lid<binrowmap->NumMyElements(); ++lid)
-      {
-        const int gid = binrowmap->GID(lid);
-        std::set<int>::iterator iter = ghostbins.find(gid);
-        if(iter != ghostbins.end())
-          ghostbins.erase(iter);
-      }
-      // only ghost bins remain
-      std::vector<int> ghostbins_vec(ghostbins.begin(),ghostbins.end());
-      const int size = (int)ghostbins.size();
-      std::vector<int> pidlist(size);
-      const int err = binrowmap->RemoteIDList(size,ghostbins_vec.data(),pidlist.data(),NULL);
-      if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
-
-      for(int i=0; i<size; ++i)
-      {
-        if(pidlist[i] == -1)
-        {
-          std::set<int>::iterator iter = bins.find(ghostbins_vec[i]);
-          if(iter == bins.end())
-            dserror("bin id is missing in bin set");
-          // erase non-existing id
-          bins.erase(iter);
-        }
-      }
-    }
-
-    // copy bingids to a vector and create bincolmap
-    std::vector<int> bincolmap(bins.begin(),bins.end());
-    bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
-
-    if(bincolmap_->NumGlobalElements() == 1 && bincolmap_->Comm().NumProc() > 1)
-      dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
-
-    // make sure that all procs are either filled or unfilled
-    bindis_->CheckFilledGlobally();
-
-    // create ghosting for bins (each knowing its particle ids)
-    bindis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
-  }
-
-
-#ifdef DEBUG
-    // check whether each proc has only particles that are within bins on this proc
-    for(int k=0; k<bindis_->NumMyColElements(); k++)
-    {
-      int binid = bindis_->lColElement(k)->Id();
-      DRT::Node** particles = bindis_->lColElement(k)->Nodes();
-
-      for(int iparticle=0; iparticle<bindis_->lColElement(k)->NumNode(); iparticle++)
-      {
-        int ijk[3] = {-1,-1,-1};
-        for(int dim=0; dim<3; ++dim)
-        {
-          ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]);
-        }
-
-        int gidofbin = ConvertijkToGid(&ijk[0]);
-        if(gidofbin != binid)
-          dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
-      }
-    }
-#endif
-
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------*
-| build bin column map                                         eichinger 09/16 |
- *-----------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BuildBinColMap(
-    Teuchos::RCP<Epetra_Map>      newrowbins,
-    std::map<int, std::set<int> > exteletobinmap)
-{
-  // copy bingids to a vector and create bincolmap
-  std::set<int> bincolmap;
-  std::map<int, std::set<int> >::const_iterator biniter;
-  for(biniter=exteletobinmap.begin();biniter!=exteletobinmap.end();++biniter)
-    bincolmap.insert(biniter->first);
-
-  for(int i=0;i<newrowbins->NumMyElements();++i)
-    bincolmap.insert(newrowbins->GID(i));
-  std::vector<int> bincolmapvec(bincolmap.begin(),bincolmap.end());
-  bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmapvec.size(),&bincolmapvec[0],0,Comm()));
-
-  if(bincolmap_->NumGlobalElements() == 1 && bincolmap_->Comm().NumProc() > 1)
-    dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
-
-  // make sure that all procs are either filled or unfilled
-  bindis_->CheckFilledGlobally();
-
-  // create ghosting for bins (each knowing its particle ids)
-  bindis_->ExtendedGhosting(*bincolmap_,true,false,false,false);
-
-#ifdef DEBUG
-    // check whether each proc has only particles that are within bins on this proc
-    for(int k=0; k<bindis_->NumMyColElements(); k++)
-    {
-      int binid = bindis_->lColElement(k)->Id();
-      DRT::Node** particles = bindis_->lColElement(k)->Nodes();
-
-      for(int iparticle=0; iparticle<bindis_->lColElement(k)->NumNode(); iparticle++)
-      {
-        int ijk[3] = {-1,-1,-1};
-        for(int dim=0; dim<3; ++dim)
-        {
-          ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]);
-        }
-
-        int gidofbin = ConvertijkToGid(&ijk[0]);
-        if(gidofbin != binid)
-          dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
-      }
-    }
-#endif
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1435,17 +699,17 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
 
   // transfer particles to new bins
-  Teuchos::RCP<std::list<int> > deletedparticles = TransferParticles(disnp);
+  Teuchos::RCP<std::list<int> > deletedparticles = PARTICLE::ParticleHandler::TransferParticles(disnp);
 
   // check whether all procs have a filled bindis_,
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
-  bindis_->CheckFilledGlobally();
+  BinStrategy()->BinDiscret()->CheckFilledGlobally();
 
   // new ghosting if necessary
   if (ghosting)
-    bindis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
+    BinStrategy()->BinDiscret()->ExtendedGhosting(*BinColMap(),true,false,true,false);
   else
-    bindis_->FillComplete(true, false, true);
+    BinStrategy()->BinDiscret()->FillComplete(true, false, true);
 
   // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
   bool rebuildwallpointer = true;
@@ -1462,142 +726,6 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   }
 
   return deletedparticles;
-}
-
-/*----------------------------------------------------------------------*
- | particles are checked and transferred if necessary       ghamm 10/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
-{
-  // set of homeless particles
-  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
-
-  std::set<int> examinedbins;
-  // check in each bin whether particles have moved out
-  // first run over particles and then process whole bin in which particle is located
-  // until all particles have been checked
-  const int numrownodes = bindis_->NodeRowMap()->NumMyElements();
-  for(int i=0; i<numrownodes; ++i)
-  {
-    DRT::Node *currparticle = bindis_->lRowNode(i);
-
-#ifdef DEBUG
-    if(currparticle->NumElement() != 1)
-      dserror("ERROR: A particle is assigned to more than one bin!");
-#endif
-
-    DRT::Element** currele = currparticle->Elements();
-    DRT::Element* currbin = currele[0];
-    // as checked above, there is only one element in currele array
-    const int binId = currbin->Id();
-
-    // if a bin has already been examined --> continue with next particle
-    if( examinedbins.count(binId) == 1 )
-    {
-      continue;
-    }
-    // else: bin is examined for the first time --> new entry in examinedbins
-    else
-    {
-      examinedbins.insert(binId);
-    }
-
-    // now all particles in this bin are processed
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::Node** particles = currbin->Nodes();
-    std::vector<int> tobemoved(0);
-    for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
-    {
-      // get current node
-      DRT::Node* currnode = particles[iparticle];
-
-      // get current position
-      std::vector<double> pos(3,0.0);
-      if(disnp!=Teuchos::null)
-      {
-        // get the first gid of a node and convert it into a LID
-        const int gid = bindis_->Dof(currnode, 0);
-        const int lid = disnp->Map().LID(gid);
-        if(lid<0)
-          dserror("displacement for node %d not stored on this proc: %d",gid,myrank_);
-
-        // we need to adapt the state vector consistent with periodic boundary conditions
-        if(havepbc_)
-        {
-          for(int dim=0; dim<3; dim++)
-            ApplyPBCToParticles((*disnp)[lid+dim],dim);
-        }
-
-        for(int dim=0; dim<3; ++dim)
-          pos[dim] = (*disnp)[lid+dim];
-      }
-      else
-      {
-        for(int dim=0; dim<3; ++dim)
-          pos[dim] = currnode->X()[dim];
-
-        // apply periodic boundary conditions for particles
-        if(havepbc_)
-        {
-          for(int dim=0; dim<3; dim++)
-            ApplyPBCToParticles(pos[dim],dim);
-        }
-      }
-
-      // change X() of current particle
-      currnode->SetPos(pos);
-
-      // transform to array
-      double* currpos = &pos[0];
-
-      const int gidofbin = ConvertPosToGid(currpos);
-      if(gidofbin != binId) // particle has left current bin
-      {
-        // gather all node Ids that will be removed and remove them afterwards
-        // (looping over nodes and deleting at the same time is detrimental)
-        tobemoved.push_back(currnode->Id());
-        // find new bin for particle
-        /*bool placed = */PlaceNodeCorrectly(Teuchos::rcp(currnode,false), currpos, homelessparticles);
-      }
-
-    } // end for inode
-
-    // finally remove nodes from their old bin
-    for(size_t iter=0; iter<tobemoved.size(); iter++)
-    {
-      dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
-    }
-
-  } // end for ibin
-
-#ifdef DEBUG
-  if(homelessparticles.size())
-    std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
-#endif
-
-  // homeless particles are sent to their new processors where they are inserted into their correct bin
-  Teuchos::RCP<std::list<int> > deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
-
-  return deletedparticles;
-}
-
-/*----------------------------------------------------------------------*
- | apply periodic boundary conditions to particles          ghamm 10/12 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::ApplyPBCToParticles(double& currpos, int dim)
-{
-  if(pbconoff_[dim])
-  {
-    if(currpos < XAABB_(dim,0))
-      currpos += pbcdeltas_[dim];
-    else if(currpos > XAABB_(dim,1))
-      currpos -= pbcdeltas_[dim];
-  }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1645,7 +773,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     for (std::map<int, DRT::Node* >::iterator nit=wallgnodes.begin(); nit != wallgnodes.end(); ++nit)
     {
       DRT::Node* currnode = (*nit).second;
-      if ( not moving_walls_ || ((currnode->Owner() == myrank_) && moving_walls_) )
+      if ( not moving_walls_ || ((currnode->Owner() == MyRank()) && moving_walls_) )
       {
         nodeids.push_back(currnode->Id());
         particlewalldis->AddNode(Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
@@ -1658,7 +786,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit=structelementsinterf.begin(); eit != structelementsinterf.end(); ++eit)
     {
       Teuchos::RCP<DRT::Element> currele = eit->second;
-      if ( not moving_walls_ || ((currele->Owner() == myrank_) && moving_walls_) )
+      if ( not moving_walls_ || ((currele->Owner() == MyRank()) && moving_walls_) )
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
@@ -1678,7 +806,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     particlewallelecolmap_standardghosting_ = Teuchos::rcp(new Epetra_Map(*particlewalldis->ElementColMap()));
 
     // extend ghosting to the bin col map
-    ExtendGhosting(particlewalldis, particlewallelecolmap_standardghosting_, bincolmap_, false, false, false, false);
+    BinStrategy()->ExtendGhosting(particlewalldis, particlewallelecolmap_standardghosting_, BinColMap(), false, false, false, false);
   }
   else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
   {
@@ -1711,7 +839,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   particlewalldis_ = particlewalldis;
 
   // some output to screen and initialization of binary output
-  if(myrank_ == 0)
+  if(MyRank() == 0)
     std::cout << "after adding particle walls" << std::endl;
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
   if(moving_walls_)
@@ -1734,7 +862,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 void PARTICLE::Algorithm::AssignWallElesToBins()
 {
   // remove assigned wall elements
-  RemoveElesFromBins(bin_surfcontent_);
+  BinStrategy()->RemoveElesFromBins(bin_surfcontent_);
 
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
   if(moving_walls_)
@@ -1775,14 +903,14 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
   double bincircumcircle = 0.0;
   for(int dim=0; dim<3; ++dim)
   {
-    bincircumcircle += std::pow(bin_size_[dim]/2.0,2.0);
+    bincircumcircle += std::pow(BinStrategy()->BinSize()[dim]/2.0,2.0);
   }
   bincircumcircle = sqrt(bincircumcircle);
 
   // minimal bin size
-  double min_bin_size = bin_size_[0];
+  double min_bin_size = BinStrategy()->BinSize()[0];
   for(int dim=1; dim<3; ++dim)
-    min_bin_size = std::min(min_bin_size, bin_size_[dim]);
+    min_bin_size = std::min(min_bin_size, BinStrategy()->BinSize()[dim]);
 
   // find bins for all wall elements
   const int numcolwalleles = particlewalldis_->NumMyColElements();
@@ -1798,7 +926,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
     {
       // initialize ijk_range with ijk of first node of wall element
       int ijk[3];
-      ConvertPosToijk(currentpositions[nodeids[0]], ijk);
+      BinStrategy()->ConvertPosToijk(currentpositions[nodeids[0]], ijk);
 
       // ijk_range contains: i_min i_max j_min j_max k_min k_max
       int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
@@ -1807,7 +935,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
       for (int j=1; j<numnode; ++j)
       {
         int ijk[3];
-        ConvertPosToijk(currentpositions[nodeids[j]], ijk);
+        BinStrategy()->ConvertPosToijk(currentpositions[nodeids[j]], ijk);
 
         for(int dim=0; dim<3; ++dim)
         {
@@ -1819,7 +947,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
       }
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      GidsInijkRange(&ijk_range[0], binIds, true);
+      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, true);
     }
 
     // if no bins on this proc were found, next wall element can be processed
@@ -1831,7 +959,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
       std::set<int> binfaraway;
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
       {
-        const LINALG::Matrix<3,1> bincentroid = GetBinCentroid(*biniter);
+        const LINALG::Matrix<3,1> bincentroid = BinStrategy()->GetBinCentroid(*biniter);
 
         // search for the closest object, more exactly it's coordinates
         LINALG::Matrix<3,1> minDistCoords;
@@ -1855,7 +983,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
         else
         {
           std::vector<LINALG::Matrix<3,1> > bincorners;
-          GetBinCorners(*biniter, bincorners);
+          BinStrategy()->GetBinCorners(*biniter, bincorners);
 
           // in case wall element is axis aligned, it might not be detected as inside because projection points
           // are located on the edges of the bin --> Remedy: bin centroid is tested as well
@@ -1870,7 +998,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
             LINALG::Matrix<3,1> minDistCoords;
             GEO::nearest3DObjectOnElement(wallele, currentpositions, bincorners[corner], minDistCoords);
 
-            const int gid = ConvertPosToGid(minDistCoords);
+            const int gid = BinStrategy()->ConvertPosToGid(minDistCoords);
             if(gid == *biniter)
             {
               projpointinsidebin = true;
@@ -1888,150 +1016,13 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
     // assign wall element to remaining bins
     {
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->gElement(*biniter))->AddAssociatedEle(bin_surfcontent_,wallele->Id(), wallele);
+        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(*biniter))->AddAssociatedEle(bin_surfcontent_,wallele->Id(), wallele);
     }
 
   } // end lid
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| build connectivity from particle wall elements to bins    ghamm 04/13 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
-{
-  if(wallpointer == true)
-  {
-    // loop over column bins and fill wall elements
-    const int numcolbin = bindis_->NumMyColElements();
-    for (int ibin=0; ibin<numcolbin; ++ibin)
-    {
-      DRT::Element* actele = bindis_->lColElement(ibin);
-      DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-      const int numwallele = actbin->NumAssociatedEle(bin_surfcontent_);
-      const int* walleleids = actbin->AssociatedEleIds(bin_surfcontent_);
-      std::vector<DRT::Element*> wallelements(numwallele);
-      for(int iwall=0; iwall<numwallele; ++iwall)
-      {
-        const int wallid = walleleids[iwall];
-        wallelements[iwall] = particlewalldis_->gElement(wallid);
-      }
-      actbin->BuildElePointers(bin_surfcontent_,&wallelements[0]);
-    }
-  }
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
-| bins are distributed to the processors based on an        ghamm 11/12 |
-| underlying discretization                                             |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderlyingDiscret(
-  Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& rowelesinbin)
-{
-
-  //--------------------------------------------------------------------
-  // 1st step: exploiting bounding box idea for scatra elements and bins
-  //--------------------------------------------------------------------
-
-  DistributeElesToBins(underlyingdis, rowelesinbin);
-
-  //--------------------------------------------------------------------
-  // 2nd step: decide which proc will be owner of each bin
-  //--------------------------------------------------------------------
-
-  std::vector<int> rowbins;
-  {
-    // fill all bins which contain row elements to a vector on each proc
-    const int numbin = rowelesinbin.size();
-    std::vector<int> mybinswithroweles;
-    mybinswithroweles.reserve(numbin);
-    for(std::map<int, std::set<int> >::const_iterator it=rowelesinbin.begin(); it != rowelesinbin.end(); ++it)
-      mybinswithroweles.push_back(it->first);
-
-    std::vector<int> maxrank_per_bin;
-
-    // loop over all procs in which proc i determines which bins it will own finally
-    for(int iproc=0; iproc<underlyingdis->Comm().NumProc() ; ++iproc)
-    {
-      // proc i determines number of bins with row elements and broadcasts
-      int numbin_proc = 0;
-      if(iproc == myrank_)
-        numbin_proc = numbin;
-      underlyingdis->Comm().Broadcast(&numbin_proc, 1, iproc);
-
-      // allocate vector on each proc with number of row bins on proc i
-      std::vector<int> binswithroweles_proci;
-
-      // proc i broadcasts its bin ids
-      if(iproc == myrank_)
-        binswithroweles_proci = mybinswithroweles;
-      else
-        binswithroweles_proci.resize(numbin_proc, 0);
-      underlyingdis->Comm().Broadcast(&binswithroweles_proci[0], numbin_proc, iproc);
-
-      // each proc feeds its number of eles for the requested bin ids
-      std::vector<int> numeles_per_bin(numbin_proc, 0);
-      for(int i=0; i<numbin_proc; ++i)
-      {
-        std::map<int, std::set<int> >::const_iterator it = rowelesinbin.find(binswithroweles_proci[i]);
-        if(it != rowelesinbin.end())
-          numeles_per_bin[i] = (int)it->second.size();
-      }
-
-      // find maximum number of eles in each bin over all procs (init with -1)
-      std::vector<int> maxnumeles_per_bin(numbin_proc,-1);
-      underlyingdis->Comm().MaxAll(&numeles_per_bin[0], &maxnumeles_per_bin[0], numbin_proc);
-
-
-#ifdef DEBUG
-      // safety check - there is no empty bin allowed
-      for(int i=0; i<numbin_proc; ++i)
-      {
-        if(maxnumeles_per_bin[i] < 1)
-          dserror("empty bin found on proc %d which should not be possible here", myrank_);
-      }
-#endif
-
-      // it is possible that several procs have the same number of eles in a bin
-      // therefore, only proc which has maximum number of eles in a bin writes its rank
-      std::vector<int> myrank_per_bin(numbin_proc,-1);
-      for(int i=0; i<numbin_proc; ++i)
-      {
-        if(numeles_per_bin[i] == maxnumeles_per_bin[i])
-          myrank_per_bin[i] = myrank_;
-      }
-
-      // find maximum myrank for each bin over all procs (init with -1)
-      std::vector<int> maxrank_per_bin_tmp(numbin_proc,-1);
-      underlyingdis->Comm().MaxAll(&myrank_per_bin[0], &maxrank_per_bin_tmp[0], numbin_proc);
-
-      // store max rank on proc i
-      if(iproc == myrank_)
-        maxrank_per_bin = maxrank_per_bin_tmp;
-    }
-
-    // assign bins to proc if it has the highest rank
-    for(int i=0; i<numbin; ++i)
-    {
-      if(myrank_ == maxrank_per_bin[i])
-      {
-        const int gid = mybinswithroweles[i];
-        Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
-        bindis_->AddElement(bin);
-        rowbins.push_back(gid);
-       }
-    }
-  }
-
-  // return binrowmap (without having called FillComplete on bindis_ so far)
-  return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,Comm()));
-}
-
 
 /*----------------------------------------------------------------------*
 | single fields are tested                                  ghamm 09/12 |
@@ -2088,11 +1079,11 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 //    gmshfilecontent << "View \" " << "velocity" << " \" {\n";
 //    LINALG::Matrix<3,1> vectorvalue(true);
 //
-//    for(int n=0; n<bindis_->NumMyRowNodes(); n++)
+//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
 //    {
-//      DRT::Node* actnode = bindis_->lRowNode(n);
+//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
 //      // get the first gid of a node and convert it into a LID
-//      int gid = bindis_->Dof(actnode, 0);
+//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
 //      int lid = particles_->Dispnp()->Map().LID(gid);
 //      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
 //      Teuchos::RCP<const Epetra_Vector> velnp = particles_->Velnp();
@@ -2114,11 +1105,11 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 //  {
 //    gmshfilecontent << "View \" " << "density" << " \" {\n";
 //
-//    for(int n=0; n<bindis_->NumMyRowNodes(); n++)
+//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
 //    {
-//      DRT::Node* actnode = bindis_->lRowNode(n);
+//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
 //      // get the first gid of a node and convert it into a LID
-//      int gid = bindis_->Dof(actnode, 0);
+//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
 //      int lid = particles_->Dispnp()->Map().LID(gid);
 //      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
 //      LINALG::Matrix<3,1> posXYZDomain(true);
@@ -2140,11 +1131,11 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 //  {
 //    gmshfilecontent << "View \" " << "radius" << " \" {\n";
 //
-//    for(int n=0; n<bindis_->NumMyRowNodes(); n++)
+//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
 //    {
-//      DRT::Node* actnode = bindis_->lRowNode(n);
+//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
 //      // get the first gid of a node and convert it into a LID
-//      int gid = bindis_->Dof(actnode, 0);
+//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
 //      int lid = particles_->Dispnp()->Map().LID(gid);
 //      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
 //      LINALG::Matrix<3,1> posXYZDomain(true);
@@ -2174,7 +1165,7 @@ void PARTICLE::Algorithm::SetUpHeatSources()
 {
   // extract heat source conditions
   std::vector<DRT::Condition*> conds;
-  bindis_->GetCondition("ParticleHeatSource", conds);
+  BinStrategy()->BinDiscret()->GetCondition("ParticleHeatSource", conds);
 
   for (size_t iHS=0; iHS<conds.size(); iHS++)
   {
@@ -2235,20 +1226,20 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
       // find the bins
       int minVerZone_ijk[3];
       int maxVerZone_ijk[3];
-      ConvertPosToijk(&((*iHS)->minVerZone_[0]), minVerZone_ijk);
-      ConvertPosToijk(&((*iHS)->maxVerZone_[0]), maxVerZone_ijk);
+      BinStrategy()->ConvertPosToijk(&((*iHS)->minVerZone_[0]), minVerZone_ijk);
+      BinStrategy()->ConvertPosToijk(&((*iHS)->maxVerZone_[0]), maxVerZone_ijk);
       const int ijk_range[] = {
           minVerZone_ijk[0],maxVerZone_ijk[0],
           minVerZone_ijk[1],maxVerZone_ijk[1],
           minVerZone_ijk[2],maxVerZone_ijk[2]};
       std::set<int>  binIds;
-      GidsInijkRange(&ijk_range[0], binIds, false);
+      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, false);
 
       if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",(*iHS)->id_);
 
       // create/update the map
       for (std::set<int>::const_iterator iBin = binIds.begin(); iBin != binIds.end(); ++iBin)
-          if(bindis_->ElementRowMap()->LID(*iBin) >= 0)
+          if(BinStrategy()->BinDiscret()->ElementRowMap()->LID(*iBin) >= 0)
             bins2heatSources_[*iBin].push_back((*iHS));
 
       (*iHS)->active_ = true;
@@ -2323,7 +1314,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
   std::vector<int> binIds;
   binIds.reserve(27);
 
-  GetNeighborAndOwnBinIds(binId,binIds);
+  BinStrategy()->GetNeighborAndOwnBinIds(binId,binIds);
 
   GetBinContent(neighboring_particles, neighboring_walls, neighboring_heatSources, binIds);
 }
@@ -2341,16 +1332,16 @@ void PARTICLE::Algorithm::GetBinContent(
   for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
   {
     // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(*bin);
+    const int lid = BinStrategy()->BinDiscret()->ElementColMap()->LID(*bin);
     if(lid<0)
       continue;
 
 #ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
 
     // gather particles
     DRT::Node** nodes = neighboringbin->Nodes();
@@ -2370,44 +1361,6 @@ void PARTICLE::Algorithm::GetBinContent(
 }
 
 /*----------------------------------------------------------------------*
- | get elements in given bins                              ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GetBinContent(
-  std::set<DRT::Element*>        &eles,
-  INPAR::BINSTRATEGY::BinContent bincontent,
-  std::vector<int>&              binIds,
-  bool                           roweles
-  )
-{
-  // loop over all bins
-  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
-  {
-    // extract bins from discretization after checking on existence
-    const int lid = bindis_->ElementColMap()->LID(*bin);
-    if(lid<0)
-      continue;
-
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
-
-    // gather wall elements
-    DRT::Element** elements = neighboringbin->AssociatedEles(bincontent);
-    const int numeles = neighboringbin->NumAssociatedEle(bincontent);
-    for(int iele=0;iele<numeles; ++iele)
-    {
-      if(roweles && elements[iele]->Owner() != myrank_)
-        continue;
-      eles.insert(elements[iele]);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
  | particleDismemberer                                     catta 07/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ParticleDismemberer()
@@ -2424,15 +1377,15 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   Teuchos::RCP<const Epetra_Vector> specEnthalpy = particles_->SpecEnthalpyn();
 
   // with this snapshotting the addition of nodes does not affect the main loop
-  const int maxLidNode_old = bindis_->NodeRowMap()->NumMyElements();
+  const int maxLidNode_old = BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements();
 
   std::vector<int> listOrganizer(maxLidNode_old);
   std::list<homelessParticleTemp > newParticleList;
 
   for (int lidNode_old = 0; lidNode_old < maxLidNode_old; ++lidNode_old)
   {
-    DRT::Node* currParticle_old = bindis_->lRowNode(lidNode_old);
-    const int lidDof_old = bindis_->DofRowMap()->LID(bindis_->Dof(currParticle_old, 0));
+    DRT::Node* currParticle_old = BinStrategy()->BinDiscret()->lRowNode(lidNode_old);
+    const int lidDof_old = BinStrategy()->BinDiscret()->DofRowMap()->LID(BinStrategy()->BinDiscret()->Dof(currParticle_old, 0));
 
     // checks
     if (lidNode_old == -1)
@@ -2503,15 +1456,15 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   // -----------------------------------------------
   // communication: determination of the correct gid
   // -----------------------------------------------
-  const int nextMaxNode_gid = bindis_->NodeRowMap()->MaxAllGID();
-  const int numproc = bindis_->Comm().NumProc();
+  const int nextMaxNode_gid = BinStrategy()->BinDiscret()->NodeRowMap()->MaxAllGID();
+  const int numproc = BinStrategy()->BinDiscret()->Comm().NumProc();
   std::vector<int> myentries(numproc,0);
   std::vector<int> globentries(numproc,0);
   const int MyNewParticleListSize0 = newParticleList.size();
-  myentries[bindis_->Comm().MyPID()] = MyNewParticleListSize0;
-  bindis_->Comm().SumAll(&myentries[0], &globentries[0], numproc);  // parallel communication
+  myentries[BinStrategy()->BinDiscret()->Comm().MyPID()] = MyNewParticleListSize0;
+  BinStrategy()->BinDiscret()->Comm().SumAll(&myentries[0], &globentries[0], numproc);  // parallel communication
   int MyOffset = 0;
-  for(int ii = 0; ii < bindis_->Comm().MyPID(); ++ii)
+  for(int ii = 0; ii < BinStrategy()->BinDiscret()->Comm().MyPID(); ++ii)
   {
    MyOffset += globentries[ii];
   }
@@ -2528,22 +1481,22 @@ void PARTICLE::Algorithm::ParticleDismemberer()
 
     std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
     Teuchos::RCP<DRT::Node> newParticle = Teuchos::rcp(new PARTICLE::ParticleNode(
-        newParticleIDcounter, &((*iNodeList).pos[0]), myrank_));
+        newParticleIDcounter, &((*iNodeList).pos[0]), MyRank()));
 
     PlaceNodeCorrectly(newParticle, newParticle->X(), homelessparticles);
     // rare case when after dismembering some particles fall into another bin
     if(homelessparticles.size() != 0)
     {
-      bindis_->AddNode(newParticle);
+      BinStrategy()->BinDiscret()->AddNode(newParticle);
       // assign node to an arbitrary row bin -> correct placement will follow in the timeloop in TransferParticles
-      DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lRowElement(0));
+      DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lRowElement(0));
       firstbinindis->AddNode(newParticle.get());
       homelessparticles.clear();
     }
   }
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  bindis_->FillComplete(true, false, true);
+  BinStrategy()->BinDiscret()->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
@@ -2564,8 +1517,8 @@ void PARTICLE::Algorithm::ParticleDismemberer()
   {
     // get node lids
     const int lidNode_new = maxLidNode_old+lidNodeCounter;
-    DRT::Node* currParticle_new = bindis_->lRowNode(lidNode_new);
-    const int lidDof_new = bindis_->DofRowMap()->LID(bindis_->Dof(currParticle_new, 0));
+    DRT::Node* currParticle_new = BinStrategy()->BinDiscret()->lRowNode(lidNode_new);
+    const int lidDof_new = BinStrategy()->BinDiscret()->DofRowMap()->LID(BinStrategy()->BinDiscret()->Dof(currParticle_new, 0));
 
     const int lidNode_old = iNodeList->lidNode_old;
     const int lidDof_old = iNodeList->lidDof_old;

@@ -50,13 +50,13 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
 
-  const bool havepbc = HavePBCs();
+  const bool havepbc = BinStrategy()->HavePBC();
 
   std::set<int> examinedbins;
-  int numrownodes = bindis_->NodeRowMap()->NumMyElements();
+  int numrownodes = BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements();
   for(int i=0; i<numrownodes; ++i)
   {
-    DRT::Node *currentparticle = bindis_->lRowNode(i);
+    DRT::Node *currentparticle = BinStrategy()->BinDiscret()->lRowNode(i);
     DRT::Element** currentbin = currentparticle->Elements();
 
     const int binId=currentbin[0]->Id();
@@ -78,7 +78,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     for(int iparticle=0; iparticle<currentbin[0]->NumNode(); ++iparticle)
     {
       DRT::Node* currparticle = particles[iparticle];
-      const double r_p = (*particleradius)[ bindis_->NodeRowMap()->LID(currparticle->Id()) ];
+      const double r_p = (*particleradius)[ BinStrategy()->BinDiscret()->NodeRowMap()->LID(currparticle->Id()) ];
       maxradius = std::max(r_p, maxradius);
     }
     if(maxradius < 0.0)
@@ -86,13 +86,13 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
     // get an ijk-range that is large enough
     int ijk[3];
-    ConvertGidToijk(binId, ijk);
+    BinStrategy()->ConvertGidToijk(binId, ijk);
 
     // scaling factor in order to account for influence of bubble
     int ibinrange[3];
     for(int dim=0; dim<3; ++dim)
     {
-      ibinrange[dim] = (int)((maxradius*influencescaling_)/bin_size_[dim]) + 1;
+      ibinrange[dim] = (int)((maxradius*influencescaling_)/BinStrategy()->BinSize()[dim]) + 1;
       if(ibinrange[dim] > 1)
         dserror("not yet tested for such large bubbles -> think about extending ghosting!");
     }
@@ -106,19 +106,19 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
     binIds.reserve((2*ibinrange[0]+1) * (2*ibinrange[1]+1) * (2*ibinrange[2]+1));
 
     // get corresponding bin ids in ijk range and fill them into binIds (in gid)
-    GidsInijkRange(&ijk_range[0], binIds, false);
+    BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, false);
 
     // variable to store all fluid elements in neighborhood
     std::set<DRT::Element*> neighboringfluideles;
     for(std::vector<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
     {
       // extract bins from discretization after checking on existence
-      const int lid = bindis_->ElementColMap()->LID(*i);
+      const int lid = BinStrategy()->BinDiscret()->ElementColMap()->LID(*i);
       if(lid<0)
         continue;
       // extract bins from discretization
       DRT::MESHFREE::MeshfreeMultiBin* currbin =
-          dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( bindis_->lColElement(lid) );
+          dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( BinStrategy()->BinDiscret()->lColElement(lid) );
 
       DRT::Element** currfluideles = currbin->AssociatedEles(bin_volcontent_);
       for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_volcontent_); ++ifluidele)
@@ -134,7 +134,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
       // fill particle position
       LINALG::Matrix<3,1> particleposition(false);
-      std::vector<int> lm_b = bindis_->Dof(currparticle);
+      std::vector<int> lm_b = BinStrategy()->BinDiscret()->Dof(currparticle);
       // convert dof of particle into correct local id in this Epetra_Vector
       int posx = bubblepos->Map().LID(lm_b[0]);
       for (int dim=0; dim<3; ++dim)
@@ -323,7 +323,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
 
   double maxfluidfrac = 0.0;
   fluid_fraction->MaxValue(&maxfluidfrac);
-  if(myrank_ == 0)
+  if(MyRank() == 0)
     std::cout << std::setprecision(16) << "minimum fluid fraction is: " << minfluidfrac << " and maximimum fluid fraction is: " << maxfluidfrac << std::endl;
 
   // apply fluid fraction to fluid on element level for visualization purpose
@@ -1345,16 +1345,16 @@ bool CAVITATION::Algorithm::XAABBoverlap(
       // check distance of fluid element and particle position roughly
       distance(idim) = ele->Nodes()[0]->X()[idim] - particleposition(idim);
       // use heuristic to find out whether fluid element and bubble are connected via a pbc bound
-      if(HavePBCs(idim) and (std::abs(distance(idim)) > PBCDelta(idim)*0.5))
+      if(BinStrategy()->HavePBC(idim) and (std::abs(distance(idim)) > BinStrategy()->PBCDelta(idim)*0.5))
       {
         // fluid element and bubble are (hopefully) connected via a pbc bound
         pbcdetected = true;
 
         // compute necessary offset to account for pbc
         if(distance(idim) > 0.0)
-          pbceleoffset(idim) = -PBCDelta(idim);
+          pbceleoffset(idim) = -BinStrategy()->PBCDelta(idim);
         else
-          pbceleoffset(idim) = +PBCDelta(idim);
+          pbceleoffset(idim) = +BinStrategy()->PBCDelta(idim);
       }
     }
   }
@@ -1538,7 +1538,7 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
 
   // gather neighboring bins
   int ijk[3];
-  ConvertGidToijk(currbin->Id(),ijk);
+  BinStrategy()->ConvertGidToijk(currbin->Id(),ijk);
 
   // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
   const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
@@ -1546,11 +1546,11 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
   binIds.reserve(27);
 
   // check on existence here
-  GidsInijkRange(ijk_range,binIds,true);
+  BinStrategy()->GidsInijkRange(ijk_range,binIds,true);
 
   for(size_t b=0; b<binIds.size(); ++b)
   {
-    currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->gElement(binIds[b]));
+    currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(binIds[b]));
 
     fluidelesinbin = currbin->AssociatedEles(bin_volcontent_);
     numfluidelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
@@ -1566,7 +1566,7 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
       {
         std::cout << "INFO: underlying fluid element (id: " << fluidele->Id() << ") for currparticle with Id: "
             << currparticle->Id() << " and position: " << myposition(0) << " " << myposition(1) << " " << myposition(2)
-            << " was found in a neighboring bin: " << currbin->Id() << " on proc " << myrank_ << std::endl;
+            << " was found in a neighboring bin: " << currbin->Id() << " on proc " << MyRank() << std::endl;
 
         // leave loop over all fluid eles in bin
         return fluidele;
@@ -1603,7 +1603,7 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
   if(targetfluidele == NULL)
   {
     std::cout << "WARNING: velocity for bubble (id: " << currparticle->Id() << " ) could not be computed at position: "
-        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << myrank_ << std::endl;
+        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << MyRank() << std::endl;
     return false;
   }
 
@@ -1622,7 +1622,7 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
   targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
 
   // enforce 2D bubble movement for pseudo-2D problem
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
     elevec1(2) = 0.0;
 
   return true;
@@ -1662,7 +1662,7 @@ bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
   if(targetfluidele == NULL)
   {
     std::cout << "WARNING: pressure for bubble (id: " << currparticle->Id() << " ) could not be computed at position: "
-        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << myrank_ << std::endl;
+        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << MyRank() << std::endl;
     return false;
   }
 
@@ -1959,7 +1959,7 @@ void CAVITATION::Algorithm::ComputePatchRecoveredFluidFraction(
   params.set<int>("action",FLD::calc_velgrad_ele_center);
 
   Teuchos::RCP<Epetra_MultiVector> nodevec;
-  if(particle_dim_ == INPAR::PARTICLE::particle_3D)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_3D)
     nodevec = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(fluiddis_,Teuchos::rcp((*fluidfraction)(0),false), "dummy", 1, params);
   else
     nodevec = DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(fluiddis_,Teuchos::rcp((*fluidfraction)(0),false), "dummy", 1, params);

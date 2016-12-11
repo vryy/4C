@@ -19,9 +19,8 @@
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "binning_strategy.H"
+#include "particle_handler.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_binstrategy.H"
 
 #include <Epetra_MpiComm.h>
@@ -37,6 +36,7 @@
  *----------------------------------------------------------------------*/
 namespace DRT
 {
+  class Element;
   class Discretization;
   class Node;
 }
@@ -62,6 +62,10 @@ namespace MAT
     class ExtParticleMat;
   }
 }
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}
 
 /*----------------------------------------------------------------------*
  | particle algorithm                                       ghamm 09/12 |
@@ -72,7 +76,7 @@ namespace PARTICLE
   // forward declaration
   class HeatSource;
 
-  class Algorithm : public ADAPTER::AlgorithmBase, public BINSTRATEGY::BinningStrategy
+  class Algorithm : public ADAPTER::AlgorithmBase, public PARTICLE::ParticleHandler
   {
   public:
 
@@ -119,13 +123,6 @@ namespace PARTICLE
     virtual Teuchos::RCP<std::list<int> > TransferParticles(const bool updatestates,
                                    const bool ghosting = true);
 
-    /// particles are checked whether they have moved out of their current bin
-    /// and transferred if necessary
-    virtual Teuchos::RCP<std::list<int> > TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
-
-    /// shift current particle positions in case periodic boundary conditions are applied
-    virtual void ApplyPBCToParticles(double& currpos, int dim);
-
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
                     DRT::Node* particle,
@@ -157,60 +154,6 @@ namespace PARTICLE
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
 
-    /// get particles and wall elements in given bins
-    void GetBinContent(
-      std::set<DRT::Element*>        &eles,
-      INPAR::BINSTRATEGY::BinContent bincontent,
-      std::vector<int>&              binIds,
-      bool                           roweles = false
-      );
-
-    /// node is placed into the correct row bin or put into the list of homeless particles
-    virtual bool PlaceNodeCorrectly(
-      Teuchos::RCP<DRT::Node> node,  ///< node to be placed
-      const double* currpos,  ///< current position of this node
-      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles  ///< list of homeless particles
-      );
-
-    /// round robin loop to fill particles into its correct bin on according proc
-    virtual void FillParticlesIntoBinsRoundRobin(
-      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles  ///< list of homeless particles
-      );
-
-    /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
-
-    /// setup ghosting of bins and particles
-    virtual void SetupGhosting(
-      Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
-      );
-
-    /// build bin colume map
-    virtual void BuildBinColMap(
-        Teuchos::RCP<Epetra_Map>      newrowbins,
-        std::map<int, std::set<int> > exteletobinmap  ///< extended map of bins
-      );
-
-    /// extend ghosting according to bin distribution
-    virtual void ExtendBinGhosting(
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<Epetra_Map>          rowbins,
-        Teuchos::RCP<Epetra_Vector>       disnp,
-        std::map<int, std::set<int> >&    extbintoelemap,
-        bool                              particle_ghosting,
-        bool                              eleghosting
-        );
-
-    /// extended ghosting of bins and particles and eles of other discret
-    virtual Teuchos::RCP<Epetra_Map> ExtendPartAndEleGhosting(
-      const Epetra_Map*              initial_elecolmap,
-      std::map<int, std::set<int> >& binelemap,
-      std::map<int, std::set<int> >& ext_bintoele_ghosting,
-      Teuchos::RCP<Epetra_Map>       rowbins,
-      bool                           particle_ghosting,
-      bool                           eleghosting
-      );
-
   protected:
 
     /// prepare time step
@@ -240,31 +183,17 @@ namespace PARTICLE
     // bins are redistributed according to the current fill level with particles
     virtual void DynamicLoadBalancing();
 
-    /// create graph for bin distribution
-    Teuchos::RCP<const Epetra_CrsGraph> CreateGraph();
-
-    /// rough safety check for proper bin size
-    virtual void BinSizeSafetyCheck(const double dt);
-
-    /// fill particles into their correct bin on according proc
-    virtual Teuchos::RCP<std::list<int> > FillParticlesIntoBinsRemoteIdList(
-      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles   ///< set of homeless particles
-      );
-
-    /// particle walls are set up and assigned to bins
-    virtual void SetupParticleWalls(
-      Teuchos::RCP<DRT::Discretization> basediscret
-      );
-
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
       );
 
-    /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcsBasedOnUnderlyingDiscret(
-      Teuchos::RCP<DRT::Discretization> underlyingdis,  ///< underlying discretization on which distribution depends on
-      std::map<int, std::set<int> >& fluideles  ///< map from bin id to row fluid elements in this bin
+    /// rough safety check for proper bin size
+    virtual void BinSizeSafetyCheck(const double dt);
+
+    /// particle walls are set up and assigned to bins
+    virtual void SetupParticleWalls(
+      Teuchos::RCP<DRT::Discretization> basediscret
       );
 
     /// assign wall elements to bins
@@ -309,8 +238,6 @@ namespace PARTICLE
     //@{
 
     Teuchos::RCP<ADAPTER::Particle> particles_;     ///< particle time integration
-
-    Teuchos::RCP<Epetra_Map> bincolmap_;     ///< colmap of bins
 
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
 

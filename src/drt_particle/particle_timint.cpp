@@ -446,7 +446,7 @@ void PARTICLE::TimInt::ComputeAcc(
     fifc_->Update(1.0, *f_contact, 1.0);
 
     // zero out non-planar entries in case of 2D
-    if(particle_algorithm_->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+    if(particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
     {
       for(int i=0; i<numrownodes; ++i)
       {
@@ -465,7 +465,7 @@ void PARTICLE::TimInt::ComputeAcc(
   }
 
   // zero out non-planar entries in case of 2D
-  if(particle_algorithm_->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+  if(particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
   {
     for(int i=0; i<numrownodes; ++i)
       (*fifc_)[i*3+2] = 0.0;

@@ -128,13 +128,13 @@ CAVITATION::Algorithm::Algorithm(
 
   // validate input file
 
-  switch (particle_dim_)
+  switch (BinStrategy()->ParticleDim())
   {
   case INPAR::PARTICLE::particle_3D:
     // standard case
     break;
   case INPAR::PARTICLE::particle_2Dz:
-    if(myrank_ == 0)
+    if(MyRank() == 0)
       IO::cout << "\nPseudo 2D cavitation problem chosen (z-direction ignored)" << IO::endl << IO::endl;
     break;
   case INPAR::PARTICLE::particle_2Dx:
@@ -237,7 +237,7 @@ CAVITATION::Algorithm::Algorithm(
       restartparticles_ = timestepsizeratio_*DRT::Problem::Instance()->Restart();
   }
 
-  if(computeradiusRPbased_ && myrank_ == 0)
+  if(computeradiusRPbased_ && MyRank() == 0)
     IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
   if(moving_walls_)
@@ -291,7 +291,7 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     // transfer particles into their correct bins at least every 10th of the fluid time step size;
     // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
     // velocity as the fluid
-    if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || havepbc_ == true)
+    if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || BinStrategy()->HavePBC() == true)
     {
       ++count_;
       TransferParticles(true);
@@ -356,7 +356,7 @@ void CAVITATION::Algorithm::TimeloopIterStaggered()
       // transfer particles into their correct bins at least every 10th of the fluid time step size;
       // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
       // velocity as the fluid
-      if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || havepbc_ == true)
+      if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || BinStrategy()->HavePBC() == true)
       {
         ++count_;
         Teuchos::RCP<std::list<int> > deletedparticles = TransferParticles(true);
@@ -388,7 +388,7 @@ void CAVITATION::Algorithm::ComputePressAndRadiusNorm(double& pressnorm_L2, doub
   // if pressure norm is almost zero
   if (pressnorm_L2 < 1e-6)
   {
-    if(myrank_ == 0)
+    if(MyRank() == 0)
       std::cout << "press norm is almost zero: " << pressnorm_L2 << " --> set to one " << std::endl;
     pressnorm_L2 = 1.0;
   }
@@ -398,7 +398,7 @@ void CAVITATION::Algorithm::ComputePressAndRadiusNorm(double& pressnorm_L2, doub
   // if radius norm is almost zero
   if (radiusnorm_L2 < 1e-6 && particles_->Radiusn()->GlobalLength() != 0)
   {
-    if(myrank_ == 0)
+    if(MyRank() == 0)
       std::cout << "radius norm is almost zero: " << radiusnorm_L2 << " --> set to one " << std::endl;
     radiusnorm_L2 = 1.0;
   }
@@ -415,7 +415,7 @@ void CAVITATION::Algorithm::PrepareRelaxation(const int outeriter)
   // do not iterate if particle field is empty and leave here
   if(particles_->Radiusn()->GlobalLength() == 0)
   {
-    if(myrank_ == 0)
+    if(MyRank() == 0)
     {
       std::cout << "/***********************/\n"
           << "NO OUTER ITERATION BECAUSE PARTICLE FIELD IS EMPTY\n/***********************/\n" << std::endl;
@@ -423,7 +423,7 @@ void CAVITATION::Algorithm::PrepareRelaxation(const int outeriter)
     return;
   }
 
-  if(myrank_ == 0)
+  if(MyRank() == 0)
   {
     std::cout << "/***********************/\n"
         << "START OUTER ITERATION NO. " << outeriter << "\n/***********************/\n" << std::endl;
@@ -497,7 +497,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       // omega^{i+1} = 1 - mu^{i+1}
       const double omega = 1.0 - mu_;
 
-      if(myrank_ == 0)
+      if(MyRank() == 0)
         std::cout << "omega for dynamic relaxation is: " <<  omega << std::endl;
 
       // relax radius solution for next iteration step
@@ -540,7 +540,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
     // reset everything if not converged
     if(not converged)
     {
-      if(myrank_ == 0)
+      if(MyRank() == 0)
         std::cout << "\n relative L2 error press: " << pressincnorm_L2 / pressnorm_L2 << " >? " << ittol_ << "\n"
             << " and relative L2 error radius: " << radiusincnorm_L2 / radiusnorm_L2 << " >? "  << ittol_ << "\n"
             << " info: and relative inf error radius: " << radiusincnorm_Linf << std::endl;
@@ -602,7 +602,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
         finaldiff->Norm2(&diffnorm);
         double radiusnorm(0.0);
         particles_->Radiusn()->Norm2(&radiusnorm);
-        if(myrank_ == 0)
+        if(MyRank() == 0)
           std::cout << " info: abs norm of difference of coupling radius and real radius is: " << diffnorm << "\n"
               << " info: relative norm of differences is: " << diffnorm / radiusnorm << "\n"
               << " --> omega for dynamic relaxation is: " << omega << std::endl;
@@ -622,7 +622,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       finaldiff->Norm2(&diffnorm);
       double radiusnorm(0.0);
       particles_->Radiusn()->Norm2(&radiusnorm);
-      if(myrank_ == 0)
+      if(MyRank() == 0)
       {
         std::cout << "\n relative L2 error press: " << pressincnorm_L2 / pressnorm_L2 << " < " << ittol_ << "\n"
             << " and relative L2 error radius: " << radiusincnorm_L2 / radiusnorm_L2 << " < "  << ittol_ << "\n"
@@ -636,7 +636,7 @@ void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
       dserror("maximum number (%i) of outer iterations reached", itmax_);
   }
 
-  if(myrank_ == 0)
+  if(MyRank() == 0)
   {
     std::stringstream info;
     converged==true ? info << "true" : info << "false";
@@ -709,13 +709,13 @@ void CAVITATION::Algorithm::ResetParticleData()
   else // recover old layout in case particles have left the domain
   {
     // remove particles from bins first
-    for(int lid=0; lid<bindis_->NumMyColNodes(); ++lid)
+    for(int lid=0; lid<BinStrategy()->BinDiscret()->NumMyColNodes(); ++lid)
     {
-      DRT::Node* currparticle = bindis_->lColNode(lid);
+      DRT::Node* currparticle = BinStrategy()->BinDiscret()->lColNode(lid);
       dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currparticle->Elements()[0])->DeleteNode(currparticle->Id());
     }
     // delete all particles in a second step
-    bindis_->DeleteNodes();
+    BinStrategy()->BinDiscret()->DeleteNodes();
 
     // add old particles instead
     std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
@@ -727,14 +727,14 @@ void CAVITATION::Algorithm::ResetParticleData()
       // assumption of identical order of dof and node based vector contents!
       for(int d=0; d<dim_; ++d)
         pos[d] = (*storedis_)[lid*3+d];
-      Teuchos::RCP<DRT::Node> oldparticle = Teuchos::rcp(new PARTICLE::ParticleNode(oldnodeid, &pos[0], myrank_));
+      Teuchos::RCP<DRT::Node> oldparticle = Teuchos::rcp(new PARTICLE::ParticleNode(oldnodeid, &pos[0], MyRank()));
       PlaceNodeCorrectly(oldparticle, pos, homelessparticles);
     }
     if(homelessparticles.size() != 0)
       dserror("%d row nodes could not be placed correctly", (int)homelessparticles.size());
 
     // setup ghosting and fill discret
-    bindis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
+    BinStrategy()->BinDiscret()->ExtendedGhosting(*BinColMap(),true,false,true,false);
 
     // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
     bool rebuildwallpointer = true;
@@ -749,7 +749,7 @@ void CAVITATION::Algorithm::ResetParticleData()
     // reset values to initial value for those particles which left during subcycling
     for(std::list<int>::const_iterator it=deletedparticlesduringsubcycling_.begin(); it!=deletedparticlesduringsubcycling_.end(); ++it)
     {
-      const int lid = bindis_->NodeRowMap()->LID(*it);
+      const int lid = BinStrategy()->BinDiscret()->NodeRowMap()->LID(*it);
       (*couplingradius_)[lid] = (*storerad_)[lid];
       (*radius_i_)[lid] = (*storerad_)[lid];
     }
@@ -804,18 +804,18 @@ void CAVITATION::Algorithm::SetupSystem()
 void CAVITATION::Algorithm::InitCavitation()
 {
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
-  bindis_->FillComplete(false,false,false);
+  BinStrategy()->BinDiscret()->FillComplete(false,false,false);
   // extract noderowmap because it will be called Reset() after adding elements
-  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*BinStrategy()->BinDiscret()->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> fluidelecolmapold = Teuchos::rcp(new Epetra_Map(*fluiddis_->ElementColMap()));
-  CreateBins(fluiddis_);
+  BinStrategy()->CreateBins(fluiddis_);
 
   // set up the links to the materials for easy access
   // make sure that a particle material is defined in the dat-file
   InitMaterials();
 
   // setup pbcs after bins have been created
-  BuildPeriodicBC();
+  BinStrategy()->BuildPeriodicBC();
 
   // gather all fluid coleles in each bin for proper extended ghosting
   std::map<int, std::set<int> > rowfluideles;
@@ -827,7 +827,7 @@ void CAVITATION::Algorithm::InitCavitation()
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
-    DRT::Node* node = bindis_->gNode(particlerowmap->GID(lid));
+    DRT::Node* node = BinStrategy()->BinDiscret()->gNode(particlerowmap->GID(lid));
     const double* currpos = node->X();
     PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
   }
@@ -864,7 +864,7 @@ void CAVITATION::Algorithm::InitCavitation()
 
   // create particle time integrator
   Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(*adaptedcavitationdyn, bindis_));
+      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(*adaptedcavitationdyn, BinStrategy()->BinDiscret()));
   particles_ = particles->ParticleField();
 
   // increase filesteps in outputwriter to account for subcycling
@@ -896,7 +896,7 @@ void CAVITATION::Algorithm::InitCavitation()
     xyze_cache_[fluidele->LID()] = xyze;
 
     // compute volume for each row element
-    if(fluidele->Owner() == myrank_)
+    if(fluidele->Owner() == MyRank())
     {
       double ev = GEO::ElementVolume( fluidele->Shape(), xyze );
       const int lid = fluiddis_->ElementRowMap()->LID(fluidele->Id());
@@ -934,17 +934,17 @@ void CAVITATION::Algorithm::InitCavitation()
   if(computeradiusRPbased_ == true)
   {
     // determine initial pressure and radius for radius adaption based on Rayleigh-Plesset equ.
-    pg0_ = LINALG::CreateVector(*bindis_->NodeRowMap(), false);
+    pg0_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(), false);
     InitBubblePressure();
     // init individual time step size for bubble radius adaption (will be corrected if too large)
-    dtsub_ = LINALG::CreateVector(*bindis_->NodeRowMap(), false);
+    dtsub_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(), false);
     dtsub_->PutScalar(1.0e-2*bubbletimestep);
   }
 
   // some output
-  if (myrank_ == 0)
+  if (MyRank() == 0)
     IO::cout << "after ghosting" << IO::endl;
-  DRT::UTILS::PrintParallelDistribution(*bindis_);
+  DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
   DRT::UTILS::PrintParallelDistribution(*fluiddis_);
 
   return;
@@ -987,7 +987,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   elevec1.Size(1);
 
   // correct initialization of bubble states for variable radius
-  for(int i=0; i<bindis_->NodeRowMap()->NumMyElements(); ++i)
+  for(int i=0; i<BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements(); ++i)
   {
     // set values here and overwrite in case of restart later
     const double r0_bub = (*bubbleradiusn)[i];
@@ -995,10 +995,10 @@ void CAVITATION::Algorithm::InitBubblePressure()
     (*bubbleradiusdot)[i] = 0.0;
 
     // bubble position is needed to get current ambient pressure for that bubble
-    DRT::Node* currparticle = bindis_->lRowNode(i);
+    DRT::Node* currparticle = BinStrategy()->BinDiscret()->lRowNode(i);
     // fill particle position
     static LINALG::Matrix<3,1> particleposition;
-    std::vector<int> lm_b = bindis_->Dof(currparticle);
+    std::vector<int> lm_b = BinStrategy()->BinDiscret()->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
@@ -1007,7 +1007,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
     const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
     if(fluidelefound == false)
       dserror("no underlying fluid element for pressure computation was found for bubble %d at positions %f %f %f on proc %d",
-          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), MyRank());
 
     const double pambient0 = elevec1[0];
 
@@ -1042,13 +1042,13 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
   elevec1.Size(dim_);
 
   // initialize velocity for all bubbles according to underlying fluid velocity
-  for(int i=0; i<bindis_->NodeRowMap()->NumMyElements(); ++i)
+  for(int i=0; i<BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements(); ++i)
   {
     // bubble position is needed to get current velocity for that bubble
-    DRT::Node* currparticle = bindis_->lRowNode(i);
+    DRT::Node* currparticle = BinStrategy()->BinDiscret()->lRowNode(i);
     // fill particle position
     static LINALG::Matrix<3,1> particleposition;
-    std::vector<int> lm_b = bindis_->Dof(currparticle);
+    std::vector<int> lm_b = BinStrategy()->BinDiscret()->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
@@ -1057,7 +1057,7 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
     const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
     if(fluidelefound == false)
       dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
-          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), MyRank());
 
     for (int d=0; d<dim_; ++d)
       (*bubblevelnp)[posx+d] = elevec1(d);
@@ -1282,7 +1282,7 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::SetFluidFraction()
 {
-  if(fluid_->PhysicalType() != INPAR::FLUID::loma && myrank_ == 0)
+  if(fluid_->PhysicalType() != INPAR::FLUID::loma && MyRank() == 0)
     IO::cout << "Info: Fluid fraction is calculated and can be visualized but it is not "
         "used for the actual calculation" << IO::endl;
 
@@ -1316,7 +1316,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
   // clear states in the beginning and set fluid states for proper coupling
   fluiddis_->ClearState();
-  bindis_->ClearState();
+  BinStrategy()->BinDiscret()->ClearState();
   Teuchos::ParameterList p;
   SetCouplingStates(p, init);
 
@@ -1334,7 +1334,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
   // vectors to be filled with forces,
   // note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
-  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*bindis_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(),true);
   Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::null;
   if(timeforcalcfluidforces)
     fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
@@ -1384,15 +1384,15 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   evelacc_cache_.clear();
 
   // only row particles are evaluated
-  for(int i=0; i<bindis_->NodeRowMap()->NumMyElements(); ++i)
+  for(int i=0; i<BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* currparticle = bindis_->lRowNode(i);
+    DRT::Node* currparticle = BinStrategy()->BinDiscret()->lRowNode(i);
     // fill particle position
     static LINALG::Matrix<3,1> particleposition(false);
-    std::vector<int> lm_b = bindis_->Dof(currparticle);
+    std::vector<int> lm_b = BinStrategy()->BinDiscret()->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     if(posx<0)
-      dserror("displacement for node %d not stored on this proc: %d",currparticle->Id(),myrank_);
+      dserror("displacement for node %d not stored on this proc: %d",currparticle->Id(),MyRank());
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
 
@@ -1418,7 +1418,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*bubblevel,v_bub,lm_b);
 
     // get bubble radius and mass (assumption of constant mass (-> no mass transfer))
-    const int lid = bindis_->NodeRowMap()->LID(currparticle->Id());
+    const int lid = BinStrategy()->BinDiscret()->NodeRowMap()->LID(currparticle->Id());
     const double r_bub = (*bubbleradius)[lid];
     const double m_b = (*bubblemass)[lid];
 
@@ -1615,7 +1615,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     static Epetra_SerialDenseVector forcecurrbubble(3);
     for(int d=0; d<dim_; ++d)
       forcecurrbubble[d] = bubbleforce(d);
-    std::vector<int> lmowner_b(lm_b.size(), myrank_);
+    std::vector<int> lmowner_b(lm_b.size(), MyRank());
     LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
 
     // coupling forces between fluid and particle only include certain forces
@@ -1740,7 +1740,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   //--------------------------------------------------------------------
 
   // enforce 2D bubble forces for pseudo-2D problem
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
   {
     const int numnodes = bubbleforces->MyLength()/dim_;
     for(int i=0; i<numnodes; ++i)
@@ -1781,7 +1781,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     dserror("global assemble into fluidforces failed");
 
   // enforce 2D fluid forces for pseudo-2D problem
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
   {
     const int numnodes = fluidforces->MyLength()/(dim_+1);
     for(int i=0; i<numnodes; ++i)
@@ -1878,7 +1878,7 @@ DRT::Element* CAVITATION::Algorithm::GetUnderlyingFluidEleData(
     std::vector<double> tmpposition(dim_);
     for(int d=0; d<dim_; ++d)
       tmpposition[d] = particleposition(d);
-    int bubbleBinId = ConvertPosToGid(tmpposition);
+    int bubbleBinId = BinStrategy()->ConvertPosToGid(tmpposition);
 
     std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
         " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedEle(bin_volcontent_) << std::endl;
@@ -2242,7 +2242,7 @@ void CAVITATION::Algorithm::ComputeRadius()
   TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::ComputeRadius");
   // setup cache for underlying fluid elements and elecoords for later force computation
   // note: lid corresponding to nodal col map is used for addressing entries!
-  underlyingelecache_.resize(bindis_->NodeColMap()->NumMyElements());
+  underlyingelecache_.resize(BinStrategy()->BinDiscret()->NodeColMap()->NumMyElements());
 
   // unit conversion for integrating bubble radius in order to account for
   // fast changes of small bubbles
@@ -2300,13 +2300,13 @@ void CAVITATION::Algorithm::ComputeRadius()
   const double pvapor = actmat->p_vapor_*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
 
   // only row particles are evaluated
-  for(int i=0; i<bindis_->NodeRowMap()->NumMyElements(); ++i)
+  for(int i=0; i<BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* currparticle = bindis_->lRowNode(i);
+    DRT::Node* currparticle = BinStrategy()->BinDiscret()->lRowNode(i);
 
     // fill particle position
     static LINALG::Matrix<3,1> particleposition;
-    std::vector<int> lm_b = bindis_->Dof(currparticle);
+    std::vector<int> lm_b = BinStrategy()->BinDiscret()->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
@@ -2332,7 +2332,7 @@ void CAVITATION::Algorithm::ComputeRadius()
     const double pfluidnp = elevec1[1]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
 
     const int gid = currparticle->Id();
-    const int lid = bindis_->NodeRowMap()->LID(gid);
+    const int lid = BinStrategy()->BinDiscret()->NodeRowMap()->LID(gid);
 
     // get bubble radii of different sub time steps
     double r_bub_k = ((*bubbleradiusn)[lid])*LENGTHSCALE;
@@ -2409,7 +2409,7 @@ void CAVITATION::Algorithm::ComputeRadius()
     // assumption of constant mass (-> no mass transfer)
     Teuchos::RCP<const Epetra_Vector> mass = particles_->Mass();
     Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
-    for(int lid=0; lid<bindis_->NumMyRowNodes(); ++lid)
+    for(int lid=0; lid<BinStrategy()->BinDiscret()->NumMyRowNodes(); ++lid)
     {
       const double rad = (*bubbleradiusn)[lid];
       // inertia-vector: sphere: I = 2/5 * m * r^2
@@ -2636,7 +2636,7 @@ void CAVITATION::Algorithm::ParticleInflow()
     for(std::set<int>::const_iterator i=latestinflowbubbles_.begin(); i!=latestinflowbubbles_.end(); ++i)
     {
       int bubblegid = *i;
-      int bubblelid = bindis_->NodeRowMap()->LID(bubblegid);
+      int bubblelid = BinStrategy()->BinDiscret()->NodeRowMap()->LID(bubblegid);
       if(bubblelid != -1)
       {
         // compute blending factor
@@ -2689,7 +2689,7 @@ void CAVITATION::Algorithm::ParticleInflow()
 
   // check globally for inflow -> all or none of the procs must go in here
   int globaltimeforinflow = 0;
-  bindis_->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
+  BinStrategy()->BinDiscret()->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
 
   // if no inflow detected -> leave here
   if(globaltimeforinflow == 0)
@@ -2703,10 +2703,10 @@ void CAVITATION::Algorithm::ParticleInflow()
   const double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
 
   // initialize bubble id with largest bubble id in use + 1 (on each proc)
-  const int maxbubbleid = bindis_->NodeRowMap()->MaxAllGID()+1;
+  const int maxbubbleid = BinStrategy()->BinDiscret()->NodeRowMap()->MaxAllGID()+1;
 
   int numrelevantdim = dim_;
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  if(BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
     numrelevantdim = 2;
 
   // start filling particles
@@ -2736,16 +2736,16 @@ void CAVITATION::Algorithm::ParticleInflow()
 
       std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
       const int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
-      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new PARTICLE::ParticleNode(newbubbleid, &inflow_position[0], myrank_));
+      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new PARTICLE::ParticleNode(newbubbleid, &inflow_position[0], MyRank()));
       latestinflowbubbles_.insert(newbubbleid);
       // most bubbles can be inserted on the proc directly
       PlaceNodeCorrectly(newparticle, &inflow_position[0], homelessparticles);
       // in the rare case when the random amplitude leads to particles that are located in col bins, special treatment is necessary
       if(homelessparticles.size() != 0)
       {
-        bindis_->AddNode(newparticle);
+        BinStrategy()->BinDiscret()->AddNode(newparticle);
         // assign node to an arbitrary row bin -> correct placement will follow in the timeloop in TransferParticles
-        DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lRowElement(0));
+        DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lRowElement(0));
         firstbinindis->AddNode(newparticle.get());
         homelessparticles.clear();
       }
@@ -2759,9 +2759,9 @@ void CAVITATION::Algorithm::ParticleInflow()
     const int initialblendingsteps = blendingsteps_;
 
     // allreduce the ids of inflow bubbles in order to do blending of the radius on all procs later on
-    LINALG::GatherAll(latestinflowbubbles_, bindis_->Comm());
+    LINALG::GatherAll(latestinflowbubbles_, BinStrategy()->BinDiscret()->Comm());
     // allreduce the number of steps which are used for blending the bubble radius
-    bindis_->Comm().MaxAll(&inflowsteps, &blendingsteps_, 1);
+    BinStrategy()->BinDiscret()->Comm().MaxAll(&inflowsteps, &blendingsteps_, 1);
     ss << blendingsteps_;
 
     // safety check
@@ -2777,20 +2777,20 @@ void CAVITATION::Algorithm::ParticleInflow()
 
   if(inflowcounter)
   {
-    std::cout << "Inflow of " << inflowcounter << " bubbles on proc " << myrank_
+    std::cout << "Inflow of " << inflowcounter << " bubbles on proc " << MyRank()
         << " at time " << particles_->Time() << " using " << ss.str() << " blending steps" << std::endl;
   }
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  bindis_->FillComplete(true, false, true);
+  BinStrategy()->BinDiscret()->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
   UpdateStates();
 
   // insert data for new bubbles into state vectors
-  const Epetra_Map* dofrowmap = bindis_->DofRowMap();
-  const Epetra_Map* noderowmap = bindis_->NodeRowMap();
+  const Epetra_Map* dofrowmap = BinStrategy()->BinDiscret()->DofRowMap();
+  const Epetra_Map* noderowmap = BinStrategy()->BinDiscret()->NodeRowMap();
   Teuchos::RCP<Epetra_Vector> disn = particles_->WriteAccessDispnp();
   Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
   Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusn();
@@ -2851,9 +2851,9 @@ void CAVITATION::Algorithm::ParticleInflow()
         continue;
 
       const int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
-      DRT::Node* currparticle = bindis_->gNode(newbubbleid);
+      DRT::Node* currparticle = BinStrategy()->BinDiscret()->gNode(newbubbleid);
       // get the first dof of a particle and convert it into a LID
-      int lid = dofrowmap->LID(bindis_->Dof(currparticle, 0));
+      int lid = dofrowmap->LID(BinStrategy()->BinDiscret()->Dof(currparticle, 0));
       for(int d=0; d<dim_; ++d)
         (*disn)[lid+d] = currparticle->X()[d];
 
@@ -2870,7 +2870,7 @@ void CAVITATION::Algorithm::ParticleInflow()
         if(fluidelefound == false)
           dserror("no underlying fluid element for velocity computation was found for bubble %d "
               "at positions %f %f %f on proc %d. Check whether init vel from fluid is desired?",
-              currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+              currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), MyRank());
 
         for (int d=0; d<dim_; ++d)
           (*veln)[lid+d] = elevec1(d);
@@ -2935,7 +2935,7 @@ void CAVITATION::Algorithm::ParticleInflow()
         const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, pos, elemat1, elemat2, elevec1, elevec2, elevec3);
         if(fluidelefound == false)
           dserror("no underlying fluid element for pressure computation was found for bubble %d at positions %f %f %f on proc %d",
-              currparticle->Id(), pos(0), pos(1), pos(2), myrank_);
+              currparticle->Id(), pos(0), pos(1), pos(2), MyRank());
 
         const double pambient0 = elevec1[0];
 
@@ -2976,7 +2976,7 @@ void CAVITATION::Algorithm::Update(const bool converged)
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ReadRestart(int restart)
 {
-  if(myrank_ == 0)
+  if(MyRank() == 0)
     IO::cout << "INFO: Restart for particles from step " << restartparticles_ << " and for fluid from step " << restart
     << ". Current time step size ratio is: " << timestepsizeratio_ << "." << IO::endl;
 
@@ -3009,8 +3009,8 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
     if(computeradiusRPbased_ == true)
     {
       // setup correct layout of vectors ...
-      pg0_ = LINALG::CreateVector(*bindis_->NodeRowMap(), false);
-      dtsub_ = LINALG::CreateVector(*bindis_->NodeRowMap(), false);
+      pg0_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(), false);
+      dtsub_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(), false);
       // ... and overwrite with data from restart file
       reader_p.ReadVector(pg0_,"pg0");
       reader_p.ReadVector(dtsub_,"dtsub");
@@ -3041,7 +3041,7 @@ void CAVITATION::Algorithm::SetupGhosting(
   //--------------------------------------------------------------------
   std::map<int, std::set<int> > extendedfluidghosting;
   Teuchos::RCP<Epetra_Map> fluidelecolmap =
-      ExtendGhosting(&(*fluidelecolmapold), rowfluideles, extendedfluidghosting, Teuchos::null, bincolmap_);
+      BinStrategy()->ExtendGhosting(&(*fluidelecolmapold), rowfluideles, extendedfluidghosting, Teuchos::null, BinColMap());
 
   fluiddis_->ExtendedGhosting(*fluidelecolmap,true,true,true,false);
 
@@ -3049,7 +3049,7 @@ void CAVITATION::Algorithm::SetupGhosting(
   // 4th step: assign fluid elements to bins which are necessary for the coupling to particles
   // not necessarily all ghost fluid elements are inserted here
   //--------------------------------------------------------------------
-  AssignElesToBins(fluiddis_,extendedfluidghosting,bin_volcontent_);
+  BinStrategy()->AssignElesToBins(fluiddis_,extendedfluidghosting,bin_volcontent_);
 
 #ifdef DEBUG
   // check whether each particle has an underlying fluid element
@@ -3066,9 +3066,9 @@ void CAVITATION::Algorithm::SetupGhosting(
     currentpositions.insert(std::pair<int,LINALG::Matrix<3,1> >(node->Id(),currpos));
   }
   // start loop over all particles
-  for(int k=0; k<bindis_->NumMyColNodes(); k++)
+  for(int k=0; k<BinStrategy()->BinDiscret()->NumMyColNodes(); k++)
   {
-    DRT::Node* particle = bindis_->lColNode(k);
+    DRT::Node* particle = BinStrategy()->BinDiscret()->lColNode(k);
     const double* pos = particle->X();
     LINALG::Matrix<3,1> projpoint;
     for(int dim=0; dim<3; dim++)
@@ -3105,10 +3105,10 @@ void CAVITATION::Algorithm::BuildElementToBinPointers(bool wallpointer)
   PARTICLE::Algorithm::BuildElementToBinPointers(wallpointer);
 
   // loop over column bins and fill fluid elements
-  const int numcolbin = bindis_->NumMyColElements();
+  const int numcolbin = BinStrategy()->BinDiscret()->NumMyColElements();
   for (int ibin=0; ibin<numcolbin; ++ibin)
   {
-    DRT::Element* actele = bindis_->lColElement(ibin);
+    DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
     const int numfluidele = actbin->NumAssociatedEle(bin_volcontent_);
     const int* fluideleids = actbin->AssociatedEleIds(bin_volcontent_);
@@ -3198,42 +3198,42 @@ void CAVITATION::Algorithm::UpdateStates()
   if (dtsub_ != Teuchos::null)
   {
     old = dtsub_;
-    dtsub_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    dtsub_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *dtsub_);
   }
 
   if (pg0_ != Teuchos::null)
   {
     old = pg0_;
-    pg0_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    pg0_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *pg0_);
   }
 
   if (radius_i_ != Teuchos::null)
   {
     old = radius_i_;
-    radius_i_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    radius_i_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *radius_i_);
   }
 
   if (couplingradius_ != Teuchos::null)
   {
     old = couplingradius_;
-    couplingradius_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    couplingradius_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *couplingradius_);
   }
 
   if (delhist_ != Teuchos::null)
   {
     old = delhist_;
-    delhist_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    delhist_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *delhist_);
   }
 
   if (del_ != Teuchos::null)
   {
     old = del_;
-    del_ = LINALG::CreateVector(*bindis_->NodeRowMap(),true);
+    del_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
     LINALG::Export(*old, *del_);
   }
 
@@ -3246,7 +3246,7 @@ void CAVITATION::Algorithm::UpdateStates()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::SubcyclingInfoToScreen()
 {
-  if (myrank_ == 0)
+  if (MyRank() == 0)
   {
     const int writeevry = std::max(1,(int)(timestepsizeratio_/10));
     if ( (particles_->Step()-restartparticles_)%writeevry == 0)
@@ -3279,7 +3279,7 @@ std::vector<int> CAVITATION::Algorithm::AdjacentBinstoCorner(int* ijk)
       {
         int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
 
-        int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
+        int neighborgid = BinStrategy()->ConvertijkToGid(&ijk_neighbor[0]);
         if(neighborgid != -1)
         {
           adjbins.push_back(neighborgid);
@@ -3299,7 +3299,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
 {
   // build inflow boundary condition
   std::vector<DRT::Condition*> conds;
-  bindis_->GetCondition("ParticleInflow", conds);
+  BinStrategy()->BinDiscret()->GetCondition("ParticleInflow", conds);
 
   // initial overlap can be problematic when particle contact is considered
   bool detectoverlap = false;
@@ -3379,8 +3379,8 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
           const double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
           source_pos[0] = (*vertex1)[0] + x * dist_x;
           // check whether this source position is on this proc
-          const int binId = ConvertPosToGid(source_pos);
-          const int found = bindis_->ElementRowMap()->LID(binId);
+          const int binId = BinStrategy()->ConvertPosToGid(source_pos);
+          const int found = BinStrategy()->BinDiscret()->ElementRowMap()->LID(binId);
           if(found != -1)
           {
             Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(
@@ -3418,7 +3418,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     {
       // get an ijk-range that is large enough
       int ijk[3];
-      ConvertGidToijk(biniter->first, ijk);
+      BinStrategy()->ConvertGidToijk(biniter->first, ijk);
 
       // this number is chosen from experience but larger number could be beneficial/necessary
       const int ibinrange = 1;
@@ -3429,15 +3429,15 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
       binIds.reserve((2*ibinrange+1) * (2*ibinrange+1) * (2*ibinrange+1));
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      GidsInijkRange(&ijk_range[0], binIds, false);
+      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, false);
 
       for(std::vector<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
       {
         // extract bins from discretization after checking on existence
-        const int lid = bindis_->ElementColMap()->LID(*i);
+        const int lid = BinStrategy()->BinDiscret()->ElementColMap()->LID(*i);
         if(lid<0)
           continue;
-        DRT::MESHFREE::MeshfreeMultiBin *currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(bindis_->lColElement(lid));
+        DRT::MESHFREE::MeshfreeMultiBin *currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
 
         DRT::Element** currfluideles = currbin->AssociatedEles(bin_volcontent_);
 
@@ -3457,7 +3457,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
       {
         // get only row nodes
         DRT::Node* node = (*iter)->Nodes()[i];
-        if(node->Owner() != myrank_)
+        if(node->Owner() != MyRank())
           continue;
         // get global and processor's local pressure dof id (using the map!)
         // this must be in sync with what happens when applying the fluid fraction to the fluid!

@@ -492,7 +492,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   // define vector for contact force
   Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap()));
 
-  const bool havepbc = particle_algorithm_->HavePBCs();
+  const bool havepbc = particle_algorithm_->BinStrategy()->HavePBC();
 
   // store bins, which have already been examined
   std::set<int> examinedbins;
@@ -680,16 +680,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       if(havepbc)
       {
         static int ijk_i[3], ijk_j[3];
-        particle_algorithm_->ConvertPosToijk(data_i.dis,ijk_i);
-        particle_algorithm_->ConvertPosToijk(position_j,ijk_j);
+        particle_algorithm_->BinStrategy()->ConvertPosToijk(data_i.dis,ijk_i);
+        particle_algorithm_->BinStrategy()->ConvertPosToijk(position_j,ijk_j);
         for(unsigned idim=0; idim<3; ++idim)
         {
-          if(particle_algorithm_->HavePBCs(idim))
+          if(particle_algorithm_->BinStrategy()->HavePBC(idim))
           {
             if(ijk_i[idim] - ijk_j[idim] < -1)
-              position_j(idim) -= particle_algorithm_->PBCDelta(idim);
+              position_j(idim) -= particle_algorithm_->BinStrategy()->PBCDelta(idim);
             else if(ijk_i[idim] - ijk_j[idim] > 1)
-              position_j(idim) += particle_algorithm_->PBCDelta(idim);
+              position_j(idim) += particle_algorithm_->BinStrategy()->PBCDelta(idim);
           }
         }
       }
@@ -1500,7 +1500,7 @@ PARTICLE::ParticleCollisionHandlerMD::ParticleCollisionHandlerMD(
     )
 {
   // safety check
-  if(particlealgorithm->HavePBCs())
+  if(particlealgorithm->BinStrategy()->HavePBC())
     dserror("Periodic boundary conditions not yet implemented for molecular dynamics!");
 
   return;

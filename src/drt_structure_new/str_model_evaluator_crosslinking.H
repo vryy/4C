@@ -61,7 +61,7 @@ namespace LINALG {
 } // namespace LINALG
 namespace PARTICLE
 {
-  class Algorithm;
+  class ParticleHandler;
 } // namespace PARTICLE
 namespace BEAMINTERACTION {
   class BeamContactParams;
@@ -725,7 +725,7 @@ namespace MODELEVALUATOR{
     Teuchos::RCP<Epetra_Vector> ia_disnp_;
 
     //! crosslinker management
-    Teuchos::RCP<PARTICLE::Algorithm> binning_;
+    Teuchos::RCP<PARTICLE::ParticleHandler> binning_;
 
     //! crosslinker and bin discretization
     Teuchos::RCP<DRT::Discretization> bindis_;

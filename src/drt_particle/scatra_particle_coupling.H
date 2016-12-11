@@ -97,11 +97,6 @@ namespace PARTICLE
     /// build connectivity from fluid elements to bins
     virtual void BuildElementToBinPointers();
 
-    /// bins are created based on XAABB and cutoff radius
-    virtual void CreateBins(
-      Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
-    );
-
   private:
 
     /// adjust particle radii to current interface position

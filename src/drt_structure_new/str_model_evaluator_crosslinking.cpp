@@ -131,19 +131,16 @@ void STR::MODELEVALUATOR::Crosslinking::Setup()
   // -------------------------------------------------------------------------
   InitializeBinDiscret();
   // -------------------------------------------------------------------------
-  // initialize particle algorithm, although we don't need/use any of the
-  // actual particle "algorithm" or integrator, we are just using some nice
-  // methods here.
-  // -------------------------------------------------------------------------
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
   /// algorithm is created here
-  binning_ = Teuchos::rcp(new PARTICLE::Algorithm(DiscretPtr()->Comm(),params));
+  binning_ = Teuchos::rcp(new PARTICLE::ParticleHandler(DiscretPtr()->Comm()));
+  // fixme: do this differently
+  binning_->BinStrategy()->SetBinDiscret(bindis_);
 
   // -------------------------------------------------------------------------
   // build periodic boundary conditions in binning strategy
   // -------------------------------------------------------------------------
   if(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength()->at(0)>0.0)
-    binning_->BuildPeriodicBC(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength());
+    binning_->BinStrategy()->BuildPeriodicBC(eval_statmech_ptr_->GetDataSMDynPtr()->PeriodLength());
 
   // -------------------------------------------------------------------------
   // a complete partitioning including the creation of bins, their weighted
@@ -1277,17 +1274,17 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
 
   // create XAABB and optionally set cutoff radius
   if(createxaabb)
-    binning_->CreateXAABB(discret_vec,disnp,setcutoff);
+    binning_->BinStrategy()->CreateXAABB(discret_vec,disnp,setcutoff);
   // just set cutoff radius
   else if (setcutoff)
-    binning_->ComputeMaxCutoff(discret_vec,disnp);
+    binning_->BinStrategy()->ComputeMaxCutoff(discret_vec,disnp);
 
   // -------------------------------------------------------------------------
   // Create bins according to XAABB and cutoff set in constructor (read
   // of input file)
   // -------------------------------------------------------------------------
   if(partition)
-    binning_->CreateBins(Teuchos::null);
+    binning_->BinStrategy()->CreateBins(Teuchos::null);
 
   // -------------------------------------------------------------------------
   // assign bins to procs according to a weighted partitioning, i.e. bins
@@ -1300,7 +1297,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   if(partition || repartition)
   {
     // get optimal row distribution of bins to procs
-    rowbins_ = binning_->WeightedDistributionOfBinsToProcs(discret_vec,
+    rowbins_ = binning_->BinStrategy()->WeightedDistributionOfBinsToProcs(discret_vec,
                                                            disnp,
                                                            nodesinbin,
                                                            repartition);
@@ -1394,12 +1391,8 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   // are given back separately if needed
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmap;
-  binning_->StandardGhosting(ia_discret_,
-                             rowbins_,
-                             ia_disnp_,
-                             stdelecolmap,
-                             stdnodecolmap,
-                             nodesinbin[0]);
+  binning_->BinStrategy()->StandardDiscretizationGhosting(ia_discret_, rowbins_, ia_disnp_,
+      stdelecolmap, stdnodecolmap, nodesinbin[0]);
 
 #ifdef DEBUG
   // print distribution after standard ghosting
@@ -1411,6 +1404,7 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   }
   DRT::UTILS::PrintParallelDistribution(*ia_discret_);
 #endif
+
 
   // ----------------------------------------------------------------------
   // extended ghosting means the following here: Each proc ghosts
@@ -1428,16 +1422,15 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   LINALG::Export(*ia_disnp_, *iadiscolnp);
 
   // extend ghosting
-  binning_->ExtendBinGhosting(ia_discret_,
-                              rowbins_,
-                              iadiscolnp,
-                              extbintoelemap_,
-                              cltoclinteraction,
-                              true);
+  std::map<int, std::set<int> > bintoelemap;
+  binning_->BinStrategy()->ExtendDiscretizationGhosting(ia_discret_, rowbins_, iadiscolnp,
+      bintoelemap, extbintoelemap_);
 
   // build element to bin map according to extended ghosting
   // extbintoelemap_ than contains for each col element the bins that are
   // somehow touched by an axis aligned bounding box around the element
+  binning_->BinStrategy()->ExtendBinGhosting(rowbins_, bintoelemap, cltoclinteraction);
+
   BuildEleToBinMap();
 
 #ifdef DEBUG
@@ -1450,13 +1443,6 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   }
   DRT::UTILS::PrintParallelDistribution(*ia_discret_);
 #endif
-
-  // -------------------------------------------------------------------------
-  // one layer ghosting of bins and particles, i.e. each proc ghosts the
-  // bins (multibin elements, elemap) and particles (nodes, nodemap) of
-  // its 26 neighbored bins -> final FillComplete() for maps included
-  // -------------------------------------------------------------------------
-  binning_->BuildBinColMap(rowbins_,extbintoelemap_);
 
 #ifdef DEBUG
   // print distribution after extended ghosting
@@ -1479,12 +1465,12 @@ void STR::MODELEVALUATOR::Crosslinking::UpdateBinStrategy(bool transfer,
   //--------------------------------------------------------------------------
   // in case have not build new bins we need to clear the content
   if(!partition)
-    binning_->RemoveElesFromBins(bin_beamcontent_);
+    binning_->BinStrategy()->RemoveElesFromBins(bin_beamcontent_);
   // note: extbintoelemap contains all necessary information for this step as
   // there is no assigning to do for empty bins (not in extbintoelemap) on a proc
   // bins that just have crosslinker are contained as well but do no damage
   // loop over all bins and remove assigned wall elements
-  binning_->AssignElesToBins(ia_discret_, extbintoelemap_, bin_beamcontent_);
+  binning_->BinStrategy()->AssignElesToBins(ia_discret_, extbintoelemap_, bin_beamcontent_);
 
 #ifdef DEBUG
   // safety check if a crosslinker got lost
@@ -1600,7 +1586,7 @@ void STR::MODELEVALUATOR::Crosslinking::InitializeBinDiscret()
   bindis_->SetWriter(
       Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
   // this is necessary for particle algorithm constructor
-  DRT::Problem::Instance()->AddDis("particle", bindis_);
+//  DRT::Problem::Instance()->AddDis("particle", bindis_);
   // -------------------------------------------------------------------------
   // set range for uniform random number generator
   // -------------------------------------------------------------------------
@@ -1939,7 +1925,7 @@ void STR::MODELEVALUATOR::Crosslinking::LookForBindingEvents(
     std::vector<int> neighboring_binIds;
     neighboring_binIds.reserve(27);
     // do not check on existence here -> shifted to GetBinContent
-    binning_->GetNeighborAndOwnBinIds(currbinId,neighboring_binIds);
+    binning_->BinStrategy()->GetNeighborAndOwnBinIds(currbinId,neighboring_binIds);
 
     // get set of neighbouring beam elements (i.e. elements that somehow touch nb bins)
     // as explained above, we only need row elements
@@ -3530,7 +3516,7 @@ void STR::MODELEVALUATOR::Crosslinking::FindAndStoreNeighboringElements()
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      binning_->GetNeighborAndOwnBinIds(*colbiniter,loc_neighboring_binIds);
+      binning_->BinStrategy()->GetNeighborAndOwnBinIds(*colbiniter,loc_neighboring_binIds);
 
       // build up comprehensive unique set of neighboring bins
       neighboring_binIds.insert(loc_neighboring_binIds.begin(), loc_neighboring_binIds.end());
