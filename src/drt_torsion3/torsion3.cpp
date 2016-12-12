@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
@@ -190,4 +191,22 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
   return lines;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Torsion3::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+{
+  if (p.isParameter("interface"))
+    interface_ptr_ =
+        Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>
+        (p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface"));
+  else
+    interface_ptr_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Torsion3::ParamsInterfacePtr()
+{
+  return interface_ptr_;
+}
 

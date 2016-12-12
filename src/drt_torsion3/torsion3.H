@@ -21,10 +21,13 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
+// forward declaration ...
+namespace STR {
+namespace ELEMENTS {
+  class ParamsInterface;
+} // namespace ELEMENTS
+} // namespace STR
 
-*/
 namespace DRT
 {
 
@@ -260,30 +263,38 @@ public:
 
   //@}
 
+  /*! \brief set the parameter interface ptr for the solid elements
+    *
+    *  \param p (in): Parameter list coming from the time integrator.
+    *
+    *  \author hiermeier
+    *  \date 04/16 */
+   virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+
+   /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
+    *
+    *  \author hiermeier
+    *  \date 04/16 */
+   virtual inline bool IsParamsInterface() const
+   { return (not interface_ptr_.is_null()); }
+
+   /*! \brief get access to the parameter interface pointer
+    *
+    *  \author hiermeier
+    *  \date 04/16 */
+   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+
+ protected:
+   /** \brief get access to the interface
+    *
+    *  \author hiermeier
+    *  \date 04/16 */
+   inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+   { if (not IsParamsInterface())
+       dserror("The interface ptr is not set!");
+     return *interface_ptr_; }
 
 private:
-
-  //! action parameters recognized by Torsion3
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_nlnstiff2,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,  //!< reset elementwise internal variables
-                             //!< during iteration to last converged state
-    postprocess_stress,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy //calculate current elastic energy of element
-  };
 
   //! possible bending potentials
   enum BendingPotential
@@ -291,6 +302,11 @@ private:
     quadratic,
     cosine
   };
+
+  /*! \brief interface ptr
+   *
+   *  data exchange between the element and the time integrator. */
+  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
   //container containing all kind of Torsion3 thisandthat
   DRT::Container data_;

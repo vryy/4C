@@ -18,6 +18,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/spring.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|
@@ -31,41 +32,47 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Torsion3::ActionType act = Torsion3::calc_none;
-  // get the action required
-  std::string action = params.get<std::string>("action","calc_none");
-  if (action == "calc_none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") act = Torsion3::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") act = Torsion3::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Torsion3::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") act = Torsion3::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") act = Torsion3::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Torsion3::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress") act = Torsion3::calc_struct_stress;
-  else if (action=="calc_struct_eleload") act = Torsion3::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") act = Torsion3::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep") act = Torsion3::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep") act = Torsion3::calc_struct_reset_istep;
-  else if (action=="postprocess_stress") act = Torsion3::postprocess_stress;
-  else if (action=="calc_struct_ptcstiff") act = Torsion3::calc_struct_ptcstiff;
-  else if (action=="calc_struct_energy") act = Torsion3::calc_struct_energy;
-  else
-  {
-    std::cout<<action<<std::endl;
-    dserror("Unknown type of action for Torsion3");
-  }
+  SetParamsInterfacePtr(params);
 
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else  // Todo remove as soon as old structural time integration is gone
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","calc_none");
+    if      (action == "calc_none")               dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")      act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")      act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce") act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")  act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")  act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass") act = ELEMENTS::struct_calc_nlnstifflmass;
+    else if (action=="calc_struct_stress")        act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_update_istep")  act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")   act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_ptcstiff")      act = ELEMENTS::struct_calc_ptcstiff;
+    else
+    {
+      std::cout<<action<<std::endl;
+      dserror("Unknown type of action for Torsion3");
+    }
+  }
 
   switch(act)
   {
-    case Torsion3::calc_struct_ptcstiff:
+    case ELEMENTS::struct_calc_ptcstiff:
     {
       //nothing to do
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
-    case Torsion3::calc_struct_linstiff:
+    case ELEMENTS::struct_calc_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
@@ -73,7 +80,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //calculate internal energy
-    case Torsion3::calc_struct_energy:
+    case ELEMENTS::struct_calc_energy:
     {
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -87,10 +94,10 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-    case Torsion3::calc_struct_nlnstiffmass:
-    case Torsion3::calc_struct_nlnstifflmass:
-    case Torsion3::calc_struct_nlnstiff:
-    case Torsion3::calc_struct_internalforce:
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstifflmass:
+    case ELEMENTS::struct_calc_nlnstiff:
+    case ELEMENTS::struct_calc_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -108,17 +115,18 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
        *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-      NodeShift<3,3>(params,mydisp);
+      // Todo method is deprecated. overhaul it if needed
+      //      NodeShift<3,3>(params,mydisp);
 
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
-      if (act == Torsion3::calc_struct_nlnstiffmass)
+      if (act == ELEMENTS::struct_calc_nlnstiffmass)
         t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
-      else if (act == Torsion3::calc_struct_nlnstifflmass)
+      else if (act == ELEMENTS::struct_calc_nlnstifflmass)
         t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
-      else if (act == Torsion3::calc_struct_nlnstiff)
+      else if (act == ELEMENTS::struct_calc_nlnstiff)
         t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
-      else if (act == Torsion3::calc_struct_internalforce)
+      else if (act == ELEMENTS::struct_calc_internalforce)
         t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
 
 
@@ -204,18 +212,27 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
     }
     break;
-    case calc_struct_update_istep:
-    case calc_struct_reset_istep:
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_update_istep:
+    case ELEMENTS::struct_calc_reset_istep:
+    case  ELEMENTS::struct_calc_stress:
     break;
-    case postprocess_stress:
+    case ELEMENTS::struct_postprocess_stress:
     {
       //no stress calculation for postprocess. Does not really make sense!
       dserror("No stress output for Torsion3!");
     }
     break;
+
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
+
     default:
-    dserror("Unknown type of action for Torsion3 %d", act);
+      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      dserror("Unknown type of action for Torsion3");
+      break;
   }
   return 0;
 
@@ -546,6 +563,8 @@ template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
                                             std::vector<double>& disp) //!<element disp vector
 {
+  dserror("Torsion3::NodeShift is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
+
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
