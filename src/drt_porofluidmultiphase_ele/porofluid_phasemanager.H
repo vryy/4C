@@ -100,10 +100,6 @@ class PhaseManagerInterface
     //! check if Setup() was called
     virtual void CheckIsSetup() const=0;
 
-    //! unwrap the manager
-    virtual Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface >
-    UnWrap()=0;
-
     //! @name Access methods (mandatory)
 
     //! get the number of phases
@@ -248,10 +244,6 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! check for reactions
     bool IsReactive(int phasenum) const {return false;};
 
-    //! unwrap the manager
-    virtual Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface >
-    UnWrap() {return Teuchos::rcp(new PhaseManagerCore(*this));};
-
     //! @name Access methods
 
     //! get the number of phases
@@ -372,10 +364,6 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     //! check if Setup() was called
     virtual void CheckIsSetup() const
     {phasemanager_->CheckIsSetup();};
-
-    //! unwrap the manager
-    virtual Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface >
-    UnWrap() {return phasemanager_->UnWrap();};
 
     //! @name Access methods
 

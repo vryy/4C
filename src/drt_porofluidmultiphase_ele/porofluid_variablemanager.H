@@ -47,7 +47,7 @@ class VariableManagerMinAccess
   {
   public:
     //! constructor
-  VariableManagerMinAccess(){};
+    VariableManagerMinAccess(){};
 
     //! destructor
     virtual ~VariableManagerMinAccess(){};
