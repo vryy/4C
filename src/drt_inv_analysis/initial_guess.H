@@ -96,7 +96,7 @@ class InitialGuess
 
   /*! \brief Initial solution
    *
-   * Refering to the possibly variation Bayesian interpretation
+   * Referring to the statistical interpretation
    * of some solution methods it is called mean.
    *
    * \author kehl \date 08/2016
@@ -105,7 +105,7 @@ class InitialGuess
 
   /*! \brief Initial inverse Hessian approximation
    *
-   * Refering to the possibly variation Bayesian interpretation
+   * Referring to the statistical interpretation
    * of some solution methods this is called covariance
    *
    * \author kehl \date 08/2016
@@ -161,9 +161,8 @@ private:
    * return result.
    */
   void ProjecttoBasis(
-      const Epetra_CrsMatrix& projector, ///[in] R in RAP
-      DcsMatrix& toproject, ///[in] matrix to be projected A in RAP
-      const Epetra_CrsMatrix& prolongator ///[in] P in RAP
+      const Epetra_CrsMatrix& projector, ///[in] R (=P') in RAP
+      DcsMatrix& toproject ///[in] matrix to be projected A in RAP
       );
   //@}
 

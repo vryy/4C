@@ -106,22 +106,18 @@ void INVANA::MatParManagerPerElement::Setup()
   optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
 
   // set up restrictor and prolongator (identity matrices)
-  restrictor_ = Teuchos::rcp(new
-      Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
-  prolongator_ = Teuchos::rcp(new
+  projector_ = Teuchos::rcp(new
       Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
 
   // insert ones onto the diagonal
-  for (int i=0; i<restrictor_->NumMyRows(); i++)
+  for (int i=0; i<projector_->NumMyRows(); i++)
   {
     int gid = paramlayoutmapunique_->GID(i);
     double values = 1.0;
     int indices = gid;
-    restrictor_->InsertGlobalValues(gid,1,&values,&indices);
-    prolongator_->InsertGlobalValues(gid,1,&values,&indices);
+    projector_->InsertGlobalValues(gid,1,&values,&indices);
   }
-  restrictor_->FillComplete();
-  prolongator_->FillComplete();
+  projector_->FillComplete();
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();

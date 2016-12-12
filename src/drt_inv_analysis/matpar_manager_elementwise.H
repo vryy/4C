@@ -64,15 +64,11 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
-  //! @name Access projection operators
+  //! @name Access projection operator
   //@{
 
-  //! Access to the restrictor
-  Teuchos::RCP<Epetra_CrsMatrix> Restrictor() {return restrictor_;}
-
-  //! Access to the prolongator (use it transposed)
-  Teuchos::RCP<Epetra_CrsMatrix> Prolongator() {return prolongator_;}
-
+  //! Access to the projector from full to sparse
+  Teuchos::RCP<Epetra_CrsMatrix> Projector() {return projector_;}
   //@}
 
 protected:
@@ -94,17 +90,19 @@ protected:
 
   std::map< int, std::vector<int> >& EleGIDtoparamsLID() {return eleGIDtoparamsLID_;}
 
-  /* @name Projections between sparse and full
-   * In here these will be just unit diagonals;
-   * Its more interesting for the specializations.
-   */
+  //! @name Projections between sparse and full
   //@{
 
-  //! linear operator to project from the full signal to the sparse approximation
-  Teuchos::RCP<Epetra_CrsMatrix> restrictor_;
-
-  //! linear operator to project from the sparse approximation to the full signal
-  Teuchos::RCP<Epetra_CrsMatrix> prolongator_;
+  /*  \brief linear operator
+   *
+   *  Linear operator to project between full and
+   *  sparse approximations.
+   *
+   *  In this base class it will be just the identity matrix.
+   *  It's more interesting for the specializations.
+   *
+   */
+  Teuchos::RCP<Epetra_CrsMatrix> projector_;
   //@}
 
 private:

@@ -136,7 +136,8 @@ void INVANA::OptimizerSMC::Integrate()
 
   // evaluate effective sample size
   double ess = particles_->EffectiveSampleSize();
-  if (ess > gnumparticles_)
+  // be tolerant to some roundoffs
+  if (ess > gnumparticles_+1)
     dserror("Particle initialization failed! ESS>%d", gnumparticles_);
 
   double tn = ti_+dt_; // next time step
@@ -264,7 +265,7 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
       fb = 0.5*tol;
       if (particles_->PComm().GComm().MyPID()==0)
         std::cout << " No time step in ["<< ta << ",1.0] significantly"
-            "reduces the ess; setting tn=1.0" << std::endl;
+            " reduces the ess; setting tn=1.0" << std::endl;
       break;
     }
   }

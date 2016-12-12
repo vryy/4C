@@ -380,10 +380,10 @@ void INVANA::OptimizerMH::Integrate()
 
       double* vals;
       dummy2.ExtractView(&vals);
-      for (int i=0; i<dummy2.MyLength(); i++)
-        vals[i] = sqrt(vals[i]);
+      for (int j=0; j<dummy2.MyLength(); j++)
+        vals[j] = sqrt(vals[j]);
 
-      (*stddev_)(i)->Scale(1.0/(size),dummy);
+      (*stddev_)(i)->Scale(1.0/(size),dummy2);
     }
   // -------- end
   }

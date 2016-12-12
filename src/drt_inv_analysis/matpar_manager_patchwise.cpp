@@ -90,7 +90,7 @@ void INVANA::MatParManagerPerPatch::FillParameters(Teuchos::RCP<Epetra_MultiVect
   params->PutScalar(0.0);
 
   // Inject into the elementwise solution space
-  int err = prolongator_->Multiply(true,*optparams_,*optparams_elewise_);
+  int err = projector_->Multiply(true,*optparams_,*optparams_elewise_);
   if (err!=0)
     dserror("Application of prolongator failed.");
 
@@ -116,10 +116,12 @@ void INVANA::MatParManagerPerPatch::ApplyParametrization(
   // this is ok here since we have a sparse approximation
   Teuchos::RCP<Epetra_CrsMatrix> fullmatrix = matrix.FillMatrix();
 
-  // matrix * restrictor_
-  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,restrictor_,false);
-  // prolongator*matrix*restrictor
-  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(prolongator_,true,mr,false);
+  // todo: this is not ok! loop over the single columns of matrix
+  // and extract only the diagonal component.
+  // matrix * projector_
+  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,projector_,false);
+  // projector'*matrix*projector
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(projector_,true,mr,false);
 
   Epetra_Vector diagonal(pmr->RowMap(),true);
   pmr->ExtractDiagonalCopy(diagonal);
@@ -143,15 +145,15 @@ void INVANA::MatParManagerPerPatch::ApplyParametrization(
 void INVANA::MatParManagerPerPatch::InitParameters()
 {
   // sanity checks
-  if ( not restrictor_->DomainMap().PointSameAs(optparams_elewise_->Map()))
+  if ( not projector_->DomainMap().PointSameAs(optparams_elewise_->Map()))
     dserror("Restrictor->DomainMap error.");
 
-  if ( not restrictor_->RangeMap().PointSameAs(optparams_->Map()))
+  if ( not projector_->RangeMap().PointSameAs(optparams_->Map()))
     dserror("Restrictor->RangeMap error");
 
   // parameters are not initialized from input but
   // from the elementwise layout
-  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
   if (err!=0)
     dserror("Application of restrictor failed.");
 
@@ -405,23 +407,19 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
       maxbw = it->second.size();
   }
   Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(*patchmap_->FullMap(),0);
-  restrictor_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
-  prolongator_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
+  projector_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
 
-  for (int i=0; i<restrictor_->NumMyRows(); i++)
+  for (int i=0; i<projector_->NumMyRows(); i++)
   {
     int numentries = patches[i].size();
-    std::vector<double> values(numentries, 1.0/numentries);
-    std::vector<double> ones(numentries,1.0);
+    std::vector<double> values(numentries, 1.0/sqrt(numentries));
 
-    int err = restrictor_->InsertGlobalValues(i,numentries,&values[0],patches[i].data());
-    int err2 = prolongator_->InsertGlobalValues(i,numentries,&ones[0],patches[i].data());
-    if (err < 0 or err2 < 0)
+    int err = projector_->InsertGlobalValues(i,numentries,&values[0],patches[i].data());
+    if (err < 0)
       dserror("Restrictor/Prolongator insertion failed.");
   }
-  int err = restrictor_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_,true);
-  int err2 = prolongator_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_,true);
-  if (err != 0 or err2!=0)
+  int err = projector_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_,true);
+  if (err != 0)
     dserror("Restrictor/Prolongator FillComplete failed.");
 
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
@@ -434,14 +432,14 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
 double INVANA::MatParManagerPerPatch::CheckApproximation()
 {
   // compute 'optimal' optimization parameters
-  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
   if (err!=0)
     dserror("Application of restrictor failed.");
 
   // project to elementwise solution space
   Teuchos::RCP<Epetra_MultiVector> projection = Teuchos::rcp(new
       Epetra_MultiVector(*elewise_map_,1,false));
-  err = prolongator_->Multiply(true,*optparams_,*projection);
+  err = projector_->Multiply(true,*optparams_,*projection);
   if (err!=0)
     dserror("Application of restrictor failed.");
 

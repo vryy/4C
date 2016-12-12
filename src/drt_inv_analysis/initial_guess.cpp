@@ -188,10 +188,9 @@ void INVANA::InitialGuess::InitfromMap(Teuchos::RCP<DRT::Discretization> discret
     Teuchos::RCP<INVANA::MatParManagerPerElement> patchman =
         Teuchos::rcp_dynamic_cast<INVANA::MatParManagerPerElement>(matman,true);
 
-    Teuchos::RCP<Epetra_CrsMatrix> projector=patchman->Restrictor();
-    Teuchos::RCP<Epetra_CrsMatrix> prolongator=patchman->Prolongator();
+    Teuchos::RCP<Epetra_CrsMatrix> projector=patchman->Projector();
 
-    ProjecttoBasis(*projector, colmatrix,*prolongator);
+    ProjecttoBasis(*projector, colmatrix);
   }
     break;
   }
@@ -231,7 +230,7 @@ void INVANA::InitialGuess::ReadLBFGSStorage(const Epetra_Map& readmap,
 
 /*----------------------------------------------------------------------*/
 void INVANA::InitialGuess::ProjecttoBasis(const Epetra_CrsMatrix& projector,
-    DcsMatrix& toproject, const Epetra_CrsMatrix& prolongator)
+    DcsMatrix& toproject)
 {
   const Epetra_Map& projmap = projector.RowMap();
 
@@ -276,8 +275,8 @@ void INVANA::InitialGuess::ProjecttoBasis(const Epetra_CrsMatrix& projector,
   }
   interm->FillComplete(projector.ColMap(),projector.RangeMap());
 
-  //interm * prolongator
-  covariance_ = LINALG::Multiply(*interm,false,prolongator,true);
+  //interm * projector'
+  covariance_ = LINALG::Multiply(*interm,false,projector,true);
 
   return;
 }

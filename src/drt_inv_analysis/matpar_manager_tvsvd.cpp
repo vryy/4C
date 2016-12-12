@@ -106,7 +106,7 @@ void INVANA::MatParManagerTVSVD::FillParameters(Teuchos::RCP<Epetra_MultiVector>
   params->PutScalar(0.0);
 
   // Inject into the elementwise solution space
-  int err = prolongator_->Multiply(true,*optparams_,*optparams_elewise_);
+  int err = projector_->Multiply(true,*optparams_,*optparams_elewise_);
   if (err!=0)
     dserror("Application of prolongator failed.");
 
@@ -132,10 +132,12 @@ void INVANA::MatParManagerTVSVD::ApplyParametrization(
   // this is ok here since we have a sparse approximation
   Teuchos::RCP<Epetra_CrsMatrix> fullmatrix = matrix.FillMatrix();
 
-  // matrix * restrictor_
-  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,restrictor_,false);
-  // prolongator*matrix*restrictor
-  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(prolongator_,true,mr,false);
+  // todo: this is not ok! loop over the single columns of matrix
+  // and extract only the diagonal component.
+  // matrix * projector_
+  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix,false,projector_,false);
+  // projector_'*matrix*projector_
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(projector_,true,mr,false);
 
   Epetra_Vector diagonal(pmr->RowMap(),true);
   pmr->ExtractDiagonalCopy(diagonal);
@@ -159,15 +161,15 @@ void INVANA::MatParManagerTVSVD::ApplyParametrization(
 void INVANA::MatParManagerTVSVD::InitParameters()
 {
   // sanity checks
-  if ( not restrictor_->DomainMap().PointSameAs(optparams_elewise_->Map()))
+  if ( not projector_->DomainMap().PointSameAs(optparams_elewise_->Map()))
     dserror("Restrictor->DomainMap error.");
 
-  if ( not restrictor_->RangeMap().PointSameAs(optparams_->Map()))
+  if ( not projector_->RangeMap().PointSameAs(optparams_->Map()))
     dserror("Restrictor->RangeMap error");
 
   // parameters are not initialized from input but
   // from the elementwise layout
-  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
   if (err!=0)
     dserror("Application of restrictor failed.");
 
@@ -247,17 +249,9 @@ void INVANA::MatParManagerTVSVD::CreateProjection()
 {
   // Quadratic approximation of the TV functional
   SetupTVOperator();
-  //LINALG::PrintMatrixInMatlabFormat("matrix.mtl",*lintvop_);
 
   // Factorization of the linear operator
   Factorize();
-
-  //for (int i=0; i<10; i++)
-  //{
-  //  std::stringstream ss;
-  //  ss << "eigenvec_" << i << ".mtl";
-  //  LINALG::PrintVectorInMatlabFormat(ss.str(),*(*evecs_)(i));
-  //}
 
   // create the orthogonal dictionary for each level
   // and check the approximation power
@@ -293,29 +287,26 @@ void INVANA::MatParManagerTVSVD::SetupRandP(int numvecs)
 
   Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(graph_->RowMap(),0);
   int maxbw = colmap->NumGlobalElements();
-  restrictor_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
-  prolongator_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
+  projector_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
 
   // get all the eigenvectors to proc 0
   Epetra_MultiVector evecs(*colmap,10,true);
   LINALG::Export(*evecs_,evecs);
 
-  // insert eigenvectors into restrictor and prolongator
-  for (int i=0; i<restrictor_->NumMyRows(); i++)
+  // insert (unit-) eigenvectors into projection
+  for (int i=0; i<projector_->NumMyRows(); i++)
   {
     int numentries = colmap->NumGlobalElements();
     Epetra_Vector* row = evecs(i);
 
-    int err = restrictor_->InsertGlobalValues(i,numentries,row->Values(),colmap->MyGlobalElements());
-    int err2 = prolongator_->InsertGlobalValues(i,numentries,row->Values(),colmap->MyGlobalElements());
-    if (err < 0 or err2 < 0)
+    int err = projector_->InsertGlobalValues(i,numentries,row->Values(),colmap->MyGlobalElements());
+    if (err < 0 )
       dserror("Restrictor/Prolongator insertion failed.");
   }
 
   // Fill Complete
-  int err = restrictor_->FillComplete(graph_->RowMap(), *paramlayoutmapunique_,true);
-  int err2 = prolongator_->FillComplete(graph_->RowMap(), *paramlayoutmapunique_,true);
-  if (err != 0 or err2!=0)
+  int err = projector_->FillComplete(graph_->RowMap(), *paramlayoutmapunique_,true);
+  if (err != 0)
     dserror("Restrictor/Prolongator FillComplete failed.");
 
   // initialize optimization parameters
@@ -535,14 +526,14 @@ void INVANA::MatParManagerTVSVD::AnasaziEigenProblem(Teuchos::RCP<Epetra_CrsMatr
 double INVANA::MatParManagerTVSVD::CheckApproximation()
 {
   // compute 'optimal' optimization parameters
-  int err = restrictor_->Multiply(false,*optparams_elewise_,*optparams_);
+  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
   if (err!=0)
     dserror("Application of restrictor failed.");
 
   // project to elementwise solution space
   Teuchos::RCP<Epetra_MultiVector> projection = Teuchos::rcp(new
       Epetra_MultiVector(*elewise_map_,1,false));
-  err = prolongator_->Multiply(true,*optparams_,*projection);
+  err = projector_->Multiply(true,*optparams_,*projection);
   if (err!=0)
     dserror("Application of restrictor failed.");
 
@@ -564,16 +555,16 @@ double INVANA::MatParManagerTVSVD::CheckApproximation()
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerTVSVD::Random(Epetra_MultiVector& randvec)
 {
- const int mylength = randvec.MyLength();
- const int numvecs = randvec.NumVectors();
- double** pointers = randvec.Pointers();
+  const int mylength = randvec.MyLength();
+  const int numvecs = randvec.NumVectors();
+  double** pointers = randvec.Pointers();
 
- // use particularly seeded Epetra_Util object to fill at random
- for(int i = 0; i < numvecs; i++)
- {
-   double * const to = pointers[i];
-   for(int j = 0; j < mylength; j++)
-     to[j] = util_.RandomDouble();
+  // use particularly seeded Epetra_Util object to fill at random
+  for(int i = 0; i < numvecs; i++)
+  {
+    double * const to = pointers[i];
+    for(int j = 0; j < mylength; j++)
+      to[j] = util_.RandomDouble();
   }
 
   return;

@@ -483,12 +483,22 @@ void INVANA::OptimizerLBFGS::WriteOutput()
   Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams();
   Writer()->WriteNamedVectors("mean_vb", result);
 
-  // variance estimation in optimization parameter layout
+  // covariance estimation in optimization parameter layout
   double objfuncscal = OptProb()->ObjectiveFunct()->GetScaleFac();
   DcsMatrix covmatrix(sstore_, ystore_, initscal_, true, objfuncscal, 1.0);
 
+  // get variances in elementwise layout
   Teuchos::RCP<Epetra_MultiVector> stdev =
       OptProb()->Matman()->GetMatrixDiagonal(covmatrix);
+
+  // make it standard deviations
+  double** pointers = stdev->Pointers();
+  for(int i = 0; i < stdev->NumVectors(); i++)
+  {
+    double * const to = pointers[i];
+    for(int j = 0; j < stdev->MyLength(); j++)
+      to[j] = sqrt(to[j]);
+  }
 
   Writer()->WriteNamedVectors("stdev_vb", stdev);
 
