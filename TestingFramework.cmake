@@ -302,7 +302,7 @@ baci_test(cardiovascular0d_syspulcirculation_0d_heart 2 "")
 baci_test(cardiovascular0d_4elementwindkessel_structure_direct_stat_new_struc 2 "")
 baci_test(cardiovascular0d_4elementwindkessel_structure_direct_genalpha_new_struc 2 "" minimal)
 baci_test(cardiovascular0d_4elementwindkessel_structure_direct_ost_new_struc 2 "")
-baci_test(cardiovascular0d_arterialproxdist_structure_direct_genalpha_new_struc 2 "")
+#baci_test(cardiovascular0d_arterialproxdist_structure_direct_genalpha_new_struc 2 "")
 #baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 1 "")
 #baci_test_restartonly(cardiovascular0d_syspulcirculation_2chamber_structure_direct_genalpha_new_struc 1 10) #this one MUST be placed behind test case 'cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc'
 #baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 2 "")
