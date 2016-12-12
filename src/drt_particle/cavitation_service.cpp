@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mortar/mortar_utils.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
@@ -988,7 +989,6 @@ void CAVITATION::Algorithm::BuildConvexHull(std::vector<LINALG::Matrix<3,1> >& s
 {
   int np = (int)surfacenodes.size();
   bool out = false;
-  double tol = 1.0e-8;
   std::vector<MORTAR::Vertex> respoly;
   std::vector<MORTAR::Vertex> collconvexhull;
 
@@ -997,6 +997,7 @@ void CAVITATION::Algorithm::BuildConvexHull(std::vector<LINALG::Matrix<3,1> >& s
 
   std::vector<int> dummy;
   std::vector<double> coords(3);
+  double maxdist = 0.0;
   // transform each convex hull point
   for (int i=0; i<np; ++i)
   {
@@ -1009,7 +1010,18 @@ void CAVITATION::Algorithm::BuildConvexHull(std::vector<LINALG::Matrix<3,1> >& s
     {
       transformed(k-1,i) = coords[k];
     }
+    // find largest edge length to adapt tolerance
+    static LINALG::Matrix<3,1> diff;
+    for (int neighbor=i+1; neighbor<np; ++neighbor)
+    {
+      for (int dim=0;dim<3;++dim)
+        diff(dim) = surfacenodes[i](dim)-surfacenodes[neighbor](dim);
+    }
+    maxdist = std::max(maxdist, sqrt(diff(0)*diff(0)+diff(1)*diff(1)+diff(2)*diff(2)));
   }
+
+  // adapt tolerance to account for size of the problem
+  double tol = MORTARCLIPTOL * maxdist;
 
   // sort convex hull points to obtain final ring integral
   int removed = MORTAR::SortConvexHullPoints(out, transformed, collconvexhull, respoly, tol);
