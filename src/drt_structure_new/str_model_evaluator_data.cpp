@@ -500,7 +500,7 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
     Teuchos::RCP<const STR::NLN::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->GetNlnSolverPtr();
     /* If we are still in the setup process we return -1. This will happen
-     * for the EquilibriateInitialState() call in dynamic simulations. */
+     * for the EquilibrateInitialState() call in dynamic simulations. */
     if (nlnsolver_ptr.is_null())
       return -1;
     nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::NLN::SOLVER::Nox>(

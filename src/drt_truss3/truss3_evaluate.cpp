@@ -22,6 +22,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
@@ -39,40 +40,47 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Truss3::ActionType act = Truss3::calc_none;
-  // get the action required
-  std::string action = params.get<std::string>("action","calc_none");
-  if (action == "calc_none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") act = Truss3::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") act = Truss3::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Truss3::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") act = Truss3::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") act = Truss3::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Truss3::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress") act = Truss3::calc_struct_stress;
-  else if (action=="calc_struct_eleload") act = Truss3::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") act = Truss3::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep") act = Truss3::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
-  else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
-  else if (action=="calc_struct_ptcstiff") act = Truss3::calc_struct_ptcstiff;
-  else if (action=="calc_struct_energy") act = Truss3::calc_struct_energy;
-  else
+  SetParamsInterfacePtr(params);
+
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
   {
-    std::cout<<action<<std::endl;
-    dserror("Unknown type of action for Truss3");
+    act = ParamsInterface().GetActionType();
+  }
+  else  // Todo remove as soon as old structural time integration is gone
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","calc_none");
+    if      (action == "calc_none")               dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")      act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")      act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce") act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")  act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")  act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass") act = ELEMENTS::struct_calc_nlnstifflmass;
+    else if (action=="calc_struct_stress")        act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_update_istep")  act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")   act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_ptcstiff")      act = ELEMENTS::struct_calc_ptcstiff;
+    else
+    {
+      std::cout<<action<<std::endl;
+      dserror("Unknown type of action for Truss3");
+    }
   }
 
   switch(act)
   {
-  case Truss3::calc_struct_ptcstiff:
+  case ELEMENTS::struct_calc_ptcstiff:
   {
     EvaluatePTC<2,3,3>(params,elemat1);
   }
   break;
   /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero displacement and
      residual values*/
-  case Truss3::calc_struct_linstiff:
+  case ELEMENTS::struct_calc_linstiff:
   {
     //only nonlinear case implemented!
     dserror("linear stiffness matrix called, but not implemented");
@@ -80,7 +88,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
   }
   break;
   //calculate internal energy
-  case Truss3::calc_struct_energy:
+  case ELEMENTS::struct_calc_energy:
   {
     // need current global displacement and get them from discretization
     // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -94,10 +102,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
   break;
 
   //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-  case Truss3::calc_struct_nlnstiffmass:
-  case Truss3::calc_struct_nlnstifflmass:
-  case Truss3::calc_struct_nlnstiff:
-  case Truss3::calc_struct_internalforce:
+  case ELEMENTS::struct_calc_nlnstiffmass:
+  case ELEMENTS::struct_calc_nlnstifflmass:
+  case ELEMENTS::struct_calc_nlnstiff:
+  case ELEMENTS::struct_calc_internalforce:
   {
     // need current global displacement and residual forces and get them from discretization
     // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -128,13 +136,13 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
     }
 
     // for engineering strains instead of total lagrange use t3_nlnstiffmass2
-    if (act == Truss3::calc_struct_nlnstiffmass)
+    if (act == ELEMENTS::struct_calc_nlnstiffmass)
       t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    else if (act == Truss3::calc_struct_nlnstifflmass)
+    else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    else if (act == Truss3::calc_struct_nlnstiff)
+    else if (act == ELEMENTS::struct_calc_nlnstiff)
       t3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-    else if (act == Truss3::calc_struct_internalforce)
+    else if (act == ELEMENTS::struct_calc_internalforce)
       t3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
 
 
@@ -218,29 +226,37 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
 
   }
   break;
-  case calc_struct_update_istep:
+  case ELEMENTS::struct_calc_update_istep:
   {
     Theta0_=Theta_;
   }
   break;
-  case calc_struct_reset_istep:
+  case ELEMENTS::struct_calc_reset_istep:
   {
     //nothing to do
   }
   break;
-  case calc_struct_stress:
+  case ELEMENTS::struct_calc_stress:
   {
     //no stress calculation implemented! Do not crash simulation and just keep quiet!
   }
   break;
-  case postprocess_stress:
+  case ELEMENTS::struct_postprocess_stress:
   {
     //no stress calculation for postprocess. Does not really make sense!
     dserror("No stress output for Truss3!");
   }
   break;
+
+  case ELEMENTS::struct_calc_recover:
+  {
+    // do nothing here
+    break;
+  }
+
   default:
-    dserror("Unknown type of action for Truss3 %d", act);
+    std::cout << "\ncalled element with action type " << ActionType2String(act);
+    dserror("Unknown type of action for Truss3");
     break;
   }
   return 0;
@@ -259,6 +275,9 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
     Epetra_SerialDenseMatrix* elemat1)
 {
   dserror("This method needs to be modified for bio-polymer networks!");
+
+  SetParamsInterfacePtr(params);
+
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
@@ -268,7 +287,13 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get<double>("total time",-1.0);
+
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
@@ -344,6 +369,7 @@ template<int nnode, int ndim, int dof> //number of nodes, number of dimensions o
 void DRT::ELEMENTS::Truss3::EvaluatePTC(Teuchos::ParameterList&   params,
     Epetra_SerialDenseMatrix& elemat1)
 {
+  dserror("Truss3::EvaluatePTC is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
 
   if(nnode > 2)
     dserror("PTC implemented for 2-noded elements only");
@@ -535,8 +561,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
     dserror("Unknown type kintype_ for Truss3");
     break;
   }
-  if(params.get<std::string>("internalforces","no")=="yes")
-    f_ = Teuchos::rcp(new Epetra_SerialDenseVector(DummyForce));
 
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a
@@ -562,25 +586,28 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
     }
   }
 
-  // Map element level into global 12 by 12 element
-  if (stiffmatrix->RowDim()>12)
-    dserror("Matrix is larger than 12. Please use different mapping strategy!");
-  else if(stiffmatrix->RowDim()==6)
+  if (stiffmatrix != NULL)
   {
-    for (int i=0; i<6; i++)
-      for (int j=0; j<6; j++)
-        (*stiffmatrix)(i,j)+=DummyStiffMatrix(i,j);
-  }
-  else if(stiffmatrix->RowDim()==12)
-  {
-    for (int i=0; i<3; i++)
-      for (int j=0; j<3; j++)
-      {
-        (*stiffmatrix)(i,j)+=DummyStiffMatrix(i,j);
-        (*stiffmatrix)(i,j+6)+=DummyStiffMatrix(i,j+3);
-        (*stiffmatrix)(i+6,j+6)+=DummyStiffMatrix(i+3,j+3);
-        (*stiffmatrix)(i+6,j)+=DummyStiffMatrix(i+3,j);
-      }
+    // Map element level into global 12 by 12 element
+    if (stiffmatrix->RowDim()>12)
+      dserror("Matrix is larger than 12. Please use different mapping strategy!");
+    else if(stiffmatrix->RowDim()==6)
+    {
+      for (int i=0; i<6; i++)
+        for (int j=0; j<6; j++)
+          (*stiffmatrix)(i,j)+=DummyStiffMatrix(i,j);
+    }
+    else if(stiffmatrix->RowDim()==12)
+    {
+      for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+        {
+          (*stiffmatrix)(i,j)+=DummyStiffMatrix(i,j);
+          (*stiffmatrix)(i,j+6)+=DummyStiffMatrix(i,j+3);
+          (*stiffmatrix)(i+6,j+6)+=DummyStiffMatrix(i+3,j+3);
+          (*stiffmatrix)(i+6,j)+=DummyStiffMatrix(i+3,j);
+        }
+    }
   }
 
   Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -2670,6 +2697,10 @@ inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList&    param
   if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
+  dserror("Truss3::CalcBrownian is deprecated; if needed adapt parameter handling according to parameter"
+      "interface pointer first! Furthermore introduce own action types struct_calc_brownianforce and struct_calc_brownianstiff");
+
+
   //add stiffness and forces due to translational damping effects
    MyTranslationalDamping<nnode,ndim,dof>(params,DummyVel,DummyDisp,DummyStiffMatrix,DummyForce);
 
@@ -2691,6 +2722,9 @@ template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
                                              std::vector<double>&    disp) //!<element disp vector
 {
+  dserror("Truss3::NodeShift is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
+
+
   /* get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    * of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));

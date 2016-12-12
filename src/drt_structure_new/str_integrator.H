@@ -199,7 +199,7 @@ namespace TIMINT {
     /*! \brief Equilibriate system at initial state and identify consistent accelerations
      *
      *  \author hiermeier */
-    void EquilibriateInitialState();
+    void EquilibrateInitialState();
 
     /*! check if current state is equilibrium (with respect to
      *  a given tolerance of the inf-norm)

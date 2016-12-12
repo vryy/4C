@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 //#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
@@ -684,4 +685,23 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+{
+  if (p.isParameter("interface"))
+    interface_ptr_ =
+        Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>
+        (p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface"));
+  else
+    interface_ptr_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterfacePtr()
+{
+  return interface_ptr_;
+}
 

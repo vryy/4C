@@ -62,7 +62,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
-    EquilibriateInitialState();
+    EquilibrateInitialState();
   }
   else
   {

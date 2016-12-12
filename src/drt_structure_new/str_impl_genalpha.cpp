@@ -160,7 +160,7 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
         "Choose GenAlphaLieGroup instead!");
   }
 
-  EquilibriateInitialState();
+  EquilibrateInitialState();
 }
 
 /*----------------------------------------------------------------------------*
@@ -470,7 +470,7 @@ bool STR::IMPLICIT::GenAlpha::PredictConstVelConsistAcc(
   /* In the general dynamic case there is no need to design a special start-up
    * procedure, since it is possible to prescribe an initial velocity or
    * acceleration. The corresponding accelerations are calculated in the
-   * EquilibriateInitialState() routine. */
+   * EquilibrateInitialState() routine. */
 
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
@@ -507,7 +507,7 @@ bool STR::IMPLICIT::GenAlpha::PredictConstAcc(
   /* In the general dynamic case there is no need to design a special start-up
    * procedure, since it is possible to prescribe an initial velocity or
    * acceleration. The corresponding accelerations are calculated in the
-   * EquilibriateInitialState() routine. */
+   * EquilibrateInitialState() routine. */
 
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();

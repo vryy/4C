@@ -118,7 +118,7 @@ void STR::Integrator::ResetModelStates(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::EquilibriateInitialState()
+void STR::Integrator::EquilibrateInitialState()
 {
   CheckInit();
 
@@ -134,19 +134,14 @@ void STR::Integrator::EquilibriateInitialState()
       Teuchos::rcp(new LINALG::SparseMatrix(*GlobalState().DofRowMapView(),
           81, true, true));
 
-  /* auxiliary vector in order to store accelerations of inhomogeneous
-   * Dirichilet-DoFs
-   * Meier 2015: This contribution is necessary in order to determine correct
-   * initial accelerations in case of inhomogeneous Dirichlet conditions */
-  Teuchos::RCP<Epetra_Vector> acc_aux_ptr =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
 
   // overwrite initial state vectors with Dirichlet BCs
+  // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
   const double& timen = (*GlobalState().GetMultiTime())[0];
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetMutableDisNp();
   Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetMutableVelNp();
   Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
-  Dbc().ApplyDirichletBC(timen,disnp_ptr,velnp_ptr,acc_aux_ptr,false);
+  Dbc().ApplyDirichletBC(timen,disnp_ptr,velnp_ptr,accnp_ptr,false);
 
 
   // ---------------------------------------------------------------------------
@@ -164,7 +159,11 @@ void STR::Integrator::EquilibriateInitialState()
   if (not ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr))
     dserror("ApplyInitialForce failed!");
 
-  // add viscous contributions to rhs
+  // add inertial and viscous contributions to rhs
+  /* note: this needs to be done 'manually' here because in the RHS evaluation
+   * routine of an ordinary time step, these contributions are scaled by weighting
+   * factors inside the time integration scheme (e.g. alpha_f/m for GenAlpha) */
+  rhs_ptr->Update(1.0,*GlobalState().GetFinertialNp(),1.0);
   rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);
 
   /* If we are restarting the simulation, we do not have to calculate a
@@ -229,9 +228,9 @@ void STR::Integrator::EquilibriateInitialState()
   // ---------------------------------------------------------------------------
   /* Meier 2015: Due to the Dirichlet conditions applied to the mass matrix, we
    * solely solve for the accelerations at non-Dirichlet DoFs while the
-   * resulting accelerations at the Dirichlet-DoFs will be zero. Therefore, the
-   * accelerations at DoFs with inhomogeneous Dirichlet conditions will be added
-   * below at *). */
+   * resulting accelerations at the Dirichlet-DoFs will be zero.
+   * accelerations at DoFs with inhomogeneous Dirichlet conditions were already
+   * added above. */
   // ---------------------------------------------------------------------------
   // solve the linear system
   if (stiff_ptr->NormInf() == 0.0) dserror("You are about to invert a singular matrix!");
@@ -239,11 +238,8 @@ void STR::Integrator::EquilibriateInitialState()
   linsys_ptr->applyJacobianInverse(p_ls,*nox_rhs_ptr,*nox_soln_ptr);
   nox_soln_ptr->scale(-1.0);
 
-  // get the solution vector and copy it into the acceleration vector
-  accnp_ptr->PutScalar(0.0);
-  accnp_ptr->Update(1.0,nox_soln_ptr->getEpetraVector(),0.0);
-  //*) Add contributions of inhomogeneous DBCs
-  accnp_ptr->Update(1.0,*acc_aux_ptr,1.0);
+  // get the solution vector and add it into the acceleration vector
+  accnp_ptr->Update(1.0,nox_soln_ptr->getEpetraVector(),1.0);
 
   // re-build the entire initial right-hand-side with correct accelerations
   ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr);

@@ -201,6 +201,9 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
     Epetra_SerialDenseVector* force) //!< element internal force vector
 {
+  dserror("Rigidsphere::CalcDragForce is deprecated; if needed adapt parameter handling according to parameter"
+      "interface pointer first! Furthermore introduce own action types struct_calc_brownianforce and struct_calc_brownianstiff");
+
   double gamma = MyDampingConstant(params);
 
 
@@ -331,6 +334,9 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(Teuchos::ParameterList& par
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
+  dserror("Rigidsphere::CalcStochasticForce is deprecated; if needed adapt parameter handling according to parameter"
+      "interface pointer first! Furthermore introduce own action types struct_calc_brownianforce and struct_calc_brownianstiff");
+
   //damping coefficient
   double gamma = MyDampingConstant(params);
 
@@ -353,6 +359,8 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(Teuchos::ParameterList& par
 void DRT::ELEMENTS::Rigidsphere::EvaluatePTC(Teuchos::ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
+  dserror("Rigidsphere::EvaluatePTC is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
+
   // damping constant
   double gamma = MyDampingConstant(params);
 

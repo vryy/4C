@@ -63,7 +63,7 @@ namespace MODELEVALUATOR{
     /*! \brief Initialize viscous and inertial matrices
      *
      *  This is the place where we calculate the default mass matrix and the
-     *  Rayleigh damping matrix only once during the EquilibriateInitialState routine.
+     *  Rayleigh damping matrix only once during the EquilibrateInitialState routine.
      *
      *  \date 09/16
      *  \author hiermeier */
@@ -270,7 +270,7 @@ namespace MODELEVALUATOR{
     /*! \biref Assemble the Rayleigh damping matrix
      *
      *  Please note, that this has to been done only once during the
-     *  STR::Integrator::EquilibriateInitialState routine!
+     *  STR::Integrator::EquilibrateInitialState routine!
      *
      *  \date 09/16
      *  \author hiermeier */

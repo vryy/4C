@@ -27,6 +27,12 @@
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
 
+// forward declaration ...
+namespace STR {
+namespace ELEMENTS {
+  class ParamsInterface;
+} // namespace ELEMENTS
+} // namespace STR
 
 /*!
  \brief DRT: namespace of the ccarat discretization module
@@ -349,38 +355,41 @@ public:
     return abs(deltatheta_(2));
   }
 
-  //! \brief internal force vector
-  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForceVector() const
-      {
-    return f_;
-      }
 
   //@}
 
-private:
+  /*! \brief set the parameter interface ptr for the solid elements
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
 
-  //! action parameters recognized by Truss3
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_nlnstiff2,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass, //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep, //!< reset elementwise internal variables
-    //!< during iteration to last converged state
-    postprocess_stress,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy
-    //calculate current elastic energy of element
-  };
+  /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual inline bool IsParamsInterface() const
+  { return (not interface_ptr_.is_null()); }
+
+  /*! \brief get access to the parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+
+protected:
+  /** \brief get access to the interface
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  { if (not IsParamsInterface())
+      dserror("The interface ptr is not set!");
+    return *interface_ptr_; }
+
+private:
 
   //! kind of integration to be performed
   enum IntegrationType
@@ -393,6 +402,11 @@ private:
   {
     tr3_totlag, tr3_engstrain
   };
+
+  /*! \brief interface ptr
+   *
+   *  data exchange between the element and the time integrator. */
+  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
   //! container containing all kind of Truss3 thisandthat
   DRT::Container data_;
@@ -444,10 +458,6 @@ private:
   LINALG::Matrix<3,1> Theta0_;
   //! Angle of current time step (necessary for PTC scheme)
   LINALG::Matrix<3,1> Theta_;
-
-
-  //! internal force vector
-  Teuchos::RCP<Epetra_SerialDenseVector> f_;
 
   //! Kinematic type
   KinematicType kintype_;
