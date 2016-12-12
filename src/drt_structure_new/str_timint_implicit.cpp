@@ -32,6 +32,8 @@
 #include "str_predict_factory.H"
 #include "str_nln_solver_factory.H"
 
+#include "../solver_nonlin_nox/nox_nln_group.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::Implicit::Implicit()
@@ -163,6 +165,35 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
   // return convergence status
   return PerformErrorAction(convstatus);
 
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  CheckInitSetup();
+  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+
+  NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
+  if (grp_ptr == NULL)
+    dserror("Dynamic cast failed!");
+
+  // cast away const-qualifier for building the Nox Vector
+  Teuchos::RCP<Epetra_Vector> mutable_disiterinc =
+      Teuchos::rcp(const_cast<Epetra_Vector*>(disiterinc.get()),false);
+
+  // wrap the displacement vector in a nox_epetra_Vector
+  Teuchos::RCP<const NOX::Epetra::Vector> nox_disiterinc_ptr =
+      Teuchos::rcp(new NOX::Epetra::Vector(mutable_disiterinc,NOX::Epetra::Vector::CreateView));
+
+  // updated the state vector in the nox group
+  grp_ptr->computeX(*grp_ptr,*nox_disiterinc_ptr,1.0);
+
+  // compute the rhs vector and the stiffness matrix
+  grp_ptr->computeFandJacobian();
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

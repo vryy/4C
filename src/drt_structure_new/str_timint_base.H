@@ -105,21 +105,21 @@ namespace TIMINT {
     /// Access discretization (structure only)
     virtual Teuchos::RCP<DRT::Discretization> Discretization()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetMutableDiscret();
     }
 
     /// Access to pointer to DoF row map of the discretization (structure only)
     virtual const Epetra_Map* DofRowMapView()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->DofRowMapView();
     }
 
     /// DoF map of structural vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->DofRowMap();
     }
 
@@ -127,7 +127,7 @@ namespace TIMINT {
     // Alternative method capable of multiple DoF sets
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->DofRowMap(nds);
     }
 

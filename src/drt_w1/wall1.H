@@ -294,31 +294,6 @@ public:
 
 protected:
 
-  /// action parameters recognized by wall1
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,
-    calc_struct_nlnstiff_gemm,  ///< internal force, stiffness and mass
-                                ///< for generalised energy-momentum method (GEMM)
-    calc_struct_stress,
-    postprocess_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep, ///< reset elementwise internal variables
-                             ///< during iteration to last converged state
-    calc_struct_energy,      ///< calculate internal energy of element
-    calc_struct_errornorms,  ///< compute error norms (L2,H1,energy)
-
-    calc_struct_mass_volume  ///< calc volume and mass
-  };
-
   /// type of 2D dimension reduction
   enum DimensionalReduction
   {

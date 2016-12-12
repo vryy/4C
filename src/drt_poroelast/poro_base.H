@@ -230,6 +230,10 @@ namespace POROELAST
       Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
       //@}
 
+      //! flag for old time integration
+      // TODO: delete this once unused!!
+      const bool oldstructimint_;
+
     private:
 
       //! setup of everything, that is needed for the volumetric coupling

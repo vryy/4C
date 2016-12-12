@@ -378,8 +378,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
         fluidtimeparams->set<int>("Physical Type",DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE"));
         if (fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro and
-            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1 and
-            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
+            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1)
             dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
 
         fluidtimeparams->set<int>("Transient Terms Poro Fluid",DRT::INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(pedyn,"TRANSIENT_TERMS"));

@@ -124,6 +124,8 @@ namespace ELEMENTS {
 
     virtual Teuchos::RCP<std::vector<char> >& MutablePlasticStrainDataPtr() = 0;
 
+    virtual Teuchos::RCP<std::vector<char> >& MutableCouplingStressDataPtr() = 0;
+
     //! get the current stress type
     virtual enum INPAR::STR::StressType GetStressOutputType() const = 0;
 
@@ -132,6 +134,9 @@ namespace ELEMENTS {
 
     //! get the current plastic strain type
     virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const = 0;
+
+    //! get the current coupling stress type
+    virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const = 0;
 
     //! add the current partial update norm of the given quantity
     virtual void SumIntoMyUpdateNorm(

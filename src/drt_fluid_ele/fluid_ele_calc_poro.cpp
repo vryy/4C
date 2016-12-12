@@ -5,11 +5,13 @@
 \brief Internal implementation of poro Fluid element (standard poro fluid)
 
 <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
 </pre>
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 
@@ -1907,8 +1909,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
  /************************************************************************/
      // 4) standard Galerkin continuity term + poroelasticity terms
 
-      // this function is overwritten by the poro_p2 element (fluid_ele_calc_poro_p2),
-      // as it evaluates a whole different pressure equation
       EvaluatePressureEquation( params,
                                 timefacfacpre,
                                 rhsfac,

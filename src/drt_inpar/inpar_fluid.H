@@ -4,6 +4,8 @@
 
 \brief Input parameters for fluid
 
+\level 1
+
 \maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -36,7 +38,6 @@ namespace INPAR
       loma,
       poro,
       poro_p1,
-      poro_p2,
       topopt,
       stokes,
       oseen

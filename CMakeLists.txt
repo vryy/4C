@@ -2027,7 +2027,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1_immersed.cpp
-  src/drt_fluid_ele/fluid_ele_calc_poro_p2.cpp
   src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
@@ -2111,9 +2110,6 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_poro_p1.cpp
   src/drt_w1/wall1_poro_p1_eletypes.cpp
   src/drt_w1/wall1_poro_p1_evaluate.cpp
-  src/drt_w1/wall1_poro_p2.cpp
-  src/drt_w1/wall1_poro_p2_eletypes.cpp
-  src/drt_w1/wall1_poro_p2_evaluate.cpp
   src/drt_w1/wall1_scatra.cpp
   src/drt_w1/wall1_scatra_evaluate.cpp
 )

@@ -2,6 +2,10 @@
 /*!
  \file so_base.cpp
 
+\brief a common base class for all solid elements
+
+\level 2
+
 \maintainer Anh-Tu Vuong
 
  *----------------------------------------------------------------------*/
@@ -93,8 +97,7 @@ void DRT::ELEMENTS::So_base::SetParamsInterfacePtr(const Teuchos::ParameterList&
 {
   if (p.isParameter("interface"))
     interface_ptr_ =
-        Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>
-        (p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface"));
+        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface");
   else
     interface_ptr_ = Teuchos::null;
 }
@@ -104,4 +107,13 @@ void DRT::ELEMENTS::So_base::SetParamsInterfacePtr(const Teuchos::ParameterList&
 Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::So_base::ParamsInterfacePtr()
 {
   return interface_ptr_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::So_base::StrParamsInterface()
+{
+  if (not IsParamsInterface())
+    dserror("The interface ptr is not set!");
+  return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_,true));
 }

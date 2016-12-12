@@ -733,6 +733,7 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
   EvalData().SetTotalTime(GState().GetTimeNp());
   EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
   EvalData().SetStressData(Teuchos::rcp(new std::vector<char>()));
+  EvalData().SetCouplingStressData(Teuchos::rcp(new std::vector<char>()));
   EvalData().SetStrainData(Teuchos::rcp(new std::vector<char>()));
   EvalData().SetPlasticStrainData(Teuchos::rcp(new std::vector<char>()));
 

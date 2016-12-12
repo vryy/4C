@@ -4,11 +4,14 @@
 \brief factory for fluid boundary evaluation
 
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
+\maintainer  Ursula Rasthofer & Volker Gravemeier
              {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-245
 </pre>
+
+\level 1
+
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_factory.H"
@@ -91,8 +94,6 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
     return DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance();
   else if (problem == "poro_p1")
     return DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance();
-  else if (problem == "poro_p2")
-    return DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

@@ -50,10 +50,6 @@ namespace TIMINT {
     /// Get stc matrix (derived)
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat();
 
-    ///  Evaluate routine for coupled problems with monolithic approach
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> disiterinc);
-
     /// Update routine for coupled problems with monolithic approach with time adaptivity
     virtual void Update(double endtime);
 

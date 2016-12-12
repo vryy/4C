@@ -62,7 +62,10 @@ namespace ELEMENTS {
     struct_interpolate_velocity_to_point,   //!< interpolate the structural velocity to a given point
     struct_calc_mass_volume,                //!< calculate volume and mass
     struct_calc_brownianforce,              //!< thermal (i.e. stochastic) and damping forces according to Brownian dynamics
-    struct_calc_brownianstiff               //!< thermal (i.e. stochastic) and damping forces and stiffnes according to Brownian dynamics
+    struct_calc_brownianstiff,              //!< thermal (i.e. stochastic) and damping forces and stiffnes according to Brownian dynamics
+    struct_poro_calc_fluidcoupling,         //!< calculate stiffness matrix related to fluid coupling within porous medium problem
+    struct_poro_calc_scatracoupling,        //!< calculate stiffness matrix related to scatra coupling within porous medium problem
+    struct_poro_calc_prescoupling           //!< calculate stiffness matrix related to pressure coupling within porous medium problem
   };  // enum ActionType
 
   //! Map action type enum to std::string

@@ -5,11 +5,14 @@
  \brief Internal implementation of poro Fluid element (standard poro fluid)
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
  </pre>
+
+ \level 2
+
  *----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_PORO_H
@@ -678,8 +681,8 @@ protected:
       bool                                   save);
 
   /*!
-   \brief evaluate pressure equation (i.e. continuity equation for standard poro elements and constitutive equation for poro_p2)
-          This function is overwritten by the poro_p1 and poro_p2 element
+   \brief evaluate pressure equation (i.e. continuity equation for standard poro elements)
+          This function is overwritten by the poro_p1 element
 
     \param params         (i) element parameter list
     \param timefacfacpre  (i) fluid pressure at gauss point

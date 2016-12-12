@@ -4,8 +4,10 @@
 
 \brief Input parameters for poro elasticity
 
+\level 2
+
 <pre>
-Maintainer: Anh-Tu Vuong
+\maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -62,13 +64,11 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
                                     "Physical Type of Porofluid",
                                     tuple<std::string>(
                                       "Poro",
-                                      "Poro_P1",
-                                      "Poro_P2"
+                                      "Poro_P1"
                                       ),
                                     tuple<int>(
                                       INPAR::FLUID::poro,
-                                      INPAR::FLUID::poro_p1,
-                                      INPAR::FLUID::poro_p2),
+                                      INPAR::FLUID::poro_p1),
                                     &poroelastdyn);
 
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)

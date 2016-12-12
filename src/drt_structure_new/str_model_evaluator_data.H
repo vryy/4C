@@ -136,6 +136,9 @@ namespace MODELEVALUATOR {
     //! mutable access to the plastic strain data vector
     virtual Teuchos::RCP<std::vector<char> >& MutablePlasticStrainDataPtr();
 
+    //! mutable access to the stress data vector
+    virtual Teuchos::RCP<std::vector<char> >& MutableCouplingStressDataPtr();
+
     //! get the current stress type [derived]
     virtual enum INPAR::STR::StressType GetStressOutputType() const;
 
@@ -144,6 +147,9 @@ namespace MODELEVALUATOR {
 
     //! get the current plastic strain type [derived]
     virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const;
+
+    //! get the current coupling stress type [derived]
+    virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
 
     //! get Interface to statmech data [derived]
     virtual inline Teuchos::RCP<STATMECH::ParamsInterface> GetStatMechParamInterface() const
@@ -315,6 +321,12 @@ namespace MODELEVALUATOR {
       stressdata_ptr_ = stressdata;
     }
 
+    //! set stress data vector
+    inline void SetCouplingStressData(const Teuchos::RCP<std::vector<char> >& couplstressdata)
+    {
+      couplstressdata_ptr_ = couplstressdata;
+    }
+
     //! set strain data vector
     inline void SetStrainData(const Teuchos::RCP<std::vector<char> >& straindata)
     {
@@ -338,6 +350,9 @@ namespace MODELEVALUATOR {
 
     //! return the plastic strain data (read-only)
     const std::vector<char>& PlasticStrainData() const;
+
+    //! return the coupling stress data (read-only)
+    const std::vector<char>& CouplingStressData() const;
 
     //! @}
 
@@ -551,6 +566,10 @@ namespace MODELEVALUATOR {
 
     //! strain data vector
     Teuchos::RCP<std::vector<char> > plastic_straindata_ptr_;
+
+    //! coupling stress data vector
+    //! e.g. in TSI: couplstress corresponds to thermal stresses
+    Teuchos::RCP<std::vector<char> > couplstressdata_ptr_;
     //! @}
 
     //! map holding the force/rhs norm type of the active quantities

@@ -517,8 +517,8 @@ void STR::TIMINT::Base::OutputStressStrain()
         dserror("Requested coupling stress type is not supported!");
         break;
     }
-    // FixMe and set the data pointer back to Teuchos::null!
-    dserror("The coupling stress output is currently unsupported!");
+    output_ptr->WriteVector(text, evaldata.CouplingStressData(),
+        *(Discretization()->ElementRowMap()));
   }
 
   // ---------------------------------------------------------------------------

@@ -1,9 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so3_poro_evaluate.cpp
-\brief
+
+\brief Evaluation methods for the 3D structural poro element
+
+\level 2
 
 <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -38,6 +41,8 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_poroelast/poroelast_utils.H"
+
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 //#include "Sacado.hpp"
 
@@ -135,21 +140,32 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 {
   if(not init_)
     dserror("internal element data not initialized!");
-  // start with "none"
-  typename So3_Poro::ActionType act = So3_Poro::none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_multidofsetcoupling")   act = So3_Poro::calc_struct_multidofsetcoupling;
-  else if (action=="calc_struct_poroscatracoupling")   act = So3_Poro::calc_struct_poroscatracoupling;
+  // set the pointer to the parameter list in element
+  so3_ele::SetParamsInterfacePtr(params);
+
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (so3_ele::IsParamsInterface())
+  {
+    act = so3_ele::ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="struct_poro_calc_fluidcoupling")    act = ELEMENTS::struct_poro_calc_fluidcoupling;
+    else if (action=="struct_poro_calc_scatracoupling")   act = ELEMENTS::struct_poro_calc_scatracoupling;
+  }
 
   // what should the element do
   switch(act)
   {
   //==================================================================================
   // off diagonal terms in stiffness matrix for monolithic coupling
-  case So3_Poro::calc_struct_multidofsetcoupling:
+  case ELEMENTS::struct_poro_calc_fluidcoupling:
   {
     MyEvaluate(params,
                       discretization,
@@ -161,7 +177,7 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
                       elevec3_epetra);
   }
   break;
-  case So3_Poro::calc_struct_poroscatracoupling:
+  case ELEMENTS::struct_poro_calc_scatracoupling:
     //no coupling-> return
   break;
   //==================================================================================
@@ -214,24 +230,34 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
                                     )
 {
   // start with "none"
-  ActionType act = none;
+ // ActionType act = none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_internalforce")         act = calc_struct_internalforce;
-  else if (action=="calc_struct_nlnstiff")              act = calc_struct_nlnstiff;
-  else if (action=="calc_struct_nlnstiffmass")          act = calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_multidofsetcoupling")   act = calc_struct_multidofsetcoupling;
-  else if (action=="calc_struct_stress")                act = calc_struct_stress;
-  //else if (action=="postprocess_stress")                act = postprocess_stress;
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (so3_ele::IsParamsInterface())
+  {
+    act = so3_ele::ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="calc_struct_internalforce")         act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_nlnstiff")              act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_nlnstiffmass")          act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="struct_poro_calc_fluidcoupling")    act = ELEMENTS::struct_poro_calc_fluidcoupling;
+    else if (action=="calc_struct_stress")                act = ELEMENTS::struct_calc_stress;
+    //else if (action=="postprocess_stress")                act = postprocess_stress;
+  }
 
   // what should the element do
   switch(act)
   {
   //==================================================================================
   // nonlinear stiffness, damping and internal force vector for poroelasticity
-  case calc_struct_nlnstiff:
+  case ELEMENTS::struct_calc_nlnstiff:
   {
     // stiffness
     LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
@@ -280,7 +306,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
   //==================================================================================
   // nonlinear stiffness, mass matrix and internal force vector for poroelasticity
-  case calc_struct_nlnstiffmass:
+  case ELEMENTS::struct_calc_nlnstiffmass:
   {
 
     // stiffness
@@ -339,7 +365,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
   //==================================================================================
   // coupling terms in force-vector and stiffness matrix for poroelasticity
-  case calc_struct_multidofsetcoupling:
+  case ELEMENTS::struct_poro_calc_fluidcoupling:
   {
     // stiffness
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_> elemat1(elemat1_epetra.A(),true);
@@ -395,7 +421,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
   //==================================================================================
   // nonlinear stiffness and internal force vector for poroelasticity
-  case calc_struct_internalforce:
+  case ELEMENTS::struct_calc_internalforce:
   {
     // stiffness
     LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
@@ -434,7 +460,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
   //==================================================================================
   // evaluate stresses and strains at gauss points
-  case calc_struct_stress:
+  case ELEMENTS::struct_calc_stress:
   {
     // nothing to do for ghost elements
     if (discretization.Comm().MyPID()==so3_ele::Owner())
@@ -445,22 +471,28 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       LINALG::Matrix<numdim_,numnod_> mydisp(true);
       ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
 
-      Teuchos::RCP<std::vector<char> > couplstressdata
-        = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > couplingstressdata = Teuchos::null;
+      INPAR::STR::StressType iocouplingstress = INPAR::STR::stress_none;
+      if (this->IsParamsInterface())
+      {
+        couplingstressdata   = this->StrParamsInterface().MutableCouplingStressDataPtr();
+        iocouplingstress     = this->StrParamsInterface().GetCouplingStressOutputType();
+      }
+      else
+      {
+        iocouplingstress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iocouplstress",INPAR::STR::stress_none);
 
-      if (couplstressdata==Teuchos::null) dserror("Cannot get 'couplstress' data");
+        couplingstressdata = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
+
+        if (couplingstressdata==Teuchos::null) dserror("Cannot get 'couplstress' data");
+      }
 
       // initialize the coupling stress
       Epetra_SerialDenseMatrix couplstress(numgpt_,numstr_);
-
-      INPAR::STR::StressType iocouplstress
-        = DRT::INPUT::get<INPAR::STR::StressType>(params, "iocouplstress",
-            INPAR::STR::stress_none);
-
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1,"fluidvel") and iocouplstress != INPAR::STR::stress_none)
+      if (discretization.HasState(1,"fluidvel") and iocouplingstress != INPAR::STR::stress_none)
       {
         // extract local values of the global vectors
         LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
@@ -473,7 +505,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
                               &couplstress,
                               NULL,
                               params,
-                              iocouplstress);
+                              iocouplingstress);
       }
 
       // pack the data for postprocessing
@@ -484,7 +516,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
         data.StartPacking();
         // pack the stresses
         so3_ele::AddtoPack(data, couplstress);
-        std::copy(data().begin(),data().end(),std::back_inserter(*couplstressdata));
+        std::copy(data().begin(),data().end(),std::back_inserter(*couplingstressdata));
       }
     }  // end proc Owner
   }  // calc_struct_stress

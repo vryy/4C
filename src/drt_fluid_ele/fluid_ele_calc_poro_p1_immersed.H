@@ -116,8 +116,8 @@ protected:
       bool                                   save);
 
   /*!
-   \brief evaluate pressure equation (i.e. continuity equation for standard poro elements and constitutive equation for poro_p2)
-          This function is overwritten by the poro_p1 and poro_p2 element
+   \brief evaluate pressure equation (i.e. continuity equation for standard poro elements)
+          This function is overwritten by the poro_p1 elements
 
     \param params         (i) element parameter list
     \param timefacfacpre  (i) fluid pressure at gauss point

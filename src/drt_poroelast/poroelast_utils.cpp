@@ -4,8 +4,10 @@
 
  \brief utility functions for porous media problems
 
+\level 2
+
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -46,7 +48,6 @@
 #include "../drt_so3/so3_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro_eletypes.H"
 #include "../drt_w1/wall1_poro_p1_eletypes.H"
-#include "../drt_w1/wall1_poro_p2_eletypes.H"
 
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
@@ -73,8 +74,6 @@ bool POROELAST::UTILS::CheckPoro(
       actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP2Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP2Type::Instance() or
       CheckPoroP1(actele)
      )
     return true;

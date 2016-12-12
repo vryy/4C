@@ -425,13 +425,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata   = ParamsInterface().MutableStressDataPtr();
-          straindata   = ParamsInterface().MutableStrainDataPtr();
-          plstraindata = ParamsInterface().MutablePlasticStrainDataPtr();
+          stressdata   = StrParamsInterface().MutableStressDataPtr();
+          straindata   = StrParamsInterface().MutableStrainDataPtr();
+          plstraindata = StrParamsInterface().MutablePlasticStrainDataPtr();
 
-          iostress   = ParamsInterface().GetStressOutputType();
-          iostrain   = ParamsInterface().GetStrainOutputType();
-          ioplstrain = ParamsInterface().GetPlasticStrainOutputType();
+          iostress   = StrParamsInterface().GetStressOutputType();
+          iostrain   = StrParamsInterface().GetStrainOutputType();
+          ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
         }
         else
         {
@@ -1627,7 +1627,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   Epetra_SerialDenseMatrix* alpha      = NULL;
   Epetra_SerialDenseMatrix* eas_inc    = NULL;
   // get access to the interface parameters
-  const double step_length   = ParamsInterface().GetStepLength();
+  const double step_length   = StrParamsInterface().GetStepLength();
   const bool iseas = (eastype_ != soh8_easnone);
 
   // have eas?
@@ -1644,14 +1644,14 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (ParamsInterface().IsDefaultStep())
+  if (StrParamsInterface().IsDefaultStep())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
     if (iseas)
     {
       // first, store the eas state of the previous accepted Newton step
-      ParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+      StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
           neas_,(*alpha)[0],Owner());
 
       Epetra_SerialDenseMatrix* oldKaainv =
@@ -1706,7 +1706,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas)
-    ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+    StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
         neas_,(*eas_inc)[0],(*alpha)[0],step_length,Owner());
 
   // the element internal stuff should be up-to-date for now...
@@ -1961,9 +1961,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       double det_defgrd =defgrd.Determinant();
       if (det_defgrd<0.0)
       {
-        if (ParamsInterface().IsTolerateErrors())
+        if (StrParamsInterface().IsTolerateErrors())
         {
-          ParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+          StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
           return;
@@ -2506,8 +2506,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = ParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = ParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
+          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
         }
         else
         {

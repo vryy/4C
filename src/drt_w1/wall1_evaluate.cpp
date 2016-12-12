@@ -327,11 +327,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata   = ParamsInterface().MutableStressDataPtr();
-          straindata   = ParamsInterface().MutableStrainDataPtr();
+          stressdata   = StrParamsInterface().MutableStressDataPtr();
+          straindata   = StrParamsInterface().MutableStrainDataPtr();
 
-          iostress   = ParamsInterface().GetStressOutputType();
-          iostrain   = ParamsInterface().GetStrainOutputType();
+          iostress   = StrParamsInterface().GetStressOutputType();
+          iostrain   = StrParamsInterface().GetStrainOutputType();
         }
         else
         {
@@ -1081,7 +1081,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(
   Epetra_SerialDenseMatrix* alpha      = NULL;
   Epetra_SerialDenseMatrix* eas_inc    = NULL;
   // get access to the interface parameters
-  const double step_length   = ParamsInterface().GetStepLength();
+  const double step_length   = StrParamsInterface().GetStepLength();
 
   // have eas?
   if (iseas_)
@@ -1097,14 +1097,14 @@ void DRT::ELEMENTS::Wall1::w1_recover(
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (ParamsInterface().IsDefaultStep())
+  if (StrParamsInterface().IsDefaultStep())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
     if (iseas_)
     {
       // first, store the eas state of the previous accepted Newton step
-      ParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+      StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
           w1_neas(),(*alpha)[0],Owner());
 
       // get stored EAS history
@@ -1155,7 +1155,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas_)
-    ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+    StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
         w1_neas(),(*eas_inc)[0],(*alpha)[0],step_length,Owner());
 
   // the element internal stuff should be up-to-date for now...

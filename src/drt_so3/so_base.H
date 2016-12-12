@@ -176,10 +176,16 @@ protected:
    *
    *  \author hiermeier
    *  \date 04/16 */
-  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
   { if (not IsParamsInterface())
       dserror("The interface ptr is not set!");
     return *interface_ptr_; }
+
+  /** \brief get access to the structure interface
+   *
+   *  \author vuong
+   *  \date 11/16 */
+  STR::ELEMENTS::ParamsInterface& StrParamsInterface();
 
 protected:
   //! kinematic type
@@ -189,7 +195,7 @@ private:
   /** \brief interface ptr
    *
    *  data exchange between the element and the time integrator. */
-  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+  Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
 
 private:
   /*!

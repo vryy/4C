@@ -2,14 +2,17 @@
 /*!
  \file poro_scatra_monolithic.cpp
 
- \brief
+ \brief monolithic coupling algorithm for scalar transport within porous medium
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
  </pre>
+
+ \level 3
+
  *----------------------------------------------------------------------*/
 
 #include "poro_scatra_monolithic.H"
@@ -1165,7 +1168,7 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatPoro()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
 
-  const std::string action = "calc_struct_poroscatracoupling";
+  const std::string action = "struct_poro_calc_scatracoupling";
   sparams.set("action", action);
   // other parameters that might be needed by the elements
   sparams.set("delta time", Dt());

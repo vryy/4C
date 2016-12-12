@@ -2,14 +2,15 @@
 /*!
  \file fluid_ele_poro_boundary_evaluate.cpp
 
- \brief
+ \brief evaluation methods for the poro boundary element
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+ \level 2
+
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
- </pre>
+
  *----------------------------------------------------------------------*/
 
 #include "fluid_ele_poro.H"
@@ -42,7 +43,6 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
   {
   case INPAR::FLUID::poro:              impltype = "poro";                break;
   case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;
-  case INPAR::FLUID::poro_p2:           impltype = "poro_p2";             break;
   default: dserror("invalid physical type for porous fluid!");  break;
   }
 

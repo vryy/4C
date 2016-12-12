@@ -37,6 +37,10 @@
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 
+// new structural time integration
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_factory.H"
+
 //contact
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
@@ -73,7 +77,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                               const Teuchos::ParameterList& timeparams) :
       AlgorithmBase(comm, timeparams),
       PartOfMultifieldProblem_(false),
-      matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroelastDynamicParams(),"MATCHINGGRID"))
+      matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroelastDynamicParams(),"MATCHINGGRID")),
+      oldstructimint_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")==INPAR::STR::int_old)
 {
   if(DRT::Problem::Instance()->ProblemType()!= prb_poroelast)
     PartOfMultifieldProblem_=true;
@@ -100,10 +105,21 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // create the structural time integrator (Init() called inside)
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(structure->StructureField());
-  structure_->Setup();
+  // TODO: clean up as soon as old time integration is unused!
+  if(oldstructimint_)
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(structure->StructureField());
+    structure_->Setup();
+  }
+  else
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr= ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->Setup();
+    structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::FPSIStructureWrapper>(adapterbase_ptr->StructureField());
+  }
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");
@@ -295,9 +311,11 @@ void POROELAST::PoroBase::Update()
 {
   StructureField()->Update();
   FluidField()->Update();
-  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
-     if (StructureField()->MeshtyingContactBridge()->HaveContact())
-       (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).UpdatePoroContact();
+  // TODO: clean up as soon as old time integration is unused!
+  if(oldstructimint_)
+    if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+       if (StructureField()->MeshtyingContactBridge()->HaveContact())
+         (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).UpdatePoroContact();
 }
 
 /*----------------------------------------------------------------------*

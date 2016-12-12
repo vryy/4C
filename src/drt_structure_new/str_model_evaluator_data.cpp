@@ -430,6 +430,23 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutableCouplingStressDataPtr()
+{
+  CheckInitSetup();
+  return couplstressdata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
+{
+  if (couplstressdata_ptr_.is_null())
+    dserror("Undefined reference to the stress data!");
+  return *couplstressdata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() const
 {
   CheckInitSetup();
@@ -450,6 +467,14 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetPlasticStrainOutputTyp
 {
   CheckInitSetup();
   return io_ptr_->GetPlasticStrainOutputType();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetCouplingStressOutputType() const
+{
+  CheckInitSetup();
+  return io_ptr_->GetCouplingStressOutputType();
 }
 
 /*----------------------------------------------------------------------*

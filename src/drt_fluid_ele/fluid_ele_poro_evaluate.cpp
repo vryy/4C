@@ -2,10 +2,12 @@
 /*!
  \file fluid_ele_poro_evaluate.cpp
 
- \brief
+ \brief A  wrapper for the poro fluid element
+
+\level 2
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -85,7 +87,6 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
       impltype = "poro_p1";
   }
     break;
-  case INPAR::FLUID::poro_p2:           impltype = "poro_p2";             break;
   default: dserror("invalid physical type for porous fluid!");  break;
   }
 
@@ -146,22 +147,6 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
       {
         //no coupling -> return
         return 0;
-      }
-      break;
-      case INPAR::FLUID::poro_p2:
-      {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
-          this,
-          discretization,
-          lm,
-          params,
-          mat,
-          elemat1,
-          elemat2,
-          elevec1,
-          elevec2,
-          elevec3,
-          true);
       }
       break;
       default:

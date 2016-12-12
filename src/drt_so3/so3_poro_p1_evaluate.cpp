@@ -2,10 +2,12 @@
 /*!
  \file so3_poro_p1_evaluate.cpp
 
- \brief
+ \brief evaluate methods for porous media using the p1 approach (mixed approach)
+
+\level 2
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -92,7 +94,7 @@ int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterLi
   // get the required action
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_multidofsetcoupling")   act = my::calc_struct_multidofsetcoupling;
+  else if (action=="struct_poro_calc_fluidcoupling")      act = my::calc_struct_multidofsetcoupling;
   else if (action=="interpolate_porosity_to_given_point") act = my::interpolate_porosity_to_given_point;
 
   // what should the element do
@@ -265,7 +267,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::MyEvaluate(
   else if (action=="calc_struct_internalforce")         act = my::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")              act = my::calc_struct_nlnstiff;
   else if (action=="calc_struct_nlnstiffmass")          act = my::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_multidofsetcoupling")   act = my::calc_struct_multidofsetcoupling;
+  else if (action=="struct_poro_calc_fluidcoupling")    act = my::calc_struct_multidofsetcoupling;
   //else if (action=="calc_struct_stress")                act = calc_struct_stress;
   //else if (action=="postprocess_stress")                act = postprocess_stress;
 

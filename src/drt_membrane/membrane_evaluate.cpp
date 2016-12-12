@@ -174,11 +174,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
 
         if (IsParamsInterface())
         {
-          stressdata   = ParamsInterface().MutableStressDataPtr();
-          straindata   = ParamsInterface().MutableStrainDataPtr();
+          stressdata   = StrParamsInterface().MutableStressDataPtr();
+          straindata   = StrParamsInterface().MutableStrainDataPtr();
 
-          iostress   = ParamsInterface().GetStressOutputType();
-          iostrain   = ParamsInterface().GetStrainOutputType();
+          iostress   = StrParamsInterface().GetStressOutputType();
+          iostrain   = StrParamsInterface().GetStrainOutputType();
         }
         else
         {

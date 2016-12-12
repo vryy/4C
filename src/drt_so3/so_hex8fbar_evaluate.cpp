@@ -190,13 +190,13 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata   = ParamsInterface().MutableStressDataPtr();
-          straindata   = ParamsInterface().MutableStrainDataPtr();
-          plstraindata = ParamsInterface().MutablePlasticStrainDataPtr();
+          stressdata   = StrParamsInterface().MutableStressDataPtr();
+          straindata   = StrParamsInterface().MutableStrainDataPtr();
+          plstraindata = StrParamsInterface().MutablePlasticStrainDataPtr();
 
-          iostress   = ParamsInterface().GetStressOutputType();
-          iostrain   = ParamsInterface().GetStrainOutputType();
-          ioplstrain = ParamsInterface().GetPlasticStrainOutputType();
+          iostress   = StrParamsInterface().GetStressOutputType();
+          iostrain   = StrParamsInterface().GetStrainOutputType();
+          ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
         }
         else
         {
@@ -980,9 +980,9 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       // check, if errors are tolerated or should throw a dserror
       if (IsParamsInterface())
       {
-        if (ParamsInterface().IsTolerateErrors())
+        if (StrParamsInterface().IsTolerateErrors())
         {
-          ParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+          StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
           return;
@@ -1434,8 +1434,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = ParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = ParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
+          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
         }
         else
         {

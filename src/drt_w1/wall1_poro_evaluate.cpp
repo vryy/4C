@@ -38,6 +38,8 @@
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
+
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
@@ -138,23 +140,31 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   if(not init_)
     dserror("internal element data not initialized!");
 
-  // start with "none"
-  typename Wall1_Poro<distype>::ActionType act = Wall1_Poro<distype>::none;
+  this->SetParamsInterfacePtr(params);
+  ELEMENTS::ActionType act = ELEMENTS::none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_multidofsetcoupling")      act = Wall1_Poro<distype>::calc_struct_multidofsetcoupling;
-  else if (action=="calc_struct_poroscatracoupling")       act = Wall1_Poro<distype>::calc_struct_poroscatra_coupling;
-  else if (action=="calc_struct_poro_presbased_coupling")  act = Wall1_Poro<distype>::calc_struct_poro_presbased_coupling;
+  if (this->IsParamsInterface())
+  {
+    act = this->ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="struct_poro_calc_fluidcoupling")       act = ELEMENTS::struct_poro_calc_fluidcoupling;
+    else if (action=="struct_poro_calc_scatracoupling")      act = ELEMENTS::struct_poro_calc_scatracoupling;
+    else if (action=="struct_poro_calc_prescoupling")  act = ELEMENTS::struct_poro_calc_prescoupling;
+  }
+
   // what should the element do
   switch(act)
   {
   //==================================================================================
   // off diagonal terms in stiffness matrix for monolithic coupling
-  case Wall1_Poro<distype>::calc_struct_multidofsetcoupling:
-  case Wall1_Poro<distype>::calc_struct_poroscatra_coupling:
-  case Wall1_Poro<distype>::calc_struct_poro_presbased_coupling:
+  case ELEMENTS::struct_poro_calc_fluidcoupling:
+  case ELEMENTS::struct_poro_calc_scatracoupling:
+  case ELEMENTS::struct_poro_calc_prescoupling:
   {
     //in some cases we need to write/change some data before evaluating
     PreEvaluate(params,
@@ -220,20 +230,27 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
                                     Epetra_SerialDenseVector&    elevec3_epetra
                                     )
 {
-  // start with "none"
-  ActionType act = none;
+  this->SetParamsInterfacePtr(params);
+  ELEMENTS::ActionType act = ELEMENTS::none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_internalforce")            act = calc_struct_internalforce;
-  else if (action=="calc_struct_nlnstiff")                 act = calc_struct_nlnstiff;
-  else if (action=="calc_struct_nlnstiffmass")             act = calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_multidofsetcoupling")      act = calc_struct_multidofsetcoupling;
-  else if (action=="calc_struct_stress")                   act = calc_struct_stress;
-  else if (action=="calc_struct_poro_presbased_coupling")  act = calc_struct_poro_presbased_coupling;
-  //else if (action=="postprocess_stress")                act = postprocess_stress;
-  //else dserror("Unknown type of action for Wall1_Poro: %s",action.c_str());
+  if (this->IsParamsInterface())
+  {
+    act = this->ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="calc_struct_internalforce")            act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_nlnstiff")                 act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_nlnstiffmass")             act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="struct_poro_calc_fluidcoupling")       act = ELEMENTS::struct_poro_calc_fluidcoupling;
+    else if (action=="calc_struct_stress")                   act = ELEMENTS::struct_calc_stress;
+    else if (action=="struct_poro_calc_prescoupling")  act = ELEMENTS::struct_poro_calc_prescoupling;
+    //else if (action=="postprocess_stress")                act = postprocess_stress;
+    //else dserror("Unknown type of action for Wall1_Poro: %s",action.c_str());
+  }
 
 
   // --------------------------------------------------
@@ -244,13 +261,12 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
 
     switch (act)
     {
-    case calc_struct_nlnstiffmass:
-    case calc_struct_nlnstifflmass:
-    case calc_struct_nlnstiff:
-    case calc_struct_internalforce:
-    case calc_struct_multidofsetcoupling:
-    case calc_struct_poro_presbased_coupling:
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstiff:
+    case ELEMENTS::struct_calc_internalforce:
+    case ELEMENTS::struct_poro_calc_fluidcoupling:
+    case ELEMENTS::struct_poro_calc_prescoupling:
+    case ELEMENTS::struct_calc_stress:
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -276,7 +292,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
   {
   //==================================================================================
   // nonlinear stiffness, damping and internal force vector for poroelasticity
-  case calc_struct_nlnstiff:
+  case ELEMENTS::struct_calc_nlnstiff:
   {
     // stiffness
     LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
@@ -339,7 +355,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
 
   //==================================================================================
   // nonlinear stiffness, mass matrix and internal force vector for poroelasticity
-  case calc_struct_nlnstiffmass:
+  case ELEMENTS::struct_calc_nlnstiffmass:
   {
 
     // stiffness
@@ -400,7 +416,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
 
   //==================================================================================
   // coupling terms in force-vector and stiffness matrix for poroelasticity
-  case calc_struct_multidofsetcoupling:
+  case ELEMENTS::struct_poro_calc_fluidcoupling:
   {
     // stiffness
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_> elemat1(elemat1_epetra.A(),true);
@@ -465,7 +481,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
 
   //==================================================================================
   // nonlinear stiffness and internal force vector for poroelasticity
-  case calc_struct_internalforce:
+  case ELEMENTS::struct_calc_internalforce:
   {
     // stiffness
     LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
@@ -519,7 +535,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
   break;
   //==================================================================================
   // evaluate stresses and strains at gauss points
-  case calc_struct_stress:
+  case ELEMENTS::struct_calc_stress:
   {
     // elemat1+2,elevec1-3 are not used anyway
 
@@ -589,7 +605,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
         std::copy(data().begin(),data().end(),std::back_inserter(*couplstressdata));
       }
     }  // end proc Owner
-  }  // calc_struct_stress
+  }  // ELEMENTS::struct_calc_stress
   break;
 
   //==================================================================================

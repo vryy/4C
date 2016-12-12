@@ -100,19 +100,10 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::ImplicitBase::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> disiterinc)
-{
-  CheckInitSetup();
-  dserror("Not yet implemented!");
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::InitialGuess()
 {
   CheckInitSetup();
-  dserror("Not yet imlemented!");
+  dserror("Not yet implemented!");
   return Teuchos::null;
 }
 

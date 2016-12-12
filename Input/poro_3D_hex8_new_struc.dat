@@ -99,6 +99,7 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha // OneStepTheta

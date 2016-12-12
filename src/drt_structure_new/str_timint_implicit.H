@@ -115,6 +115,9 @@ namespace TIMINT {
       return implint_ptr_;
     };
 
+    ///  Evaluate routine for coupled problems with monolithic approach
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+
   protected:
     //! returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;

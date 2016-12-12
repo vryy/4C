@@ -5,11 +5,13 @@
 \brief Factory of fluid elements
 
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
+\maintainer Ursula Rasthofer & Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/245
 </pre>
+
+\level 1
 */
 /*--------------------------------------------------------------------------*/
 
@@ -22,7 +24,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro.H"
 #include "fluid_ele_calc_poro_p1.H"
 #include "fluid_ele_calc_poro_p1_immersed.H"
-#include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
 #include "fluid_ele_calc_xwall.H"
 #include "fluid_ele_calc_hdg.H"
@@ -127,8 +128,6 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
   else if (problem == "poro_p1")
     return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
-  else if (problem == "poro_p2")
-    return DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance();
   else if (problem == "hdg")
     return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
   else if (problem == "xw")
