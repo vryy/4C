@@ -1378,6 +1378,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
+  case INPAR::FSI::AMGnxn:
   {
 
     linSys = Teuchos::rcp(
