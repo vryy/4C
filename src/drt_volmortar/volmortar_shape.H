@@ -641,6 +641,36 @@ void volmortar_shape_function_2D(
     funct(3) = 0.25*(1.0-xi0)*(1.0+xi1);
     break;
   }
+  // *********************************************************************
+  // 2D standard quadratic shape functions (quad9)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case DRT::Element::quad9:
+  {
+    const double r=xi0;
+    const double s=xi1;
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+    const double rh=0.5*r;
+    const double sh=0.5*s;
+    const double rs=rh*sh;
+
+    funct(0)= rs*rm*sm;
+    funct(1)=-rs*rp*sm;
+    funct(2)= rs*rp*sp;
+    funct(3)=-rs*rm*sp;
+    funct(4)=-sh*sm*r2;
+    funct(5)= rh*rp*s2;
+    funct(6)= sh*sp*r2;
+    funct(7)=-rh*rm*s2;
+    funct(8)= r2*s2;
+
+    break;
+  }
   default:
       dserror("shape unknown\n");
   }
