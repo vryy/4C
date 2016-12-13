@@ -261,7 +261,9 @@ public:
       return MeshCoupling::GetCouplingElement(sid);
     }
     //else
-    return coupl_dis_->gElement(GetEmbeddedElementId(sid));
+    DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
+    if (!fele) dserror("Cast to FaceElement failed!");
+    return fele->ParentElement();
   }
 
   //! get the element from the conditioned dis for a local coupling side element id
@@ -269,19 +271,9 @@ public:
     const int sid ///< global side element id w.r.t cutter discretization
   )
   {
-    return cond_dis_->gElement(GetEmbeddedElementId(sid));
-  }
-
-  //! Access to map from cutting surface element id to coupling element's face lid
-  int GetFaceLidOfEmbeddedElement(int face_id)
-  {
-    dsassert(init_volcoupling_,"MeshVolCoupling::GetFaceLidOfEmbeddedElement: Volume Coupling not initialized!");
-    std::map<int,int>::iterator it = cutting_emb_face_lid_map_.find(face_id);
-
-    if (it == cutting_emb_face_lid_map_.end())
-      dserror("No local id of the face-element % d w.r.t embedded element stored!", face_id);
-
-    return it->second;
+    DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
+    if (!fele) dserror("Cast to FaceElement failed!");
+    return fele->ParentElement();
   }
 
   //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface discretization)
@@ -300,48 +292,30 @@ public:
   double Get_EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
 protected:
-  //! create map from cutting surface element id to embedded element id
-  void CreateCuttingToEmbeddedElementMap();
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
   void RedistributeEmbeddedDiscretization();
 
   //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific face element
   //! via solving a local eigenvalue problem
-  void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
+  virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
+  { dserror("EstimateNitscheTraceMaxEigenvalue not implemented for your coupling object!"); }
 
   //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
   void CreateAuxiliaryDiscretization();
 
+  //! map stores max eigenvalues of trace estimate of the elements
+  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue_;
+
 private:
-  //! Access to map from cutting surface element id to embedded element id
-  int GetEmbeddedElementId(int sid)
-
-  {
-    dsassert(init_volcoupling_,"MeshVolCoupling::GetEmbeddedElementId: Volume Coupling not initialized!");
-    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(sid);
-
-    if (it == cutting_emb_gid_map_.end())
-      dserror("Could not find parent element ID for side %d.", sid);
-
-    return it->second;
-  }
 
   //! auxiliary discretization, based on the elements of cond_dis, that contribute to
   //! the elements of cutter_dis_ with at least one edge
   Teuchos::RCP<DRT::Discretization> aux_coup_dis_;
 
-  //! map from cutting surface element id to embedded element id
-  std::map<int,int> cutting_emb_gid_map_;
-
-  //! map from cutting surface element id to embedded element's face lid
-  std::map<int,int> cutting_emb_face_lid_map_;
-
   //! bool to indicate if volume coupling is initialized
   bool init_volcoupling_;
 
-  //! map stores max eigenvalues of trace estimate of the elements
-  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue_;
 };
 
 /*!
@@ -826,6 +800,10 @@ public:
   }
 
 protected:
+
+  //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific face element
+  //! via solving a local eigenvalue problem
+  virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
   //! Initializes configurationmap
   void InitConfigurationMap();

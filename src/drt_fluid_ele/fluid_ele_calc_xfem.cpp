@@ -4623,20 +4623,12 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     if(averaging_strategy != INPAR::XFEM::Embedded_Sided)
       dserror("ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
 
+    DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(face);
+    if (!fele) dserror("Cast to FaceElement failed!");
+
     //---------------------------------------------------
-    // find the corresponding local id of the face of the element
-    // REMARK: this is quite slow, however at the moment the easiest way to get the local id
-    //         here is space for improvement
-
-    const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
-    Teuchos::RCP<XFEM::MeshVolCoupling> mc_vol = Teuchos::rcp_dynamic_cast<XFEM::MeshVolCoupling>(cond_manager->GetCouplingByIdx(coup_idx));
-    if (mc_vol == Teuchos::null) dserror("ComputeCharEleLength-ViscStab_hk_ele_vol_div_by_ele_surf: Cast to MeshVolCoupling failed!");
-
-    const int lid = mc_vol->GetFaceLidOfEmbeddedElement(face->Id());
-    //---------------------------------------------------
-
     // compute the uncut element's surface measure
-    meas_surf = ComputeMeasFace(ele, ele_xyze, lid);
+    meas_surf = ComputeMeasFace(ele, ele_xyze, fele->FaceParentNumber());
 
     // evaluate shape functions and derivatives at element center w.r.t embedded element
     // compute the full element volume measure

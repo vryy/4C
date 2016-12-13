@@ -329,8 +329,6 @@ void XFEM::MeshVolCoupling::Init_VolCoupling()
   {
     // ghost coupling elements, that contribute to the cutting discretization
     RedistributeEmbeddedDiscretization();
-    // create map from side to embedded element ID
-    CreateCuttingToEmbeddedElementMap();
 
     init_volcoupling_ = true;
   }
@@ -348,81 +346,7 @@ void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(
 }
 
 /*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshVolCoupling::CreateCuttingToEmbeddedElementMap()
-{
-  // fill map between boundary (cutting) element id and its corresponding embedded (coupling) element id
-  for (int ibele=0; ibele< cutter_dis_->NumMyColElements(); ++ ibele)
-  {
-    // boundary element and its nodes
-    DRT::Element* bele = cutter_dis_->lColElement(ibele);
-    const int * bele_node_ids = bele->NodeIds();
-
-    bool bele_found = false;
-
-    // ask all conditioned embedded elements for this boundary element
-    for(int iele = 0; iele< cond_dis_->NumMyColElements(); ++iele)
-    {
-      DRT::Element* ele = cond_dis_->lColElement(iele);
-      const int * ele_node_ids = ele->NodeIds();
-
-      // get nodes for every face of the embedded element
-      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
-
-      // loop the faces of the element and check node equality for every boundary element
-      // Todo: Efficiency?
-      for (int f = 0; f < ele->NumFace(); f++)
-      {
-        bele_found = true;
-
-        const int face_numnode = face_node_map[f].size();
-
-        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
-
-        // check all nodes of the boundary element
-        for(int inode=0; inode<bele->NumNode();  ++inode)
-        {
-          // boundary node
-          const int belenodeId = bele_node_ids[inode];
-
-          bool node_found = false;
-          for (int fnode=0; fnode<face_numnode; ++fnode)
-          {
-            const int facenodeId = ele_node_ids[face_node_map[f][fnode]];
-
-            if(facenodeId == belenodeId)
-            {
-              // nodes are the same
-              node_found = true;
-              break;
-            }
-          } // loop nodes of element's face
-          if (node_found==false) // this node is not contained in this face
-          {
-            bele_found = false; // element not the right one, if at least one boundary node is not found
-            break; // node not found
-          }
-        } // loop nodes of boundary element
-
-
-        if (bele_found)
-        {
-          cutting_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-          cutting_emb_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
-          break;
-        }
-      } // loop element faces
-      if (bele_found) break; // do not continue the search
-
-    }
-
-    if(bele_found == false)
-      dserror("Corresponding embedded element for boundary element id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!",
-        bele->Id(), cond_dis_->Comm().MyPID());
-  }
-}
-
-/*--------------------------------------------------------------------------*
+ * Ghost Discretization from which the cutter_dis_ was created
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 {
@@ -521,6 +445,20 @@ void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 
     cond_dis_->FillComplete(true,true,true);
   }
+
+  // STEP 3: reconnect all parentelement pointers in the cutter_dis_ faceelements
+  {
+    for (int fele_lid = 0; fele_lid < cutter_dis_->NumMyColElements(); fele_lid++)
+    {
+      DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(cutter_dis_->ElementColMap()->GID(fele_lid)));
+      if (!fele) dserror("Cast to FaceElement failed!");
+
+      DRT::Element* ele = cond_dis_->gElement(fele->ParentElementId());
+      if (!ele) dserror("Couldn't get Parent Element!");
+
+      fele->SetParentMasterElement(ele,fele->FaceParentNumber());
+    }
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -532,33 +470,6 @@ double XFEM::MeshVolCoupling::Get_EstimateNitscheTraceMaxEigenvalue(
     EstimateNitscheTraceMaxEigenvalue(ele);
 
   return ele_to_max_eigenvalue_->at(ele->Id());
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshVolCoupling::EstimateNitscheTraceMaxEigenvalue(
-    DRT::Element* ele)
-{
-  Teuchos::ParameterList params;
-  DRT::Element::LocationArray la(1);
-  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
-  Epetra_SerialDenseMatrix      dummyelemat;
-  Epetra_SerialDenseVector      dummyelevec;
-  DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-  if (!faceele) dserror("Cast to faceele failed!"); //todo change to dsassert
-
-  faceele->SetParentMasterElement(coupl_dis_->gElement(faceele->ParentElementId()), faceele->FaceParentNumber());
-  faceele->LocationVector(*coupl_dis_,la,false);
-
-  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(faceele)->EstimateNitscheTraceMaxEigenvalue(
-      faceele,
-      params,
-      *coupl_dis_,
-      la[0].lm_,
-      dummyelemat,
-      dummyelevec);
-
-  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -2166,6 +2077,32 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
   else
     dserror("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(
+    DRT::Element* ele)
+{
+  Teuchos::ParameterList params;
+  DRT::Element::LocationArray la(1);
+  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
+  Epetra_SerialDenseMatrix      dummyelemat;
+  Epetra_SerialDenseVector      dummyelevec;
+  DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+  if (!faceele) dserror("Cast to faceele failed!"); //todo change to dsassert
+
+  faceele->LocationVector(*coupl_dis_,la,false);
+
+  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(faceele)->EstimateNitscheTraceMaxEigenvalue(
+      faceele,
+      params,
+      *coupl_dis_,
+      la[0].lm_,
+      dummyelemat,
+      dummyelevec);
 
   return;
 }
