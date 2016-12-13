@@ -17,7 +17,7 @@
 
 
 #include "porofluidmultiphase_ele_action.H"
-#include "porofluidmultiphase_ele_boundary_interface.H"
+#include "porofluidmultiphase_ele_interface.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -31,7 +31,7 @@ namespace ELEMENTS
 class PoroFluidMultiPhaseEleParameter;
 
 template<DRT::Element::DiscretizationType distype>
-class PoroFluidMultiPhaseEleBoundaryCalc: public PoroFluidMultiPhaseEleBoundaryInterface
+class PoroFluidMultiPhaseEleBoundaryCalc: public PoroFluidMultiPhaseEleInterface
 {
 public:
 
@@ -54,14 +54,14 @@ public:
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! setup element evaluation
-  int SetupCalc( DRT::FaceElement*                 ele,
-                 Teuchos::ParameterList&           params,
-                 DRT::Discretization&              discretization);
+  int SetupCalc( DRT::Element*                 ele,
+                 Teuchos::ParameterList&       params,
+                 DRT::Discretization&          discretization);
 
   //! extract element based or nodal values
   //  return extracted values of phinp
   virtual void ExtractElementAndNodeValues(
-    DRT::FaceElement*             ele,
+    DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la
@@ -69,40 +69,33 @@ public:
 
   //! Evaluate the element (using location array)
   virtual int Evaluate(
-      DRT::FaceElement*             ele,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      DRT::Element::LocationArray&  la,
-      Epetra_SerialDenseMatrix&     elemat1_epetra,
-      Epetra_SerialDenseMatrix&     elemat2_epetra,
-      Epetra_SerialDenseVector&     elevec1_epetra,
-      Epetra_SerialDenseVector&     elevec2_epetra,
-      Epetra_SerialDenseVector&     elevec3_epetra
+      DRT::Element*                          ele,
+      Teuchos::ParameterList&                params,
+      DRT::Discretization&                   discretization,
+      DRT::Element::LocationArray&            la,
+      std::vector<Epetra_SerialDenseMatrix*>& elemat,
+      std::vector<Epetra_SerialDenseVector*>& elevec
       );
 
   //! evaluate action
   virtual int EvaluateAction(
-      DRT::FaceElement*                   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      POROFLUIDMULTIPHASE::BoundaryAction action,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseMatrix&           elemat1_epetra,
-      Epetra_SerialDenseMatrix&           elemat2_epetra,
-      Epetra_SerialDenseVector&           elevec1_epetra,
-      Epetra_SerialDenseVector&           elevec2_epetra,
-      Epetra_SerialDenseVector&           elevec3_epetra
+      DRT::Element*                           ele,
+      Teuchos::ParameterList&                 params,
+      DRT::Discretization&                    discretization,
+      POROFLUIDMULTIPHASE::BoundaryAction     action,
+      DRT::Element::LocationArray&            la,
+      std::vector<Epetra_SerialDenseMatrix*>& elemat,
+      std::vector<Epetra_SerialDenseVector*>& elevec
       );
 
   //! evaluate Neumann boundary condition
   virtual int EvaluateNeumann(
-      DRT::FaceElement*                   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      DRT::Condition&                     condition,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseVector&           elevec1,
-      const double                        scalar
+      DRT::Element*                   ele,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      DRT::Condition&                 condition,
+      DRT::Element::LocationArray&    la,
+      Epetra_SerialDenseVector&       elevec1
       );
 
 protected:

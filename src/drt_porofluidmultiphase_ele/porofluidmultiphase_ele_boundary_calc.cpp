@@ -99,9 +99,9 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
-    DRT::FaceElement*              ele,
-    Teuchos::ParameterList&        params,
-    DRT::Discretization&           discretization)
+    DRT::Element*              ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
@@ -114,15 +114,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
-    DRT::FaceElement*                   ele,
-    Teuchos::ParameterList&             params,
-    DRT::Discretization&                discretization,
-    DRT::Element::LocationArray&        la,
-    Epetra_SerialDenseMatrix&           elemat1_epetra,
-    Epetra_SerialDenseMatrix&           elemat2_epetra,
-    Epetra_SerialDenseVector&           elevec1_epetra,
-    Epetra_SerialDenseVector&           elevec2_epetra,
-    Epetra_SerialDenseVector&           elevec3_epetra
+    DRT::Element*                           ele,
+    Teuchos::ParameterList&                 params,
+    DRT::Discretization&                    discretization,
+    DRT::Element::LocationArray&            la,
+    std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    std::vector<Epetra_SerialDenseVector*>& elevec
 )
 {
 
@@ -147,11 +144,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
       discretization,
       action,
       la,
-      elemat1_epetra,
-      elemat2_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      elevec3_epetra
+      elemat,
+      elevec
       );
 
   return 0;
@@ -162,7 +156,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
-    DRT::FaceElement*             ele,
+    DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la)
@@ -200,16 +194,13 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementA
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(
-    DRT::FaceElement*                 ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
+    DRT::Element*                           ele,
+    Teuchos::ParameterList&                 params,
+    DRT::Discretization&                    discretization,
     POROFLUIDMULTIPHASE::BoundaryAction     action,
-    DRT::Element::LocationArray&      la,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseMatrix&         elemat2_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    Epetra_SerialDenseVector&         elevec2_epetra,
-    Epetra_SerialDenseVector&         elevec3_epetra
+    DRT::Element::LocationArray&            la,
+    std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    std::vector<Epetra_SerialDenseVector*>& elevec
 )
 {
   // switch over action type
@@ -222,8 +213,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(
     if(condition == NULL)
       dserror("Cannot access Neumann boundary condition!");
 
-    // evaluat neumann loads
-    EvaluateNeumann(ele,params,discretization,*condition,la,elevec1_epetra,1.);
+    // evaluate neumann loads
+    EvaluateNeumann(ele,params,discretization,*condition,la,*elevec[0]);
 
     break;
   }
@@ -237,13 +228,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
-    DRT::FaceElement*                   ele,
-    Teuchos::ParameterList&             params,
-    DRT::Discretization&                discretization,
-    DRT::Condition&                     condition,
-    DRT::Element::LocationArray&        la,
-    Epetra_SerialDenseVector&           elevec1,
-    const double                        scalar
+    DRT::Element*                   ele,
+    Teuchos::ParameterList&         params,
+    DRT::Discretization&            discretization,
+    DRT::Condition&                 condition,
+    DRT::Element::LocationArray&    la,
+    Epetra_SerialDenseVector&       elevec1
     )
 {
   // integration points and weights
@@ -321,7 +311,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
         const double val_fac_funct_curve_fac = (*val)[dof]*fac*functfac*curvefac;
 
         for(int node=0; node<nen_; ++node)
-          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_funct_curve_fac;
+          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_funct_curve_fac;
       } // if ((*onoff)[dof])
     } // loop over dofs
   } // loop over integration points

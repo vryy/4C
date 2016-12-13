@@ -106,16 +106,6 @@ template<int,int> class VariableManagerInterface;
                          std::vector<Epetra_SerialDenseMatrix*>& elemat,
                          std::vector<Epetra_SerialDenseVector*>& elevec);
 
-
-//    //! element-type specific flag if second derivatives are needed
-//    static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::Use2ndDerivs<distype>::use;
-//
-//    //! number of components necessary to store second derivatives
-//    // 1 component  for nsd=1:  (N,xx)
-//    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
-//    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-//    static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
-
   protected:
     /*========================================================================*/
     //! @name general framework
@@ -185,20 +175,6 @@ template<int,int> class VariableManagerInterface;
       DRT::Discretization&                       discretization,   //!< discretization
       DRT::Element::LocationArray&               la                //!< location array
     );
-
-    /*========================================================================*/
-    //! @name material and related functions
-    /*========================================================================*/
-
-//    //! get the material parameters
-//    virtual void GetMaterialParams(
-//      const DRT::Element* ele,       //!< the element we are dealing with
-//      double&             densn,     //!< density at t_(n)
-//      double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-//      double&             densam,    //!< density at t_(n+alpha_M)
-//      double&             visc,      //!< fluid viscosity
-//      const int           iquad      //!< id of current gauss point (default = -1)
-//    );
 
   private:
 

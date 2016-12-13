@@ -16,7 +16,7 @@
 
 #include "porofluidmultiphase_ele_action.H"
 #include "porofluidmultiphase_ele_boundary_factory.H"
-#include "porofluidmultiphase_ele_boundary_interface.H"
+#include "porofluidmultiphase_ele_interface.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_discret.H"
@@ -55,6 +55,15 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(
   // the element and does not change during the computations
   const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
 
+  // copy pointers to matrices and vectors into std::vector
+  std::vector<Epetra_SerialDenseMatrix*> elemat(2);
+  elemat[0]=&elemat1;
+  elemat[1]=&elemat2;
+  std::vector<Epetra_SerialDenseVector*> elevec(3);
+  elevec[0]=&elevec1;
+  elevec[1]=&elevec2;
+  elevec[2]=&elevec3;
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
@@ -67,11 +76,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(
       params,
       discretization,
       la,
-      elemat1,
-      elemat2,
-      elevec1,
-      elevec2,
-      elevec3
+      elemat,
+      elevec
       );
 }
 

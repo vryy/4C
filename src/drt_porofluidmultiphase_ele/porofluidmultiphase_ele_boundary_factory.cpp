@@ -17,7 +17,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_element.H"
 
-#include "porofluidmultiphase_ele_boundary_interface.H"
+#include "porofluidmultiphase_ele_interface.H"
 #include "porofluidmultiphase_ele_boundary_calc.H"
 #include "porofluidmultiphase_ele_boundary_factory.H"
 
@@ -25,7 +25,7 @@
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryInterface*
+DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
     const DRT::Element* ele,
     const int numdofpernode,
@@ -76,7 +76,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryInterface* DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
+DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface* DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
     const int numdofpernode,
     const std::string& disname
     )

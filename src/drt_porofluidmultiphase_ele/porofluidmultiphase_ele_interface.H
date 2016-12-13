@@ -45,6 +45,9 @@ namespace ELEMENTS
     /// Empty constructor
     PoroFluidMultiPhaseEleInterface(){return;};
 
+    /// Empty destructor
+    virtual ~PoroFluidMultiPhaseEleInterface(){return;};
+
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function; it

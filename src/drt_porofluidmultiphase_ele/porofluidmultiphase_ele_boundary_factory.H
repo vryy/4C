@@ -25,7 +25,7 @@ namespace DRT
 namespace ELEMENTS
 {
 // forward declaration
-class PoroFluidMultiPhaseEleBoundaryInterface;
+class PoroFluidMultiPhaseEleInterface;
 
 class PoroFluidMultiPhaseBoundaryFactory
 {
@@ -38,7 +38,7 @@ public:
   virtual ~PoroFluidMultiPhaseBoundaryFactory(){return;};
 
   //! ProvideImpl
-  static PoroFluidMultiPhaseEleBoundaryInterface* ProvideImpl(
+  static PoroFluidMultiPhaseEleInterface* ProvideImpl(
                                               const DRT::Element* ele,
                                               const int numdofpernode,
                                               const std::string& disname);
@@ -47,7 +47,7 @@ private:
 
   //! return instance of element evaluation class depending on implementation type
   template<DRT::Element::DiscretizationType distype>
-  static PoroFluidMultiPhaseEleBoundaryInterface* DefineProblemType(
+  static PoroFluidMultiPhaseEleInterface* DefineProblemType(
       const int numdofpernode,
       const std::string& disname
       );

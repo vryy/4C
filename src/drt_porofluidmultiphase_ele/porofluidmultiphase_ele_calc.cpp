@@ -483,7 +483,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
 
-} //ScaTraImpl::EvalShapeFuncAndDerivsAtIntPoint
+} //PoroFluidMultiPhaseEleCalc::EvalShapeFuncAndDerivsAtIntPoint
 
 /*--------------------------------------------------------------------------*
  | evaluate shape functions and derivatives in parameter space   vuong 08/16 |
