@@ -48,7 +48,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_function.cpp"
+#include "../drt_lib/drt_function.H" //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_locsys.H"

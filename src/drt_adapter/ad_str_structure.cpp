@@ -31,7 +31,7 @@
 
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parmetis.cpp"
+#include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_sparsematrix.H"

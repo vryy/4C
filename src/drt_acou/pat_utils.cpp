@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file pat_utils.cpp
 
+\brief ...to be done...
+
+\level 2
+
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -18,7 +22,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.cpp"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "acou_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
