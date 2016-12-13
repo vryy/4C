@@ -391,6 +391,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
   // set element
   ele_ = ele;
 
+  //Note:
+  // here the phase manager, the variable manager and the evaluator classes are
+  // rebuild here, allocating new memory. This is actually not necessary.
+  // If this proves to be a performance issue, then the Create*** methods
+  // could be adapted to have static members, which are only built once.
+
   //build the phase manager
   phasemanager_ =
       DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
@@ -402,7 +408,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
   // setup the manager
   phasemanager_->Setup(ele);
 
-  //just to be sure: rebuild the phase manager
+  //rebuild the phase manager
   variablemanager_ =
       DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_>::CreateVariableManager(
           *para_,

@@ -42,6 +42,16 @@ class PhaseManagerInterface;
 template<int,int> class VariableManagerInterface;
 }
 
+/*!
+\brief implementation of evaluation routines of porous fluid multiphase  element
+
+This singleton class is responsible for evaluating boundary terms.
+It provides the method Evaluate(...) which performs the actual evaluation
+depending on the action provided by the global algorithm.
+
+
+\author vuong
+*/
   template<DRT::Element::DiscretizationType distype>
   class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
   {
@@ -85,16 +95,6 @@ template<int,int> class VariableManagerInterface;
     //! element-type specific flag if second derivatives are needed
     static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
 
-    /// In this class we do not define a static ScaTraEle...* Instance
-    /// since only derived child classes are free to be allocated!!
-
-    /// Setup element evaluation
-    virtual int SetupCalc(
-        DRT::Element*               ele,
-        DRT::Discretization&        discretization,
-        const POROFLUIDMULTIPHASE::Action& action
-        );
-
     /// Evaluate the element
     /*!
       Generic virtual interface function. Called via base pointer.
@@ -110,6 +110,13 @@ template<int,int> class VariableManagerInterface;
     /*========================================================================*/
     //! @name general framework
     /*========================================================================*/
+
+    /// Setup element evaluation
+    virtual int SetupCalc(
+        DRT::Element*               ele,
+        DRT::Discretization&        discretization,
+        const POROFLUIDMULTIPHASE::Action& action
+        );
 
     //! evaluate action
     virtual int EvaluateAction(

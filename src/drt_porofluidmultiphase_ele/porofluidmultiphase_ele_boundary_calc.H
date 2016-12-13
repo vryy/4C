@@ -30,6 +30,16 @@ namespace ELEMENTS
 {
 class PoroFluidMultiPhaseEleParameter;
 
+/*!
+\brief implementation of evaluation routines of porous fluid multiphase boundary element
+
+This singleton class is responsible for evaluating boundary terms.
+It provides the method Evaluate(...) which performs the actual evaluation
+depending on the action provided by the global algorithm.
+
+
+\author vuong
+*/
 template<DRT::Element::DiscretizationType distype>
 class PoroFluidMultiPhaseEleBoundaryCalc: public PoroFluidMultiPhaseEleInterface
 {
@@ -53,6 +63,18 @@ public:
   //! number of boundary(!) space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+  //! Evaluate the element (using location array)
+  virtual int Evaluate(
+      DRT::Element*                           ele,
+      Teuchos::ParameterList&                 params,
+      DRT::Discretization&                    discretization,
+      DRT::Element::LocationArray&            la,
+      std::vector<Epetra_SerialDenseMatrix*>& elemat,
+      std::vector<Epetra_SerialDenseVector*>& elevec
+      );
+
+protected:
+
   //! setup element evaluation
   int SetupCalc( DRT::Element*                 ele,
                  Teuchos::ParameterList&       params,
@@ -66,16 +88,6 @@ public:
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la
   );
-
-  //! Evaluate the element (using location array)
-  virtual int Evaluate(
-      DRT::Element*                          ele,
-      Teuchos::ParameterList&                params,
-      DRT::Discretization&                   discretization,
-      DRT::Element::LocationArray&            la,
-      std::vector<Epetra_SerialDenseMatrix*>& elemat,
-      std::vector<Epetra_SerialDenseVector*>& elevec
-      );
 
   //! evaluate action
   virtual int EvaluateAction(
@@ -98,7 +110,6 @@ public:
       Epetra_SerialDenseVector&       elevec1
       );
 
-protected:
   //! evaluate shape functions and derivatives at int. point
   double EvalShapeFuncAndIntFac(
       const DRT::UTILS::IntPointsAndWeights<nsd_>&   intpoints,         ///< integration points

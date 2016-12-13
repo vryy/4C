@@ -2,7 +2,7 @@
 /*!
  \file porofluidmultiphase_ele_boundary_factory.H
 
- \brief  factory class providing the implementions of the porofluidmultiphase
+ \brief  factory class providing the implementations of the porous fluid multiphase
          boundary element
 
    \level 3

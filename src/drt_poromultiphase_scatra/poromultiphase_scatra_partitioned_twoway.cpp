@@ -76,9 +76,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
       nds_solidpressure,
       ndsporofluid_scatra);
 
+  // read input variables
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.get<double>("TOLINC_GLOBAL");
 
+  // initialize increment vectors
   scaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())));
   structincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->StructDispnp()))));
   fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->FluidPhinp()))));

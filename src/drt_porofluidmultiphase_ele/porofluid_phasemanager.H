@@ -52,7 +52,30 @@ class VariableManagerMinAccess;
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! interface to phase manager classes
+/*!
+\brief interface to phase manager classes
+
+These classes manage all accesses to variables at gauss points for the different
+phases. The phase manager is responsible for the choice of primary variables.
+As we can choose pressures or saturation as primary variables this class
+will make sure everything is accessed correctly. Therefore it differentiates
+between the phases (as each phase can have a different physical primary variable)
+
+(in contrast to variable manager, which manages the 'generic' primary variables. Note that
+these two manager classes are closely related).
+
+The idea is, that there are the methods Setup(...) and EvaluateGPState(..), which
+need to be called before evaluation.
+All other methods are (more or less) constant access methods.
+
+All implementations are derived from this class.
+
+Two factory methods (in fact, only one as one calls the other), provide
+the specialization depending on the evaluation action.
+
+\author vuong
+*/
+
 class PhaseManagerInterface
   {
   public:
@@ -100,7 +123,7 @@ class PhaseManagerInterface
     //! check if Setup() was called
     virtual void CheckIsSetup() const=0;
 
-    //! @name Access methods (mandatory)
+    //! @name Access methods
 
     //! get the number of phases
     virtual int NumPhases() const=0;
@@ -153,61 +176,46 @@ class PhaseManagerInterface
     //! get the current element the manager was set up with
     virtual const DRT::Element* Element() const = 0;
 
-    //@}
-
-    //! @name Access methods (optional)
-
     //! get porosity
-    virtual double Porosity() const
-    {dserror("Porosity not available for this phase manager!");return 0.0;};
+    virtual double Porosity() const=0;
 
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     virtual double PorosityDeriv(
-            int doftoderive) const
-    {dserror("Derivative of porosity not available for this phase manager!");return 0.0;};
+            int doftoderive) const=0;
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
             int phasenum,
-            int doftoderive) const
-    {dserror("Derivative of saturation not available for this phase manager!");return 0.0;};
+            int doftoderive) const=0;
 
     //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double PressureDeriv(
             int phasenum,
-            int doftoderive) const
-    {dserror("Derivative of pressure not available for this phase manager!");return 0.0;};
+            int doftoderive) const=0;
 
     //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
     virtual double SolidPressureDeriv(
-            int doftoderive) const
-    {dserror("Derivative of solid pressure not available for this phase manager!");return 0.0;};
+            int doftoderive) const=0;
 
     //! get derivative of pressure of phase 'phasenum'
     //! w.r.t. DOF 'doftoderive' (first derivative)
     //! and w.r.t. DOF 'doftoderive2' (second derivative)
     virtual double SolidPressureDerivDeriv(
             int doftoderive,
-            int doftoderive2) const
-    {dserror("Second derivative of solid pressure not available for this phase manager!");return 0.0;};
+            int doftoderive2) const=0;
 
     //! get the reaction term
-    virtual double ReacTerm(int phasenum) const
-    {dserror("Reaction term not available for this phase manager!");return 0.0;};
+    virtual double ReacTerm(int phasenum) const=0;
 
     //! get the derivative of the reaction term
-    virtual double ReacDeriv(int phasenum, int doftoderive) const
-    {dserror("Reaction term not available for this phase manager!");return 0.0;};
+    virtual double ReacDeriv(int phasenum, int doftoderive) const=0;
 
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
-        {dserror("Diffusion tensor (3D) not available for this phase manager!");};
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const=0;
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const
-        {dserror("Diffusion tensor (2D) not available for this phase manager!");};
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const=0;
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const
-        {dserror("Diffusion tensor (1D) not available for this phase manager!");};
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const=0;
 
     //@}
 
@@ -217,7 +225,15 @@ class PhaseManagerInterface
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! standard phase manager, holding pressures and saturations
+/*!
+\brief standard phase manager, holding pressures and saturations
+
+This class is a minimal version of a phase manager. It basically provides
+access to the primary variables (saturation, pressure, etc.) and quantities
+that can be accessed via the material in almost all cases (bulkmodulus, ...).
+
+\author vuong
+*/
 class PhaseManagerCore : public PhaseManagerInterface
   {
   public:
@@ -235,7 +251,7 @@ class PhaseManagerCore : public PhaseManagerInterface
 
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
-        double                 J,
+        double                          J,
         const VariableManagerMinAccess& varmanager);
 
     //! clear the states
@@ -313,6 +329,58 @@ class PhaseManagerCore : public PhaseManagerInterface
         dserror("Setup() was not called!");
     }
 
+    //! get porosity
+    virtual double Porosity() const
+    {dserror("Porosity not available for this phase manager!");return 0.0;};
+
+    //! get derivative of porosity w.r.t. DOF 'doftoderive'
+    virtual double PorosityDeriv(
+            int doftoderive) const
+    {dserror("Derivative of porosity not available for this phase manager!");return 0.0;};
+
+    //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
+    virtual double SaturationDeriv(
+            int phasenum,
+            int doftoderive) const
+    {dserror("Derivative of saturation not available for this phase manager!");return 0.0;};
+
+    //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
+    virtual double PressureDeriv(
+            int phasenum,
+            int doftoderive) const
+    {dserror("Derivative of pressure not available for this phase manager!");return 0.0;};
+
+    //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
+    virtual double SolidPressureDeriv(
+            int doftoderive) const
+    {dserror("Derivative of solid pressure not available for this phase manager!");return 0.0;};
+
+    //! get derivative of pressure of phase 'phasenum'
+    //! w.r.t. DOF 'doftoderive' (first derivative)
+    //! and w.r.t. DOF 'doftoderive2' (second derivative)
+    virtual double SolidPressureDerivDeriv(
+            int doftoderive,
+            int doftoderive2) const
+    {dserror("Second derivative of solid pressure not available for this phase manager!");return 0.0;};
+
+    //! get the reaction term
+    virtual double ReacTerm(int phasenum) const
+    {dserror("Reaction term not available for this phase manager!");return 0.0;};
+
+    //! get the derivative of the reaction term
+    virtual double ReacDeriv(int phasenum, int doftoderive) const
+    {dserror("Reaction term not available for this phase manager!");return 0.0;};
+
+    //! get the diffusion tensor
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
+        {dserror("Diffusion tensor (3D) not available for this phase manager!");};
+    //! get the diffusion tensor
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const
+        {dserror("Diffusion tensor (2D) not available for this phase manager!");};
+    //! get the diffusion tensor
+    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const
+        {dserror("Diffusion tensor (1D) not available for this phase manager!");};
+
   private:
     //! number of phases
     const int numphases_;
@@ -341,7 +409,17 @@ class PhaseManagerCore : public PhaseManagerInterface
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! wrapper class, base class for extensions to phase manager
+/*!
+\brief wrapper class, base class for extensions to phase manager
+
+The idea is to use a core phase manager (class PhaseManagerCore) and extend
+it when the evaluation to be performed demands it. For this a decorator
+ pattern is used, i.e. this class wraps another phase manager, extending it if necessary.
+
+This is the base class for all decorators.
+
+\author vuong
+*/
 class PhaseManagerDecorator : public PhaseManagerInterface
   {
   public:
@@ -470,6 +548,14 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual const DRT::Element* Element() const
     {return phasemanager_->Element();};
 
+    //! get the reaction term
+    virtual double ReacTerm(int phasenum) const
+    {return phasemanager_->ReacTerm(phasenum);};
+
+    //! get the derivative of the reaction term
+    virtual double ReacDeriv(int phasenum, int doftoderive) const
+    {return phasemanager_->ReacDeriv(phasenum,doftoderive);};
+
     //! get the diffusion tensor
     virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
     {phasemanager_->DiffTensor(phasenum,difftensor);};
@@ -493,7 +579,14 @@ class PhaseManagerDecorator : public PhaseManagerInterface
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! wrapper class, extensions for derivatives
+/*!
+\brief wrapper class, extensions for derivatives
+
+This class is a decorator for a phase manager, including the derivatives
+of the pressures and saturations w.r.t. to the primary variables
+
+\author vuong
+*/
 class PhaseManagerDeriv : public PhaseManagerDecorator
   {
   public:
@@ -556,7 +649,14 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! wrapper class, extensions for porosity
+/*!
+\brief wrapper class, extensions for derivatives and porosity
+
+This class is a decorator for a phase manager, including evaluation of
+the pressures and saturations w.r.t. to the primary variables and the porosity.
+
+\author vuong
+*/
 class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
   {
   public:
@@ -599,7 +699,14 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! wrapper class, extensions for reaction/mass exchange terms
+/*!
+\brief wrapper class, extensions for reaction/mass exchange terms
+
+This class is a decorator for a phase manager, including evaluation of
+reaction/mass exchange terms.
+
+\author vuong
+*/
 class PhaseManagerReaction : public PhaseManagerDecorator
   {
   public:
@@ -654,7 +761,15 @@ class PhaseManagerReaction : public PhaseManagerDecorator
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! wrapper class, extensions for diffusion
+/*!
+\brief wrapper class, extensions for diffusion
+
+This class is a decorator for a phase manager, including evaluation of
+the diffusion tensor (inverse permeability). As the tensor is saved
+as a LINALG::Matrix, it is templated by the number of space dimensions
+
+\author vuong
+*/
 template<int nsd>
 class PhaseManagerDiffusion : public PhaseManagerDecorator
   {

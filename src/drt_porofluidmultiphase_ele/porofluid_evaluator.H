@@ -44,6 +44,27 @@ namespace POROFLUIDEVALUATOR
 {
 template<int,int> class EvaluatorInterface;
 
+
+/*!
+\brief A helper class for element assembly of the porous multiphase flow equations
+
+The thing is, that in this formulation for the porous multiphase flow equations,
+one equation is somewhat special. That is, that one equation is actually the
+sum of all phases incorporating the phase constraint, i.e. that all saturations
+sum up to 1.
+
+For this propose these small classes handle in which DOF, i.e. in which row of
+the element matrix, the terms are assembled into. For now, there are three
+assembly classes:
+
+   1. a general, pure virtual interface
+   2. standard assemble, i.e. assemble into one phase, that is the phase that
+      currently evaluated
+   3. assemble into two phases. The current phase and the summed up phase
+
+\author vuong
+*/
+
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
@@ -115,7 +136,26 @@ private:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! general interface class for evaluation of element matrix
+
+/*!
+\brief Evaluator class for the element matrices
+
+These classes do the actual work, they assemble the terms within the porous multiphase
+flow equations.
+
+The idea is simple. Each additive term in the equation has its own evaluator.
+This way, single summands can be turned on and off easily. The key methods are
+EvaluateMatrix(..) and EvaluateVector(..). One assembles the linearization, the
+other the RHS vector.
+
+This class is a general interface class for evaluation of the  element matrix and the RHS vector.
+It templated by the space dimensions 'nsd' and the number of nodes 'nen'.
+It comprises the pure virtual functions EvaluateMatrix(..) and EvaluateVector(..)
+and the factory method CreateEvaluator(). The factory method is the central place,
+ where the terms are defined.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorInterface
 {
@@ -133,6 +173,7 @@ public:
       int                                                   numdofpernode,
       const POROFLUIDMANAGER::PhaseManagerInterface&        phasemanager);
 
+  //! evaluate matrixes (stiffness)
   virtual void EvaluateMatrix(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
@@ -145,6 +186,7 @@ public:
       double                                                      fac             //!< domain-integration factor times time-integration factor
     ) = 0;
 
+  //! evaluate vectors (RHS vector)
   virtual void EvaluateVector(
       std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
       const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
@@ -162,7 +204,14 @@ public:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! helper class for evaluation of element matrix/vectors for multiple phases
+/*!
+\brief Evaluator class for evaluation of element matrix/vectors for multiple phases
+
+This class wraps multiple evaluators. For evaluation of matrix and vector, it just loops over all
+single evaluators.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class MultiEvaluator : public EvaluatorInterface<nsd,nen>
 {
@@ -173,7 +222,7 @@ public:
   //! destructor
   virtual ~MultiEvaluator(){};
 
-  //! evaluate matrixes
+  //! evaluate matrixes (stiffness)
   void EvaluateMatrix(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
@@ -186,6 +235,7 @@ public:
       double                                                      fac             //!< domain-integration factor times time-integration factor
     )
   {
+    // loop over the evaluators
     typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > >::iterator it;
     for(it=evaluators_.begin();it!=evaluators_.end();it++)
       (*it)->EvaluateMatrix(
@@ -200,7 +250,7 @@ public:
             fac);
   };
 
-  //! evaluate vectors
+  //! evaluate vectors (RHS vector)
   void EvaluateVector(
       std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
       const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
@@ -213,6 +263,7 @@ public:
       double                                                      fac              //!< domain-integration factor
       )
   {
+    // loop over the evaluators
     typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > >::iterator it;
     for(it=evaluators_.begin();it!=evaluators_.end();it++)
       (*it)->EvaluateVector(
@@ -227,10 +278,12 @@ public:
           fac);
   };
 
+  //! add an evaluator to the list of evaluators
   void AddEvaluator(Teuchos::RCP<EvaluatorInterface<nsd,nen> > evaluator)
   {evaluators_.push_back(evaluator);};
 
 private:
+  //! list of all evaluators
   std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > > evaluators_;
 
 };
@@ -239,7 +292,16 @@ private:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! general base class for evaluation of one term
+/*!
+\brief general base class for evaluation of one term
+
+This class  is the base class for single summand evaluators. It comprises an assembler object,
+defining in which rows the term is to be assembled into. The pure virtual
+methods EvaluateMatrixAndAssemble(...) and EvaluateVectorAndAssemble(...) defined
+the actual term and are to be implemented in derived classes.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorBase : public EvaluatorInterface<nsd,nen>
 {
@@ -253,7 +315,7 @@ public:
   //! destructor
   virtual ~EvaluatorBase(){};
 
-
+  //! evaluate matrixes (stiffness)
   void EvaluateMatrix(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
@@ -266,8 +328,10 @@ public:
       double                                                      fac             //!< domain-integration factor times time-integration factor
     )
   {
+    // the assembler class decides, where the terms are assembled into
     for(int iassemble=0; iassemble<assembler_->NumPhasesToAssembleInto(); iassemble++)
     {
+      // call the actual evaluation and assembly of the respective term (defined by derived class)
        EvaluateMatrixAndAssemble(
           elemat,
           funct,
@@ -283,6 +347,7 @@ public:
     }
   };
 
+  //! evaluate vectors (RHS vector)
   void EvaluateVector(
       std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
       const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
@@ -295,8 +360,10 @@ public:
       double                                                      fac              //!< domain-integration factor
       )
   {
+    // the assembler class decides, where the terms are assembled into
     for(int iassemble=0; iassemble<assembler_->NumPhasesToAssembleInto(); iassemble++)
     {
+      // call the actual evaluation and assembly of the respective term (defined by derived class)
       EvaluateVectorAndAssemble(
           elevec,
           funct,
@@ -314,6 +381,7 @@ public:
 
 protected:
 
+  // actual evaluation and assembly of the respective term in the stiffness matrix (defined by derived class)
   virtual void EvaluateMatrixAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
@@ -327,6 +395,7 @@ protected:
       double                                                      fac             //!< domain-integration factor times time-integration factor
     )=0;
 
+  // actual evaluation and assembly of the respective term in the RHS vector (defined by derived class)
   virtual void EvaluateVectorAndAssemble(
       std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
       const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
@@ -350,7 +419,16 @@ private:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of convective term into the element matrix
+/*!
+\brief class for evaluation of convective term into the element matrix
+
+This class implements the convective term $(w, v \nabla \cdot S )$.
+
+\note this term is not used, since the equations are written in a Lagrangian description
+      w.r.t. skeleton.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorConv : public EvaluatorBase<nsd,nen>
 {
@@ -398,7 +476,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of divergence of the (mesh) velocity field
+/*!
+\brief class for evaluation of divergence of the (mesh) velocity field
+
+This class implements the term $(w, \nabla \cdot v^s )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorDivVel : public EvaluatorBase<nsd,nen>
 {
@@ -446,7 +530,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of divergence of the (mesh) velocity field, scaled by saturation
+/*!
+\brief class for evaluation of divergence of the (mesh) velocity field, scaled by saturation
+
+This class implements the term $(w, S \nabla \cdot v^s )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorSatDivVel : public EvaluatorDivVel<nsd,nen>
 {
@@ -494,7 +584,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of diffusive term into the element matrix
+/*!
+\brief class for evaluation of diffusive term into the element matrix
+
+This class implements the term $( \nabla w, K \nabla p )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorDiff : public EvaluatorBase<nsd,nen>
 {
@@ -541,7 +637,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of reactive term into the element matrix
+/*!
+\brief class for evaluation of reactive term into the element matrix
+
+This class implements all kinds of reactive terms, defined by the phasemanager.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorReac : public EvaluatorBase<nsd,nen>
 {
@@ -589,7 +691,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of mass term (pressure) into the element matrix
+/*!
+\brief class for evaluation of mass term (pressure) into the element matrix
+
+This class implements the term $( w,porosity S/K \frac{\partial p}{\partial t} )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorMassPressure : public EvaluatorBase<nsd,nen>
 {
@@ -637,7 +745,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of mass term (solid pressure) into the element matrix
+/*!
+\brief class for evaluation of mass term (solid pressure) into the element matrix
+
+This class implements the term $( w, \frac{(1-\porosity) }{K_s} \frac{\partial p^s}{\partial t} )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorMassSolidPressure : public EvaluatorBase<nsd,nen>
 {
@@ -686,7 +800,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of mass term (solid pressure) into the element matrix
+/*!
+\brief class for evaluation of mass term (solid pressure), scaled with saturation into the element matrix
+
+This class implements the term $( w, S\frac{(1-\porosity) }{K_s} \frac{\partial p^s}{\partial t} )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorMassSolidPressureSat : public EvaluatorMassSolidPressure<nsd,nen>
 {
@@ -734,7 +854,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! class for evaluation of mass term (solid saturation) into the element matrix
+/*!
+\brief class for evaluation of mass term (solid saturation) into the element matrix
+
+This class implements the term $( w, \porosity \frac{\partial S}{\partial t} )$.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorMassSaturation : public EvaluatorBase<nsd,nen>
 {
@@ -783,7 +909,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! helper class for evaluation of pressure and saturation
+/*!
+\brief helper class for evaluation of pressure and saturation
+
+This class implements the post processing of pressures and saturation at the nodes.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorPressureAndSaturation : public EvaluatorBase<nsd,nen>
 {
@@ -831,7 +963,13 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! helper class for evaluation of pressure and saturation
+/*!
+\brief helper class for evaluation of the solid pressure
+
+This class implements the post processing of the solid pressure at the nodes.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class EvaluatorSolidPressure : public EvaluatorBase<nsd,nen>
 {
@@ -879,7 +1017,14 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! helper class for reconstruction of flux
+/*!
+\brief helper class for reconstruction of flux
+
+This class implements the linearization of the flux reconstruction matrix (L_2 projection).
+Only the matrix! For RHS see class ReconstructFluxRHS.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class ReconstructFluxLinearization : public EvaluatorBase<nsd,nen>
 {
@@ -927,7 +1072,14 @@ protected:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! helper class for reconstruction of flux
+/*!
+\brief helper class for reconstruction of flux
+
+This class implements the RHS the flux reconstruction matrix (L_2 projection).
+Only the RHS! For the matrix see ReconstructFlux.
+
+\author vuong
+*/
 template<int nsd, int nen>
 class ReconstructFluxRHS : public EvaluatorBase<nsd,nen>
 {

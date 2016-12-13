@@ -42,7 +42,22 @@ template<int,int> class VariableManagerInterface;
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! general interface to variable manager for minimal access (non template)
+/*!
+\brief general interface to variable manager for minimal access (non template)
+
+These classes manage all accesses to primary variables
+ (in contrast to the phase manager, which manages values of secondary).
+
+\note The 'phi' vector denotes the 'generic' primary variable, which
+      can be a pressure, saturation or a differential pressure. This
+      does not (and needs not) to differentiate between the actual choice
+      of primary variables (this is the responsibility of the phase manager).
+
+This class is a pure virtual non-template class, which provides access to
+the generic state phi and the scalar state (coming from a ScaTra coupling).
+
+\author vuong
+*/
 class VariableManagerMinAccess
   {
   public:
@@ -61,7 +76,26 @@ class VariableManagerMinAccess
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! general interface to variable manager
+/*!
+\brief general interface to variable manager (template)
+
+The idea is, that there are the methods ExtractElementAndNodeValues(...)
+and EvaluateGPVariables(..), which need to be called before evaluation.
+ExtractElementAndNodeValues(...) reads the node values associated with the element
+from the global state vector and EvaluateGPVariables(..) performs the interpolation
+to the gauss points.
+All other methods are (more or less) constant access methods.
+
+As fixed sized LINALG::Matrix is used for saving the values, almost
+all variables managers are templated by the number of space dimensions 'nsd'
+and the number of element nodes 'nen'.
+
+This class is a pure virtual template interface class.
+It implements the factory method, which builds the concrete variable manager
+based on the element action.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerInterface : public VariableManagerMinAccess
   {
@@ -114,7 +148,14 @@ class VariableManagerInterface : public VariableManagerMinAccess
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! base class for all core variable managers
+/*!
+\brief  base class for all core variable managers
+
+This class is the base class for all variable managers. It basically
+implements some safety checks.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerBase : public VariableManagerInterface<nsd,nen>
   {
@@ -202,7 +243,15 @@ class VariableManagerBase : public VariableManagerInterface<nsd,nen>
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! minimal variable manager only holding the state vector 'phi'
+/*!
+\brief   minimal variable manager only holding the generic state vector 'phi'
+
+This class is the minimal version of a concrete variable managers. It only
+holds the generic state vector 'phi' (this can be e.g. the pressure or
+the saturation).
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerPhi: public VariableManagerBase<nsd, nen>
 {
@@ -248,7 +297,14 @@ protected:
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! variable manager only holding the state vector 'phi' and its gradient
+/*!
+\brief  variable manager only holding the state vector 'phi' and its gradient
+
+This class only holds the generic state vector 'phi' (this can be e.g. the pressure or
+the saturation) and its gradient.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerPhiGradPhi: public VariableManagerPhi<nsd, nen>
 {
@@ -281,7 +337,17 @@ private:
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-//! base class for all decorator/wrapper classes, i.e. extensions to core variable managers
+/*!
+\brief  base class for all decorator/wrapper classes, i.e. extensions to core variable managers
+
+The idea is to use a core variable manager (e.g. VariableManagerPhi) and extend
+it when the evaluation to be performed demands it. For this a decorator
+ pattern is used, i.e. this class wraps another variable manager, extending it if necessary.
+
+This is the base class for all decorators.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
   {
@@ -356,7 +422,14 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! decorator/wrapper class for variable manager, extensions to time derivatives
+/*!
+\brief  decorator/wrapper class for variable manager, extensions to time derivatives
+
+This class entends a wraped variable manager by the instationary variables
+(time derivatives, and 'history'-vector)
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerInstat : public VariableManagerDecorator<nsd,nen>
   {
@@ -419,7 +492,14 @@ class VariableManagerInstat : public VariableManagerDecorator<nsd,nen>
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! decorator/wrapper class for variable manager, extensions to moving domain variables
+/*!
+\brief  decorator/wrapper class for variable manager, extensions to moving domain variables
+
+This class entends a wraped variable manager by the  variables needed for an ALE
+formulation, i.e. mesh displacements and convective velocity.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerStruct : public VariableManagerDecorator<nsd,nen>
   {
@@ -495,7 +575,14 @@ class VariableManagerStruct : public VariableManagerDecorator<nsd,nen>
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
-//! decorator/wrapper class for variable manager, extensions to moving domain variables
+/*!
+\brief  decorator/wrapper class for variable manager, extensions to ScaTra coupling
+
+This class entends a wraped variable manager by the  variables needed for a ScaTra
+coupling, i.e. the scalar values.
+
+\author vuong
+*/
 template <int nsd, int nen>
 class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
   {
