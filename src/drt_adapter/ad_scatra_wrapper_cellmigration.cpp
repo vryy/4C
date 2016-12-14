@@ -75,3 +75,17 @@ void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDepen
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  add contribution to rhs                                 rauch 04/15 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::AdapterScatraWrapperCellMigration::AddContributionToRHS(
+    const Teuchos::RCP<const Epetra_Vector>& contributing_vector)
+{
+  int err = GetNeumannLoadsPtr()->Update(1.0,*contributing_vector,1.0);
+
+  if(err!=0)
+    dserror(" Epetra_Vector update threw error code %i ",err);
+
+  return;
+}

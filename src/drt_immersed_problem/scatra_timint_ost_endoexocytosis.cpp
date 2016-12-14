@@ -168,7 +168,7 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::PreSolve()
   }
 
   // write source_ to rhs
-  AddContributionToRHS(source_);
+  GetNeumannLoadsPtr()->Update(1.0,*source_,1.0);
 
   return;
 }

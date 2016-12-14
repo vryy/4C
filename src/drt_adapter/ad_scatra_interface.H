@@ -13,6 +13,7 @@
 
 
 #include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 
 // forward declarations
@@ -51,6 +52,9 @@ public:
 
   //! return number of dofset associated with displacement dofs
   virtual int NdsDisp() = 0;
+
+  //! return rcp ptr to neumann loads vector
+  virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() = 0;
 
 }; // class ScatraInterface
 } // namespace ADAPTER

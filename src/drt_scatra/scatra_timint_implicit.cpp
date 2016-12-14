@@ -2985,20 +2985,6 @@ Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(int nds)
   return Teuchos::rcp(dofrowmap, false);
 }
 
-
-/*----------------------------------------------------------------------*
- |  add contribution to rhs                                rauch   04/15|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector>& contributing_vector)
-{
-  int err = neumann_loads_->Update(1.0,*contributing_vector,1.0);
-
-  if(err!=0)
-    dserror(" Epetra_Vector update threw error code %i ",err);
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  return number of scalars in scatra discretization       vuong   04/16|
  *----------------------------------------------------------------------*/

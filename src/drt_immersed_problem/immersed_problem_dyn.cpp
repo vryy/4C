@@ -310,7 +310,7 @@ void CellMigrationControlAlgorithm()
   // declare pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem = Teuchos::null;
   // declare pointer to scatra wrapper
-  Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> scatra_wrapper = Teuchos::null;
+  Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> cellscatra_wrapper = Teuchos::null;
 
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -525,9 +525,13 @@ void CellMigrationControlAlgorithm()
     // now setup cellscatra (ssi) subproblem
     cellscatra_subproblem->Setup();
 
-    // create scatra cell migration wrapper
-    scatra_wrapper = Teuchos::rcp(new ADAPTER::AdapterScatraWrapperCellMigration(
+    // create scatra wrapper for structural tiem integration of cell-scatra field
+    cellscatra_wrapper = Teuchos::rcp(new ADAPTER::AdapterScatraWrapperCellMigration(
         cellscatra_subproblem->ScaTraField()->ScaTraField()));
+    // set scatra adapter in ssi subproblem
+    if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+      Teuchos::rcp_dynamic_cast<SSI::SSI_Part2WC_PROTRUSIONFORMATION>(cellscatra_subproblem)
+          ->SetScatraWrapper(cellscatra_wrapper);
 
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
@@ -583,6 +587,10 @@ void CellMigrationControlAlgorithm()
   poroscatra_subproblem->SetupSystem();
   if(comm.MyPID()==0)
     std::cout<<" Created Field PoroScatra ... \n"<<std::endl;
+
+  // construct scatra-adapter for poro-scatra time integration
+  Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> poroscatrawrapper =
+      Teuchos::rcp(new ADAPTER::AdapterScatraWrapperCellMigration(poroscatra_subproblem->ScaTraField()));
 
 
 
@@ -663,7 +671,9 @@ void CellMigrationControlAlgorithm()
   // in order to make them accessible in subproblems.
   ///////////////////////////////////////////////////////////////////////
   params.set<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure",cellstructure);
+  params.set<Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> >("RCPToCellScatraWrapper",cellscatra_wrapper);
   params.set<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra",poroscatra_subproblem);
+  params.set<Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> >("RCPToPoroScatraWrapper",poroscatrawrapper);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree",cell_SearchTree);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell",&currpositions_cell);

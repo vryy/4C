@@ -372,9 +372,6 @@ public:
   //! remove dirichlet dofs from dbcmaps_
   void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
-  //! add vector to rhs
-  void AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector>& contributing_vector);
-
   //! return pointer to const dofrowmap
   Teuchos::RCP<const Epetra_Map> DofRowMap();
 
@@ -568,6 +565,9 @@ public:
 
   //! derivative of micro-scale coupling flux w.r.t. macro-scale state variable for macro-micro coupling in multi-scale simulations
   const double& DqDphi() const {return dq_dphi_;};
+
+  //! return rcp ptr to neumann loads vector
+  virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr(){return neumann_loads_;};
 
   /*========================================================================*/
   //! @name turbulence and related

@@ -19,6 +19,7 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structalewrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_adapter/ad_scatra_wrapper_cellmigration.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 
@@ -53,7 +54,8 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(
   numdof_actin_(-1),
   ale_fluid_wrapper_(Teuchos::null),
   ssi_wrapper_(Teuchos::null),
-  struct_ale_wrapper_(Teuchos::null)
+  struct_ale_wrapper_(Teuchos::null),
+  cell_scatra_wrapper_(Teuchos::null)
 {
   // empty
 }
@@ -312,8 +314,11 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoScatraStep()
         << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
 
+  if(CellScatra()==Teuchos::null)
+    dserror("Pointer to scatra wrapper for cell-scatra time integration is not set!");
+
   // rate of change of actin monomer concentration, Arp2/3 (Branch) conc., and filament barbed end conc.
-  scatra_->ScaTraField()->AddContributionToRHS(sources_);
+  CellScatra()->AddContributionToRHS(sources_);
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
@@ -323,7 +328,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoScatraStep()
   // remove sources from scatra rhs
   // this needs to be done because otherwise, we would always add neumann loads in every iteration
   sources_->Scale(-1.0);
-  scatra_->ScaTraField()->AddContributionToRHS(sources_);
+  CellScatra()->AddContributionToRHS(sources_);
   sources_->Scale(-1.0);
 
   // set scalar transport values expressed in structural dofs
@@ -950,4 +955,13 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateAndOutput()
   sources_->PutScalar(0.0);
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetScatraWrapper(
+    Teuchos::RCP< ::ADAPTER::AdapterScatraWrapperCellMigration> scatra_wrapper)
+{
+  cell_scatra_wrapper_ = scatra_wrapper;
 }

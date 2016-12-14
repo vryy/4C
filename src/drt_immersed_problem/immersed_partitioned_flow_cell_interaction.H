@@ -28,6 +28,7 @@ namespace POROELAST
 
 namespace ADAPTER
 {
+  class AdapterScatraWrapperCellMigration;
   class FPSIStructureWrapper;
   class FSIStructureWrapperImmersed;
 }
@@ -168,6 +169,9 @@ protected:
 
   /// pointer to poroelast subproblem (poro-scatra interaction)
   Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
+
+  /// scatra adapter for poro-scatra time integration
+  Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> poroscatra_wrapper_;
 
   /// basic information for parallelism
   int myrank_;

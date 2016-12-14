@@ -20,6 +20,7 @@
 
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_adapter/ad_scatra_wrapper_cellmigration.H"
 #include "../drt_adapter/ad_str_multiphysicswrapper_cellmigration.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -57,6 +58,9 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   // get pointer to the current position map of the cell
   currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
 
+  // get pointer to scatra time integration wrapper for the poro-scatra field
+  poroscatra_wrapper_ = params.get<Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> >("RCPToPoroScatraWrapper");
+
   // get pointer to cell structure
   Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
       params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
@@ -83,6 +87,8 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
     dserror("no pointer to cellstructure_ provided !");
   if(poroscatra_subproblem_==Teuchos::null)
     dserror("no pointer to poroscatra_subproblem_ provided !");
+  if(poroscatra_wrapper_==Teuchos::null)
+    dserror("no pointer to poroscatra_wrapper_ provided !");
 
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
@@ -402,7 +408,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BackgroundOp(Teuchos::RCP
             sparams_struct,
             evaluateonlyboundary);
 
-      poroscatra_subproblem_->ScaTraField()->AddContributionToRHS(poroscatra_segregated_phi_);
+      poroscatra_wrapper_->AddContributionToRHS(poroscatra_segregated_phi_);
 
     }
     else

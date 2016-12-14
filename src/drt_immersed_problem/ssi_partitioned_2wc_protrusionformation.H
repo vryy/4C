@@ -21,6 +21,7 @@
 /*==========================================================================*/
 namespace ADAPTER
 {
+  class AdapterScatraWrapperCellMigration;
   class SSIStructureWrapper;
   class StructAleWrapper;
   class AleFluidWrapper;
@@ -107,6 +108,10 @@ public:
   void SetStructAleWrapper(Teuchos::RCP< ::ADAPTER::StructAleWrapper> structalewrapper)
   {struct_ale_wrapper_=structalewrapper;};
 
+  //! set the scatra wrapper ptr for the cell-scatra time integration
+  void SetScatraWrapper(
+      Teuchos::RCP< ::ADAPTER::AdapterScatraWrapperCellMigration> scatra_wrapper);
+
   /*! \brief Initialize this object
 
    Initializes members and performs problem specific setup.
@@ -173,12 +178,15 @@ public:
   //! access to ale field
   const Teuchos::RCP<ADAPTER::AleFluidWrapper>&
       AleField(){return ale_fluid_wrapper_;};
-  //! access to scatra field
+  //! access to ssi field
   const Teuchos::RCP< ::ADAPTER::SSIStructureWrapper>&
       SSIStructureField(){return ssi_wrapper_;};
-  //! access to scatra field
+  //! access to struct-ale field
   const Teuchos::RCP< ::ADAPTER::StructAleWrapper>&
       StructAle(){return struct_ale_wrapper_;};
+  //! access to cell-scatra field
+  const Teuchos::RCP< ::ADAPTER::AdapterScatraWrapperCellMigration>&
+      CellScatra(){return cell_scatra_wrapper_;};
   //@}
 
   //! update time step and print to screen
@@ -299,6 +307,9 @@ private:
 
   //! underlying structure wrapper for struct-ale
   Teuchos::RCP< ::ADAPTER::StructAleWrapper> struct_ale_wrapper_;
+
+  //! underlying scatra wrapper for cell-scatra
+  Teuchos::RCP< ::ADAPTER::AdapterScatraWrapperCellMigration> cell_scatra_wrapper_;
   //@}
 
 

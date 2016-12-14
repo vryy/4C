@@ -62,6 +62,10 @@ protected:
   virtual int NdsDisp()
   {return scatra_timint_ -> NdsDisp(); };
 
+  /// return rcp ptr to neumann loads vector
+  virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr()
+  {return scatra_timint_->GetNeumannLoadsPtr();};
+
 private:
 
   Teuchos::RCP<ScatraInterface> scatra_timint_; ///< underlying structural time integration

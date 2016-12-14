@@ -31,6 +31,7 @@ class AdapterScatraWrapperCellMigration : public AdapterScatraWrapper
 
 public:
 
+  /// constructor
   explicit AdapterScatraWrapperCellMigration(Teuchos::RCP<ScatraInterface> scatra);
 
   /// virtual to get polymorph destruction
@@ -41,6 +42,10 @@ public:
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
       Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
+
+  /// add vector to rhs
+  void AddContributionToRHS(
+      const Teuchos::RCP<const Epetra_Vector>& contributing_vector);
 
 private:
 
