@@ -14,15 +14,23 @@
 
 #include "poromultiphase_base.H"
 
+#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
+
+#include "../drt_inpar/inpar_porofluidmultiphase.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase.H"
-#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 
 #include "../linalg/linalg_utils.H"
 
+// new structural time integration
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_factory.H"
 
+#include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |
@@ -61,15 +69,12 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
 
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
-          globaltimeparams,
-          structparams,
-          structdis));
-
-  // build structural time integrator (Init() called inside)
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
-  structure_->Setup();
+  // build structural time integrator
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase =
+      ADAPTER::STR::BuildStructureAlgorithm(structparams);
+  adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
+  adapterbase->Setup();
+  structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::Structure>(adapterbase->StructureField());
 
   // initialize zero vector for convenience
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
@@ -77,14 +82,46 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = fluidparams.get<int>("LINEAR_SOLVER");
 
+
+  // -------------------------------------------------------------------
+  // access the fluid discretization
+  // -------------------------------------------------------------------
+  Teuchos::RCP<DRT::Discretization> fluiddis  = DRT::Problem::Instance()->GetDis(fluid_disname);
+
+  // -------------------------------------------------------------------
+  // set degrees of freedom in the discretization
+  // -------------------------------------------------------------------
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  Teuchos::RCP<IO::DiscretizationWriter> output = fluiddis->Writer();
+  output->WriteMesh(0,0.0);
+
+  // -------------------------------------------------------------------
+  // algorithm construction depending on
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+  INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
+    DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(fluidparams,"TIMEINTEGR");
+
   // build poro fluid time integrator
-  fluid_ = Teuchos::rcp(new ADAPTER::PoroFluidMultiphase());
+  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> porofluid =
+      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+        timintscheme,
+        fluiddis,
+        linsolvernumber,
+        globaltimeparams,
+        fluidparams,
+        DRT::Problem::Instance()->ErrorFile()->Handle(),
+        output
+        );
+
+  // wrap it
+  fluid_ = Teuchos::rcp(new ADAPTER::PoroFluidMultiphaseWrapper(porofluid));
   // initialize it
   fluid_->Init(
-      globaltimeparams,
-      fluidparams,
-      linsolvernumber,
-      fluid_disname,
       isale,
       nds_disp,
       nds_vel,
@@ -174,6 +211,22 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetSolidPressure(
 {
   const int nds_solidpressure = fluid_->GetDofSetNumberOfSolidPressure();
   structure_->Discretization()->SetState(nds_solidpressure,"solid_pressure",pressure);
+}
+
+/*------------------------------------------------------------------------*
+ | dof map of vector of unknowns of structure field           vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::StructDofRowMap() const
+{
+  return structure_->DofRowMap();
+}
+
+/*------------------------------------------------------------------------*
+ | dof map of vector of unknowns of fluid field           vuong 08/16  |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMap() const
+{
+  return fluid_->DofRowMap();
 }
 
 /*------------------------------------------------------------------------*

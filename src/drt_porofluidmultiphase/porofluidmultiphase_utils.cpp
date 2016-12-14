@@ -14,10 +14,14 @@
 
 #include "porofluidmultiphase_utils.H"
 
+#include "porofluidmultiphase_timint_ost.H"
+
 #include "../drt_mat/material.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_adapter/ad_porofluidmultiphase.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -113,3 +117,45 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
   return multi;
 }
 
+/*----------------------------------------------------------------------*
+ | create algorithm                                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+    INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
+    Teuchos::RCP<DRT::Discretization>                 dis,
+    const int                                         linsolvernumber,
+    const Teuchos::ParameterList&                     probparams,
+    const Teuchos::ParameterList&                     poroparams,
+    FILE*                                             errfile,
+    Teuchos::RCP<IO::DiscretizationWriter>            output
+    )
+{
+  // Creation of Coupled Problem algortihm.
+  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = Teuchos::null;
+
+  // -------------------------------------------------------------------
+  // algorithm construction depending on
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+
+  switch(timintscheme)
+  {
+  case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
+  {
+    // create algorithm
+    algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
+            dis,
+            linsolvernumber,
+            probparams,
+            poroparams,
+            errfile,
+            output));
+    break;
+  }
+  default:
+    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+    break;
+  }
+
+  return algo;
+}

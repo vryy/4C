@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_porofluidmultiphase.cpp
+ \file ad_porofluidmultiphase_wrapper.cpp
 
- \brief adapter for multiphase porous fluid problem
+ \brief a wrapper for porous multiphase flow algorithms
 
    \level 3
 
@@ -12,90 +12,40 @@
                 089 - 289-15251
  *----------------------------------------------------------------------*/
 
-
+#include "ad_porofluidmultiphase_wrapper.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_porofluidmultiphase.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // general time integration schemes
 #include "../drt_porofluidmultiphase/porofluidmultiphase_timint_implicit.H"
 #include "../drt_porofluidmultiphase/porofluidmultiphase_timint_ost.H"
-#include "ad_porofluidmultiphase.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::PoroFluidMultiphase::PoroFluidMultiphase(
-    )
+ADAPTER::PoroFluidMultiphaseWrapper::PoroFluidMultiphaseWrapper(
+    Teuchos::RCP<PoroFluidMultiphase> porofluid
+    ):
+    porofluid_(porofluid)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::Init(
-    const Teuchos::ParameterList&   globalparams,         ///< parameter list of global control algorithm
-    const Teuchos::ParameterList&   porofluiddyn,         ///< parameter list for multiphase porous flow  subproblem
-    const int                       linsolvernumber,      ///< number of linear solver
-    const std::string&              disname,              ///< name of multiphase porous flow discretization
-    const bool                      isale ,                ///< ALE flag
-    const int nds_disp,
-    const int nds_vel,
-    const int nds_solidpressure,
-    const int ndsporofluid_scatra
+void ADAPTER::PoroFluidMultiphaseWrapper::Init(
+    const bool                      isale,                ///< ALE flag
+    const int                       nds_disp,             ///< number of dofset associated with displacements
+    const int                       nds_vel,              ///< number of dofset associated with fluid velocities
+    const int                       nds_solidpressure,    ///< number of dofset associated with solid pressure
+    const int                       ndsporofluid_scatra   ///< number of dofset associated with scalar on fluid discretization
     )
 {
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis(disname);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // algorithm construction depending on
-  // time-integration (or stationary) scheme
-  // -------------------------------------------------------------------
-  INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-    DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(porofluiddyn,"TIMEINTEGR");
-
-  switch(timintscheme)
-  {
-  case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
-  {
-    // create instance of time integration class (call the constructor)
-    porofluid_ =
-        Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
-            actdis,
-            linsolvernumber,
-            globalparams,
-            porofluiddyn,
-            DRT::Problem::Instance()->ErrorFile()->Handle(),
-            output));
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
-  }
-
   // initialize algorithm for specific time-integration scheme
   porofluid_->Init(
       isale,
@@ -110,28 +60,28 @@ void ADAPTER::PoroFluidMultiphase::Init(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::PoroFluidMultiphase::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::PoroFluidMultiphaseWrapper::CreateFieldTest()
 {
   return porofluid_->CreateFieldTest();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphase::DofRowMap(unsigned nds) const
+Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::DofRowMap(unsigned nds) const
 {
   return porofluid_->DofRowMap(nds);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::ReadRestart(int restart)
+void ADAPTER::PoroFluidMultiphaseWrapper::ReadRestart(int restart)
 {
   return porofluid_->ReadRestart(restart);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::ApplyMeshMovement(
+void ADAPTER::PoroFluidMultiphaseWrapper::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp //!< displacement vector
     )
 {
@@ -140,7 +90,7 @@ void ADAPTER::PoroFluidMultiphase::ApplyMeshMovement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::SetVelocityField(
+void ADAPTER::PoroFluidMultiphaseWrapper::SetVelocityField(
     Teuchos::RCP<const Epetra_Vector>   vel
    )
 {
@@ -149,95 +99,115 @@ void ADAPTER::PoroFluidMultiphase::SetVelocityField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::SetScatraSolution(
+void ADAPTER::PoroFluidMultiphaseWrapper::SetState(
     unsigned nds,
-    Teuchos::RCP<const Epetra_Vector> scalars
+    const std::string& name,
+    Teuchos::RCP<const Epetra_Vector> state
    )
 {
-  porofluid_->SetState(nds,"scalars",scalars);
+  porofluid_->SetState(nds,name,state);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphase::Phinp() const
+void ADAPTER::PoroFluidMultiphaseWrapper::SetScatraSolution(
+    unsigned nds,
+    Teuchos::RCP<const Epetra_Vector> scalars
+   )
+{
+  SetState(nds,"scalars",scalars);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Phinp() const
 {
   return porofluid_->Phinp();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphase::SolidPressure() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::SolidPressure() const
 {
   return porofluid_->SolidPressure();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphase::Pressure() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Pressure() const
 {
   return porofluid_->Pressure();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphase::Saturation() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Saturation() const
 {
   return porofluid_->Saturation();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_MultiVector> ADAPTER::PoroFluidMultiphase::Flux() const
+Teuchos::RCP<const Epetra_MultiVector> ADAPTER::PoroFluidMultiphaseWrapper::Flux() const
 {
   return porofluid_->Flux();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::PrepareTimeStep()
+int ADAPTER::PoroFluidMultiphaseWrapper::GetDofSetNumberOfSolidPressure() const
+{
+  return porofluid_->GetDofSetNumberOfSolidPressure();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::TimeLoop()
+{
+  porofluid_->TimeLoop();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeStep()
 {
   porofluid_->PrepareTimeStep();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::Output()
+void ADAPTER::PoroFluidMultiphaseWrapper::Output()
 {
   porofluid_->Output();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::Update()
+void ADAPTER::PoroFluidMultiphaseWrapper::Update()
 {
   porofluid_->Update();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::EvaluateErrorComparedToAnalyticalSol()
+void ADAPTER::PoroFluidMultiphaseWrapper::EvaluateErrorComparedToAnalyticalSol()
 {
   porofluid_->EvaluateErrorComparedToAnalyticalSol();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::Solve()
+void ADAPTER::PoroFluidMultiphaseWrapper::Solve()
 {
   porofluid_->Solve();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphase::PrepareTimeLoop()
+void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeLoop()
 {
   porofluid_->PrepareTimeLoop();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int ADAPTER::PoroFluidMultiphase::GetDofSetNumberOfSolidPressure()
-{
-  return porofluid_->GetDofSetNumberOfSolidPressure();
-}

@@ -24,16 +24,12 @@
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
+  class PoroMultiPhase;
 }
 
 namespace DRT
 {
   class Discretization;
-}
-
-namespace POROMULTIPHASE
-{
- class PoroMultiPhaseBase;
 }
 
 namespace POROMULTIPHASESCATRA
@@ -101,7 +97,7 @@ namespace POROMULTIPHASESCATRA
 
   protected:
     /// underlying poroelast multi phase
-    Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> poromulti_;
+    Teuchos::RCP<ADAPTER::PoroMultiPhase> poromulti_;
 
     /// underlying scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;

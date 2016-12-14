@@ -17,13 +17,11 @@
 
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include "Teuchos_RCP.hpp"
-#include <Epetra_Vector.h>
+#include "../drt_adapter/ad_poromultiphase.H"
 
 namespace ADAPTER
 {
-  class PoroFluidMultiphase;
+  class PoroFluidMultiphaseWrapper;
   class Structure;
 }
 
@@ -36,12 +34,12 @@ namespace POROMULTIPHASE
 {
 
   //! Base class of all solid-scatra algorithms
-  class PoroMultiPhaseBase : public ADAPTER::AlgorithmBase
+  class PoroMultiPhaseBase : public ADAPTER::AlgorithmBase, public ADAPTER::PoroMultiPhase
   {
   public:
 
     /// create using a Epetra_Comm
-    explicit PoroMultiPhaseBase(
+    PoroMultiPhaseBase(
         const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);// Problem builder
 
@@ -85,6 +83,12 @@ namespace POROMULTIPHASE
 
     //! update time step and print to screen
     virtual void UpdateAndOutput() = 0;
+
+    /// dof map of vector of unknowns of structure field
+    virtual Teuchos::RCP<const Epetra_Map> StructDofRowMap() const;
+
+    /// dof map of vector of unknowns of fluid field
+    virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const;
 
     /// set structure solution on scatra field
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
@@ -130,7 +134,7 @@ namespace POROMULTIPHASE
     Teuchos::RCP< ::ADAPTER::Structure>    structure_;
 
     /// underlying fluid problem of the PoroMultiPhase problem
-    Teuchos::RCP<ADAPTER::PoroFluidMultiphase> fluid_;
+    Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper> fluid_;
 
     /// a zero vector of full length of structure dofs
     Teuchos::RCP<Epetra_Vector> zeros_;

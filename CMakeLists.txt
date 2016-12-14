@@ -715,7 +715,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
-  src/drt_adapter/ad_porofluidmultiphase.cpp
+  src/drt_adapter/ad_porofluidmultiphase_wrapper.cpp
   src/drt_adapter/ad_str_multiphysicswrapper_cellmigration.cpp
   src/drt_adapter/ad_scatra_wrapper.cpp
   src/drt_adapter/ad_scatra_wrapper_cellmigration.cpp

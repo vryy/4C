@@ -18,6 +18,7 @@
 #include "poromultiphase_scatra_partitioned_twoway.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_poromultiphase/poromultiphase_base.H"
 
@@ -81,9 +82,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
   ittol_ = algoparams.get<double>("TOLINC_GLOBAL");
 
   // initialize increment vectors
-  scaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())));
-  structincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->StructDispnp()))));
-  fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->FluidPhinp()))));
+  scaincnp_    = Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Discretization()->DofRowMap())));
+  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poromulti_->StructDofRowMap())));
+  fluidincnp_  = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->FluidDofRowMap()))));
 
 }
 

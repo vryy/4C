@@ -19,6 +19,7 @@ DIM           2
 PROBLEMTYP                      Multiphase_Poroelasticity // Multiphase_Porous_Flow Multiphase_Poroelasticity Structure_Scalar_Interaction
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta // OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -82,7 +83,7 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 89 QUANTITY dispx VALUE 9.88901011878700886e-02 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.33743306312264365e-01 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.33743306589853567e-01 TOLERANCE 1e-09
 POROFLUIDMULTIPHASE DIS porofluid NODE 89 QUANTITY phi1 VALUE 7.00587754549553410e-02 TOLERANCE 1e-09
 POROFLUIDMULTIPHASE DIS porofluid NODE 341 QUANTITY saturation3 VALUE 2.76983240069627046e-01 TOLERANCE 1e-09
 POROFLUIDMULTIPHASE DIS porofluid NODE 542 QUANTITY phi3 VALUE 4.88062235414466095e+00 TOLERANCE 1e-09

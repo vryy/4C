@@ -25,9 +25,13 @@ namespace DRT
   class Discretization;
 }
 
+namespace ADAPTER
+{
+  class PoroMultiPhase;
+}
+
 namespace POROMULTIPHASE
 {
-class PoroMultiPhaseBase;
 
 /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
 namespace UTILS
@@ -49,7 +53,7 @@ void AssignMaterialPointers(
     );
 
 /// create solution algorithm depending on input file
-Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> CreatePoroMultiPhaseAlgorithm(
+Teuchos::RCP<ADAPTER::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
     INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme, //!< solution scheme to build (i)
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
     const Epetra_Comm& comm //!< communicator(i)

@@ -17,7 +17,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_poromultiphase/poromultiphase_base.H"
+#include "../drt_adapter/ad_poromultiphase.H"
 #include "../drt_poromultiphase/poromultiphase_utils.H"
 
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
@@ -128,7 +128,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart( int restart )
     scatra_->ScaTraField()->ReadRestart(restart);
 
     // reset time and step for the global algorithm
-    SetTimeStep(poromulti_->Time(), restart);
+    SetTimeStep(scatra_->ScaTraField()->Time(), restart);
   }
 
   return;

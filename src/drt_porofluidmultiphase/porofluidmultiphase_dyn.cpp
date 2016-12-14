@@ -87,9 +87,6 @@ void porofluidmultiphase_dyn(int restart)
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
-  // Creation of Coupled Problem algortihm.
-  Teuchos::RCP<POROFLUIDMULTIPHASE::TimIntImpl> algo = Teuchos::null;
-
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
@@ -97,24 +94,17 @@ void porofluidmultiphase_dyn(int restart)
   INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
     DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(porodyn,"TIMEINTEGR");
 
-  switch(timintscheme)
-  {
-  case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
-  {
-    // create algorithm
-    algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
-            actdis,
-            linsolvernumber,
-            porodyn,
-            porodyn,
-            DRT::Problem::Instance()->ErrorFile()->Handle(),
-            output));
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
-  }
+  // build poro fluid time integrator
+  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo =
+      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+        timintscheme,
+        actdis,
+        linsolvernumber,
+        porodyn,
+        porodyn,
+        DRT::Problem::Instance()->ErrorFile()->Handle(),
+        output
+        );
 
   // initialize
   algo->Init(

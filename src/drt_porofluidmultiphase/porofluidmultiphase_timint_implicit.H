@@ -26,6 +26,8 @@
 
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_adapter/ad_porofluidmultiphase.H"
+
 #include "../drt_inpar/inpar_porofluidmultiphase.H"
 
 
@@ -66,7 +68,7 @@ namespace POROFLUIDMULTIPHASE
  * \brief implicit time integration for porous multiphase flow problems
  */
 
-class TimIntImpl
+class TimIntImpl : public ADAPTER::PoroFluidMultiphase
 {
 
 public:
@@ -93,7 +95,7 @@ public:
       int nds_vel,
       int nds_solidpressure,
       int nds_scalar
-      )=0;
+      );
 
   /*========================================================================*/
   //! @name general framework
@@ -254,13 +256,6 @@ public:
 
   //! return number of dof set associated with solid pressure
   int GetDofSetNumberOfSolidPressure() const {return nds_solidpressure_;};
-
-  //! output mean values of pressure(s)
-  //virtual void OutputMeanPressures(const int num=0);
-
-  //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
-  //void OutputDomainOrBoundaryIntegrals(const std::string condstring);
-
 
 protected:
 

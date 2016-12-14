@@ -17,6 +17,8 @@
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "poromultiphase_utils_clonestrategy.H"
 
+#include "../drt_adapter/ad_poromultiphase.H"
+
 #include "poromultiphase_partitioned.H"
 #include "poromultiphase_partitioned_twoway.H"
 
@@ -107,15 +109,15 @@ void POROMULTIPHASE::UTILS::AssignMaterialPointers(
 }
 
 /*----------------------------------------------------------------------*
- | setup algorithm                                                      |
+ | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
+Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
     INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams,
     const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhaseBase> algo = Teuchos::null;
+  Teuchos::RCP<ADAPTER::PoroMultiPhase> algo = Teuchos::null;
 
   switch(solscheme)
   {

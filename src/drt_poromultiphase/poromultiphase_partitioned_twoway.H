@@ -27,7 +27,7 @@ namespace POROMULTIPHASE
   public:
 
     /// create using a Epetra_Comm
-    explicit PoroMultiPhasePartitionedTwoWay(
+    PoroMultiPhasePartitionedTwoWay(
         const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);
 

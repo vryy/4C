@@ -19,9 +19,17 @@
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
 
+#include "../drt_inpar/inpar_porofluidmultiphase.H"
+#include "../drt_io/io.H"
+
 namespace DRT
 {
   class Discretization;
+}
+
+namespace ADAPTER
+{
+  class PoroFluidMultiphase;
 }
 
 namespace POROFLUIDMULTIPHASE
@@ -57,6 +65,17 @@ Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToNodeBasedMultiVector(
     const Epetra_Vector& vector,
     const int nds,
     const int numdofpernode);
+
+/// create solution algorithm depending on input file
+Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
+    INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,       //!< time discretization scheme
+    Teuchos::RCP<DRT::Discretization>                 dis,                //!< discretization
+    const int                                         linsolvernumber,    //!< number of linear solver
+    const Teuchos::ParameterList&                     probparams,         //!< parameter list of global problem
+    const Teuchos::ParameterList&                     poroparams,         //!< paramter list of poro problem
+    FILE*                                             errfile,            //!< error file
+    Teuchos::RCP<IO::DiscretizationWriter>            output              //!< output writer
+    );
 
 }
 }

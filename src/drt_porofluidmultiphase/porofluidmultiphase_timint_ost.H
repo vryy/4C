@@ -20,7 +20,7 @@
 
 namespace POROFLUIDMULTIPHASE
 {
-class TimIntOneStepTheta : public virtual TimIntImpl
+class TimIntOneStepTheta : public TimIntImpl
 {
 
 public:
@@ -37,14 +37,6 @@ public:
 
   /// Destructor
   virtual ~TimIntOneStepTheta();
-
-  /// initialize time integration scheme
-  virtual void Init(
-      bool isale,
-      int nds_disp,
-      int nds_vel,
-      int nds_solidpressure,
-      int ndsporofluid_scatra);
 
   /// Print information about current time step to screen (reimplementation for OST)
   virtual void PrintTimeStepInfo();

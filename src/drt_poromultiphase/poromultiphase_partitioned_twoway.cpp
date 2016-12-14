@@ -15,7 +15,7 @@
 
 #include "poromultiphase_partitioned_twoway.H"
 
-#include "../drt_adapter/ad_porofluidmultiphase.H"
+#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
@@ -158,13 +158,6 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 
     // update the states to the last solutions obtained
     IterUpdateStates();
-
-    if(itnum_!=1)
-    {
-      // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
-      // we only get norm of the evaluation of the structure problem
-      structure_->PreparePartitionStep();
-    }
 
     // 1.) solve structural system
     DoStructStep();

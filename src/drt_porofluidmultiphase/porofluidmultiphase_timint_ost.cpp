@@ -38,23 +38,6 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                             vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Init(
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
-    int ndsporofluid_scatra)
-{
-  // initialize base class
-  TimIntImpl::Init(isale,nds_disp,nds_vel,nds_solidpressure,ndsporofluid_scatra);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                 vuong  08/16 |
 *-----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::TimIntOneStepTheta::~TimIntOneStepTheta()
@@ -240,29 +223,4 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
 
   return;
 }
-
-
-///*-----------------------------------------------------------------------------------------------------------*
-// | calculate consistent initial scalar time derivatives in compliance with initial scalar field   fang 09/15 |
-// *-----------------------------------------------------------------------------------------------------------*/
-//void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
-//{
-//  // standard general element parameter without stabilization
-//  SetElementGeneralParameters(true);
-//
-//  // we also have to modify the time-parameter list (incremental solve)
-//  // actually we do not need a time integration scheme for calculating the initial time derivatives,
-//  // but the rhs of the standard element routine is used as starting point for this special system of equations.
-//  // Therefore, the rhs vector has to be scaled correctly.
-//  SetElementTimeParameter(true);
-//
-//  // call core algorithm
-//  TimIntImpl::CalcInitialTimeDerivative();
-//
-//  // and finally undo our temporary settings
-//  SetElementGeneralParameters(false);
-//  SetElementTimeParameter(false);
-//
-//  return;
-//}
 
