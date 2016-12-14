@@ -188,7 +188,7 @@ void elch_dyn(int restart)
         // clone ALE discretization from fluid discretization
         DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
 
-        aledis->FillComplete(false,true,false);
+        aledis->FillComplete(true,true,false);
         // setup material in every ALE element
         Teuchos::ParameterList params;
         params.set<std::string>("action", "setup_material");
@@ -219,7 +219,10 @@ void elch_dyn(int restart)
       elch->Init(
           scatradyn,
           scatradyn,
-          problem->SolverParams(linsolvernumber) );
+          problem->SolverParams(linsolvernumber),
+          "scatra",
+          true
+          );
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.

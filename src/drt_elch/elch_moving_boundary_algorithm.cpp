@@ -246,12 +246,14 @@ return;
 void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
+
+  // screen output
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n";
-    std::cout<<"*********************\n";
-    std::cout<<"  FLUID-ALE SOLVER   \n";
-    std::cout<<"*********************\n";
+    std::cout << std::endl;
+    std::cout << "*************************************************************************" << std::endl;
+    std::cout << "  MOVING-BOUNDARY ALGORITHM FOR ELECTROCHEMISTRY  ---  STEP = " << std::setw(4) << Step() << "/" << std::setw(4) << NStep() << std::endl;
+    std::cout << "*************************************************************************" << std::endl << std::endl;
   }
 
   FluidField()->PrepareTimeStep();
@@ -272,6 +274,15 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::SolveFluidAle()
 {
+  // screen output
+  if (Comm().MyPID()==0)
+  {
+    std::cout<< std::endl;
+    std::cout<< "*********************" << std::endl;
+    std::cout<< "  FLUID-ALE SOLVER   " << std::endl;
+    std::cout<< "*********************" << std::endl;
+  }
+
   // solve nonlinear Navier-Stokes system on a moving mesh
   FluidAleNonlinearSolve(idispnp_,iveln_,pseudotransient_);
 
@@ -285,10 +296,10 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 {
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n";
-    std::cout<<"************************\n";
-    std::cout<<"       ELCH SOLVER      \n";
-    std::cout<<"************************\n";
+    std::cout << std::endl;
+    std::cout << "************************" << std::endl;
+    std::cout << "       ELCH SOLVER      " << std::endl;
+    std::cout << "************************" << std::endl;
   }
 
   switch(FluidField()->TimIntScheme())
