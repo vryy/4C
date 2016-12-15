@@ -375,7 +375,12 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
-    if(la.Size()>1)
+    // we skip this evaluation if the coupling is not setup yet, i.e.
+    // if the secondary dofset or the secondary material was not set
+    // this can happen during setup of the time integrator or restart
+    // TODO: there might be a better way. For instance do not evaluate
+    //       before the setup of the multiphysics problem is completed.
+    if(la.Size()>1 and NumMaterial() > 1)
     {
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset

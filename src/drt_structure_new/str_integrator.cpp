@@ -155,6 +155,15 @@ void STR::Integrator::EquilibrateInitialState()
   // initialize the mass matrix and the Rayleigh damping matrix (optional)
   if (not ModelEval().InitializeInertiaAndDamping(*disnp_ptr,*stiff_ptr))
     dserror("InitializeInertiaAndDamping failed!");
+
+  /* If we are restarting the simulation, we do not have to calculate a
+   * consistent acceleration, since we get it anyway from the restart file.
+   * Furthermore, we keep the update routines untouched. Actually, the only
+   * thing which is necessary is the calculation of the mass matrix. So we are
+   * done at this point.                                    hiermeier 06/16 */
+  if (timint_ptr_->IsRestarting())
+    return;
+
   // build the entire initial right-hand-side
   if (not ModelEval().ApplyInitialForce(*disnp_ptr,*rhs_ptr))
     dserror("ApplyInitialForce failed!");
@@ -165,14 +174,6 @@ void STR::Integrator::EquilibrateInitialState()
    * factors inside the time integration scheme (e.g. alpha_f/m for GenAlpha) */
   rhs_ptr->Update(1.0,*GlobalState().GetFinertialNp(),1.0);
   rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);
-
-  /* If we are restarting the simulation, we do not have to calculate a
-   * consistent acceleration, since we get it anyway from the restart file.
-   * Furthermore, we keep the update routines untouched. Actually, the only
-   * thing which is necessary is the calculation of the mass matrix. So we are
-   * done at this point.                                    hiermeier 06/16 */
-  if (timint_ptr_->IsRestarting())
-    return;
 
   /* Meier 2015: Here, we copy the mass matrix in the stiffness block in order to
    * not perform the Dirichlet conditions on the constant mass matrix later on.

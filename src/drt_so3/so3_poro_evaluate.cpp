@@ -337,12 +337,16 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
         return 0;
     }
 
-    // need current fluid state,
-    // call the fluid discretization: fluid equates 2nd dofset
-    // disassemble velocities and pressures
-
-    if(la.Size()>1)
+    // we skip this evaluation if the coupling is not setup yet, i.e.
+    // if the secondary dofset or the secondary material was not set
+    // this can happen during setup of the time integrator or restart
+    // TODO: there might be a better way. For instance do not evaluate
+    //       before the setup of the multiphysics problem is completed.
+    if(la.Size()>1 and so3_ele::NumMaterial() > 1)
     {
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
       LINALG::Matrix<numdim_,numnod_> myvel(true);
       LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
       LINALG::Matrix<numnod_,1> myepreaf(true);
@@ -369,13 +373,6 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
   {
     // stiffness
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_> elemat1(elemat1_epetra.A(),true);
-    //LINALG::Matrix<numdof_,(numdim_+1)*numnod_> elemat2(elemat2_epetra.A(),true);
-
-    // internal force vector
-    //LINALG::Matrix<numdof_,1> elevec1(elevec1_epetra.A(),true);
-    //LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
-
-    // elemat2,elevec2+3 are not used anyway
 
     // build the location vector only for the structure field
     std::vector<int> lm = la[0].lm_;

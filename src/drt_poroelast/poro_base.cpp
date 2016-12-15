@@ -236,6 +236,9 @@ void POROELAST::PoroBase::ReadRestart(const int step)
 {
   if (step)
   {
+    if(not oldstructimint_)
+      structure_->Setup();
+
     // apply current velocity and pressures to structure
     SetFluidSolution();
     // apply current structural displacements to fluid

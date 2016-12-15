@@ -851,8 +851,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
         }
         else
         {
-          if(problem->Restart())
-            ti_strategy->Setup();
           str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy)); // case of partitioned fsi
         }
       }
@@ -861,15 +859,11 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
     case prb_immersed_fsi:
     case prb_immersed_ale_fsi:
     {
-      if(problem->Restart())
-        ti_strategy->Setup();
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
     case prb_ssi:
     {
-      if(problem->Restart())
-        ti_strategy->Setup();
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
