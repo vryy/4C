@@ -107,6 +107,9 @@ double SCATRA::ScaTraResultTest::ResultNode(
     if(locator == k_string.c_str())
       dserror("Couldn't read species ID!");
 
+    if(scatratimint_->Discretization()->NumDof(0,node)<=k)
+      dserror("Species ID is larger than number of DOFs of node!");
+
     // extract result
     result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,k))];
   }
@@ -127,7 +130,10 @@ double SCATRA::ScaTraResultTest::ResultNode(
     char* locator(NULL);
     int k = strtol(suffix.c_str(),&locator,10) - 1;
     if(locator == suffix.c_str())
-      dserror("Couldn't read species ID!");
+      dserror("Couldn't flux domain ID!");
+
+    if(scatratimint_->Discretization()->NumDof(0,node)<=k)
+      dserror("Flux domain ID is larger than number of DOFs of node!");
 
     // read spatial dimension
     ++locator;

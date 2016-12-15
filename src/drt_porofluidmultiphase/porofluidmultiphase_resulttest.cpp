@@ -108,6 +108,9 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     if(locator == k_string.c_str())
       dserror("Couldn't read species ID!");
 
+    if(porotimint_.Discretization()->NumDof(0,node)<=k)
+      dserror("Species ID is larger than number of DOFs of node!");
+
     // extract result
     result = (*porotimint_.Phinp())[phinpmap.LID(porotimint_.Discretization()->Dof(0,node,k))];
   }
@@ -124,7 +127,10 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     char* locator(NULL);
     int k = strtol(k_string.c_str(),&locator,10) - 1;
     if(locator == k_string.c_str())
-      dserror("Couldn't read species ID!");
+      dserror("Couldn't read pressure ID!");
+
+    if(porotimint_.Discretization()->NumDof(0,node)<=k)
+      dserror("Pressure ID is larger than number of DOFs of node!");
 
     // extract result
     result = (*porotimint_.Pressure())[phinpmap.LID(porotimint_.Discretization()->Dof(0,node,k))];
@@ -142,7 +148,10 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     char* locator(NULL);
     int k = strtol(k_string.c_str(),&locator,10) - 1;
     if(locator == k_string.c_str())
-      dserror("Couldn't read species ID!");
+      dserror("Couldn't read saturation ID!");
+
+    if(porotimint_.Discretization()->NumDof(0,node)<=k)
+      dserror("Saturation ID is larger than number of DOFs of node!");
 
     // extract result
     result = (*porotimint_.Saturation())[phinpmap.LID(porotimint_.Discretization()->Dof(0,node,k))];

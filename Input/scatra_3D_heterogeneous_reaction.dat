@@ -1,3 +1,10 @@
+//
+// Maintainer: Andreas Rauch
+// rauch@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+//
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -69,7 +76,7 @@ FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y/(sqrt(x*x+y*y+z*z))
 FUNCT5 COMPONENT 0 EXPR 0 0.0 0 FUNCTION z/(sqrt(x*x+y*y+z*z))
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 8.51855127950017568e-03 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 250 QUANTITY phi2 VALUE 6.94875210409241539e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 251 QUANTITY phi VALUE 6.94875210409241539e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 356 QUANTITY phi VALUE 6.94909343800770607e+00 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
