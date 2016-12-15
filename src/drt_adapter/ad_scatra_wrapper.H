@@ -17,6 +17,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
+#include "../drt_scatra/scatra_timint_meshtying_strategy_base.H"
+
 
 // forward declarations
 
@@ -65,6 +67,14 @@ protected:
   /// return rcp ptr to neumann loads vector
   virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr()
   {return scatra_timint_->GetNeumannLoadsPtr();};
+
+  //! return meshtying strategy (includes standard case without meshtying)
+  virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const
+  {return scatra_timint_->Strategy();};
+
+  //! return scalar field phi at time n
+  Teuchos::RCP<Epetra_Vector> Phin()
+  { return scatra_timint_->Phin(); }
 
 private:
 

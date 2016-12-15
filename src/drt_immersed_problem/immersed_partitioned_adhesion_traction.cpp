@@ -79,10 +79,6 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // get pointer to global problem
   globalproblem_ = DRT::Problem::Instance();
 
-  // safety check
-  if (globalproblem_->CellMigrationParams().get<std::string>("ADHESION_DYNAMICS") != "yes")
-    dserror("Parameter ADHESION_DYNAMICS must be set to 'yes' in ---CELL DYNAMIC section.");
-
   backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
   immerseddis_            = globalproblem_->GetDis("cell");

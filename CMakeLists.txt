@@ -539,6 +539,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matlist_reactions.cpp
+  src/drt_mat/matlist_bondreacs.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp
   src/drt_mat/matpar_parameter.cpp
@@ -573,6 +574,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_mat_multiporo.cpp
   src/drt_mat/scatra_reaction_mat.cpp
+  src/drt_mat/scatra_bondreac_mat.cpp
   src/drt_mat/scatra_reaction_coupling.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
   src/drt_mat/matlist_reactions.cpp
@@ -1292,6 +1294,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
   src/drt_scatra_ele/scatra_ele_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
+  src/drt_scatra_ele/scatra_ele_calc_bondreac.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
@@ -2365,6 +2368,7 @@ src/drt_immersed_problem/immersed_partitioned_flow_cell_interaction.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_ale.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp
+src/drt_immersed_problem/ssi_partitioned_2wc_adhesiondynamics.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 

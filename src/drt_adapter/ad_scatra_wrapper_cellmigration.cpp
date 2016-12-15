@@ -12,6 +12,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_base.H"
+#include "../drt_scatra/scatra_timint_heterogeneous_reaction_strategy.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_mat/biochemo_mechano_cell_activefiber.H"
@@ -34,44 +36,56 @@ void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDepen
     Teuchos::RCP<Epetra_Vector>          rhs
 )
 {
-  // get rcp to cell discretization
-  Teuchos::RCP<DRT::Discretization> celldis = DRT::Problem::Instance()->GetDis("cell");
-
-  // Evaluate biochemical transport and reaction at focal adhesion sites
-  // only if BioChemoMechanoCellActiveFiber is used in cell.
-  DRT::Condition* FocalAdhesionCondition = Discretization()->GetCondition("CellFocalAdhesion");
-  if(FocalAdhesionCondition != NULL and
-     Teuchos::rcp_dynamic_cast<MAT::BioChemoMechanoCellActiveFiber>(
-         celldis->gElement(celldis->ElementRowMap()->GID(0))->Material() ) != Teuchos::null
-     )
+  // Do only for cellscatra discretization
+  if(Discretization()->Name()=="cellscatra")
   {
-    // declare ParameterList
-    Teuchos::ParameterList params;
+    // get rcp to cell discretization
+    Teuchos::RCP<DRT::Discretization> celldis = DRT::Problem::Instance()->GetDis("cell");
 
-    // zero rates vector
-    rates_->Scale(0.0);
+    // Evaluate biochemical transport and reaction at focal adhesion sites
+    // only if BioChemoMechanoCellActiveFiber is used in cell.
+    DRT::Condition* FocalAdhesionCondition = Discretization()->GetCondition("CellFocalAdhesion");
+    if(FocalAdhesionCondition != NULL and
+        Teuchos::rcp_dynamic_cast<MAT::BioChemoMechanoCellActiveFiber>(
+            celldis->gElement(celldis->ElementRowMap()->GID(0))->Material() ) != Teuchos::null
+    )
+    {
+      // declare ParameterList
+      Teuchos::ParameterList params;
 
-    params.set<int>("action",SCATRA::calc_cell_mechanotransduction);
-    params.set<int>("ndsdisp",NdsDisp());
+      // zero rates vector
+      rates_->Scale(0.0);
 
-    // add element parameters and set state vectors according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
-    Discretization()->Evaluate(params,Teuchos::null,Teuchos::null,rates_,Teuchos::null,Teuchos::null);
+      params.set<int>("action",SCATRA::calc_cell_mechanotransduction);
+      params.set<int>("ndsdisp",NdsDisp());
 
-    /* -------------------------------------------------------------------------------------------*/
+      // add element parameters and set state vectors according to time-integration scheme
+      AddTimeIntegrationSpecificVectors();
+      Discretization()->Evaluate(params,Teuchos::null,Teuchos::null,rates_,Teuchos::null,Teuchos::null);
 
-    params.set<int>("action",SCATRA::bd_calc_mechanotransduction);
+      /* -------------------------------------------------------------------------------------------*/
 
-    // add element parameters and set state vectors according to time-integration scheme
-    Discretization()->EvaluateCondition(params,Teuchos::null,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"CellFocalAdhesion",-1);
+      params.set<int>("action",SCATRA::bd_calc_mechanotransduction);
 
-    // safety
-    Discretization()->ClearState();
+      // add element parameters and set state vectors according to time-integration scheme
+      Discretization()->EvaluateCondition(params,Teuchos::null,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"CellFocalAdhesion",-1);
 
-    // write result to right-hand-side
-    rhs->Update(1.0,*rates_,1.0);
+      // safety
+      Discretization()->ClearState();
 
-  } // at focal adhesions
+      // write result to right-hand-side
+      rhs->Update(1.0,*rates_,1.0);
+
+    } // at focal adhesions
+
+    // so far this is only needed for adhesion dynamics with bond reactions
+    Teuchos::RCP<SCATRA::HeterogeneousReactionStrategy> strategy =
+        Teuchos::rcp_dynamic_cast<SCATRA::HeterogeneousReactionStrategy>(Strategy());
+
+    // set scalar state
+    if(strategy != Teuchos::null)
+      strategy->SetState(0,"phin",Phin());
+  } // Do only for cellscatra discretization
 
   return;
 }

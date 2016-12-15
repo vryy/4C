@@ -457,7 +457,7 @@ namespace MAT
         const double* gpcoord                                            //!< Gauss-point coordinates
         ) const;
 
-  private:
+  protected:
 
     ///helper for calculating advanced reaction terms
     double CalcReaBodyForceTerm(

@@ -66,7 +66,6 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   condparams.set<int>("ndsvel",scatratimint_->NdsVel());
 
   // set global state vectors according to time-integration scheme
-  discret_->ClearState();
   discret_->SetState("phinp",scatratimint_->Phiafnp());
   discret_->SetState("hist",scatratimint_->Hist());
 
@@ -91,6 +90,15 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   }
 
   discret_->Evaluate(condparams,scatratimint_->SystemMatrix(),scatratimint_->Residual());
+
+  // now we clear all states.
+  // it would be nicer to do this directly before all
+  // states are set at the beginning of this method.
+  // However, in this case we are not able to set states externally
+  // before this method is called.
+  // See the call hierarchy of HeterogeneousReactionStrategy::SetState()
+  // to check in which algorithms states are set on discret_ .
+  discret_->ClearState();
   return;
 } // SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying
 
@@ -128,8 +136,13 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
       if(element == NULL)
         dserror("Invalid element type!");
 
-      element->SetImplType(INPAR::SCATRA::impltype_advreac);
-    }
+      if ( element->Material()->MaterialType() == INPAR::MAT::m_matlist_reactions )
+        element->SetImplType(INPAR::SCATRA::impltype_advreac);
+      else if ( element->Material()->MaterialType() == INPAR::MAT::m_matlist_bondreacs )
+        element->SetImplType(INPAR::SCATRA::impltype_bondreac);
+      else
+        dserror("Invalid material type for HeterogeneousReactionStrategy!");
+    } // loop over all column elements
   }
 
   {

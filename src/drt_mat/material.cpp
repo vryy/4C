@@ -78,8 +78,10 @@
 #include "scalardepinterp.H"
 #include "scatra_growth_scd.H"
 #include "scatra_reaction_mat.H"
+#include "scatra_bondreac_mat.H"
 #include "scatra_chemotaxis_mat.H"
 #include "matlist_reactions.H"
+#include "matlist_bondreacs.H"
 #include "matlist_chemotaxis.H"
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
@@ -297,6 +299,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMatMultiPoro* params = static_cast<MAT::PAR::ScatraMatMultiPoro*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_scatra_bondreac:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraBondReacMat(curmat));
+      MAT::PAR::ScatraBondReacMat* params = static_cast<MAT::PAR::ScatraBondReacMat*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
   case INPAR::MAT::m_scatra_multiscale:
   {
     if (curmat->Parameter() == NULL)
@@ -564,6 +573,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
             MAT::PAR::MatListReactions* params = dynamic_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+  case INPAR::MAT::m_matlist_bondreacs:
+      {
+        if (curmat->Parameter() == NULL)
+          curmat->SetParameter(new MAT::PAR::MatListBondReacs(curmat));
+              MAT::PAR::MatListBondReacs* params = dynamic_cast<MAT::PAR::MatListBondReacs*>(curmat->Parameter());
+        return params->CreateMaterial();
+      }
   case INPAR::MAT::m_matlist_chemotaxis:
     {
       //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure

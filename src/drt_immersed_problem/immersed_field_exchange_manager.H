@@ -96,6 +96,7 @@ public:
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
   Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_adhesion_force_;
+  Teuchos::RCP<Epetra_Vector> points_to_surface_traction_;
   //@}
 
   //! @name Misc. epetra multivectors
@@ -247,6 +248,10 @@ public:
    void SetPointerECMAdhesionForce(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_adhesion_force_=vector; return;};
 
    Teuchos::RCP<Epetra_Vector> GetPointerECMAdhesionForce(){return points_to_ecm_adhesion_force_;};
+
+   void SetPointerSurfaceTraction(const Teuchos::RCP<Epetra_Vector> vector){points_to_surface_traction_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerSurfaceTraction(){return points_to_surface_traction_;};
 
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 

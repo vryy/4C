@@ -2643,11 +2643,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // potential residual scaling and potential addition of Neumann terms
   ScalingAndNeumann(); //TODO: do we have to call this function twice??
 
-  // evaluate solution-depending boundary and interface conditions
-  EvaluateSolutionDependingConditions(sysmat_,residual_);
-
   // evaluate solution-depending additional models
   EvaluateAdditionalSolutionDependingModels(sysmat_,residual_);
+
+  // evaluate solution-depending boundary and interface conditions
+  EvaluateSolutionDependingConditions(sysmat_,residual_);
 
   // finalize assembly of system matrix
   sysmat_->Complete();

@@ -202,7 +202,8 @@ namespace INPAR
       impltype_chemo,
       impltype_chemoreac,
       impltype_std_hdg,
-      impltype_cardiac_monodomain_hdg
+      impltype_cardiac_monodomain_hdg,
+      impltype_bondreac
     };
 
     /// type of method for improving consistency of stabilized methods

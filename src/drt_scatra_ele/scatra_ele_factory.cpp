@@ -27,6 +27,7 @@
 #include "scatra_ele_calc_refconc_reac.H"
 #include "scatra_ele_calc_chemo.H"
 #include "scatra_ele_calc_chemo_reac.H"
+#include "scatra_ele_calc_bondreac.H"
 #include "scatra_ele_calc_poro_reac_ECM.H"
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_calc_multiporo_reac.H"
@@ -47,6 +48,7 @@
 #include "../drt_lib/drt_element.H"
 
 #include "scatra_ele_factory.H"
+
 #include "scatra_ele_calc_cardiac_monodomain_hdg.H"
 
 
@@ -418,7 +420,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   if(DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
     if( problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
-        problem != INPAR::SCATRA::impltype_advreac)
+        problem != INPAR::SCATRA::impltype_advreac and
+        problem != INPAR::SCATRA::impltype_bondreac)
       dserror("ImplType '%s' not implemented for transport on manifolds!",SCATRA::ImplTypeToString(problem).c_str());
 
   switch(problem)
@@ -527,6 +530,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   {
     return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
+  }
+  case INPAR::SCATRA::impltype_bondreac:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::Instance(numdofpernode,numscal,disname);
+        break;
   }
   default:
   {

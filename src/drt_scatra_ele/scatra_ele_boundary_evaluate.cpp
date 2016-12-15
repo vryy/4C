@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file scatra_ele_boundary_evaluate.cpp
-\brief
 
-Evaluate boundary conditions for scalar transport problems
+\brief Evaluate boundary conditions for scalar transport problems
+
+\level 2
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -91,6 +92,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   case INPAR::SCATRA::impltype_pororeac:
   case INPAR::SCATRA::impltype_thermo_elch_diffcond:
   case INPAR::SCATRA::impltype_thermo_elch_electrode:
+  case INPAR::SCATRA::impltype_bondreac:
     // do nothing in these cases
     break;
 

@@ -12,7 +12,6 @@
 
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
-
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"
 #include "immersed_node.H"
@@ -22,6 +21,7 @@
 #include "immersed_partitioned_cellmigration.H"
 #include "ssi_partitioned_2wc_biochemomechano.H"
 #include "immersed_partitioned_cellcontraction.H"
+#include "ssi_partitioned_2wc_adhesiondynamics.H"
 #include "immersed_partitioned_adhesion_traction.H"
 #include "ssi_partitioned_2wc_protrusionformation.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
@@ -409,13 +409,18 @@ void CellMigrationControlAlgorithm()
       if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
         cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
       else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
-        cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
+      {
+        if(problem->CellMigrationParams().get<std::string>("ADHESION_DYNAMICS") == "yes")
+          cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ADHESIONDYNAMICS(comm,problem->CellMigrationParams()));
+        else
+          cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm,problem->CellMigrationParams()));
+      }
       else if (simtype==INPAR::CELL::sim_type_pureContraction)
       {
         cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm,problem->CellMigrationParams()));
         params.set<bool>("IsPureContraction", true);
       }
-        break;
+      break;
     default:
       dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
       break;
@@ -428,15 +433,15 @@ void CellMigrationControlAlgorithm()
     // "ale" dis is cloned and filled inside.
     // SSI coupling object is constructed inside.
     // Returns true if redistribution is required.
-      int redistribute =
-      cellscatra_subproblem->Init(
-          comm,
-          problem->CellMigrationParams(),
-          problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
-          problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
-          "cell",
-          "cellscatra",
-          isale);
+    int redistribute =
+    cellscatra_subproblem->Init(
+        comm,
+        problem->CellMigrationParams(),
+        problem->CellMigrationParams().sublist("SCALAR TRANSPORT"),
+        problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),
+        "cell",
+        "cellscatra",
+        isale);
 
     // Redistribute discretizations if necessary
     if(redistribute)
@@ -473,9 +478,7 @@ void CellMigrationControlAlgorithm()
       }
       else
         dserror("Only matching discretizatiosn are supported.");
-
     } // end redistribution
-
 
     // ghost cell discretizations on each proc (for search algorithm)
     if(comm.NumProc() > 1)
@@ -753,6 +756,7 @@ void CellMigrationControlAlgorithm()
 
     // create result tests for single fields
     DRT::Problem::Instance()->AddFieldTest(cellstructure->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(cellscatra_subproblem->ScaTraField()->CreateScaTraFieldTest());
     DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->FluidField()->CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->ScaTraFieldBase()->CreateScaTraFieldTest());

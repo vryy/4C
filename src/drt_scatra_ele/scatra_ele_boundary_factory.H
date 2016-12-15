@@ -4,8 +4,10 @@
 
 \brief factory for scatra boundary evaluation
 
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252

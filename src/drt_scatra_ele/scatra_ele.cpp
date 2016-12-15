@@ -18,10 +18,12 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../drt_mat/matlist_bondreacs.H"
 #include "../drt_mat/matlist_chemotaxis.H"
 #include "../drt_mat/scatra_chemotaxis_mat.H"
 #include "../drt_mat/matlist_chemoreac.H"
 #include "../drt_mat/scatra_reaction_mat.H"
+#include "../drt_mat/scatra_bondreac_mat.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/elasthyper.H"
@@ -406,6 +408,35 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
           dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
       }
   }
+  else if(mat->MaterialType() == INPAR::MAT::m_matlist_bondreacs)  // we have a system of reactive scalars w ith bond dynamics
+      {
+      const MAT::MatListBondReacs* actmat = dynamic_cast<const MAT::MatListBondReacs*>(mat.get());
+
+        numdofpernode_=actmat->NumMat();
+
+        for (int ii=0; ii<numdofpernode_; ++ii)
+        {
+          // In the context of reactions the only valid material combination is m_matlist and m_scatra
+          if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+            dserror("The material Mat_matlist_bondreacs only supports MAT_scatra as valid main Material");
+        }
+
+        int numreac = actmat->NumReac();
+        for (int jj=0; jj<numreac; ++jj)
+        {
+          // In the context of reactions the only valid material combination is m_matlist and m_scatra_reaction
+          if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_bondreac)
+            dserror("The material MAT_matlist_bondreacs only supports MAT_scatra_bondreac as valid reaction Material");
+
+          // some safety check for the MAT_scatra_reaction materials
+          const Teuchos::RCP<const MAT::ScatraBondReacMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(actmat->MaterialById(actmat->ReacID(jj)));
+
+          const int stoichlength = reacmat->NumScal();
+
+          if (stoichlength != numdofpernode_)
+            dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
+        }
+    }
   else if (mat->MaterialType() == INPAR::MAT::m_matlist_chemotaxis) // we have a system of chemotactic scalars
   {
     //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure

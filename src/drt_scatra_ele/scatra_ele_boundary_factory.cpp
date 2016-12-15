@@ -4,8 +4,10 @@
 
 \brief factory for scatra boundary evaluation
 
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -109,6 +111,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::impltype_levelset:
   case INPAR::SCATRA::impltype_std:
   case INPAR::SCATRA::impltype_thermo_elch_diffcond:
+  case INPAR::SCATRA::impltype_bondreac:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal,disname);
     break;

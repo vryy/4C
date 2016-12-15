@@ -105,7 +105,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  "RefConc_Reac",
                                  "Cardiac_Monodomain",
                                  "Chemotaxis",
-                                 "Chemo_Reac"),
+                                 "Chemo_Reac",
+                                 "Bond_Reac"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_std,
@@ -113,7 +114,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_refconcreac,
                                  INPAR::SCATRA::impltype_cardiac_monodomain,
                                  INPAR::SCATRA::impltype_chemo,
-                                 INPAR::SCATRA::impltype_chemoreac),
+                                 INPAR::SCATRA::impltype_chemoreac,
+                                 INPAR::SCATRA::impltype_bondreac),
                                  &ssidyn);
 
   //Restart from Structure problem instead of SSI

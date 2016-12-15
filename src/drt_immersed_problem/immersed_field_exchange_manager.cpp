@@ -72,6 +72,7 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
 
   points_to_ecm_adhesion_force_=Teuchos::null;
   points_to_curr_subset_of_backgrounddis_ = NULL;
+  points_to_surface_traction_=Teuchos::null;
 
   isfluidinteraction_ = false;
   isprotrusionformation = false;

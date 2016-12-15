@@ -1,14 +1,19 @@
 /*!
 \file scatra_ele_calc_utils.cpp
 
+\brief Utility methods for scatra
+
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
 */
 /*----------------------------------------------------------------------*/
+
 
 #include "scatra_ele_calc_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -195,6 +200,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Reactive scalar transport in porous media";
     break;
   }
+  case INPAR::SCATRA::impltype_bondreac:
+    {
+      impltypestring = "Advanced reactions with bond dynamics";
+      break;
+    }
   case INPAR::SCATRA::impltype_undefined:
   {
     impltypestring = "Undefined";

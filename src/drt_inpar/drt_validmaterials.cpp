@@ -273,6 +273,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+    // scalar transport bond material
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_scatra_bondreac",
+                                              "bond dynamics material",
+                                              INPAR::MAT::m_scatra_bondreac));
+
+      AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
+      AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+      AddNamedReal(m,"REACCOEFF","reaction coefficient");
+      AddNamedInt(m,"DISTRFUNCT","spatial distribution of reaction coefficient",0,true);
+      AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
+      AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
+      AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
+      AddNamedString(m,"BONDTYPE","type of bond", "no_bondtype",false);
+      AddNamedReal(m,"GAMMA","characteristic binding length of a slip bond",-1.0,true);
+
+      AppendMaterialDefinition(matlist,m);
+    }
+
+  /*----------------------------------------------------------------------*/
   // scalar transport reaction material
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -597,6 +618,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_matlist_reactions",
                                             "list/collection of materials, i.e. material IDs and list of reactions",
                                             INPAR::MAT::m_matlist_reactions));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
+    AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection with bond reactions
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_matlist_bondreacs",
+                                            "list/collection of materials, i.e. material IDs and list of bond reactions",
+                                            INPAR::MAT::m_matlist_bondreacs));
 
     AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");

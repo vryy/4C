@@ -91,6 +91,7 @@ namespace INPAR
       m_lubrication,                           ///< lubrication material
       m_matlist,                               ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,                     ///< collection of single materials (used for scalar transport problems) and collection of reactions (used for advanced reaction elements)
+      m_matlist_bondreacs,
       m_matlist_chemotaxis,                    ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs (used for chemotaxis elements)
       m_matlist_chemoreac,                     ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs AND reactions
       m_mixfrac,                               ///< material according to mixture-fraction approach
@@ -123,6 +124,7 @@ namespace INPAR
       m_scatra_multiscale,                     ///< scalar transport material for multi-scale approach
       m_scatra_reaction_poroECM,               ///< reaction definition and parameters for reaction model in porous ECM
       m_scatra_reaction,                       ///< reaction definition and parameters
+      m_scatra_bondreac,                       ///< biochemical bond reactions in cell migration context
       m_scatra_chemotaxis,                     ///< chemotaxis definition parameters
       m_soret,                                 ///< material for heat transport due to Fourier-type thermal conduction and the Soret effect
       m_spring,                                ///< elastic spring (translational or rotational)

@@ -92,6 +92,7 @@ if (
     (mtype != INPAR::MAT::m_yoghurt) &&
     (mtype != INPAR::MAT::m_matlist) &&
     (mtype != INPAR::MAT::m_matlist_reactions) &&
+    (mtype != INPAR::MAT::m_matlist_bondreacs) &&
     (mtype != INPAR::MAT::m_myocard) &&
     (mtype != INPAR::MAT::m_scatra_growth_scd) &&
     (mtype != INPAR::MAT::m_scatra_multiporo)
@@ -184,7 +185,8 @@ INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(mat
 if (
     (mtype != INPAR::MAT::m_scatra) &&
     (mtype != INPAR::MAT::m_matlist) &&
-    (mtype != INPAR::MAT::m_matlist_reactions)
+    (mtype != INPAR::MAT::m_matlist_reactions) &&
+    (mtype != INPAR::MAT::m_matlist_bondreacs)
    )
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 }

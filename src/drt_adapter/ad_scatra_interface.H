@@ -21,6 +21,11 @@ namespace DRT {
   class Discretization;
 }
 
+namespace SCATRA {
+  class MeshtyingStrategyBase;
+}
+
+
 namespace ADAPTER {
 
 /*! \brief General pure virtual interface for all scatra time integrators and scatra adapters.
@@ -55,6 +60,12 @@ public:
 
   //! return rcp ptr to neumann loads vector
   virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() = 0;
+
+  //! return meshtying strategy (includes standard case without meshtying)
+  virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const = 0;
+
+  //! return scalar field phi at time n
+  virtual Teuchos::RCP<Epetra_Vector> Phin() = 0;
 
 }; // class ScatraInterface
 } // namespace ADAPTER
