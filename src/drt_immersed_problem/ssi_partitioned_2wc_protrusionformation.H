@@ -68,7 +68,7 @@ by a value, proportional to the actin monomer size.
 
 For the implementation of the actual growth equation and the corresponding source/sink terms, it is important to note,
 that this class relies on the \ref ssicoupling_ object in SSI::SSI_Base::SSI_Base. In this coupling object we build
-\ref DRT::DofSetMappedProxy::DofSetMappedProxy . See also the documentation for this class. The cell discretization
+\ref DRT::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper . See also the documentation for this class. The cell discretization
 wears three dofsets: 1) the cell structural dofs, 2) the scatra volume dofs, and 3) the scatra surface dofs. By
 scatra surface we mean actual surface elements that are given in the input file. The coupling between the surface
 discretization and the volume discretization (actually they are both combined in one large discretization) is managed
