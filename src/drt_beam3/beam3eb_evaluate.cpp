@@ -2278,7 +2278,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(Teuchos::ParameterList& pa
  | theorem                                                                           (public) Mukherjee 10/13|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, unsigned int vpernode, unsigned int ndim>
-inline void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
                                               std::vector<double>&      vel,  //!< element velocity vector
                                               std::vector<double>&      disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -4077,3 +4077,27 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 //***************************************************************************************
 //End: Methods for arbitrary precision calculation
 //***************************************************************************************
+
+// explicit template instantations
+template void DRT::ELEMENTS::Beam3eb::EvaluatePTC<2>(Teuchos::ParameterList&,
+                                                     Epetra_SerialDenseMatrix&);
+
+template void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping<2,2,3>(Teuchos::ParameterList&,
+                                                          const LINALG::Matrix<12,1>&,
+                                                          const LINALG::Matrix<12,1>&,
+                                                          Epetra_SerialDenseMatrix*,
+                                                          Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces<2,2,3,3>(Teuchos::ParameterList&,
+                                              const LINALG::Matrix<12,1>&,
+                                              Epetra_SerialDenseMatrix*,
+                                              Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff<2,2,3>(Teuchos::ParameterList&,
+                                              std::vector<double>&,
+                                              std::vector<double>&,
+                                              Epetra_SerialDenseMatrix*,
+                                              Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag<2,6>(const std::vector<double>&,
+                                                            LINALG::Matrix<12,1>&) const;
