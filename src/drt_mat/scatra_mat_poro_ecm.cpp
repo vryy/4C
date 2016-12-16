@@ -2,14 +2,14 @@
 /*!
  \file scatra_mat_poro_ecm.cpp
 
- \brief
+ \brief scatra material for transport within porous model with special implementations
+        for ECM model
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+
+\level 3
  *----------------------------------------------------------------------*/
 
 

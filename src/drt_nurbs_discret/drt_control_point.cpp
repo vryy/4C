@@ -1,19 +1,19 @@
 /*!----------------------------------------------------------------------
 \file drt_control_point.cpp
 
-   This is basically a (3d-) node with an additional weight.
+\brief   This is basically a (3d-) node with an additional weight.
    The weight is required for the evaluation of the nurbs
    basis functions.
 
    note that X() is not the coordinate of some grid point
    anymore, it's just the control point position
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -35,9 +35,9 @@ DRT::ParObject* DRT::NURBS::ControlPointType::Create( const std::vector<char> & 
   Standard ctor
  */
 DRT::NURBS::ControlPoint::ControlPoint(int           id    ,
-				       const double* coords,
-				       const double  weight,
-				       const int     owner)
+               const double* coords,
+               const double  weight,
+               const int     owner)
 :
   DRT::Node(id,coords,owner),
   w_(weight)

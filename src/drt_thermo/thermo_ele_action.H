@@ -2,14 +2,14 @@
 /*!
  \file thermo_ele_action.H
 
- \brief
+ \brief enums defining action of the thermo elements and related helper functions
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+\level 1
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
  *----------------------------------------------------------------------*/
 
 

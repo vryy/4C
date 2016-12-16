@@ -2,14 +2,13 @@
 /*!
  \file wall1_scatra.cpp
 
- \brief
+ \brief a 2D solid-wall element with ScaTra coupling
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+ \level 2
+
+ \maintainer Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "wall1_scatra.H"
@@ -75,7 +74,7 @@ void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition( std::map<std::strin
 }
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mgit 01/08/|
+ |  ctor (public)                                            vuong 01/14/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(int id, int owner) :
 Wall1(id,owner)
@@ -84,7 +83,7 @@ Wall1(id,owner)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mgit 01/08|
+ |  copy-ctor (public)                                       vuong 01/14|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(const DRT::ELEMENTS::Wall1_Scatra& old) :
     Wall1(old)
@@ -95,7 +94,7 @@ DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(const DRT::ELEMENTS::Wall1_Scatra& old
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
- |                                                            mgit 03/07 |
+ |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
 {
@@ -105,7 +104,7 @@ DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            mgit 03/07 |
+ |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
 {
@@ -124,7 +123,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            mgit 03/07 |
+ |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
 {
@@ -140,7 +139,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mgit 03/07|
+ |  print this element (public)                              vuong 01/14|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1_Scatra::Print(std::ostream& os) const
 {

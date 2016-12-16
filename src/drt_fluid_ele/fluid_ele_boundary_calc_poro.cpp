@@ -3,12 +3,12 @@
 
 \brief evaluate boundary conditions not requiring parent-element evaluations
 
-<pre>
-Maintainers: Anh-Tu Vuong and Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15240
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"

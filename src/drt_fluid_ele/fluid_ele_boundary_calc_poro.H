@@ -3,12 +3,12 @@
 
 \brief evaluate boundary conditions for poroelast / fpsi
 
-<pre>
-Maintainers: Anh-Tu Vuong & Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15264/-15240
-</pre>
+             089 - 289-15240
 *----------------------------------------------------------------------*/
 #ifndef FLUID_ELE_BOUNDARY_CALC_PORO_H
 #define FLUID_ELE_BOUNDARY_CALC_PORO_H

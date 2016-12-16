@@ -4,13 +4,14 @@
 
 \brief A service method allowing the application of initial conditions
        for nurbs discretisations.
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
-*/
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
+
+\level 2
+
 /*----------------------------------------------------------------------*/
 #include "drt_apply_nurbs_initial_condition.H"
 #include "../drt_lib/drt_globalproblem.H"

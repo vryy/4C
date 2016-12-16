@@ -4,13 +4,11 @@
 
  \brief A dofset that owns a predefined number of dofs
 
- <pre>
-   \level 1
+ \level 2
 
-   \maintainer Anh-Tu Vuong
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+ \maintainer  Andreas Rauch
+              rauch@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef drt_dofset_predefineddofnumber_H_

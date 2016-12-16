@@ -6,10 +6,10 @@
 
    \level 3
 
-   \maintainer  Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
-                089 - 289-15251
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089-289-10364
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_SCATRA_REACTION_COUPLING_H_

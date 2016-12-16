@@ -2,14 +2,13 @@
 /*!
  \file wall1_poro_p1_eletypes.cpp
 
- \brief
+ \brief element types of the 2D solid-poro element (p1/mixed approach)
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+ \maintainer Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "wall1_poro_p1_eletypes.H"

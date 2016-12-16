@@ -7,12 +7,9 @@
 
 \level 2
 
-<pre>
-  \maintainer Anh-Tu Vuong
-              vuong@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-15264
-</pre>
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
  *----------------------------------------------------------------------*/
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_parameter_std.H"

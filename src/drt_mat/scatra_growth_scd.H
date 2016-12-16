@@ -2,14 +2,14 @@
 /*!
  \file scatra_growth_scd.H
 
- \brief
+ \brief  scatra material used for scalar dependent growth modeling
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089-289-10364
+
+\level 3
  *----------------------------------------------------------------------*/
 
 

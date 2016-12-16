@@ -2,14 +2,13 @@
 /*!
  \file so3_poro_p1_eletypes.H
 
- \brief
+ \brief element types of the p1 (mixed) solid-poro element
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+ \level 2
+
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
  *----------------------------------------------------------------------*/
 
 

@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file so3_poro_fwd.hpp
-\brief
+\brief forward declarations (explicit instantiation) of the templated poro elements
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+
+\level 2
 
 *----------------------------------------------------------------------*/
 // template classes

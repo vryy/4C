@@ -4,12 +4,12 @@
 
  \brief Internal implementation of poro Fluid element (p1 poro fluid)
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15240
  *----------------------------------------------------------------------*/
 
 #include "fluid_ele_calc_poro_p1.H"

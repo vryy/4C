@@ -4,14 +4,11 @@
 
  \brief evaluate methods for porous media using the p1 approach (mixed approach)
 
-\level 2
+ \level 2
 
- <pre>
-   \maintainer Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
  *----------------------------------------------------------------------*/
 
 #include "so3_poro_p1.H"

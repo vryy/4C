@@ -4,11 +4,11 @@
 
 \brief Input parameters for poro scatra
 
-<pre>
-Maintainer: Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+   \level 2
+
+   \maintainer  Andreas Rauch
+                rauch@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
 */
 
 /*----------------------------------------------------------------------*/

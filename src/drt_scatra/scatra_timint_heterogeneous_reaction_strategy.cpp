@@ -4,14 +4,11 @@
 
  \brief Solution strategy for heterogeneous reactions. This is not meshtying!!!
 
- <pre>
     \level 3
 
-   \maintainer  Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
+   \maintainer  Andreas Rauch
+                rauch@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
-                089 - 289-15251
- </pre>
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

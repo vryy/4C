@@ -4,9 +4,12 @@
 
 \brief a class to manage one nurbs discretization
 
-\maintainer Anh-Tu Vuong
-
 \level 1
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 
 */
 /*----------------------------------------------------------------------*/

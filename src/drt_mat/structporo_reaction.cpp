@@ -4,12 +4,11 @@
 
  \brief wrapper for structure material of porous media including reactive reference porosity
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+
+\level 3
  *----------------------------------------------------------------------*/
 
 #include <vector>

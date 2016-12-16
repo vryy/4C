@@ -14,12 +14,12 @@ position since dofs associated with neighbouring control points influence
 the function value as well)
 
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #ifndef DRT_APPLY_NURBS_INITIAL_CONDITION_H

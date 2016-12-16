@@ -2,14 +2,13 @@
 /*!
  \file so3_poro_p1_fwd.hpp
 
- \brief
+ \brief forward declarations (explicit instantiation) of the templated p1 (mixed )poro-elements
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+ \level 2
+
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
  *----------------------------------------------------------------------*/
 
 // template classes

@@ -5,12 +5,11 @@
  \brief a material defining the pressure-saturation relationship of
         fluid phase within a multiphase porous fluid
 
- \level 3
+   \level 3
 
- \maintainer   Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
+   \maintainer  Lena Yoshihara
+                yoshihara@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_FLUIDPORO_SINGLEPHASELAW_H_

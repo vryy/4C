@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file so_nurbs27.cpp
-\brief
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief implementation of the quadratic NURBS 27 element
+
+\level 2
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 
 *----------------------------------------------------------------------*/
 

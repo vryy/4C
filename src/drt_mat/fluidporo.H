@@ -1,12 +1,14 @@
 /*!-----------------------------------------------------------------------*
  \file fluidporo.H
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\brief  fluid material for poroelasticity problems
+
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+
+\level 2
  *-----------------------------------------------------------------------*/
 
 #ifndef FLUIDPORO_H_

@@ -4,13 +4,12 @@
 
  \brief Implementation of a dofset using a GID based mapping
 
- <pre>
-   \level 1
+\level 2
 
-   \maintainer Anh-Tu Vuong
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+
  *----------------------------------------------------------------------*/
 
 #include "drt_dofset_gidbased_wrapper.H"

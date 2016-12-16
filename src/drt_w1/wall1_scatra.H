@@ -2,14 +2,13 @@
 /*!
  \file wall1_scatra.H
 
- \brief
+ \brief a 2D solid-wall element with ScaTra coupling
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+ \level 2
+
+ \maintainer Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef WALL1_SCATRA_H_

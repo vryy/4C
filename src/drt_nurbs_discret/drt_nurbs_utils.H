@@ -5,12 +5,12 @@
 \brief service methods for accessing knot vector and weights for a given
        element of a nurbs discretisations
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\level 1
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 */
 /*----------------------------------------------------------------------*/
 #ifndef DRT_NURBS_UTILS_H

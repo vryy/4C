@@ -4,14 +4,11 @@
 
  \brief porous material for dissolution reaction in ECM model
 
- <pre>
- \level 3
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
 
- \maintainer Anh-Tu Vuong
-              vuong@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-15251
- </pre>
+\level 3
  *----------------------------------------------------------------------*/
 
 #ifndef STRUCTPORO_REACTION_ECM_H_

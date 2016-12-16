@@ -7,12 +7,12 @@
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from ADAPTER::CouplingNonLinMortar
 
-<pre>
-Maintainer: Anh-Tu Vuong & Christoph Ager
+\level 3
+
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef ADAPTER_COUPLING_PORO_MORTAR_H_

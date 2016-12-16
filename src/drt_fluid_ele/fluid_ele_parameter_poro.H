@@ -4,12 +4,12 @@
 
 \brief Evaluation of general fluid parameter for porofluid
 
-<pre>
-Maintainers: Anh-Tu Vuong and Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15251/-15240
-</pre>
+             089 - 289-15240
 */
 /*----------------------------------------------------------------------*/
 

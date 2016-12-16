@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file so3_poro.H
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief implementation of the 3D solid-poro element
+
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+
+\level 2
 
 *----------------------------------------------------------------------*/
 #ifndef SO3_PORO_H

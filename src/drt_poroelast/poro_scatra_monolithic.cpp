@@ -4,14 +4,12 @@
 
  \brief monolithic coupling algorithm for scalar transport within porous medium
 
- <pre>
-   \maintainer Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
 
- \level 3
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
 
  *----------------------------------------------------------------------*/
 

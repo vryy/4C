@@ -3,12 +3,11 @@
 
  \brief two way coupled partitioned scalar structure interaction
 
-\maintainer    Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
+ \level 2
 
-\level 2
+ \maintainer Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
  *------------------------------------------------------------------------------------------------*/
 

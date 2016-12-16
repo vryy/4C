@@ -4,13 +4,11 @@
 
 \brief Input parameters for scatra
 
-<pre>
-\level 1
+   \level 1
 
-\maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+   \maintainer  Rui Fang
+                fang@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
 */
 
 /*----------------------------------------------------------------------*/

@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
-\file So3_poro_eletypes.H
+\file so3_poro_eletypes.H
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief element types of the 3D solid-poro element
+
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
+
+\level 2
 
 *----------------------------------------------------------------------*/
 #ifndef SO3_PORO_ELETYPES_H_

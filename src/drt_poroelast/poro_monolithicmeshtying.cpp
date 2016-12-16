@@ -7,12 +7,12 @@
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from poro_monolithic
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
  *----------------------------------------------------------------------*/
 
 #include "poro_monolithicmeshtying.H"

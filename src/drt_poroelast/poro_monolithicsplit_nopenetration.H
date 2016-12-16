@@ -2,14 +2,15 @@
 /*!
  \file poro_monolithicsplit_nopenetration.H
 
- \brief
+ \brief porous medium algorithm with matrix split for condensation of
+      no-penetration constraint
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+\maintainer Ager Christoph
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 15249
  *----------------------------------------------------------------------*/
 
 

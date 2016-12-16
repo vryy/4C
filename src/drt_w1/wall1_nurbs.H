@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file wall1_nurbs.H
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief 2D solid-wall elements using NURBS shape functions
+
+\level 2
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 
 *----------------------------------------------------------------------*/
 #ifndef WALL1_NURBS_H

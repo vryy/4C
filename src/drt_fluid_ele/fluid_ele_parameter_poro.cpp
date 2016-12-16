@@ -7,12 +7,12 @@
 FluidEleParameter::SetElementPoroParameter(Teuchos::ParameterList& params)
 set all general porofluid parameter once for all elements.
 
-<pre>
-Maintainers: Anh-Tu Vuong and Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15251/-15240
-</pre>
+             089 - 289-15240
 */
 /*----------------------------------------------------------------------*/
 #include "fluid_ele_parameter_poro.H"

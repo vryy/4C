@@ -3,12 +3,11 @@
 
  \brief base class for partitioned scalar structure interaction
 
- \level 1
+ \level 2
 
- \maintainer Anh-Tu Vuong
-             vuong@lnm.mw.tum.de
+ \maintainer Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15264
 
  *------------------------------------------------------------------------------------------------*/
 

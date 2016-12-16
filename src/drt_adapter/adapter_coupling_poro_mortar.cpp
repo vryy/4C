@@ -9,7 +9,7 @@ and Christoph Ager, Originates from ADAPTER::CouplingNonLinMortar
 
 \level 3
 
-\maintainer Anh-Tu Vuong, Christoph Ager
+\maintainer Christoph Ager
 
 */
 /*---------------------------------------------------------------------*/

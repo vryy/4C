@@ -2,14 +2,13 @@
 /*!
  \file so3_poro_p1.H
 
- \brief
+ \brief implementation of the 3D solid-poro element (p1, mixed approach)
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+ \level 2
+
+   \maintainer Andreas Rauch
+               rauch@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
  *----------------------------------------------------------------------*/
 
 

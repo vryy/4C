@@ -1,14 +1,14 @@
 /*!----------------------------------------------------------------------
 \file so_nurbs27_evaluate.cpp
-\brief
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief evaluation methods of the quadratic NURBS 27 element
 
+\level 2
+
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15271
 *----------------------------------------------------------------------*/
 #include "so_nurbs27.H"
 #include "../drt_lib/drt_discret.H"

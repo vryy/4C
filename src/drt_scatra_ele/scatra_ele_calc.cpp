@@ -5,12 +5,10 @@
 
 \level 1
 
-<pre>
-\maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 

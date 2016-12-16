@@ -6,10 +6,9 @@
 
    \level 3
 
-   \maintainer  Anh-Tu Vuong
-                vuong@lnm.mw.tum.de
+   \maintainer  Lena Yoshihara
+                yoshihara@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
-                089 - 289-15251
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H_

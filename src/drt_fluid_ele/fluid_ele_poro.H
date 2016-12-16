@@ -8,12 +8,12 @@ This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
+\level 2
+
+\maintainer  Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15240
  *----------------------------------------------------------------------*/
 
 

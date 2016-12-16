@@ -2,16 +2,14 @@
 /*!
 \file scatra_ele_calc_poro_reac_ECM.cpp
 
-\brief scatra_ele_calc_poro_reac_ECM.cpp
+\brief evaluation class containing routines for dissolving reactions within
+       porous medium for ECM modeling
 
 \level 2
 
-<pre>
-  \maintainer Anh-Tu Vuong
-              vuong@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-15251
-</pre>
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_poro_reac_ECM.H"
