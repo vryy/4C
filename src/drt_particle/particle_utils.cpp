@@ -68,22 +68,23 @@ double PARTICLE::Utils::SpecEnthalpy2Temperature(
 
 /*----------------------------------------------------------------------*/
 /* compute temperature from the specEnthalpy - (vector version) */
-Teuchos::RCP<const Epetra_Vector> PARTICLE::Utils::SpecEnthalpy2Temperature(
+void PARTICLE::Utils::SpecEnthalpy2Temperature(
+    Teuchos::RCP<Epetra_Vector> temperature,
     const Teuchos::RCP<const Epetra_Vector>& specEnthalpy,
     const MAT::PAR::ExtParticleMat* extParticleMat)
 {
   // check: no specEnthalpy? no temperature :)
   if (specEnthalpy == Teuchos::null)
-    return Teuchos::null;
-
-  // create temperature vector
-  Teuchos::RCP<Epetra_Vector> temperature = Teuchos::rcp(new Epetra_Vector(specEnthalpy->Map(), true));
+    dserror("specEnthalpy is a null pointer!");
+  if (temperature == Teuchos::null)
+    dserror("temperature is a null pointer!");
+  if (!(temperature->Map().SameAs(specEnthalpy->Map())))
+    dserror("temperature map and specEnthalpy map missmatch!");
 
   for (int lidNode = 0; lidNode < specEnthalpy->MyLength(); ++lidNode)
   {
     (*temperature)[lidNode] = PARTICLE::Utils::SpecEnthalpy2Temperature((*specEnthalpy)[lidNode],extParticleMat);
   }
-  return temperature;
 }
 
 /*-----------------------------------------------------------------------------*/

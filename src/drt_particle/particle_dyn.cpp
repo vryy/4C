@@ -41,7 +41,11 @@ void particle_drt()
     {
       const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
 
-      problem->GetDis("rendering")->FillComplete();
+      if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
+      {
+        problem->GetDis("rendering")->FillComplete();
+      }
+
       /// algorithm is created
       Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
 

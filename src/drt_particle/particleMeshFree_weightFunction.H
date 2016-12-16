@@ -16,6 +16,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_particle.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
@@ -65,6 +66,25 @@ private :
    static double Rsz3D(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
 
 };
+
+
+class WeightFunction_HyperbolaNoRsz
+{
+public :
+
+   //! @name Actions
+   //@{
+
+   //! compute the cubicBspline weight function
+   static double Weight(const double &disRel, const double &radius);
+
+   //! compute the weight function derivative of the cubicBspline weight function
+   static double WeightDerivative(const double &disRel, const double &radius);
+
+   //@}
+
+};
+
 
 }  // namespace PARTICLE
 

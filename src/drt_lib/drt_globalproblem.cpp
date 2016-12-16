@@ -2046,22 +2046,29 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
      dserror("meshfree simulations must be distype=Meshfree");
     }
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    renderingdis = Teuchos::rcp(new DRT::DiscretizationFaces("rendering",reader.Comm()));
+
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
     particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-    renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
+
 
     AddDis("structure", structdis);
     AddDis("particle", particledis);
-    AddDis("rendering", renderingdis);
 
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
     nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-    nodereader.AddAdvancedReader(renderingdis, reader, "MESHFREE RENDERING",INPAR::geometry_box, 0);
 
+    // add rendering in case is required
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
+    {
+      renderingdis = Teuchos::rcp(new DRT::Discretization("rendering",reader.Comm()));
+      renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
+      AddDis("rendering", renderingdis);
+      nodereader.AddAdvancedReader(renderingdis, reader, "MESHFREE RENDERING",
+          INPAR::geometry_box, 0);
+    }
     break;
   }
   case prb_level_set:

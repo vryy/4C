@@ -71,7 +71,8 @@ namespace PARTICLE
         const MAT::PAR::ExtParticleMat* extParticleMat);
 
     //! Compute the temperature from the specEnthalpy (vector version)
-    static Teuchos::RCP<const Epetra_Vector> SpecEnthalpy2Temperature(
+    static void SpecEnthalpy2Temperature(
+        Teuchos::RCP<Epetra_Vector> temperature,
         const Teuchos::RCP<const Epetra_Vector>& specEnthalpy,
         const MAT::PAR::ExtParticleMat*);
 

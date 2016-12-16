@@ -21,21 +21,19 @@
  *----------------------------------------------------------------------*/
 
 // The formula can be found in:
-// Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
+// R1-E9 - Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
 
 double PARTICLE::WeightFunction_CubicBspline::Weight(
   const double &disRel,
   const double &radius
   )
 {
-
-
   const double rszDisRel = RszDisRel(disRel,radius);
 
   double weight = 0;
   if (rszDisRel < 1)
   {
-    weight = 1 - 1.5 * std::pow(rszDisRel,2) - 0.75 * std::pow(rszDisRel,3);
+    weight = 1 - 1.5 * std::pow(rszDisRel,2) + 0.75 * std::pow(rszDisRel,3);
   }
   else if (rszDisRel < 2)
   {
@@ -50,7 +48,7 @@ double PARTICLE::WeightFunction_CubicBspline::Weight(
 
 
 /*-----------------------------------------------------------------------------*
- | compute the weight function derivative                    cattabiani 08/16  |
+ | compute the cubicBspline weight function derivative       cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
 
 // empowered by mathematica:
@@ -80,7 +78,7 @@ double PARTICLE::WeightFunction_CubicBspline::WeightDerivative(const double &dis
 
 
 /*----------------------------------------------------------------------*
- | compute the cubicBspline weight function           cattabiani 08/16  |
+ | compute the SqrtHyperbola weight function          cattabiani 08/16  |
  *----------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_SqrtHyperbola::Weight(
   const double &disRel,
@@ -98,7 +96,7 @@ double PARTICLE::WeightFunction_SqrtHyperbola::Weight(
 
 
 /*-----------------------------------------------------------------------------*
- | compute the weight function derivative                    cattabiani 08/16  |
+ | compute the SqrtHyperbola weight function derivative      cattabiani 08/16  |
  *-----------------------------------------------------------------------------*/
 double PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(const double &disRel, const double &radius)
 {
@@ -106,6 +104,39 @@ double PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(const double &di
   if (disRel<radius)
   {
     weightDerivative = (- std::pow(radius/disRel,0.5) / (2 * disRel) ) * Rsz3D(radius);
+  }
+
+  return weightDerivative;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute the HyperbolaNoRsz weight function         cattabiani 08/16  |
+ *----------------------------------------------------------------------*/
+double PARTICLE::WeightFunction_HyperbolaNoRsz::Weight(
+  const double &disRel,
+  const double &radius
+  )
+{
+  double weight = 0;
+  if (disRel<radius)
+  {
+    weight = radius/disRel - 1;
+  }
+
+  return weight;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | compute the HyperbolaNoRsz weight function derivative     cattabiani 08/16  |
+ *-----------------------------------------------------------------------------*/
+double PARTICLE::WeightFunction_HyperbolaNoRsz::WeightDerivative(const double &disRel, const double &radius)
+{
+  double weightDerivative = 0;
+  if (disRel<radius)
+  {
+    weightDerivative = - radius/(disRel * disRel);
   }
 
   return weightDerivative;

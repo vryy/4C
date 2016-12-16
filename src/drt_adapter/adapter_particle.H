@@ -47,6 +47,7 @@ namespace IO
 namespace PARTICLE
 {
   class Algorithm;
+  class ParticleMeshFreeInteractionHandler;
 }
 
 namespace MAT
@@ -169,9 +170,6 @@ namespace ADAPTER
     //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotn() = 0;
 
-    //! Read-only specific temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
-
 
 
     //! Read-only displacements \f$D_{n+1}\f$
@@ -204,9 +202,6 @@ namespace ADAPTER
     //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotnp() = 0;
 
-    //! Read-only temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
-
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
 
@@ -219,10 +214,11 @@ namespace ADAPTER
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
+    //! Read-only temperatures \f$T_{n}\f$ or \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperature() = 0;
+
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() = 0;
-
-
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;

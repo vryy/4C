@@ -541,6 +541,18 @@ void ParticleFilter::WriteAllResults(PostField* field)
 }
 
 /*----------------------------------------------------------------------*/
+void ParticleMeshFreeRenderingFilter::WriteAllResults(PostField* field)
+{
+  writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
+  writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
+
+  writer_->WriteResult("density", "density", nodebased, 1);
+  writer_->WriteResult("pressure", "pressure", nodebased, 1);
+  writer_->WriteResult("temperature", "temperature", nodebased, 1);
+  writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
+}
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AcouFilter::WriteAllResults(PostField* field)
 {

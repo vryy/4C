@@ -805,10 +805,13 @@ void CAVITATION::Algorithm::InitCavitation()
 {
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
   BinStrategy()->BinDiscret()->FillComplete(false,false,false);
+
   // extract noderowmap because it will be called Reset() after adding elements
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*BinStrategy()->BinDiscret()->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> fluidelecolmapold = Teuchos::rcp(new Epetra_Map(*fluiddis_->ElementColMap()));
   BinStrategy()->CreateBins(fluiddis_);
+
+
 
   // set up the links to the materials for easy access
   // make sure that a particle material is defined in the dat-file

@@ -75,7 +75,8 @@ namespace INPAR
     enum WeightFunction
     {
       CubicBspline,
-      SqrtHyperbola
+      SqrtHyperbola,
+      HyperbolaNoRsz
     };
 
     /// wall interaction type for MeshFree interactions

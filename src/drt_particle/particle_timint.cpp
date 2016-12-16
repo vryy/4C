@@ -16,6 +16,9 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "particle_resulttest.H"
+#include "particleMeshFree_interaction.H"
+#include "particleMeshFree_weightFunction.H"
+#include "particleMeshFree_rendering.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -102,7 +105,10 @@ PARTICLE::TimInt::TimInt
   radiusDot_(Teuchos::null),
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
+  temperature_(Teuchos::null),
   pressure_(Teuchos::null),
+
+  restDensity_(-1.0),
 
   dofmapexporter_(Teuchos::null),
   nodemapexporter_(Teuchos::null),
@@ -162,6 +168,7 @@ void PARTICLE::TimInt::Init()
     density_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     specEnthalpy_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     specEnthalpyDot_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    temperature_ = LINALG::CreateVector(*NodeRowMapView(), true);
     break;
   }
   default : //do nothing
@@ -371,6 +378,10 @@ void PARTICLE::TimInt::SetInitialFields()
   switch (particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    // set the rest density used for pressure-related dynamics
+    restDensity_ = initDensity;
+  }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // set density in the density vector (useful only for thermodynamics)
@@ -387,6 +398,8 @@ void PARTICLE::TimInt::SetInitialFields()
       (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
     else
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+
+    UpdateTemperaturen();
     break;
   }
   default : //do nothing
@@ -397,8 +410,8 @@ void PARTICLE::TimInt::SetInitialFields()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- particle_algorithm_->ExtParticleMat()->initDensity_);
-    deltaDensity->Update(1.0,*(*density_)(0),1.0);
+    deltaDensity->PutScalar(- restDensity_);
+    deltaDensity->Update(1.0, *(*density_)(0), 1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
   }
 }
@@ -560,6 +573,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
   UpdateStateVectorMap(inertia_,true);
+  UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
 }
 
@@ -647,7 +661,7 @@ void PARTICLE::TimInt::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- particle_algorithm_->ExtParticleMat()->initDensity_);
+    deltaDensity->PutScalar(- restDensity_);
     deltaDensity->Update(1.0,*densityn_,1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
   }
@@ -749,7 +763,7 @@ void PARTICLE::TimInt::OutputRestart
     output_->WriteVector("density", (*density_)(0), output_->nodevector);
     output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0), output_->nodevector);
     output_->WriteVector("specEnthalpyDot", (*specEnthalpyDot_)(0), output_->nodevector);
-    output_->WriteVector("temperature", Temperaturen(), output_->nodevector);
+    output_->WriteVector("temperature", temperature_, output_->nodevector);
     break;
   }
   default : // do nothing
@@ -792,6 +806,14 @@ void PARTICLE::TimInt::OutputRestart
     fflush(errfile_);
   }
 
+  Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
+  if (rendering != Teuchos::null)
+  {
+    rendering->UpdateStateVectors(discret_, (*dis_)(0), (*vel_)(0),
+        (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+    rendering->OutputState();
+  }
+
   return;
 }
 
@@ -828,7 +850,7 @@ void PARTICLE::TimInt::OutputState
   {
     output_->WriteVector("density", (*density_)(0), output_->nodevector);
     output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0), output_->nodevector);
-    output_->WriteVector("temperature", Temperaturen(), output_->nodevector);
+    output_->WriteVector("temperature", temperature_, output_->nodevector);
     if(writevelacc_)
       output_->WriteVector("specEnthalpyDot", (*specEnthalpyDot_)(0), output_->nodevector);
     break;
@@ -841,6 +863,14 @@ void PARTICLE::TimInt::OutputState
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded
   output_->ClearMapCache();
+
+  Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
+  if (rendering != Teuchos::null)
+  {
+    rendering->UpdateStateVectors(discret_, (*dis_)(0), (*vel_)(0),
+        (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+    rendering->OutputState();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -1089,17 +1119,17 @@ void PARTICLE::TimInt::InitializeOrientVector()
 }
 
 /*----------------------------------------------------------------------*/
-//! Read-only temperatures \f$T_{n}\f$
-Teuchos::RCP<const Epetra_Vector> PARTICLE::TimInt::Temperaturen()
+//! update temperatures \f$T_{n}\f$
+void PARTICLE::TimInt::UpdateTemperaturen()
 {
-  return PARTICLE::Utils::SpecEnthalpy2Temperature((*specEnthalpy_)(0), particle_algorithm_->ExtParticleMat());
+  PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,(*specEnthalpy_)(0), particle_algorithm_->ExtParticleMat());
 }
 
 /*----------------------------------------------------------------------*/
-//! Read-only temperatures \f$T_{n}\f$
-Teuchos::RCP<const Epetra_Vector> PARTICLE::TimInt::Temperaturenp()
+//! update temperatures \f$T_{n+1}\f$
+void PARTICLE::TimInt::UpdateTemperaturenp()
 {
-  return PARTICLE::Utils::SpecEnthalpy2Temperature(specEnthalpyn_, particle_algorithm_->ExtParticleMat());
+  PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,specEnthalpyn_, particle_algorithm_->ExtParticleMat());
 }
 
 /*----------------------------------------------------------------------*/
@@ -1118,4 +1148,3 @@ void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<
     std::cout << *vec << std::endl;
   std::cin.get();
 }
-

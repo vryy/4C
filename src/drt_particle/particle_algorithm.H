@@ -75,6 +75,7 @@ namespace PARTICLE
 {
   // forward declaration
   class HeatSource;
+  class Rendering;
 
   class Algorithm : public ADAPTER::AlgorithmBase, public PARTICLE::ParticleHandler
   {
@@ -137,6 +138,7 @@ namespace PARTICLE
                     std::set<DRT::Element*>& neighboring_walls,
                     const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::null);
 
+    /// link to timInt
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
 
     /// map that links bins to heat sources
@@ -153,6 +155,8 @@ namespace PARTICLE
 
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
+
+    virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
 
   protected:
 
@@ -267,7 +271,7 @@ namespace PARTICLE
 
     INPAR::BINSTRATEGY::BinContent bin_surfcontent_;
 
-    Teuchos::RCP<DRT::Discretization> renderingdis_;     ///< rendering discretization for meshfree dynamics
+    Teuchos::RCP<Rendering> rendering_; /// handler of the rendering discretization (used for meshFree dynamics)
 
     //@}
 

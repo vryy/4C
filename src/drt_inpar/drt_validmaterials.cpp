@@ -2632,6 +2632,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DYNAMIC_VISCOSITY","dynamic (shear) viscosity for the liquid phase");
     AddNamedReal(m,"BULK_VISCOSITY","bulk viscosity for the liquid phase, important only in case of rapid compressions/expansions like shock waves");
     AddNamedReal(m,"THERMAL_CONDUCTIVITY","thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)");
+    AddNamedReal(m,"SURFACE_VOID_TENSION","surface tension coefficient with void (or air) and the liquid phase");
+    AddNamedReal(m,"SURFACE_WALL_TENSION","surface tension coefficient with walls and the liquid phase");
 
     AppendMaterialDefinition(matlist,m);
   }

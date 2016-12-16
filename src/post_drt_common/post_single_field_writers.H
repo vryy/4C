@@ -288,6 +288,29 @@ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
+
+/*!
+ \brief Writer for particle meshfree rendering problems
+
+ \author katta
+ \date 12/16
+ */
+class ParticleMeshFreeRenderingFilter : public PostFilterBase
+{
+public:
+  ParticleMeshFreeRenderingFilter(PostField *field,
+                                  std::string name)
+  :
+    PostFilterBase (field, name)
+  {
+  }
+
+protected:
+
+  virtual void WriteAllResults(PostField* field);
+};
+
+
 /*!
  \brief Writer for acoustical problems
 

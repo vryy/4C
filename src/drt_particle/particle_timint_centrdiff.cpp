@@ -66,7 +66,7 @@ void PARTICLE::TimIntCentrDiff::Init()
   {
   case INPAR::PARTICLE::MeshFree:
   {
-    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams));
+    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, restDensity_));
     break;
   }
   case INPAR::PARTICLE::Normal_DEM:

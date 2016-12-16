@@ -72,6 +72,8 @@ private:
   Teuchos::RCP<const Epetra_Vector> density_;
   //! global temperature
   Teuchos::RCP<const Epetra_Vector> temperature_;
+  //! global pressure
+  Teuchos::RCP<const Epetra_Vector> pressure_;
 
 };
 

@@ -90,6 +90,8 @@ void PARTICLE::TimIntExpl::UpdateStepState()
     //    \dot{H}_{n} := \dot{H}_{n+1}, \dot{H}_{n-1} := \dot{H}_{n}
     specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
 
+    //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
+    UpdateTemperaturenp();
     break;
   }
   default : // do nothing
@@ -101,7 +103,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- particle_algorithm_->ExtParticleMat()->initDensity_);
+    deltaDensity->PutScalar(- restDensity_);
     deltaDensity->Update(1.0,*densityn_,1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
   }
@@ -128,7 +130,7 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   {
   case INPAR::PARTICLE::MeshFree :
   {
-    interHandler_->SetStateVectors(disn_,veln_,radiusn_,densityn_,specEnthalpyn_,mass_,pressure_);
+    interHandler_->SetStateVectors(disn_,veln_,radiusn_,densityn_,specEnthalpyn_,mass_,temperature_,pressure_);
     break;
   }
   case INPAR::PARTICLE::Normal_DEM_thermo :

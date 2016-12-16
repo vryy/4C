@@ -97,11 +97,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                "weight function for meshFree interaction dynamics",
                                tuple<std::string>(
                                  "CubicBspline",
-                                 "SqrtHyperbola"
+                                 "SqrtHyperbola",
+                                 "HyperbolaNoRsz"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::CubicBspline,
-                                 INPAR::PARTICLE::SqrtHyperbola
+                                 INPAR::PARTICLE::SqrtHyperbola,
+                                 INPAR::PARTICLE::HyperbolaNoRsz
                                  ),
                                &particledyn);
 
@@ -144,6 +146,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
    BoolParameter("RADIUS_DISTRIBUTION","no","switch on/off random normal distribution of particle radii",&particledyn);
    DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of normal distribution of particle radii",&particledyn);
+   BoolParameter("RENDERING","no","switch on/off the rendering domain. If it is yes... you better have a RENDERING DOMAIN available",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle simulations.",
                              &particledyn);

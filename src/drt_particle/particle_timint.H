@@ -25,6 +25,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Vector.h>
+#include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
 
 #include <string>
@@ -280,9 +281,6 @@ namespace PARTICLE
     //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotn() { return (*specEnthalpyDot_)(0); }
 
-    //! Read-only temperatures \f$T_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen();
-
     //! Read-only displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
 
@@ -313,9 +311,6 @@ namespace PARTICLE
     //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotnp() { return specEnthalpyDotn_; }
 
-    //! Read-only temperatures \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp();
-
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
 
@@ -328,10 +323,11 @@ namespace PARTICLE
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
+    //! Read-only temperatures \f$T_{n}\f$ or \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperature() { return temperature_; }
+
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
-
-
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
@@ -444,6 +440,12 @@ namespace PARTICLE
     /* Update state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
+    //! Read-only temperatures \f$T_{n}\f$
+    virtual void UpdateTemperaturen();
+
+    //! Read-only temperatures \f$T_{n+1}\f$
+    virtual void UpdateTemperaturenp();
+
     //! initialization of vector for visualization of the particle orientation
     virtual void InitializeOrientVector();
 
@@ -555,8 +557,13 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
+    //! Temperature \f$T_{n}\f$ or \f$T_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> temperature_;
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
+
+    //! rest density for meshFree-pressure dynamics
+    double restDensity_;
 
     //@}
 

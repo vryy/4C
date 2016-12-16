@@ -127,6 +127,7 @@ namespace PARTICLE
     //@{
 
   private:
+
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     const int myrank_;    ///< myrank

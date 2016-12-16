@@ -14,6 +14,8 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "particle_utils.H"
+#include "particleMeshFree_rendering.H"
+#include "particleMeshFree_interaction.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "binning_strategy.H"
@@ -67,7 +69,7 @@ PARTICLE::Algorithm::Algorithm(
   particleMat_(NULL),
   extParticleMat_(NULL),
   bin_surfcontent_(INPAR::BINSTRATEGY::Surface),
-  renderingdis_(Teuchos::null)
+  rendering_(Teuchos::null)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -98,11 +100,6 @@ PARTICLE::Algorithm::Algorithm(
   // new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
   Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
   BinStrategy()->BinDiscret()->ReplaceDofSet(independentdofset);
-
-  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
-  {
-    renderingdis_ = DRT::Problem::Instance()->GetDis("rendering");
-  }
 
   return;
 }
@@ -294,6 +291,11 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   // update connectivity
   UpdateHeatSourcesConnectivity(true);
+
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
+  {
+    rendering_ = Teuchos::rcp(new PARTICLE::Rendering(Teuchos::rcp(this,false)));
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1318,6 +1320,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 
   GetBinContent(neighboring_particles, neighboring_walls, neighboring_heatSources, binIds);
 }
+
 
 /*----------------------------------------------------------------------*
  | get particles and wall elements in given bins           ghamm 09/13  |

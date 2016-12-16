@@ -86,6 +86,10 @@ namespace MAT
       const double bulkViscosity_;
       /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
       const double thermalConductivity_;
+      /// surface tension between void (common air) and the material in liquid phase
+      const double surfaceVoidTension_;
+      /// surface tension between the wall and the material in liquid phase
+      const double surfaceWallTension_;
 
 
     };  // class MAT::PAR::ExtParticleMat

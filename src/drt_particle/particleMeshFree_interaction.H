@@ -18,7 +18,6 @@
 #include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
 #include "../drt_lib/drt_element.H"
-#include <Epetra_FEVector.h>
 
 
 // forward declarations
@@ -72,7 +71,8 @@ namespace PARTICLE
     ParticleMeshFreeInteractionHandler(
       Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-      const Teuchos::ParameterList& particledynparams);
+      const Teuchos::ParameterList& particledynparams,
+      const double restDensity);
 
     //! Destructor
     virtual ~ParticleMeshFreeInteractionHandler(){ ; }
@@ -90,20 +90,18 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> densityn,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> temperature,
         Teuchos::RCP<const Epetra_Vector> pressure);
-    /// --- second round -> unactivated ----------------------------------- ///
-    /*
+
     //! set state vectors (col type) - second round
     virtual void SetStateVectors_SecondRound(
-        Teuchos::RCP<const Epetra_Vector> gradT_over_rho);
+        Teuchos::RCP<const Epetra_Vector> colorFieldGradientn);
 
     /// calculate interaction with neighboring particles - second round
     virtual void CalcNeighboringParticleMeshFreeInteraction_SecondRound(
       const int lidNodeCol_i,
       const std::list<DRT::Node*> neighboring_particles,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
-    */
-    ///--------------------------------------------------------------------///
+      Teuchos::RCP<Epetra_Vector> accn);
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual void EvaluateParticleMeshFreeInteractions(
@@ -121,7 +119,8 @@ namespace PARTICLE
       const std::list<DRT::Node*> neighboring_particles,
       Teuchos::RCP<Epetra_Vector> accn,
       Teuchos::RCP<Epetra_Vector> densityDotn,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+      Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
 
     /// calculate interaction with neighboring walls
     virtual void CalcNeighboringWallMeshFreeInteraction(
@@ -158,8 +157,8 @@ namespace PARTICLE
     /// temporary storage of particleMeshFree data
     std::vector<ParticleMeshFreeData> particleMeshFreeData_;
 
-    /// weight function type
-    const INPAR::PARTICLE::WeightFunction weightFunctionType_;
+    /// weight function derivative pointer
+    double (*weightDerivative_)(const double &, const double &) = NULL;
 
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
@@ -172,11 +171,23 @@ namespace PARTICLE
     //! @name wall interaction parameters
     //@{
 
+    /// rest density
+    const double restDensity_;
+
     /// laplacian velocity, diffusion coefficient
     double diffusionCoeff_;
 
     /// gradient of the divergence of the velocity, convection coefficient
     double convectionCoeff_;
+
+    /// cohesion surface tension coefficient with void (or air)
+    double surfaceVoidTension_;
+
+    /// cohesion surface tension coefficient with the wall
+    double surfaceWallTension_;
+
+    // trigger for the second round
+    bool trg_secondRound_;
 
     //@}
 
@@ -189,9 +200,8 @@ namespace PARTICLE
   struct ParticleMeshFreeData {
     LINALG::Matrix<3,1> dis;
     LINALG::Matrix<3,1> vel;
-/// --- second round -> unactivated ----------------------------------- ///
-//    LINALG::Matrix<3,1> gradT_over_rho;
-///--------------------------------------------------------------------///
+    LINALG::Matrix<3,1> colorFieldGradient; //< Between E2 and E3 in http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
+
     double radius;
     double density;
     double specEnthalpy;
