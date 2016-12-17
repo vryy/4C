@@ -81,7 +81,7 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
 
     //! weight function pointer
-    double (*weight_)(const double &, const double &) = NULL;
+    double (*weight_)(const double &, const double &);
 
     bool trg_writeMesh_;
 

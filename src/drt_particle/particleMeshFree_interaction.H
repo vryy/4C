@@ -158,7 +158,7 @@ namespace PARTICLE
     std::vector<ParticleMeshFreeData> particleMeshFreeData_;
 
     /// weight function derivative pointer
-    double (*weightDerivative_)(const double &, const double &) = NULL;
+    double (*weightDerivative_)(const double &, const double &);
 
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
