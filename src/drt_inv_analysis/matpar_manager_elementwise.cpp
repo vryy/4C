@@ -31,7 +31,8 @@
 #include "../drt_comm/comm_utils.H"
 
 INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
-   :MatParManager(discret)
+   :MatParManager(discret),
+has_graph_(false)
 {}
 
 /*----------------------------------------------------------------------*/
@@ -110,17 +111,20 @@ void INVANA::MatParManagerPerElement::Setup()
       Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
 
   // insert ones onto the diagonal
+  double values=1.0;
   for (int i=0; i<projector_->NumMyRows(); i++)
   {
     int gid = paramlayoutmapunique_->GID(i);
-    double values = 1.0;
-    int indices = gid;
-    projector_->InsertGlobalValues(gid,1,&values,&indices);
+    projector_->InsertGlobalValues(gid,1,&values,&gid);
   }
   projector_->FillComplete();
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
+
+  // Create elemetwise graph structure, before some specialized
+  // class might overwrite some maps
+  CreateGraph();
 
 }
 
@@ -196,6 +200,32 @@ void INVANA::MatParManagerPerElement::ApplyParametrization(
       diagonals->ReplaceGlobalValue(paramsLIDtoeleGID_[plid],k,(*tmp)[i]);
     }
   }
+
+  return;
+}
+
+void INVANA::MatParManagerPerElement::CreateGraph()
+{
+  if (has_graph_)
+    dserror("the graph should only be computed once. Maps might not match anylonger!");
+
+  int maxbw=6;  // based on connectivity for hex8 elements
+  graph_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*(paramapextractor_->FullMap()),maxbw,false));
+
+  for (int i=0; i<paramapextractor_->NumMaps(); i++)
+    FillAdjacencyMatrix(*(paramapextractor_->Map(i)), graph_);
+
+  // Finalize the graph ...
+  graph_->FillComplete();
+
+  // put zeros one the diagonal; the diagonal is the "self weight" and it should never
+  // be used somewhere since its meaningless but its better to have 0.0 than some
+  // random value resulting from redundant inserting during FillAdjacencyMatrix
+  Teuchos::RCP<Epetra_Vector> diagonal=Teuchos::rcp(new Epetra_Vector(*(paramapextractor_->FullMap()), true));
+  diagonal->PutScalar(0.0);
+  graph_->ReplaceDiagonalValues(*diagonal);
+
+  has_graph_=true;
 
   return;
 }
@@ -424,6 +454,14 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerPerElement::InitialCovariance()
+{
+  // the best inital guess to get from datfile input is a
+  // unit diagonal. This is already available via the projector_
+  return projector_;
 }
 
 

@@ -40,7 +40,14 @@ namespace INVANA
  * with limited memory. Dense columns of these matrices can then be reproduced by
  * applying it to the unit vectors of the parameter space.
  *
- * It also provides access to itself as Epetra_CrsMatrix.
+ * It also provides access to itself as (not at all sparse) Epetra_CrsMatrix.
+ * This function is only to be used in case the matrix is reasonably small or
+ * for testing and visulization in case of small matrix size.
+ *
+ * todo: If you want get eigenvectors and eigenvalues. All you have to do is
+ * to derive from Epetra_Operator and then it can be plugged into to the
+ * AnasaziEpetra Adapter. So at least the computation of the first few vectors
+ * should be computationally feasible.
  *
  * \author kehl \date 06/2016
  */
@@ -57,8 +64,7 @@ public:
       Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore,
       bool initscal, /// [in] initial scaling of the hessian approximation
       bool probscal, /// [in] scaling of functional?
-      double probscalefac, /// [in] scale factor of the functional
-      double covscalefac /// [in] scale factor of the covariance
+      double probscalefac /// [in] scale factor of the functional
       );
 
   //! destructor
@@ -118,9 +124,6 @@ private:
 
   //! scaling factor for the problem
   double prob_scale_fac_;
-
-  //! scaling factor for the covariance
-  double cov_scale_fac_;
 
   //! a column
   mutable Teuchos::RCP<Epetra_Vector> column_;

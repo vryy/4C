@@ -47,21 +47,25 @@ void INVANA::RegularizationTotalVariation::Setup(const Teuchos::ParameterList& i
 /*----------------------------------------------------------------------*/
 void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
-  // check if the map of theta is the row map of the adjacency matrix
-  if (not theta.Map().SameAs(adjacency_->RowMap()))
-    dserror("Map of the parameter vector is not the row map of the adjacency matrix");
-
   // check if only one vector in the multivector
   if (theta.NumVectors()>1)
-    dserror("tvd regularization not made for use with more than one vector!");
+    dserror("tv regularization not made for use with more than one vector!");
+
+  // project to elementwise layout
+  Epetra_Vector thetaele(adjacency_->RowMap(),true);
+  connectivity_->Projector()->Multiply(true,theta,thetaele);
+
+  // check if the map of theta is the row map of the adjacency matrix
+  if (not thetaele.Map().SameAs(adjacency_->RowMap()))
+    dserror("Map of the parameter vector is not the row map of the adjacency matrix");
 
   // communicate theta data from other procs such that every proc can compute sums
   // over adjacent parameters
-  Epetra_MultiVector thetacol(adjacency_->ColMap(),theta.NumVectors(),false);
-  LINALG::Export(theta,thetacol);
+  Epetra_MultiVector thetacol(adjacency_->ColMap(),thetaele.NumVectors(),false);
+  LINALG::Export(thetaele,thetacol);
 
   double functvalue=0.0;
-  for (int i=0; i<theta(0)->MyLength(); i++)
+  for (int i=0; i<thetaele(0)->MyLength(); i++)
   {
     // get weights of neighbouring parameters
     int lenindices = adjacency_->NumMyEntries(i);
@@ -71,10 +75,10 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
     adjacency_->ExtractMyRowCopy(i,lenindices,numindex,&weights[0],&indices[0]);
 
     // row in local index space of the collayout
-    int rowi = thetacol.Map().LID(theta.Map().GID(i));
+    int rowi = thetacol.Map().LID(thetaele.Map().GID(i));
 
     double rowsum=0.0;
-    double rowval=(*theta(0))[i];
+    double rowval=(*thetacol(0))[i];
     for (int j=0; j<lenindices; j++)
     {
       if (indices[j]!=rowi) // skip substracting from itself
@@ -101,25 +105,30 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
 void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVector& theta,
     Teuchos::RCP<Epetra_MultiVector> gradient)
 {
-  // check if the map of theta is the row map of the adjacency matrix
-  if (not theta.Map().SameAs(adjacency_->RowMap()))
-    dserror("Map of the parameter vector is not the row map of the adjacency matrix");
-
   // check if only one vector in the multivector
   if (theta.NumVectors()>1 or gradient->NumVectors()>1)
-    dserror("tvd regularization not made for use with more than one vector!");
+    dserror("tv regularization not made for use with more than one vector!");
+
+  // project to elementwise layout
+  Epetra_Vector thetaele(adjacency_->RowMap(),true);
+  connectivity_->Projector()->Multiply(true,theta,thetaele);
+
+  // check if the map of theta is the row map of the adjacency matrix
+  if (not thetaele.Map().SameAs(adjacency_->RowMap()))
+    dserror("Map of the parameter vector is not the row map of the adjacency matrix");
+
 
   // communicate theta data from other procs such that every proc can compute sums
   // over adjacent parameters
-  Epetra_MultiVector thetacol(adjacency_->ColMap(),theta.NumVectors(),false);
-  LINALG::Export(theta,thetacol);
+  Epetra_MultiVector thetacol(adjacency_->ColMap(),thetaele.NumVectors(),false);
+  LINALG::Export(thetaele,thetacol);
 
   // a gradient with the column layout of the adjacency matrix to be filled
   // on each proc and then summed up via the Epetra_Export back to the
   // unique layout of the gradient vector coming in
   Epetra_MultiVector gradientcol(adjacency_->ColMap(), gradient->NumVectors(),true);
 
-  for (int i=0; i<theta(0)->MyLength(); i++)
+  for (int i=0; i<thetaele(0)->MyLength(); i++)
   {
     // get weights of neighbouring parameters
     int lenindices = adjacency_->NumMyEntries(i);
@@ -132,10 +141,10 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
       dserror("bla");
 
     // value of the parameter in this row
-    double rowval=(*theta(0))[i];
+    double rowval=(*thetaele(0))[i];
 
     // row in local index space of the collayout
-    int rowi = thetacol.Map().LID(theta.Map().GID(i));
+    int rowi = thetacol.Map().LID(thetaele.Map().GID(i));
 
     // denominator
     double denom=0.0;
@@ -189,7 +198,12 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
   if (err)
     dserror("Export using exporter returned err=%d", err);
 
-  gradient->Update(weight_,tmp,1.0);
+  // apply possible linear transformation
+  // project to elementwise layout
+  Epetra_Vector tmptrans(connectivity_->Projector()->RangeMap(),true);
+  connectivity_->Projector()->Multiply(true,tmp,tmptrans);
+
+  gradient->Update(weight_,tmptrans,1.0);
 
   return;
 }

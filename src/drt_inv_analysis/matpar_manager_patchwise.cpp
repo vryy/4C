@@ -48,14 +48,14 @@ void INVANA::MatParManagerPerPatch::Setup()
   if (Comm().MyPID() == 0)
   {
     std::cout << "-----------------------------" << std::endl;
-    std::cout << "MatParManager Setup:" << std::endl;
+    std::cout << "MatParManagerPatch Setup:" << std::endl;
   }
 
-  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-  map_restart_step_ = invp.get<int>("MAP_RESTART");
-  map_restart_file_ = Teuchos::getNumericStringParameter(invp,"MAP_RESTARTFILE");
+  const Teuchos::ParameterList& invp = Inpar();
+  map_restart_step_ = invp.get<int>("MAP_REDUCT_RESTART");
+  map_restart_file_ = Teuchos::getNumericStringParameter(invp,"MAP_REDUCT_RESTARTFILE");
 
-  max_num_levels_ = invp.get<int>("NUM_PATCH_LEVELS");
+  max_num_levels_ = invp.get<int>("NUM_REDUCT_LEVELS");
 
   if (max_num_levels_<1)
     dserror("Choose at least NUM_LEVELS = 1 for the patch creation!");
@@ -65,7 +65,6 @@ void INVANA::MatParManagerPerPatch::Setup()
   MatParManagerPerElement::Setup();
   optparams_elewise_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
   elewise_map_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
-  graph_ = GetConnectivityData()->AdjacencyMatrix();
 
   // read map approximation to perform the reduction on
   ReadMAPApproximation();
@@ -213,8 +212,43 @@ void INVANA::MatParManagerPerPatch::ReadMAPApproximation()
     std::cout << "  step " << map_restart_step_ << " (from: " << input->FileName() << ")" << std::endl;
   }
 
+  // MAP solution
   reader.ReadMultiVector(optparams_elewise_,"solution");
 
+  // Read lbfgs matrix storage
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore = Teuchos::rcp(new
+      TIMINT::TimIntMStep<Epetra_Vector>(0, 0, elewise_map_.get(), true));
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore = Teuchos::rcp(new
+      TIMINT::TimIntMStep<Epetra_Vector>(0, 0, elewise_map_.get(), true));
+
+  int actsize = reader.ReadInt("storage_size");
+
+  //initialize storage
+  sstore->Resize(-actsize+1,0,elewise_map_.get(),true);
+  ystore->Resize(-actsize+1,0,elewise_map_.get(),true);
+
+  Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new
+      Epetra_MultiVector(*elewise_map_,actsize,false));
+
+  reader.ReadMultiVector(storage,"sstore");
+  for (int i=0; i<actsize; i++)
+    sstore->UpdateSteps(*(*storage)(i));
+
+  storage->Scale(0.0);
+  reader.ReadMultiVector(storage,"ystore");
+  for (int i=0; i<actsize; i++)
+    ystore->UpdateSteps(*(*storage)(i));
+
+  // ---- create covariance matrix
+  double scalefac=1.0;
+  bool objfuncscal = DRT::INPUT::IntegralValue<bool>(Inpar(), "OBJECTIVEFUNCTSCAL");
+  if (objfuncscal)
+    scalefac = Objfunct().GetScaleFac();
+
+  bool initscal = DRT::INPUT::IntegralValue<bool>(Inpar(), "LBFGSINITSCAL");
+
+  fullcovariance_ = Teuchos::rcp(new
+      DcsMatrix(sstore, ystore, initscal, objfuncscal, scalefac));
 
   return;
 }
@@ -589,5 +623,44 @@ void INVANA::MatParManagerPerPatch::FindHistogramMax(
 
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerPerPatch::InitialCovariance()
+{
+  // projector * covariance
+  Teuchos::RCP<Epetra_CrsMatrix> interm = Teuchos::rcp(new Epetra_CrsMatrix(
+      Copy,projector_->RowMap(),projector_->ColMap(),projector_->MaxNumEntries(),false));
+
+  Teuchos::RCP<Epetra_Vector> column = Teuchos::rcp(new
+      Epetra_Vector(fullcovariance_->RowMap(),false));
+  Teuchos::RCP<Epetra_Vector> col_interm = Teuchos::rcp(new
+      Epetra_Vector(projector_->RowMap(),false));
+  int maxnumentries = fullcovariance_->MaxNumEntries();
+  for (int i=0; i<maxnumentries; i++)
+  {
+    // get column
+    fullcovariance_->ExtractGlobalColumnCopy(i,*column);
+
+    // project this column
+    int err = projector_->Multiply(false,*column,*col_interm);
+    if (err!=0)
+      dserror("Projection failed.");
+
+    // put column into intermediate matrix
+    double* vals;
+    int colind = i;
+    col_interm->ExtractView(&vals);
+    for (int j=0; j<col_interm->MyLength(); j++)
+    {
+      int gid = projector_->RowMap().GID(j);
+      interm->InsertGlobalValues(gid,1,&vals[j],&colind);
+    }
+  }
+  interm->FillComplete(projector_->ColMap(),projector_->RangeMap());
+
+  //interm * projector'
+  Teuchos::RCP<Epetra_CrsMatrix> cov = LINALG::Multiply(*interm,false,*projector_,true);
+  return cov;
 }
 

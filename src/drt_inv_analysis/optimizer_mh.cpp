@@ -103,7 +103,7 @@ void INVANA::OptimizerMH::SetupParticles()
 {
 
   Teuchos::RCP<CholFactorBase> prec =
-      INVANA::CreateICT_lowmem(OptProb()->InitialGuess()->Covariance(),params_);
+      INVANA::CreateICT(OptProb()->InitialGuess()->Covariance(),params_);
 
   // ---- construct evaluator for particles
   // get the map estimation as mean for the prior likelihood
@@ -111,9 +111,10 @@ void INVANA::OptimizerMH::SetupParticles()
       Epetra_Vector(*(*OptProb()->InitialGuess()->Mean())(0)));
 
   // construct the prior evaluator
+  double covscale = Inpar().get<double>("MAP_PRIOR_SCALE");
   Teuchos::RCP<INVANA::LogLikePrior> prior =
       Teuchos::rcp(new INVANA::LogLikePrior());
-  prior->Init(prec,mean);
+  prior->Init(prec,mean,covscale);
 
   // construct new mixture evaluator
   mixture_ = Teuchos::rcp(new INVANA::LogLikeMixture(params_));

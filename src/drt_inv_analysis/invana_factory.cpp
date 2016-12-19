@@ -84,7 +84,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
     break;
   }
 
-  // parameterization
+  // parametrization
   Teuchos::RCP<INVANA::MatParManager> matman = Teuchos::null;
   switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
   {
@@ -112,7 +112,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
   }
-  matman->Init(invp);
+  matman->Init(invp,objfunct);
   matman->Setup();
 
   // initial guess

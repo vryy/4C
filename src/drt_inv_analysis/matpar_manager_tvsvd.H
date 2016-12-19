@@ -62,8 +62,8 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
-  //! Access to the unreduced layout
-  Teuchos::RCP<Epetra_Map> UnreducedMap() {return elewise_map_;}
+  //! Return initial covariance guess
+  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
 
 protected:
 
@@ -110,10 +110,7 @@ private:
   //! Setup restriction and prolongation operators
   void SetupRandP(int numvecs);
 
-  //! check the approximation power of this dictionary
-  double CheckApproximation();
-
-  //! number of patch levels
+  //! number of eigenvectors to use
   int max_num_levels_;
 
   /*! \brief random initialization of eigenproblem
@@ -137,9 +134,6 @@ private:
    */
   void Random(Epetra_MultiVector& randvec);
 
-  //! quality threshold
-  double qthresh_;
-
   //! TV epsilon
   double eps_;
 
@@ -159,11 +153,11 @@ private:
   //! elementwise layout
   Teuchos::RCP<Epetra_Map> elewise_map_;
 
-  //! elementwise graph
-  Teuchos::RCP<Epetra_CrsMatrix> graph_;
-
   //! The linearized TV operator
   Teuchos::RCP<Epetra_CrsMatrix> lintvop_;
+
+  //! Covariance approximation
+  Teuchos::RCP<DcsMatrix> fullcovariance_;
   //@}
 
   //! @name Projection between sparse appoximation and full basis
@@ -172,6 +166,14 @@ private:
   //! Eigenvectors of the TV approximation
   Teuchos::RCP<Epetra_MultiVector> evecs_;
 
+  //! number of eigenvectors to compute
+  int nev_;
+
+  //! number of blocks (for the block eigensolver)
+  int nblocks_;
+
+  //! block size (for the block eigensolver)
+  int bsize_;
   //@}
 
 };

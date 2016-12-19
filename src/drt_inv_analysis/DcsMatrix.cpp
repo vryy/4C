@@ -22,13 +22,12 @@
 INVANA::DcsMatrix::DcsMatrix(
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore,
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore,
-    bool initscal, bool probscal, double probscalefac, double covscalefac) :
+    bool initscal, bool probscal, double probscalefac) :
 sty_(0,0,0.0),
 initscal_(initscal),
 init_scale_fac_(1.0),
 probscal_(probscal),
-prob_scale_fac_(probscalefac),
-cov_scale_fac_(covscalefac)
+prob_scale_fac_(probscalefac)
 {
   // stupid conversion from Block map to non block map
   Teuchos::RCP<Epetra_Vector> avec = (*sstore)(0);
@@ -163,9 +162,6 @@ void INVANA::DcsMatrix::twolooprecursion(Epetra_Vector& p) const
   // if the original problem was somehow scaled
   if (probscal_)
     p.Scale(prob_scale_fac_);
-
-  // if the covariance should be scaled
-  p.Scale(cov_scale_fac_);
 
   return;
 }

@@ -37,7 +37,7 @@ void MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int 
 //! compute dot product of two vectors stored in multivector format for storage reasons only
 void MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
 
-Teuchos::RCP<INVANA::CholFactorBase> CreateICT_lowmem(
+Teuchos::RCP<INVANA::CholFactorBase> CreateICT(
     Teuchos::RCP<Epetra_CrsMatrix> covariance, /// [in] covariance to tbe factorized
     const Teuchos::ParameterList& params
     );

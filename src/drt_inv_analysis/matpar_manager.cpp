@@ -47,9 +47,11 @@ discret_(discret)
 {}
 
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManager::Init(const Teuchos::ParameterList& invp)
+void INVANA::MatParManager::Init(const Teuchos::ParameterList& invp,
+    Teuchos::RCP<INVANA::ObjectiveFunct> objfunct)
 {
   inpar_invana_ = invp;
+  objfunct_ = objfunct;
 
   // want metaparametrization
   metaparams_.SetParametrization(
@@ -517,32 +519,14 @@ const Epetra_Comm& INVANA::MatParManager::GComm()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityData()
 {
-  int maxbw=6;  // based on connectivity for hex8 elements
-  Teuchos::RCP<Epetra_CrsMatrix> graph = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*(paramapextractor_->FullMap()),maxbw,false));
-
-  for (int i=0; i<paramapextractor_->NumMaps(); i++)
-    FillAdjacencyMatrix(*(paramapextractor_->Map(i)), graph);
-
-  // Finalize the graph ...
-  graph->FillComplete();
-
-  // put zeros one the diagonal; the diagonal is the "self weight" and it should never
-  // be used somewhere since its meaningless but its better to have 0.0 than some
-  // random value resulting from redundant inserting during FillAdjacencyMatrix
-  Teuchos::RCP<Epetra_Vector> diagonal=Teuchos::rcp(new Epetra_Vector(*(paramapextractor_->FullMap()), true));
-  diagonal->PutScalar(0.0);
-  graph->ReplaceDiagonalValues(*diagonal);
+  Teuchos::RCP<Epetra_CrsMatrix> graph = Graph();
+  Teuchos::RCP<Epetra_CrsMatrix> projector = Projector();
 
   // store graph in a container
-  Teuchos::RCP<ConnectivityData> connectivity = Teuchos::rcp(new ConnectivityData(graph));
+  Teuchos::RCP<ConnectivityData> connectivity = Teuchos::rcp(new
+      ConnectivityData(graph, projector));
 
   return connectivity;
-}
-/*----------------------------------------------------------------------*/
-void INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
-{
-  dserror("dont query this from here!");
-  return;
 }
 
 /*----------------------------------------------------------------------*/

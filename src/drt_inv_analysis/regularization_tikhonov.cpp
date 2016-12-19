@@ -30,7 +30,7 @@ INVANA::RegularizationTikhonov::RegularizationTikhonov() :
 void INVANA::RegularizationTikhonov::Setup(const Teuchos::ParameterList& invp)
 {
   params_ = invp;
-  cov_factor_ = INVANA::CreateICT_lowmem(initguess_->Covariance(),params_);
+  cov_factor_ = INVANA::CreateICT(initguess_->Covariance(),params_);
 
   return;
 }

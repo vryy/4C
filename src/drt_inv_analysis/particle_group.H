@@ -125,17 +125,11 @@ public:
       double& prior /// [out] prior value
       );
 
-  //! Compute weights from given scales
-  void ComputeWeights(double scale_next, double scale_curr);
-
   //! update weights weights_ <- new_weights_
   void UpdateWeights();
 
   //! Compute effective sample size from all particles with weights_
   double EffectiveSampleSize();
-
-  //! Compute effective sample size of the current set in new_weigths_
-  double NewEffectiveSampleSize();
 
   //! Compute new effective sample size from given scales
   double NewEffectiveSampleSize(double scale_next, double scale_curr);

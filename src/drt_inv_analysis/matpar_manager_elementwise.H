@@ -64,12 +64,9 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
-  //! @name Access projection operator
-  //@{
+  //! Return initial covariance guess
+  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
 
-  //! Access to the projector from full to sparse
-  Teuchos::RCP<Epetra_CrsMatrix> Projector() {return projector_;}
-  //@}
 
 protected:
 
@@ -90,6 +87,11 @@ protected:
 
   std::map< int, std::vector<int> >& EleGIDtoparamsLID() {return eleGIDtoparamsLID_;}
 
+  virtual Teuchos::RCP<Epetra_CrsMatrix> Graph() {return graph_;}
+
+  //! Access to the projector from full to sparse
+  Teuchos::RCP<Epetra_CrsMatrix> Projector() {return projector_;}
+
   //! @name Projections between sparse and full
   //@{
 
@@ -105,10 +107,15 @@ protected:
   Teuchos::RCP<Epetra_CrsMatrix> projector_;
   //@}
 
+  //! Graph of the full elementwise layout
+  Teuchos::RCP<Epetra_CrsMatrix> graph_;
+
 private:
 
   //! build a graph of elements in the optimization parameter vector
-  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
+  void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
+
+  void CreateGraph();
 
   //! Set action for FillAdjacencyMatrix
   virtual void SetAction(Teuchos::ParameterList& p);
@@ -133,6 +140,9 @@ private:
    */
   std::map< int, std::vector<int> > eleGIDtoparamsLID_;
   //@}
+
+  //! graph was already built upon setuo
+  bool has_graph_;
 
 };
 }  // namespace INVANA

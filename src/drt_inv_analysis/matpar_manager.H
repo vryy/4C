@@ -26,6 +26,7 @@
 
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "DcsMatrix.H"
+#include "objective_funct.H"
 
 // forward declarations
 namespace DRT
@@ -55,9 +56,12 @@ class ConnectivityData
 
 public:
    // constructor
-  ConnectivityData(Teuchos::RCP<Epetra_CrsMatrix> graph)
+  ConnectivityData(
+      Teuchos::RCP<Epetra_CrsMatrix> graph,
+      Teuchos::RCP<Epetra_CrsMatrix> projector)
   {
     graph_=graph;
+    projector_=projector;
   }
 
   // destructor
@@ -65,10 +69,17 @@ public:
 
   Teuchos::RCP<Epetra_CrsMatrix> AdjacencyMatrix() { return graph_;}
 
+  Teuchos::RCP<Epetra_CrsMatrix> Projector() {return projector_;}
+
 private:
 
   //! graph to hold the connectivity of parameters inside a vector of parameters
   Teuchos::RCP<Epetra_CrsMatrix> graph_;
+
+  /*! \projector
+   * a projection operator from some optimization parameter layout
+   */
+  Teuchos::RCP<Epetra_CrsMatrix> projector_;
 
 };
 
@@ -166,7 +177,9 @@ public:
   //@{
 
   //! Init function for base class
-  void Init(const Teuchos::ParameterList& invp);
+  void Init(const Teuchos::ParameterList& invp, /// [in] inverse analysis input
+      Teuchos::RCP<INVANA::ObjectiveFunct> objfunc /// [in] objective function pointer
+      );
 
   //! Setup specific parametrization layout for derived classes
   virtual void Setup() = 0;
@@ -207,6 +220,9 @@ public:
 
   //! Return initial optimization parameters
   const Epetra_MultiVector& InitialParams(){return *optparams_initial_;}
+
+  //! Return initial guess covariance
+  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance() = 0;
 
   //@}
 
@@ -318,12 +334,21 @@ protected:
 
   //! Return the material to be optimized for this element, -1 otherwise
   int ElementOptMat(DRT::Element* ele);
+
+  //! Elementwise connectivity graph
+  virtual Teuchos::RCP<Epetra_CrsMatrix> Graph() = 0;
+
+  //! Projection from full to reduced
+  virtual Teuchos::RCP<Epetra_CrsMatrix> Projector() = 0;
   //@}
 
-  //! @name Access
+  //! @name Access to inverse analysis stuff
   //@{
 
+  //! Access to the input file parameters
   const Teuchos::ParameterList& Inpar() {return inpar_invana_;}
+
+  INVANA::ObjectiveFunct& Objfunct() {return *objfunct_;}
   //@}
 
   //! actual set of material parameters in some parametrization layout
@@ -373,16 +398,6 @@ private:
 
   //! setup paramap_, parapos_ from input and check for validity
   void SetupMatOptMap(const Teuchos::ParameterList& invp);
-
-  /*! \brief graph of optimization parameters
-   *
-   * A graph having the connectivity of the
-   * optimization parameters. Used for regularization.
-  */
-  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, /// [in] a map from which to build the graph
-      Teuchos::RCP<Epetra_CrsMatrix> graph /// [out] filled graph
-      );
-
   //@}
 
   //! @name Maps keeping track of the layout of MatParManager::params_
@@ -439,8 +454,11 @@ private:
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  // Input file parameters
+  //! Input file parameters
   Teuchos::ParameterList inpar_invana_;
+
+  //! pointer to the objective function
+  Teuchos::RCP<INVANA::ObjectiveFunct> objfunct_;
 
 };
 }  // namespace INVANA

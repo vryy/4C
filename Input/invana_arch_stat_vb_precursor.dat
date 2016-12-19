@@ -40,7 +40,7 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-6
 INIT_TYPE                       dat
 PARAMETRIZATION                 elementwise
-NUM_PATCH_LEVELS                2
+NUM_REDUCT_LEVELS               2
 REGULARIZATION                  totalvariation
 REG_WEIGHT                      10.0
 TVD_EPS                         0.01
@@ -53,16 +53,6 @@ KERNELSCALE                     0.5
 MEASVARESTIM                    0.01
 SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
-NUM_PARTICLES                   12
-MAP_COV_SCALE                   1.0
-MAP_COV_FILL                    1.0
-MAP_RESTART                     5
-MAP_RESTARTFILE                 zzz
-SMC_ESS_REDUCTION               0.05
-MH_ACCADAPT_EVRY                5
-MH_ACCADAPT_ITER                20
-MH_THIN                         2
-MH_BURNIN                       0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

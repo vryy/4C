@@ -161,8 +161,17 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                       stat_inv_mp_uniform),
                                     &statinvp);
 
-  // number of levels for the patch creation
-  IntParameter("NUM_PATCH_LEVELS",4,"number of levels for the patch creation",&statinvp);
+  // number of levels/eigenvectors for the basis reduction
+  IntParameter("NUM_REDUCT_LEVELS",4,"number of levels for the basis reduction (patch-levels, or eigenvectors)",&statinvp);
+
+  // anasazi's number of eigenvectors for the eigensolver in INVANA::MatParManagerTVSVD
+  IntParameter("TVSVD_ANASAZI_NEV",10,"anasazi's number of eigenvectors for the eigensolver in INVANA::MatParManagerTVSVD",&statinvp);
+
+  // anasazi's number of blocks for the eigensolver in INVANA::MatParManagerTVSVD
+  IntParameter("TVSVD_ANASAZI_NBLOCKS",4,"anasazi's number of blocks for the eigensolver in INVANA::MatParManagerTVSVD",&statinvp);
+
+  // anasazi's blocksize for the eigensolver in INVANA::MatParManagerTVSVD
+  IntParameter("TVSVD_ANASAZI_BSIZE",10,"anasazi's blocksize for the eigensolver in INVANA::MatParManagerTVSVD",&statinvp);
 
   // decide which weights to use for the graph of the elementwise parametrization
   setStringToIntegralParameter<int>("GRAPHWEIGHTS","area",
@@ -287,18 +296,23 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("SYNTHNOISESEED",1,"seed to be used for synthetic noise generation",&statinvp);
 
   // scale the covariance matrix for monte carlo algorithms using it
-  DoubleParameter("MAP_COV_SCALE", 1.0, "scaling for the covariance in the smc algorithm", &statinvp);
+  DoubleParameter("MAP_PRIOR_SCALE", 1.0, "scaling for the prior covariance in the LogLikePrior", &statinvp);
 
-  // level of fill for the incomplete factorization of the covariance matrix
-  DoubleParameter("MAP_COV_FILL", 0.1, "level of fill for the incomplete factorization of the covariance matrix", &statinvp);
+  // file to read MAP approximation (as initial guess) from
+  StringParameter("MAP_RESTARTFILE","none",
+                  "control file to read the maximum a posterior approximation (as initial guess) from",
+                  &statinvp);
+
+  // step from which to read the MAP (as initial guess) approximation
+  IntParameter("MAP_RESTART",0,"step to read the maximum a posterior approximation (as initial guess) from",&statinvp);
 
   // file to read MAP approximation from
-  StringParameter("MAP_RESTARTFILE","none",
-                  "control file to read the maximum a posterior approximation from",
+  StringParameter("MAP_REDUCT_RESTARTFILE","none",
+                  "control file to read the maximum a posterior approximation (to create a reduced basis) from",
                   &statinvp);
 
   // step from which to read the MAP approximation
-  IntParameter("MAP_RESTART",0,"step to read the maximum a posterior approximation from",&statinvp);
+  IntParameter("MAP_REDUCT_RESTART",0,"step to read the maximum a posterior approximation (to create a reduced basis) from",&statinvp);
 
   // target effective sample size reduction per time step
   DoubleParameter("SMC_ESS_REDUCTION", 0.05, "targeted effective sample size reduction per step", &statinvp);

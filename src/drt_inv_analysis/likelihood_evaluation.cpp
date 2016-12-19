@@ -107,6 +107,7 @@ void INVANA::LogLikeMixture::DrawProposal(const Epetra_Vector& mean,
 
 /*----------------------------------------------------------------------*/
 INVANA::LogLikePrior::LogLikePrior() :
+cov_scale_(1.0),
 generator_(),
 distribution_(0.0,1.0)
 {
@@ -115,10 +116,11 @@ distribution_(0.0,1.0)
 
 /*----------------------------------------------------------------------*/
 void INVANA::LogLikePrior::Init(Teuchos::RCP<CholFactorBase> cov_factor,
-    Teuchos::RCP<Epetra_Vector> pmean)
+    Teuchos::RCP<Epetra_Vector> pmean, double covscale)
 {
   cov_factor_=cov_factor;
   pmean_=pmean;
+  cov_scale_=covscale;
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   generator_.seed(seed);
@@ -146,8 +148,9 @@ void INVANA::LogLikePrior::DrawfromPrior(Epetra_Vector& draw)
   // Correlate
   L.Multiply(false,sample,draw);
 
-  // mean shift
-  draw.Update(1.0,*pmean_,1.0);
+  // mean shift and scale
+  double sqrtscale = sqrt(cov_scale_);
+  draw.Update(1.0,*pmean_,sqrtscale);
   return;
 }
 
@@ -195,7 +198,7 @@ void INVANA::LogLikePrior::Evaluate(const Epetra_Vector& state, double* val)
   double prior=0.0;
   tmp.Dot(solv,&prior);
 
-  *val=prior*(-1.0);
+  *val=prior*(-1.0)/cov_scale_;
 
   return;
 }

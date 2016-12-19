@@ -62,7 +62,8 @@ public:
 
   //! initialize variables
   void Init(Teuchos::RCP<CholFactorBase> cov_factor, ///[in] factor of covariance matrix
-      Teuchos::RCP<Epetra_Vector> pmean ///[in] prior mean
+      Teuchos::RCP<Epetra_Vector> pmean, ///[in] prior mean
+      double covscale ///[in] scale facrtor for the covariance
       );
   //@}
 
@@ -107,6 +108,8 @@ private:
   //! prior mean
   Teuchos::RCP<Epetra_Vector> pmean_;
 
+  //! covariance scale factor
+  double cov_scale_;
   //@}
 
   //! @name random number generation

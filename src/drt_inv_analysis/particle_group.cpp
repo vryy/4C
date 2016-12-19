@@ -333,94 +333,6 @@ double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double s
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::ParticleGroup::ComputeWeights(double scale_next, double scale_curr)
-{
-  // there can appear fpe in here
-  fedisableexcept(FE_ALL_EXCEPT);
-  int raise = 0;
-
-  // unnormalized weights
-  std::vector<double> myweights;
-  //and their ids
-  std::vector<int> myids;
-
-  // loop all the particles in this group
-  for(DATAITER it=Data().begin(); it!=Data().end(); it++)
-  {
-    // get posterior value
-    double posterior = it->second->GetPosterior();
-
-    // get prior value
-    double prior = it->second->GetPrior();
-
-    // compute current mixture
-    double m_curr = posterior*scale_curr + prior*(1.0-scale_curr);
-    //compute next mixture
-    double m_next = posterior*scale_next + prior*(1.0-scale_next);
-
-    // clear flags
-    raise = 0;
-    feclearexcept(FE_ALL_EXCEPT);
-    // compute likelihood ratio
-    double val = exp(m_next - m_curr);
-    raise = fetestexcept(FE_OVERFLOW);
-    if (raise)
-      val = std::numeric_limits<double>::max();
-
-    myweights.push_back( weights_[it->first]*val );
-
-    // keep track of the order of id (just out of paranoia)
-    myids.push_back(it->first);
-  }
-
-  //normalize
-  std::vector<double> weights(gnumparticles_);
-  pcomm_->IComm().GatherAll(&myweights[0],&weights[0],lnumparticles_);
-
-  // reset flags
-  raise = 0;
-  feclearexcept(FE_OVERFLOW);
-
-  double sum=0.0;
-  for (int i=0; i<(int)weights.size(); i++)
-    sum += weights[i];
-
-  if (raise)
-    sum = std::numeric_limits<double>::max();
-
-  if (sum==0.0)
-    dserror("Degenerated set of particles."
-        "This should not happen with enough particles!");
-
-  int i=0;
-  for (std::vector<int>::iterator it=myids.begin(); it!=myids.end(); it++)
-  {
-    // reset flags
-    raise = 0;
-    feclearexcept(FE_UNDERFLOW);
-    double divi = myweights[i]/sum;
-    raise = fetestexcept(FE_UNDERFLOW);
-    if (raise)
-      new_weights_[*it] = 0.0;
-    else
-      new_weights_[*it] = divi;
-
-    i++;
-  }
-
-  // everybody should be done before proceeding
-  pcomm_->GComm().Barrier();
-
-  // reset and set traps in case
-  feclearexcept(FE_ALL_EXCEPT);
-#ifdef TRAP_FE
-  feenableexcept(FE_INVALID | FE_DIVBYZERO);
-#endif
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
 void INVANA::ParticleGroup::UpdateWeights()
 {
   weights_=new_weights_;
@@ -460,51 +372,6 @@ double INVANA::ParticleGroup::EffectiveSampleSize()
   }
   // sum is actually one since we have normalized weights
   ess = sum*sum/sum2;
-
-  return ess;
-}
-
-/*----------------------------------------------------------------------*/
-double INVANA::ParticleGroup::NewEffectiveSampleSize()
-{
-  // there can appear fpe in here
-  fedisableexcept(FE_ALL_EXCEPT);
-  int raise = 0;
-
-  double ess=0.0;
-
-  // put weights into vector
-  std::vector<double> myweights;
-  std::map<int, double>::iterator it;
-  for (it=new_weights_.begin(); it!=new_weights_.end(); it++)
-    myweights.push_back(it->second);
-
-  // gather all weights on all procs
-  std::vector<double> weights(gnumparticles_);
-  pcomm_->IComm().GatherAll(&myweights[0],&weights[0],lnumparticles_);
-
-
-  // compute the same ess on all procs
-  double sum=0.0;
-  double sum2=0.0;
-  std::vector<double>::iterator kt;
-  for (kt=weights.begin(); kt!=weights.end(); kt++)
-  {
-    sum += *kt;
-    sum2 += *kt*(*kt);
-  }
-  ess = sum*sum/sum2;
-
-  raise = fetestexcept(FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO);
-  if (raise)
-    ess = 0.0;
-  else
-
-  // reset and set traps in case
-  feclearexcept(FE_ALL_EXCEPT);
-#ifdef TRAP_FE
-  feenableexcept(FE_INVALID | FE_DIVBYZERO);
-#endif
 
   return ess;
 }
@@ -688,7 +555,7 @@ void INVANA::ParticleGroup::RejuvenateParticles(double scale)
   }
 
   double boundl=0.15;
-  double boundu=0.60;
+  double boundu=0.30;
   double acceptance = 0.0;
   while(acceptance<boundl || acceptance >boundu)
   {
@@ -771,7 +638,7 @@ void INVANA::ParticleGroup::ComputeMean(std::map<int, Teuchos::RCP<ParticleData>
     for (std::map<int,double>::iterator it=weights.begin(); it!=weights.end(); it++)
       sum+=it->second;
 
-    if (abs(sum-1.0)>1.0e-13)
+    if (abs(sum-1.0)>1.0e-1)
       dserror("weight is not normalized, but %.1f", sum);
 
     // mean

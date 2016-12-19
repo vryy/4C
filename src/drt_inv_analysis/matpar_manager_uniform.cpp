@@ -44,7 +44,7 @@ void INVANA::MatParManagerUniform::Setup()
   if (Comm().MyPID() == 0)
   {
     std::cout << "-----------------------------" << std::endl;
-    std::cout << "MatParManager Setup:" << std::endl;
+    std::cout << "MatParManagerUniform Setup:" << std::endl;
   }
 
   // call setup of the Base class to have all the
@@ -52,7 +52,6 @@ void INVANA::MatParManagerUniform::Setup()
   MatParManagerPerElement::Setup();
   optparams_elewise_ = Teuchos::rcp(new Epetra_MultiVector(*optparams_));
   elewise_map_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
-  graph_ = GetConnectivityData()->AdjacencyMatrix();
 
   // create projection from elements to patches
   CreateProjection();
@@ -239,4 +238,22 @@ void INVANA::MatParManagerUniform::CreateProjection()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerUniform::InitialCovariance()
+{
+  // the best inital guess to get from datfile input is a
+  // unit diagonal.
+  Teuchos::RCP<Epetra_CrsMatrix> cov = Teuchos::rcp(new
+      Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*paramlayoutmapunique_,1,false));
 
+  // insert ones onto the diagonal
+  double values=1.0;
+  for (int i=0; i<cov->NumMyRows(); i++)
+  {
+    int gid = paramlayoutmapunique_->GID(i);
+    cov->InsertGlobalValues(gid,1,&values,&gid);
+  }
+  cov->FillComplete();
+
+  return cov;
+}

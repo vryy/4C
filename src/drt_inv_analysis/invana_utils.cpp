@@ -73,44 +73,17 @@ void INVANA::MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiV
 
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<INVANA::CholFactorBase> INVANA::CreateICT_lowmem(
+Teuchos::RCP<INVANA::CholFactorBase> INVANA::CreateICT(
     Teuchos::RCP<Epetra_CrsMatrix> covariance, const Teuchos::ParameterList& params)
 {
   INVANA::CholFactory cholfactory;
 
+  // when different factorizations are derived from
+  // INVANA::CholFactorBase. Put the necessary stuff into this list
+  // the only current implementation doesn't need any input
   Teuchos::ParameterList List(params);
-  // These four are read by Ifpack_IC::SetParameters
-  List.set("fact: ict level-of-fill", params.get<double>("MAP_COV_FILL")); // exact: 1.0
-  List.set("fact: absolute threshold",0.0); // exact: 0.0
-  List.set("fact: relative threshold",1.0); //exact: 1.0
-  List.set("fact: drop tolerance",0.0); //exact: 0.0
+
   Teuchos::RCP<CholFactorBase> prec = cholfactory.Create(covariance,List);
-
-  // -------- debug print outs
-#if INVANA_DEBUG_PRINTING
-
-  // test for type
-  Teuchos::RCP<DcsMatrix> Ad = Teuchos::rcp_dynamic_cast<DcsMatrix>(covariance);
-
-  if (Ad != Teuchos::null)
-  {
-  LINALG::PrintMatrixInMatlabFormat("lower.mtl",prec->H());
-
-  Teuchos::RCP<Epetra_CrsMatrix> fullA = Ad->FillMatrix();
-  LINALG::PrintMatrixInMatlabFormat("fullmatrix.mtl",*fullA);
-  }
-  else
-    LINALG::PrintMatrixInMatlabFormat("fullmatrix.mtl",*covariance);
-
-  Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(covariance->RowMap(),false));
-  b->Random();
-  LINALG::PrintVectorInMatlabFormat("rhs.mtl",*b);
-
-  Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(covariance->RowMap(),true));
-  prec->ApplyInverse(*b,*x);
-  LINALG::PrintVectorInMatlabFormat("x.mtl",*x);
-#endif
-  // -------- end debug
 
   return prec;
 }

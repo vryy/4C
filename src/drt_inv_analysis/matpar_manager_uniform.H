@@ -58,8 +58,8 @@ public:
       Teuchos::RCP<Epetra_MultiVector> target
       );
 
-  //! Access to the unreduced layout
-  Teuchos::RCP<Epetra_Map> UnreducedMap() {return elewise_map_;}
+  //! Return initial covariance guess
+  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
 
 
 protected:
@@ -94,9 +94,6 @@ private:
 
   //! elementwise layout
   Teuchos::RCP<Epetra_Map> elewise_map_;
-
-  //! elementwise graph
-  Teuchos::RCP<Epetra_CrsMatrix> graph_;
   //@}
 
   //! global optimization parameter id to patch id

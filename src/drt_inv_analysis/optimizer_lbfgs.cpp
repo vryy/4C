@@ -485,7 +485,7 @@ void INVANA::OptimizerLBFGS::WriteOutput()
 
   // covariance estimation in optimization parameter layout
   double objfuncscal = OptProb()->ObjectiveFunct()->GetScaleFac();
-  DcsMatrix covmatrix(sstore_, ystore_, initscal_, true, objfuncscal, 1.0);
+  DcsMatrix covmatrix(sstore_, ystore_, initscal_, true, objfuncscal);
 
   // get variances in elementwise layout
   Teuchos::RCP<Epetra_MultiVector> stdev =

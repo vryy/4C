@@ -49,10 +49,12 @@ INVANA::MatParManagerTVSVD::MatParManagerTVSVD(Teuchos::RCP<DRT::Discretization>
    : MatParManagerPerElement(discret),
 max_num_levels_(1),
 seed_(1),
-qthresh_(0.05),
 eps_(1.0e-02),
 map_restart_file_("none"),
-map_restart_step_(-1)
+map_restart_step_(-1),
+nev_(10),
+nblocks_(10),
+bsize_(4)
 {}
 
 /*----------------------------------------------------------------------*/
@@ -61,26 +63,30 @@ void INVANA::MatParManagerTVSVD::Setup()
   if (Comm().MyPID() == 0)
   {
     std::cout << "-----------------------------" << std::endl;
-    std::cout << "MatParManager Setup:" << std::endl;
+    std::cout << "MatParManagerTVSVD Setup:" << std::endl;
   }
 
-  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-  map_restart_step_ = invp.get<int>("MAP_RESTART");
-  map_restart_file_ = Teuchos::getNumericStringParameter(invp,"MAP_RESTARTFILE");
+  // MAP restart stuff
+  const Teuchos::ParameterList& invp = Inpar();
+  map_restart_step_ = invp.get<int>("MAP_REDUCT_RESTART");
+  map_restart_file_ = Teuchos::getNumericStringParameter(invp,"MAP_REDUCT_RESTARTFILE");
 
-  max_num_levels_ = invp.get<int>("NUM_PATCH_LEVELS");
+  // eigendecomposition stuff
+  max_num_levels_ = invp.get<int>("NUM_REDUCT_LEVELS");
+  nev_ = invp.get<int>("TVSVD_ANASAZI_NEV");
+  nblocks_ = invp.get<int>("TVSVD_ANASAZI_NBLOCKS");
+  bsize_ = invp.get<int>("TVSVD_ANASAZI_BSIZE");
 
   eps_ = invp.get<double>("TVD_EPS");
 
   if (max_num_levels_<1)
-    dserror("Choose at least NUM_LEVELS = 1 for the patch creation!");
+    dserror("Choose at least NUM_LEVELS = 1 for the basis creation!");
 
   // call setup of the Base class to have all the
   // layout of the elementwise distribution
   MatParManagerPerElement::Setup();
   optparams_elewise_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
   elewise_map_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
-  graph_ = GetConnectivityData()->AdjacencyMatrix();
 
   // set up random number generator consistently in case of nested parallelity
   util_.SetSeed(seed_+Comm().MyPID());
@@ -106,14 +112,17 @@ void INVANA::MatParManagerTVSVD::FillParameters(Teuchos::RCP<Epetra_MultiVector>
   params->PutScalar(0.0);
 
   // Inject into the elementwise solution space
-  int err = projector_->Multiply(true,*optparams_,*optparams_elewise_);
+  Epetra_MultiVector projected(*elewise_map_,1,true);
+  int err = projector_->Multiply(true,*optparams_,projected);
   if (err!=0)
     dserror("Application of prolongator failed.");
+
+  projected.Update(1.0,*optparams_elewise_,1.0);
 
   // loop the parameter blocks
   for (int k=0; k<paramapextractor_->NumMaps(); k++)
   {
-    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(*(*optparams_elewise_)(0),k);
+    Teuchos::RCP<Epetra_Vector> tmp = paramapextractor_->ExtractVector(*projected(0),k);
     for (int i=0; i< tmp->MyLength(); i++)
     {
       int pgid = tmp->Map().GID(i); // !! the local id of the partial map is not the local parameter id!!
@@ -167,14 +176,8 @@ void INVANA::MatParManagerTVSVD::InitParameters()
   if ( not projector_->RangeMap().PointSameAs(optparams_->Map()))
     dserror("Restrictor->RangeMap error");
 
-  // parameters are not initialized from input but
-  // from the elementwise layout
-  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
-  if (err!=0)
-    dserror("Application of restrictor failed.");
-
-  // set initial values
-  optparams_initial_->Scale(1.0,*optparams_);
+  // optparams are initialized to zero
+  optparams_initial_->PutScalar(0.0);
 
 }
 
@@ -238,8 +241,43 @@ void INVANA::MatParManagerTVSVD::ReadMAPApproximation()
     std::cout << "  step " << map_restart_step_ << " (from: " << input->FileName() << ")" << std::endl;
   }
 
+  // MAP solution
   reader.ReadMultiVector(optparams_elewise_,"solution");
 
+  // Read lbfgs matrix storage
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore = Teuchos::rcp(new
+      TIMINT::TimIntMStep<Epetra_Vector>(0, 0, elewise_map_.get(), true));
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore = Teuchos::rcp(new
+      TIMINT::TimIntMStep<Epetra_Vector>(0, 0, elewise_map_.get(), true));
+
+  int actsize = reader.ReadInt("storage_size");
+
+  //initialize storage
+  sstore->Resize(-actsize+1,0,elewise_map_.get(),true);
+  ystore->Resize(-actsize+1,0,elewise_map_.get(),true);
+
+  Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new
+      Epetra_MultiVector(*elewise_map_,actsize,false));
+
+  reader.ReadMultiVector(storage,"sstore");
+  for (int i=0; i<actsize; i++)
+    sstore->UpdateSteps(*(*storage)(i));
+
+  storage->Scale(0.0);
+  reader.ReadMultiVector(storage,"ystore");
+  for (int i=0; i<actsize; i++)
+    ystore->UpdateSteps(*(*storage)(i));
+
+  // ---- create covariance matrix
+  double scalefac=1.0;
+  bool objfuncscal = DRT::INPUT::IntegralValue<bool>(Inpar(), "OBJECTIVEFUNCTSCAL");
+  if (objfuncscal)
+    scalefac = Objfunct().GetScaleFac();
+
+  bool initscal = DRT::INPUT::IntegralValue<bool>(Inpar(), "LBFGSINITSCAL");
+
+  fullcovariance_ = Teuchos::rcp(new
+      DcsMatrix(sstore, ystore, initscal, objfuncscal, scalefac));
 
   return;
 }
@@ -253,23 +291,8 @@ void INVANA::MatParManagerTVSVD::CreateProjection()
   // Factorization of the linear operator
   Factorize();
 
-  // create the orthogonal dictionary for each level
-  // and check the approximation power
-  double quality = 100.0;
-  int level=1;
-  while (quality > qthresh_ and level <= max_num_levels_)
-  {
-    SetupRandP(level);
-    quality = CheckApproximation();
-    level += 1;
-  }
-
-  // Some user information
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "  Reached approximation quality of " << quality << std::endl;
-    std::cout << "  using the first " << level - 1 << " eigenvectors" << std::endl;
-  }
+  // Set up projection operators
+  SetupRandP(max_num_levels_);
 
   return;
 }
@@ -309,7 +332,7 @@ void INVANA::MatParManagerTVSVD::SetupRandP(int numvecs)
   if (err != 0)
     dserror("Restrictor/Prolongator FillComplete failed.");
 
-  // initialize optimization parameters
+  // initialize optimization parameters to zero
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
   optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
 
@@ -416,13 +439,13 @@ void INVANA::MatParManagerTVSVD::Factorize()
   //------------------------------------------------
   // Setup the eigenproblem using Anasazi
   const int nev = 10;
-  const int blocksize = 2;
+  const int blocksize = 10;
   evecs_ = Teuchos::rcp(new Epetra_MultiVector(graph_->RowMap(), nev));
 
   // prerequ:
   // numblock*blocksize + maxlocked must be < spacedim
   // maxlocked + blocksize > nev
-  int numblocks = 20;
+  int numblocks = 4;
 
   Teuchos::ParameterList params;
   std::string which("SM");
@@ -437,6 +460,8 @@ void INVANA::MatParManagerTVSVD::Factorize()
   params.set("Verbosity", Anasazi::Errors);
 
   AnasaziEigenProblem(lintvop_,evecs_,params);
+  //AnasaziEigenProblem(fullcovariance_->FillMatrix(),evecs_,params);
+
   return;
 }
 
@@ -521,37 +546,6 @@ void INVANA::MatParManagerTVSVD::AnasaziEigenProblem(Teuchos::RCP<Epetra_CrsMatr
   printer.print(Anasazi::Errors,os.str());
 }
 
-
-/*----------------------------------------------------------------------*/
-double INVANA::MatParManagerTVSVD::CheckApproximation()
-{
-  // compute 'optimal' optimization parameters
-  int err = projector_->Multiply(false,*optparams_elewise_,*optparams_);
-  if (err!=0)
-    dserror("Application of restrictor failed.");
-
-  // project to elementwise solution space
-  Teuchos::RCP<Epetra_MultiVector> projection = Teuchos::rcp(new
-      Epetra_MultiVector(*elewise_map_,1,false));
-  err = projector_->Multiply(true,*optparams_,*projection);
-  if (err!=0)
-    dserror("Application of restrictor failed.");
-
-  // compute metric
-  projection->Update(-1.0,*optparams_elewise_,1.0);
-  // projection->Print(std::cout);
-  double metric;
-  projection->Norm2(&metric);
-
-  double base;
-  optparams_elewise_->Norm2(&base);
-
-  // make metric relative
-  metric/=base;
-
-  return metric;
-}
-
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManagerTVSVD::Random(Epetra_MultiVector& randvec)
 {
@@ -568,4 +562,43 @@ void INVANA::MatParManagerTVSVD::Random(Epetra_MultiVector& randvec)
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerTVSVD::InitialCovariance()
+{
+  // projector * covariance
+  Teuchos::RCP<Epetra_CrsMatrix> interm = Teuchos::rcp(new Epetra_CrsMatrix(
+      Copy,projector_->RowMap(),projector_->ColMap(),projector_->MaxNumEntries(),false));
+
+  Teuchos::RCP<Epetra_Vector> column = Teuchos::rcp(new
+      Epetra_Vector(fullcovariance_->RowMap(),false));
+  Teuchos::RCP<Epetra_Vector> col_interm = Teuchos::rcp(new
+      Epetra_Vector(projector_->RowMap(),false));
+  int maxnumentries = fullcovariance_->MaxNumEntries();
+  for (int i=0; i<maxnumentries; i++)
+  {
+    // get column
+    fullcovariance_->ExtractGlobalColumnCopy(i,*column);
+
+    // project this column
+    int err = projector_->Multiply(false,*column,*col_interm);
+    if (err!=0)
+      dserror("Projection failed.");
+
+    // put column into intermediate matrix
+    double* vals;
+    int colind = i;
+    col_interm->ExtractView(&vals);
+    for (int j=0; j<col_interm->MyLength(); j++)
+    {
+      int gid = projector_->RowMap().GID(j);
+      interm->InsertGlobalValues(gid,1,&vals[j],&colind);
+    }
+  }
+  interm->FillComplete(projector_->ColMap(),projector_->RangeMap());
+
+  //interm * projector'
+  Teuchos::RCP<Epetra_CrsMatrix> cov = LINALG::Multiply(*interm,false,*projector_,true);
+  return cov;
 }
