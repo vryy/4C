@@ -51,24 +51,25 @@ inline double kernel(double x1, double x2, double x3,
   return exp(-((x1-y1)*(x1-y1)+(x2-y2)*(x2-y2)+(x3-y3)*(x3-y3))/lscale);}
 
 
-/*!
-  \brief An objective function comparing sets of surfaces
-
-  This is a handler to have easy access to currents based on different conditions,
-  i.e every source surface current condition should be evaluated against the corresponding
-  target surface current condition.
-
-  This object just handles correspondences between surfaces to be compared against each other.
-  The necessary information comes from the input files of meshes to be compared with each other.
-
-  The actual computation of a norm on surfaces and the gradient thereof is forwarded to
-  INVANA::SurfCurrentPair.
-
-  The whole objective function is made up as sums of pair-wise norm.
-
-  Eventually it is expected that this class might also manage the tracking of surfaces warped by
-  the solution of the timestepping of a problem. But sofar only one timestep, which is considered the
-  "final" timestep is taken into account.
+/*! \brief An objective function comparing sets of surfaces
+ *
+ * This is a handler to have easy access to currents based on different conditions,
+ * i.e every source surface current condition should be evaluated against the corresponding
+ * target surface current condition.
+ *
+ * This object just handles correspondences between surfaces to be compared against each other.
+ * The necessary information comes from the input files of meshes to be compared with each other.
+ *
+ * The actual computation of a norm on surfaces and the gradient thereof is forwarded to
+ * INVANA::SurfCurrentPair.
+ *
+ * The whole objective function is made up as sums of pair-wise norm.
+ *
+ * Eventually it is expected that this class might also manage the tracking of surfaces warped by
+ * the solution of the timestepping of a problem. But sofar only one timestep, which is considered the
+ *  "final" timestep is taken into account.
+ *
+ *  \author kehl \date 2015
   */
 class SurfCurrentGroup : public ObjectiveFunct
 {
@@ -404,21 +405,48 @@ struct ConvoluteDk {
 };
 
 
-  /*!
-  \brief Comparison of 2 surfaces in the space of surface current W.
-
-  This class computes the difference between two surfaces in the space of surface currents.
-  In here surfaces are already discretized objects in the sense of Triangulations.
-  These must be provided by INVANA:: Triangulation.
-
-  Further it provides gradient information of the above mentioned norm wrt. degrees of freedom
-  of the triangulation. Track of how these degrees of freedom are matched to the degrees of
-  freedom of some global problem this norm is part of is kept by the INVANA::Triangulation class.
-
-  This class makes heavy use of OpenMP(if available) through Kokkos. Otherwise one will at least
-  benefit from the Kokkos:Serial mode which is anyhow way faster than plain mpi parallelization.
-
-  */
+/*! \brief Comparison of 2 surfaces in the space of surface current.
+ *
+ * This class computes the difference between two surfaces in the space of surface currents
+ * (labelled W in here). In here surfaces are already discretized objects in the sense of
+ * Triangulations. These must be provided by INVANA:: Triangulation.
+ *
+ * Further it provides gradient information of the above mentioned norm wrt. degrees of freedom
+ * of the triangulation. Track of how these degrees of freedom are matched to the degrees of
+ * freedom of some global problem this norm is part of is kept by the INVANA::Triangulation class.
+ *
+ * This class makes heavy use of OpenMP(if available) through Kokkos. Otherwise one will at least
+ * benefit from the Kokkos:Serial mode which is anyhow way faster than plain MPI parallelization.
+ *
+ * By default Kokkos just uses Serial mode, meaning hardware threads are one-to-one connected to
+ * the mpi-ranks. If the newly introduced (r21563) do-configure HAVE_OpenMP-flag is set ON (default
+ * is OFF) baci is compiled with OpenMP support and Kokkos can make use of it in case a proper
+ * Trilinos is provided, i.e set
+ *
+ * Trilinos_ENABLE_OpenMP:BOOL=ON
+ * Kokkos_ENABLE_OpenMP:BOOL=ON
+ * Kokkos_ENABLE_Pthread:BOOL=OFF
+ * Tpetra_INST_OPENMP:BOOL=ON
+ *
+ * in your trilinos. When using one of the /lnm/lib versions, baci will simply fall back to Kokkos::Serial
+ * mode although having HAVE_OpenMP=ON, since Kokkos doesn't provide the OpenMP macro.
+ *
+ * ATTENTION: In the case of a fully working OpenMP built, the user has to define a binding of mpi-ranks
+ * to threads/cores manually as arguments to mpirun whenever having > 2 mpi-ranks.(For <=2 mpi-ranks there
+ * is a default binding in OpenMPI). Not doing so probably results in an awfully slow baci for very basic
+ * standard operations. See the man entry for mpirun
+ *
+ * Suppose you have a DELL T3600 ((1 node), 1 socket, 6 cores (with 2 threads each)) and you want to run
+ * 3 mpi processes you can do like this:
+ *
+ * mpirun -np 3 --map-by node:PE=2 --bind-to core baciexe ...
+ * that means on the node (in this case socket would do aswell) you do a mapping of 2 ProcessingElements (PE)
+ * to each mpi-rank, whereby the PE are defined by the --bind-to argument to be cores. This would then use
+ * all of your 6 cores, whereby each mpi-rank would use the 4 associated threads. Using --report-bindings
+ * helps to see whether your binding does what you want.
+ *
+ * \author kehl \date 11/2015
+ */
 class SurfCurrentPair
 {
 private:
@@ -508,8 +536,9 @@ public:
   * should inherit from a proper base class. Since the main focus - at the moment -
   * is that this class is used by the INVANA::SurfCurrrentPair class to have it easily
   * being reused for any sort of opmtimization problem.
-
-*/
+  *
+  * \author kehl \date 11/2015
+  */
 class Triangulation {
 
 public:
