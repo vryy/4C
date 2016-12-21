@@ -2,13 +2,15 @@
 /*!
 \file acou_ele_boundary_calc.H
 
-\brief Routines for acoustic elements
+\brief Routines for acoustic boundary elements
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15271
+            089 - 289-15265
 </pre>
 */
 /*--------------------------------------------------------------------------*/

@@ -1,13 +1,12 @@
 /*!
 \file acou_ele_boundary_calc.cpp
-\brief
+\brief boundary calc base routines
 \level 2
 
-<pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
 /*--------------------------------------------------------------------------*/

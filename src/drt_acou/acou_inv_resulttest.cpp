@@ -5,10 +5,12 @@
 \brief testing of inverse photoacoustic reconstruction results
 
 <pre>
-        Maintainer: Svenja Schoeder
-        schoeder@lnm.mw.tum.de
-        http://www.lnm.mw.tum.de/staff/svenja-schoeder/
-        089 - 289-15271
+\level 2
+
+\maintainer Svenja Schoeder
+            schoeder@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

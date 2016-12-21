@@ -6,6 +6,8 @@ Runge-Kutta method of order 4, low-storage RK methods, strong stability
 preserving RK methods and ADER
 
 <pre>
+\level 2
+
 \maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -80,13 +82,47 @@ public:
       vec_np[d] = 0;
 
     // apply ader scheme
-    this->operation.applyader(vec_n,vec_np,current_time,time_step);
+    this->operation.apply(vec_n,vec_np,current_time,time_step);
 
     // add
     for (unsigned int d=0; d<vec_n.size(); ++d)
       vec_np[d].sadd(-1.0,1.0,vec_n[d]);
   }
 };
+
+/**
+ * Implementation of the ADER LTS method, taking the input in @p vec_n
+ * and producing an output at <code>current_time + time_step</code> in the
+ * output @p vec_np. The function evaluation is doing through
+ * Operator::applyader.
+ *
+ * @author Svenja Schoeder, 2016
+ */
+template <typename Operator>
+class ArbitraryHighOrderDGLTS : public ExplicitIntegrator<Operator>
+{
+public:
+  typedef typename Operator::vector_type vector_type;
+
+  ArbitraryHighOrderDGLTS (const Operator &operation)
+  :
+    ExplicitIntegrator<Operator>(operation)
+    {};
+
+  virtual void do_time_step( std::vector<vector_type> &vec_n,
+      std::vector<vector_type> &vec_np,
+      const double              current_time,
+      const double              time_step)
+  {
+    // init
+    for (unsigned int d=0; d<vec_n.size(); ++d)
+      vec_np[d] = 0;
+
+    // apply ader scheme
+    this->operation.apply(vec_n,vec_np,current_time,time_step);
+  }
+};
+
 
 /**
  * Implementation of the forward Euler method, taking the input in @p vec_n

@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file acou_dyn.cpp
 \brief Main control routine for acoustic simulations
-\level 3
+\level 2
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -123,6 +123,7 @@ void acoustics_drt()
     case INPAR::ACOU::acou_lsrk45reg3:
     case INPAR::ACOU::acou_ssprk:
     case INPAR::ACOU::acou_ader:
+    case INPAR::ACOU::acou_ader_lts:
     {
       acoudishdg->AddElementGhostLayer();
       break;
@@ -230,11 +231,16 @@ void acoustics_drt()
     case INPAR::ACOU::acou_lsrk45reg3:
     case INPAR::ACOU::acou_ssprk:
     case INPAR::ACOU::acou_ader:
+    case INPAR::ACOU::acou_ader_lts:
     {
       acoualgo = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acoudishdg,solver,params,output));
       break;
     }
-
+    case INPAR::ACOU::acou_ader_tritet:
+    {
+      acoualgo = Teuchos::rcp(new ACOU::AcouTimeIntAderTriTet(acoudishdg,solver,params,output));
+      break;
+    }
     default:
       dserror("Unknown time integration scheme for problem type Acoustics");
       break;

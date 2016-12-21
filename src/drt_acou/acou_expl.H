@@ -3,10 +3,12 @@
 \brief Control routine for acoustic explicit time integration.
 
 <pre>
+\level 2
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -47,6 +49,10 @@ public:
                       Teuchos::RCP<ACOU::AcouExplicitTimeInt>    timeintin);
 
   ~WaveEquationProblem();
+
+  // evaluator is set
+  void set_evaluator(const Teuchos::RCP<Teuchos::ParameterList> params,
+                     const int fe_degree);
 
   // Integration, i.e. time loop
   void run(Teuchos::RCP<Epetra_MultiVector> history);

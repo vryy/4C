@@ -1,15 +1,16 @@
 /*!---------------------------------------------------------------------------
 \file acou_ele_action.H
 
-\brief Provides enum of actions.
+\brief Provides enum of actions for acoustic elements
 
 <pre>
+\level 2
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
-
 *---------------------------------------------------------------------------*/
 
 #ifndef ACOU_ELE_ACTION_H
@@ -40,7 +41,12 @@ enum Action {
   project_dirich_field,               // 15
   ele_init_from_acouoptrestart,       // 16
   bd_integrate,                       // 17
-  calc_average_pressure               // 18
+  calc_average_pressure,              // 18
+  calc_ader_sysmat_and_residual,      // 19
+  update_ader_solution,               // 20
+  prepare_ader_postprocessing,        // 21
+  ader_postprocessing,                // 22
+  ader_postpro_gradanddiv             // 23
 }; // enum Action
 
 } // namespace ACOU

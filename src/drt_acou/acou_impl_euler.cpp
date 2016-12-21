@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file acou_impl_euler.cpp
-\brief
+\brief specific acoustic implicit euler implementation
 
 <pre>
-Maintainers: Svenja Schoeder
-             schoeder@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15271
+\level 2
+
+\maintainer Svenja Schoeder
+            schoeder@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 
 *----------------------------------------------------------------------*/

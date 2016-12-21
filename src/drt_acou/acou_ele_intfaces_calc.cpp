@@ -5,13 +5,15 @@
 Integrate internal face terms on an internal faces element
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "acou_ele_action.H"

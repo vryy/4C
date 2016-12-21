@@ -6,10 +6,12 @@
 \level 2
 
 <pre>
+\level 2
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/staff/svenja-schoeder/
-            089 - 289-15271
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -206,6 +208,19 @@ bool ACOU::PATLineSearch::Run()
     // update parameters
     step_->Update(1.0,*state_,0.0);
     step_->Update(alpha_i_,*dir_,1.0);
+
+    double maxval=-1.0;
+    step_->MaxValue(&maxval);
+    while(maxval<0.0)
+    {
+      alpha_i_ /=2.0;
+      step_->Update(1.0,*state_,0.0);
+      step_->Update(alpha_i_,*dir_,1.0);
+      step_->MaxValue(&maxval);
+      if(!myrank_)
+        std::cout<<"warning: had to reduce line search step length to "<<alpha_i_<<", all values were negative"<<std::endl;
+    }
+
     imagereconstruction_->ReplaceParams(step_);
 
     // solve forward problem
@@ -474,7 +489,6 @@ void ACOU::PATRegula::Evaluate(Teuchos::RCP<Epetra_Vector> params, double* val)
           rowsum += weights[j]*(colval-rowval)*(colval-rowval);
         }
       }
-
       // sum over all the rows
       functvalue+=sqrt(rowsum+tvdeps_);
     }

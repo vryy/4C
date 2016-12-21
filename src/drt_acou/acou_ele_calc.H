@@ -5,10 +5,12 @@
 \brief Routines for acoustic elements
 
 <pre>
+\level 2
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15271
+            089 - 289-15265
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -53,7 +55,16 @@ namespace ELEMENTS
     void ComputeError(
         DRT::ELEMENTS::Acou*          ele,
         Teuchos::ParameterList&       params,
-        Epetra_SerialDenseVector&     elevec);
+        Epetra_SerialDenseVector&     elevec,
+        double rho,
+        double dt);
+
+    void ComputeADERPostProcessing(
+        DRT::ELEMENTS::Acou*          ele,
+        Teuchos::ParameterList&       params,
+        Epetra_SerialDenseVector&     elevec,
+        double rho,
+        double dt);
 
     /// projection of optical field
     virtual void ElementInit(DRT::ELEMENTS::Acou*                 ele,
@@ -140,6 +151,15 @@ namespace ELEMENTS
                            Epetra_SerialDenseVector          & eleVec,
                            Epetra_SerialDenseVector          & interiorVeln,
                            Epetra_SerialDenseVector          & interiorPressn);
+
+      void ComputeADERResidual(DRT::ELEMENTS::Acou*                ele,
+                               DRT::Discretization &               discretization,
+                               Teuchos::ParameterList&             params,
+                               Epetra_SerialDenseVector          & eleVec,
+                               Epetra_SerialDenseVector          & interiorVeln,
+                               Epetra_SerialDenseVector          & interiorPressn,
+                               double c,
+                               double rho);
 
       void ComputeSource(Teuchos::ParameterList&           params,
                          Epetra_SerialDenseVector          & interiorSourcen,
@@ -274,6 +294,14 @@ namespace ELEMENTS
                                                    double                            dt,
                                                    bool                              errormaps,
                                                    bool                              updateonly);
+
+    /// updates interior variables and calculates residual
+    void UpdateADERSolution(DRT::Discretization &             discretization,
+                                              Teuchos::ParameterList&           params,
+                                              DRT::ELEMENTS::Acou*       ele,
+                                              const Teuchos::RCP<MAT::Material> &mat,
+                                              Epetra_SerialDenseVector          & elevec,
+                                              double                            dt);
 
     void ComputeGradientContribution(DRT::Discretization &             discretization,
                                      DRT::ELEMENTS::Acou &             ele,

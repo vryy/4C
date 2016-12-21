@@ -20,13 +20,14 @@ RESTART                         0
 ----------------------------------------------------------------IO
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.003333333333333333
+TIMESTEP                        0.0033333333333333333
 MAXTIME                         0.2
 NUMSTEP                         2000000
-RESTARTEVRY                     5
+RESTARTEVRY                     20
+RESULTSEVRY                     10
 STARTFUNCNO                     1
 SOURCETERMFUNCNO                2
-CALCERRORFUNCNO                 0 //3
+CALCERRORFUNCNO                 0 // 3
 PHOTOACOU                       No
 PHYSICAL_TYPE                   lossless
 ERRORMAPS                       No

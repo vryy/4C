@@ -1,14 +1,18 @@
+/*--------------------------------------------------------------------------*/
 /*!
 \file acou_ele_evaluate.cpp
-\brief
+\brief acoustic element evaluation base routines
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
+/*--------------------------------------------------------------------------*/
 
 #include "acou_ele_factory.H"
 #include "../drt_inpar/inpar_acou.H"

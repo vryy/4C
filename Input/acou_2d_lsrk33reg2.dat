@@ -14,6 +14,7 @@
  the stability limit for bdf2, hence any errors should be
  recognized easily. Approximate run time on four processors is
  forty seconds.
+ CFL=0.3
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1428
 //NODES       1492
@@ -30,9 +31,9 @@ NUMTHERMDIS                     0
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1
 TIMESTEP                        0.001
-NUMSTEP                         250
-MAXTIME                         1.0
-RESULTSEVRY                           10
+NUMSTEP                         2500
+MAXTIME                         0.25
+RESULTSEVRY                     10
 RESTARTEVRY                     0
 STARTFUNCNO                     1
 PHOTOACOU                       No
@@ -101,13 +102,13 @@ FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 1.0*exp(4.0*(-x^2.0-y^2.0))
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 824 QUANTITY pressure VALUE 1.61100212275434081e-03 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1083 QUANTITY pressure VALUE 8.61934167046666255e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1285 QUANTITY pressure VALUE 9.52256686510436767e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1332 QUANTITY pressure VALUE -1.81794734871003373e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1423 QUANTITY pressure VALUE -1.22826615828520891e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1464 QUANTITY pressure VALUE -8.86670019742122340e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 1119 QUANTITY pressure VALUE 5.67879627119609459e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 824 QUANTITY pressure VALUE 1.69820955628265146e-03 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1083 QUANTITY pressure VALUE  8.79528204876296460e-02TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1285 QUANTITY pressure VALUE 9.19213902470957245e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1332 QUANTITY pressure VALUE -2.13386628033225903e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1423 QUANTITY pressure VALUE -1.22285289762687294e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1464 QUANTITY pressure VALUE -8.75970178294216972e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1119 QUANTITY pressure VALUE 5.82705787554973625e-02 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

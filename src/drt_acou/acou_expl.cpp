@@ -3,10 +3,12 @@
 \brief Control routine for acoustic explicit time integration.
 
 <pre>
+\level 2
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -39,6 +41,7 @@
 #include <deal.II/lac/parallel_vector.h>
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
+//#include "fe_evaluation.h"
 #include <deal.II/matrix_free/operators.h>
 
 #include <deal.II/grid/tria_boundary_lib.h>
@@ -56,6 +59,7 @@
 #include <iomanip>
 
 #include "time_integrators.h"
+#include "acou_pml.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -376,6 +380,11 @@ std::string AcouExplicitTimeInt::Name()
     name = "ADER";
     break;
   }
+  case INPAR::ACOU::acou_ader_lts:
+  {
+    name = "ADER LTS";
+    break;
+  }
   default:
     name = "Expl";
     break;
@@ -386,7 +395,6 @@ std::string AcouExplicitTimeInt::Name()
 /*----------------------------------------------------------------------*
  |  FROM HERE ON: ADAPTED DEAL STUFF                     schoeder 03/15 |
  *----------------------------------------------------------------------*/
-
 template <int dim>
 class ExactSolution : public Function<dim>
 {
@@ -519,7 +527,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   dof_handler_post_disp(triangulation),
   time(0.0),
   step(0),
-  cfl_number (0.3/fe.degree/dim),
+  cfl_number (0.3/fe.degree/dim), //cfl_number (0.1/fe.degree/dim),
   discret(discretin),
   bacitimeint(timeintin),
   invana(params->get<bool>("invana")),
@@ -529,46 +537,6 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   solid((DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE"))==INPAR::ACOU::acou_solid)
 {
   make_grid_and_dofs(discret,bacitimeint->AdjointSourceVec());
-  const unsigned int fe_degree = discret->lRowElement(0)->Degree();
-
-  // get function numbers for analytic solution and right hand side
-  int comps = 1;
-  if(solid) comps = dim;
-  int sourcetermfuncno = (params->get<int>("SOURCETERMFUNCNO"))-1;
-  Teuchos::RCP<Function<dim> > rhs (new RightHandSide<dim>(comps,0.0,sourcetermfuncno));
-  Teuchos::RCP<Function<dim> > diriboundary (new DirichletBoundaryFunction<dim>(comps,0.0,discret));
-
-  if (fe_degree==1)
-    evaluator.reset(new WaveEquationOperation<dim,1,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else if (fe_degree==2)
-    evaluator.reset(new WaveEquationOperation<dim,2,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else if (fe_degree==3)
-    evaluator.reset(new WaveEquationOperation<dim,3,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else if (fe_degree==4)
-    evaluator.reset(new WaveEquationOperation<dim,4,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else if (fe_degree==5)
-    evaluator.reset(new WaveEquationOperation<dim,5,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else if (fe_degree==6)
-    evaluator.reset(new WaveEquationOperation<dim,6,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
-  else
-    dserror("Only degrees between 1 and 6 are implemented!");
-
-  if(solid)
-    solutions.resize(dim*dim+dim+1);
-  else
-    solutions.resize(dim+1);
-
-  evaluator->initialize_dof_vector(solutions[0]);
-  for (unsigned int d=1; d<solutions.size(); ++d)
-    solutions[d] = solutions[0];
-
-  if(solid)
-    post_quantity.resize(dim);
-  else
-    post_quantity.resize(1);
-
-  for (unsigned int d=0; d<post_quantity.size(); ++d)
-    post_quantity[d].reinit(dof_handler_post_disp.locally_owned_dofs(),MPI_COMM_WORLD);
 
   // get some parameters:
   final_time = params->get<double>("MAXTIME");
@@ -576,6 +544,27 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   step_max = params->get<int>("NUMSTEP");
   dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*params,"TIMEINT");
   exactsolutionfuncno = (params->get<int>("CALCERRORFUNCNO"))-1;
+
+  // create the wave equation operation object
+  set_evaluator(params,discret->lRowElement(0)->Degree());
+  evaluator->set_adjoint_eval(invana&&adjoint);
+
+  // resize solutions vector
+  solutions.resize(evaluator->number_of_solutionvectors());
+
+  // initialize solution vectors
+  evaluator->initialize_dof_vector(solutions[0]);
+  for (unsigned int d=1; d<solutions.size(); ++d)
+    solutions[d] = solutions[0];
+
+  // TODO
+  if(solid)
+    post_quantity.resize(dim);
+  else
+    post_quantity.resize(1);
+
+  for (unsigned int d=0; d<post_quantity.size(); ++d)
+    post_quantity[d].reinit(dof_handler_post_disp.locally_owned_dofs(),MPI_COMM_WORLD);
 
   // init storage vector for optimization of acoustical parameters
   if(invana && adjoint && acouopt)
@@ -590,45 +579,55 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   double diameter = 0.0;
   double given_time_step = params->get<double>("TIMESTEP");
 
-  for (; cell!=endc; ++cell)
+  if(dyna!=INPAR::ACOU::acou_ader_lts)
   {
-    diameter = cell->diameter()/std::sqrt(dim);
-
-    const int element_index = cell->index();
-    Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
-    double c = 0.0;
-    if(solid)
+    for (; cell!=endc; ++cell)
     {
-      MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
-      c = actmat->SpeedofSound();
+      diameter = cell->diameter()/std::sqrt(dim);
+      //diameter = cell->minimum_vertex_distance();
+      //diameter = cell->extent_in_direction(0);
+      const int element_index = cell->index();
+      Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
+      double c = 0.0;
+      if(solid)
+      {
+        MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
+        c = actmat->SpeedofSound();
+      }
+      else
+      {
+        MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
+        c = actmat->SpeedofSound(element_index);
+      }
+      diameter /= c;
+
+      if (diameter < min_cell_diameter)
+        min_cell_diameter = diameter;
+    }
+    const double glob_min_cell_diameter = -Utilities::MPI::max(-min_cell_diameter, MPI_COMM_WORLD);
+
+    time_step = cfl_number * glob_min_cell_diameter;
+    time_step = (final_time-time)/(1+int((final_time-time)/time_step));
+
+    if( time_step < given_time_step )
+    {
+      pcout <<"WARNING: Time step size set to "<<time_step<<" to prevent stability problems"<<std::endl;
+      pcout <<"   finest cell / speed of sound "<< glob_min_cell_diameter<< std::endl << std::endl;
+      if(invana)
+      {
+        time_step = 0.0;
+        //dserror("set your time step size smaller, otherwise mismatch with monitored values");
+      }
+
     }
     else
     {
-      MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
-      c = actmat->SpeedofSound(element_index);
+      time_step = given_time_step;
+      pcout << "Time step size: " << time_step << " (smaller than critical timestep) " << std::endl << std::endl;
     }
-    diameter /= c;
-
-    if (diameter < min_cell_diameter)
-      min_cell_diameter = diameter;
-  }
-  const double glob_min_cell_diameter = -Utilities::MPI::max(-min_cell_diameter, MPI_COMM_WORLD);
-
-  time_step = cfl_number * glob_min_cell_diameter;
-  time_step = (final_time-time)/(1+int((final_time-time)/time_step));
-
-  if( time_step < given_time_step )
-  {
-    pcout <<"WARNING: Time step size set to "<<time_step<<" to prevent stability problems"<<std::endl;
-    pcout <<"   finest cell / speed of sound "<< glob_min_cell_diameter<< std::endl << std::endl;
-    if(invana)
-      dserror("set your time step size smaller, otherwise mismatch with monitored values");
   }
   else
-  {
     time_step = given_time_step;
-    pcout << "Time step size: " << time_step << " (smaller than critical timestep) " << std::endl << std::endl;
-  }
 }
 
 template <int dim, typename Number>
@@ -638,6 +637,105 @@ WaveEquationProblem<dim,Number>::~WaveEquationProblem()
   dof_handler.clear();
 }
 
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::ParameterList> params,
+                                                    const int fe_degree)
+{
+  if(fe_degree>6)
+    dserror("Only degrees between 1 and 6 are implemented!");
+
+  // get function numbers for analytic solution and right hand side
+  int comps = 1;
+  if(solid) comps = dim;
+  int sourcetermfuncno = (params->get<int>("SOURCETERMFUNCNO"))-1;
+  Teuchos::RCP<Function<dim> > rhs (new RightHandSide<dim>(comps,0.0,sourcetermfuncno));
+  Teuchos::RCP<Function<dim> > diriboundary (new DirichletBoundaryFunction<dim>(comps,0.0,discret));
+
+  // read PML
+  std::string filename_pml = params->get<std::string>("PML_DEFINITION_FILE");
+
+  if(solid)
+  {
+    if (fe_degree==1)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==2)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==3)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==4)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==5)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==6)
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+
+  }
+  else if(dyna==INPAR::ACOU::acou_ader_lts)
+  {
+    if (fe_degree==1)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==2)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==3)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==4)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==5)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==6)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+  }
+  else if(dyna==INPAR::ACOU::acou_ader)
+  {
+    if (fe_degree==1)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==2)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==3)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==4)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==5)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==6)
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+  }
+  else if (filename_pml != std::string("none.txt"))
+  {
+    Teuchos::RCP<AttenuationPML<dim,Number> > sigma = Teuchos::rcp(new AttenuationPML<dim,Number>());
+    sigma->read_pml_definition(filename_pml);
+
+    if (fe_degree==1)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==2)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==3)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==4)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==5)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==6)
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+  }
+  else
+  {
+    if (fe_degree==1)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==2)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==3)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==4)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==5)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+    else if (fe_degree==6)
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+  }
+
+  return;
+}
 
 
 template<int dim, typename Number>
@@ -759,31 +857,109 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
   }
 }
 
+namespace
+{
+  template <int dim>
+  void get_relevant_set (const DoFHandler<dim> &dof_handler,
+                         IndexSet              &relevant_set)
+  {
+    relevant_set = dof_handler.locally_owned_dofs();
+
+    std::vector<types::global_dof_index> dof_indices;
+    std::set<types::global_dof_index> global_dof_indices;
+
+    typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
+        endc = dof_handler.end();
+    for (; cell!=endc; ++cell)
+    {
+      dof_indices.resize(cell->get_fe().dofs_per_cell);
+      cell->get_dof_indices(dof_indices);
+
+      for (std::vector<types::global_dof_index>::iterator it =
+           dof_indices.begin(); it != dof_indices.end(); ++it)
+        if (!relevant_set.is_element(*it))
+          global_dof_indices.insert(*it);
+    }
+    relevant_set.add_indices(global_dof_indices.begin(), global_dof_indices.end());
+    relevant_set.compress();
+  }
+}
+
 template <int dim, typename Number>
 void
 WaveEquationProblem<dim,Number>::compute_post_pressure()
 {
-  for (unsigned int d=0; d<dim+1; ++d)
-    previous_solutions[d] = 0;
-  evaluator->apply(solutions,previous_solutions,time);
-  QGauss<dim> quadrature_post(dof_handler_post_disp.get_fe().degree+1);
+  std::vector<parallel::distributed::Vector<value_type> > temp_post_solutions(dim+1);
+  for(unsigned int d=0;d<temp_post_solutions.size();++d)
+  {
+    temp_post_solutions[d] = previous_solutions[d];
+    temp_post_solutions[d] = 0.;
+  }
+
+  // calcualte gradient
+  evaluator->compute_post_gradient(solutions,temp_post_solutions,time);
+
+  // evaluate error in gradient
+  {
+    for(int d=0; d<dim; ++d)
+    {
+      Vector<double> norm_per_cell_p (triangulation.n_active_cells());
+
+      // calculate norm of field
+      VectorTools::integrate_difference (dof_handler,
+                                         temp_post_solutions[d],
+                                         ZeroFunction<dim>(1),
+                                         norm_per_cell_p,
+                                         QGauss<dim>(fe.degree+2),
+                                         VectorTools::L2_norm);
+      double solution_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+      // calculate norm of difference between field and analytic field
+      norm_per_cell_p = 0;
+      VectorTools::integrate_difference (dof_handler,
+          temp_post_solutions[d],
+          ExactSolution<dim>(dim,time,exactsolutionfuncno+d+dim+1),
+          norm_per_cell_p,
+          QGauss<dim>(fe.degree+3),
+          VectorTools::L2_norm);
+      double error_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+      // calculate norm of analytic solution
+      /*norm_per_cell_p =0;
+      ghosted_sol = 0.0;
+      VectorTools::integrate_difference (dof_handler,
+          ghosted_sol,
+          ExactSolution<dim>(dim,time,exactsolutionfuncno+d+dim+1),
+          norm_per_cell_p,
+          QGauss<dim>(fe.degree+3),
+          VectorTools::L2_norm);*/
+      double exact_sol_mag = 0.0;// std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+      pcout<<"gradient, component "<<d<<" absolute error "<<std::sqrt(error_mag)<<" exact solution norm "<<std::sqrt(exact_sol_mag)<<" solution norm "<<std::sqrt(solution_mag)<<" at time "<<time<<std::endl;
+
+    }
+
+  }
+
+  QGauss<dim> quadrature_post(dof_handler_post_disp.get_fe().degree+2);
+
   FEValues<dim> fe_values(dof_handler.get_fe(),quadrature_post,
-                          update_values | update_gradients | update_quadrature_points |
-                          update_JxW_values);
+      update_values | update_gradients | update_quadrature_points |
+      update_JxW_values);
 
   FEValues<dim> fe_values_post(dof_handler_post_disp.get_fe(),quadrature_post,
-                               update_values | update_gradients | update_quadrature_points |
-                               update_JxW_values);
+      update_values | update_gradients | update_quadrature_points |
+      update_JxW_values);
 
   const unsigned int dofs_per_cell_post = dof_handler_post_disp.get_fe().dofs_per_cell,
                      dofs_per_cell = dof_handler.get_fe().dofs_per_cell;
 
   const unsigned int n_q_points = quadrature_post.size();
 
-  LAPACKFullMatrix<double> half_matrix(dofs_per_cell_post*dim,dofs_per_cell_post);
+  LAPACKFullMatrix<double> half_matrix(n_q_points*dim,dofs_per_cell_post);
   LAPACKFullMatrix<double> cell_matrix(dofs_per_cell_post,dofs_per_cell_post);
   Vector<double> rhs_vector(dofs_per_cell_post),
-         replace_vector(dofs_per_cell_post);
+                 replace_vector(dofs_per_cell_post);
   Table<2,double> solution_vector(dim+1, dofs_per_cell);
   Tensor<1,dim> flux_values;
 
@@ -795,12 +971,20 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
   typename DoFHandler<dim>::active_cell_iterator cellpost = dof_handler_post_disp.begin_active(),
                                                  endcpost = dof_handler_post_disp.end();
 
+  double error_p_average = 0.0;
+  double p_average = 0.0;
+  double p_analyt_average = 0.0;
+  ExactSolution<dim> exsol(1,time,exactsolutionfuncno+dim);
+
   for (; cellpost!=endcpost; ++cell, ++cellpost)
+  {
+    if(cell->is_locally_owned())
     {
       const int element_index = cell->index();
       Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
       MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
       double rho = actmat->Density();
+
       cell_matrix = 0;
       rhs_vector = 0.;
       replace_vector = 0.;
@@ -812,11 +996,16 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
       for (unsigned int i=0; i<dofs_per_cell; ++i)
       {
         for (unsigned int d=0; d<dim; ++d)
-          solution_vector[d][i] = previous_solutions[d](local_dof_indices[i]);
+          solution_vector[d][i] = temp_post_solutions[d](local_dof_indices[i]);
         solution_vector[dim][i] = solutions[dim](local_dof_indices[i]);
       }
+
+      p_analyt_average = 0.;
       for (unsigned int q_index=0; q_index<n_q_points; ++q_index)
       {
+        Point<dim> qpoint = fe_values.quadrature_point(q_index);
+        p_analyt_average += exsol.value(qpoint,0)*fe_values.JxW(q_index);
+
         flux_values = 0.;
         for (unsigned int i=0; i<dofs_per_cell; ++i)
         {
@@ -845,14 +1034,19 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
       }
 
       cell_matrix.compute_lu_factorization();
+      p_average = replace_value;
+      //if(std::abs(p_average-p_analyt_average)>error_p_average)
+        error_p_average += std::abs(p_average-p_analyt_average);
 
       rhs_vector(0) = replace_value;
       cell_matrix.apply_lu_factorization(rhs_vector, false);
       for (unsigned int i=0; i<dofs_per_cell_post; ++i)
-        {
-          post_quantity[0].local_element(local_dof_indices_post[i]) = rhs_vector(i);
-        }
+      {
+        post_quantity[0](local_dof_indices_post[i]) = rhs_vector(i);
+      }
     }
+  }
+  std::cout<<"summed pressure average error "<<error_p_average<<std::endl;
   post_quantity[0].compress(VectorOperation::insert);
 }
 
@@ -952,86 +1146,47 @@ WaveEquationProblem<dim,Number>::compute_post_velocity()
   }
 }
 
-
-namespace
-{
-  template <int dim>
-  void get_relevant_set (const DoFHandler<dim> &dof_handler,
-                         IndexSet              &relevant_set)
-  {
-    relevant_set = dof_handler.locally_owned_dofs();
-
-    std::vector<types::global_dof_index> dof_indices;
-    std::set<types::global_dof_index> global_dof_indices;
-
-    typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
-        endc = dof_handler.end();
-    for (; cell!=endc; ++cell)
-    {
-      dof_indices.resize(cell->get_fe().dofs_per_cell);
-      cell->get_dof_indices(dof_indices);
-
-      for (std::vector<types::global_dof_index>::iterator it =
-           dof_indices.begin(); it != dof_indices.end(); ++it)
-        if (!relevant_set.is_element(*it))
-          global_dof_indices.insert(*it);
-    }
-    relevant_set.add_indices(global_dof_indices.begin(), global_dof_indices.end());
-    relevant_set.compress();
-  }
-}
-
-
-
 template <int dim, typename Number>
 void
 WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history)
 {
-
   if (exactsolutionfuncno>=0 && this->solid==false)
   {
     for(int d=0; d<dim+1; ++d)
     {
       Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
-      IndexSet relevant_set;
-      get_relevant_set(dof_handler, relevant_set);
-      parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                        solutions[d].get_mpi_communicator());
-      ghosted_sol = solutions[d];
-      ghosted_sol.update_ghost_values();
-
       // calculate norm of field
       VectorTools::integrate_difference (dof_handler,
-                                         ghosted_sol,
+                                         solutions[d],
                                          ZeroFunction<dim>(1),
                                          norm_per_cell_p,
                                          QGauss<dim>(fe.degree+1),
                                          VectorTools::L2_norm);
-      double solution_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+      double solution_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
       // calculate norm of difference between field and analytic field
       norm_per_cell_p = 0;
       VectorTools::integrate_difference (dof_handler,
-          ghosted_sol,
+          solutions[d],
           ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
           norm_per_cell_p,
           QGauss<dim>(fe.degree+2),
           VectorTools::L2_norm);
-      double error_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+      double error_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
       // calculate norm of analytic solution
-      norm_per_cell_p =0;
-      ghosted_sol*=0.0;
+      /*norm_per_cell_p =0;
+      ghosted_sol = 0.0;
       VectorTools::integrate_difference (dof_handler,
           ghosted_sol,
           ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
           norm_per_cell_p,
-          QGauss<dim>(fe.degree+2),
-          VectorTools::L2_norm);
-      double exact_sol_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+          QGauss<dim>(fe.degree+3),
+          VectorTools::L2_norm);*/
+      double exact_sol_mag = 0.0; //std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
-      pcout<<"d "<<d<<" absolute error "<<std::sqrt(error_mag)<<" exact solution norm "<<std::sqrt(exact_sol_mag)<<" solution norm "<<std::sqrt(solution_mag)<<std::endl;
+      pcout<<"d "<<d<<" absolute error "<<(error_mag)<<" exact solution norm "<<(exact_sol_mag)<<" solution norm "<<(solution_mag)<<" at time "<<time<<std::endl;
 
     }
 
@@ -1040,20 +1195,14 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
 
     compute_post_pressure();
 
-    IndexSet relevant_set;
-    get_relevant_set(dof_handler_post_disp, relevant_set);
-    parallel::distributed::Vector<double> ghosted_post(dof_handler_post_disp.locally_owned_dofs(),relevant_set,
-                                                       solutions[dim].get_mpi_communicator());
-    ghosted_post = post_quantity[0];
-    ghosted_post.update_ghost_values();
     VectorTools::integrate_difference (dof_handler_post_disp,
-                                       ghosted_post,
+                                       post_quantity[0],
                                        ExactSolution<dim>(dim,time,exactsolutionfuncno+dim),
                                        norm_per_cell_p,
                                        QGauss<dim>(fe.degree+3),
                                        VectorTools::L2_norm);
-    double error_post_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-    pcout<<"post absolute error "<<std::sqrt(error_post_mag)<<std::endl;
+    double error_post_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+    pcout<<"post absolute error "<<(error_post_mag)<<std::endl;
 
 
   }
@@ -1079,7 +1228,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
                                          ghosted_sol,
                                          ZeroFunction<dim>(1),
                                          norm_per_cell_v,
-                                         QGauss<dim>(fe.degree+1),
+                                         QGauss<dim>(fe.degree+3),
                                          VectorTools::L2_norm);
 
       v_solution_mag = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
@@ -1090,7 +1239,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
                                          ghosted_sol,
                                          ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
                                          norm_per_cell_v,
-                                         QGauss<dim>(fe.degree+2),
+                                         QGauss<dim>(fe.degree+3),
                                          VectorTools::L2_norm);
       v_error_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
 
@@ -1101,7 +1250,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
                                          ghosted_sol,
                                          ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
                                          norm_per_cell_v,
-                                         QGauss<dim>(fe.degree+2),
+                                         QGauss<dim>(fe.degree+3),
                                          VectorTools::L2_norm);
       double v_exactsol_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
 
@@ -1194,70 +1343,70 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
   }
 
   /* VTU output */
-   if(!invana && step%up_res == 0) // otherwise we  get way too much output files
-   {
-     IndexSet relevant_set;
-     get_relevant_set(dof_handler, relevant_set);
-     parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                       solutions[0].get_mpi_communicator());
-     ghosted_sol = solutions[dim];
-     ghosted_sol.update_ghost_values();
-
-     DataOut<dim> data_out;
-
-     data_out.attach_dof_handler (dof_handler);
-     data_out.add_data_vector (ghosted_sol, "solution_pressure");
-     data_out.build_patches (/*2*/);
-
-     const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
-         ".solution-pressure_" +
-         Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
-         + "-" + Utilities::int_to_string (timestep_number, 3);
-
-     std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
-     data_out.write_vtu (output_pressure);
-   }
+  if(!invana && step%up_res == 0) // otherwise we  get way too much output files
+  {
+//    IndexSet relevant_set;
+//    get_relevant_set(dof_handler, relevant_set);
+//    parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+//        solutions[0].get_mpi_communicator());
+//    ghosted_sol = solutions[dim];
+//    ghosted_sol.update_ghost_values();
+//
+//    DataOut<dim> data_out;
+//
+//    data_out.attach_dof_handler (dof_handler);
+//    data_out.add_data_vector (ghosted_sol, "solution_pressure");
+//    data_out.build_patches (/*2*/);
+//
+//    const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+//        ".solution-pressure_" +
+//        Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
+//    + "-" + Utilities::int_to_string (timestep_number, 3);
+//
+//    std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
+//    data_out.write_vtu (output_pressure);
+  }
 
   // write baci output
   write_deal_cell_values();
 
   //if(!adjoint)
   {
-    if(bacitimeint->Step()%bacitimeint->UpRes()==0)
+    //if(bacitimeint->Step()%bacitimeint->UpRes()==0)
       bacitimeint->Output(history);
-    else
-    {
-      // deal write node output to history please!
-      if( history != Teuchos::null )
-      {
-        IndexSet relevant_set;
-        get_relevant_set(dof_handler, relevant_set);
-        parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                          solutions[dim].get_mpi_communicator());
-        ghosted_sol = solutions[dim];
-        ghosted_sol.update_ghost_values();
-
-        Point<dim> eval_point;
-
-        // monitor boundary condition
-        std::string condname = "PressureMonitor";
-        std::vector<DRT::Condition*> pressuremon;
-        discret->GetCondition(condname,pressuremon);
-        const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
-        for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
-        {
-          if(discret->NodeRowMap()->LID(pressuremonnodes[i])>=0)
-          {
-            for(unsigned int d=0; d<dim; ++d)
-              eval_point[d] = discret->lRowNode(discret->NodeRowMap()->LID(pressuremonnodes[i]))->X()[d];
-
-            double press = VectorTools::point_value(dof_handler,ghosted_sol,eval_point);
-
-            history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),bacitimeint->Step(),press);
-          }
-        }
-      }
-    }
+//    else
+//    {
+//      // deal write node output to history please!
+//      if( history != Teuchos::null )
+//      {
+//        IndexSet relevant_set;
+//        get_relevant_set(dof_handler, relevant_set);
+//        parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+//                                                          solutions[dim].get_mpi_communicator());
+//        ghosted_sol = solutions[dim];
+//        ghosted_sol.update_ghost_values();
+//
+//        Point<dim> eval_point;
+//
+//        // monitor boundary condition
+//        std::string condname = "PressureMonitor";
+//        std::vector<DRT::Condition*> pressuremon;
+//        discret->GetCondition(condname,pressuremon);
+//        const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
+//        for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
+//        {
+//          if(discret->NodeRowMap()->LID(pressuremonnodes[i])>=0)
+//          {
+//            for(unsigned int d=0; d<dim; ++d)
+//              eval_point[d] = discret->lRowNode(discret->NodeRowMap()->LID(pressuremonnodes[i]))->X()[d];
+//
+//            double press = VectorTools::point_value(dof_handler,ghosted_sol,eval_point);
+//
+//            history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),bacitimeint->Step(),press);
+//          }
+//        }
+//      }
+//    }
   }
   return;
 }
@@ -1267,6 +1416,13 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
 template<int dim, typename Number>
 void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> history)
 {
+
+  if(time_step == 0.0 && invana && history!=Teuchos::null)
+  {
+    history->PutScalar(1000000000000.0);
+    return;
+  }
+
   previous_solutions = solutions;
 
   // if necessary, write a monitor file
@@ -1312,6 +1468,11 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
     integrator.reset(new ArbitraryHighOrderDG<WaveEquationOperationBase<dim,Number> >(*evaluator));
     break;
   }
+  case INPAR::ACOU::acou_ader_lts:
+  {
+    integrator.reset(new ArbitraryHighOrderDGLTS<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   default:
     dserror("unknown explicit time integration scheme");
     break;
@@ -1323,7 +1484,6 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
   double wtime = 0;
   double output_time = 0;
   step=1;
-  evaluator->set_adjoint_eval(invana&&adjoint);
 
   // for percent output in inverse run
   int maxstep = step_max;
@@ -1332,7 +1492,7 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
   int percent_count = 0;
 
   // the time loop
-  for (time+=time_step; time<=final_time && step<step_max; time+=time_step, ++step)
+  for (time+=time_step; time<=final_time+1.e-7 && step<step_max; time+=time_step, ++step)
   {
     bacitimeint->IncrementTimeAndStep();
     timer.restart();

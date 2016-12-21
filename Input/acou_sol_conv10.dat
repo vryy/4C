@@ -1,8 +1,17 @@
+//
+// Maintainer: Svenja Schoeder
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
+This test case tests acoustic solid elements (with viscosity and
+hence with shear forces - in contrast to the standard acoustic
+wave equation neglecting this effect). Quadratic shape functions
+are used for the HDG discretization and time integration is done
+with a low storage Runge-Kutta scheme of order three with three
+stages and two registers.
+This setup is inspired by convergence studies.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121

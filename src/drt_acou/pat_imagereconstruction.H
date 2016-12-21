@@ -7,10 +7,12 @@
 \level 3
 
 <pre>
+\level 3
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/staff/svenja-schoeder/
-            089 - 289-15271
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -188,8 +190,8 @@ protected:
   //! time reversal as initial guess
   bool timereversal_;
 
-  //! reduce basis for parameter update according to absorption gradient or values respectively.
-  bool reducedbasis_;
+  //! patch type
+  INPAR::ACOU::PatchType patchtype_;
 
   //! fdcheck
   bool fdcheck_;
@@ -226,6 +228,7 @@ protected:
 
   //! map belonging to acou_rhs_ and acou_rhsm_ holding the nodes of the measurement boundary
   Teuchos::RCP<Epetra_Map> abcnodes_map_;
+  Teuchos::RCP<Epetra_Map> abcnodes_colmap_;
 
   //! node based vector holding absorption coefficient
   Teuchos::RCP<Epetra_Vector> node_reac_;
@@ -393,10 +396,10 @@ protected:
   virtual bool PerformIteration();
 
   //! evaluate diffusion coefficient gradient
-  Teuchos::RCP<Epetra_Vector> EvaluateDiffGrad();
+  void EvaluateDiffGrad();
 
   //! build basis patches
-  void CheckNeighborsDiffGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+  void CheckNeighborsDiffGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double diffval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
 
   //! indicator if reaction or diffusion or speed of sound or density is optimized
   int reacordifforcorrho_;
@@ -473,16 +476,29 @@ protected:
   //! build the gradient
   virtual void EvaluateGradient();
 
+  //! reduce basis
+  void ReduceBasis();
+
+  //! recalculate gradients
+  void ReducedGradientsCalculation(Teuchos::RCP<Epetra_Vector> setids, bool acouonly);
+
+  //! patch self
+  void ReducePatchSelf(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> patchvec, Teuchos::RCP<Epetra_Vector> opt_ind);
+
+  //! patch reaction values
+  void ReducePatchReacVals();
+
+  //! check neighbors patch self
+  void CheckNeighborsPatchSelf(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> patchvec, DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double val, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
+  //! check neighbors patch reaction values
+  void CheckNeighborsPatchReacVals(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
   //! calculate the value of the objective function
   virtual double EvalulateObjectiveFunction();
 
   //! calculate the norm of the dot product of the gradient and a given direction
   virtual void CalculateGradDirNorm(const Epetra_Vector& bvector, const Epetra_Map& uniquemap, double* result);
-
-  //! build basis patches
-  //void CheckNeighborsAcouGrads(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
-  void CheckNeighborsSoSGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
-  void CheckNeighborsRhoGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
 
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError();
@@ -541,6 +557,9 @@ private:
 
   //! vector holding the mat ids
   std::vector<int> acou_matids_;
+
+  //! bool determines how acoustical materials are identified
+  bool acouident_avg_;
 
   //! perform one iteration
   virtual bool PerformIteration();

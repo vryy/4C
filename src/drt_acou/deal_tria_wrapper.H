@@ -3,7 +3,9 @@
 \brief Computes a deal.II Triangulation from DRT::Discretization
 
 <pre>
-Maintainer: Martin Kronbichler
+
+\level 2
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -5,10 +5,12 @@
 \brief Internal implementation of acou internal faces elements
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

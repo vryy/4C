@@ -1,4 +1,4 @@
-/*!
+/*!----------------------------------------------------------------------
 \file acou_ele.H
 
 \brief A C++ wrapper for the acoustic element
@@ -7,12 +7,15 @@ This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
+/*----------------------------------------------------------------------*/
 
 #ifndef ACOU_ELE_H
 #define ACOU_ELE_H
@@ -354,6 +357,9 @@ public:
   /// local values from interior solution vector (gradient, velocity) at n+1
   Epetra_SerialDenseVector eleinteriorVelnp_;
   Epetra_SerialDenseVector eleinteriorPressnp_;
+
+  Epetra_SerialDenseVector eleADERimprovedGrad_;
+  Epetra_SerialDenseVector eleADERimprovedDiv_;
 
   /// local values for acoustical parameter optimization
   std::vector<Epetra_SerialDenseVector> eleintPressForward_;

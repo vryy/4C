@@ -8,7 +8,7 @@
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -19,6 +19,7 @@
 #include <deal.II/lac/parallel_vector.h>
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
+//#include "fe_evaluation.h"
 #include <deal.II/matrix_free/operators.h>
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -37,11 +38,43 @@
 
 namespace ACOU
 {
+template<int dim, int fe_degree, typename Number>
+WaveEquationOperationElasticWave<dim,fe_degree,Number>::
+WaveEquationOperationElasticWave(const DoFHandler<dim> &dof_handler,
+                                  Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                                  Teuchos::RCP<Function<dim> > boundary_conditions,
+                                  Teuchos::RCP<Function<dim> > source_term,
+                                  int sourceno,
+                                  Teuchos::RCP<Epetra_MultiVector> source_adjoint)
+  :
+  WaveEquationOperation<dim,fe_degree,Number>(dof_handler,discret,boundary_conditions,source_term,sourceno,source_adjoint)
+{
+  this->viscs.resize(this->data.n_macro_cells()+this->data.n_macro_ghost_cells());
 
+  for (unsigned int i=0; i<this->data.n_macro_cells()+this->data.n_macro_ghost_cells(); ++i)
+  {
+    this->densities[i] = make_vectorized_array<value_type>(1.);
+    this->speeds[i] = make_vectorized_array<value_type>(1.);
+    this->viscs[i] = make_vectorized_array<value_type>(1.);
+    for (unsigned int v=0; v<this->data.n_components_filled(i); ++v)
+    {
+      if (this->data.get_cell_iterator(i,v)->level() != 0)
+        dserror("Refined meshes currently not implemented!");
+
+      const int element_index = this->data.get_cell_iterator(i,v)->index();
+      Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
+
+      MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
+      this->densities[i][v] = actmat->Density();
+      this->speeds[i][v] = actmat->SpeedofSound();
+      this->viscs[i][v] = actmat->Viscosity();
+    }
+  }
+}
 
 template<int dim, int fe_degree, typename Number>
-void WaveEquationOperation<dim, fe_degree,Number>::
-local_apply_solid_domain(const MatrixFree<dim,value_type>                                &data,
+void WaveEquationOperationElasticWave<dim, fe_degree,Number>::
+local_apply_domain(const MatrixFree<dim,value_type>                                &data,
                          std::vector<parallel::distributed::Vector<value_type> >         &dst,
                          const std::vector<parallel::distributed::Vector<value_type> >   &src,
                          const std::pair<unsigned int,unsigned int>                 &cell_range) const
@@ -67,10 +100,10 @@ local_apply_solid_domain(const MatrixFree<dim,value_type>                       
     H.read_dof_values(src,dim+1);
     H.evaluate(true, false, false);
 
-    const VectorizedArray<value_type> rho = densities[cell];
-    const VectorizedArray<value_type> rho_inv = 1./densities[cell];
-    const VectorizedArray<value_type> c_sq = speeds[cell]*speeds[cell];
-    const VectorizedArray<value_type> visc = viscs[cell];
+    const VectorizedArray<value_type> rho = this->densities[cell];
+    const VectorizedArray<value_type> rho_inv = 1./this->densities[cell];
+    const VectorizedArray<value_type> c_sq = this->speeds[cell]*this->speeds[cell];
+    const VectorizedArray<value_type> visc = this->viscs[cell];
 
     for (unsigned int q=0; q<v.n_q_points; ++q)
     {
@@ -87,7 +120,7 @@ local_apply_solid_domain(const MatrixFree<dim,value_type>                       
           Point<dim> q_point;
           for (unsigned int d=0; d<dim; ++d)
             q_point[d] = q_points[d][n];
-          rhs[d][n] = source_term->value(q_point,d);
+          rhs[d][n] = this->source_term->value(q_point,d);
         }
       v.submit_value(rho_inv*rhs,q);
 
@@ -150,8 +183,8 @@ local_apply_solid_domain(const MatrixFree<dim,value_type>                       
 
 template <int dim, int fe_degree, typename Number>
 void
-WaveEquationOperation<dim,fe_degree,Number>::
-local_apply_solid_face (const MatrixFree<dim,value_type> &,
+WaveEquationOperationElasticWave<dim,fe_degree,Number>::
+local_apply_face (const MatrixFree<dim,value_type> &,
                         std::vector<parallel::distributed::Vector<value_type> > &dst,
                         const std::vector<parallel::distributed::Vector<value_type> > &src,
                         const std::pair<unsigned int,unsigned int> &face_range) const
@@ -167,9 +200,9 @@ local_apply_solid_face (const MatrixFree<dim,value_type> &,
     phi.reinit(face);
     phi.read_dof_values(src, 0);
     phi.evaluate(true,false);
-    const VectorizedArray<value_type> rho_plus = phi.read_cell_data(densities);
+    const VectorizedArray<value_type> rho_plus = phi.read_cell_data(this->densities);
     const VectorizedArray<value_type> rho_inv_plus = 1./rho_plus;
-    const VectorizedArray<value_type> c_plus = phi.read_cell_data(speeds);
+    const VectorizedArray<value_type> c_plus = phi.read_cell_data(this->speeds);
     const VectorizedArray<value_type> c_sq_plus = c_plus * c_plus;
     const VectorizedArray<value_type> tau_plus = make_vectorized_array<value_type>(1.0);
     const VectorizedArray<value_type> visc_plus = phi.read_cell_data(viscs);
@@ -177,12 +210,12 @@ local_apply_solid_face (const MatrixFree<dim,value_type> &,
     phi_neighbor.reinit(face);
     phi_neighbor.read_dof_values(src, 0);
     phi_neighbor.evaluate(true,false);
-    const VectorizedArray<value_type> rho_minus = phi_neighbor.read_cell_data(densities);
+    const VectorizedArray<value_type> rho_minus = phi_neighbor.read_cell_data(this->densities);
     const VectorizedArray<value_type> rho_inv_minus = 1./rho_minus;
-    const VectorizedArray<value_type> c_minus = phi_neighbor.read_cell_data(speeds);
+    const VectorizedArray<value_type> c_minus = phi_neighbor.read_cell_data(this->speeds);
     const VectorizedArray<value_type> c_sq_minus = c_minus * c_minus;
     const VectorizedArray<value_type> tau_minus = make_vectorized_array<value_type>(1.0);
-    const VectorizedArray<value_type> visc_minus = phi_neighbor.read_cell_data(viscs);
+    const VectorizedArray<value_type> visc_minus = phi_neighbor.read_cell_data(this->viscs);
 
     const VectorizedArray<value_type> tau_inv = 1./(tau_plus + tau_minus);
 
@@ -259,8 +292,8 @@ local_apply_solid_face (const MatrixFree<dim,value_type> &,
 }
 
 template <int dim, int fe_degree, typename Number>
-void WaveEquationOperation<dim,fe_degree,Number>::
-local_apply_solid_boundary_face (const MatrixFree<dim,value_type> &,
+void WaveEquationOperationElasticWave<dim,fe_degree,Number>::
+local_apply_boundary_face (const MatrixFree<dim,value_type> &,
                            std::vector<parallel::distributed::Vector<value_type> >       &dst,
                            const std::vector<parallel::distributed::Vector<value_type> > &src,
                            const std::pair<unsigned int,unsigned int>               &face_range) const
@@ -281,12 +314,12 @@ local_apply_solid_boundary_face (const MatrixFree<dim,value_type> &,
     phi.reinit(face);
     phi.read_dof_values(src, 0);
     phi.evaluate(true,false);
-    const VectorizedArray<value_type> rho = phi.read_cell_data(densities);
+    const VectorizedArray<value_type> rho = phi.read_cell_data(this->densities);
     const VectorizedArray<value_type> rho_inv = 1./rho;
-    const VectorizedArray<value_type> c_sq = phi.read_cell_data(speeds)*phi.read_cell_data(speeds);
-    const VectorizedArray<value_type> c = phi.read_cell_data(speeds);
+    const VectorizedArray<value_type> c_sq = phi.read_cell_data(this->speeds)*phi.read_cell_data(this->speeds);
+    const VectorizedArray<value_type> c = phi.read_cell_data(this->speeds);
     const VectorizedArray<value_type> tau = make_vectorized_array<value_type>(1.0);
-    const VectorizedArray<value_type> visc = phi.read_cell_data(viscs);
+    const VectorizedArray<value_type> visc = phi.read_cell_data(this->viscs);
 
     const types::boundary_id boundary_index = this->data.get_boundary_indicator(face);
     const int int_boundary_id = int(boundary_index);
@@ -352,7 +385,7 @@ local_apply_solid_boundary_face (const MatrixFree<dim,value_type> &,
             for (unsigned int d=0; d<dim; ++d)
               point[d] = q_point[d][v];
             for(unsigned int d=0; d<dim; ++d)
-              vhat[d][v] = dirichlet_boundary_conditions->value(point,(int_boundary_id-5)*dim+d);
+              vhat[d][v] = this->dirichlet_boundary_conditions->value(point,(int_boundary_id-5)*dim+d);
           }
         else
           for(unsigned int d=0; d<dim; ++d)
@@ -403,13 +436,13 @@ local_apply_solid_boundary_face (const MatrixFree<dim,value_type> &,
 }
 
 template<int dim, int fe_degree, typename Number>
-void WaveEquationOperation<dim, fe_degree,Number>::
-local_apply_solid_mass_matrix(const MatrixFree<dim,value_type>                  &data,
+void WaveEquationOperationElasticWave<dim, fe_degree,Number>::
+local_apply_mass_matrix(const MatrixFree<dim,value_type>                  &data,
                         std::vector<parallel::distributed::Vector<value_type> >        &dst,
                         const std::vector<parallel::distributed::Vector<value_type> >  &src,
                         const std::pair<unsigned int,unsigned int>    &cell_range) const
 {
-  internal::InverseMassMatrixDataSolid<dim,fe_degree,value_type>& mass_data = mass_matrix_data_solid.get();
+  internal::InverseMassMatrixData<dim,fe_degree,dim*dim+dim+1,value_type>& mass_data = this->mass_matrix_data_solid.get();
   for (unsigned int cell=cell_range.first; cell<cell_range.second; ++cell)
     {
       mass_data.phi[0].reinit(cell);
@@ -424,31 +457,556 @@ local_apply_solid_mass_matrix(const MatrixFree<dim,value_type>                  
     }
 }
 
+template<int dim, int fe_degree, typename Number>
+void
+WaveEquationOperationElasticWave<dim,fe_degree,Number>::
+write_deal_cell_values(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                       const std::vector<parallel::distributed::Vector<value_type> >   &src) const
+{
+
+  const unsigned dofs_per_cell = this->data.get_dof_handler().get_fe().dofs_per_cell;
+  std::vector<types::global_dof_index> indices, local_dof_indices (dofs_per_cell);
+  for (typename DoFHandler<dim>::active_cell_iterator cell = this->data.get_dof_handler().begin_active();
+       cell != this->data.get_dof_handler().end(); ++cell)
+  {
+    cell->get_dof_indices(local_dof_indices);
+    indices.insert(indices.end(), local_dof_indices.begin(), local_dof_indices.end());
+  }
+
+  IndexSet relevant_dofs(src[0].size());
+  relevant_dofs.add_indices(indices.begin(), indices.end());
+  relevant_dofs.compress();
+  std::vector<parallel::distributed::Vector<value_type> > ghosted_vector(src.size());
+  for (unsigned int i=0; i<src.size(); ++i)
+  {
+    ghosted_vector[i].reinit(this->data.get_dof_handler().locally_owned_dofs(),relevant_dofs, src[0].get_mpi_communicator());
+    ghosted_vector[i] = src[i];
+    ghosted_vector[i].update_ghost_values();
+  }
+
+  unsigned int ndofs1d;
+  if(dim==2)
+    ndofs1d = std::sqrt(dofs_per_cell);
+  else if(dim==3)
+    ndofs1d = int(std::pow(dofs_per_cell,1.0/3.0));
+  unsigned int ndofs2d = ndofs1d * ndofs1d;
+
+  unsigned int nodes_per_cell = GeometryInfo< dim >::vertices_per_cell;
+  std::vector<Point<dim> > baci_vals_loc(nodes_per_cell);
+  std::vector<Point<dim> > deal_vals_loc(nodes_per_cell);
+
+  Vector<value_type> local_values(dofs_per_cell);
+  for (int i=0; i<discret->NumMyColElements(); ++i)
+  {
+    typename DoFHandler<dim>::active_cell_iterator cell(&this->data.get_dof_handler().get_triangulation(), 0, i, &this->data.get_dof_handler());
+    DRT::ELEMENTS::AcouSol * acouele = dynamic_cast<DRT::ELEMENTS::AcouSol*>(discret->lColElement(i));
+
+    for (unsigned int n=0; n<nodes_per_cell; ++n)
+    {
+      for(int d=0; d<dim; ++d)
+      {
+        deal_vals_loc[n](d) = cell->vertex(n)(d);
+        baci_vals_loc[n](d) = acouele->Nodes()[n]->X()[d];
+      }
+    }
+
+    // perform permutation: step 2: swap it
+    switch(acouele->Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      if((deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+         deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+         deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+         deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10))
+      {
+        // everything is alright
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+j) = local_values[j];
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+          acouele->eleinteriorPressnp_(j) = local_values[j];
+        // stresses
+        for(unsigned d=0; d<dim;  ++d)
+          for(unsigned e=0; e<dim; ++e)
+          {
+            cell->get_interpolated_dof_values(ghosted_vector[dim+1+d*dim+e], local_values);
+            for (unsigned int j=0; j<dofs_per_cell; ++j)
+              acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+j) = local_values[j];
+          }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+
+        for (unsigned int d=0; d<dim; ++d)
+          for(unsigned e=0; e<dim; ++e)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d*dim+e], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+            acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+
+        for (unsigned int d=0; d<dim; ++d)
+          for(unsigned e=0; e<dim; ++e)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d*dim+e], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+            acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+
+        for (unsigned int d=0; d<dim; ++d)
+          for(unsigned e=0; e<dim; ++e)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d*dim+e], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+            acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else
+        dserror("unknown permutation");
+      break;
+    }
+    case DRT::Element::hex8:
+    {
+      if(deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+         deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+         deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+         deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+         deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+         deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+         deal_vals_loc[6].distance(baci_vals_loc[7])<1e-10 &&
+         deal_vals_loc[7].distance(baci_vals_loc[6])<1e-10)
+      {
+        // everything is alright
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+j) = local_values[j];
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+          acouele->eleinteriorPressnp_(j) = local_values[j];
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[2])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax + (ndofs1d-1-ay)*ndofs2d + az*ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = ax + (ndofs1d-1-ay)*ndofs2d + az*ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[3])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax*ndofs1d + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az);
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = ax*ndofs1d + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az);
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[1])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + (ndofs1d-1-ay)*ndofs2d + az;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = (ndofs1d-1-ax)*ndofs1d + (ndofs1d-1-ay)*ndofs2d + az;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[0])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az)*ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az)*ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+      }
+      else
+        dserror("unknown permutation");
+      break;
+    }
+    default:
+      dserror("other distypes not yet implemented!");
+      break;
+    }
+  }
+  return;
+}
+
+template<int dim, int fe_degree, typename Number>
+void
+WaveEquationOperationElasticWave<dim,fe_degree,Number>::
+read_initial_conditions(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                        std::vector<parallel::distributed::Vector<value_type> > &dst)
+                        {
+  FEEvaluation<dim,fe_degree,fe_degree+1,dim+1+dim*dim,value_type> phi(this->data);
+  for (unsigned int j=0; j<phi.dofs_per_cell; ++j)
+    phi.submit_dof_value(Tensor<1,dim+1+dim*dim,VectorizedArray<value_type> >(), j);
+
+  unsigned int dofs_per_cell = phi.dofs_per_cell; // i assume, that it is the same for all cells
+  unsigned int ndofs1d;
+  if(dim==2)
+    ndofs1d = std::sqrt(dofs_per_cell);
+  else if(dim==3)
+    ndofs1d = int(std::pow(dofs_per_cell,1.0/3.0));
+  //unsigned int ndofs2d = ndofs1d * ndofs1d;
+
+  unsigned int nodes_per_cell = GeometryInfo< dim >::vertices_per_cell;
+  std::vector<Point<dim> > baci_vals_loc(nodes_per_cell);
+  std::vector<Point<dim> > deal_vals_loc(nodes_per_cell);
+
+  for (unsigned int i=0; i<this->data.n_macro_cells(); ++i)
+  {
+    phi.reinit(i);
+    for (unsigned int v=0; v<this->data.n_components_filled(i); ++v)
+    {
+
+      const int element_index = this->data.get_cell_iterator(i,v)->index();
+      DRT::ELEMENTS::AcouSol * acouele = dynamic_cast<DRT::ELEMENTS::AcouSol*>(discret->lColElement(element_index));
+      if (acouele == NULL)
+        dserror("No acoustic solid element given!");
+
+      // perform permutation: step 1: get the node coordinates
+      for (unsigned int n=0; n<nodes_per_cell; ++n)
+      {
+        for(int d=0; d<dim; ++d)
+        {
+          deal_vals_loc[n](d) = this->data.get_cell_iterator(i,v)->vertex(n)(d);
+          baci_vals_loc[n](d) = acouele->Nodes()[n]->X()[d];
+        }
+      }
+
+      // perform permutation: step 2: swap it
+      switch(acouele->Shape())
+      {
+      case DRT::Element::quad4:
+      {
+        if(deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10)
+        {
+          // everything is alright
+          for (unsigned j=0; j<dofs_per_cell; ++j)
+          {
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+j][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+j);
+            for(unsigned int d=0; d<dim; ++d)
+              for(unsigned int e=0; e<dim; ++e)
+                phi.begin_dof_values()[(d*dim+e+dim+1)*dofs_per_cell+j][v] = acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+j);
+            phi.begin_dof_values()[dim*dofs_per_cell+j][v] = acouele->eleinteriorPressnp_(j);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10)
+        {
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            const int ax = i%ndofs1d;
+            const int ay = i/ndofs1d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for(unsigned int d=0; d<dim; ++d)
+              for(unsigned int e=0; e<dim; ++e)
+                phi.begin_dof_values()[(d*dim+e+dim+1)*dofs_per_cell+i][v] = acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10)
+        {
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            const int ax = i%ndofs1d;
+            const int ay = i/ndofs1d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for(unsigned int d=0; d<dim; ++d)
+              for(unsigned int e=0; e<dim; ++e)
+                phi.begin_dof_values()[(d*dim+e+dim+1)*dofs_per_cell+i][v] = acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10)
+        {
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            const int ax = i%ndofs1d;
+            const int ay = i/ndofs1d;
+            int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for(unsigned int d=0; d<dim; ++d)
+              for(unsigned int e=0; e<dim; ++e)
+                phi.begin_dof_values()[(d*dim+e+dim+1)*dofs_per_cell+i][v] = acouele->eleinteriorGradVelnp_((d*dim+e)*dofs_per_cell+permute);
+          }
+        }
+        else
+        {
+          std::cout<<"d "<<deal_vals_loc[0](0)<<" "<<deal_vals_loc[0](1)<<" b "<<baci_vals_loc[0](0)<<" "<<baci_vals_loc[0](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[1](0)<<" "<<deal_vals_loc[1](1)<<" b "<<baci_vals_loc[1](0)<<" "<<baci_vals_loc[1](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[2](0)<<" "<<deal_vals_loc[2](1)<<" b "<<baci_vals_loc[2](0)<<" "<<baci_vals_loc[2](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[3](0)<<" "<<deal_vals_loc[3](1)<<" b "<<baci_vals_loc[3](0)<<" "<<baci_vals_loc[3](1)<<" "<<std::endl;
+          dserror("unknown permutation");
+        }
+        break;
+      }
+      default:
+        dserror("other distypes not yet implemented!");
+        break;
+      }
+    }
+    phi.set_dof_values(dst);
+  }
+
+  for (unsigned int i=0; i<dim+1+dim*dim; ++i)
+    dst[i].update_ghost_values();
+}
+
+template<int dim, int fe_degree, typename Number>
+void WaveEquationOperationElasticWave<dim, fe_degree, Number>::
+apply(const std::vector<parallel::distributed::Vector<value_type> >  &src,
+      std::vector<parallel::distributed::Vector<value_type> >        &dst,
+      const double                                              &cur_time,
+      const double                                                    &dt) const
+{
+  Timer timer;
+  this->time = cur_time;
+  this->dirichlet_boundary_conditions->set_time(this->time);
+  this->source_term->set_time(this->time);
+
+  this->data.loop (&WaveEquationOperationElasticWave<dim, fe_degree, Number>::local_apply_domain,
+                   &WaveEquationOperationElasticWave<dim, fe_degree, Number>::local_apply_face,
+                   &WaveEquationOperationElasticWave<dim, fe_degree, Number>::local_apply_boundary_face,
+                   this, dst, src);
+
+  this->computing_times[0] += timer.wall_time();
+  timer.restart();
+
+  this->data.cell_loop(&WaveEquationOperationElasticWave<dim, fe_degree, Number>::local_apply_mass_matrix,
+                       this, dst, dst);
+
+  this->computing_times[1] += timer.wall_time();
+  this->computing_times[2] += 1.;
+}
+
 // explicit instantiations
-template class WaveEquationOperation<2,1,double>;
-template class WaveEquationOperation<2,2,double>;
-template class WaveEquationOperation<2,3,double>;
-template class WaveEquationOperation<2,4,double>;
-template class WaveEquationOperation<2,5,double>;
-template class WaveEquationOperation<2,6,double>;
-template class WaveEquationOperation<3,1,double>;
-template class WaveEquationOperation<3,2,double>;
-template class WaveEquationOperation<3,3,double>;
-template class WaveEquationOperation<3,4,double>;
-template class WaveEquationOperation<3,5,double>;
-template class WaveEquationOperation<3,6,double>;
-template class WaveEquationOperation<2,1,float>;
-template class WaveEquationOperation<2,2,float>;
-template class WaveEquationOperation<2,3,float>;
-template class WaveEquationOperation<2,4,float>;
-template class WaveEquationOperation<2,5,float>;
-template class WaveEquationOperation<2,6,float>;
-template class WaveEquationOperation<3,1,float>;
-template class WaveEquationOperation<3,2,float>;
-template class WaveEquationOperation<3,3,float>;
-template class WaveEquationOperation<3,4,float>;
-template class WaveEquationOperation<3,5,float>;
-template class WaveEquationOperation<3,6,float>;
+template class WaveEquationOperationElasticWave<2,1,double>;
+template class WaveEquationOperationElasticWave<2,2,double>;
+template class WaveEquationOperationElasticWave<2,3,double>;
+template class WaveEquationOperationElasticWave<2,4,double>;
+template class WaveEquationOperationElasticWave<2,5,double>;
+template class WaveEquationOperationElasticWave<2,6,double>;
+template class WaveEquationOperationElasticWave<3,1,double>;
+template class WaveEquationOperationElasticWave<3,2,double>;
+template class WaveEquationOperationElasticWave<3,3,double>;
+template class WaveEquationOperationElasticWave<3,4,double>;
+template class WaveEquationOperationElasticWave<3,5,double>;
+template class WaveEquationOperationElasticWave<3,6,double>;
+template class WaveEquationOperationElasticWave<2,1,float>;
+template class WaveEquationOperationElasticWave<2,2,float>;
+template class WaveEquationOperationElasticWave<2,3,float>;
+template class WaveEquationOperationElasticWave<2,4,float>;
+template class WaveEquationOperationElasticWave<2,5,float>;
+template class WaveEquationOperationElasticWave<2,6,float>;
+template class WaveEquationOperationElasticWave<3,1,float>;
+template class WaveEquationOperationElasticWave<3,2,float>;
+template class WaveEquationOperationElasticWave<3,3,float>;
+template class WaveEquationOperationElasticWave<3,4,float>;
+template class WaveEquationOperationElasticWave<3,5,float>;
+template class WaveEquationOperationElasticWave<3,6,float>;
 }
 
 

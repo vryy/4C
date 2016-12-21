@@ -3,10 +3,12 @@
 \brief Main control routine for acoustic simulations
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -709,6 +711,7 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
     params.set<int>("funct",params_->get<int>("CALCERRORFUNCNO"));
     params.set<int>("useacouoptvecs",-1);
+    params.set<double>("dt",dtp_);
 
     discret_->SetState(0,"trace",velnp_);
 
@@ -751,13 +754,239 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 
     if(!myrank_)
     {
-      std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[0]<<" absolute L2 pressure error "<<sqrt((*errors)[0])<< " L2 pressure norm "<<sqrt((*errors)[1])<<std::endl;
+      //std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[0]<<" absolute L2 pressure error "<<sqrt((*errors)[0])<< " L2 pressure norm "<<sqrt((*errors)[1])<<std::endl;
+      std::cout<<"time "<<time_<<" absolute L2 pressure error "<<sqrt((*errors)[0])<<" absolute L2 postprocessed pressure error "<<sqrt((*errors)[2])<<" L2 pressure norm "<<sqrt((*errors)[1])<<std::endl;
       if(phys_==INPAR::ACOU::acou_solid)
       {
         std::cout<<"time "<<time_<<" relative L2 velocity error "<<(*relerror)[1]<<" absolute L2 velocity error "<<sqrt((*errors)[2])<< " L2 velocity norm "<<sqrt((*errors)[3])<<std::endl;
         std::cout<<"time "<<time_<<" relative L2 velgradi error "<<(*relerror)[2]<<" absolute L2 velgradi error "<<sqrt((*errors)[4])<< " L2 velgradi norm "<<sqrt((*errors)[5])<<std::endl;
       }
     }
+  }
+  return;
+}
+
+/****************************************************************************************/
+// ADER TRI TET MIT BACI
+/****************************************************************************************/
+ACOU::AcouTimeIntAderTriTet::AcouTimeIntAderTriTet(
+  const Teuchos::RCP<DRT::DiscretizationHDG>&   actdis,
+  const Teuchos::RCP<LINALG::Solver>&           solver,
+  const Teuchos::RCP<Teuchos::ParameterList>&   params,
+  const Teuchos::RCP<IO::DiscretizationWriter>& output
+  ):
+  AcouImplicitTimeInt(actdis,solver,params,output)
+{
+  tempsrc_ = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
+}
+
+void ACOU::AcouTimeIntAderTriTet::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
+{
+
+  // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
+  Output(history);
+
+  // evaluate error
+  //EvaluateErrorComparedToAnalyticalSol();
+
+  AssembleMatAndRHS();
+
+  // time loop
+  while (step_<stepmax_ and time_<maxtime_)
+  {
+    // increment time and step
+    IncrementTimeAndStep();
+
+    // output to screen
+    OutputToScreen();
+
+    // solve
+    Solve();
+
+    // output of solution
+    Output(history);
+
+    // evaluate error
+    EvaluateErrorComparedToAnalyticalSol();
+  }
+}
+
+void ACOU::AcouTimeIntAderTriTet::Solve()
+{
+  // for postprocessing-correction:
+  {
+    // first step: evaluate right hand side for lambda system
+    Teuchos::ParameterList eleparams;
+    eleparams.set<double>("dt",dtp_);
+    eleparams.set<bool>("padaptivity",padaptivity_);
+    eleparams.set<int>("useacouoptvecs",-1);
+    eleparams.set<int>("action",ACOU::prepare_ader_postprocessing);
+    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+    eleparams.set<bool>("adjoint",adjoint_);
+    eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+    eleparams.set<bool>("allelesequal",false);
+
+    // evaluate
+    residual_->Scale(0.0);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+    ApplyDirichletToSystem();
+
+    // solve for lambda
+    Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    solver_->Solve(sysmat_->EpetraOperator(),lambda,residual_,true,false,Teuchos::null);
+
+    // second step: go back to the elements and store improved gradient and improved divergence
+    eleparams.set<int>("action",ACOU::ader_postpro_gradanddiv);
+    discret_->SetState(0,"trace",lambda);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+    discret_->ClearState(true);
+  }
+
+
+  AssembleMatAndRHS();
+  ApplyDirichletToSystem();
+
+  solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
+  UpdateInteriorVariablesAndAssemebleRHS();
+
+  return;
+}
+
+void ACOU::AcouTimeIntAderTriTet::AssembleMatAndRHS()
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // reset residual and sysmat
+  residual_->Scale(0.0);
+  sysmat_->Zero();
+
+  // set general vector values needed by elements
+  discret_->ClearState(true);
+
+  // set element parameters
+  eleparams.set<double>("dt",dtp_);
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
+  eleparams.set<bool>("resonly",false);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  eleparams.set<int>("useacouoptvecs",-1);
+  eleparams.set<int>("action",ACOU::calc_ader_sysmat_and_residual);
+  eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<bool>("adjoint",adjoint_);
+  eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
+  eleparams.set<double>("time",time_);
+  eleparams.set<double>("timep",time_+dtp_);
+  eleparams.set<int>("step",step_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+
+  // set storage for intermediate values
+  tempsrc_->PutScalar(0.0);
+  discret_->SetState(1,"tempsrc",tempsrc_);
+
+  // evaluate
+  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+
+  tempsrc_->Update(1.0,*(discret_->GetState(1,"tempsrc")),0.0);
+  discret_->ClearState(true);
+
+  // complete
+  sysmat_->Complete();
+
+  return;
+}
+
+void ACOU::AcouTimeIntAderTriTet::UpdateInteriorVariablesAndAssemebleRHS()
+{
+  // create parameterlist
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
+  eleparams.set<double>("dt",dtp_);
+  eleparams.set<double>("time",time_);
+  eleparams.set<double>("timep",time_+dtp_);
+  eleparams.set<bool>("adjoint",adjoint_);
+  eleparams.set<bool>("errormaps",errormaps_);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  eleparams.set<double>("padaptivitytol",padapttol_);
+  eleparams.set<int>("useacouoptvecs",-1);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  eleparams.set<bool>("allelesequal",allelesequal_);
+  eleparams.set<int>("action",ACOU::update_ader_solution);
+  eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<bool>("calculategradient",false);
+  eleparams.set<int>("step",step_);
+
+  // evaluate
+  residual_->Scale(0.0);
+  discret_->SetState("trace",velnp_);
+  discret_->SetState(1,"tempsrc",tempsrc_);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+
+  // clear
+  discret_->ClearState(true);
+
+  return;
+}
+
+void ACOU::AcouTimeIntAderTriTet::EvaluateErrorComparedToAnalyticalSol()
+{
+  if(calcerr_)
+  {
+    // call element routine
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::calc_acou_error);
+    params.set<double>("time",time_);
+    params.set<bool>("padaptivity",padaptivity_);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+    params.set<int>("funct",params_->get<int>("CALCERRORFUNCNO"));
+    params.set<int>("useacouoptvecs",-1);
+    params.set<double>("dt",dtp_);
+    params.set<bool>("adjoint",false);
+    params.set<bool>("allelesequal",allelesequal_);
+    params.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+    params.set<bool>("calculategradient",false);
+    params.set<int>("step",step_);
+
+    discret_->SetState(0,"trace",velnp_);
+
+    Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(6));
+
+    // call loop over elements (assemble nothing)
+    discret_->EvaluateScalars(params, errors);
+    discret_->ClearState(true);
+
+    if(!myrank_)
+      std::cout<<"time "<<time_<<" absolute L2 pressure error "<<sqrt((*errors)[0])<<" L2 pressure norm "<<sqrt((*errors)[1])<<std::endl;
+
+    // postprocess solution!
+    if(1)
+    {
+      params.set<int>("action",ACOU::prepare_ader_postprocessing);
+
+      // evaluate
+      residual_->Scale(0.0);
+      discret_->Evaluate(params,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+      ApplyDirichletToSystem();
+
+      // solve for lambda
+      Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+      solver_->Solve(sysmat_->EpetraOperator(),lambda,residual_,true,false,Teuchos::null);
+
+      // calculate improved gradient and divergence
+      params.set<int>("action",ACOU::ader_postprocessing);
+      double error_post_val;
+      double* error_post = &error_post_val;
+      *error_post = 0.0;
+      params.set<double*>("error_post",error_post);
+
+      // evaluate
+      discret_->SetState(0,"trace",lambda);
+      discret_->Evaluate(params,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+      discret_->ClearState(true);
+
+      std::cout<<"time "<<time_<<" absolute L2 postprocessed pressure error "<<sqrt(*error_post)<<std::endl;
+
+    }
+
   }
   return;
 }

@@ -1792,10 +1792,11 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_expl.cpp
   src/drt_acou/acou_expl_worker.cpp
   src/drt_acou/acou_expl_worker_ader.cpp
+  src/drt_acou/acou_expl_worker_ader_lts.cpp
   src/drt_acou/acou_expl_worker_sol.cpp
+  src/drt_acou/acou_pml.cpp
   src/drt_acou/deal_tria_wrapper.cpp
   src/drt_acou/pat_imagereconstruction.cpp
-  src/drt_acou/pat_matpar_manager.cpp
   src/drt_acou/pat_utils.cpp
 )
 set(OBJS_DRT_ACOU_LIB

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_acou.H
-
+\level 2
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -34,7 +34,9 @@ namespace INPAR
       acou_lsrk33reg2,  // low storage Runge-Kutta
       acou_lsrk45reg3,  // low storage Runge-Kutta
       acou_ssprk,       // strong stability preserving Runge-Kutta
-      acou_ader         // ader time integration
+      acou_ader,        // ader time integration
+      acou_ader_lts,    // ader with local time stepping
+      acou_ader_tritet
     };
 
     // physical type
@@ -70,6 +72,15 @@ namespace INPAR
       pat_regula_tikhtvd      // both
     };
 
+    /// Patch Type
+    enum PatchType
+    {
+      pat_patch_none,
+      pat_patch_self,
+      pat_patch_reacgrad,
+      pat_patch_reacvals,
+      pat_patch_mixed
+    };
 
     /// Defines all valid parameters for acou problem
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

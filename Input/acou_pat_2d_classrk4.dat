@@ -1,8 +1,15 @@
+//
+// Maintainer: Svenja Schoeder
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
+Test case to check time integration with standard Runge-Kutta
+scheme of fourth order in connection with HDG spatial discretization
+with quadratic shape functions. This test case also tests photo-
+acoustics: a scalar transport problem for light propagation is
+solved and determines the initial pressure.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    896
 //NODES       954
@@ -16,7 +23,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        1e-5
 NUMSTEP                         40000
 MAXTIME                         1e-3
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 RESTARTEVRY                     10
 STARTFUNCNO                     1
 PHOTOACOU                       Yes
@@ -134,13 +141,13 @@ MAT 6 MAT_scatra DIFFUSIVITY 0.6 REACOEFF 4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION exp(1000000*(-(x-0.02)^2.0-(y-0.01)^2.0-z^2.0))
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE -9.15829011492960560e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 100 QUANTITY pressure VALUE -7.01493924858704598e-02 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 231 QUANTITY pressure VALUE 3.31211450262367701e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 300 QUANTITY pressure VALUE -3.42022635858557356e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 400 QUANTITY pressure VALUE -1.82797864768186602e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 500 QUANTITY pressure VALUE -2.27771760208073382e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 600 QUANTITY pressure VALUE -1.67295216161155558e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE -9.15848761706135606e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 100 QUANTITY pressure VALUE -7.01492802709240693e-02 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 231 QUANTITY pressure VALUE 3.31206145423750209e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 300 QUANTITY pressure VALUE -3.42021338140652775e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 400 QUANTITY pressure VALUE -1.82795844528994389e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 500 QUANTITY pressure VALUE -2.27772078466937727e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 600 QUANTITY pressure VALUE -1.67298794229398889e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  2

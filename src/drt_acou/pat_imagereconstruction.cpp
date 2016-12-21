@@ -7,15 +7,16 @@
 \level 3
 
 <pre>
+\level 3
+
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/staff/svenja-schoeder/
-            089 - 289-15271
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
 #include "pat_imagereconstruction.H"
-#include "pat_matpar_manager.H"
 #include "pat_utils.H"
 #include "acou_expl.H"
 #include "acou_impl_euler.H"
@@ -73,7 +74,7 @@ output_count_(0),
 last_acou_fw_output_count_(0),
 meshconform_(DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM")),
 timereversal_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"TIMEREVERSAL")),
-reducedbasis_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REDUCEDBASIS")),
+patchtype_(DRT::INPUT::IntegralValue<INPAR::ACOU::PatchType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"PATCHTYPE")),
 fdcheck_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("FDCHECK"))),
 J_(0.0),
 J_start_(0.0),
@@ -156,9 +157,9 @@ overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE
   if(DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE")!=INPAR::ACOU::pat_regula_none)
     reac_regula_ = Teuchos::rcp(new PATRegula(
         DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE"),
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT"),
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT"),
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT_MUA"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT_MUA"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS_MUA"),
         scatra_discret_));
 
 
@@ -197,7 +198,7 @@ overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE
 
     // open file
     FILE* file = fopen(impulseresponsefilename.c_str(),"rb");
-    if (file==NULL) dserror("Could not open monitor file %s",impulseresponsefilename.c_str());
+    if (file==NULL) dserror("Could not open impulse response file %s",impulseresponsefilename.c_str());
 
     // read file
     char buffer[150000];
@@ -506,122 +507,6 @@ void ACOU::PatImageReconstruction::EvaluateReacGrad()
   if(reac_regula_!=Teuchos::null)
     reac_regula_->EvaluateGradient(reac_vals_,reac_objgrad_);
 
-  if(reducedbasis_)
-  {
-    // subdivide the material into numset sets, each set has to change in the same manner
-    int numinterval = 2;
-
-    double maxval = 0.0;
-    double minval = 0.0;
-    reac_objgrad_->MaxValue(&maxval);
-    reac_objgrad_->MinValue(&minval);
-    if(maxval == minval)
-      return;
-    double rangeval = maxval - minval;
-
-    // create a helper vector
-    Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-    auxvals->Update(1.0,*reac_objgrad_,0.0);
-
-    // find minid
-    int minid = -1;
-    for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-    {
-      if(reac_objgrad_->operator [](e)<=minval+1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
-        minid = e;
-    }
-    int global_minid = -1;
-    scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-    int loc_owner = -1;
-    if(minid==global_minid)
-      loc_owner = myrank_;
-    int owner = -1;
-    scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-    // create a vector to store the set ids
-    Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-    setids->PutScalar(-1.0);
-    double minvalsetids = -1.0;
-
-    // set all the set ids
-    int i=0;
-    while(minvalsetids<0.0)
-    {
-      double set = double(i);
-      DRT::Element* actele = NULL;
-      if(myrank_==owner) // only for owning processor
-      {
-        setids->ReplaceMyValue(minid,0,set);
-        auxvals->ReplaceMyValue(minid,0,123456.789);
-        actele = scatra_discret_->lRowElement(minid);
-      }
-      CheckNeighborsReacGrad(actele,owner,setids,set,minval,rangeval/numinterval,auxvals);
-
-      // find next minimum value
-      auxvals->MinValue(&minval);
-
-      // find minid
-      minid = -1;
-      for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-      {
-        if(auxvals->operator [](e)<=minval+1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
-          minid = e;
-      }
-      global_minid = -1;
-      scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-      loc_owner = -1;
-      if(minid==global_minid)
-        loc_owner = myrank_;
-      owner = -1;
-      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-      setids->MinValue(&minvalsetids);
-      i++;
-    }
-
-    if(!myrank_)
-      std::cout<<"identified "<<i<<" sets using the reaction gradient for the reaction basis"<<std::endl;
-
-    // now recalculate the entries in the gradients according to the sets
-    for(int j=0; j<i; ++j) // i holds the number of sets right now
-    {
-      double lsetvalreac = 0.0;
-      int lnumsetval = 0;
-      for(int g=0; g<reac_objgrad_->MyLength(); ++g)
-      {
-        if(opti_opt_ind_->operator [](g)!= 0.0)
-        {
-          double reacgradval = reac_objgrad_->operator [](g);
-          int set = setids->operator [](g);
-          if(set==j)
-          {
-            lsetvalreac += reacgradval;
-            lnumsetval++;
-          }
-        }
-      }
-
-      double gsetvalreac = 0.0;
-      scatra_discret_->Comm().SumAll(&lsetvalreac,&gsetvalreac,1);
-      int gnumsetval = 0;
-      scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
-
-      if(gnumsetval!=0.0)
-        gsetvalreac/=gnumsetval;
-
-      for(int g=0; g<reac_objgrad_->MyLength(); ++g)
-      {
-        if(opti_opt_ind_->operator [](g)!= 0.0)
-        {
-          int set = setids->operator [](g);
-          if(set==j)
-            reac_objgrad_->ReplaceMyValue(g,0,gsetvalreac);
-        }
-      }
-      scatra_discret_->Comm().Barrier();
-    }
-  }
-
   ConvertGradient(scatra_discret_,reac_objgrad_);
 
   return;
@@ -671,7 +556,7 @@ void ACOU::PatImageReconstruction::CheckNeighborsReacGrad(DRT::Element* actele, 
           // if already evaluated, skip
           if(scatra_discret_->ElementRowMap()->LID(neighborele->Id())<0)
             continue;
-          if(setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0.0)
+          if(setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0)
             continue;
 
           // determine reaction coefficient
@@ -679,7 +564,7 @@ void ACOU::PatImageReconstruction::CheckNeighborsReacGrad(DRT::Element* actele, 
           if(abs(neighborreac-reacval) <= interval)
           {
             setsids->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,set);
-            auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,123456.789);
+            auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,std::numeric_limits<double>::max());
 
             // this has to be checked and its neighbors too
             toevaluate.push_back(neighborele->Id());
@@ -764,6 +649,7 @@ void ACOU::PatImageReconstruction::CheckNeighborsReacGrad(DRT::Element* actele, 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> gradient)
 {
+  double L=8.0;
 
   // harmonic basis
   if(0)
@@ -771,7 +657,7 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
     // this is an implementation for circular harmonics
 
     // basis size
-    int basis_size = 50+iter_+2;
+    int basis_size = iter_+5;
 
     // to calculate the gradient with respect to the values scaling the basis function, we need to scale each element gradient value with the value of the
     // basis function at that point
@@ -791,9 +677,9 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
           std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(discret->lRowElement(e));
 
           // evaluate i-th shape function at these coordinates
-          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/10.0)*std::cos(double(j)*PI*xyz[1]/10.0);
-          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
-          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/L)*std::cos(double(j)*PI*xyz[1]/L);
+          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/L)*std::sin(double(j+1)*PI*xyz[1]/L);
+          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/L)*std::sin(double(j+1)*PI*xyz[1]/L);
 
           // compute product of evaluated shape function and gradient value
           loc_grad_contrib[0] += N_ij_at_xy_cc * gradient->operator [](e);
@@ -822,9 +708,9 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
         for(int j=0; j<basis_size; ++j)
         {
           // evaluate i-th shape function at these coordinates
-          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/10.0)*std::cos(double(j)*PI*xyz[1]/10.0);
-          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
-          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/L)*std::cos(double(j)*PI*xyz[1]/L);
+          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/L)*std::sin(double(j+1)*PI*xyz[1]/L);
+          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/L)*std::sin(double(j+1)*PI*xyz[1]/L);
 
           new_grad_ele += N_ij_at_xy_cc * newgrad[i*basis_size+j]
                         + N_ij_at_xy_cs * newgrad[i*basis_size+j+1*basis_size*basis_size]
@@ -839,7 +725,7 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
   if(0)
   {
     // basis size
-    int basis_size = (iter_+2);
+    int basis_size = 5;//(iter_+2);
 
     // new gradient
     std::vector<double> newgrad(basis_size*basis_size);
@@ -862,9 +748,9 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
           for(int k=0; k<basis_size; ++k)
           {
             if(k!=i)
-              N_i_at_x *= (xyz[0]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+i*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+              N_i_at_x *= (xyz[0]-(-L/2.0+k*L/(basis_size-1)))/(-L/2.0+i*L/(basis_size-1)-(-L/2.0+k*L/(basis_size-1)));
             if(k!=j)
-              N_j_at_y *= (xyz[1]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+j*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+              N_j_at_y *= (xyz[1]-(-L/2.0+k*L/(basis_size-1)))/(L/2.0+j*L/(basis_size-1)-(L/2.0+k*L/(basis_size-1)));
           }
 
           // compute product of evaluated shape function and gradient value
@@ -896,9 +782,9 @@ void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretizat
           for(int k=0; k<basis_size; ++k)
           {
             if(k!=i)
-              N_i_at_x *= (xyz[0]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+i*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+              N_i_at_x *= (xyz[0]-(-L/2.0+k*L/(basis_size-1)))/(-L/2.0+i*L/(basis_size-1)-(-L/2.0+k*L/(basis_size-1)));
             if(k!=j)
-              N_j_at_y *= (xyz[1]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+j*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+              N_j_at_y *= (xyz[1]-(-L/2.0+k*L/(basis_size-1)))/(-L/2.0+j*L/(basis_size-1)-(-L/2.0+k*L/(basis_size-1)));
           }
 
           new_grad_ele += N_i_at_x * N_j_at_y * newgrad[i*basis_size+j];
@@ -946,9 +832,9 @@ ACOU::PatImageReconstructionOptiSplit::PatImageReconstructionOptiSplit(
   if(DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE")!=INPAR::ACOU::pat_regula_none)
     diff_regula_ = Teuchos::rcp(new PATRegula(
         DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE"),
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT")/10.0,
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT")/10.0,
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT_D"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT_D"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS_D"),
         scatra_discret_));
 
   // set parameter for aocustic time integration
@@ -968,8 +854,10 @@ void ACOU::PatImageReconstructionOptiSplit::ReplaceParams(Teuchos::RCP<Epetra_Ve
   else
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.001)
-        params->ReplaceMyValue(i,0,0.001);
+      if(params->operator [](i)<0.4)
+        params->ReplaceMyValue(i,0,0.4);
+      else if(params->operator [](i)>1.0)
+        params->ReplaceMyValue(i,0,1.0);
     }
 
   Teuchos::RCP<Epetra_Vector> paramscol = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementColMap()),false));
@@ -1061,7 +949,7 @@ void ACOU::PatImageReconstructionOptiSplit::EvaluateGradient()
 
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstructionOptiSplit::EvaluateDiffGrad()
+void ACOU::PatImageReconstructionOptiSplit::EvaluateDiffGrad()
 {
   // export solution vector to column map
   Teuchos::RCP<Epetra_Vector> phicol = LINALG::CreateVector(*scatra_discret_->DofColMap(),false);
@@ -1107,250 +995,13 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstructionOptiSplit::EvaluateDiffG
   if(diff_regula_!=Teuchos::null)
     diff_regula_->EvaluateGradient(diff_vals_,diff_objgrad_);
 
-  if(reducedbasis_)
-  {
-    // PATCHREAC
-    if(1)
-    {
-      // for reduced basis, the diffusion coefficient has to build patches according to the absorption coefficient distribution
-      int numinterval = 2;
-      double maxval = 0.0;
-      double minval = 0.0;
-      reac_vals_->MaxValue(&maxval);
-      reac_vals_->MinValue(&minval);
-      //diff_objgrad_->MaxValue(&maxval);
-      //diff_objgrad_->MinValue(&minval);
-
-      double rangeval = maxval - minval;
-      if(rangeval == 0.0)
-        return Teuchos::null;
-
-      // create a helper vector
-      Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-      auxvals->Update(1.0,*reac_vals_,0.0);
-      //auxvals->Update(1.0,*diff_objgrad_,0.0);
-
-      // find maxid
-      int maxid = -1;
-      for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-      {
-        //if(diff_objgrad_->operator [](e)<=minval+1.0e-10)
-        if(reac_vals_->operator [](e)>=maxval-1.0e-10)
-          maxid = e;
-      }
-      int global_maxid = -1;
-      scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
-      int loc_owner = -1;
-      if(maxid==global_maxid)
-        loc_owner = myrank_;
-      int owner = -1;
-      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-      // create a vector to store the set ids
-      Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-      setids->PutScalar(-1.0);
-      double minvalsetids = -1.0;
-
-      // set all the set ids
-      int i=0;
-      while(minvalsetids<0.0)
-      {
-        double set = double(i);
-        DRT::Element* actele = NULL;
-        if(myrank_==owner) // only for owning processor
-        {
-          setids->ReplaceMyValue(maxid,0,set);
-          auxvals->ReplaceMyValue(maxid,0,-123456.789);
-          //auxvals->ReplaceMyValue(maxid,0,123456.789);
-          actele = scatra_discret_->lRowElement(maxid);
-        }
-        CheckNeighborsDiffGrad(actele,owner,setids,set,maxval,rangeval/numinterval,auxvals);
-
-        // find next minimum value
-        auxvals->MaxValue(&maxval);
-        //auxvals->MinValue(&maxval);
-
-        // find maxid
-        maxid = -1;
-        for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-        {
-          //if(auxvals->operator [](e)<=maxval+1.0e-10)
-          if(auxvals->operator [](e)>=maxval-1.0e-10)
-            maxid = e;
-        }
-        global_maxid = -1;
-        scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
-        loc_owner = -1;
-        if(maxid==global_maxid)
-          loc_owner = myrank_;
-        owner = -1;
-        scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-        setids->MinValue(&minvalsetids);
-        i++;
-      }
-
-      if(!myrank_)
-        std::cout<<"identified "<<i<<" sets using the reaction values for the diffusion basis"<<std::endl;
-        //std::cout<<"identified "<<i<<" sets using the diffusion gradient for the diffusion basis"<<std::endl;
-
-      // now recalculate the entries in the gradients according to the sets
-      for(int j=0; j<i; ++j) // i holds the number of sets right now
-      {
-        double lsetvaldiff = 0.0;
-        int lnumsetval = 0;
-        for(int g=0; g<diff_objgrad_->MyLength(); ++g)
-        {
-          double diffgradval = diff_objgrad_->operator [](g);
-          int set = setids->operator [](g);
-          if(set==j)
-          {
-            lsetvaldiff += diffgradval;
-            lnumsetval++;
-          }
-        }
-
-        double gsetvaldiff = 0.0;
-        scatra_discret_->Comm().SumAll(&lsetvaldiff,&gsetvaldiff,1);
-        int gnumsetval = 0;
-        scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
-
-        if(gnumsetval!=0.0)
-          gsetvaldiff/=gnumsetval;
-
-        for(int g=0; g<diff_objgrad_->MyLength(); ++g)
-        {
-          int set = setids->operator [](g);
-          if(set==j)
-            diff_objgrad_->ReplaceMyValue(g,0,gsetvaldiff);
-        }
-        scatra_discret_->Comm().Barrier();
-      }
-
-      return setids;
-    }
-    // PATCHSELF
-    if(0)
-    {
-      // for reduced basis, the diffusion coefficient has to build patches according to the absorption coefficient distribution
-      int numinterval = 2;
-      double maxval = 0.0;
-      double minval = 0.0;
-      diff_objgrad_->MaxValue(&maxval);
-      diff_objgrad_->MinValue(&minval);
-
-      double rangeval = maxval - minval;
-      if(rangeval == 0.0)
-        return Teuchos::null;
-
-      // create a helper vector
-      Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-      auxvals->Update(1.0,*diff_objgrad_,0.0);
-
-      // find maxid
-      int maxid = -1;
-      for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-      {
-        if(diff_objgrad_->operator [](e)<=minval+1.0e-10)
-          maxid = e;
-      }
-      int global_maxid = -1;
-      scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
-      int loc_owner = -1;
-      if(maxid==global_maxid)
-        loc_owner = myrank_;
-      int owner = -1;
-      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-      // create a vector to store the set ids
-      Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
-      setids->PutScalar(-1.0);
-      double minvalsetids = -1.0;
-
-      // set all the set ids
-      int i=0;
-      while(minvalsetids<0.0)
-      {
-        double set = double(i);
-        DRT::Element* actele = NULL;
-        if(myrank_==owner) // only for owning processor
-        {
-          setids->ReplaceMyValue(maxid,0,set);
-          auxvals->ReplaceMyValue(maxid,0,123456.789);
-          actele = scatra_discret_->lRowElement(maxid);
-        }
-        CheckNeighborsDiffGrad(actele,owner,setids,set,maxval,rangeval/numinterval,auxvals);
-
-        // find next minimum value
-        auxvals->MinValue(&maxval);
-
-        // find maxid
-        maxid = -1;
-        for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
-        {
-          if(auxvals->operator [](e)<=maxval+1.0e-10)
-            maxid = e;
-        }
-        global_maxid = -1;
-        scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
-        loc_owner = -1;
-        if(maxid==global_maxid)
-          loc_owner = myrank_;
-        owner = -1;
-        scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-        setids->MinValue(&minvalsetids);
-        i++;
-      }
-
-      if(!myrank_)
-        std::cout<<"identified "<<i<<" sets using the reaction values for the diffusion basis"<<std::endl;
-        //std::cout<<"identified "<<i<<" sets using the diffusion gradient for the diffusion basis"<<std::endl;
-
-      // now recalculate the entries in the gradients according to the sets
-      for(int j=0; j<i; ++j) // i holds the number of sets right now
-      {
-        double lsetvaldiff = 0.0;
-        int lnumsetval = 0;
-        for(int g=0; g<diff_objgrad_->MyLength(); ++g)
-        {
-          double diffgradval = diff_objgrad_->operator [](g);
-          int set = setids->operator [](g);
-          if(set==j)
-          {
-            lsetvaldiff += diffgradval;
-            lnumsetval++;
-          }
-        }
-
-        double gsetvaldiff = 0.0;
-        scatra_discret_->Comm().SumAll(&lsetvaldiff,&gsetvaldiff,1);
-        int gnumsetval = 0;
-        scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
-
-        if(gnumsetval!=0.0)
-          gsetvaldiff/=gnumsetval;
-
-        for(int g=0; g<diff_objgrad_->MyLength(); ++g)
-        {
-          int set = setids->operator [](g);
-          if(set==j)
-            diff_objgrad_->ReplaceMyValue(g,0,gsetvaldiff);
-        }
-        scatra_discret_->Comm().Barrier();
-      }
-
-      return setids;
-    }
-  }
-
   ConvertGradient(scatra_discret_,diff_objgrad_);
 
-  return Teuchos::null;
+  return;
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstructionOptiSplit::CheckNeighborsDiffGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
+void ACOU::PatImageReconstructionOptiSplit::CheckNeighborsDiffGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double diffval, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
 {
   // parallel version
   int lactelenodeids[4]={0,0,0,0};
@@ -1397,13 +1048,11 @@ void ACOU::PatImageReconstructionOptiSplit::CheckNeighborsDiffGrad(DRT::Element*
             continue;
 
           // determine reaction coefficient
-          double neighborreac = reac_vals_->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id()));
-          //double neighborreac = diff_objgrad_->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id()));
-          if(abs(neighborreac-reacval) <= interval)
+          double neighbordiff = diff_objgrad_->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id()));
+          if(abs(neighbordiff-diffval) <= interval)
           {
             setsids->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,set);
-            auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,-123456.789);
-            //auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,123456.789);
+            auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,std::numeric_limits<double>::max());
 
             // this has to be checked and its neighbors too
             toevaluate.push_back(neighborele->Id());
@@ -1432,7 +1081,7 @@ void ACOU::PatImageReconstructionOptiSplit::CheckNeighborsDiffGrad(DRT::Element*
       int nbowner = -1;
       scatra_discret_->Comm().MaxAll(&lnbowner,&nbowner,1);
       DRT::Element* neighborele = scatra_discret_->gElement(gtoeva[s]);
-      CheckNeighborsDiffGrad(neighborele,nbowner,setsids,set,reacval,interval,auxvals);
+      CheckNeighborsDiffGrad(neighborele,nbowner,setsids,set,diffval,interval,auxvals);
     }
   }
   return;
@@ -1450,7 +1099,10 @@ bool ACOU::PatImageReconstructionOptiSplit::PerformIteration()
 
   reacordifforcorrho_ = 0;
   bool reacsucc = false;
-  for(int i=0; i<sequenzeiter_; ++i)
+  int reacseq = sequenzeiter_;
+  if(iter_==0)
+    reacseq *= 5;
+  for(int i=0; i<reacseq; ++i)
   {
     if(!myrank_)
       std::cout<<"ITERATION "<<i<<std::endl;
@@ -1679,15 +1331,15 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
   {
     c_regula_ = Teuchos::rcp(new PATRegula(
           DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE"),
-          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT"),
-          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT"),
-          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS"),
+          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT_C"),
+          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT_C"),
+          acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS_C"),
           acou_discret_));
     rho_regula_ = Teuchos::rcp(new PATRegula(
         DRT::INPUT::IntegralValue<INPAR::ACOU::RegulaType>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"REGULATYPE"),
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT")/10.0,
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT")/10.0,
-        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TIKHWEIGHT_RHO"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDWEIGHT_RHO"),
+        acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("TVDEPS_RHO"),
         acou_discret_));
   }
 
@@ -1695,6 +1347,52 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
   acouparams_->set<bool>("acouopt",true);
 
   /* only for optimization with "correctly set" acoustical properties */
+  if(0)
+  {
+    double mu_1=0.01;
+    double D_1=0.5;
+    double c_1=1.54;
+    double rho_1=1.1;
+
+    double mu_2=0.1;
+    double D_2=0.3;
+    double c_2=1.8;
+    double rho_2=1.2;
+
+    c_vals_->PutScalar(1.48);
+    rho_vals_->PutScalar(1.00);
+    for(int i=scatra_discret_->ElementRowMap()->MinAllGID(); i<=scatra_discret_->ElementRowMap()->MaxAllGID(); ++i)
+    {
+      // local id
+      int lid = scatra_discret_->ElementRowMap()->LID(i);
+
+      // get element center coordinates
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
+
+      // determine value to set
+      double f = std::exp(-0.5*xyz[0]*xyz[0]-0.25*xyz[1]*xyz[1]);
+      double mu_tat = (1.0-f)*mu_1+f*mu_2;
+      double D_tat = (1.0-f)*D_1+f*D_2;
+      double c_tat = (1.0-f)*c_1+f*c_2;
+      double rho_tat = (1.0-f)*rho_1+f*rho_2;
+
+      reac_vals_->ReplaceMyValue(lid,0,mu_tat);
+      diff_vals_->ReplaceMyValue(lid,0,D_tat);
+      c_vals_->ReplaceMyValue(lid,0,c_tat);
+      rho_vals_->ReplaceMyValue(lid,0,rho_tat);
+    }
+    reacordifforcorrho_ = 0;
+    ReplaceParams(reac_vals_);
+    reacordifforcorrho_ = 1;
+    ReplaceParams(diff_vals_);
+    reacordifforcorrho_ = 2;
+    ReplaceParams(c_vals_);
+    reacordifforcorrho_ = 3;
+    ReplaceParams(rho_vals_);
+
+    acouparams_->set<bool>("acouopt",false);
+  }
+
   if(0)
   {
     /*
@@ -1838,6 +1536,46 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
 
     acouparams_->set<bool>("acouopt",false);
   }
+
+
+  if(0) // forward calculation for mixed material
+  {
+    for(int i=scatra_discret_->ElementRowMap()->MinAllGID(); i<=scatra_discret_->ElementRowMap()->MaxAllGID(); ++i)
+    {
+      // local id
+      int lid = scatra_discret_->ElementRowMap()->LID(i);
+
+      // get element center coordinates
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
+
+      if(sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])>1.86)
+      {
+        // set default parameters
+        reac_vals_->ReplaceMyValue(lid,0,1.);
+        diff_vals_->ReplaceMyValue(lid,0,0.6);
+        c_vals_->ReplaceMyValue(lid,0,1.);
+        rho_vals_->ReplaceMyValue(lid,0,1.);
+      }
+      else
+      {
+        double expval=exp(-xyz[0]*xyz[0]-xyz[1]*xyz[1]);
+        reac_vals_->ReplaceMyValue(lid,0,(1-expval)*1.+expval*2.);
+        diff_vals_->ReplaceMyValue(lid,0,(1-expval)*0.6+expval*0.8);
+        c_vals_->ReplaceMyValue(lid,0,(1-expval)*1.+expval*1.2);
+        rho_vals_->ReplaceMyValue(lid,0,(1-expval)*1.+expval*1.5);
+      }
+    }
+    reacordifforcorrho_ = 0;
+    ReplaceParams(reac_vals_);
+    reacordifforcorrho_ = 1;
+    ReplaceParams(diff_vals_);
+
+    reacordifforcorrho_ = 2;
+    ReplaceParams(c_vals_);
+    reacordifforcorrho_ = 3;
+    ReplaceParams(rho_vals_);
+
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -1852,8 +1590,10 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReplaceParams(Teuchos::RCP<
   else
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.001)
-        params->ReplaceMyValue(i,0,0.001);
+      if(params->operator [](i)<0.4)
+        params->ReplaceMyValue(i,0,0.4);
+      else if(params->operator [](i)>1.0)
+        params->ReplaceMyValue(i,0,1.0);
     }
 
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -1975,7 +1715,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 
   // do the actual evaluation
   EvaluateReacGrad();
-  Teuchos::RCP<Epetra_Vector> setidsdiff = EvaluateDiffGrad();
+  EvaluateDiffGrad();
   EvaluateCGrad();
   EvaluateRhoGrad();
 
@@ -1983,326 +1723,460 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
   if(fdcheck_)
     FDCheck();
 
-  // PATCHREAC
-  //if(0)
-  if(reducedbasis_ && setidsdiff != Teuchos::null) // in the first iteration, the set ids are null pointer
+  // reduce basis
+  ReduceBasis();
+
+//  double norm1 = 0.0, norm2 = 0.0, norminf=0.0;
+//  reac_objgrad_->Norm1(&norm1); reac_objgrad_->Norm2(&norm2); reac_objgrad_->NormInf(&norminf);
+//  std::cout<<"reac "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
+//  diff_objgrad_->Norm1(&norm1); diff_objgrad_->Norm2(&norm2); diff_objgrad_->NormInf(&norminf);
+//  std::cout<<"diff "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
+//  c_objgrad_->Norm1(&norm1); c_objgrad_->Norm2(&norm2); c_objgrad_->NormInf(&norminf);
+//  std::cout<<"sos  "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
+//  rho_objgrad_->Norm1(&norm1); rho_objgrad_->Norm2(&norm2); rho_objgrad_->NormInf(&norminf);
+//  std::cout<<"rho  "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
+//
+//  // output the solution
+//  std::string outname = name_;
+//  outname.append("_c_and_rho_grad");
+//  acououtput_->NewResultFile(outname,0);
+//  output_count_++;
+//  acououtput_->WriteMesh(0,0.0);
+//  acououtput_->NewStep(1,1.0);
+//  acououtput_->WriteElementData(true);
+//  acououtput_->WriteVector("density",rho_objgrad_);
+//  acououtput_->WriteVector("speedofsound",c_objgrad_);
+//
+//  std::string soutname = name_;
+//  soutname.append("_reac_and_diff_grad");
+//  scatraoutput_->NewResultFile(soutname,0);
+//  output_count_++;
+//  scatraoutput_->WriteMesh(0,0.0);
+//  scatraoutput_->NewStep(1,1.0);
+//  scatraoutput_->WriteElementData(true);
+//  scatraoutput_->WriteVector("rea_coeff",reac_objgrad_);
+//  scatraoutput_->WriteVector("diff_coeff",diff_objgrad_);
+//
+//  if(reducedbasis_ && setidsdiff != Teuchos::null) dserror("und stopp");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReduceBasis()
+{
+  // first part: reduce the basis of the absorption coefficient, it always uses its own gradient
+  if(patchtype_==INPAR::ACOU::pat_patch_none)
+    return;
+
+  // security check
+  if(meshconform_==false) dserror("reduced basis not implemented for nonconforming meshes");
+
+  // reduce the basis for the reaction coefficient first
+  // create a vector to store the set ids
+  Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+  if(patchtype_!=INPAR::ACOU::pat_patch_mixed)
   {
+    double maxval = 0.0;
+    double minval = 0.0;
+    reac_objgrad_->MaxValue(&maxval);
+    reac_objgrad_->MinValue(&minval);
+    if(maxval == minval) dserror("tried to reduce basis, but gradient has only one value");
+    double rangeval = std::abs(maxval - minval);
 
-    if(meshconform_==false)
-      dserror("not implemented for nonconforming meshes"); // TODO
+    // create a helper vector
+    Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+    auxvals->Update(1.0,*reac_objgrad_,0.0);
 
-    // create a vector to store the set ids
-    Teuchos::RCP<Epetra_Vector> setidsacou = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),true));
-
-    // calculate the acou setids from the diffusion setids!
-    for(int i=scatra_discret_->ElementRowMap()->MinAllGID(); i<=scatra_discret_->ElementRowMap()->MaxAllGID(); ++i)
+    // find minid
+    int minid = -1;
+    for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
     {
-      double lsetval = -1234567.89;
-      if(scatra_discret_->ElementRowMap()->LID(i)>=0)
-      {
-        lsetval = setidsdiff->operator [](scatra_discret_->ElementRowMap()->LID(i));
-      }
-      double setval = 0.0;
-      scatra_discret_->Comm().MaxAll(&lsetval,&setval,1);
+      if(reac_objgrad_->operator [](e)<=minval+1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
+        minid = e;
+    }
+    int global_minid = -1;
+    scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
+    int loc_owner = -1;
+    if(minid==global_minid)
+      loc_owner = myrank_;
+    int owner = -1;
+    scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
 
-      int agid = i - scatra_discret_->ElementRowMap()->MinAllGID() + acou_discret_->ElementRowMap()->MinAllGID();
-      int alid = acou_discret_->ElementRowMap()->LID(agid);
-      if(alid>=0)
-        setidsacou->ReplaceMyValue(alid,0,setval);
+    setids->PutScalar(-1.0);
+    double minvalsetids = -1.0;
+
+    // set all the set ids
+    int i=0;
+    while(minvalsetids<0.0)
+    {
+      double set = double(i);
+      DRT::Element* actele = NULL;
+      if(myrank_==owner) // only for owning processor
+      {
+        setids->ReplaceMyValue(minid,0,set);
+        auxvals->ReplaceMyValue(minid,0,std::numeric_limits<double>::max());
+        actele = scatra_discret_->lRowElement(minid);
+      }
+      CheckNeighborsReacGrad(actele,owner,setids,set,minval,2./3.*rangeval,auxvals);
+
+      // find next minimum value
+      auxvals->MinValue(&minval);
+
+      // find minid
+      minid = -1;
+      for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
+      {
+        if(auxvals->operator [](e)<=minval+1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
+          minid = e;
+      }
+      global_minid = -1;
+      scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
+      loc_owner = -1;
+      if(minid==global_minid)
+        loc_owner = myrank_;
+      owner = -1;
+      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
+
+      setids->MinValue(&minvalsetids);
+      i++;
     }
 
+    if(!myrank_)
+      std::cout<<"identified "<<i<<" sets using the reaction gradient for the reaction basis"<<std::endl;
+
     // now recalculate the entries in the gradients according to the sets
-    double doublemaxset = 0.0;
-    setidsacou->MaxValue(&doublemaxset);
-    for(int j=0; j<=int(doublemaxset); ++j) // i holds the number of sets right now
+    for(int j=0; j<i; ++j) // i holds the number of sets right now
     {
-      double lsetvalc = 0.0;
-      double lsetvalrho = 0.0;
+      double lsetvalreac = 0.0;
       int lnumsetval = 0;
-      for(int g=0; g<c_objgrad_->MyLength(); ++g)
+      for(int g=0; g<reac_objgrad_->MyLength(); ++g)
       {
-        if(acou_opt_ind_->operator [](g)!=0.0) // only for those who play a role (not the water region)
+        if(opti_opt_ind_->operator [](g)!= 0.0)
         {
-          double cgradval = c_objgrad_->operator [](g);
-          double rhogradval = rho_objgrad_->operator [](g);
-          int set = setidsacou->operator [](g);
+          double reacgradval = reac_objgrad_->operator [](g);
+          int set = setids->operator [](g);
           if(set==j)
           {
-            lsetvalc += cgradval;
-            lsetvalrho += rhogradval;
+            lsetvalreac += reacgradval;
             lnumsetval++;
           }
         }
       }
 
-      double gsetvalc = 0.0;
-      double gsetvalrho = 0.0;
-      scatra_discret_->Comm().SumAll(&lsetvalc,&gsetvalc,1);
-      scatra_discret_->Comm().SumAll(&lsetvalrho,&gsetvalrho,1);
+      double gsetvalreac = 0.0;
+      scatra_discret_->Comm().SumAll(&lsetvalreac,&gsetvalreac,1);
       int gnumsetval = 0;
       scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
 
       if(gnumsetval!=0.0)
+        gsetvalreac/=gnumsetval;
+
+      for(int g=0; g<reac_objgrad_->MyLength(); ++g)
       {
-        gsetvalc/=gnumsetval;
-        gsetvalrho/=gnumsetval;
-      }
-      for(int g=0; g<c_objgrad_->MyLength(); ++g)
-      {
-        if(acou_opt_ind_->operator [](g)!=0.0) // only for those who play a role (not the water region)
+        if(opti_opt_ind_->operator [](g)!= 0.0)
         {
-          int set = setidsacou->operator [](g);
+          int set = setids->operator [](g);
           if(set==j)
-          {
-            c_objgrad_->ReplaceMyValue(g,0,gsetvalc);
-            rho_objgrad_->ReplaceMyValue(g,0,gsetvalrho);
-          }
+            reac_objgrad_->ReplaceMyValue(g,0,gsetvalreac);
         }
       }
       scatra_discret_->Comm().Barrier();
     }
-  }
-  // PATCH SELF
-  if(0)
+  } // reduction of reaction basis
+
+  if(patchtype_==INPAR::ACOU::pat_patch_reacgrad)
   {
+    // this is the easy case, because all other gradient just use the same patch as the absorption coefficient
+    // but this makes only sense for sequenze_=1
+    if(sequenzeiter_!=1 && !myrank_)
+      std::cout<<"warning: patchreac makes only sense for sequenze_=1"<<std::endl;
 
-    // speed of sound gradient
+    ReducedGradientsCalculation(setids,false);
+
+  } // ** if(patchtype_==INPAR::ACOU::pat_patch_reacgrad)
+  else if(patchtype_==INPAR::ACOU::pat_patch_self) // patch self
+  {
+    ReducePatchSelf(scatra_discret_,diff_objgrad_,opti_opt_ind_);
+    ReducePatchSelf(acou_discret_,c_objgrad_,acou_opt_ind_);
+    ReducePatchSelf(acou_discret_,rho_objgrad_,acou_opt_ind_);
+  } // ** else if(patchtype_==INPAR::ACOU::pat_patch_self)
+  else if(patchtype_==INPAR::ACOU::pat_patch_reacvals)
+  {
+    ReducePatchReacVals();
+  }
+  else if(patchtype_==INPAR::ACOU::pat_patch_mixed)
+  {
+    // diffusion coefficient with reaction gradient basis and speed of sound and mass density with reaction values
+
+    // 1.) diffusion gradient
+    /*double doublemaxset = 0.0;
+    setids->MaxValue(&doublemaxset);
+    for(int j=0; j<=int(doublemaxset); ++j) // i holds the number of sets right now
     {
-      // subdivide the material into numset sets, each set has to change in the same manner
-      int numinterval = 2;
-
-      double maxval = 0.0;
-      double minval = 0.0;
-      c_objgrad_->MaxValue(&maxval);
-      c_objgrad_->MinValue(&minval);
-      if(maxval == minval)
-        return;
-      double rangeval = maxval - minval;
-
-      // create a helper vector
-      Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),false));
-      auxvals->Update(1.0,*c_objgrad_,0.0);
-
-      // find minid
-      int minid = -1;
-      for(int e=0; e<acou_discret_->NumMyRowElements(); ++e)
-      {
-        if(c_objgrad_->operator [](e)<=minval+1.0e-10)
-          minid = e;
-      }
-      int global_minid = -1;
-      scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-      int loc_owner = -1;
-      if(minid==global_minid)
-        loc_owner = myrank_;
-      int owner = -1;
-      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-      // create a vector to store the set ids
-      Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),false));
-      setids->PutScalar(-1.0);
-      double minvalsetids = -1.0;
-
-      // set all the set ids
-      int i=0;
-      while(minvalsetids<0.0)
-      {
-        double set = double(i);
-        DRT::Element* actele = NULL;
-        if(myrank_==owner) // only for owning processor
+      double lsetvaldiff = 0.0;
+      int lnumsetvaldiff = 0;
+      for(int g=0; g<diff_objgrad_->MyLength(); ++g)
+        if(opti_opt_ind_->operator [](g)!=0.0)
         {
-          setids->ReplaceMyValue(minid,0,set);
-          auxvals->ReplaceMyValue(minid,0,123456.789);
-          actele = acou_discret_->lRowElement(minid);
-        }
-        CheckNeighborsSoSGrad(actele,owner,setids,set,minval,rangeval/numinterval,auxvals);
-
-        // find next minimum value
-        auxvals->MinValue(&minval);
-
-        // find minid
-        minid = -1;
-        for(int e=0; e<acou_discret_->NumMyRowElements(); ++e)
-        {
-          if(auxvals->operator [](e)<=minval+1.0e-10)
-            minid = e;
-        }
-        global_minid = -1;
-        scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-        loc_owner = -1;
-        if(minid==global_minid)
-          loc_owner = myrank_;
-        owner = -1;
-        scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-        setids->MinValue(&minvalsetids);
-        i++;
-      }
-
-      if(!myrank_)
-        std::cout<<"identified "<<i<<" sets using the sos gradient for the sos basis"<<std::endl;
-
-      // now recalculate the entries in the gradients according to the sets
-      for(int j=0; j<i; ++j) // i holds the number of sets right now
-      {
-        double lsetvalreac = 0.0;
-        int lnumsetval = 0;
-        for(int g=0; g<c_objgrad_->MyLength(); ++g)
-        {
-          if(acou_opt_ind_->operator [](g)!=0.0)
+          double diffgradval = diff_objgrad_->operator [](g);
+          int set = setids->operator [](g);
+          if(set==j)
           {
-            double reacgradval = c_objgrad_->operator [](g);
-            int set = setids->operator [](g);
-            if(set==j)
-            {
-              lsetvalreac += reacgradval;
-              lnumsetval++;
-            }
+            lsetvaldiff += diffgradval;
+            lnumsetvaldiff++;
           }
         }
 
-        double gsetvalreac = 0.0;
-        scatra_discret_->Comm().SumAll(&lsetvalreac,&gsetvalreac,1);
-        int gnumsetval = 0;
-        scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
+      double gsetvaldiff = 0.0;
+      scatra_discret_->Comm().SumAll(&lsetvaldiff,&gsetvaldiff,1);
+      int gnumsetvaldiff = 0;
+      scatra_discret_->Comm().SumAll(&lnumsetvaldiff,&gnumsetvaldiff,1);
 
-        if(gnumsetval!=0.0)
-          gsetvalreac/=gnumsetval;
+      if(gnumsetvaldiff!=0.0)
+        gsetvaldiff/=gnumsetvaldiff;
 
-        for(int g=0; g<c_objgrad_->MyLength(); ++g)
+      for(int g=0; g<diff_objgrad_->MyLength(); ++g)
+        if(opti_opt_ind_->operator [](g)!=0.0)
         {
-          if(acou_opt_ind_->operator [](g)!=0.0)
-          {
-            int set = setids->operator [](g);
-            if(set==j)
-              c_objgrad_->ReplaceMyValue(g,0,gsetvalreac);
-          }
+          int set = setids->operator [](g);
+          if(set==j)
+            diff_objgrad_->ReplaceMyValue(g,0,gsetvaldiff);
         }
-        scatra_discret_->Comm().Barrier();
-      }
-    }
-    // density gradient
+
+      scatra_discret_->Comm().Barrier();
+    }*/
+
+    // 2.) acoustic gradients
+    ReducePatchReacVals();
+  }
+  else
+    dserror("invalid patch build type");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducedGradientsCalculation(Teuchos::RCP<Epetra_Vector> setids, bool acouonly)
+{
+  // create a vector to store the set ids
+  Teuchos::RCP<Epetra_Vector> setidsacou = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),true));
+
+  // calculate the acou setids from the reaction setids!
+  for(int i=scatra_discret_->ElementRowMap()->MinAllGID(); i<=scatra_discret_->ElementRowMap()->MaxAllGID(); ++i)
+  {
+    double lsetval = -1.0;
+    if(scatra_discret_->ElementRowMap()->LID(i)>=0)
     {
-      // subdivide the material into numset sets, each set has to change in the same manner
-      int numinterval = 2;
-
-      double maxval = 0.0;
-      double minval = 0.0;
-      rho_objgrad_->MaxValue(&maxval);
-      rho_objgrad_->MinValue(&minval);
-      if(maxval == minval)
-        return;
-      double rangeval = maxval - minval;
-
-      // create a helper vector
-      Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),false));
-      auxvals->Update(1.0,*rho_objgrad_,0.0);
-
-      // find minid
-      int minid = -1;
-      for(int e=0; e<acou_discret_->NumMyRowElements(); ++e)
-      {
-        if(rho_objgrad_->operator [](e)<=minval+1.0e-10)
-          minid = e;
-      }
-      int global_minid = -1;
-      scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-      int loc_owner = -1;
-      if(minid==global_minid)
-        loc_owner = myrank_;
-      int owner = -1;
-      scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-      // create a vector to store the set ids
-      Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->ElementRowMap()),false));
-      setids->PutScalar(-1.0);
-      double minvalsetids = -1.0;
-
-      // set all the set ids
-      int i=0;
-      while(minvalsetids<0.0)
-      {
-        double set = double(i);
-        DRT::Element* actele = NULL;
-        if(myrank_==owner) // only for owning processor
-        {
-          setids->ReplaceMyValue(minid,0,set);
-          auxvals->ReplaceMyValue(minid,0,123456.789);
-          actele = acou_discret_->lRowElement(minid);
-        }
-        CheckNeighborsRhoGrad(actele,owner,setids,set,minval,rangeval/numinterval,auxvals);
-
-        // find next minimum value
-        auxvals->MinValue(&minval);
-
-        // find minid
-        minid = -1;
-        for(int e=0; e<acou_discret_->NumMyRowElements(); ++e)
-        {
-          if(auxvals->operator [](e)<=minval+1.0e-10)
-            minid = e;
-        }
-        global_minid = -1;
-        scatra_discret_->Comm().MaxAll(&minid,&global_minid,1);
-        loc_owner = -1;
-        if(minid==global_minid)
-          loc_owner = myrank_;
-        owner = -1;
-        scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
-
-        setids->MinValue(&minvalsetids);
-        i++;
-      }
-
-      if(!myrank_)
-        std::cout<<"identified "<<i<<" sets using the sos gradient for the sos basis"<<std::endl;
-
-      // now recalculate the entries in the gradients according to the sets
-      for(int j=0; j<i; ++j) // i holds the number of sets right now
-      {
-        double lsetvalreac = 0.0;
-        int lnumsetval = 0;
-        for(int g=0; g<rho_objgrad_->MyLength(); ++g)
-        {
-          if(acou_opt_ind_->operator [](g)!=0.0)
-          {
-            double reacgradval = rho_objgrad_->operator [](g);
-            int set = setids->operator [](g);
-            if(set==j)
-            {
-              lsetvalreac += reacgradval;
-              lnumsetval++;
-            }
-          }
-        }
-
-        double gsetvalreac = 0.0;
-        scatra_discret_->Comm().SumAll(&lsetvalreac,&gsetvalreac,1);
-        int gnumsetval = 0;
-        scatra_discret_->Comm().SumAll(&lnumsetval,&gnumsetval,1);
-
-        if(gnumsetval!=0.0)
-          gsetvalreac/=gnumsetval;
-
-        for(int g=0; g<rho_objgrad_->MyLength(); ++g)
-        {
-          if(acou_opt_ind_->operator [](g)!=0.0)
-          {
-            int set = setids->operator [](g);
-            if(set==j)
-              rho_objgrad_->ReplaceMyValue(g,0,gsetvalreac);
-          }
-        }
-        scatra_discret_->Comm().Barrier();
-      }
+      lsetval = setids->operator [](scatra_discret_->ElementRowMap()->LID(i));
     }
+    double setval = 0.0;
+    scatra_discret_->Comm().MaxAll(&lsetval,&setval,1);
+
+    int agid = i - scatra_discret_->ElementRowMap()->MinAllGID() + acou_discret_->ElementRowMap()->MinAllGID();
+    int alid = acou_discret_->ElementRowMap()->LID(agid);
+    if(alid>=0)
+      setidsacou->ReplaceMyValue(alid,0,setval);
+  }
+
+  // now recalculate the entries in the gradients according to the sets
+  double doublemaxset = 0.0;
+  setidsacou->MaxValue(&doublemaxset);
+  for(int j=0; j<=int(doublemaxset); ++j) // i holds the number of sets right now
+  {
+    double lsetvaldiff = 0.0;
+    double lsetvalc = 0.0;
+    double lsetvalrho = 0.0;
+    int lnumsetvalacou = 0;
+    int lnumsetvaldiff = 0;
+    for(int g=0; g<c_objgrad_->MyLength(); ++g)
+      if(acou_opt_ind_->operator [](g)!=0.0) // only for those who play a role (not the water region)
+      {
+        double cgradval = c_objgrad_->operator [](g);
+        double rhogradval = rho_objgrad_->operator [](g);
+        int set = setidsacou->operator [](g);
+        if(set==j)
+        {
+          lsetvalc += cgradval;
+          lsetvalrho += rhogradval;
+          lnumsetvalacou++;
+        }
+      }
+    if(acouonly == false)
+      for(int g=0; g<diff_objgrad_->MyLength(); ++g)
+        if(opti_opt_ind_->operator [](g)!=0.0)
+        {
+          double diffgradval = diff_objgrad_->operator [](g);
+          int set = setids->operator [](g);
+          if(set==j)
+          {
+            lsetvaldiff += diffgradval;
+            lnumsetvaldiff++;
+          }
+        }
+
+    double gsetvalc = 0.0;
+    double gsetvalrho = 0.0;
+    double gsetvaldiff = 0.0;
+    scatra_discret_->Comm().SumAll(&lsetvalc,&gsetvalc,1);
+    scatra_discret_->Comm().SumAll(&lsetvalrho,&gsetvalrho,1);
+    scatra_discret_->Comm().SumAll(&lsetvaldiff,&gsetvaldiff,1);
+    int gnumsetvalacou = 0;
+    int gnumsetvaldiff = 0;
+    scatra_discret_->Comm().SumAll(&lnumsetvalacou,&gnumsetvalacou,1);
+    scatra_discret_->Comm().SumAll(&lnumsetvaldiff,&gnumsetvaldiff,1);
+
+    if(gnumsetvalacou!=0.0)
+    {
+      gsetvalc/=gnumsetvalacou;
+      gsetvalrho/=gnumsetvalacou;
+    }
+    if(gnumsetvaldiff!=0.0)
+      gsetvaldiff/=gnumsetvaldiff;
+
+    for(int g=0; g<c_objgrad_->MyLength(); ++g)
+      if(acou_opt_ind_->operator [](g)!=0.0) // only for those who play a role (not the water region)
+      {
+        int set = setidsacou->operator [](g);
+        if(set==j)
+        {
+          c_objgrad_->ReplaceMyValue(g,0,gsetvalc);
+          rho_objgrad_->ReplaceMyValue(g,0,gsetvalrho);
+        }
+      }
+    if(acouonly == false)
+      for(int g=0; g<diff_objgrad_->MyLength(); ++g)
+        if(opti_opt_ind_->operator [](g)!=0.0)
+        {
+          int set = setids->operator [](g);
+          if(set==j)
+            diff_objgrad_->ReplaceMyValue(g,0,gsetvaldiff);
+        }
+
+    scatra_discret_->Comm().Barrier();
   }
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsSoSGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducePatchSelf(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> patchvec, Teuchos::RCP<Epetra_Vector> opt_ind)
+{
+
+  // for reduced basis, the diffusion coefficient has to build patches according to the absorption coefficient distribution
+  double maxval = 0.0;
+  double minval = 0.0;
+  patchvec->MaxValue(&maxval);
+  patchvec->MinValue(&minval);
+
+  double rangeval = std::abs(maxval - minval);
+  if(rangeval == 0.0) dserror("rangeval is zero");
+
+  // create a helper vector
+  Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(discret->ElementRowMap()),false));
+  auxvals->Update(1.0,*patchvec,0.0);
+
+  // find maxid
+  int minid = -1;
+  for(int e=0; e<discret->NumMyRowElements(); ++e)
+  {
+    if(patchvec->operator [](e)<=minval+1.0e-10 && opt_ind->operator [](e)!= 0.0)
+      minid = e;
+  }
+  int global_minid = -1;
+  discret->Comm().MaxAll(&minid,&global_minid,1);
+  int loc_owner = -1;
+  if(minid==global_minid)
+    loc_owner = myrank_;
+  int owner = -1;
+  discret->Comm().MaxAll(&loc_owner,&owner,1);
+
+  // create a vector to store the set ids
+  Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(discret->ElementRowMap()),false));
+  setids->PutScalar(-1.0);
+  double minvalsetids = -1.0;
+
+  // set all the set ids
+  int i=0;
+  while(minvalsetids<0.0)
+  {
+    double set = double(i);
+    DRT::Element* actele = NULL;
+    if(myrank_==owner) // only for owning processor
+    {
+      setids->ReplaceMyValue(minid,0,set);
+      auxvals->ReplaceMyValue(minid,0,std::numeric_limits<double>::max());
+      actele = discret->lRowElement(minid);
+    }
+    CheckNeighborsPatchSelf(discret,patchvec,actele,owner,setids,set,minval,2./3.*rangeval,auxvals);
+
+    // find next minimum value
+    auxvals->MinValue(&minval);
+
+    // find maxid
+    minid = -1;
+    for(int e=0; e<discret->NumMyRowElements(); ++e)
+    {
+      if(auxvals->operator [](e)<=minval+1.0e-10 && opt_ind->operator [](e)!= 0.0)
+        minid = e;
+    }
+    global_minid = -1;
+    discret->Comm().MaxAll(&minid,&global_minid,1);
+    loc_owner = -1;
+    if(minid==global_minid)
+      loc_owner = myrank_;
+    owner = -1;
+    discret->Comm().MaxAll(&loc_owner,&owner,1);
+
+    setids->MinValue(&minvalsetids);
+    i++;
+  }
+
+  if(!myrank_)
+    std::cout<<"identified "<<i<<" sets using the gradient for the basis"<<std::endl;
+
+  // now recalculate the entries in the gradients according to the sets
+  for(int j=0; j<i; ++j) // i holds the number of sets right now
+  {
+    double lsetval = 0.0;
+    int lnumsetval = 0;
+    for(int g=0; g<patchvec->MyLength(); ++g)
+    {
+      double gradval = patchvec->operator [](g);
+      int set = setids->operator [](g);
+      if(set==j)
+      {
+        lsetval += gradval;
+        lnumsetval++;
+      }
+    }
+
+    double gsetval = 0.0;
+    discret->Comm().SumAll(&lsetval,&gsetval,1);
+    int gnumsetval = 0;
+    discret->Comm().SumAll(&lnumsetval,&gnumsetval,1);
+
+    if(gnumsetval!=0.0)
+      gsetval/=gnumsetval;
+
+    for(int g=0; g<patchvec->MyLength(); ++g)
+    {
+      if(opt_ind->operator [](g)!= 0.0)
+      {
+        int set = setids->operator [](g);
+        if(set==j)
+          patchvec->ReplaceMyValue(g,0,gsetval);
+      }
+    }
+    discret->Comm().Barrier();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsPatchSelf(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> patchvec, DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double val, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
 {
   // parallel version
   int lactelenodeids[4]={0,0,0,0};
@@ -2315,14 +2189,14 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsSoSGrad(DRT::
     for(int n=0; n<4; ++n)
       lactelenodeids[n]=actele->NodeIds()[n];
   }
-  scatra_discret_->Comm().MaxAll(&lactelenodeids[0],&gactelenodeids[0],4);
+  discret->Comm().MaxAll(&lactelenodeids[0],&gactelenodeids[0],4);
 
   for(int n=0; n<4; ++n)
   {
     std::vector<int> toevaluate;
-    if(acou_discret_->HaveGlobalNode(gactelenodeids[n]))
+    if(discret->HaveGlobalNode(gactelenodeids[n]))
     {
-      DRT::Node* node = acou_discret_->gNode(gactelenodeids[n]);
+      DRT::Node* node = discret->gNode(gactelenodeids[n]);
       for(int e=0; e<node->NumElement(); ++e)
       {
         DRT::Element* neighborele = node->Elements()[e];
@@ -2343,18 +2217,17 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsSoSGrad(DRT::
         else if(share == 2) // neighbor element
         {
           // if already evaluated, skip
-          if(acou_discret_->ElementRowMap()->LID(neighborele->Id())<0)
+          if(discret->ElementRowMap()->LID(neighborele->Id())<0)
             continue;
-          if(setsids->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0.0)
+          if(setsids->operator [](discret->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](discret->ElementRowMap()->LID(neighborele->Id())) >= 0.0)
             continue;
 
           // determine reaction coefficient
-          double neighborreac = c_objgrad_->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id()));
-          if(abs(neighborreac-reacval) <= interval)
+          double neighborval = patchvec->operator [](discret->ElementRowMap()->LID(neighborele->Id()));
+          if(abs(neighborval-val) <= interval)
           {
-            setsids->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(neighborele->Id()),0,set);
-            //auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,-123456.789);
-            auxvals->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(neighborele->Id()),0,123456.789);
+            setsids->ReplaceMyValue(discret->ElementRowMap()->LID(neighborele->Id()),0,set);
+            auxvals->ReplaceMyValue(discret->ElementRowMap()->LID(neighborele->Id()),0,std::numeric_limits<double>::max());
 
             // this has to be checked and its neighbors too
             toevaluate.push_back(neighborele->Id());
@@ -2366,31 +2239,119 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsSoSGrad(DRT::
     }
     int lsize = toevaluate.size();
     int size = -1;
-    scatra_discret_->Comm().MaxAll(&lsize,&size,1);
+    discret->Comm().MaxAll(&lsize,&size,1);
     if(toevaluate.size()!=unsigned(size))
       toevaluate.resize(size,0);
     std::vector<int> gtoeva(size);
-    scatra_discret_->Comm().MaxAll(&toevaluate[0],&gtoeva[0],size);
+    discret->Comm().MaxAll(&toevaluate[0],&gtoeva[0],size);
 
     for(int s=0; s<size; ++s)
     {
-      int llid = acou_discret_->ElementRowMap()->LID(gtoeva[s]);
+      int llid = discret->ElementRowMap()->LID(gtoeva[s]);
       int lid = -1;
-      scatra_discret_->Comm().MaxAll(&llid,&lid,1);
+      discret->Comm().MaxAll(&llid,&lid,1);
       int lnbowner = -1;
       if(lid==llid) // owner
         lnbowner = myrank_;
       int nbowner = -1;
-      scatra_discret_->Comm().MaxAll(&lnbowner,&nbowner,1);
-      DRT::Element* neighborele = acou_discret_->gElement(gtoeva[s]);
-      CheckNeighborsSoSGrad(neighborele,nbowner,setsids,set,reacval,interval,auxvals);
+      discret->Comm().MaxAll(&lnbowner,&nbowner,1);
+      DRT::Element* neighborele = discret->gElement(gtoeva[s]);
+      CheckNeighborsPatchSelf(discret,patchvec,neighborele,nbowner,setsids,set,val,interval,auxvals);
     }
   }
   return;
+
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsRhoGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducePatchReacVals()
+{
+  Teuchos::RCP<Epetra_Vector> setids = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+
+  double maxval = 0.0;
+  double minval = 0.0;
+  reac_vals_->MaxValue(&maxval);
+  reac_vals_->MinValue(&minval);
+  if(maxval == minval)
+  {
+    if(!myrank_)
+      std::cout<<"warning: tried to reduce basis, but gradient has only one value"<<std::endl;
+    return;
+  }
+  double rangeval = std::abs(maxval - minval);
+
+  // create a helper vector
+  Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+  auxvals->Update(1.0,*reac_vals_,0.0);
+
+  // find maxid
+  int maxid = -1;
+  for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
+  {
+    if(reac_vals_->operator [](e)>=maxval-1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
+      maxid = e;
+  }
+  int global_maxid = -1;
+  scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
+  int loc_owner = -1;
+  if(maxid==global_maxid)
+    loc_owner = myrank_;
+  int owner = -1;
+  scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
+
+  setids->PutScalar(-1.0);
+  double minvalsetids = -1.0;
+
+  // set all the set ids
+  int i=0;
+  while(minvalsetids<0.0)
+  {
+    double set = double(i);
+    DRT::Element* actele = NULL;
+    if(myrank_==owner) // only for owning processor
+    {
+      setids->ReplaceMyValue(maxid,0,set);
+      auxvals->ReplaceMyValue(maxid,0,-std::numeric_limits<double>::max());
+      actele = scatra_discret_->lRowElement(maxid);
+    }
+    CheckNeighborsPatchReacVals(actele,owner,setids,set,maxval,2./3.*rangeval,auxvals);
+
+    // find next maximum value
+    auxvals->MaxValue(&maxval);
+
+    // find maxid
+    maxid = -1;
+    for(int e=0; e<scatra_discret_->NumMyRowElements(); ++e)
+    {
+      if(auxvals->operator [](e)>=maxval-1.0e-10 && opti_opt_ind_->operator [](e)!= 0.0)
+        maxid = e;
+    }
+    global_maxid = -1;
+    scatra_discret_->Comm().MaxAll(&maxid,&global_maxid,1);
+    loc_owner = -1;
+    if(maxid==global_maxid)
+      loc_owner = myrank_;
+    owner = -1;
+    scatra_discret_->Comm().MaxAll(&loc_owner,&owner,1);
+
+    setids->MinValue(&minvalsetids);
+    i++;
+  }
+
+  if(!myrank_)
+    std::cout<<"identified "<<i<<" sets using the reaction values"<<std::endl;
+
+  if(patchtype_==INPAR::ACOU::pat_patch_mixed)
+    ReducedGradientsCalculation(setids,true);
+  else
+    ReducedGradientsCalculation(setids,false);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsPatchReacVals(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals)
 {
   // parallel version
   int lactelenodeids[4]={0,0,0,0};
@@ -2408,9 +2369,9 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsRhoGrad(DRT::
   for(int n=0; n<4; ++n)
   {
     std::vector<int> toevaluate;
-    if(acou_discret_->HaveGlobalNode(gactelenodeids[n]))
+    if(scatra_discret_->HaveGlobalNode(gactelenodeids[n]))
     {
-      DRT::Node* node = acou_discret_->gNode(gactelenodeids[n]);
+      DRT::Node* node = scatra_discret_->gNode(gactelenodeids[n]);
       for(int e=0; e<node->NumElement(); ++e)
       {
         DRT::Element* neighborele = node->Elements()[e];
@@ -2431,25 +2392,24 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsRhoGrad(DRT::
         else if(share == 2) // neighbor element
         {
           // if already evaluated, skip
-          if(acou_discret_->ElementRowMap()->LID(neighborele->Id())<0)
+          if(scatra_discret_->ElementRowMap()->LID(neighborele->Id())<0)
             continue;
-          if(setsids->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0.0)
+          if(setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0)
             continue;
 
           // determine reaction coefficient
-          double neighborreac = rho_objgrad_->operator [](acou_discret_->ElementRowMap()->LID(neighborele->Id()));
+          double neighborreac = reac_vals_->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id()));
           if(abs(neighborreac-reacval) <= interval)
           {
-            setsids->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(neighborele->Id()),0,set);
-            //auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,-123456.789);
-            auxvals->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(neighborele->Id()),0,123456.789);
+            setsids->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,set);
+            auxvals->ReplaceMyValue(scatra_discret_->ElementRowMap()->LID(neighborele->Id()),0,-std::numeric_limits<double>::max());
 
             // this has to be checked and its neighbors too
             toevaluate.push_back(neighborele->Id());
           }
         }
         else
-          dserror("how can two quad4 elements share exactly 3 nodes??");
+          dserror("this is strange");
       }
     }
     int lsize = toevaluate.size();
@@ -2462,7 +2422,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsRhoGrad(DRT::
 
     for(int s=0; s<size; ++s)
     {
-      int llid = acou_discret_->ElementRowMap()->LID(gtoeva[s]);
+      int llid = scatra_discret_->ElementRowMap()->LID(gtoeva[s]);
       int lid = -1;
       scatra_discret_->Comm().MaxAll(&llid,&lid,1);
       int lnbowner = -1;
@@ -2470,13 +2430,12 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsRhoGrad(DRT::
         lnbowner = myrank_;
       int nbowner = -1;
       scatra_discret_->Comm().MaxAll(&lnbowner,&nbowner,1);
-      DRT::Element* neighborele = acou_discret_->gElement(gtoeva[s]);
-      CheckNeighborsRhoGrad(neighborele,nbowner,setsids,set,reacval,interval,auxvals);
+      DRT::Element* neighborele = scatra_discret_->gElement(gtoeva[s]);
+      CheckNeighborsPatchReacVals(neighborele,nbowner,setsids,set,reacval,interval,auxvals);
     }
   }
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateCGrad()
@@ -2550,12 +2509,28 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
     std::cout<<std::endl;
   }
 
+  int reacseq = sequenzeiter_;
+  int diffseq = sequenzeiter_;
+  int cseq    = sequenzeiter_;
+  int rhoseq  = sequenzeiter_;
+
+
+  if(patchtype_==INPAR::ACOU::pat_patch_reacvals&&iter_==0)
+    reacseq = 10;
+  else if(patchtype_==INPAR::ACOU::pat_patch_mixed&&iter_<10)
+  {
+    reacseq = 1;
+    diffseq = 1;
+    cseq = 0;
+    rhoseq = 0;
+  }
+
   reacordifforcorrho_ = 0;
   bool reacsucc = false;
-  for(int i=0; i<sequenzeiter_; ++i)
+  for(int i=0; i<reacseq; ++i)
   {
     if(!myrank_)
-      std::cout<<"ITERATION "<<i<<std::endl;
+      std::cout<<"REACTION ITERATION "<<i<<std::endl;
     linesearch_->Init(J_,reac_objgrad_,reac_searchdirection_->ComputeDirection(reac_objgrad_,reac_vals_,iter_),reac_vals_,scatra_discret_->ElementRowMap());
     reacsucc = linesearch_->Run();
 
@@ -2575,43 +2550,15 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
   if(!myrank_)
   {
     std::cout<<std::endl;
-    std::cout<<"DIFFUSION LINE SEARCH"<<std::endl;
-    std::cout<<std::endl;
-  }
-  reacordifforcorrho_ = 1;
-  bool diffsucc = false;
-  for(int i=0; i<sequenzeiter_; ++i)
-  {
-    if(!myrank_)
-      std::cout<<"ITERATION "<<i<<std::endl;
-    linesearch_->Init(J_,diff_objgrad_,diff_searchdirection_->ComputeDirection(diff_objgrad_,diff_vals_,iter_),diff_vals_,scatra_discret_->ElementRowMap());
-    diffsucc = linesearch_->Run();
-
-    if(!myrank_)
-    {
-      std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
-      std::cout<<"*** objective function value          "<<J_<<std::endl;
-      std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** error value                       "<<error_<<std::endl;
-      std::cout<<"*** output count                      "<<output_count_<<std::endl;
-    }
-    ComputeParameterError();
-    if(diffsucc==false)
-      break;
-  }
-
-  if(!myrank_)
-  {
-    std::cout<<std::endl;
     std::cout<<"SOUND SPEED LINE SEARCH"<<std::endl;
     std::cout<<std::endl;
   }
   reacordifforcorrho_ = 2;
   bool csucc = false;
-  for(int i=0; i<sequenzeiter_; ++i)
+  for(int i=0; i<cseq; ++i)
   {
     if(!myrank_)
-      std::cout<<"ITERATION "<<i<<std::endl;
+      std::cout<<"SOUND SPEED ITERATION "<<i<<std::endl;
     linesearch_->Init(J_,c_objgrad_,c_searchdirection_->ComputeDirection(c_objgrad_,c_vals_,iter_),c_vals_,acou_discret_->ElementRowMap());
     csucc = linesearch_->Run();
 
@@ -2636,10 +2583,10 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
   }
   reacordifforcorrho_ = 3;
   bool rhosucc = false;
-  for(int i=0; i<sequenzeiter_; ++i)
+  for(int i=0; i<rhoseq; ++i)
   {
     if(!myrank_)
-      std::cout<<"ITERATION "<<i<<std::endl;
+      std::cout<<"DENSITY ITERATION "<<i<<std::endl;
     linesearch_->Init(J_,rho_objgrad_,rho_searchdirection_->ComputeDirection(rho_objgrad_,rho_vals_,iter_),rho_vals_,acou_discret_->ElementRowMap());
     rhosucc = linesearch_->Run();
 
@@ -2656,6 +2603,33 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
       break;
   }
 
+  if(!myrank_)
+  {
+    std::cout<<std::endl;
+    std::cout<<"DIFFUSION LINE SEARCH"<<std::endl;
+    std::cout<<std::endl;
+  }
+  reacordifforcorrho_ = 1;
+  bool diffsucc = false;
+  for(int i=0; i<diffseq; ++i)
+  {
+    if(!myrank_)
+      std::cout<<"DIFFUSION ITERATION "<<i<<std::endl;
+    linesearch_->Init(J_,diff_objgrad_,diff_searchdirection_->ComputeDirection(diff_objgrad_,diff_vals_,iter_),diff_vals_,scatra_discret_->ElementRowMap());
+    diffsucc = linesearch_->Run();
+
+    if(!myrank_)
+    {
+      std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
+      std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
+    }
+    ComputeParameterError();
+    if(diffsucc==false)
+      break;
+  }
 
   return (reacsucc || diffsucc || csucc || rhosucc);
 }
@@ -2834,6 +2808,93 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::SampleObjectiveFunction()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
 {
+  // reaction part
+  {
+    reacordifforcorrho_ = 0;
+    double J_before = J_;
+    std::cout<<"reaction gradient according to adjoint analysis"<<std::endl;
+    reac_objgrad_->Print(std::cout);
+
+    Epetra_Vector fd_reac_grad(*scatra_discret_->ElementRowMap(),false);
+    Teuchos::RCP<Epetra_Vector> perturb_reac_vals = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap(),false));
+    Teuchos::RCP<Epetra_Vector> reac_vals_before = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap(),false));
+    reac_vals_before->Update(1.0,*reac_vals_,0.0);
+
+    for(int i=0; i<reac_vals_->MyLength(); ++i)
+    {
+      double perturba = 0.0; //1.0e-3;
+      double perturbb = 1.0e-6;
+
+      double pn=0.0;
+      double p=0.0;
+      double dp=0.0;
+
+      p = reac_vals_->operator [](i);
+      pn = p+p*perturba+perturbb;
+      std::cout<<"i "<<i<<" p "<<p<<" disturbed "<<pn<<std::endl;
+      perturb_reac_vals->Update(1.0,*reac_vals_before,0.0);
+      perturb_reac_vals->ReplaceMyValue(i,0,pn);
+
+      ReplaceParams(perturb_reac_vals);
+
+      SolveStandardScatra();
+      SolveStandardAcou();
+      EvalulateObjectiveFunction();
+
+      dp=(J_before-J_)/(p-pn);
+      std::cout<<"J_before - J_ "<<J_before-J_<<" p-pn "<<p-pn<<" val "<<dp<<std::endl;
+      fd_reac_grad.ReplaceMyValue(i,0,dp);
+    }
+    std::cout<<"reaction gradient according to FD analysis"<<std::endl;
+    fd_reac_grad.Print(std::cout);
+
+    ReplaceParams(reac_vals_before);
+    J_ = J_before;
+  }
+
+  // diffusion part
+  {
+    reacordifforcorrho_ = 1;
+    double J_before = J_;
+    std::cout<<"diffusion gradient according to adjoint analysis"<<std::endl;
+    diff_objgrad_->Print(std::cout);
+
+    Epetra_Vector fd_diff_grad(*scatra_discret_->ElementRowMap(),false);
+    Teuchos::RCP<Epetra_Vector> perturb_diff_vals = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap(),false));
+    Teuchos::RCP<Epetra_Vector> diff_vals_before = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap(),false));
+    diff_vals_before->Update(1.0,*diff_vals_,0.0);
+
+    for(int i=0; i<diff_vals_->MyLength(); ++i)
+    {
+      double perturba = 0.0;//1.0e-3;
+      double perturbb = 1.0e-6;
+
+      double pn=0.0;
+      double p=0.0;
+      double dp=0.0;
+
+      p = diff_vals_->operator [](i);
+      pn = p+p*perturba+perturbb;
+      std::cout<<"i "<<i<<" p "<<p<<" disturbed "<<pn<<std::endl;
+      perturb_diff_vals->Update(1.0,*diff_vals_before,0.0);
+      perturb_diff_vals->ReplaceMyValue(i,0,pn);
+
+      ReplaceParams(perturb_diff_vals);
+
+      SolveStandardScatra();
+      SolveStandardAcou();
+      EvalulateObjectiveFunction();
+
+      dp=(J_before-J_)/(p-pn);
+      std::cout<<"J_before - J_ "<<J_before-J_<<" p-pn "<<p-pn<<" val "<<dp<<std::endl;
+      fd_diff_grad.ReplaceMyValue(i,0,dp);
+    }
+    std::cout<<"diffusion gradient according to FD analysis"<<std::endl;
+    fd_diff_grad.Print(std::cout);
+
+    ReplaceParams(diff_vals_before);
+    J_ = J_before;
+  }
 
   // sos part
   {
@@ -2841,7 +2902,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
     std::cout<<"sos gradient according to adjoint analysis"<<std::endl;
     c_objgrad_->Print(std::cout);
 
-    Epetra_Vector fd_c_grad(*acou_discret_->ElementRowMap(),false);
+    Epetra_Vector fd_c_grad(*acou_discret_->ElementRowMap(),true);
     Teuchos::RCP<Epetra_Vector> perturb_c_vals = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
     Teuchos::RCP<Epetra_Vector> c_vals_before = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
     c_vals_before->Update(1.0,*c_vals_,0.0);
@@ -2850,8 +2911,10 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
 
     for(int i=0; i<c_vals_->MyLength(); ++i)
     {
-      double perturba = 1.0e-3;
-      double perturbb = 1.0e-4;
+      if(acou_opt_ind_->operator [](i) == 0.0) continue;
+
+      double perturba =0.0;// 1.0e-3;
+      double perturbb = 1.0e-6;
 
       double pn=0.0;
       double p=0.0;
@@ -2873,12 +2936,60 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
       std::cout<<"J_before - J_ "<<J_before-J_<<" p-pn "<<p-pn<<" val "<<dp<<std::endl;
       fd_c_grad.ReplaceMyValue(i,0,dp);
     }
-    std::cout<<"reaction gradient according to FD analysis"<<std::endl;
+    std::cout<<"sos gradient according to FD analysis"<<std::endl;
     fd_c_grad.Print(std::cout);
 
     ReplaceParams(c_vals_before);
     J_ = J_before;
   }
+
+  // density part
+  {
+    double J_before = J_;
+    std::cout<<"density gradient according to adjoint analysis"<<std::endl;
+    rho_objgrad_->Print(std::cout);
+
+    Epetra_Vector fd_rho_grad(*acou_discret_->ElementRowMap(),true);
+    Teuchos::RCP<Epetra_Vector> perturb_rho_vals = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
+    Teuchos::RCP<Epetra_Vector> rho_vals_before = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
+    rho_vals_before->Update(1.0,*rho_vals_,0.0);
+
+    reacordifforcorrho_ = 3;
+
+    for(int i=0; i<rho_vals_->MyLength(); ++i)
+    {
+      if(acou_opt_ind_->operator [](i) == 0.0) continue;
+
+      double perturba = 0.0;//1.0e-3;
+      double perturbb = 1.0e-6;
+
+      double pn=0.0;
+      double p=0.0;
+      double dp=0.0;
+
+      p = rho_vals_->operator [](i);
+      pn = p+p*perturba+perturbb;
+      std::cout<<"i "<<i<<" p "<<p<<" disturbed "<<pn<<std::endl;
+      perturb_rho_vals->Update(1.0,*rho_vals_before,0.0);
+      perturb_rho_vals->ReplaceMyValue(i,0,pn);
+
+      ReplaceParams(perturb_rho_vals);
+
+      SolveStandardScatra();
+      SolveStandardAcou();
+      EvalulateObjectiveFunction();
+
+      dp=(J_before-J_)/(p-pn);
+      std::cout<<"J_before - J_ "<<J_before-J_<<" p-pn "<<p-pn<<" val "<<dp<<std::endl;
+      fd_rho_grad.ReplaceMyValue(i,0,dp);
+    }
+    std::cout<<"density gradient according to FD analysis"<<std::endl;
+    fd_rho_grad.Print(std::cout);
+
+    ReplaceParams(rho_vals_before);
+    J_ = J_before;
+  }
+
   dserror("that is it");
 
   return;
@@ -2887,7 +2998,15 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::ComputeParameterError()
 {
-return;
+  return;
+
+  if(acou_discret_->Comm().NumProc()>1)
+  {
+    if(!myrank_)
+      std::cout<<"Function ComputeParameterError() skipped! Not yet implemented for parallel usage";
+    return;
+  }
+
   // this is implemented problem specific, here for test_recon.dat
   // for a different geometry, you have to implement the correct values here!
   double reac_error = 0.0;
@@ -2910,29 +3029,29 @@ return;
     std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
 
     // check if the center of this element is in the rectangular region
-    double g1 = (1.96568+0.086284)/(2.476838+3.161328)*(xyz[0]+3.161328)-0.086284;
-    double g2 = (1.96568+0.086284)/(2.476838+3.161328)*(xyz[0]+2.476938)-1.965881;
-    double g3 = (-1.96588+0.086554)/(-2.476938+3.161369)*(xyz[0]+3.161369)-0.0865542;
-    double g4 = (-1.96588+0.086554)/(-2.476938+3.161369)*(xyz[0]-2.476729)+1.9656129;
+    double g1 = (1.90184747127+0.49231421291)/(3.032389891147+3.54545535887)*(xyz[0]+3.54545535887)-0.49231421291;
+    double g2 = (1.90184747127+0.49231421291)/(3.032389891147+3.54545535887)*(xyz[0]+3.0322954880291)-1.90173750140464;
+    double g3 = (-1.90173750140464+0.49231421291)/(-3.0322954880291+3.54545535887)*(xyz[0]+3.54545535887)-0.49231421291;
+    double g4 = (-1.90173750140464+0.49231421291)/(-3.0322954880291+3.54545535887)*(xyz[0]-3.03238981147)+1.90184747127;
 
     if(xyz[1]<g1 && xyz[1]>g2 && xyz[1]>g3 && xyz[1]<g4)
     {
-      reac_val = 0.25;
-      D_val = 0.3;
-      c_val = 1.6;
-      rho_val = 1.2;
+      reac_val = 0.1;
+      D_val = 0.5;
+      c_val = 2.0;
+      rho_val = 2.0;
     }
     else
     {
       reac_val = 0.01;
-      D_val = 0.5;
+      D_val = 0.2;
       c_val = 1.5;
       rho_val = 1.1;
     }
 
     // check if the element is close to the boundary of the inclusion
 
-    double h_halbe = 0.35/2.0;
+    double h_halbe = 0.23/2.0;
     if( ((xyz[1]<g1+h_halbe)&&(xyz[1]>g1-h_halbe)) ||
         ((xyz[1]<g2+h_halbe)&&(xyz[1]>g2-h_halbe)) ||
         ((xyz[1]<g3+h_halbe)&&(xyz[1]>g3-h_halbe)) ||
@@ -2947,15 +3066,15 @@ return;
       c_error += (c_vals_->operator [](lid)-c_val)*(c_vals_->operator [](lid)-c_val);
       rho_error += (rho_vals_->operator [](lid)-rho_val)*(rho_vals_->operator [](lid)-rho_val);
     }
-    /*// this is to check if the musterloesung is correctly set
-     reac_vals_->ReplaceMyValue(lid,0,reac_val);
+    // this is to check if the musterloesung is correctly set
+    /*reac_vals_->ReplaceMyValue(lid,0,reac_val);
     diff_vals_->ReplaceMyValue(lid,0,D_val);
     c_vals_->ReplaceMyValue(lid,0,c_val);
     rho_vals_->ReplaceMyValue(lid,0,rho_val);*/
   }
 
-  /*// this is to check if the musterloesung is correctly set
-  reacordifforcorrho_ = 0;
+  // this is to check if the musterloesung is correctly set
+  /*reacordifforcorrho_ = 0;
   ReplaceParams(reac_vals_);
   reacordifforcorrho_ = 1;
   ReplaceParams(diff_vals_);
@@ -2963,8 +3082,17 @@ return;
   ReplaceParams(c_vals_);
   reacordifforcorrho_ = 3;
   ReplaceParams(rho_vals_);
-  SolveStandardScatra();*/
 
+  std::string soutname = name_;
+  soutname.append("_reac_and_diff");
+  scatraoutput_->NewResultFile(soutname,0);
+  output_count_++;
+  scatraoutput_->WriteMesh(0,0.0);
+  scatraoutput_->NewStep(1,1.0);
+  scatraoutput_->WriteElementData(true);
+  scatraoutput_->WriteVector("rea_coeff",reac_vals_);
+  scatraoutput_->WriteVector("diff_coeff",diff_vals_);dserror("stop");
+*/
   std::cout<<std::endl<<"AFTER "<<skip<<" SKIPS: ERRORS IN THE PARAMETER FIELDS (order: mu, D, c, rho): "<<reac_error<<" "<<diff_error<<" "<<c_error<<" "<<rho_error<<std::endl<<std::endl;
 
   return;
@@ -2981,7 +3109,8 @@ ACOU::PatImageReconstructionOptiSplitAcouIdent::PatImageReconstructionOptiSplitA
   Teuchos::RCP<IO::DiscretizationWriter> scatraout,
   Teuchos::RCP<IO::DiscretizationWriter> acouout)
 : PatImageReconstructionOptiSplit(scatradis,acoudis,scatrapara,acoupara,scatrasolv,acousolv,scatraout,acouout),
-  sequenzeiter_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<int>("SEQUENZE"))
+  sequenzeiter_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<int>("SEQUENZE")),
+  acouident_avg_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"ACOUIDENT_AVG"))
 {
   c_vals_ = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
   rho_vals_ = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap(),false));
@@ -3019,11 +3148,21 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReplaceParams(Teuchos::RCP<
       if(params->operator [](i)<0.0)
         params->ReplaceMyValue(i,0,0.0);
     }
+  else if(reacordifforcorrho_==1)
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.4)
+        params->ReplaceMyValue(i,0,0.4);
+      else if(params->operator [](i)>1.0)
+        params->ReplaceMyValue(i,0,1.0);
+    }
   else
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.001)
-        params->ReplaceMyValue(i,0,0.001);
+      if(params->operator [](i)<0.6)
+        params->ReplaceMyValue(i,0,0.6);
+      else if(params->operator [](i)>2.0)
+        params->ReplaceMyValue(i,0,2.0);
     }
 
   Teuchos::RCP<Epetra_Vector> paramscol;
@@ -3146,6 +3285,11 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReadMaterials(std::string m
     foundit = buffer;
   }
 
+  std::cout<<"materialtable: "<<std::endl;
+  for(unsigned int m=0; m<nummats_; ++m)
+    std::cout<<materialtable_[m][0]<<" "<<materialtable_[m][1]<<" "<<materialtable_[m][2]<<" "<<materialtable_[m][3]<<" "<<std::endl;
+
+
   return;
 }
 
@@ -3197,20 +3341,20 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::UpdateAcousticalParameters(
       loc_reac = actele->Material()->Parameter()->GetParameter(1,scatra_discret_->ElementColMap()->LID(actele->Id()));
       loc_D = actele->Material()->Parameter()->GetParameter(0,scatra_discret_->ElementColMap()->LID(actele->Id()));
     }
-    double D=0.0, reac = 0.0;
+    double D = 0.0, reac = 0.0;
     scatra_discret_->Comm().SumAll(&loc_D,&D,1);
     scatra_discret_->Comm().SumAll(&loc_reac,&reac,1);
 
     // calculate the acoustical values which are required
     // first possibility: closest
     double c = 0.0, rho = 0.0;
-    if(1)
+    if(!acouident_avg_)
     {
       double abst = 1.0e6;
       int mat = -1;
       for(unsigned m=0; m<nummats_; ++m)
       {
-        double abstm = sqrt((reac-materialtable_[m][0])*(reac-materialtable_[m][0])+0.01*(D-materialtable_[m][1])*(D-materialtable_[m][1]));
+        double abstm = sqrt(0.85*(reac-materialtable_[m][0])*(reac-materialtable_[m][0])+0.15*(D-materialtable_[m][1])*(D-materialtable_[m][1]));
         if(abstm<abst)
         {
           abst = abstm;
@@ -3220,9 +3364,35 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::UpdateAcousticalParameters(
       c = materialtable_[mat][2];
       rho = materialtable_[mat][3];
     }
-    else // second possibility: average from all
+    else // second possibility: average from two closest
     {
+      double mindistance = 1000000.0;
+      double mindistancesecond = mindistance;
+      int index_mindistance = 0;
+      int index_mindistancesecond = 0;
 
+      for(unsigned int m=0; m<nummats_; ++m)
+      {
+        double currentdistance = sqrt(0.85*(reac-materialtable_[m][0])*(reac-materialtable_[m][0])+0.15*(D-materialtable_[m][1])*(D-materialtable_[m][1]));
+        if(currentdistance<mindistance)
+        {
+          index_mindistancesecond = index_mindistance;
+          index_mindistance = m;
+          mindistancesecond = mindistance;
+          mindistance = currentdistance;
+        }
+        else if(currentdistance<mindistancesecond)
+        {
+          mindistancesecond = currentdistance;
+          index_mindistancesecond = m;
+        }
+      }
+
+      double entiredistance = mindistance + mindistancesecond;
+      c =   mindistancesecond/entiredistance * materialtable_[index_mindistance][2]
+          + mindistance/entiredistance       * materialtable_[index_mindistancesecond][2];
+      rho = mindistancesecond/entiredistance * materialtable_[index_mindistance][3]
+          + mindistance/entiredistance       * materialtable_[index_mindistancesecond][3];
     }
 
     // write values to acoustical vector
@@ -3275,6 +3445,7 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
     dserror("you have to use pressure monitor conditions for inverse analysis!");
   const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
   std::vector<int> pressuremonmicsunique;
+  std::vector<int> pressuremonmicscolumn;
 
   nodes_.resize(pressuremonmics.size());
   for(unsigned int i=0; i<pressuremonmics.size(); ++i)
@@ -3290,6 +3461,7 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
       {
         if(acou_discret_->HaveGlobalNode(pressuremonmics[j]))
         {
+          pressuremonmicscolumn.push_back(pressuremonmics[j]);
           if(acou_discret_->gNode(pressuremonmics[j])->Owner()==int(i))
             pressuremonmicsunique.push_back(pressuremonmics[j]);
         }
@@ -3301,10 +3473,9 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
 
   // create map
   abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonmicsunique.size(), &pressuremonmicsunique[0], 0, acou_discret_->Comm()));
+  abcnodes_colmap_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonmicscolumn.size(), &pressuremonmicscolumn[0], 0, acou_discret_->Comm()));
 
   // determine the number of vectors for monitoring
-  // this is naive: later on, we won't be able to store everything at once and we have to implement
-  // a smarter approach to reduce storage requirements
   int numvec = acouparams_->get<int>("NUMSTEP");
   int oderso = acouparams_->get<double>("MAXTIME")/dtacou;
   if ( oderso < numvec)
@@ -3320,7 +3491,9 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
   Epetra_SerialDenseVector mcurve;
 
   // check for monitor file
-  if (monitorfilename=="none.monitor") dserror("No monitor file provided");
+  if (monitorfilename=="none.monitor")
+    dserror("No monitor file provided");
+
   // insert path to monitor file if necessary
   if (monitorfilename[0]!='/')
   {
@@ -3412,7 +3585,7 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
         distance[j] = ReadMonitorDelta(meascoords[j][0],meascoords[j][1],meascoords[j][2],nod_coords[0],nod_coords[1],nod_coords[2]);
 
         // if the nod is in an epsilon bubble of any of the microphones, the measured curve of this microphone and the nod's curve should be equal
-        if(distance[j]<=epsilon)
+        if(distance[j]<0.9*epsilon)
         {
           for(l=0;l<nsteps;l++)
             nodcurvinterpol[i*nsteps+l]=mcurve[j+l*nmics];
@@ -3672,7 +3845,7 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
       scatraalgo_->TimeLoop();
 
       // output of elemental reaction coefficient
-      OutputReactionAndDiffusion();
+      //OutputReactionAndDiffusion();
 
       // store the solution vector
       phi_ = scatraalgo_->Phinp();
@@ -3817,7 +3990,9 @@ void ACOU::PatImageReconstruction::SolveAdjointAcou()
   tempvec->Multiply(1.0,*touchcountvec,*tempvec,0.0);
 
   // set the difference between measured and simulated values
-  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",tempvec);
+  Teuchos::RCP<Epetra_MultiVector> tosetvec = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_colmap_,acou_rhsm_->NumVectors(),true));
+  LINALG::Export(*tempvec,*tosetvec);
+  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",tosetvec);
 
   // prepare the output
   std::string outname = name_;
@@ -3921,7 +4096,7 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   scatrasolver_->Solve(sysmatscatra->EpetraOperator(),adjoint_phi_,b,true,true);
 
   // output the solution
-  /*
+
   std::string outname = name_;
   outname.append("_invadjoint_opti");
   scatraoutput_->NewResultFile(outname,output_count_);
@@ -3930,7 +4105,7 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   scatraoutput_->NewStep(1,1.0);
   scatraoutput_->WriteElementData(true);
   scatraoutput_->WriteVector("phinp",adjoint_phi_);
-  */
+
   return;
 }
 

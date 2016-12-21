@@ -2,12 +2,12 @@
 /*!
  * \file io_control.H
 \brief output control
-
+\level 0
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -105,6 +105,7 @@ namespace IO
     std::fstream controlfile_;
     int filesteps_;
     int create_controlfile_;
+    int myrank_;
   };
 
 

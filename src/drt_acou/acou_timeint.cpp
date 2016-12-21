@@ -3,10 +3,12 @@
 \brief Base class functions for implicit and explicit time integration
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
+            089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -61,34 +63,7 @@ ACOU::AcouTimeInt::AcouTimeInt(
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   if(params_->isParameter("rhsvec"))
-  {
-    //adjoint_rhs_= params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
-    Teuchos::RCP<Epetra_MultiVector> rowadjointrhs = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
-
-    // export this thing!!
-    const int * globeles = rowadjointrhs->Map().MyGlobalElements();
-    std::vector<int> glomapval;
-    std::vector<int> locmapval;
-
-    for(int j=0; j<discret_->Comm().NumProc(); ++j)
-    {
-      discret_->Comm().Barrier();
-      int numglobeles = rowadjointrhs->Map().NumMyElements();
-      discret_->Comm().Broadcast(&numglobeles,1,j);
-      locmapval.resize(numglobeles);
-      if(j == discret_->Comm().MyPID())
-        for(int i=0; i<numglobeles; ++i)
-          locmapval[i] = globeles[i];
-
-      discret_->Comm().Broadcast(&locmapval[0],numglobeles,j);
-      for(int i=0; i<numglobeles; ++i)
-        glomapval.push_back(locmapval[i]);
-    }
-    Teuchos::RCP<Epetra_Map> fullmap = Teuchos::rcp(new Epetra_Map(-1,glomapval.size(),&glomapval[0],0,discret_->Comm()));
-    adjoint_rhs_ =  Teuchos::rcp(new Epetra_MultiVector(*fullmap,rowadjointrhs->NumVectors(),true));
-    LINALG::Export(*rowadjointrhs,*adjoint_rhs_);
-    discret_->Comm().Barrier();
-  }
+    adjoint_rhs_ = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
 
   if(!invana_)
     params_->set<bool>("timereversal",false);

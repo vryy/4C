@@ -7,10 +7,12 @@ This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
 

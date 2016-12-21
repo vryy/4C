@@ -3,10 +3,12 @@
  * \file pat_utils.H
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/staff/svenja-schoeder/
-            089 - 289-15271
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

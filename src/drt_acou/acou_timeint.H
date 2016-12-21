@@ -4,15 +4,13 @@
 
 \brief Acoustics Base Algorithm for implicit and explicit time integration
 
-       Derived classes are implicit Euler, trapezoidal rule, BDF2,
-       BDF3, BDF4 and several diagonally implicit RK-schemes and all
-       explicit time interators
-
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

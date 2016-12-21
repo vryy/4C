@@ -2,12 +2,12 @@
 /*!
  * \file io_control.cpp
 \brief output control
-
+\level 0
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -52,11 +52,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     filename_(outputname),
     restartname_(outputname),
     filesteps_(filesteps),
-    create_controlfile_(create_controlfile)
+    create_controlfile_(create_controlfile),
+    myrank_(comm.MyPID())
 {
   if (restart)
   {
-    if (comm.MyPID()==0)
+    if (myrank_==0)
     {
       int number = 0;
       size_t pos = RestartFinder(filename_);
@@ -99,7 +100,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     }
   }
 
-  if (comm.MyPID()==0)
+  if (myrank_==0)
   {
     std::stringstream name;
     name << filename_ << ".control";
@@ -159,11 +160,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     filename_(outputname),
     restartname_(restartname),
     filesteps_(filesteps),
-    create_controlfile_(create_controlfile)
+    create_controlfile_(create_controlfile),
+    myrank_(comm.MyPID())
 {
   if (restart)
   {
-    if (comm.MyPID()==0 && adaptname == true)
+    if (myrank_==0 && adaptname == true)
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
@@ -224,7 +226,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     }
   }
 
-  if (comm.MyPID()==0)
+  if (myrank_==0)
   {
     std::stringstream name;
     name << filename_ << ".control";
@@ -274,33 +276,36 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void IO::OutputControl::OverwriteResultFile()
 {
-  controlfile_.close();
-  std::stringstream name;
-  name << filename_ << ".control";
-  controlfile_.open(name.str().c_str(),std::ios_base::out);
-  if (not controlfile_)
-    dserror("could not open control file '%s' for writing", name.str().c_str());
+  if (myrank_==0)
+  {
+    controlfile_.close();
+    std::stringstream name;
+    name << filename_ << ".control";
+    controlfile_.open(name.str().c_str(),std::ios_base::out);
+    if (not controlfile_)
+      dserror("could not open control file '%s' for writing", name.str().c_str());
 
-  time_t time_value;
-  time_value = time(NULL);
+    time_t time_value;
+    time_value = time(NULL);
 
-  char hostname[31];
-  struct passwd *user_entry;
-  user_entry = getpwuid(getuid());
-  gethostname(hostname, 30);
+    char hostname[31];
+    struct passwd *user_entry;
+    user_entry = getpwuid(getuid());
+    gethostname(hostname, 30);
 
-  controlfile_ << "# baci output control file\n"
-               << "# created by "
-               << user_entry->pw_name
-               << " on " << hostname << " at " << ctime(&time_value)
-               << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-               << "input_file = \"" << inputfile_ << "\"\n"
-               << "problem_type = \"" << problemtype_ << "\"\n"
-               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
-               << "ndim = " << ndim_ << "\n"
-               << "\n";
+    controlfile_ << "# baci output control file\n"
+                 << "# created by "
+                 << user_entry->pw_name
+                 << " on " << hostname << " at " << ctime(&time_value)
+                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+                 << "input_file = \"" << inputfile_ << "\"\n"
+                 << "problem_type = \"" << problemtype_ << "\"\n"
+                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+                 << "ndim = " << ndim_ << "\n"
+                 << "\n";
 
-  controlfile_ << std::flush;
+    controlfile_ << std::flush;
+  }
 }
 
 
@@ -320,31 +325,35 @@ void IO::OutputControl::NewResultFile(int numb_run)
   name << filename_ << "_run_"<< numb_run;
   filename_ = name.str();
   name << ".control";
-  controlfile_.close();
-  controlfile_.open(name.str().c_str(),std::ios_base::out);
-  if (not controlfile_)
-    dserror("could not open control file '%s' for writing", name.str().c_str());
 
-  time_t time_value;
-  time_value = time(NULL);
+  if (myrank_==0)
+  {
+    controlfile_.close();
+    controlfile_.open(name.str().c_str(),std::ios_base::out);
+    if (not controlfile_)
+      dserror("could not open control file '%s' for writing", name.str().c_str());
 
-  char hostname[31];
-  struct passwd *user_entry;
-  user_entry = getpwuid(getuid());
-  gethostname(hostname, 30);
+    time_t time_value;
+    time_value = time(NULL);
 
-  controlfile_ << "# baci output control file\n"
-               << "# created by "
-               << user_entry->pw_name
-               << " on " << hostname << " at " << ctime(&time_value)
-               << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-               << "input_file = \"" << inputfile_ << "\"\n"
-               << "problem_type = \"" << problemtype_ << "\"\n"
-               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
-               << "ndim = " << ndim_ << "\n"
-               << "\n";
+    char hostname[31];
+    struct passwd *user_entry;
+    user_entry = getpwuid(getuid());
+    gethostname(hostname, 30);
 
-  controlfile_ << std::flush;
+    controlfile_ << "# baci output control file\n"
+                 << "# created by "
+                 << user_entry->pw_name
+                 << " on " << hostname << " at " << ctime(&time_value)
+                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+                 << "input_file = \"" << inputfile_ << "\"\n"
+                 << "problem_type = \"" << problemtype_ << "\"\n"
+                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+                 << "ndim = " << ndim_ << "\n"
+                 << "\n";
+
+    controlfile_ << std::flush;
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -357,33 +366,36 @@ void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
   filename_ = name.str();
   name << ".control";
 
-  controlfile_.close();
-  // bool b = controlfile_.fail();
-  // IO::cout << b << IO::endl;
-  controlfile_.open(name.str().c_str(),std::ios_base::out);
-  if (not controlfile_)
-    dserror("could not open control file '%s' for writing", name.str().c_str());
+  if (myrank_==0)
+  {
+    controlfile_.close();
+    // bool b = controlfile_.fail();
+    // IO::cout << b << IO::endl;
+    controlfile_.open(name.str().c_str(),std::ios_base::out);
+    if (not controlfile_)
+      dserror("could not open control file '%s' for writing", name.str().c_str());
 
-  time_t time_value;
-  time_value = time(NULL);
+    time_t time_value;
+    time_value = time(NULL);
 
-  char hostname[31];
-  struct passwd *user_entry;
-  user_entry = getpwuid(getuid());
-  gethostname(hostname, 30);
+    char hostname[31];
+    struct passwd *user_entry;
+    user_entry = getpwuid(getuid());
+    gethostname(hostname, 30);
 
-  controlfile_ << "# baci output control file\n"
-               << "# created by "
-               << user_entry->pw_name
-               << " on " << hostname << " at " << ctime(&time_value)
-               << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-               << "input_file = \"" << inputfile_ << "\"\n"
-               << "problem_type = \"" << problemtype_ << "\"\n"
-               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
-               << "ndim = " << ndim_ << "\n"
-               << "\n";
+    controlfile_ << "# baci output control file\n"
+                 << "# created by "
+                 << user_entry->pw_name
+                 << " on " << hostname << " at " << ctime(&time_value)
+                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+                 << "input_file = \"" << inputfile_ << "\"\n"
+                 << "problem_type = \"" << problemtype_ << "\"\n"
+                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+                 << "ndim = " << ndim_ << "\n"
+                 << "\n";
 
-  controlfile_ << std::flush;
+    controlfile_ << std::flush;
+  }
 }
 
 /*----------------------------------------------------------------------*/

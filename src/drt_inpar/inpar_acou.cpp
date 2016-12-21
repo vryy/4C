@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_acou.cpp
-
+\level 2
 <pre>
 \maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -25,18 +25,19 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& acousticdyn = list->sublist("ACOUSTIC DYNAMIC",false,"control parameters for acoustic or photoacoustic problems\n");
 
+  // general time stepping settings
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
   IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
   DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
-  IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&acousticdyn);
 
+  // additional parameters
+  IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&acousticdyn);
   IntParameter("RESULTSEVRY",1,"Increment for writing solution",&acousticdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
   IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
   IntParameter("SOURCETERMFUNCNO",-1,"Function for source term in volume",&acousticdyn);
   BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with float",&acousticdyn);
-
   BoolParameter("ALLELESEQUAL","No","Yes, if all elements have same shape and material",&acousticdyn);
 
   // distinguish viscous and lossless flows
@@ -49,6 +50,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     acou_lossless,
                     acou_solid),
                     &acousticdyn);
+
   // for viscous flows, one can specify if the displacement gradient or the stresses are outputted
   BoolParameter("WRITESTRESS","Yes","Output of stresses instead of displacement gradient",&acousticdyn);
 
@@ -72,7 +74,9 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     "lsrk33reg2",
                     "lsrk45reg3",
                     "ssprk",
-                    "ader"),
+                    "ader",
+                    "aderlts",
+                    "adertritet"),
                     tuple<int>(
                     acou_impleuler,
                     acou_expleuler,
@@ -81,10 +85,15 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     acou_lsrk33reg2,
                     acou_lsrk45reg3,
                     acou_ssprk,
-                    acou_ader),
+                    acou_ader,
+                    acou_ader_lts,
+                    acou_ader_tritet),
                     &acousticdyn);
 
+  // output of "measured" pressure curves
   BoolParameter("WRITEMONITOR","No","Write a monitor file for Pressure Monitor Condition",&acousticdyn);
+
+  // inverse analysis
   setStringToIntegralParameter<int>("INV_ANALYSIS","none",
                  "Types of inverse analysis and on/off switch",
                  tuple<std::string>(
@@ -101,7 +110,10 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                    pat_optisplitacouident),
                  &acousticdyn);
 
+  // PML
+  StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the pml definition",&acousticdyn);
 
+  // sublist PA IMAGE RECONSTRUCTION
   Teuchos::ParameterList& acou_inv = acousticdyn.sublist("PA IMAGE RECONSTRUCTION",false,"");
 
   setStringToIntegralParameter<int>("OPTIMIZATION","LBFGS",
@@ -126,7 +138,21 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       pat_regula_tvd,
                                       pat_regula_tikhtvd),
                                     &acou_inv);
-
+  setStringToIntegralParameter<int>("PATCHTYPE","none",
+                                    "types of patch building",
+                                    tuple<std::string>(
+                                      "none",
+                                      "patchself",
+                                      "patchreacgrad",
+                                      "patchreacvals",
+                                      "patchmixed"),
+                                    tuple<int>(
+                                      pat_patch_none,
+                                      pat_patch_self,
+                                      pat_patch_reacgrad,
+                                      pat_patch_reacvals,
+                                      pat_patch_mixed),
+                                    &acou_inv);
   BoolParameter("OVERWRITEOUTPUT","Yes","overwrite output (recommended)", &acou_inv);
   StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
   BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
@@ -137,18 +163,24 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   StringParameter("ACOUPARAMLIST","none","list of std::string of acoustical parameters to be optimized",&acou_inv);
   StringParameter("OPTIPARAMLIST","none","list of std::string of optical parameters to be optimized",&acou_inv);
   StringParameter("SEGMENTATIONMATS","none.material","Filename of file containing table of materials",&acou_inv);
-  DoubleParameter("EQUALITYPENALTY",1.0,"penalty coefficient for the equality constraint for segmentation",&acou_inv);
   IntParameter("SEQUENZE",-1,"sequential optimization for penalty and the rest",&acou_inv);
-  BoolParameter("GRADWEIGHTING","No","Weighting of gradient with reaction contribution",&acou_inv);
   BoolParameter("TIMEREVERSAL","No","Initial reaction guess with time reversal",&acou_inv);
-  BoolParameter("REDUCEDBASIS","No","Reduce basis according to absorption gradient and values",&acou_inv);
   BoolParameter("SAMPLEOBJECTIVE","No","Sample objective function for several parameters (need be implemented)",&acou_inv);
-  DoubleParameter("TIKHWEIGHT",1.0,"tikhonow weight",&acou_inv);
-  DoubleParameter("TVDWEIGHT",1.0,"tvd weight",&acou_inv);
-  DoubleParameter("TVDEPS",0.01,"tvd eps",&acou_inv);
+  DoubleParameter("TIKHWEIGHT_MUA",1.0,"tikhonow weight",&acou_inv);
+  DoubleParameter("TVDWEIGHT_MUA",1.0,"tvd weight",&acou_inv);
+  DoubleParameter("TIKHWEIGHT_D",1.0,"tikhonow weight",&acou_inv);
+  DoubleParameter("TVDWEIGHT_D",1.0,"tvd weight",&acou_inv);
+  DoubleParameter("TIKHWEIGHT_C",1.0,"tikhonow weight",&acou_inv);
+  DoubleParameter("TVDWEIGHT_C",1.0,"tvd weight",&acou_inv);
+  DoubleParameter("TIKHWEIGHT_RHO",1.0,"tikhonow weight",&acou_inv);
+  DoubleParameter("TVDWEIGHT_RHO",1.0,"tvd weight",&acou_inv);
+  DoubleParameter("TVDEPS_MUA",0.01,"tvd eps",&acou_inv);
+  DoubleParameter("TVDEPS_D",0.01,"tvd eps",&acou_inv);
+  DoubleParameter("TVDEPS_C",0.01,"tvd eps",&acou_inv);
+  DoubleParameter("TVDEPS_RHO",0.01,"tvd eps",&acou_inv);
   DoubleParameter("IMPULSERESPONSE_DT",0.0,"time step with which impulse response is recorded",&acou_inv);
   StringParameter("IMPULSERESPONSE","none.impresp","Filename of file containing the impulse response",&acou_inv);
-
+  BoolParameter("ACOUIDENT_AVG","No","should acoustical properties set according to their two closest?",&acou_inv);
 }
 
 

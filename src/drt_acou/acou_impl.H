@@ -4,14 +4,13 @@
 
 \brief Acoustics Base Algorithm for implicit time integration
 
-       Derived classes are implicit Euler, trapezoidal rule, BDF2,
-       BDF3, BDF4 and several diagonally implicit RK-schemes
-
 <pre>
-Maintainer: Svenja Schoeder
+\level 2
+
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -65,7 +64,7 @@ public:
   void OutputToScreen();
 
   /// evaluate error compared to analytical solution
-  void EvaluateErrorComparedToAnalyticalSol();
+  virtual void EvaluateErrorComparedToAnalyticalSol();
 
   /// p-adaptivity
   virtual void UpdatePolyAndState();
@@ -131,6 +130,40 @@ protected:
   virtual void IntermediateIntegrate();
 
   //@}
+
+};
+
+class AcouTimeIntAderTriTet : public AcouImplicitTimeInt
+{
+public:
+  /// constructor
+  AcouTimeIntAderTriTet(
+      const Teuchos::RCP<DRT::DiscretizationHDG>&   actdis,
+      const Teuchos::RCP<LINALG::Solver>&           solver,
+      const Teuchos::RCP<Teuchos::ParameterList>&   params,
+      const Teuchos::RCP<IO::DiscretizationWriter>& output
+  );
+
+  /// return the name of the time integration scheme
+  virtual std::string Name() { return "AderTriTet"; }
+
+  /// run a complete simulation
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
+
+  /// solve the system for trace and interior variables
+  virtual void Solve();
+
+  /// call elements to calculate system matrix
+  virtual void AssembleMatAndRHS();
+
+  /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
+  virtual void UpdateInteriorVariablesAndAssemebleRHS();
+
+  /// evaluate error compared to analytical solution
+  virtual void EvaluateErrorComparedToAnalyticalSol();
+
+private:
+  Teuchos::RCP<Epetra_Vector> tempsrc_;
 
 };
 
