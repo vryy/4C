@@ -204,7 +204,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
     params.set<int>("action",FLD::least_squares_matrix_rhs_immersed_boundary);
 
     // loop over all immersed fluid elements
-    for (int i=0; i<immersedbdrygids.size(); ++i)
+    for (int i=0; i<(int)immersedbdrygids.size(); ++i)
     {
       int eid = immersedbdrygids[i];
 
