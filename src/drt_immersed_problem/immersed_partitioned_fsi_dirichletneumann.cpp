@@ -60,8 +60,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
     immersed_info_isvalid_(false),
     fluiddis_(Teuchos::null),
     structdis_(Teuchos::null),
-    immersedstructure_(Teuchos::null),
-    fluid_action_(FLD::none)
+    immersedstructure_(Teuchos::null)
 
 {
   // empty constructor
@@ -75,13 +74,7 @@ int IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::Parame
   // reset the setup flag
   SetIsSetup(false);
 
-  // get fluid action type needed in CalcArtificialVelocity() as set in immersed_problem_dyn() in the params
-  std::string fluid_action = const_cast<Teuchos::ParameterList&>(params).get<std::string>("fluid_action","none");
-
-  if (fluid_action == "none") dserror("No fluid action type supplied");
-  else if (fluid_action=="interpolate_velocity_to_given_point_immersed")
-    fluid_action_ = FLD::interpolate_velocity_to_given_point_immersed;
-  else {dserror("Unknown type of fluid action for immersed partitioned fsi");}
+  // do all init stuff here
 
   // set isinit_ flag true
   SetIsInit(true);
@@ -862,7 +855,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Ca
                      &curr_subset_of_fluiddis_,
                      structure_SearchTree_,
                      &currpositions_struct_,
-                     (int)fluid_action_,
+                     FLD::interpolate_velocity_to_given_point_immersed,
                      false);
 
     // we just validated the artificial velocity

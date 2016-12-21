@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file fluid_ele_calc.H
 
 \brief main file containing routines for calculation of fluid element
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\maintainer Volker Gravemeier
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_H
 #define FLUID_ELE_CALC_H
@@ -237,6 +235,30 @@ public:
       const std::vector<int> &             lm,
       Epetra_SerialDenseVector&            elevec1_epetra,
       Epetra_SerialDenseVector&            elevec2_epetra
+      );
+
+  /*! \brief search for immersed boundary fluid elements
+   *
+   *  \author fuchs \date 11/2016
+   */
+  int SearchImmersedBoundaryElements(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      Epetra_SerialDenseMatrix&            elemat1,
+      Epetra_SerialDenseVector&            elevec1
+      );
+
+  /*! \brief get least squares matrix and rhs for immersed boundary elements
+   *
+   *  \author fuchs \date 11/2016
+   */
+  int GetLeastSquaresMatrixImmersedBoundary(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseMatrix&            elemat1,
+      Epetra_SerialDenseVector&            elevec1
       );
 
   /*! \brief Interpolate velocity to given point

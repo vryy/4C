@@ -217,9 +217,6 @@ protected:
   /// pointer to immersed structure adapter
   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> immersedstructure_;
 
-  /// action type for fluid needed in CalcArtificialVelocity()
-  FLD::Action fluid_action_;
-
 };// class ImmersedFSI
 } // namspace IMMERSED
 

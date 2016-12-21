@@ -58,6 +58,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Immersed_ALE_FSI"]                                 = prb_immersed_ale_fsi;
     string2prbtype["Immersed_CellMigration"]                           = prb_immersed_cell;
     string2prbtype["Immersed_FSI"]                                     = prb_immersed_fsi;
+    string2prbtype["Immersed_Membrane_FSI"]                            = prb_immersed_membrane_fsi;
     string2prbtype["Inverse_Analysis"]                                 = prb_invana;
     string2prbtype["Level_Set"]                                        = prb_level_set;
     string2prbtype["Low_Mach_Number_Flow"]                             = prb_loma;

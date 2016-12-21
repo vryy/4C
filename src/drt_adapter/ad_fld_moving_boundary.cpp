@@ -2,14 +2,11 @@
 /*!
 \file ad_fld_moving_boundary.cpp
 
-\brief
+\brief to be set by the maintainer
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Andreas Rauch
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 
@@ -65,6 +62,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       break;
     }
     case prb_immersed_fsi:
+    case prb_immersed_membrane_fsi:
     {
       fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn,condname));
       break;

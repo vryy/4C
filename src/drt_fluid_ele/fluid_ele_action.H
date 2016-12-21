@@ -1,16 +1,14 @@
-/*!---------------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file fluid_ele_action.H
 
 \brief provides enum of actions.
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\maintainer Benjamin Krank
 
-*---------------------------------------------------------------------------*/
+\level 1
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_ACTION_H
 #define FLUID_ELE_ACTION_H
@@ -64,6 +62,8 @@ enum Action {
     set_adjoint_time_parameter,
     calc_volume,
     interpolate_velocity_to_given_point_immersed,
+    search_immersed_boundary_elements,
+    least_squares_matrix_rhs_immersed_boundary,
     update_immersed_information,
     interpolate_velgrad_to_given_point,
     calc_artificial_velocity_divergence,

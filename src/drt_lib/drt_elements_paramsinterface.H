@@ -65,7 +65,9 @@ namespace ELEMENTS {
     struct_calc_brownianstiff,              //!< thermal (i.e. stochastic) and damping forces and stiffnes according to Brownian dynamics
     struct_poro_calc_fluidcoupling,         //!< calculate stiffness matrix related to fluid coupling within porous medium problem
     struct_poro_calc_scatracoupling,        //!< calculate stiffness matrix related to scatra coupling within porous medium problem
-    struct_poro_calc_prescoupling           //!< calculate stiffness matrix related to pressure coupling within porous medium problem
+    struct_poro_calc_prescoupling,          //!< calculate stiffness matrix related to pressure coupling within porous medium problem
+    struct_calc_fluid_traction,             //!< calculate fluid traction on immersed boundary
+    struct_calc_cur_normal_at_point         //!< calculate normal on immersed boundary surface
   };  // enum ActionType
 
   //! Map action type enum to std::string
@@ -180,6 +182,12 @@ namespace ELEMENTS {
         break;
       case struct_calc_brownianstiff:
         return "struct_calc_brownianstiff";
+        break;
+      case struct_calc_fluid_traction:
+        return "struct_calc_fluid_traction";
+        break;
+      case struct_calc_cur_normal_at_point:
+        return "struct_calc_cur_normal_at_point";
         break;
       default:
         return "unknown";

@@ -1,14 +1,14 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file fluid_ele_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\brief to be set by the maintainer
+
+\maintainer Volker Gravemeier
+
+\level 1
 */
+/*----------------------------------------------------------------------*/
 
 
 #include "fluid_ele_factory.H"
@@ -791,6 +791,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_fluidfrac_projection:
     case FLD::interpolate_velgrad_to_given_point:
     case FLD::interpolate_velocity_to_given_point_immersed:
+    case FLD::search_immersed_boundary_elements:
+    case FLD::least_squares_matrix_rhs_immersed_boundary:
     case FLD::calc_artificial_velocity_divergence:
     case FLD::interpolate_velocity_to_given_point:
     case FLD::interpolate_pressure_to_given_point:

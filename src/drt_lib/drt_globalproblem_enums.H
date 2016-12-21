@@ -54,6 +54,7 @@ typedef enum _PROBLEM_TYP
   prb_immersed_ale_fsi,     // immersed fsi coupled with ale fsi
   prb_immersed_cell,        // immersed cell migration process (poroelast-structure interaction)
   prb_immersed_fsi,         // immersed fsi
+  prb_immersed_membrane_fsi,// immersed fsi with membrane finite elements
   prb_invana,               // inverse analysis of structures(so far)
   prb_level_set,            // level-set problem
   prb_loma,                 // low-Mach-number flow problem

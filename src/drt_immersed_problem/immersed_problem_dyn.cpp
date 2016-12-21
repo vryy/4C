@@ -28,6 +28,7 @@
 #include "immersed_partitioned_protrusion_formation.H"
 #include "immersed_partitioned_flow_cell_interaction.H"
 #include "immersed_partitioned_fsi_dirichletneumann_ale.H"
+#include "immersed_partitioned_fsi_dirichletneumann_membrane.H"
 #include "str_model_evaluator_multiphysics_cellmigration.H"
 
 #include "../linalg/linalg_utils.H"
@@ -121,9 +122,6 @@ void immersed_problem_drt()
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
       }
-
-      // set fluid action type needed in function CalcArtificialVelocity()
-      params.set<std::string>("fluid_action","interpolate_velocity_to_given_point_immersed");
 
       // init algo
       algo->Init(params);
@@ -227,9 +225,6 @@ void immersed_problem_drt()
         dserror("unknown coupling scheme");
       }
 
-      // set fluid action type needed in function CalcArtificialVelocity()
-      params.set<std::string>("fluid_action","interpolate_velocity_to_given_point_immersed");
-
       // init algo
       algo->Init(params);
 
@@ -263,7 +258,88 @@ void immersed_problem_drt()
       DRT::Problem::Instance()->TestAll(comm);
 
       break;
-    }// case prb_immersed_fsi
+    }// case prb_immersed_ale_fsi
+
+    case prb_immersed_membrane_fsi:
+    {
+      // SAFETY FIRST
+      {
+        // check if INODE is defined in input file
+        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
+        IMMERSED::ImmersedNode* inode =
+            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
+
+            if(inode == NULL)
+              dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                      "Make sure you defined INODE instead of NODE in your input file.");
+      }
+
+      {
+        // check if structural predictor ConstDisVelAcc is chosen in input file
+        if(problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
+          dserror("Invalid structural predictor for immersed fsi!\n"
+                  "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
+                  "Structural state projected onto fluid in new time step should be the same as in previous time step.");
+      }
+
+      // access structure discretization
+      Teuchos::RCP<DRT::Discretization> struct_dis = problem->GetDis("structure");
+
+      // access fluid discretization
+      Teuchos::RCP<DRT::Discretization> fluid_dis = problem->GetDis("fluid");
+
+      // fill discretizations
+      struct_dis->FillComplete();
+      fluid_dis->FillComplete();
+
+      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane> algo = Teuchos::null;
+      if(scheme == INPAR::IMMERSED::dirichletneumann)
+        algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane(comm));
+      else
+      {
+        algo = Teuchos::null;
+        dserror("unknown coupling scheme");
+      }
+
+      // init algo
+      algo->Init(params);
+
+      // ghost structure redundantly on all procs
+      DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
+
+      // setup algo
+      algo->Setup();
+
+      // PARTITIONED FSI ALGORITHM
+
+      // read restart step
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        algo->ReadRestart(restart);
+      }
+
+      // additional setup for structural search tree, etc.
+      algo->SetupStructuralDiscretization();
+
+      algo->Timeloop(algo);
+
+      if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+      {
+        Teuchos::TimeMonitor::summarize();
+        Teuchos::TimeMonitor::zeroOutTimers();
+      }
+
+      // create result tests for single fields
+      DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
+    }// case prb_immersed_membrane_fsi
 
     case prb_immersed_cell:
     {

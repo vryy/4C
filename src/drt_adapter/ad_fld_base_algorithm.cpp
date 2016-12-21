@@ -860,6 +860,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fsi:
     case prb_immersed_fsi:
     case prb_immersed_ale_fsi:
+    case prb_immersed_membrane_fsi:
     case prb_gas_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
