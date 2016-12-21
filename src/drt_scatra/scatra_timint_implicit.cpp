@@ -312,16 +312,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     scalarhandler_->Setup(this);
 
   // setup strategy
-  // note: this check is needed, because the the Setup() method is called
-  //       twice, for instance in ELCH problems due to the multiple inheritance
-  //       of the integrators. However setting up MeshtyingStrategyS2I will
-  //       cause an error, becuase the conditions on the discretizations are
-  //       manipulated!
-  // TODO: Fix this! Calling Setup() twice should not be neccessary, but
-  //       should give the same results nevertheless. Perhaps we should
-  //       try not to use multiple inheritance ...
-  if(not issetup_)
-    strategy_->SetupMeshtying();
+  strategy_->SetupMeshtying();
 
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)

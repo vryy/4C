@@ -76,9 +76,6 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Init()
 {
-  // call init in base class
-  SCATRA::ScaTraTimIntImpl::Init();
-
   // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
   // Let's check for valid options
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
@@ -92,9 +89,6 @@ void SCATRA::ScaTraTimIntElch::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Setup()
 {
-  // call base class set up
-  ScaTraTimIntImpl::Setup();
-
   // set up the concentration-el.potential splitter
   splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
   FLD::UTILS::SetupFluidSplit(*discret_,NumScal(),*splitter_);
