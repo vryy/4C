@@ -438,21 +438,18 @@ void INVANA::MatParManagerTVSVD::Factorize()
 {
   //------------------------------------------------
   // Setup the eigenproblem using Anasazi
-  const int nev = 10;
-  const int blocksize = 10;
-  evecs_ = Teuchos::rcp(new Epetra_MultiVector(graph_->RowMap(), nev));
+  evecs_ = Teuchos::rcp(new Epetra_MultiVector(graph_->RowMap(), nev_));
 
-  // prerequ:
+  // prerequ: (no test here since Anasazi complains)
   // numblock*blocksize + maxlocked must be < spacedim
   // maxlocked + blocksize > nev
-  int numblocks = 4;
 
   Teuchos::ParameterList params;
   std::string which("SM");
   params.set("Which", which );
-  params.set("nev",nev);
-  params.set("Block Size", blocksize);
-  params.set("Num Blocks", numblocks);
+  params.set("nev",nev_);
+  params.set("Block Size", bsize_);
+  params.set("Num Blocks", nblocks_);
   params.set("Maximum Restarts", 100);
   params.set("Convergence Tolerance", 1.0e-6);
   params.set("Use Locking", true);

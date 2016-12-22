@@ -189,19 +189,21 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVe
 
   }// loop theta
 
-  // bring back gradient to the unique layout he came here with.
+  // bring back gradient to the unique full layout.
   // we have to add up off proc components so we cannot use
   // the LINALG::Export since it only provides CombineMode::Insert
-  Epetra_MultiVector tmp(gradient->Map(), gradient->NumVectors(),true);
+  Epetra_MultiVector tmp(adjacency_->RowMap(), 1,true);
   Epetra_Export exporter(gradientcol.Map(), tmp.Map());
   int err = tmp.Export(gradientcol, exporter, Add);
   if (err)
     dserror("Export using exporter returned err=%d", err);
 
   // apply possible linear transformation
-  // project to elementwise layout
+  // project to optimization parameter layout
   Epetra_Vector tmptrans(connectivity_->Projector()->RangeMap(),true);
-  connectivity_->Projector()->Multiply(true,tmp,tmptrans);
+  err = connectivity_->Projector()->Multiply(false,tmp,tmptrans);
+  if (err)
+    dserror("Projection to optimization parameter layout returned err=%d", err);
 
   gradient->Update(weight_,tmptrans,1.0);
 
