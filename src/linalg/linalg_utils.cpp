@@ -2146,7 +2146,6 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
   Teuchos::RCP<Epetra_Map> rmap;
 
   rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
-  // check the map
 
   return rmap;
 }
