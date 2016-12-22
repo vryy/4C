@@ -129,11 +129,7 @@ public:
       const int coupling_id
   )
   {
-    if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
-    {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
-    }
-    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
+    if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
@@ -583,7 +579,6 @@ public:
       break;
     }
     case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-    case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
     case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
     case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:

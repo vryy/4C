@@ -41,7 +41,6 @@
 #include "inpar_ssi.H"
 #include "inpar_particle.H"
 #include "inpar_cavitation.H"
-#include "inpar_crack.H"
 #include "inpar_beampotential.H"
 
 
@@ -1647,8 +1646,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::CELL::SetValidConditions(condlist);
 
   INPAR::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
-
-  INPAR::CRACK::SetValidConditions(condlist);
 
   INPAR::INVANA::SetValidConditions(condlist);
 

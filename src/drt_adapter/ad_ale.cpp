@@ -19,7 +19,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "ad_ale.H"
-#include "ad_ale_crack.H"
 #include "ad_ale_fluid.H"
 #include "ad_ale_fpsi.H"
 #include "ad_ale_fsi_msht.H"
@@ -93,7 +92,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
   bool write_output = true;
-  if (probtype == prb_crack or probtype == prb_fsi_crack or probtype == prb_uq)
+  if (probtype == prb_uq)
     write_output = false;
 
 
@@ -301,12 +300,6 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   case prb_fpsi_xfem:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
-    break;
-  }
-  case prb_crack:
-  case prb_fsi_crack:
-  {
-    ale_ = Teuchos::rcp(new ADAPTER::AleCrackWrapper(ale));
     break;
   }
   case prb_struct_ale:

@@ -80,14 +80,6 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace DRT
-{
-namespace CRACK
-{
-class CrackDyn;
-}
-}
-
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics
 namespace STR
@@ -210,7 +202,7 @@ namespace STR
     virtual void Setup();
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
-    void createFields( Teuchos::RCP<LINALG::Solver>& solver );
+    void createFields();
 
     //! Construct all solution vectors
     void createAllEpetraVectors();
@@ -715,9 +707,6 @@ namespace STR
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 
-    //! Read restart files for crack simulations
-    void ReadRestartCrack();
-
     //! initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
@@ -988,7 +977,7 @@ namespace STR
     /// wrapper for things that should be done before the output
     virtual void PreOutput(){};
 
-    /// wrapper for things that should be done after convergence of Newton scheme (like crack propagation)
+    /// wrapper for things that should be done after convergence of Newton scheme
     virtual void PostOutput(){};
 
     /// wrapper for things that should be done after the actual time loop is finished
@@ -1032,26 +1021,6 @@ namespace STR
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
 
     virtual bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()) ; }
-
-    //@}
-
-    //! @name Crack propagation methods
-    //@{
-
-    //! check for crack propagation and do preparations
-    void PrepareCrackSimulation();
-
-    //! After introducing new nodes in crack, this performs all related operations in discretization
-    bool UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace );
-
-    //! update all Epectra_vectors related to the chosen time integration
-    virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
-
-    //! Get map of old and new crack tip nodes
-    std::map<int,int> getOldNewCrackNodes();
-
-    //! Get the crack tip nodes
-    std::vector<int> GetCrackTipNodes();
 
     //@}
 
@@ -1166,14 +1135,8 @@ namespace STR
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
-    //!  Holds class that propagates crack within the discretization
-    Teuchos::RCP<DRT::CRACK::CrackDyn> propcrack_;
-
     //! elements with micro-materials
     bool havemicromat_;
-
-    //! Is this a crack propagation simulation?
-    bool isCrack_;
 
     //! Is GMSH output of displacements required?
     bool gmsh_out_;

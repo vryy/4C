@@ -7,7 +7,8 @@
 Can only be used in conjunction with XFluid!
 
 <pre>
-Maintainer:  Benedikt Schott
+\level 1
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -224,15 +225,6 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
 {
   return xfluid_->RHS_s_Vec(coupling_name_);
-}
-
-/*----------------------------------------------------------------------*
- * Rebuild FSI interface in case of crack-FSI problem               sudhakar 03/14
- * This is needed when we add new nodes to the FSI interface
- *----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::RebuildFSIStructInterface()
-{
-  StructInterface()->Setup(*mesh_coupling_fsi_->GetCutterDis());
 }
 
 /// GmshOutput for background mesh and cut mesh

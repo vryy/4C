@@ -660,33 +660,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
 
   //*----------------*/
-  // Surface partitioned CRACK XFSI boundary conditions
-
-  Teuchos::RCP<ConditionDefinition> xfem_surf_crfsi_part =
-      Teuchos::rcp(new ConditionDefinition(
-          "DESIGN XFEM CRACK FSI PARTITIONED SURF CONDITIONS",
-          "XFEMSurfCrackFSIPart",
-          "XFEM Surf Crack FSI Part",
-          DRT::Condition::XFEM_Surf_CrackFSIPart,
-          true,
-          DRT::Condition::Surface));
-
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
-
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT",true)));
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("slipcoeff",1,true)));
-
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_CURVE", true)));
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true, true)));
-
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT",true)));
-  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
-
-  condlist.push_back(xfem_surf_crfsi_part);
-
-
-  //*----------------*/
   // Surface Weak Dirichlet conditions
 
   Teuchos::RCP<ConditionDefinition> xfem_surf_wdbc =

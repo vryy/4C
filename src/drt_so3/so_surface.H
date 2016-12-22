@@ -207,23 +207,6 @@ public:
                        Epetra_SerialDenseVector& elevector2,
                        Epetra_SerialDenseVector& elevector3);
 
-  /*!
-  \brief Evaluate J-integral
-
-  this method evaluate and return components of J-integral used to define strength of singularity at crack tip
-
-  \param discret (in)      : underlying structural discretization
-  \param dispvec (in)      : column vector holding the displacement
-  \param supp_func (in)    : holds the value of support function at each node
-  \param normalcrack (in)  : normal to crack in crack-coordinate-system
-  \param tangentcrack (in) : tangent to crack in crack-coordinate-system
-   */
-  std::vector<double> Evaluate_J_integral_crack( Teuchos::RCP<DRT::Discretization>& discret,
-                                                 Teuchos::RCP<Epetra_Vector>& dispvec,
-                                                 std::map<int,double> supp_func,
-                                                 LINALG::Matrix<3,1>& normalcrack,
-                                                 LINALG::Matrix<3,1>& tangentcrack );
-
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::Element* ParentElement() const
   {return ParentMasterElement();}

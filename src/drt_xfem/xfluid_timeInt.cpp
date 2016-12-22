@@ -1399,19 +1399,6 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     if(!successful_check or (successful_check and did_node_change_side))
       return -1; // do not accept the old value
 
-    //--------------------------------------
-    // special check for crack applications
-    if( (is_std_set_np and is_std_set_n) )
-    {
-      successful_check = SpecialCheck_Crack(did_node_change_side, n_old, n_new);
-
-      if(!successful_check or (successful_check and did_node_change_side))
-        return -1; // do not accept the old value
-    }
-
-    if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-      return nds_old; // don't do further checks, otherwise SpaceTimeCheck can lead to segfault's as sides at t^(n+1) are not available at t^n
-
     if(xfluid_timint_check_interfacetips_)
     {
       //--------------------------------------
@@ -1536,56 +1523,6 @@ bool XFEM::XFluidTimeInt::SpecialCheck_SlidingOnSurface(
   changed_side = false;
   return true;
 }
-
-bool XFEM::XFluidTimeInt::SpecialCheck_Crack(
-    bool&                                                          changed_side,        /// did the node change the side ?
-    const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
-    const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
-)
-{
-  bool successful_check = true;
-
-  //------------------------------------
-  // Get all the connected elements from this nodes at old and new position         sudhakar 12/14
-  // If all these elements have same cut situation in both configurations, then the point did not change side
-  // This is not as generalized as its alternative, but since in FSI-crack problem, certain
-  // surfaces are eliminated/added from the FSI interface, this is only working option we have
-
-  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  {
-    GEO::CUT::Point* p_old = n_old->point();
-    GEO::CUT::Point* p_new = n_new->point();
-
-    GEO::CUT::Point::PointPosition pos_old = p_old->Position();
-    GEO::CUT::Point::PointPosition pos_new = p_new->Position();
-
-    const GEO::CUT::plain_element_set & eleold = n_old->Elements();
-    const GEO::CUT::plain_element_set & elenew = n_new->Elements();
-
-    std::set<int> old_ele_set, new_ele_set;
-    for(GEO::CUT::plain_element_set::const_iterator it=eleold.begin(); it!=eleold.end(); it++)
-      old_ele_set.insert( (*it)->Id() );
-    for(GEO::CUT::plain_element_set::const_iterator it=elenew.begin(); it!=elenew.end(); it++)
-      new_ele_set.insert( (*it)->Id() );
-
-    //TODO: @ sudhakar
-    if( old_ele_set == new_ele_set )
-      return false;// TODO: actually we want to do this    changed_side = false;
-    else
-    {
-      if( pos_old == pos_new )
-        changed_side = false;
-      else
-        changed_side = true;
-    }
-  }
-  else
-    changed_side = false; // accept the value for this check
-  //------------------------------------
-
-  return successful_check; // accept value if not crack application
-}
-
 
 
 // -------------------------------------------------------------------

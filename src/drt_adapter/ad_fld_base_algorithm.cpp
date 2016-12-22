@@ -141,7 +141,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     if (probtype == prb_fsi_xfem or
         probtype == prb_fluid_xfem or
         probtype == prb_combust or
-        probtype == prb_fsi_crack or
         (probtype == prb_fpsi_xfem and disname == "fluid")or
         probtype == prb_fluid_xfem_ls)
     {
@@ -306,8 +305,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       probtype != prb_fluid_xfem and
       probtype != prb_fluid_xfem_ls and
       probtype != prb_combust and
-      !(probtype == prb_fsi and DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID")) and
-      probtype != prb_fsi_crack )
+      !(probtype == prb_fsi and DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID")))
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
@@ -407,7 +405,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
       or (probtype == prb_fsi and
           DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
-      or probtype == prb_fsi_crack
       or probtype == prb_fluid_xfem_ls)
   {
     // get also scatra stabilization sublist
@@ -461,7 +458,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       probtype == prb_thermo_fsi or
       probtype == prb_fsi_xfem or
       (probtype == prb_fpsi_xfem and disname == "fluid") or
-      probtype == prb_fsi_crack or
       probtype == prb_fsi_redmodels)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
@@ -523,7 +519,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   }
 
   // sanity checks and default flags
-  if ( probtype == prb_fsi_xfem or probtype == prb_fsi_crack or (probtype == prb_fpsi_xfem and disname == "fluid"))
+  if ( probtype == prb_fsi_xfem or (probtype == prb_fpsi_xfem and disname == "fluid"))
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -538,7 +534,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   }
 
   // sanity checks and default flags
-  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem or probtype == prb_fsi_crack or (probtype == prb_fpsi_xfem and disname == "fluid") )
+  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem or (probtype == prb_fpsi_xfem and disname == "fluid") )
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -835,15 +831,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         fluid_ = tmpfluid;
       else
         fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, condition_name , solver, fluidtimeparams, output));
-    }
-    break;
-    case prb_fsi_crack:
-    {
-      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-      const std::string condition_name = "XFEMSurfCrackFSIPart";
-
-      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid,condition_name, solver, fluidtimeparams, output));
     }
     break;
     case prb_fluid_xfem_ls:

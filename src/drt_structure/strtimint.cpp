@@ -49,7 +49,6 @@
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/inpar_cell.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
@@ -74,9 +73,6 @@
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"
-
-#include "../drt_crack/crackDyn.H"
-#include "../drt_crack/crackUtils.H"
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
@@ -150,8 +146,6 @@ STR::TimInt::TimInt
   beamcman_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
-  propcrack_(Teuchos::null),
-  isCrack_(false),
   gmsh_out_(false),
   time_(Teuchos::null),
   timen_(0.0),
@@ -239,7 +233,7 @@ void STR::TimInt::Init
       sdynparams_);
 
   // create stiffness, mass matrix and other fields
-  createFields( solver_ );
+  createFields();
 
   // stay with us
 
@@ -259,7 +253,7 @@ void STR::TimInt::Setup()
   createAllEpetraVectors();
 
   // create stiffness, mass matrix and other fields
-  createFields( solver_ );
+  createFields();
 
   // set initial fields
   SetInitialFields();
@@ -307,11 +301,6 @@ void STR::TimInt::Setup()
     // corresponding manager object stored via #ssnplastman_ is created and all relevant
     // stuff is initialized. Else, #ssnplastman_ remains a Teuchos::null pointer.
     PrepareSemiSmoothPlasticity();
-  }
-
-  // check for crack propagation
-  {
-    PrepareCrackSimulation();
   }
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
@@ -431,11 +420,9 @@ void STR::TimInt::createAllEpetraVectors()
 }
 
 /*-------------------------------------------------------------------------------------------*
- * Either while creating timint for the first time, or when the discretization is
- * modified as in crack propagation simulations,  this function creates fields whose
- * values at previous time step are not important                             sudhakar 12/13
+ * Create matrices when setting up time integrator
  *-------------------------------------------------------------------------------------------*/
-void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
+void STR::TimInt::createFields()
 {
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -1041,10 +1028,6 @@ void STR::TimInt::PrepareStepContact()
 /* things that should be done after the convergence of Newton method */
 void STR::TimInt::PostSolve()
 {
-  // propagate crack within the structure
-  if( DRT::Problem::Instance()->ProblemType() == prb_crack )
-    UpdateCrackInformation( Dispnp() );
-
   return;
 }
 
@@ -1862,7 +1845,6 @@ void STR::TimInt::ReadRestart
   ReadRestartBeamContact();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
-  ReadRestartCrack();
   ReadRestartSpringDashpot();
 
   ReadRestartForce();
@@ -1916,9 +1898,6 @@ void STR::TimInt::SetRestart
   // biofilm growth
   if (HaveBiofilmGrowth())
     dserror("Set restart not implemented for biofilm growth");
-
-  if ( isCrack_ )
-    dserror("Set restart not implemented for crack growth");
 
   // ---------------------------------------------------------------------------
 
@@ -2071,21 +2050,6 @@ void STR::TimInt::ReadRestartMultiScale()
       discret_->ClearState();
       break;
     }
-  }
-}
-
-/*-----------------------------------------------------------------------*
- * Read and initialize data for crack propagation problem        sudhakar 12/14
- *-----------------------------------------------------------------------*/
-void STR::TimInt::ReadRestartCrack()
-{
-  if( isCrack_ )
-  {
-    IO::DiscretizationReader reader(discret_,step_);
-    propcrack_->ReadRestartCrack( reader );
-
-    dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
-    createFields( solver_ );
   }
 }
 
@@ -2392,12 +2356,6 @@ void STR::TimInt::OutputRestart
   if (HaveBiofilmGrowth())
   {
     output_->WriteVector("str_growth_displ", strgrdisp_);
-  }
-
-  // crack propagation
-  if( isCrack_ )
-  {
-    propcrack_->WriteRestartCrack( output_ );
   }
 
   // springdashpot output
@@ -3674,115 +3632,4 @@ void STR::TimInt::ResizeMStepTimAda()
   acc_->Resize(-1, 0, DofRowMapView(), true);
 
   return;
-}
-
-/*-----------------------------------------------------------------------------*
- * check for crack propagation, and do preparations               sudhakar 12/13
- * ---------------------------------------------------------------------------*/
-void STR::TimInt::PrepareCrackSimulation()
-{
-  if( DRT::Problem::Instance()->ProblemType() == prb_crack
-   or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  {
-    isCrack_ = true;
-    propcrack_ = Teuchos::rcp(new DRT::CRACK::CrackDyn( discret_ ) );
-
-    const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
-    gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
-
-    bool gmsh_io = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
-    if( not gmsh_io )
-      gmsh_out_ = false;
-  }
-}
-
-/*-----------------------------------------------------------------------------*
- * update all the field variables to the new discretization       sudhakar 01/14
- * ---------------------------------------------------------------------------*/
-bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace )
-{
-  if( not isCrack_ )
-    return false;
-
-  propcrack_->propagateOperations( displace, stressdata_, straindata_ );
-
-  if (not discret_->Filled() || not discret_->HaveDofs())
-  {
-    dserror("New discretisation after crack propagation is not complete or has no dofs!");
-  }
-
-  std::map<int,int> oldnewIds = propcrack_->GetOldNewNodeIds();
-
-  if( oldnewIds.size() == 0 )
-  {
-    return false;
-  }
-
-  if( oldnewIds.size() > 0 or propcrack_->DidIClearConditionsNow() )
-  {
-    std::cout<<"===============updating crack information==================\n";
-
-    // new boundary condition map is built when calling discret_->EvaluateDirichlet(...)
-    // within the createFields() funciton
-    dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
-    createFields( solver_ );
-
-    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disn_, oldnewIds );
-    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, veln_, oldnewIds );
-    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accn_, oldnewIds );
-    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fifc_, oldnewIds );
-
-    if( dismatn_ != Teuchos::null )
-      DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dismatn_, oldnewIds );
-
-    if ((*dis_)(0) != Teuchos::null)
-    {
-      dis_->ReplaceMaps(discret_->DofRowMap());
-      LINALG::Export(*disn_, *(*dis_)(0));
-    }
-
-    if ((*vel_)(0) != Teuchos::null)
-    {
-      vel_->ReplaceMaps(discret_->DofRowMap());
-      LINALG::Export(*veln_, *(*vel_)(0));
-    }
-
-    if ((*acc_)(0) != Teuchos::null)
-    {
-      acc_->ReplaceMaps(discret_->DofRowMap());
-      LINALG::Export(*accn_, *(*acc_)(0));
-    }
-
-    if( dismat_ != Teuchos::null )
-    {
-      dismat_->ReplaceMaps(discret_->DofRowMap());
-      LINALG::Export(*dismatn_, *(*dismat_)(0));
-    }
-
-    // update other field vectors related to specific integration method
-    updateEpetraVectorsCrack( oldnewIds );
-  }
-
-  return true;
-}
-
-/*-----------------------------------------------------------------------------*
- * During propagation of crack, new nodes corresponding to the    sudhakar 02/14
- * old tip nodes are created. Here we get the map of old and new node ids
- *----------------------------------------------------------------------------*/
-std::map<int,int> STR::TimInt::getOldNewCrackNodes()
-{
-  if( not isCrack_ )
-    dserror( "You are trying to access crack nodes; but this is not a crack problem" );
-  return propcrack_->GetOldNewNodeIds();
-}
-
-/*-----------------------------------------------------------------------------*
- * Return the current crack tip nodes                             sudhakar 03/14
- *----------------------------------------------------------------------------*/
-std::vector<int> STR::TimInt::GetCrackTipNodes()
-{
-  if( not isCrack_ )
-    dserror( "You are trying to access crack nodes; but this is not a crack problem" );
-  return propcrack_->GetCrackTipNodes();
 }

@@ -87,9 +87,6 @@ public:
   /// Setup of coupling at fsi interface
   virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
 
-  /// Perform all operations related to updating FSI interface for FSI-crack problem
-  virtual void update_FSI_interface_Crack();
-
 protected:
 
   //! @name Transfer helpers

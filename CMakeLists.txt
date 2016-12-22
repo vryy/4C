@@ -703,13 +703,11 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_structalewrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
-  src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/ad_str_poro_wrapper.cpp
   src/drt_adapter/ad_str_timeloop.cpp
   src/drt_adapter/ad_str_invana.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/ad_ale.cpp
-  src/drt_adapter/ad_ale_crack.cpp
   src/drt_adapter/ad_ale_fluid.cpp
   src/drt_adapter/ad_ale_fpsi.cpp
   src/drt_adapter/ad_ale_fsi_msht.cpp
@@ -765,7 +763,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_combust.cpp
   src/drt_inpar/inpar_contact.cpp
-  src/drt_inpar/inpar_crack.cpp
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elch.cpp
   src/drt_inpar/inpar_fluid.cpp
@@ -1165,7 +1162,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_debugwriter.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
-  src/drt_fsi/fsi_dirichletneumanncrack.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
   src/drt_fsi/fsi_lagrangeprec.cpp
@@ -2162,20 +2158,6 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
 )
-set(OBJS_DRT_CRACK_LIB
-  src/drt_crack/InsertCohesiveElements.cpp
-  src/drt_crack/dcohesive.cpp
-  src/drt_crack/dcohesive_evaluate.cpp
-  src/drt_crack/propagateTip.cpp
-  src/drt_crack/initiateCrack.cpp
-  src/drt_crack/crackUtils.cpp
-  src/drt_crack/SplitHexIntoTwoWedges.cpp
-  src/drt_crack/j_Integral.cpp
-  )
-set(OBJS_DRT_CRACK
-  src/drt_crack/aleCrack.cpp
-  src/drt_crack/crackDyn.cpp
-  )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
@@ -2553,7 +2535,6 @@ add_library(alg_combust ${OBJS_DRT_COMBUST})
 #add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
-add_library(alg_crack ${OBJS_DRT_CRACK})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
 add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
@@ -2586,7 +2567,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_porofluidmultiphase
   alg_scatra
   alg_structure
-  alg_crack
   alg_plastic_ssn
   alg_invanalysis
   alg_statinvanalysis
@@ -2635,7 +2615,6 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
-add_library(drt_lib_crack ${OBJS_DRT_CRACK_LIB})
 add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
@@ -2654,7 +2633,6 @@ set(SUPPORT_LIBRARIES
   drt_lib_xfem
   drt_lib_xfem_combust
   drt_lib_cut
-  drt_lib_crack
   drt_lib_inpar
   drt_lib_io
   drt_lib_nurbs

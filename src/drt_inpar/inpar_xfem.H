@@ -176,7 +176,6 @@ namespace INPAR
       CouplingCond_SURF_FPI_MONO,
       CouplingCond_SURF_FLUIDFLUID,
       CouplingCond_SURF_FSI_PART,
-      CouplingCond_SURF_CRACK_FSI_PART,
       CouplingCond_SURF_WEAK_DIRICHLET,
       CouplingCond_SURF_NEUMANN,
       CouplingCond_SURF_NAVIER_SLIP,

@@ -475,8 +475,7 @@ void DRT::UTILS::MatchingOctree::FindMatch(
   // that belongs to FSICoupling conditions. All the nodes in the FSI interface
   // is contained in soliddis and they have same node numbers
   //------
-  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem or
-       DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem )
   {
     for( unsigned node = 0 ; node < slavenodeids.size(); node++ )
     {

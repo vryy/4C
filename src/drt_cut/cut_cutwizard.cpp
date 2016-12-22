@@ -112,8 +112,7 @@ void GEO::CutWizard::AddCutterState(
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col
 )
 {
-  std::map<int, LINALG::Matrix<3,1> > tipnodes;
-  AddCutterState(0,cutter_dis, cutter_disp_col, 0, tipnodes);
+  AddCutterState(0,cutter_dis, cutter_disp_col, 0);
 }
 
 /*-------------------------------------------------------------*
@@ -123,8 +122,7 @@ void GEO::CutWizard::AddCutterState(
     const int mc_idx,
     Teuchos::RCP<DRT::Discretization> cutter_dis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-    const int                         start_ele_gid,
-    std::map<int, LINALG::Matrix<3,1> > & tip_nodes
+    const int                         start_ele_gid
 )
 {
   std::map<int, Teuchos::RCP<CutterMesh> >::iterator cm = cutter_meshes_.find(mc_idx);
@@ -135,7 +133,6 @@ void GEO::CutWizard::AddCutterState(
       new CutterMesh(
       cutter_dis,
       cutter_disp_col,
-      tip_nodes,
       start_ele_gid)
   );
 
@@ -378,8 +375,6 @@ void GEO::CutWizard::AddMeshCuttingSide()
     AddMeshCuttingSide(
         cutter_mesh->cutterdis_,
         cutter_mesh->cutter_disp_col_,
-        cutter_mesh->is_crack_,
-        cutter_mesh->tip_nodes_,
         cutter_mesh->start_ele_gid_);
   }
 }
@@ -392,8 +387,6 @@ void GEO::CutWizard::AddMeshCuttingSide()
 void GEO::CutWizard::AddMeshCuttingSide(
     Teuchos::RCP<DRT::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-    bool is_crack,
-    std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
     const int start_ele_gid        ///< mesh coupling index
     )
 {
@@ -446,22 +439,6 @@ void GEO::CutWizard::AddMeshCuttingSide(
 
         LINALG::Matrix<3, 1> disp( &mydisp[0], true );
 
-        // ------------------------------------------------------------------------------------------------
-        // --- when simulating FSI with crack, nodes that represent crack are treated separately        ---
-        // --- These nodes deform until the spring that connects them break. Only after the springs are ---
-        // --- broken, we consider it as a real displacement and introduce crack opening there.         ---
-        // --- this is advantageous. otherwise we need to introduce pseudo-elements there and should    ---
-        // --- deal with them correctly. This becomes problematic when simulating extrinsic cohesive    ---
-        // --- zone modeling                                                                            ---
-        // ------------------------------------------------------------------------------------------------
-        if( is_crack )
-        {
-          std::map<int, LINALG::Matrix<3,1> >::iterator itt = tip_nodes.find( node.Id() );
-          if( itt != tip_nodes.end() )
-          {
-            disp = itt->second;
-          }
-        }
         //update x-position of cutter node for current time step (update with displacement)
         x.Update( 1, disp, 1 );
       }

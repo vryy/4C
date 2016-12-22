@@ -20,7 +20,6 @@
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"
-#include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_structalewrapper.H"
@@ -29,8 +28,6 @@
 #include "ad_str_ssiwrapper.H"
 
 #include "../drt_structure/strtimada_create.H"
-
-#include "../drt_crack/InsertCohesiveElements.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -49,7 +46,6 @@
 
 #include "../drt_mat/matpar_bundle.H"
 
-#include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_beamcontact.H"
@@ -165,8 +161,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
 
   // get the problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
-  // what's the current problem type?
-  PROBLEM_TYP probtype = problem->ProblemType();
   // get the restart step
   const int restart = problem->Restart();
 
@@ -182,13 +176,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Here we read the discretization at the current
   // time step from restart files
   // ---------------------------------------------------------------------------
-  if ( restart and probtype == prb_crack )
-  {
-    IO::DiscretizationReader reader(actdis_, restart);
-    reader.ReadMesh(restart);
-  }
-  // set degrees of freedom in the discretization
-  else if (not actdis_->Filled() || not actdis_->HaveDofs())
+  if (not actdis_->Filled() || not actdis_->HaveDofs())
     actdis_->FillComplete();
 
   // ---------------------------------------------------------------------------
@@ -246,23 +234,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
         else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdyn_->sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Add cohesive elements in case of crack
-  // propagation simulations
-  // ---------------------------------------------------------------------------
-  {
-    const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
-    if (DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
-          == INPAR::CRACK::crack_cohesive)
-    {
-      //if( (not DRT::Problem::Instance()->Restart()) and DRT::Problem::Instance()->ProblemType() == prb_structure )
-      {
-        Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-        DRT::CRACK::InsertCohesiveElements isp( structdis );
       }
     }
   }
@@ -458,7 +429,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fsi_xfem:
-    case prb_fsi_crack:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
           isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Partitioned Coupling Model"))
@@ -778,7 +748,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
   switch (probtype)
   {
     case prb_structure: // pure structural time adaptivity
-    case prb_crack:
     {
       str_wrapper_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, ti_strategy));
       break;
@@ -869,9 +838,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
-    case prb_fsi_crack:
-      str_wrapper_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))))));
-      break;
     case prb_redairways_tissue:
       str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;

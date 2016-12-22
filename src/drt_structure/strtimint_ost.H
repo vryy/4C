@@ -343,9 +343,6 @@ namespace STR
 
     //@}
 
-    /// update all the field vectors to account for new node introduced by crack
-    void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ){dserror("not yet implemented for this scheme");}
-
   protected:
 
     //! equal operator is NOT wanted

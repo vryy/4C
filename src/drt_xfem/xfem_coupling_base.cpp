@@ -38,7 +38,6 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
   else if(condname == "XFEMSurfFPIMono"      || condname == "XFEMSurfFPIMono_ps_ps"
       || condname == "XFEMSurfFPIMono_ps_pf" || condname == "XFEMSurfFPIMono_pf_ps"
       || condname == "XFEMSurfFPIMono_pf_pf")       return INPAR::XFEM::CouplingCond_SURF_FPI_MONO;
-  else if(condname == "XFEMSurfCrackFSIPart")       return INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART;
   else if(condname == "XFEMSurfFluidFluid")         return INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID;
   else if(condname == "XFEMLevelsetWeakDirichlet")  return INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET;
   else if(condname == "XFEMLevelsetNeumann")        return INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN;
@@ -295,7 +294,6 @@ void XFEM::CouplingBase::SetAveragingStrategy()
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-  case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
@@ -345,7 +343,6 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-  case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET: // set this to Teuchos::null when the values are read from the function instead of the ivelnp vector
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:

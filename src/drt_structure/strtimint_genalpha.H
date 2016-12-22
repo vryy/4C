@@ -291,9 +291,6 @@ namespace STR
     void EvaluateMidState();
     //@}
 
-    /// update all the field vectors to account for new node introduced by crack
-    void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew );
-
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
     void BuildResStiffNLMassRot(Teuchos::RCP<Epetra_Vector> fres_,

@@ -229,13 +229,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
       break;
     }
-    case prb_crack:
-    {
-      PostField* crackfield = problem.get_discretization(0);
-      StructureFilter writer(crackfield, problem.outname(), problem.stresstype(), problem.straintype());
-      writer.WriteFilesChangingGeom();
-      break;
-    }
     case prb_cavitation:
     {
       PostField* fluidfield = problem.get_discretization(0);
@@ -393,7 +386,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_fsi_xfem:
     case prb_fpsi_xfem:
-    case prb_fsi_crack:
     {
       std::cout << "|=============================================================================|" << std::endl;
       std::cout << "|==  Output FSI/FPSI-XFEM Problem" << std::endl;

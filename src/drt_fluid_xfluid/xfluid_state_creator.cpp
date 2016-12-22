@@ -179,18 +179,11 @@ void FLD::XFluidStateCreator::CreateNewCutState(
 
     if (!mc_coupl->CutGeometry()) continue;
 
-    std::map<int, LINALG::Matrix<3,1> > tip_nodes;        ///< nodes of the crack tip when simulating FSI with crack
-
-    Teuchos::RCP<XFEM::MeshCouplingFSICrack> crfsi_mc_coupl = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl);
-
-    if(crfsi_mc_coupl!=Teuchos::null) tip_nodes = crfsi_mc_coupl->GetCrackTipNodes(); ///< copy routine which copies form crfsi to tipnodes
-
     wizard->AddCutterState(
         mc_idx,
         mc_coupl->GetCutterDis(),
         mc_coupl->GetCutterDispCol(),
-        condition_manager_->GetMeshCouplingStartGID(mc_idx),
-        tip_nodes
+        condition_manager_->GetMeshCouplingStartGID(mc_idx)
         );
   }
 

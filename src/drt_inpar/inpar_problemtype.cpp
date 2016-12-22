@@ -36,7 +36,6 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Cardiac_Monodomain"]                               = prb_cardiac_monodomain;
     string2prbtype["Cavitation"]                                       = prb_cavitation;
     string2prbtype["Combustion"]                                       = prb_combust;
-    string2prbtype["Crack"]                                            = prb_crack;
     string2prbtype["Elastohydrodynamic_Lubrication"]                   = prb_ehl;
     string2prbtype["Electrochemistry"]                                 = prb_elch;
     string2prbtype["Fluid"]                                            = prb_fluid;
@@ -46,7 +45,6 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Fluid_Porous_Structure_Interaction"]               = prb_fpsi;
     string2prbtype["Fluid_Porous_Structure_Scalar_Scalar_Interaction"] = prb_fps3i;
     string2prbtype["Fluid_RedModels"]                                  = prb_fluid_redmodels;
-    string2prbtype["Fluid_Structure_Crack_Interaction"]                = prb_fsi_crack;
     string2prbtype["Fluid_Structure_Interaction"]                      = prb_fsi;
     string2prbtype["Fluid_Structure_Interaction_Lung"]                 = prb_fsi_lung;
     string2prbtype["Fluid_Structure_Interaction_RedModels"]            = prb_fsi_redmodels;

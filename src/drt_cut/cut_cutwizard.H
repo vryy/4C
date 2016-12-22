@@ -4,7 +4,8 @@
 \brief class that provides the common functionality for a mesh cut based on a level set field or on surface meshes
 
 <pre>
-Maintainer: Benedikt Schott
+\level 3
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -63,13 +64,10 @@ namespace GEO
       CutterMesh(
           Teuchos::RCP<DRT::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-          std::map<int, LINALG::Matrix<3,1> > tip_nodes, // copy the values
           const int start_ele_gid
           ) :
           cutterdis_(cutterdis),
           cutter_disp_col_(cutter_disp_col),
-          tip_nodes_(tip_nodes),
-          is_crack_( (tip_nodes_.size() != 0) ),
           start_ele_gid_(start_ele_gid)
       {
       }
@@ -91,14 +89,6 @@ namespace GEO
 
       //! @name state vectors holding displacements
       Teuchos::RCP<const Epetra_Vector> cutter_disp_col_;    ///< col vector holding interface displacements for cutterdis
-      //@}
-
-
-      //---------------------------------Crack specific stuff ----------------------------
-
-      //! @name Options
-      std::map<int, LINALG::Matrix<3,1> > tip_nodes_;        ///< nodes of the crack tip when simulating FSI with crack
-      bool is_crack_;                                        ///< are crack tipnodes involved?
       //@}
 
       //!
@@ -158,8 +148,7 @@ namespace GEO
         const int mc_idx,
         Teuchos::RCP<DRT::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-        const int                         start_ele_gid,
-        std::map<int, LINALG::Matrix<3,1> > & tip_nodes
+        const int                         start_ele_gid
     );
 
     //@}
@@ -221,8 +210,6 @@ namespace GEO
     void AddMeshCuttingSide(
         Teuchos::RCP<DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-        bool is_crack,
-        std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
         const int start_ele_gid = 0  ///< global start index for element id numbering
         );
 

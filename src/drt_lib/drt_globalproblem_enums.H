@@ -32,7 +32,6 @@ typedef enum _PROBLEM_TYP
   prb_cardiac_monodomain,   // Cardiac electrophsiology problem
   prb_cavitation,           // cavitation problem
   prb_combust,              // combustion problem
-  prb_crack,                // crack propagation modeling
   prb_ehl,                  // elastohydrodynamic lubrication problem (or lubrication structure interaction)
   prb_elch,                 // electrochemical problem
   prb_fluid,                // fluid problem
@@ -46,7 +45,6 @@ typedef enum _PROBLEM_TYP
   prb_fpsi_xfem,            // fluid poro structure interaction problem including XFEM interfaces (atm just for FSI Interface!)
   prb_freesurf,             // free surface fluid
   prb_fsi,                  // fluid structure interaction problem
-  prb_fsi_crack,            // FSI with XFEM in presence of cracking structures
   prb_fsi_lung,             // airway fsi problem with attached parenchyma balloon
   prb_fsi_redmodels,        // fluid structure interaction problem
   prb_fsi_xfem,             // fluid structure interaction problem including XFEM interfaces

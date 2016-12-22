@@ -94,7 +94,7 @@ namespace TIMINT {
     /// wrapper for things that should be done before the output
     virtual void PreOutput() {};
 
-    /// wrapper for things that should be done after convergence of Newton scheme (like crack propagation)
+    /// wrapper for things that should be done after convergence of Newton scheme
     virtual void PostOutput() {};
 
     /// things that should be done after the actual time loop is finished
@@ -539,23 +539,6 @@ namespace TIMINT {
     /// FixMe set structure displacement vector due to biofilm growth
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
     { dserror("Currently unsupported!"); }
-    /// @}
-
-    /// Crack related stuff
-    /// @{
-    /// FixMe Return the current crack tip nodes
-    /// Do we really need a hard copy? Why no const reference?
-    virtual std::vector<int> GetCrackTipNodes()
-    { dserror("Not yet implemented!"); return std::vector<int>(0); }
-
-    /// FixMe  Get map of newly introduced node ids with their corresponding old node ids
-    /// Do we really need a hard copy? Why no const reference?
-    virtual std::map<int,int> getOldNewCrackNodes()
-    { dserror("Not yet implemented!"); return std::map<int,int>(); }
-
-    /// FixMe Propagate crack within the structure and accordingly modify the discretization
-    virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace)
-    { dserror("Not yet implemented!"); return false; }
     /// @}
 
     /// @name Pure virtual adapter functions (have to be implemented in the derived classes)

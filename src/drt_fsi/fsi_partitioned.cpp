@@ -92,9 +92,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
 
 
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 1)// matching meshes
-      and (
-          DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
-      and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
+      and
+      (DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem)
       )
   {
     matchingnodes_ = true;
@@ -110,7 +109,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
   else if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 1)// matching meshes coupled via XFEM
-      and ( DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
+      and ( DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem)
       )
   {
     matchingnodes_ = true; // matching between structure and boundary dis! non-matching between boundary dis and fluid is handled bei XFluid itself
@@ -129,8 +128,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
   }
   else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0 // mortar coupling
       and (
-          DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
-      and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
+          DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem)
   )
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are coupled
@@ -524,10 +522,6 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
       Remeshing();
     }
 
-    // Add newly created crack surfaces to cut discretization in XFEM
-    // This is for FSI with cracking structure simulations
-    update_FSI_interface_Crack();
-
     // calculate stresses, strains, energies
     PrepareOutput();
 
@@ -826,12 +820,6 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::Remeshing()
-{
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::Partitioned::update_FSI_interface_Crack()
 {
 }
 

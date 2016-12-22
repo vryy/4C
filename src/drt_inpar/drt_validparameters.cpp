@@ -66,7 +66,6 @@ Maintainer: Martin Kronbichler
 #include "inpar_fs3i.H"
 #include "inpar_particle.H"
 #include "inpar_cavitation.H"
-#include "inpar_crack.H"
 #include "inpar_levelset.H"
 #include "inpar_wear.H"
 #include "inpar_beamcontact.H"
@@ -634,7 +633,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::STATMECH::SetValidParameters(list);
-  INPAR::CRACK::SetValidParameters(list);
   INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);
 

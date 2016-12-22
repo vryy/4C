@@ -185,46 +185,6 @@ void DRT::UTILS::DisBasedLocationVector(
 }
 
 
-/*---------------------------------------------------------------------------------------*
- * Equate the values at DOFs of global nodeids, given by original and copy
- * After equating dof_values(copy) = dof_values(original)                         sudhakar 12/13
- * At the moment, this is used when duplicating nodes in crack simulation
- *---------------------------------------------------------------------------------------*/
-void DRT::UTILS::EquateValuesAtTheseNodes( Epetra_Vector& vec,
-                                           Teuchos::RCP<DRT::Discretization> dis,
-                                           int original,
-                                           int copy )
-{
-  if( dis->HaveGlobalNode( copy ) )
-  {
-    DRT::Node * newnode = dis->gNode( copy );
-    if( newnode->Owner() == dis->Comm().MyPID() )
-    {
-      DRT::Node * oldnode = dis->gNode( original );
-
-      if( not (oldnode->Owner() == dis->Comm().MyPID() ) )
-        dserror( "Both nodes should be owned by the same processor" );
-
-      const std::vector<int> dof_new = dis->Dof( newnode );
-      const std::vector<int> dof_old = dis->Dof( oldnode );
-
-      if( not (dof_new.size() == dof_old.size() ) )
-        dserror( "Both nodes should have same number of DOFs" );
-
-      const int lid_new = vec.Map().LID(dof_new[0]);
-      const int lid_old = vec.Map().LID(dof_old[0]);
-      if ( lid_new<0 ) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",vec.Comm().MyPID(),dof_new[0]);
-      if ( lid_old<0 ) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",vec.Comm().MyPID(),dof_old[0]);
-
-      for( unsigned i=0; i<dof_new.size(); i++ )
-      {
-        vec[ lid_new + i ] = vec[ lid_old + i ];
-      }
-    }
-  }
-}
-
-
 /*----------------------------------------------------------------------*
  | compute node based L2 projection originating from a dof based        |
  | state vector                                                         |

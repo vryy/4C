@@ -85,7 +85,6 @@ namespace XFEM
 {
   class ConditionManager;
   class MeshCoupling;
-  class MeshCouplingFSICrack;
   class XFEMDofSet;
   class XFEM_EdgeStab;
   class XFluidTimeInt;

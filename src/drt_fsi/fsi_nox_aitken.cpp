@@ -79,6 +79,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   const NOX::Abstract::Vector& F = oldGrp.getF();
 
 
+  // fix_seitz can this go, if we delete crack?
   // This occurs in case of FSI-crack simulations
   // When new elements are added to FSI interface, the EpetraVectos do not have same dimensions
   // In this case, we calculate relaxation parameter as in the beginning of the simulation
@@ -87,6 +88,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
            dynamic_cast<NOX::Epetra::Vector&>(*del_).getEpetraVector().Map() ) ) )
   {
     del_ = Teuchos::null;
+    dserror("stop");
   }
 
 

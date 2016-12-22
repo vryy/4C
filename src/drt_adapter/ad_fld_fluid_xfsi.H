@@ -7,7 +7,8 @@
 Can only be used in conjunction with XFluid!
 
 <pre>
-Maintainer:  Benedikt Schott
+\level 1
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -105,10 +106,6 @@ namespace ADAPTER {
 
     /// convert increment of displacement to increment in velocity
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
-
-    /// Rebuild FSI interface in case of FSI-crack problem
-    virtual void RebuildFSIStructInterface();
-
 
     /// apply the interface displacements to the fluid
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);

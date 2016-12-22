@@ -338,7 +338,6 @@ public:
   const Teuchos::ParameterList& LocaParams() const { return getParameterList()->sublist("LOCA"); }
   const Teuchos::ParameterList& CavitationParams() const { return getParameterList()->sublist("CAVITATION DYNAMIC"); }
   const Teuchos::ParameterList& ParticleParams() const { return getParameterList()->sublist("PARTICLE DYNAMIC"); }
-  const Teuchos::ParameterList& CrackParams() const { return getParameterList()->sublist("CRACK"); }
   const Teuchos::ParameterList& LevelSetControl() const { return getParameterList()->sublist("LEVEL-SET CONTROL"); }
   const Teuchos::ParameterList& WearParams() const { return getParameterList()->sublist("WEAR"); }
   const Teuchos::ParameterList& TSIContactParams() const { return getParameterList()->sublist("TSI CONTACT"); }

@@ -46,7 +46,6 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     }
     case prb_fluid_xfem:
     case prb_fsi_xfem:
-    case prb_fsi_crack:
     {
       const Teuchos::ParameterList xfluid = DRT::Problem::Instance()->XFluidDynamicParams();
       bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");

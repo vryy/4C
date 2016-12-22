@@ -770,7 +770,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
     case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-    case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
     {
       NIT_Stab_Penalty(
         funct_m,

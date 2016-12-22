@@ -61,7 +61,6 @@
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_discsh3/discsh3.H"
-#include "../drt_crack/crackUtils.H"
 #include "../drt_structure_new/str_timint_databiopolynetdyn.H"
 #include "../solver_nonlin/nln_operator_base.H"
 #include "../solver_nonlin/nln_operator_factory.H"
@@ -4846,19 +4845,6 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve()
   }
 
   return linsolve_error;
-}
-
-/*-----------------------------------------------------------------------------*
- * update the field vectors to account for new node               sudhakar 12/13
- * introduced by crack propagation
- *----------------------------------------------------------------------------*/
-void STR::TimIntImpl::updateEpetraVectorsCrack( std::map<int,int>& oldnew )
-{
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disi_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fres_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, freact_, oldnew );
-
-  updateMethodSpecificEpetraCrack( oldnew );
 }
 
 /*-----------------------------------------------------------------------------*

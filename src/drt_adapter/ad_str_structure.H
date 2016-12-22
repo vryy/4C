@@ -501,20 +501,8 @@ namespace ADAPTER {
     /// set structure displacement vector due to biofilm growth
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
 
-    //! @name Crack propagation specific methods
-    //@{
-    /// Propagate crack within the structure and accordingly modify the discretization
-    virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace) = 0;
-
     /// Write Gmsh output for structural field
     virtual void writeGmshStrucOutputStep() = 0;
-
-    /// Get map of newly introduced node ids with their corresponding old node ids
-    virtual std::map<int,int> getOldNewCrackNodes() = 0;
-
-    /// Get new crack tip nodes after propagation
-    virtual std::vector<int> GetCrackTipNodes() = 0;
-    //@}
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;

@@ -333,8 +333,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
-  reader.ReadGidSection("--CRACK", *list);
-  reader.ReadGidSection("--FSI CRACK", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
@@ -1214,7 +1212,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
   case prb_fsi_xfem:
   case prb_fluid_xfem:
-  case prb_fsi_crack:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1682,7 +1679,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_crack:
   case prb_struct_ale: // structure with ale
   {
     // create empty discretizations
@@ -2244,7 +2240,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_structure:
-    case prb_crack:
     case prb_invana:
     {
       // read microscale fields from second, third, ... inputfile if necessary

@@ -132,16 +132,6 @@ namespace UTILS
     const int nsd                                    ///< number of space dimensions
     );
 
-  /// For the given Epetra_Vector, equate the values at dofs of global node ids, original and copy.
-  /// Both original and copy nodes should be owned by the same processor
-  /*  \author sudhakar
-   *  \date 12/13
-   */
-  void EquateValuesAtTheseNodes( Epetra_Vector& vec,                      ///< given vector
-                                 Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
-                                 int original,                            ///< id of original node. Values are copied from this node
-                                 int copy );                              ///< id of node to which copied values are set
-
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /// and fill a local matrix that has implemented the (.,.) operator
   /*  \author g.bau

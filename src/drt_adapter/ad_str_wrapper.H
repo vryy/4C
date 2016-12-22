@@ -313,6 +313,9 @@ namespace ADAPTER
     virtual void Output(bool forced_writerestart = false)
     { structure_->Output(forced_writerestart); return; }
 
+    /// Write Gmsh output for structural field
+    virtual void writeGmshStrucOutputStep() { structure_->writeGmshStrucOutputStep(); return; }
+
     /// output results to screen
     virtual void PrintStep()
     { structure_->PrintStep(); return; }
@@ -454,23 +457,6 @@ namespace ADAPTER
 
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
     { structure_->SetStrGrDisp(struct_growth_disp); return; }
-
-    //@}
-
-    //! @name Crack specific methods
-    //@{
-
-    /// Propagate crack within the structure and accordingly modify the discretization
-    virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace){ return structure_->UpdateCrackInformation( displace ); }
-
-    /// Write Gmsh output for structural field
-    virtual void writeGmshStrucOutputStep() { structure_->writeGmshStrucOutputStep(); return; }
-
-    /// Get map of newly introduced node ids with their corresponding old node ids
-    virtual std::map<int,int> getOldNewCrackNodes(){ return structure_->getOldNewCrackNodes(); }
-
-    /// Get current crack tip nodes
-    virtual std::vector<int> GetCrackTipNodes(){ return structure_->GetCrackTipNodes(); }
 
     //@}
 

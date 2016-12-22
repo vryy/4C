@@ -3381,9 +3381,6 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   // STEP 2:               SEMILAGRANGE RECONSTRUCTION of std values
   //------------------------------------------------------------------------------------
-  //if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  //  return;  // Do nothing in time integration----> active for crack-fsi problem ???
-
   if(timint_semi_lagrangean)
   {
     Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
@@ -3510,12 +3507,8 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
   if(firstcall_in_timestep) // for the first iteration we allow the standard reconstruction method as we again reconstruct w.r.t t^n
     timint_method = xfluid_timintapproach_;
   else // for further iterations we just allow for simple copying and ghost-penalty reconstruction
-  {
-    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-      timint_method = xfluid_timintapproach_; // for partitioned fsi with crack we allow e.g. also to use semi-lagrangean
-    else // for monolithic fsi and also for partitioned fsi it is the best not to allow semi-lagrangean
-      timint_method = INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP;
-  }
+    // for monolithic fsi and also for partitioned fsi it is the best not to allow semi-lagrangean
+    timint_method = INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP;
 
   //-----------------------------time integration----------------------
 
@@ -3631,12 +3624,6 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
     }
     else
     {
-      if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-      {
-        IO::cout << "WARNING: CRACK-Application: XTimint_DoIncrementStepTransfer required Semilagrangean algorithm in this iteration! Switch to steady state-predictor! Note: you loose information from the last iteration and start the Fluid-Newton from the stead-state predictor again!" << IO::endl;
-        return false;
-      }
-
       // How to perform a good prediction as startvalue when restarting the monolithic Newton is required
       // and simple copying is not possible???
 
@@ -4765,201 +4752,6 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::RHS_s_Vec(const std::string & cond_name
   const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
   return state_->coup_state_[coup_idx]->rhC_s_;
 }
-
-
-
-/*---------------------------------------------------------------------------------------------*
- * Define crack tip elements from given nodes                                 sudhakar 09/13
- * Add them to boundary discretization
- *---------------------------------------------------------------------------------------------*/
-/*void FLD::XFluid::addCrackTipElements( const std::vector<int>* tipNodes )
-{
-  if( not tipNodes->size() == 4 )
-    dserror( "at the moment handle only one element in z-direction -- pseudo-2D" );
-
-  int nodeids[4]={0,0,0,0};
-  std::vector<double> eqn_plane(4), eqn_ref(4);
-
-  std::cout<<"number of points = "<<tipNodes->size()<<"\n";
-
-  if ( tipNodes->size() == 3 )
-    dserror("at the moment handling triangular elements is not possible\n");
-
-  else if( tipNodes->size() == 4 )
-  {
-    std::vector<int>::const_iterator it = tipNodes->begin();
-
-    DRT::Node * n1 = soliddis_->gNode(*it);
-    DRT::Node * n2 = soliddis_->gNode(*++it);
-    DRT::Node * n3 = soliddis_->gNode(*++it);
-    DRT::Node * n4 = soliddis_->gNode(*++it);
-
-    const double * x1 = n1->X();
-    const double * x2 = n2->X();
-    const double * x3 = n3->X();
-    const double * x4 = n4->X();
-
-    // Find equation of plane and project the QUAD which is in x-y-z space
-    // into appropriate coordinate plane
-
-    eqn_plane[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
-    eqn_plane[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
-    eqn_plane[2] = x1[0]*(x2[1]-x3[1])+x2[0]*(x3[1]-x1[1])+x3[0]*(x1[1]-x2[1]);
-    eqn_plane[3] = x1[0]*(x2[1]*x3[2]-x3[1]*x2[2])+x2[0]*(x3[1]*x1[2]-x1[1]*x3[2])+x3[0]*(x1[1]*x2[2]-x2[1]*x1[2]);
-
-    std::string projPlane = "";
-    GEO::CUT::KERNEL::FindProjectionPlane( projPlane, eqn_plane );
-
-    int ind1=0,ind2=0;
-    if( projPlane=="x" )
-    {
-      ind1 = 1;
-      ind2 = 2;
-    }
-    else if( projPlane=="y" )
-    {
-      ind1 = 2;
-      ind2 = 0;
-    }
-    else if( projPlane=="z" )
-    {
-      ind1 = 0;
-      ind2 = 1;
-    }
-
-    // Now we should decide the correct ordering of these  vertices to form
-    // non-intersecting QUAD element
-    // This is very simple in our case because the QUAD is always convex
-    // We first decide the middle point of QUAD (xm,ym)
-    // Decide the sign of ((xi-xm), (yi-ym)) at each point
-    // Choose any one as a starting point. The next point in correct order
-    // should change sign only in one coordinate : either in (xi-xm) or in (yi-ym)
-    //
-    //         (-,+)                              (+,+)
-    //            *---------------------------------*
-    //            |                                 |
-    //            |                                 |
-    //            |             o                   |
-    //            |           (xm,ym)               |
-    //            |                                 |
-    //            |                                 |
-    //            |                                 |
-    //            *---------------------------------*
-    //          (-,-)                             (+,-)
-    //
-    //
-
-    double xm=0.0, ym=0.0;
-    xm = 0.25*( x1[ind1] + x2[ind1] + x3[ind1] + x4[ind1] );
-    ym = 0.25*( x1[ind2] + x2[ind2] + x3[ind2] + x4[ind2] );
-
-
-    for(std::vector<int>::const_iterator i=tipNodes->begin(); i!=tipNodes->end(); i++ )
-    {
-      const int m = *i;
-      const double *x = soliddis_->gNode( m )->X();
-
-      if( (x[ind1] - xm) < 0.0 and (x[ind2] - ym) > 0.0 )
-        nodeids[0] = m;
-      else if( (x[ind1] - xm) > 0.0 and (x[ind2] - ym) > 0.0 )
-        nodeids[1] = m;
-      else if( (x[ind1] - xm) > 0.0 and (x[ind2] - ym) < 0.0 )
-        nodeids[2] = m;
-      else if( (x[ind1] - xm) < 0.0 and (x[ind2] - ym) < 0.0 )
-        nodeids[3] = m;
-      else
-        dserror("can centre point of Quad be inline with one of the vertices for convex Quad?");
-    }
-  }
-
-  else
-    dserror("interface element should be either Tri or Quad\n");
-
-  // Now that we have formed a non-intersecting Quad shape
-  // It is mandatory to check whether the normal from this element is pointing in the right direction
-  // To do this, we take the element which shares one of the nodes of the tip element
-  // and check whether the normals are consistent
-  bool reverse = false, check=false;
-
-  const int numrowele = boundarydis_->NumMyRowElements();
-  for (int i=0; i<numrowele; ++i)
-  {
-    DRT::Element* actele = boundarydis_->lRowElement(i);
-
-    const int* idnodes = actele->NodeIds();
-    for( int j=0; j<actele->NumNode(); j++ )
-    {
-      const int id = idnodes[j];
-      if( id == *tipNodes->begin() )
-      {
-        check = true;
-        break;
-      }
-    }
-
-    if( check )
-    {
-      const double * x1 = boundarydis_->gNode( idnodes[0] )->X();
-      const double * x2 = boundarydis_->gNode( idnodes[1] )->X();
-      const double * x3 = boundarydis_->gNode( idnodes[2] )->X();
-
-      eqn_ref[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
-      eqn_ref[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
-      eqn_ref[2] = x1[0]*(x2[1]-x3[1])+x2[0]*(x3[1]-x1[1])+x3[0]*(x1[1]-x2[1]);
-      eqn_ref[3] = x1[0]*(x2[1]*x3[2]-x3[1]*x2[2])+x2[0]*(x3[1]*x1[2]-x1[1]*x3[2])+x3[0]*(x1[1]*x2[2]-x2[1]*x1[2]);
-
-      if( ((eqn_plane[0] * eqn_ref[0]) > 1e-8 and (eqn_plane[0] * eqn_ref[0]) < 0.0) or
-          ((eqn_plane[1] * eqn_ref[1]) > 1e-8 and (eqn_plane[1] * eqn_ref[1]) < 0.0) or
-          ((eqn_plane[2] * eqn_ref[2]) > 1e-8 and (eqn_plane[2] * eqn_ref[2]) < 0.0) )
-      {
-        reverse = true;
-        break;
-      }
-    }
-  }
-
-  if( not check )
-    dserror("no element in boundary discretization that shares a node in crack tip?");
-
-  std::cout<<"ref eqn = "<<eqn_ref[0]<<"\t"<<eqn_ref[1]<<"\t"<<eqn_ref[2]<<"\t"<<eqn_ref[3]<<"\n";
-
-  // Add proper tip element to the boundary discretization
-  if ( tipNodes->size() == 3 )          // add Tri3 element
-  {
-    int finalids[3] = { nodeids[0], nodeids[1], nodeids[2] };
-    if( reverse )
-    { finalids[0] = nodeids[2]; finalids[2] = nodeids[0]; }
-
-    int neweleid = boundarydis_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3_3","tri3", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
-    spr->SetNodeIds( 3, finalids );
-    //spr->Print(std::cout);
-    boundarydis_->AddElement( spr );
-    boundarydis_->FillComplete();
-
-    crackTip_[neweleid] = spr;
-  }
-
-  else if ( tipNodes->size() == 4 )   // add Quad4 element
-  {
-    int finalids[4] = { nodeids[0], nodeids[1], nodeids[2], nodeids[3] };
-
-    if( reverse )
-    { finalids[0] = nodeids[3]; finalids[1] = nodeids[2]; finalids[2] = nodeids[1]; finalids[3] = nodeids[0]; }
-
-    int neweleid = boundarydis_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3_3","quad4", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
-    spr->SetNodeIds( 4, finalids );
-    spr->Print(std::cout);
-    boundarydis_->AddElement( spr );
-    boundarydis_->FillComplete();
-
-    crackTip_[neweleid] = spr;
-
-  }
-  else
-    dserror("Tip element should be either Tri or Quad\n");
-}*/
 
 /*------------------------------------------------------------------------------------------------*
  | create field test

@@ -311,9 +311,6 @@ namespace STR
       return Teuchos::null;
     }
 
-    /// update all the field vectors to account for new node introduced by crack
-    void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) { dserror( "not implemented yet" ); }
-
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {

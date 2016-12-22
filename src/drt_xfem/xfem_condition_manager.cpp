@@ -84,7 +84,6 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfFSIPart");
     conditions_to_check.push_back("XFEMSurfFSIMono");
     conditions_to_check.push_back("XFEMSurfFPIMono");
-    conditions_to_check.push_back("XFEMSurfCrackFSIPart");
     conditions_to_check.push_back("XFEMSurfFluidFluid");
     conditions_to_check.push_back("XFEMSurfNavierSlip");
 

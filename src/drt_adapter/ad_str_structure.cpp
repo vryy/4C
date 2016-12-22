@@ -22,7 +22,6 @@
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"
-#include "ad_str_fsi_crack.H"
 #include "ad_str_ssiwrapper.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_fsiwrapper_immersed.H"
@@ -46,7 +45,6 @@
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_meshfree.H"
-#include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -60,7 +58,6 @@
 
 #include "../drt_io/io_pstream.H"
 
-#include "../drt_crack/InsertCohesiveElements.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -148,25 +145,12 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
   if(mtcond.size()==0 and ccond.size()!=0)
     onlycontact = true;
 
-  // Problem-types involving changing mesh (like crack) or redistribution of mesh
+  // Problem-types involving changing mesh or redistribution of mesh
   // for load balancing (like particle or contact) during the simulation needs an additional step.
   // This is because the discretization read from the input file
   // do not match with the discr. at the current time step.
   // Here we read the discretization at the current time step from restart files
-  const int restart = DRT::Problem::Instance()->Restart();
-  if ( restart and probtype == prb_crack )
-  {
-    IO::DiscretizationReader reader(actdis, restart);
-    reader.ReadMesh(restart);
-
-    // repartition problem for a good load distribution in case of altered number of procs
-    if(reader.GetNumOutputProc(restart) != actdis->Comm().NumProc())
-    {
-      DRT::UTILS::WeightedRepartitioning(actdis, true, true, true);
-    }
-  }
-  // set degrees of freedom in the discretization
-  else if (not actdis->Filled() || not actdis->HaveDofs())
+  if (not actdis->Filled() || not actdis->HaveDofs())
     actdis->FillComplete();
 
   // get input parameter lists and copy them, because a few parameters are overwritten
@@ -322,20 +306,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
     }
   }
 
-  // Add cohesive elements in case of crack propagation simulations
-  {
-    const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
-    if (DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
-          == INPAR::CRACK::crack_cohesive)
-    {
-      //if( (not DRT::Problem::Instance()->Restart()) and DRT::Problem::Instance()->ProblemType() == prb_structure )
-      {
-        Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-        DRT::CRACK::InsertCohesiveElements isp( structdis );
-      }
-    }
-  }
-
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN"))
@@ -414,7 +384,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
     switch (probtype)
     {
       case prb_structure: // pure structural time adaptivity
-      case prb_crack:
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;
@@ -483,11 +452,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
     case prb_ssi:
     {
       structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
-    }
-    break;
-    case prb_fsi_crack:
-    {
-      structure_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))))));
     }
     break;
     case prb_redairways_tissue:

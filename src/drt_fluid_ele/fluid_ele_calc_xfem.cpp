@@ -979,7 +979,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
       if( cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
           cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-          cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
           cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
@@ -1619,7 +1618,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
@@ -3347,7 +3345,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
@@ -3855,7 +3852,6 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-  case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   {
     // evaluate function at nodes at current time
     si->GetInterfaceJumpVelnp(ivelint_jump);
@@ -4002,7 +3998,6 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
-  case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   {
     // evaluate function at nodes at current time
     si->GetInterfaceJumpVeln(ivelintn_jump);

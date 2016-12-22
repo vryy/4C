@@ -14,7 +14,6 @@
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_crack/crackUtils.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 
@@ -490,16 +489,6 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
   finert->PutScalar(0.0);
   output->WriteVector("finert",finert);
   return;
-}
-
-/*-----------------------------------------------------------------------------*
- * Update all field vectors defined specific for this method,     sudhakar 12/13
- * to take into account of the new nodes introduced by crack propagation
- *----------------------------------------------------------------------------*/
-void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
-{
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
 }
 
 /*---------------------------------------------------------------*/

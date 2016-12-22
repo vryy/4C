@@ -134,7 +134,6 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==XFEM_Surf_FSIPart)             os << "XFEM Surface partitioned XFSI boundary condition: ";
   else if (Type()==XFEM_Surf_FSIMono)             os << "XFEM Surface monolithic XFSI coupling condition: ";
   else if (Type()==XFEM_Surf_FPIMono)             os << "XFEM Surface monolithic XPSI coupling condition: ";
-  else if (Type()==XFEM_Surf_CrackFSIPart)        os << "XFEM Surface partitioned Crack XFSI boundary condition: ";
   else if (Type()==XFEM_Surf_FluidFluid)          os << "XFEM Surface Fluid-Fluid coupling condition: ";
   else if (Type()==XFEM_Surf_Weak_Dirichlet)      os << "XFEM Surface weak Dirichlet boundary condition: ";
   else if (Type()==XFEM_Surf_Neumann)             os << "XFEM Surface Neumann boundary condition: ";
@@ -244,12 +243,6 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ParticlePeriodic)              os << "particle periodic boundary condition";
   else if (Type()==ParticleWall)                  os << "particle wall condition";
   else if (Type()==ParticleHeatSource)            os << "particle heat source condition";
-  else if (Type()==CrackMastersurface)            os << "Master crack surface";
-  else if (Type()==CrackSlavesurface)             os << "Slave crack surface";
-  else if (Type()==CrackBoundaryPoints)           os << "Crack boundary points";
-  else if (Type()==CrackInitPoints)               os << "Crack Initiation points";
-  else if (Type()==CrackInnerLayerPoints)         os << "Inner layer crack points";
-  else if (Type()==CrackOuterLayerPoints)         os << "Outer layer crack points";
   else if (Type()==SurfaceModeKrylovProjection)   os << "Surface mode for Krylov space projection";
   else if (Type()==VolumeModeKrylovProjection)    os << "Volume mode for Krylov space projection";
   else if (Type()==SurfaceCurrent)                os << "Surface Current Evaluation";

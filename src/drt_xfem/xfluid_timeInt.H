@@ -204,13 +204,6 @@ public:
       const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
   );
 
-  /// special check for crack applications
-  bool SpecialCheck_Crack(
-      bool&                                                          changed_side,        /// did the node change the side ?
-      const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
-      const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
-  );
-
   /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
   bool SpecialCheck_InterfaceTips(
       bool&                                                          changed_side,        /// did the node change the side ?

@@ -20,7 +20,6 @@
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
-#include "fsi_dirichletneumanncrack.H"
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
@@ -773,16 +772,8 @@ void xfsi_drt()
 
     if (method==INPAR::FSI::DirichletNeumann)
     {
-      if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-      {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumann_Crack(comm));
-        fsi->Setup();
-      }
-      else
-      {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-        fsi->Setup();
-      }
+      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+      fsi->Setup();
     }
     else
       dserror("only Dirichlet-Neumann partitioned schemes with XFEM");

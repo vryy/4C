@@ -24,7 +24,6 @@
 #include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_crack/crackUtils.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 /*----------------------------------------------------------------------*/
@@ -917,68 +916,6 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrite
   output->WriteVector("fint",fint_);
   output->WriteVector("finert",finert_);
   return;
-}
-
-/*-----------------------------------------------------------------------------*
- * Update all field vectors defined specific for this method,     sudhakar 12/13
- *  to take into account of the new nodes introduced by crack propagation
- *----------------------------------------------------------------------------*/
-void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
-{
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dism_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, velm_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accm_, oldnew );
-
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fint_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintm_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );
-
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fext_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextm_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
-
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finert_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finertm_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finertn_, oldnew );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fviscm_, oldnew );
-
-  // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
-
-  if (!HaveNonlinearMass())
-  {
-    // determine mass, damping and initial accelerations
-    DetermineMassDampConsistAccel();
-  }
-  else
-  {
-    /* the case of nonlinear inertia terms works so far only for examples with
-     * vanishing initial accelerations, i.e. the initial external forces and
-     * initial velocities have to be chosen consistently!!!
-     */
-    (*acc_)(0)->PutScalar(0.0);
-  }
-
-  ApplyForceStiffExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
-
-    // create parameter list
-    Teuchos::ParameterList params;
-
-  if (!HaveNonlinearMass())
-  {
-    // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, params);
-  }
-  else
-  {
-    double timeintfac_dis=beta_*(*dt_)[0]*(*dt_)[0];
-    double timeintfac_vel=gamma_*(*dt_)[0];
-
-    // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
-
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
-  }
 }
 
 /*-----------------------------------------------------------------------------*

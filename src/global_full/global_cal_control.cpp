@@ -62,7 +62,6 @@ void ntacal()
   switch (DRT::Problem::Instance()->ProblemType())
   {
     case prb_structure:
-    case prb_crack:
       caldyn_drt();
       break;
     case prb_fluid:
@@ -102,7 +101,6 @@ void ntacal()
       fsi_ale_drt();
       break;
     case prb_fsi_xfem:
-    case prb_fsi_crack:
       xfsi_drt();
       break;
     case prb_fpsi_xfem:

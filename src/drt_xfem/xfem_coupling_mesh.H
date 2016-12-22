@@ -688,55 +688,6 @@ protected:
 };
 
 
-
-/// class which allows to manipulate the boundary dis and to deal with crack specific staff
-class MeshCouplingFSICrack : public MeshCouplingFSI
-{
-public:
-
-  //! constructor
-  explicit MeshCouplingFSICrack(
-      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
-      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
-      const int                           coupling_id,///< id of composite of coupling conditions
-      const double                        time,      ///< time
-      const int                           step       ///< time step
-  );
-
-  //! destructor
-  virtual ~MeshCouplingFSICrack()
-  {
-    return;
-  }
-
-  /// set new cutter discretization
-  void SetCutterDis(Teuchos::RCP<DRT::Discretization> cutter_dis_new);
-
-  void InitCrackInitiationsPoints();
-
-  //! set the nodes representing crack tip in FSI with crack structure simulations
-  void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip_nodes )
-  {
-    tip_nodes_.clear();
-    if( tip_nodes.size() > 0 )
-      tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
-  }
-
-  //! get the nodes representing crack tip in FSI with crack structure simulations
-  std::map<int, LINALG::Matrix<3,1> > & GetCrackTipNodes(){ return tip_nodes_; };
-
-  void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
-
-
-private:
-
-  std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
-
-  Teuchos::RCP<DRT::Discretization> cutterdis_init_output_;
-
-};
-
 /*!
 \brief specialized class for coupling with an embedded fluid discretization
   \author kruse
