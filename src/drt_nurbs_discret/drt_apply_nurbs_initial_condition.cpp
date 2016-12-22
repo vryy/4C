@@ -11,7 +11,7 @@
             089 - 289-15271
 
 \level 2
-
+*/
 /*----------------------------------------------------------------------*/
 #include "drt_apply_nurbs_initial_condition.H"
 #include "../drt_lib/drt_globalproblem.H"
