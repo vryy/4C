@@ -1082,7 +1082,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
       LINALG::SplitMatrix2x2(F_sm,fgsdofrowmap_,fgmdofrowmap_,domainmap,tempmap0,F_s,F_s0,F_m,F_m0);
 
       // store some stuff for static condensation of LM
-      csx_s_.insert(std::pair<int,Teuchos::RCP<LINALG::SparseMatrix> >(Column_Block_Id,F_s));
+      cfx_s_.insert(std::pair<int,Teuchos::RCP<LINALG::SparseMatrix> >(Column_Block_Id,F_s));
 
       /**********************************************************************/
       /* (5) Split slave quantities into active / inactive                  */
@@ -1232,7 +1232,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
   std::map<int,Teuchos::RCP<Epetra_Vector> > incm;
   incm.insert(std::pair<int, Teuchos::RCP<Epetra_Vector> >(0,inc));
 
-  RecoverCoupled(disi,incm);
+  RecoverPoroNoPen(disi,incm);
   return;
 }
 
