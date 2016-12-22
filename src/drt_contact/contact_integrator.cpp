@@ -12913,7 +12913,7 @@ double inline CONTACT::CoIntegrator::TDetDeformationGradient(
       {
         for (unsigned int j=0;j<dim;++j)
         {
-          JLin[sele.MoData().ParentDof()[inode*dim+i]] += J*pderiv_loc(j,inode)*xjm(i,j);
+          JLin[sele.MoData().ParentDof().at(inode*dim+i)] += J*pderiv_loc(j,inode)*xjm(i,j);
 //          auxJLin(idof,inode)+=J*pderiv_loc(j,inode)*xjm(i,j); //matrix that could be filled with linearizations
         }
       }

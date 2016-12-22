@@ -89,7 +89,7 @@ class MonoCoupledLagrangeStrategy : public CoLagrangeStrategy
     virtual void ApplyForceStiffCmtCoupled(
                                       Teuchos::RCP<Epetra_Vector> dis,
                                       Teuchos::RCP<LINALG::SparseOperator>& k_ss,
-                                      std::map<int,Teuchos::RCP<LINALG::SparseOperator> > k_sx,
+                                      std::map<int,Teuchos::RCP<LINALG::SparseOperator>* > k_sx,
                                       Teuchos::RCP<Epetra_Vector>& rhs_s,
                                       const int step,
                                       const int iter,

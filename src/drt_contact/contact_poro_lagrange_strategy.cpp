@@ -2,9 +2,9 @@
 /*!
 \file contact_poro_lagrange_strategy.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Contact Strategy handling the porous no penetraction condition on the active contact interface
 
-\level 2
+\level 3
 
 \maintainer Christoph Ager
 
@@ -27,6 +27,11 @@
 
 #include "../drt_lib/drt_utils.H"
 
+// this is not nice, but since there is no chance at them moment to set the
+// full displacement during a restart from outside before the contact tries to
+// evaluate I'm force to do this atm...
+#include "../drt_lib/drt_globalproblem.H"
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
@@ -43,7 +48,7 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
     bool poroslave,
     bool poromaster):
     MonoCoupledLagrangeStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-    no_penetration_(false),
+    no_penetration_(params.get<bool>("CONTACTNOPEN")),
     nopenalpha_(0.0),
     poroslave_(poroslave),
     poromaster_(poromaster)
@@ -54,11 +59,44 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
 }
 
 /*----------------------------------------------------------------------*
+ |  read restart information for contact                      ager 12/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::DoReadRestart(
+    IO::DiscretizationReader& reader,
+    Teuchos::RCP<const Epetra_Vector> dis,
+    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
+{
+  Teuchos::RCP<DRT::Discretization> discret = DRT::Problem::Instance()->GetDis("structure");
+  if (discret==Teuchos::null) dserror("didn't get my discretization");
+
+  Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*discret->DofColMap(),true));
+  // it's clear that we get some zeros here ... but poroelast monolithic fixes this a little bit later
+  // by doing the same thing with correct displacements again :-)
+  LINALG::Export(*dis,*global);
+  SetParentState("displacement",global,discret);
+
+  //Call (nearly absolute)Base Class
+  CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis,cparams_ptr);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup this strategy object                                ager 12/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::Setup(bool redistributed, bool init)
+{
+  //Call Base Class
+  CONTACT::CoAbstractStrategy::Setup(redistributed,init);
+
+  if(no_penetration_)
+    SetupNoPenetrationCondition();
+}
+
+/*----------------------------------------------------------------------*
  | Activate No-Penetration for the contact surface (public)   ager 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroLagrangeStrategy::SetupNoPenetrationCondition()
 {
-  no_penetration_ = true;
   lambda_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
   lambdaold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
   if(!poroslave_ and poromaster_)
@@ -440,16 +478,16 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
  |  condition on contact surface(public)                         ager 07/15|
  *------------------------------------------------------------------------*/
 void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff,
-                                                             std::map<int,Teuchos::RCP<LINALG::SparseMatrix> >& Feff,
+                                                             std::map<int,Teuchos::RCP<LINALG::SparseMatrix>* >& Feff,
                                                              Teuchos::RCP<Epetra_Vector>& feff)
 {
   EvaluateMatPoroNoPen(k_fseff,feff);
 
   //Take care of the alternative condensation of the off-diagonal blocks!!!
-  std::map<int,Teuchos::RCP<LINALG::SparseMatrix> >::iterator matiter;
+  std::map<int,Teuchos::RCP<LINALG::SparseMatrix>* >::iterator matiter;
   for (matiter=Feff.begin(); matiter!=Feff.end(); ++matiter)
   {
-    EvaluateOtherMatPoroNoPen(matiter->second,matiter->first);
+    EvaluateOtherMatPoroNoPen(*(matiter->second),matiter->first);
   }
 }
 
@@ -1206,7 +1244,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (no_penetration_ && !IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!no_penetration_ || (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())) return;
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");

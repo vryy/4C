@@ -228,6 +228,9 @@ namespace POROELAST
       //Setup solver for monolithic system
       virtual bool SetupSolver();
 
+      /// read restart data
+      virtual void ReadRestart(const int step);
+
     protected:
 
       void Aitken();
@@ -344,7 +347,7 @@ namespace POROELAST
       //! @name poro-contact
 
       /// apply current velocity of fluid  to ContactMangager if contact problem
-      void SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+      void SetPoroContactStates();
 
       // assemble relevant matrixes for porocontact and meshtying
       void EvalPoroMortar();

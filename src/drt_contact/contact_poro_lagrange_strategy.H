@@ -2,9 +2,9 @@
 /*!
 \file contact_poro_lagrange_strategy.H
 
-\brief ToDo Add meaningful comment.
+\brief Contact Strategy handling the porous no penetraction condition on the active contact interface
 
-\level 2
+\level 3
 
 \maintainer Christoph Ager
 
@@ -66,6 +66,22 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
+    virtual void DoReadRestart(IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+
+    /*! \brief Setup this strategy object (maps, vectors, etc.)
+
+     All global maps and vectors are initialized by collecting
+     the necessary information from all interfaces. In the case
+     of a parallel redistribution, this method is called again
+     to re-setup the above mentioned quantities. In this case
+     we set the input parameter redistributed=TRUE. Moreover,
+     when called for the first time (in the constructor) this
+     method is given the input parameter init=TRUE to account
+     for initialization of the active set. */
+    virtual void Setup(bool redistributed, bool init);
+
     /*!
     /brief Activate the No Penetration Condition for the active contact surface!
      */
@@ -118,7 +134,7 @@ namespace CONTACT
      condition on contact surface
     */
     void EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff,
-                                  std::map<int,Teuchos::RCP<LINALG::SparseMatrix> >& Feff,
+                                  std::map<int,Teuchos::RCP<LINALG::SparseMatrix>* >& Feff,
                                   Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!

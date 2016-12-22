@@ -134,17 +134,9 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
   // TODO: clean up as soon as old time integration is unused!
   if(oldstructimint_)
     if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
-    {
       if (StructureField()->MeshtyingContactBridge()->HaveContact())
-      {
-        const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-        if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
-        {
-          no_penetration_ = true;
-          (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).SetupNoPenetrationCondition();
-        }
-      }
-    }
+        no_penetration_ = (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).HasPoroNoPenetration();
+
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
   //contact no penetration constraint not yet works for non-matching structure and fluid discretizations
@@ -305,7 +297,7 @@ void POROELAST::Monolithic::Evaluate(
 
   // apply current velocity of fluid to ContactMangager if contact problem
   if (no_penetration_)
-    SetPoroContactStates(sx,fx); //ATM svel is set in structure evaluate as the vel of the structure is evaluated there ...
+    SetPoroContactStates(); //ATM svel is set in structure evaluate as the vel of the structure is evaluated there ...
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   UpdaterIterIncrementally(sx),
@@ -2012,9 +2004,7 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RC
 /*-----------------------------------------------------------------------/
 |  Set Contact States                                    ager 07/14      |
 /-----------------------------------------------------------------------*/
-void POROELAST::Monolithic::SetPoroContactStates(
-    Teuchos::RCP<const Epetra_Vector> sx,
-    Teuchos::RCP<const Epetra_Vector> fx)
+void POROELAST::Monolithic::SetPoroContactStates()
 {
   // TODO: clean up as soon as old time integration is unused!
   if(oldstructimint_)
@@ -2202,6 +2192,20 @@ void POROELAST::Monolithic::ComputeInvRowSums(
   return;
 } // POROELAST::Monolithic::ComputeInvRowSums
 
+/*----------------------------------------------------------------------*
+ | read restart information for given time step (public)    ager 12/16  |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::ReadRestart(const int step)
+{
+  //call base class
+  POROELAST::PoroBase::ReadRestart(step);
+
+  //set states for porous contact
+  // apply current velocity of fluid to ContactMangager if contact problem
+  if (no_penetration_)
+    SetPoroContactStates();
+
+} // POROELAST::Monolithic::ReadRestart
 
 /*----------------------------------------------------------------------*
  | copy from scatra meshtying   fang 06/15                              |
