@@ -431,6 +431,8 @@ struct ConvoluteDk {
  * in your trilinos. When using one of the /lnm/lib versions, baci will simply fall back to Kokkos::Serial
  * mode although having HAVE_OpenMP=ON, since Kokkos doesn't provide the OpenMP macro.
  *
+ * -----------------------------
+ * GNU OpenMP implementation on workstations:
  * ATTENTION: In the case of a fully working OpenMP built, the user has to define a binding of mpi-ranks
  * to threads/cores manually as arguments to mpirun whenever having > 2 mpi-ranks.(For <=2 mpi-ranks there
  * is a default binding in OpenMPI). Not doing so probably results in an awfully slow baci for very basic
@@ -444,6 +446,17 @@ struct ConvoluteDk {
  * to each mpi-rank, whereby the PE are defined by the --bind-to argument to be cores. This would then use
  * all of your 6 cores, whereby each mpi-rank would use the 4 associated threads. Using --report-bindings
  * helps to see whether your binding does what you want.
+ *
+ * -----------------------------
+ * Intel OpenMP implementation on supermuc (Haswell nodes)
+ * Binding is not necessarily to be taken care of since the system already does. Just issue an
+ * export OMP_NUM_THREADS=<number of threads per mpi-rank>
+ * before your mpiexec call. Use KMP_AFFINITY to be more precise on binding, but it is usually not needed.
+ *
+ * Instead it is really important to build and link EVERYTHING against the Intel OpenMP implementation.
+ * "-qopenmp" is icpc's flag for compiling and linking. If you have loaded some modules (such as MKL)
+ * and you use specific variables like $MKL_LIB somewhere in your linking process, make sure there is no
+ * "-lgomp" (the gnu omp implementation) defined! (Use the serial MKL version e.g. mkl/11.3_s in case).
  *
  * \author kehl \date 11/2015
  */
