@@ -559,14 +559,8 @@ public:
   //! @name Global Data Extraction
   //@{
 
-  //! Get points reduced to mpi-rank rank
-  extract_type Points(int rank);
-
   //! Get Points reduced to all ranks
   extract_type Points();
-
-  //! Get Data reduced to mpi-rank rank
-  extract_type Data(int rank);
 
   //! Get Data reduced to all mpi-ranks
   extract_type Data();
@@ -646,10 +640,7 @@ private:
   //!@}
 
   //! @name Communicate distributed data around
-  //{@
-
-  //! Bring data to mpi-rank rank
-  void CommunicateData(extract_type& data, int rank);
+  //@{
 
   //! Bring data to all mpi-ranks
   void CommunicateData(extract_type& data);

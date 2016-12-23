@@ -53,7 +53,7 @@ KERNELSCALE                     0.5
 MEASVARESTIM                    0.01
 SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
-NUM_PARTICLES                   6
+NUM_PARTICLES                   24
 MAP_PRIOR_SCALE                 0.1
 MAP_REDUCT_RESTART              42
 MAP_REDUCT_RESTARTFILE          xxx

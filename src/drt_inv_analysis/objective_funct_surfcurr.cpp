@@ -347,8 +347,8 @@ double INVANA::SurfCurrentPair::WSpaceNorm()
 
   //-------------------------------------------------
   // All the points and the data reduced to myrank
-  extract_type x_source = tri_source_->Points(myrank);
-  extract_type disp = tri_source_->Data(myrank);
+  extract_type x_source = tri_source_->Points();
+  extract_type disp = tri_source_->Data();
   unsigned xsize=x_source.size();
 
   // View on all points of the source
@@ -416,8 +416,8 @@ void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector
 
   //-------------------------------------------------
   // All the points and the data reduced to myrank
-  extract_type x_source = tri_source_->Points(myrank);
-  extract_type disp = tri_source_->Data(myrank);
+  extract_type x_source = tri_source_->Points();
+  extract_type disp = tri_source_->Data();
   unsigned xsize=x_source.size();
 
   // View on all points of the source
@@ -937,18 +937,6 @@ void INVANA::Triangulation::ApplyNoise(const extract_type& normals, const extrac
 }
 
 /*----------------------------------------------------------------------*/
-INVANA::extract_type INVANA::Triangulation::Points(int rank)
-{
-  if (not haspoints_)
-    dserror("Points were not evaluated so far!");
-
-  // copy since we want to keep the original points
-  extract_type p(points_);
-  CommunicateData(p,rank);
-  return p;
-}
-
-/*----------------------------------------------------------------------*/
 INVANA::extract_type INVANA::Triangulation::Points()
 {
   if (not haspoints_)
@@ -957,18 +945,6 @@ INVANA::extract_type INVANA::Triangulation::Points()
   // copy since we want to keep the original points
   extract_type p(points_);
   CommunicateData(p);
-  return p;
-}
-
-/*----------------------------------------------------------------------*/
-INVANA::extract_type INVANA::Triangulation::Data(int rank)
-{
-  if (not hasdata_)
-    dserror("Data was not evaluated so far!");
-
-  // copy since we want to keep the original data
-  extract_type p(data_);
-  CommunicateData(p,rank);
   return p;
 }
 
@@ -1000,19 +976,6 @@ INVANA::extract_type INVANA::Triangulation::MyData()
     dserror("Data was not evaluated so far!");
 
   return data_;
-}
-
-/*----------------------------------------------------------------------*/
-void INVANA::Triangulation::CommunicateData(extract_type& data,int rank)
-{
-
-  Epetra_Map map_red(*LINALG::AllreduceEMap(*trimap_));
-
-  // build the exporter
-  DRT::Exporter ex(*trimap_,map_red,trimap_->Comm());
-
-  // export
-  ex.Export(data);
 }
 
 /*----------------------------------------------------------------------*/

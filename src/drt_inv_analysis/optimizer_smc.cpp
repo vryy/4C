@@ -192,9 +192,9 @@ void INVANA::OptimizerSMC::Integrate()
   // Set up vectors to hold the statistical evaluation
   Teuchos::RCP<Epetra_MultiVector> state = OptProb()->Matman()->GetRawParams();
   Teuchos::RCP<Epetra_MultiVector> mean_smc = Teuchos::rcp(new
-      Epetra_MultiVector(state->Map(),state->NumVectors(),false));
+      Epetra_MultiVector(state->Map(),state->NumVectors(),true));
   Teuchos::RCP<Epetra_MultiVector> stdev_smc = Teuchos::rcp(new
-      Epetra_MultiVector(state->Map(),state->NumVectors(),false));
+      Epetra_MultiVector(state->Map(),state->NumVectors(),true));
 
   // Set up Particle data
   std::map<int, Teuchos::RCP<INVANA::ParticleData> > data = Particles()->GetData();

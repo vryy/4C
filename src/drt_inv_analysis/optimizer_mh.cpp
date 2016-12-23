@@ -135,9 +135,9 @@ void INVANA::OptimizerMH::SetupParticles()
   //  the optimization parameters)
   Teuchos::RCP<Epetra_MultiVector> visstate = OptProb()->Matman()->GetRawParams();
   mean_ = Teuchos::rcp(new
-      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),false));
+      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),true));
   stddev_ = Teuchos::rcp(new
-      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),false));
+      Epetra_MultiVector(visstate->Map(),visstate->NumVectors(),true));
 
   return;
 }

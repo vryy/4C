@@ -33,9 +33,9 @@ STDOUTEVRY                      0
 STAT_INV_ANALYSIS               MonteCarloSMC
 LBFGSINITSCAL                   yes
 ITERTOPC                        100000
-RESTARTEVRY                     5
+RESTARTEVRY                     2
 PARAMLIST                       1 YOUNG
-MAXITER                         10
+MAXITER                         2
 STEPSIZE                        1.0
 CONVTOL                         1.0e-6
 INIT_TYPE                       dat
@@ -53,7 +53,7 @@ KERNELSCALE                     0.5
 MEASVARESTIM                    0.01
 SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
-NUM_PARTICLES                   6
+NUM_PARTICLES                   24
 MAP_PRIOR_SCALE                 0.1
 MAP_REDUCT_RESTART              42
 MAP_REDUCT_RESTARTFILE          xxx
