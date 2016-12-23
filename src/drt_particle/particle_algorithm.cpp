@@ -1357,9 +1357,12 @@ void PARTICLE::Algorithm::GetBinContent(
       walls.insert(walleles[iwall]);
 
     // gather heat sources
+    // it is a set so that there are no repetitions of the heat source
     if (heatSources != Teuchos::null)
+    {
       for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
         heatSources->insert(*iHS);
+    }
   }
 }
 

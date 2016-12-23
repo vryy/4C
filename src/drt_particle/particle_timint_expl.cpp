@@ -130,7 +130,7 @@ void PARTICLE::TimIntExpl::SetStatesForCollision()
   {
   case INPAR::PARTICLE::MeshFree :
   {
-    interHandler_->SetStateVectors(disn_,veln_,radiusn_,densityn_,specEnthalpyn_,mass_,temperature_,pressure_);
+    interHandler_->Init(disn_,veln_,radiusn_,densityn_,specEnthalpyn_,mass_,temperature_,pressure_);
     break;
   }
   case INPAR::PARTICLE::Normal_DEM_thermo :

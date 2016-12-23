@@ -207,6 +207,8 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
       // direct update of the accelerations
       interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_,specEnthalpyDotn_);
+      // clear vectors, keep memory
+      interHandler_->Clear();
     }
     else
       ComputeAcc(f_contact, m_contact, accn_, angAccn_);

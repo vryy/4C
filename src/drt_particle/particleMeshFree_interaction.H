@@ -32,6 +32,8 @@ namespace PARTICLE
   class WeightFunctionBase;
   struct WallContactPoint;
   struct ParticleMeshFreeData;
+  struct Interaction_Particles;
+  struct Interaction_Walls;
 
   /// struct to store wallMeshFree data for faster access
   struct WallMeshFreeData {
@@ -82,6 +84,30 @@ namespace PARTICLE
     //! @name Actions
     //@{
 
+    //! set up the object for the interaction computations
+    virtual void Init(
+        Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+        Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> temperature,
+        Teuchos::RCP<const Epetra_Vector> pressure);
+
+    /// clear content, keep memory
+    virtual void Clear();
+
+    /// compute collisions (inter-particle and particle-wall), returns contact energy
+    virtual void EvaluateParticleMeshFreeInteractions(
+      const Teuchos::RCP<Epetra_Vector> accn,
+      const Teuchos::RCP<Epetra_Vector> densityDotn,
+      const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+
+    //@}
+
+  protected:
+
     //! set state vectors (col type)
     virtual void SetStateVectors(
         Teuchos::RCP<const Epetra_Vector> disn,
@@ -97,45 +123,57 @@ namespace PARTICLE
     virtual void SetStateVectors_SecondRound(
         Teuchos::RCP<const Epetra_Vector> colorFieldGradientn);
 
-    /// calculate interaction with neighboring particles - second round
-    virtual void CalcNeighboringParticleMeshFreeInteraction_SecondRound(
-      const int lidNodeCol_i,
-      const std::list<DRT::Node*> neighboring_particles,
-      Teuchos::RCP<Epetra_Vector> accn);
+    /// determine the neighbors
+    virtual void SetNeighbours();
 
-    /// compute collisions (inter-particle and particle-wall), returns contact energy
-    virtual void EvaluateParticleMeshFreeInteractions(
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<Epetra_Vector> densityDotn,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+    // determine the neighbors - particles
+    void SetNeighbours_Particles(
+        const ParticleMeshFreeData& particle_i,
+        const std::list<DRT::Node*>& neighboring_particles);
 
-    //@}
+    // determine the neighbors - walls
+    void SetNeighbours_Walls(
+        const ParticleMeshFreeData& particle_i,
+        const std::set<DRT::Element*>& neighboring_walls,
+        const Teuchos::RCP<DRT::Discretization>& walldiscret,
+        const Teuchos::RCP<const Epetra_Vector>& walldisn,
+        const Teuchos::RCP<const Epetra_Vector>& wallveln);
 
-  protected:
+    // determine the neighbors - heat sources
+    void SetNeighbours_HeatSources(
+        const ParticleMeshFreeData& particle_i,
+        const std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>& neighboring_heatSources);
+
+    // print interactions
+    void PrintNeighbouringParticles();
 
     /// calculate interaction with neighboring particles
     virtual void CalcNeighboringParticleMeshFreeInteraction(
-      const int lidNodeCol_i,
-      const std::list<DRT::Node*> neighboring_particles,
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<Epetra_Vector> densityDotn,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
-      Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
+      const ParticleMeshFreeData& particle_i,
+      const std::list<Interaction_Particles> neighboringParticles,
+      const Teuchos::RCP<Epetra_Vector> accn,
+      const Teuchos::RCP<Epetra_Vector> densityDotn,
+      const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+      const Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
 
     /// calculate interaction with neighboring walls
     virtual void CalcNeighboringWallMeshFreeInteraction(
-      const int lidNodeCol_i,
-      const std::set<DRT::Element*>& neighboring_walls,
-      const Teuchos::RCP<DRT::Discretization>& walldiscret,
-      const Teuchos::RCP<const Epetra_Vector>& walldisn,
-      const Teuchos::RCP<const Epetra_Vector>& wallveln,
-      const Teuchos::RCP<Epetra_Vector>& accn,
-      Teuchos::RCP<Epetra_Vector> densityDotn);
+      const ParticleMeshFreeData& particle_i,
+      const std::list<Interaction_Walls>& neighbouringWalls,
+      const Teuchos::RCP<Epetra_Vector> accn,
+      const Teuchos::RCP<Epetra_Vector> densityDotn);
 
+    /// calculate interaction with heat sources
     virtual void CalcNeighboringHeatSourcesContact(
-      const int lidNodeCol_i,
-      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+      const ParticleMeshFreeData& particle_i,
+      const std::list<Teuchos::RCP<HeatSource> > neighboringHeatSources,
       const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
+
+    /// calculate interaction with neighboring particles - second round
+    virtual void CalcNeighboringParticleMeshFreeInteraction_SecondRound(
+      const ParticleMeshFreeData& particle_i,
+      const std::list<Interaction_Particles> neighbouringParticles,
+      const Teuchos::RCP<Epetra_Vector> accn);
 
     //! @name helper classes
     //@{
@@ -156,6 +194,15 @@ namespace PARTICLE
 
     /// temporary storage of particleMeshFree data
     std::vector<ParticleMeshFreeData> particleMeshFreeData_;
+
+    /// neighbours - particles
+    std::vector<std::list<Interaction_Particles> > neighbouringParticles_;
+
+    /// neighbours - heat sources
+    std::vector<std::list<Teuchos::RCP<HeatSource> > > neighbouringHeatSources_;
+
+    /// neighbours - heat sources
+    std::vector<std::list<Interaction_Walls> > neighbouringWalls_;
 
     /// weight function derivative pointer
     double (*weightDerivative_)(const double &, const double &);
@@ -221,6 +268,23 @@ namespace PARTICLE
    std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
    std::vector<int> lm;
    std::vector<int> lmowner;
+  };
+
+  /// struct to store some basic interaction data pvp
+  struct Interaction_Particles {
+    int lidCol_j;
+    LINALG::Matrix<3,1> rRelVersor_ij;
+    double weightDerivative_ij;
+    double weightDerivative_ji;
+    double rRelNorm2;
+  };
+
+  /// struct to store some basic interaction data pvw
+  struct Interaction_Walls {
+    int elemId;
+    LINALG::Matrix<3,1> rRelVersor;
+    double weightDerivative;
+    double rRelNorm2;
   };
 
   //@}

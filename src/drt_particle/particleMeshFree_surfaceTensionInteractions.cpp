@@ -39,7 +39,7 @@ double PARTICLE::SurfaceTensionInteractions::Cohesion(
 {
 
   double weight = 0;
-  if (disRel < radius/2)
+  if (2 * disRel < radius)
   {
     weight = 2 * std::pow(radius - disRel,3) * std::pow(disRel,3) - std::pow(radius,6)/64;
   }
