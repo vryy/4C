@@ -22,8 +22,6 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-#include "../drt_inpar/inpar_statmech.H"
-
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 
 DRT::ELEMENTS::Beam3Type& DRT::ELEMENTS::Beam3Type::Instance()

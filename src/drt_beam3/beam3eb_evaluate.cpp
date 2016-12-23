@@ -24,13 +24,14 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include <Epetra_CrsMatrix.h>
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include <Sacado.hpp>
+
+#include "../drt_inpar/inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -48,7 +49,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   if (IsParamsInterface())
-    SetStatMechParamsInterfacePtr();
+    SetBrownianDynParamsInterfacePtr();
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -1211,7 +1212,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnode);
 
   UpdateDispTotlag<nnode,dofpn>(disp,disp_totlag);
@@ -2202,7 +2203,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(Teuchos::ParameterList& pa
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
   LINALG::Matrix<ndim,1> r_s(true);
@@ -2286,7 +2287,7 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
 {
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnode);
 
   // update current total position state of element

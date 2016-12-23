@@ -27,7 +27,6 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
-#include "../drt_inpar/inpar_statmech.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
@@ -44,7 +43,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   if (IsParamsInterface())
-    SetStatMechParamsInterfacePtr();
+    SetBrownianDynParamsInterfacePtr();
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -1633,14 +1632,14 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(Teuchos::ParameterList& params,
 inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
-  gamma(0) = 2*PI*StatMechParamsInterface().GetEta();
-  gamma(1) = 4*PI*StatMechParamsInterface().GetEta();
+  gamma(0) = 2*PI*BrownianDynParamsInterface().GetViscosity();
+  gamma(1) = 4*PI*BrownianDynParamsInterface().GetViscosity();
 
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = std::pow((4*Iyy_/PI),0.5);
   double artificial = 4000;//1000;  //1000 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
-  gamma(2) = 4*PI*StatMechParamsInterface().GetEta()*rsquare*artificial;
+  gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity()*rsquare*artificial;
 
    /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
     * comparison of the finite element simulation with the results of that article; note that we assume that the element
@@ -1653,9 +1652,9 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
    double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
    double Ct=0.312+0.565/p-0.100/pow(p,2.0);
    double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-   gamma(0) = 2.0*PI*StatMechParamsInterface().GetEta()/(log(p) + 2*Ct - Cr);
-   gamma(1) = 4.0*PI*StatMechParamsInterface().GetEta()/(log(p)+Cr);
-   gamma(3) = 4.0*PI*StatMechParamsInterface().GetEta()*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/p^2);
+   gamma(0) = 2.0*PI*BrownianDynParamsInterface().GetViscosity()/(log(p) + 2*Ct - Cr);
+   gamma(1) = 4.0*PI*BrownianDynParamsInterface().GetViscosity()/(log(p)+Cr);
+   gamma(3) = 4.0*PI*BrownianDynParamsInterface().GetViscosity()*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/p^2);
    */
 }
 
@@ -1688,51 +1687,41 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList&       pa
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
 
   //velocity at upper boundary of domain
-  double uppervel = 0.0;
+//  double uppervel = 0.0;
 
   //default values for background velocity and its gradient
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
-  double time = -1.0;
-  double dt = 1000;
-  if (IsParamsInterface())
-  {
-    time = ParamsInterface().GetTotalTime();
-    dt = ParamsInterface().GetDeltaTime();
-  }
-  else
-  {
-    time = params.get<double>("total time",-1.0);
-    dt = params.get<double>("delta time");
-  }
-  double starttime = StatMechParamsInterface().GetStartTimeAction();
-  double shearamplitude = StatMechParamsInterface().GetShearAmplitude();
-  int curvenumber = StatMechParamsInterface().GetCurveNumber() - 1;
-  int dbcdispdir = StatMechParamsInterface().GetDbcDispDir() - 1;
-
-  Teuchos::RCP<std::vector<double> > periodlength = StatMechParamsInterface().GetPeriodLength();
-  INPAR::STATMECH::DBCType dbctype = StatMechParamsInterface().GetDbcType();
-  bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-     dbctype==INPAR::STATMECH::dbctype_affineshear||
-     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-    shearflow = true;
-
-  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
-  if(periodlength->at(0) > 0.0)
-    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 && dbcdispdir >= 0 )
-    {
-      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
-
-      //compute background velocity
-      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
-
-      //compute gradient of background velocity
-      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
-    }
+  // fixme: this needs to go somewhere else, outside of element
+//  double time = -1.0;
+//
+//
+//  double shearamplitude = BrownianDynParamsInterface().GetShearAmplitude();
+//  int curvenumber = BrownianDynParamsInterface().GetCurveNumber() - 1;
+//  int dbcdispdir = BrownianDynParamsInterface().GetDbcDispDir() - 1;
+//
+//  Teuchos::RCP<std::vector<double> > periodlength = BrownianDynParamsInterface().GetPeriodLength();
+//  INPAR::STATMECH::DBCType dbctype = BrownianDynParamsInterface().GetDbcType();
+//  bool shearflow = false;
+//  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+//     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+//     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+//     dbctype==INPAR::STATMECH::dbctype_affineshear||
+//     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
+//    shearflow = true;
+//
+//  if(periodlength->at(0) > 0.0)
+//    if(shearflow  && curvenumber >=  0 && dbcdispdir >= 0 )
+//    {
+//      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+//
+//      //compute background velocity
+//      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
+//
+//      //compute gradient of background velocity
+//      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
+//    }
 
 }
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1965,7 +1954,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+   Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
 
 
 
@@ -2033,7 +2022,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& pa
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+   Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {

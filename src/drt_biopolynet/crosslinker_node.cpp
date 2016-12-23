@@ -29,7 +29,7 @@ DRT::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(
   const std::vector<char> & data )
 {
   double dummycoord[3] = {999.,999.,999.};
-  DRT::Node* crosslinker =
+  CROSSLINKING::CrosslinkerNode* crosslinker =
       new CROSSLINKING::CrosslinkerNode(-1,dummycoord,-1);
   crosslinker->Unpack(data);
   return crosslinker;

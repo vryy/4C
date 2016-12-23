@@ -121,28 +121,12 @@ basisnodes_(discret.NumGlobalNodes())
   if(boundingbox_==Beam3ContactOctTree::cyloriented && (int)extrusionvalue_->size()!= 2)
     dserror("For cylindrical, oriented bounding boxes, TWO extrusion factors are mandatory! Check BEAMS_EXTVAL in your input file.");
 
-  // set flag signaling the existence of periodic boundary conditions
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // retrieve the dimensions of the periodic boundary box
+  // statmech input section no longer existent, get parameters out of new section if needed
   periodlength_ = Teuchos::rcp(new std::vector<double>);
   periodlength_->clear();
-  {
-    std::istringstream PL(Teuchos::getNumericStringParameter(statmechparams,"PERIODLENGTH"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      periodlength_->push_back(std::strtod(word.c_str(), &input));
-  }
-  if((int)periodlength_->size()<3 && (int)periodlength_->size()!=1)
-    dserror("You only gave %d values for PERIODLENGTH! Check your input file.", (int)periodlength_->size());
-  else if((int)periodlength_->size()==1)
-    for(int i=0; i<2; i++)
-      periodlength_->push_back(periodlength_->at(0));
-
-  if(periodlength_->at(0)>1e-12)
-    periodicBC_ = true;
-  else
-    periodicBC_ = false;
+  for(int i=0; i<2; i++)
+    periodlength_->push_back(0);
+  periodicBC_ = false;
 
   // determine bounding box type
   switch(bboxtype_input)

@@ -29,7 +29,7 @@ namespace LINALG {
 } // namespace LINALG
 namespace STR{
 namespace MODELEVALUATOR{
-  class StatMechData;
+  class BrownianDynData;
 
   class BrownianDyn : public Generic
   {
@@ -159,12 +159,12 @@ namespace MODELEVALUATOR{
     void GenerateGaussianRandomNumbers();
 
     //! \brief safety check whether this condition is fulfilled
-    bool IsAnyBeamElementLengthLargerThanHalfPeriodLength() const;
+    bool IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength() const;
 
   private:
 
     //! statmech evaluation data container
-    Teuchos::RCP<STR::MODELEVALUATOR::StatMechData> eval_statmech_ptr_;
+    Teuchos::RCP<STR::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
 
     //! global internal force at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> f_brown_np_ptr_;
@@ -181,11 +181,10 @@ namespace MODELEVALUATOR{
     //! seed for random number generator
     int rs_;
 
-  }; // class BrownianDyn
+  };
 
-} // namespace ModelEvaluator
-} // namespace STR
+}
+}
 
 
-
-#endif /* STR_MODEL_EVALUATOR_BROWNIANDYN_H_ */
+#endif

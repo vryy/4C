@@ -55,7 +55,6 @@ namespace MAT
 //      const double deltarlink_;
 //      const double alink_;
 //      const double iplink;
-//      const double elink;
 
 
       //@}

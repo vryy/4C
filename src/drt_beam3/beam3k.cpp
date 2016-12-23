@@ -491,7 +491,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
     const int nnode = 2; //number of nodes
 
     // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
@@ -678,7 +678,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
     const int nnode = 2; //number of nodes
 
     // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.

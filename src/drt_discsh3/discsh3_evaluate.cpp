@@ -23,14 +23,14 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_statmech.H"
-
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "Sacado.hpp"
+
+#include "../drt_inpar/inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 
@@ -438,7 +438,7 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
                                               Epetra_SerialDenseVector* force)
 {
   x_n_=SpatialConfiguration(disp);
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
 
   // Calculate the stiffness and viscous contribution arising from area constraint
   const int NumGElements=discretization.NumGlobalElements();
@@ -456,18 +456,18 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
   // Global way of computing constraint on Barycenter
   //   BaryConstrtStiffmass(params,disp,vel,stiffmatrix,force,NumGElements);
 
-  INPAR::STATMECH::AreaPenaltyType area_pen_type = DRT::INPUT::IntegralValue<INPAR::STATMECH::AreaPenaltyType>(StatMechParams,"AREA_PENALTY_TYPE");
-
-  if(area_pen_type==INPAR::STATMECH::areapenalty_local)
-  {
-    // Local way of computing constraint on element area
-    AreaConstrtStiffmass(params,disp,vel,stiffmatrix,force);
-  }
-  else if(area_pen_type==INPAR::STATMECH::areapenalty_global)
-  {
-    // Global way of computing constraint on element area
-    AreaConstrtGlobalStiff(params,discretization,disp,stiffmatrix,force);
-  }
+//  INPAR::STATMECH::AreaPenaltyType area_pen_type = DRT::INPUT::IntegralValue<INPAR::STATMECH::AreaPenaltyType>(StatMechParams,"AREA_PENALTY_TYPE");
+//
+//  if(area_pen_type==INPAR::STATMECH::areapenalty_local)
+//  {
+//    // Local way of computing constraint on element area
+//    AreaConstrtStiffmass(params,disp,vel,stiffmatrix,force);
+//  }
+//  else if(area_pen_type==INPAR::STATMECH::areapenalty_global)
+//  {
+//    // Global way of computing constraint on element area
+//    AreaConstrtGlobalStiff(params,discretization,disp,stiffmatrix,force);
+//  }
 
   // Local way of computing constraint on element area (Quadrature based)
   //  AreaConstrtQuadStiffmass(params,disp,vel,stiffmatrix,force);
@@ -492,17 +492,17 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
   * the element does not attach this special vector to params the following method is just doing nothing, which means that for
   * any ordinary problem of structural mechanics it may be ignored*/
 
-  // Get if normal dynamics problem or statmech problem
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB"))
-  {
-      #ifdef INEXTENSIBLE
-        dserror("INEXTENSIBLE formulation not possible for statmech so far. Adapt vector vel -> myvel like above!");
-      #endif
-        CalcBrownian(params,vel,disp,stiffmatrix,force);
-
-        // Internal damping forces
-//          MyDampingForces(params,vel,disp,stiffmatrix,force);
-    }
+//  // Get if normal dynamics problem or statmech problem
+//  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "BROWNDYNPROB"))
+//  {
+//      #ifdef INEXTENSIBLE
+//        dserror("INEXTENSIBLE formulation not possible for statmech so far. Adapt vector vel -> myvel like above!");
+//      #endif
+//        CalcBrownian(params,vel,disp,stiffmatrix,force);
+//
+//        // Internal damping forces
+////          MyDampingForces(params,vel,disp,stiffmatrix,force);
+//    }
 
   return;
 } // DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass
@@ -1063,11 +1063,12 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList&   params
 {
   FAD BehaviorFunctArea;
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD cg_penalty=StatMechParams.get<double>("CG_PENALTY",0.0);
-  if (cg_penalty==0)
-    dserror("Please enter a non-zero CG_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD cg_penalty=StatMechParams.get<double>("CG_PENALTY",0.0);
+//  if (cg_penalty==0)
+//    dserror("Please enter a non-zero CG_PENALTY");
 
+    FAD cg_penalty = 0.0;
 
     std::vector<FAD> x_FAD(NUMDOF_DISCSH3,0.0);
     // Get Spatial positions
@@ -1143,10 +1144,11 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList&   
 {
   FAD BehaviorFunctArea;
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  double cg_penalty=StatMechParams.get<double>("CG_PENALTY",0.0);
-  if (cg_penalty==0)
-    dserror("Please enter a non-zero CG_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  double cg_penalty=StatMechParams.get<double>("CG_PENALTY",0.0);
+//  if (cg_penalty==0)
+//    dserror("Please enter a non-zero CG_PENALTY");
+  double cg_penalty = 0.0;
 
   Teuchos::RCP<Epetra_SerialDenseVector>  CG_ref_rcp=params.get<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG",Teuchos::null);
   Teuchos::RCP<Epetra_SerialDenseVector>  CG_curr_rcp=params.get<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG",Teuchos::null);
@@ -1216,11 +1218,12 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList&   para
                                               const int NumGlobalEles)
 {
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD bary_penalty=StatMechParams.get<double>("BARY_PENALTY",0.0);
-  if (bary_penalty==0)
-    dserror("Please enter a non-zero BARY_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD bary_penalty=StatMechParams.get<double>("BARY_PENALTY",0.0);
+//  if (bary_penalty==0)
+//    dserror("Please enter a non-zero BARY_PENALTY");
 
+  FAD bary_penalty = 0.0;
 
     std::vector<FAD> x_FAD(NUMDOF_DISCSH3,0.0);
     // Get Spatial positions
@@ -1296,10 +1299,12 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList&   para
 
   FAD BehaviorFunctArea;
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
-  if (area_penalty==0)
-    dserror("Please enter a non-zero AREA_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
+//  if (area_penalty==0)
+//    dserror("Please enter a non-zero AREA_PENALTY");
+
+  FAD area_penalty = 0.0;
 
   CalcBehaviorFunctArea(params,disp, BehaviorFunctArea);
 
@@ -1429,11 +1434,13 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList&   
 
   FAD BehaviorFunctArea;
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  double area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
-  if (area_penalty==0)
-    dserror("Please enter a non-zero AREA_PENALTY");
-  // element geometry update
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  double area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
+//  if (area_penalty==0)
+//    dserror("Please enter a non-zero AREA_PENALTY");
+//  // element geometry update
+
+  double area_penalty = 0.0;
 
   const int numnode = NumNode();
   LINALG::SerialDenseMatrix x(numnode,3);
@@ -1484,10 +1491,12 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList&   param
   FAD BehaviorFunctVol;
 
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD vol_penalty=StatMechParams.get<double>("VOL_PENALTY",0.0);
-  if (vol_penalty==0)
-    dserror("Please enter a non-zero VOL_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD vol_penalty=StatMechParams.get<double>("VOL_PENALTY",0.0);
+//  if (vol_penalty==0)
+//    dserror("Please enter a non-zero VOL_PENALTY");
+
+  FAD vol_penalty = 0.0;
 
   CalcBehaviorFunctVol(params,disp, BehaviorFunctVol);
 
@@ -1577,17 +1586,17 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList&   param
   // Calculate surface area at reference config FAD
   CalcVolume(vol_ref, disp, true);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
-  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
-  {
-    double time = params.get<double>("total time",0.0);
-
-
-    if(time>=1.0)
-      dserror("Stopping simulation! Volume can't be zero");
-
-    vol_ref=(1-time)*vol_ref;
-  }
+//  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
+//  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
+//  {
+//    double time = params.get<double>("total time",0.0);
+//
+//
+//    if(time>=1.0)
+//      dserror("Stopping simulation! Volume can't be zero");
+//
+//    vol_ref=(1-time)*vol_ref;
+//  }
 
 
   FAD vol_curr;
@@ -1634,24 +1643,26 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList&      
                                               Epetra_SerialDenseMatrix*    stiffmatrix,
                                               Epetra_SerialDenseVector*          force)
 {
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD vol_penalty=StatMechParams.get<double>("VOL_PENALTY",0.0);
-  if (vol_penalty==0)
-    dserror("Please enter a non-zero VOL_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD vol_penalty=StatMechParams.get<double>("VOL_PENALTY",0.0);
+//  if (vol_penalty==0)
+//    dserror("Please enter a non-zero VOL_PENALTY");
+
+  FAD vol_penalty = 0.0;
 
   double vol_ref=params.get<double>("reference volume",0.0);
   double vol_curr=params.get<double>("current volume",0.0);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
-  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
-  {
-    double time = params.get<double>("total time",0.0);
-
-    if(time>=1.0)
-      dserror("Stopping simulation! Volume can't be zero");
-
-    vol_ref=(1-time)*vol_ref;
-  }
+//  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
+//  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
+//  {
+//    double time = params.get<double>("total time",0.0);
+//
+//    if(time>=1.0)
+//      dserror("Stopping simulation! Volume can't be zero");
+//
+//    vol_ref=(1-time)*vol_ref;
+//  }
 
   // Calculate behavior function
   FAD BehaviorFunctVol=  std::pow(vol_ref,0.5)*(1-vol_curr/vol_ref);
@@ -1768,11 +1779,13 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList&     
                                               Epetra_SerialDenseMatrix*    stiffmatrix,
                                               Epetra_SerialDenseVector*          force)
 {
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
+//
+//  if (area_penalty==0)
+//    dserror("Please enter a non-zero AREA_PENALTY");
 
-  if (area_penalty==0)
-    dserror("Please enter a non-zero AREA_PENALTY");
+  FAD area_penalty = 0.0;
 
   double area_ref=params.get<double>("reference area",0.0);
   double area_curr=params.get<double>("current area",0.0);
@@ -1903,11 +1916,12 @@ void DRT::ELEMENTS::DiscSh3::CalcBehaviorFunctArea(Teuchos::ParameterList&   par
                                                     const std::vector<double>& disp,
                                                    FAD & BehaviorFunctArea)
 {
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
-  if (area_penalty==0)
-    dserror("Please enter a non-zero AREA_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD area_penalty=StatMechParams.get<double>("AREA_PENALTY",0.0);
+//  if (area_penalty==0)
+//    dserror("Please enter a non-zero AREA_PENALTY");
 
+  FAD area_penalty = 0.0;
 
   // Calculate surface area at reference config FAD
   FAD area_ref= CalcSurfaceArea(disp,true);
@@ -1935,14 +1949,14 @@ void DRT::ELEMENTS::DiscSh3::CalcBehaviorFunctVol(Teuchos::ParameterList&   para
   // Calculate volume at reference config FAD
   CalcVolume(vol_ref, disp, true);
 
-  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
-  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
-  {
-    double time = params.get<double>("total time",0.0);
-    if(time>=1.0)
-      dserror("Stopping simulation! Volume can't be zero");
-    vol_ref=(1-time)*vol_ref;
-  }
+//  INPAR::STATMECH::StatOutput StatOut = params.get<INPAR::STATMECH::StatOutput>("SPECIALOUTPUT",INPAR::STATMECH::statout_none);
+//  if (StatOut == INPAR::STATMECH::statout_vesceqshapes)
+//  {
+//    double time = params.get<double>("total time",0.0);
+//    if(time>=1.0)
+//      dserror("Stopping simulation! Volume can't be zero");
+//    vol_ref=(1-time)*vol_ref;
+//  }
 
   // Volume at spatial configuration
   FAD vol_curr;

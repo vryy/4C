@@ -35,14 +35,18 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }
-
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
+}
+}
 namespace STR {
 namespace ELEMENTS {
   class ParamsInterface;
-} // namespace ELEMENTS
-} // namespace STR
+}
+}
 
-namespace STATMECH {
+namespace BROWNIANDYN {
   class ParamsInterface;
 }
 
@@ -99,7 +103,7 @@ public:
    *  \date 04/16 */
   virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
 
-  virtual void SetStatMechParamsInterfacePtr();
+  virtual void SetBrownianDynParamsInterfacePtr();
 
   /** \brief returns true if the parameter interface is defined and initialized, otherwise false
    *
@@ -113,7 +117,7 @@ public:
    *  \author hiermeier
    *  \date 04/16 */
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
-  virtual Teuchos::RCP<STATMECH::ParamsInterface> StatMechParamsInterfacePtr() const;
+  virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> BrownianDynParamsInterfacePtr() const;
 
   //! computes the number of different random numbers required in each time step for generation of stochastic forces
   virtual int HowManyRandomNumbersINeed() const = 0;
@@ -267,7 +271,7 @@ public:
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
   virtual void UnShiftNodePosition(std::vector<double>&       disp, //!<element disp vector
-                                   const std::vector<double>& periodlength,
+                                   Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
                                    const unsigned int         nnode) const;
 
 
@@ -281,9 +285,9 @@ protected:
       dserror("The interface ptr is not set!");
     return *interface_ptr_; }
 
-  inline STATMECH::ParamsInterface& StatMechParamsInterface() const
+  inline BROWNIANDYN::ParamsInterface& BrownianDynParamsInterface() const
   {
-    return *sm_interface_ptr_;
+    return *browndyn_interface_ptr_;
   }
 
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
@@ -502,7 +506,7 @@ public:
   void GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
                            std::vector<double>&       disp,
                            const int&                 bspotlocn,
-                           const std::vector<double>& periodlength) const;
+                           Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
 
   //! get triad at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
   void GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     triad,
@@ -549,7 +553,7 @@ private:
    *  data exchange between the element and the time integrator. */
   Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
- Teuchos::RCP<STATMECH::ParamsInterface> sm_interface_ptr_;
+ Teuchos::RCP<BROWNIANDYN::ParamsInterface> browndyn_interface_ptr_;
 
   /*!
   \brief Default Constructor must not be called

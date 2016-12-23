@@ -44,10 +44,13 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::Init(
-    const Teuchos::ParameterList& beam_contact_params_list)
+void BEAMINTERACTION::BeamContactParams::Init()
 {
   issetup_ = false;
+
+  // Teuchos parameter list for beam contact
+  const Teuchos::ParameterList& beam_contact_params_list =
+      DRT::Problem::Instance()->BeamContactParams();
 
   /****************************************************************************/
   // get and check required parameters

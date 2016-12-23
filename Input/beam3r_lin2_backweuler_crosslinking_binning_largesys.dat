@@ -4,9 +4,9 @@
 -------------------------------------------------------------TITLE
 beam3r_lin2_backweuler_crosslinking_largesys.dat
 ------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      3120                  // nfil=104  periodlength=[5 5 5] um  fiber_division=30  fiber_length=[4 4 4]um
-//NODES                         3224                  // ca=1.9956uM  n=2.4945e-19mol  V=1.25e-13l  -->elementlength = 0.133333 um
-DIM                             3                     // rumpf2.txt /begin
+//ELEMENTS                      3120
+//NODES                         3224
+DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -------------------------------------------------------PROBLEM TYP
@@ -43,43 +43,33 @@ TOLRES                          1.0E-08
 MAXITER                         25
 MASSLIN                         rotations
 NEGLECTINERTIA                  yes
+------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
+DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   0.2
+PERIODICONOFF                   1 1 1
+DEFINEXAABBPER                  input
 BOUNDINGBOX                     0 0 0 5 5 5
-------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           1                     // header_01 end
-----------------------------------------------STATISTICAL MECHANICS
-STATMECHPROB                    yes
+----------------------------------------------BROWNIAN DYNAMICS
+BROWNDYNPROB                    yes
+VISCOSITY                       0.001
+KT                              0.00404531
+----------------------------------------------CROSSLINKING
 CROSSLINKER                     yes
-//============= SIMULATION SPECS ============
-PERIODLENGTH                    5 5 5                 // edge lengths of the cuboid volume
-ETA                             0.001                 // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
-KT                              0.00404531            // thermal energy
-KTACT                           0.00404531            // thermal energy after starttimeact_
-K_ON_start                      90                    // chemical association-rate before ktswitchtime
-K_ON_end                        90                    // chemical dissociation-rate after ktswitchtime // 100.0 1000.0
-K_ON_SELF                       0                     // chemical association-rate in case of linker with both ends on the same filament
-K_OFF_start                     3                     // in analogy to k_on
-K_OFF_end                       3                     // in analogy to k_on
-//============== FILAMENT MODEL =============
-FILAMENTMODEL                   std                   // select filament model: std, helical
-FILAMENTPOLARITY                No                    // toggles filament polarity
-NUM_EVAL_ELEMENTS               3120                  // number of (initial) beam elements
-RISEPERBINSPOT                  0.00277               // rise per monomer in the actin helix
-ROTPERBINSPOT                   -2.8999               // rotation per monomer in the actin helix
-PHIBINSPOT                      0.841                 // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
-BINSPOTINTERVAL                 1                     // every n-th binding spot is available for binding
-//============ CROSSLINKER MODEL ============
-LINKERMODEL                     std                   // set linker model: none, std, bellseq, active, stdintpol
-ACTIVELINKERFRACTION            0                     // fraction of crosslinkers which is active
-NUMCROSSLINK                    1000                  // number of crosslinkers in the simulated volume
-R_LINK                          0.1                   // distance between the two binding domains of a linker
-DeltaR_LINK                     0.01                  // deviation from r_link
-ALINK                           4.751658e-06          // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
-ILINK                           4.4918e-11            // Must set ilink=0.0 ->TRUSS!
-IPLINK                          8.9836e-11            // 2xilink
-ELINK                           2560000               // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
+NUMCROSSLINK                    100
+VISCOSITY                       0.001
+KT                              0.00404531
+LINKINGLENGTH                   0.5
+LINKINGLENGTHTOL                0.2
+ALINK                           4.751658e-06
+ILINK                           4.4918e-11
+IPLINK                          8.9836e-11
+LINKINGANGLE                    0.0
+LINKINGANGLETOL                 0.392699081698724
+K_ON                            90
+K_OFF                           3.0
 -----------------------------------------------------SOLVER 1  // header_02 begin
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym UMFPACK Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

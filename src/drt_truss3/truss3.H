@@ -22,7 +22,6 @@
 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_statmech.H"
 
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;

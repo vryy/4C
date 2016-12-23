@@ -30,16 +30,20 @@
 class Epetra_Time;
 namespace LINALG {
   class Solver;
-} // namespace LINALG
+}
 namespace DRT {
   class Discretization;
-} // namespace DRT
+}
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
+}
+}
 namespace STR {
 namespace MODELEVALUATOR {
   class Generic;
-} // namespace MODELEVALUATOR
+}
 namespace TIMINT {
-  class DataSMDyn;
 
   /** \brief Structural dynamics data container for the structural (time) integration
    *
@@ -292,11 +296,11 @@ namespace TIMINT {
     /// @name Get model specific data container
     ///@{
     /// Returns statmech data container (read access)
-    Teuchos::RCP<const DataSMDyn> GetDataSMDynPtr() const
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
     {
-      if (sm_data_ptr_.is_null())
+      if (periodic_boundingbox.is_null())
         dserror("The statmech model is not active!");
-      return sm_data_ptr_;
+      return periodic_boundingbox;
     }
     ///@}
 
@@ -864,7 +868,7 @@ namespace TIMINT {
     ///@{
 
     /// pointer to the linear solvers map
-    Teuchos::RCP<STR::TIMINT::DataSMDyn> sm_data_ptr_;
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox;
     ///@}
 
     ///@}

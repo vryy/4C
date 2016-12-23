@@ -25,7 +25,6 @@
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_inpar/inpar_statmech.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     grill 09/14|

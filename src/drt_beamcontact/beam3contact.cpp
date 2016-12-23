@@ -28,7 +28,6 @@
 #include "../drt_beam3/beam3k.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_inpar/inpar_statmech.H"
 
 #include "Teuchos_TimeMonitor.hpp"
 //TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!

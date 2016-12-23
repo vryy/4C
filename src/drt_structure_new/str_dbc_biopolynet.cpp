@@ -30,7 +30,6 @@
 #include <NOX_Epetra_Vector.H>
 #include <Teuchos_ParameterList.hpp>
 #include "str_model_evaluator_browniandyn.H"
-#include "str_timint_databiopolynetdyn.H"
 
 
 /*----------------------------------------------------------------------*
@@ -55,7 +54,7 @@ void STR::DbcBioPolyNet::Init(const Teuchos::RCP<DRT::Discretization>&     discr
   // call Init from base class
   STR::Dbc::Init(discret_ptr_,freact_ptr,timint_ptr);
 
-  smdyn_ptr_ = timint_ptr_->GetDataSDyn().GetDataSMDynPtr();
+  smdyn_ptr_ = timint_ptr_->GetDataSDyn().GetMeshFreeDataPtr();
 
   // initial clearing of dbc management vectors
   dbcnodesets_.clear();
@@ -121,20 +120,7 @@ void STR::DbcBioPolyNet::BioPolyNetPrintBCType()
         dserror("Check your DBC type! %i", dbctype);
       break;
     }
-    // todo: this needs to go, only dirichlet boundary conditions are handled here
-    INPAR::STATMECH::NBCType nbctype = smdyn_ptr_->NbcType();
-    switch(nbctype)
-    {
-      case INPAR::STATMECH::nbctype_constcreep:
-        std::cout<<"- constant shear Neumann boundary condition on a nodal subset" << std::endl;
-        break;
-      case INPAR::STATMECH::nbctype_randompointforce:
-        std::cout<<"- random time-dependent Neumann point force on single nodes" << std::endl;
-        break;
-      default:
-        std::cout<<"- standard input file based definition of Neumann boundary conditions / no NBCs"<< std::endl;
-        break;
-    }
+
   }
   return;
 } //BioPolyNetPrintBCType()
@@ -226,9 +212,6 @@ void STR::DbcBioPolyNet::EvaluateDirichletPeriodic(Teuchos::ParameterList&     p
     // shear with a fixed Dirichlet node set and setting axial stiffness of disrupted elements close to zero
     case INPAR::STATMECH::dbctype_shearfixeddel:
     {
-      // if point in time is reached at which the application of Dirichlet values starts
-      if(!DbcStart(params))
-        return;
       DBCOscillatoryMotion(params,dis,vel,deltadbc);
       useinitdbcset_ = true;
     }
@@ -236,8 +219,6 @@ void STR::DbcBioPolyNet::EvaluateDirichletPeriodic(Teuchos::ParameterList&     p
     // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
     case INPAR::STATMECH::dbctype_sheartrans:
     {
-      if(!DbcStart(params))
-        return;
       DBCOscillatoryMotion(params,dis,vel,deltadbc);
     }
     break;
@@ -255,8 +236,6 @@ void STR::DbcBioPolyNet::EvaluateDirichletPeriodic(Teuchos::ParameterList&     p
     // apply affine shear displacement to all nodes
     case INPAR::STATMECH::dbctype_affinesheardel:
     {
-      if(!DbcStart(params))
-        return;
       DBCAffineShear(params,dis,vel,deltadbc);
       // used here to store the node set that remains under DBCs after the initial affine displacement
       useinitdbcset_ = true;
@@ -265,8 +244,6 @@ void STR::DbcBioPolyNet::EvaluateDirichletPeriodic(Teuchos::ParameterList&     p
     // apply movable support to all upper face nodes of cut elements
     case INPAR::STATMECH::dbctype_movablesupport1d:
     {
-      if(!DbcStart(params))
-        return;
       DBCMovableSupport1D(params,dis);
     }
     break;
@@ -288,24 +265,6 @@ void STR::DbcBioPolyNet::EvaluateDirichletPeriodic(Teuchos::ParameterList&     p
   return;
 } //EvaluateDirichletPeriodic()
 
-/*----------------------------------------------------------------------*
- | Determine if application of DBCs starts at a given time  mueller 5/12|
- *----------------------------------------------------------------------*/
-bool STR::DbcBioPolyNet::DbcStart(Teuchos::ParameterList& params)
-{
-  double eps = 2.0e-11;
-  // get the current time
-  double time = params.get<double>("total time", 0.0);
-  double starttime = smdyn_ptr_->ActionTime()->at(smdyn_ptr_->BcTimeIndex());
-  //double dt = params.get<double>("delta time", 0.01);
-  if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The absolute time should be positive!", time);
-
-  if(time < starttime && fabs(starttime-time)>eps)
-    return false;
-  else
-    return true;
-
-} // DbcStart
 
 /*----------------------------------------------------------------------*
  | Gather information on where DBCs are to be applied in the case of    |
@@ -355,7 +314,7 @@ void STR::DbcBioPolyNet::DBCOscillatoryMotion(Teuchos::ParameterList&     params
       // An element used to browse through local Row Elements
       DRT::Element* element = DiscretPtr()->lRowElement(lid);
       // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-      if(element->Id() <= basisnodes_ && element->Id() < smdyn_ptr_->NumEvalElements())
+      if(element->Id() <= basisnodes_)
       {
         // number of translational DOFs
         int numdof = 3;
@@ -555,12 +514,6 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
   if(vel!=Teuchos::null)
     curvefac = DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1);
 
-  double tol = 1e-10;
-
-  // upon hitting the third time threshold, erase the last node set and thus free these nodes of DBCs
-  if(fabs(time-dt-smdyn_ptr_->ActionTime()->at(2))<tol && (int) dbcnodesets_.size()==3)
-    dbcnodesets_.erase(dbcnodesets_.end());
-
   // We need column map displacements as we might need access to ghost nodes
   Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*DiscretPtr()->DofColMap(), true));
   LINALG::Export(*dis, *discol);
@@ -582,7 +535,7 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
     {
       DRT::Element* element = DiscretPtr()->lRowElement(lid);
       // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-      if(element->Id() <= basisnodes_ && element->Id() < smdyn_ptr_->NumEvalElements())
+      if(element->Id() <= basisnodes_)
       {
         // number of translational DOFs
         int numdof = 3;
@@ -678,7 +631,7 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
     for(int lid=0; lid<DiscretPtr()->NumMyRowElements(); lid++)
     {
       DRT::Element* element = DiscretPtr()->lRowElement(lid);
-      if(element->Id() <= basisnodes_ && element->Id() < smdyn_ptr_->NumEvalElements())
+      if(element->Id() <= basisnodes_)
       {
         int numdof = 3;
         LINALG::SerialDenseMatrix coord(numdof,(int)DiscretPtr()->lRowElement(lid)->NumNode(), true);
@@ -705,10 +658,6 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
     }
     dbcnodesets_.push_back(sensornodes);
     dbcnodesets_.push_back(fixednodes);
-    // without if-statement, this node set might be added again after restart beyond smdyn_ptr_->ActionTime()->at(2)
-    if(time<=smdyn_ptr_->ActionTime()->at(2))
-      dbcnodesets_.push_back(affineshearnodes);
-    //std::cout<<"A Proc "<<DiscretPtr()->Comm().MyPID()<<": sizeosc = "<<dbcnodesets_[0].size()<<std::endl;
 
 //    UpdateForceSensors(dbcnodesets_[0], displacementdir);
   }
@@ -769,7 +718,7 @@ void STR::DbcBioPolyNet::DBCMovableSupport1D(Teuchos::ParameterList&     params,
     for(int lid=0; lid<DiscretPtr()->NumMyRowElements(); lid++)
     {
       DRT::Element* element = DiscretPtr()->lRowElement(lid);
-      if(element->Id() <= basisnodes_ && element->Id() < smdyn_ptr_->NumEvalElements())
+      if(element->Id() <= basisnodes_)
       {
         int numdof = 3;
         LINALG::SerialDenseMatrix coord(numdof,(int)DiscretPtr()->lRowElement(lid)->NumNode(), true);
@@ -1240,13 +1189,6 @@ void STR::DbcBioPolyNet::DbcSanityCheck()
         dserror("Check PERIODLENGTH in your input file! This method only works for a cubic boundary volume");
       if(displacementdir>2 || displacementdir<0 || (curvenumber<0 && dbctype != INPAR::STATMECH::dbctype_movablesupport1d))
         dserror("In case of imposed DBC values, please define the BioPolyNet parameters DBCDISPDIR={1,2,3} and/or CURVENUMBER correctly");
-      if(dbctype==INPAR::STATMECH::dbctype_affineshear)
-      {
-        if((int)smdyn_ptr_->ActionTime()->size()<3)
-          dserror("For affine deformation, give three time values for ACTIONTIME! 1. equilibration time 2. dbc application time 3. release of DBC nodes other than nodes of elements shifted in z-direction!");
-        else if(smdyn_ptr_->BcTimeIndex()!=1)
-          dserror("BCTIMEINDEX must be set to 2 for affine shear displacement!");
-      }
     }
   }
 

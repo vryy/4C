@@ -26,7 +26,6 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../headers/FAD_utils.H"
 
 #include "Teuchos_TimeMonitor.hpp"

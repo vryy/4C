@@ -85,9 +85,9 @@ namespace INPAR
       model_springdashpot,        ///< evaluate the springdashpot model
       model_lag_pen_constraint,   ///< evaluate the Lagrange or/and penalty enforced constraint models
       model_partitioned_coupling, ///< evaluate any partitioned coupling contributions
-      model_beam_interaction,     ///< evaluate the model for contact/potential/... interactions of beams
+      model_beam_interaction_old,     ///< evaluate the model for contact/potential/... interactions of beams
       model_browniandyn,          ///< evaluate the brownian dynamics model
-      model_crosslinking,         ///< evaluate the crosslinking model
+      model_beaminteraction,         ///< evaluate beaminteraction model
       model_vague                 ///< undefined model type
     };
 
@@ -120,14 +120,14 @@ namespace INPAR
       case model_partitioned_coupling:
         return "Partitioned-Coupling";
         break;
-      case model_beam_interaction :
-        return "BeamInteraction";
+      case model_beam_interaction_old :
+        return "BeamInteractionOld";
         break;
       case model_browniandyn :
         return "BrownianDyn";
         break;
-      case model_crosslinking :
-        return "Crosslinking";
+      case model_beaminteraction :
+        return "BeamInteraction";
         break;
       default :
         dserror("Cannot make std::string for model type %d", name);

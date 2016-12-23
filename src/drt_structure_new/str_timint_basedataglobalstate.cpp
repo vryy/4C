@@ -291,9 +291,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       break;
     }
     case INPAR::STR::model_springdashpot:
-    case INPAR::STR::model_beam_interaction:
+    case INPAR::STR::model_beam_interaction_old:
     case INPAR::STR::model_browniandyn:
-    case INPAR::STR::model_crosslinking:
+    case INPAR::STR::model_beaminteraction:
     {
       // structural block
       model_block_id_[mt] = 0;

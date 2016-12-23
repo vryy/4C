@@ -28,7 +28,6 @@
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_statmech.H"
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                     meier 01/14 |

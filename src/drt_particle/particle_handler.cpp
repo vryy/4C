@@ -30,6 +30,17 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleHandler::ParticleHandler(
+  const int myrank) :
+    binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy())),
+    myrank_(myrank),
+    bincolmap_(Teuchos::null)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+PARTICLE::ParticleHandler::ParticleHandler(
   const Epetra_Comm& comm
   ) :
   binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy(comm))),
@@ -40,6 +51,22 @@ PARTICLE::ParticleHandler::ParticleHandler(
   // empty constructor
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleHandler::DistributeParticlesToBins(
+    Teuchos::RCP<Epetra_Map> const& particlerowmap)
+{
+  std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
+  for ( int lid = 0; lid < particlerowmap->NumMyElements(); ++lid )
+  {
+    DRT::Node* node = binstrategy_->BinDiscret()->gNode(particlerowmap->GID(lid));
+    const double* currpos = node->X();
+    PlaceNodeCorrectly( Teuchos::rcp(node,false), currpos, homelessparticles );
+  }
+
+  // start round robin loop to fill particles into their correct bins
+  FillParticlesIntoBinsRoundRobin(homelessparticles);
+}
 
 /*----------------------------------------------------------------------*
 | bins are distributed to the processors                    ghamm 09/12 |
@@ -97,12 +124,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcs()
       rcp_balanced_graph->RowMap().MyGlobalElements(),0,binstrategy_->BinDiscret()->Comm()));
 
   // fill bins into discret
-  for(int i=0; i<rowbins->NumMyElements(); ++i)
-  {
-    const int gid = rowbins->GID(i);
-    Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
-    binstrategy_->BinDiscret()->AddElement(bin);
-  }
+  BinStrategy()->FillBinsIntoBinDiscretization(rowbins);
 
   // return binrowmap
   return rowbins;
@@ -140,8 +162,6 @@ Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::ParticleHandler::CreateGraph()
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleHandler::FillParticlesIntoBinsRoundRobin(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
 {
-  //--------------------------------------------------------------------
-  // -> 2) round robin loop
 
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   const int myrank = binstrategy_->BinDiscret()->Comm().MyPID();       // me
@@ -150,7 +170,7 @@ void PARTICLE::ParticleHandler::FillParticlesIntoBinsRoundRobin(std::list<Teucho
 
   DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
 
-  for (int irobin = 0; irobin < numproc; ++irobin)
+  for ( int irobin = 0; irobin < numproc; ++irobin )
   {
     std::vector<char> sdata;
     std::vector<char> rdata;
@@ -382,13 +402,13 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRe
 /*----------------------------------------------------------------------*
 | node is placed into the correct row bin                   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-bool PARTICLE::ParticleHandler::PlaceNodeCorrectly
-(Teuchos::RCP<DRT::Node> node,
-  const double* currpos,
-  std::list<Teuchos::RCP<DRT::Node> >& homelessparticles
-  )
+bool PARTICLE::ParticleHandler::PlaceNodeCorrectly(
+    Teuchos::RCP<DRT::Node> node,
+    const double* currpos,
+    std::list<Teuchos::RCP<DRT::Node> >& homelessparticles
+)
 {
-//  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
+  //  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
   const int binId = binstrategy_->ConvertPosToGid(currpos);
 
   // check whether the current node belongs into a bin on this proc
@@ -410,8 +430,6 @@ bool PARTICLE::ParticleHandler::PlaceNodeCorrectly
       {
         DRT::Node* existingnode = binstrategy_->BinDiscret()->gNode(node->Id());
         // existing node is a row node, this means that node is equal existingnode
-
-
         if(existingnode->Owner() == myrank_)
         {
 //          std::cout << "on proc: " << myrank_ << " existingnode row node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << std::endl;
@@ -562,7 +580,7 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
  | particles are checked and transferred if necessary       ghamm 10/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
-TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
+    TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 {
   // set of homeless particles
   std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
@@ -684,11 +702,11 @@ TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 | bins are distributed to the processors based on an        ghamm 11/12 |
 | underlying discretization                                             |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcsBasedOnUnderlyingDiscret(
-  Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& rowelesinbin)
+Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::
+    DistributeBinsToProcsBasedOnUnderlyingDiscret(
+        Teuchos::RCP<DRT::Discretization> underlyingdis,
+        std::map<int, std::set<int> >& rowelesinbin)
 {
-
   //--------------------------------------------------------------------
   // 1st step: exploiting bounding box idea for scatra elements and bins
   //--------------------------------------------------------------------

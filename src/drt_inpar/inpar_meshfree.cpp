@@ -43,10 +43,28 @@ void INPAR::MESHFREE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
   DoubleParameter("VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
   DoubleParameter("RANGE_TOL",1e-6,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
+
+  setStringToIntegralParameter<int>("DEFINEBINSPER","cutoff","determine bin size or number of bins per direction",
+                                    tuple<std::string>("cutoff","binsperdir","largestele"),
+                                    tuple<int>(
+                                      cutoff,
+                                      binsperdir,
+                                      largestele),
+                                    &meshfree);
   DoubleParameter("CUTOFF_RADIUS",-1.0,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
   setNumericStringParameter("BIN_PER_DIR","-1 -1 -1",
                             "Number of bins per direction (x, y, z) in particle simulations.",
                             &meshfree);
+  setNumericStringParameter("PERIODICONOFF","0 0 0",
+                            "Turn of/off peridodic boundary conditions in each direction",
+                            &meshfree);
+
+  setStringToIntegralParameter<int>("DEFINEXAABBPER","input","determine size of bounding box",
+                                    tuple<std::string>("input","dynamic"),
+                                    tuple<int>(
+                                      input,
+                                      dynamic),
+                                    &meshfree);
   setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);

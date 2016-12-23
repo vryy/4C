@@ -23,13 +23,13 @@
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_lagpenconstraint.H"
-#include "str_model_evaluator_beaminteraction.H"
 #include "str_model_evaluator_browniandyn.H"
-#include "str_model_evaluator_crosslinking.H"
+#include "str_model_evaluator_beaminteraction.H"
 #include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
 
 // problem types
 #include "../drt_lib/drt_globalproblem.H"
+#include "str_model_evaluator_beaminteraction_old.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -64,14 +64,14 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
       case INPAR::STR::model_browniandyn:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BrownianDyn());
         break;
-      case INPAR::STR::model_crosslinking:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Crosslinking());
+      case INPAR::STR::model_beaminteraction:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction());
         break;
       case INPAR::STR::model_contact:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
         break;
-      case INPAR::STR::model_beam_interaction:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction());
+      case INPAR::STR::model_beam_interaction_old:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionOld());
         break;
       case INPAR::STR::model_lag_pen_constraint:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::LagPenConstraint());

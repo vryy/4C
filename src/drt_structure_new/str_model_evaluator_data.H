@@ -19,25 +19,29 @@
 #include "../drt_lib/drt_dserror.H"
 #include <NOX_Abstract_Vector.H>
 #include "str_elements_paramsinterface.H"   // base class of the Data class
+#include "str_timint_basedatasdyn.H"   // base class of the Data class
 #include "../drt_contact/contact_paramsinterface.H" // base class of the ContactData class
 #include "../drt_lib/drt_discret.H"
-#include "str_timint_databiopolynetdyn.H"
 
 
 // forward declaration ...
 class Epetra_Comm;
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
+}
+}
 namespace STR {
 namespace TIMINT {
   class BaseDataGlobalState;
-  class BaseDataSDyn;
-  class DataSMDyn;
+  class MeshFreeData;
   class BaseDataIO;
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
   class BeamData;
   class ContactData;
-  class StatMechData;
+  class BrownianDynData;
 
 
   /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
@@ -151,11 +155,11 @@ namespace MODELEVALUATOR {
     //! get the current coupling stress type [derived]
     virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
 
-    //! get Interface to statmech data [derived]
-    virtual inline Teuchos::RCP<STATMECH::ParamsInterface> GetStatMechParamInterface() const
+    //! get Interface to brownian dyn data [derived]
+    virtual inline Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const
     {
       CheckInitSetup();
-      return statmech_data_ptr_;
+      return browniandyn_data_ptr_;
     }
 
     //! get special parameter interface for beam elements [derived]
@@ -387,18 +391,18 @@ namespace MODELEVALUATOR {
       return contact_data_ptr_;
     }
 
-    //! access the statmech data container, if the statmech model is active
-    inline StatMechData& StatMech()
+    //! access the brownian dynamic data container
+    inline BrownianDynData& BrownianDyn()
     {
-      if (statmech_data_ptr_.is_null())
-        dserror("The statmech model is not active!");
-      return *statmech_data_ptr_;
+      if (browniandyn_data_ptr_.is_null())
+        dserror("The brownian dynamic model is not active!");
+      return *browniandyn_data_ptr_;
     }
-    inline const Teuchos::RCP<StatMechData>& StatMechPtr()
+    inline const Teuchos::RCP<BrownianDynData>& BrownianDynPtr()
     {
-      if (statmech_data_ptr_.is_null())
-        dserror("The statmech model is not active!");
-      return statmech_data_ptr_;
+      if (browniandyn_data_ptr_.is_null())
+        dserror("The brownian dynamic model is not active!");
+      return browniandyn_data_ptr_;
     }
     //! @}
 
@@ -622,7 +626,7 @@ namespace MODELEVALUATOR {
     Teuchos::RCP<ContactData> contact_data_ptr_;
 
     //! statmech data container
-    Teuchos::RCP<StatMechData> statmech_data_ptr_;
+    Teuchos::RCP<BrownianDynData> browniandyn_data_ptr_;
   };  // class Data
 
 
@@ -875,86 +879,38 @@ namespace MODELEVALUATOR {
 
   }; // class ContactData
 
-  /*! StatMech data container for the statistical mechanic model evaluation procedure.
+  /*! Brownian dynamic data container for the model evaluation procedure.
    *
    * \author Jonas Eichinger
    * \date 06/16 */
-  class StatMechData : public STATMECH::ParamsInterface
+  class BrownianDynData : public BROWNIANDYN::ParamsInterface
   {
   public:
     //! constructor
-    StatMechData();
+    BrownianDynData();
 
     //! destructor
-    virtual ~StatMechData() {};
+    virtual ~BrownianDynData() {};
 
     //! initialize the stuff coming from outside
-    void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr,
-              const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr_);
+    void Init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
 
     //! setup member variables
     void Setup();
 
-    const Teuchos::RCP< Epetra_MultiVector>& GetRandomForces() const
+    //! Structural dynamic data
+    inline STR::TIMINT::BaseDataSDyn const& SDyn() const
+    {
+      CheckInit();
+      return str_data_ptr_->SDyn();
+    }
+
+    /// thermal energy
+    double const& KT() const
     {
       CheckInitSetup();
-      return randomforces_;
+      return kt_;
     };
-
-    /// return type of predefined dirichlet boundary condition
-    const enum INPAR::STATMECH::DBCType& GetDbcType() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->DbcType();
-    };
-
-    /// edge lengths of the cuboid simulation volume
-    const Teuchos::RCP<std::vector<double> >& GetPeriodLength() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->PeriodLength();
-    };
-
-    /// amplitude of shear in micrometers
-    const double& GetShearAmplitude() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->ShearAmplitude();
-    };
-
-    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-    const double& GetEta() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->Eta();
-    };
-
-    /// direction of dbc displacement after starttimeact_; (x==1, y==2, z==3)
-    const int& GetDbcDispDir() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->DbcDispDir();
-    };
-
-    /// applied time curve for dbc after starttimeact_;
-    const int& GetCurveNumber() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->CurveNumber();
-    };
-
-    /// time when action is supposed to happen
-    const double& GetStartTimeAction() const
-    {
-      CheckInitSetup();
-      return smdyn_ptr_->StartTimeAction();
-    };
-    //! @}
-
-    /*! @name set routines which are used to set the parameters of the data container
-     *
-     *  These functions are not allowed to be called by the elements! */
-    //! @{
 
     //! get specified time curve number of imposed Dirichlet BCs
     void ResizeRandomForceMVector(Teuchos::RCP<DRT::Discretization> discret_ptr,
@@ -967,13 +923,43 @@ namespace MODELEVALUATOR {
       return randomforces_;
     };
 
-    /// get statmech data container
-    const Teuchos::RCP<const STR::TIMINT::DataSMDyn>& GetDataSMDynPtr() const
+    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
+    double const& MaxRandForce() const
     {
       CheckInitSetup();
-      return smdyn_ptr_;
+      return maxrandforce_;
     };
 
+    /// thermal energy
+    double const& TimeIntConstRandNumb() const
+    {
+      CheckInitSetup();
+      return timeintconstrandnumb_;
+    };
+    //! @}
+
+    /*! @name set routines which are allowed to be called by the elements
+     */
+    //! @{
+    Teuchos::RCP< Epetra_MultiVector> const& GetRandomForces() const
+    {
+      CheckInitSetup();
+      return randomforces_;
+    };
+
+    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
+    double const& GetViscosity() const
+    {
+      CheckInitSetup();
+      return viscosity_;
+    };
+
+    //! get vector holding periodic bounding box object
+    virtual Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
+    {
+      CheckInitSetup();
+      return str_data_ptr_->SDyn().GetPeriodicBoundingBox();
+    }
     //! @}
 
   protected:
@@ -1004,12 +990,21 @@ namespace MODELEVALUATOR {
 
     bool issetup_;
 
-    //! statmech dynamics data container
-    Teuchos::RCP<const STR::TIMINT::DataSMDyn> smdyn_ptr_;
+    Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
+
+    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
+    double viscosity_;
+    /// thermal energy
+    double kt_;
+    /// any random force beyond MAXRANDFORCE*(standdev) will be omitted and redrawn. -1.0 means no bounds.
+    double maxrandforce_;
+    /// within this time interval the random numbers remain constant. -1.0 means no prescribed time interval
+    double timeintconstrandnumb_;
 
     /// multiVector holding random forces
     Teuchos::RCP<Epetra_MultiVector> randomforces_;
-  }; // class StatMechData
+  };
+
 } // namespace MODELEVALUATOR
 } // namespace STR
 

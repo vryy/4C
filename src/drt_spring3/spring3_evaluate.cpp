@@ -20,7 +20,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 #include "Sacado.hpp"
@@ -453,9 +452,10 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const LINALG::Matrix<1,6>&  
                                                   Epetra_SerialDenseMatrix& DummyStiffMatrix,
                                                   Epetra_SerialDenseVector& DummyForce)
 {
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Spring stiffness
-  double spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
+//  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  // Spring stiffness
+//  double spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
+  double spring = 0.0;
 
 //  double spring= 1e-1;
 
@@ -903,8 +903,9 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
   }
 
   // Spring stiffness
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  double spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+//  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  double spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+  double spring = 0.0;
 
   // Calculate torsional forces
   for(int j=0; j<6; j++)
@@ -1006,9 +1007,10 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   tcurr1_unit.Update(1.0/norm_tcurr1,tcurr1,0.0);
   tcurr2_unit.Update(1.0/norm_tcurr2,tcurr2,0.0);
 
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Spring stiffness
-  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+//  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  // Spring stiffness
+//  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+  FAD spring = 0.0;
 
   //computing energy potential (equation 3.3)
   FAD W=0.5*spring*pow((FADUTILS::ScalarProduct(tcurr1_unit,tcurr2_unit)-FADUTILS::ScalarProduct(tref1_unit,tref2_unit)),2);
@@ -1150,7 +1152,10 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
 
   deltatheta=theta-theta_0;
 
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  // Spring stiffness
+//  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+  FAD spring = 0.0;
 
   // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
   LINALG::TMatrix<FAD,1,3> aux_a(true);  // Identical to "a" in derivation
@@ -1165,8 +1170,7 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
     aux_c(0,j+3)= aux_b(0,j);
   }
 
-  // Spring stiffness
-  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+
 
   // Calculate torsional forces
   for(int j=0; j<6; j++)
@@ -1325,58 +1329,60 @@ template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Spring3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
                                              std::vector<double>&    disp) //!<element disp vector
 {
-  /* get number of degrees of freedom per node; note: the following function assumes the same number of degrees
-   * of freedom for each element node*/
-  int numdof = NumDofPerNode(*(Nodes()[0]));
-  if (nnode==2 && disp.size()==12)
-    numdof = 6;
-  double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  double dt = params.get<double>("delta time");
-  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
-  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
-  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
-  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
-  bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed || dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
-    shearflow = true;
-  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
-   * method has to change the displacement variables*/
-  if(periodlength->at(0) > 0.0)
-    //loop through all nodes except for the first node which remains fixed as reference node
-    for(int i=1;i<nnode;i++)
-    {
-      for(int dof= ndim - 1; dof > -1; dof--)
-      {
-        /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
-         * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
-         * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
-         * is smaller than half the periodic length*/
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
-        {
-          disp[numdof*i+dof] += periodlength->at(dof);
+  dserror("With new statmech this does not work any longer");
 
-          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
-           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
-           *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
-        }
-
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
-        {
-          disp[numdof*i+dof] -= periodlength->at(dof);
-
-          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
-           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
-           *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
-        }
-      }
-    }
+//  /* get number of degrees of freedom per node; note: the following function assumes the same number of degrees
+//   * of freedom for each element node*/
+//  int numdof = NumDofPerNode(*(Nodes()[0]));
+//  if (nnode==2 && disp.size()==12)
+//    numdof = 6;
+//  double time = params.get<double>("total time",0.0);
+//  double starttime = params.get<double>("STARTTIMEACT",0.0);
+//  double dt = params.get<double>("delta time");
+//  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
+//  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
+//  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
+//  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
+//  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
+//  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
+//  bool shearflow = false;
+//  if(dbctype==INPAR::STATMECH::dbctype_shearfixed || dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
+//    shearflow = true;
+//  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
+//   * method has to change the displacement variables*/
+//  if(periodlength->at(0) > 0.0)
+//    //loop through all nodes except for the first node which remains fixed as reference node
+//    for(int i=1;i<nnode;i++)
+//    {
+//      for(int dof= ndim - 1; dof > -1; dof--)
+//      {
+//        /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+//         * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+//         * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+//         * is smaller than half the periodic length*/
+//        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+//        {
+//          disp[numdof*i+dof] += periodlength->at(dof);
+//
+//          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
+//           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
+//           *z-surface, the shear has to be substracted from nodal coordinates in that case */
+//          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
+//            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//        }
+//
+//        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+//        {
+//          disp[numdof*i+dof] -= periodlength->at(dof);
+//
+//          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
+//           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
+//           *z-surface, the shear has to be added to nodal coordinates in that case */
+//          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
+//            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//        }
+//      }
+//    }
 
 
   return;

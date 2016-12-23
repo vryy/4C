@@ -24,7 +24,7 @@
 #include "../linalg/linalg_solver.H"
 
 #include <Epetra_Time.h>
-#include "str_timint_databiopolynetdyn.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -306,11 +306,12 @@ void STR::TIMINT::BaseDataSDyn::Setup()
   {
     switch (*it)
     {
+      case INPAR::STR::model_beaminteraction:
       case INPAR::STR::model_browniandyn:
       {
-        sm_data_ptr_ = Teuchos::rcp(new DataSMDyn());
-        sm_data_ptr_->Init(Teuchos::rcp(this,false));
-        sm_data_ptr_->Setup();
+        periodic_boundingbox = Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+        periodic_boundingbox->Init();
+        periodic_boundingbox->Setup();
         break;
       }
       default:

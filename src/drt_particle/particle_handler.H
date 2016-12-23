@@ -29,11 +29,6 @@ namespace DRT
   class Discretization;
   class Node;
 }
-namespace ADAPTER
-{
-  class Structure;
-  class Particle;
-}
 namespace IO
 {
   class DiscretizationWriter;
@@ -43,15 +38,6 @@ namespace LINALG
   class MapExtractor;
 }
 
-namespace MAT
-{
-  namespace PAR
-  {
-    class ParticleMat;
-    class ExtParticleMat;
-  }
-}
-
 /// for particle simulation without using any algorithm related stuff
 namespace PARTICLE
 {
@@ -59,14 +45,20 @@ namespace PARTICLE
   {
   public:
 
-    ParticleHandler(
-      const Epetra_Comm& comm  ///< local epetra communicator
-      );
+    // constructor
+    ParticleHandler(const int myrank);
 
+    // constructor
+    ParticleHandler(const Epetra_Comm& comm);
+
+    // destructor
     virtual ~ParticleHandler(){};
 
     /// get binning strategy
     virtual inline Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategy() {return binstrategy_;}
+
+    /// initial distribution of particles ( more general nodes of bindis_ ) to bins
+    virtual void DistributeParticlesToBins(Teuchos::RCP<Epetra_Map> const& particlerowmap);
 
     /// get bin colume map
     virtual inline Teuchos::RCP<Epetra_Map>& BinColMap(){return bincolmap_;}
@@ -106,7 +98,6 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
       );
 
-
   protected:
 
     /// create graph for bin distribution
@@ -123,18 +114,16 @@ namespace PARTICLE
       std::map<int, std::set<int> >& fluideles  ///< map from bin id to row fluid elements in this bin
       );
 
-    //! @name particle related stuff
-    //@{
-
   private:
 
+    /// binning strategy
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
-    const int myrank_;    ///< myrank
+    /// myrank
+    const int myrank_;
 
-    Teuchos::RCP<Epetra_Map> bincolmap_;     ///< colmap of bins
-
-    //@}
+    /// colmap of bins
+    Teuchos::RCP<Epetra_Map> bincolmap_;
 
   };
 

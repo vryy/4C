@@ -24,6 +24,8 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
+
 
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_structure_new/str_timint_basedatasdyn.H"
@@ -48,9 +50,9 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
 
-  // Set statmech params interface pointer
+  // Set brownian params interface pointer
   if (IsParamsInterface())
-    SetStatMechParamsInterfacePtr();
+    SetBrownianDynParamsInterfacePtr();
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -370,7 +372,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnode);
 
   //Set current positions and orientations at all nodes:
@@ -747,7 +749,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnode);
 
   //Set current positions and orientations at all nodes:
@@ -1714,7 +1716,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnode);
 
   //internal force vector
@@ -1859,17 +1861,17 @@ void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(Teuchos::ParameterList&
     LINALG::Matrix<3,1> diff(true);
 
     LINALG::TMatrix<FAD,3,1> delta_r_ost(true);
-    std::vector<double> periodlength = *(StatMechParamsInterface().GetPeriodLength());
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> pbb = BrownianDynParamsInterface().GetPeriodicBoundingBox();
     for (unsigned int idim=0; idim<ndim; idim++)
     {
-      // difference in position of this GP as compared to last time step
-      delta_r_ost(idim) = evaluationpoint(idim) - rconvmass_[gp](idim);
+      double unshiftedrconvmass_i = rconvmass_[gp](idim);
+      double evaluationpoint_i_double = FADUTILS::CastToDouble(evaluationpoint(idim));
 
-      // manually adapt this difference in case of shifting due to PBC
-      if (periodlength[idim] > 0.0 and delta_r_ost(idim) >= 0.5*periodlength[idim])
-        delta_r_ost(idim) -= periodlength[idim];
-      else if (periodlength[idim] > 0.0 and delta_r_ost(idim) <= -0.5*periodlength[idim])
-        delta_r_ost(idim) += periodlength[idim];
+      // difference in position of this GP as compared to last time step
+      pbb->UnShift1D( idim, unshiftedrconvmass_i , evaluationpoint_i_double);
+
+      // difference in position of this GP as compared to last time step
+      delta_r_ost(idim) = evaluationpoint(idim) - unshiftedrconvmass_i;
 
       // velocity according to Backward Euler scheme
       vel_rel(idim) = delta_r_ost(idim)/dt;
@@ -1901,7 +1903,6 @@ void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(Teuchos::ParameterList&
     // compute viscous force vector per unit length at current GP
     f_visc.Multiply(damp_mat,vel_rel);
 
-
     // loop over all nodes used for centerline interpolation
     for (unsigned int inode=0; inode<nnode; inode++)
       // loop over dimensions
@@ -1929,7 +1930,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateStochasticForces(Teuchos::ParameterList& par
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
   LINALG::TMatrix<FAD,ndim,1> r_s(true);

@@ -42,7 +42,6 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/drt_validparameters.H"

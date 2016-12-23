@@ -30,6 +30,9 @@ PARTICLEBANDWIDTH               1.0
 FAST_CHECK                      yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
+DEFINEBINSPER                   binsperdir
+PERIODICONOFF                   1 0 0
+DEFINEXAABBPER                  input
 //CUTOFF_RADIUS                   0.4
 BIN_PER_DIR                     20 5 1
 BOUNDINGBOX                     -4.0 4.0 0.0 0.0 0.0 0.0
@@ -101,9 +104,6 @@ DSURF                           2
 E 2 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
 E 3 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
-------------------------------------DESIGN PARTICLE PERIODIC BOUNDARY CONDITION
-DPARTICLE                       1
-E 1 - ONOFF 1 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2 DNODE 1
 NODE 1 DNODE 2

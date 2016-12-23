@@ -34,7 +34,6 @@ Maintainer: Martin Kronbichler
 #include "inpar_twophase.H"
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
-#include "inpar_statmech.H"
 #include "inpar_fsi.H"
 #include "inpar_topopt.H"
 #include "inpar_lubrication.H"
@@ -75,6 +74,8 @@ Maintainer: Martin Kronbichler
 #include "inpar_volmortar.H"
 #include "inpar_loca_continuation.H"
 #include "../drt_tutorial/inpar_tutorial.H"
+#include "inpar_browniandyn.H"
+#include "inpar_crosslinking.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_plasticity.H"
 
@@ -632,7 +633,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::WEAR::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
-  INPAR::STATMECH::SetValidParameters(list);
+  INPAR::BROWNIANDYN::SetValidParameters(list);
+  INPAR::CROSSLINKING::SetValidParameters(list);
+
   INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);
 

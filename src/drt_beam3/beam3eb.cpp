@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_browniandyn.H"
 
 
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
       isinit_ = true;
 
       // set the flag statmechprob_
-      statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
+      statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
       //Get DiscretizationType
       DRT::Element::DiscretizationType distype = Shape();

@@ -301,7 +301,8 @@ public:
   const Teuchos::ParameterList& MortarCouplingParams() const { return getParameterList()->sublist("MORTAR COUPLING"); }
   const Teuchos::ParameterList& ContactDynamicParams() const { return getParameterList()->sublist("CONTACT DYNAMIC"); }
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
-  const Teuchos::ParameterList& StatisticalMechanicsParams() const { return getParameterList()->sublist("STATISTICAL MECHANICS"); }
+  const Teuchos::ParameterList& BrownianDynamicsParams() const { return getParameterList()->sublist("BROWNIAN DYNAMICS"); }
+  const Teuchos::ParameterList& CrosslinkingParams() const { return getParameterList()->sublist("CROSSLINKING"); }
   const Teuchos::ParameterList& ThermalDynamicParams() const { return getParameterList()->sublist("THERMAL DYNAMIC"); }
   const Teuchos::ParameterList& TSIDynamicParams() const { return getParameterList()->sublist("TSI DYNAMIC"); }
   const Teuchos::ParameterList& FluidDynamicParams() const { return getParameterList()->sublist("FLUID DYNAMIC"); }

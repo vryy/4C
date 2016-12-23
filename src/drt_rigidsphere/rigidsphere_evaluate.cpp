@@ -24,8 +24,9 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include <Epetra_CrsMatrix.h>
+
+#include "../drt_inpar/inpar_browniandyn.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -237,7 +238,8 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
       }
     }
     else
-      dserror("How did you get here? Rigidsphere damping forces should only be evaluated in StatMech environment!");
+      dserror("How did you get here? Rigidsphere damping forces should only be evaluated in StatMech environment!."
+              " Also rigid sphere needs to be transferred to new structural time integration ");
   }
 
   return;
@@ -257,46 +259,47 @@ void DRT::ELEMENTS::Rigidsphere::MyBackgroundVelocity(Teuchos::ParameterList& pa
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
-  double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  double dt = params.get<double>("delta time");
-
-  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-
-  // check and throw error if shear flow is applied
-  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
-  bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-     dbctype==INPAR::STATMECH::dbctype_affineshear||
-     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-  {
-    shearflow = true;
-    dserror("Shear flow not implemented yet for rigid spherical particles!");
-  }
-
-  // constant background velocity specified in input file?
-  Teuchos::RCP<std::vector<double> > constbackgroundvel = params.get("CONSTBACKGROUNDVEL", defvalues);
-
-  if (constbackgroundvel->size() != 3) dserror("\nSpecified vector for constant background velocity has wrong dimension! Check input file!");
-  bool constflow = false;
-  for (int i=0; i<3; ++i)
-  {
-    if (constbackgroundvel->at(i)!=0.0) constflow=true;
-  }
-
-  if(periodlength->at(0) > 0.0)
-  {
-    if(constflow && time>starttime && fabs(time-starttime)>dt/1e4)
-    {
-      for (int i=0; i<3; ++i) velbackground(i) = constbackgroundvel->at(i);
-
-      // shear flow AND constant background flow not implemented
-      if(shearflow) dserror("Conflict in input parameters: shearflow AND constant background velocity specified. Not implemented!\n");
-    }
-  }
+  dserror("Needs to be transferred to new structure time integration and new statmech");
+//  double time = params.get<double>("total time",0.0);
+//  double starttime = params.get<double>("STARTTIMEACT",0.0);
+//  double dt = params.get<double>("delta time");
+//
+//  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
+//  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
+//
+//  // check and throw error if shear flow is applied
+//  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
+//  bool shearflow = false;
+//  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+//     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+//     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+//     dbctype==INPAR::STATMECH::dbctype_affineshear||
+//     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
+//  {
+//    shearflow = true;
+//    dserror("Shear flow not implemented yet for rigid spherical particles!");
+//  }
+//
+//  // constant background velocity specified in input file?
+//  Teuchos::RCP<std::vector<double> > constbackgroundvel = params.get("CONSTBACKGROUNDVEL", defvalues);
+//
+//  if (constbackgroundvel->size() != 3) dserror("\nSpecified vector for constant background velocity has wrong dimension! Check input file!");
+//  bool constflow = false;
+//  for (int i=0; i<3; ++i)
+//  {
+//    if (constbackgroundvel->at(i)!=0.0) constflow=true;
+//  }
+//
+//  if(periodlength->at(0) > 0.0)
+//  {
+//    if(constflow && time>starttime && fabs(time-starttime)>dt/1e4)
+//    {
+//      for (int i=0; i<3; ++i) velbackground(i) = constbackgroundvel->at(i);
+//
+//      // shear flow AND constant background flow not implemented
+//      if(shearflow) dserror("Conflict in input parameters: shearflow AND constant background velocity specified. Not implemented!\n");
+//    }
+//  }
 
 }
 

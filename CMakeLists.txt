@@ -754,10 +754,14 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cardiovascular0d.cpp
   src/drt_inpar/inpar_acou.cpp
   src/drt_inpar/inpar_ale.cpp
+#  src/drt_inpar/inpar_biopolynet_dbc.cpp
   src/drt_inpar/inpar_beamcontact.cpp
+  src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
+  src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
+  src/drt_inpar/inpar_crosslinking.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_cell.cpp
@@ -790,7 +794,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_solver.cpp
   src/drt_inpar/inpar_solver_nonlin.cpp
   src/drt_inpar/inpar_ssi.cpp
-  src/drt_inpar/inpar_statmech.cpp
   src/drt_inpar/inpar_sti.cpp
   src/drt_inpar/inpar_structure.cpp
   src/drt_inpar/inpar_thermo.cpp
@@ -1486,6 +1489,7 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
   src/drt_biopolynet/crosslinker_node.cpp
+  src/drt_biopolynet/periodic_boundingbox.cpp
   src/drt_particle/particle_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
@@ -1704,7 +1708,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
-  src/drt_structure_new/str_dbc_biopolynet.cpp
+#  src/drt_structure_new/str_dbc_biopolynet.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
   src/drt_structure_new/str_impl_generic.cpp
@@ -1718,7 +1722,8 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_data.cpp
   src/drt_structure_new/str_model_evaluator_beamdata.cpp
   src/drt_structure_new/str_model_evaluator_contactdata.cpp
-  src/drt_structure_new/str_model_evaluator_biopolynetdata.cpp
+  src/drt_structure_new/str_model_evaluator_browniandyn.cpp
+  src/drt_structure_new/str_model_evaluator_browniandyndata.cpp
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
@@ -1727,9 +1732,15 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
-  src/drt_structure_new/str_model_evaluator_browniandyn.cpp
-  src/drt_structure_new/str_model_evaluator_crosslinking.cpp
+  src/drt_structure_new/str_model_evaluator_beaminteraction_old.cpp
   src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
+  src/drt_structure_new/str_model_evaluator_beaminteraction_datastate.cpp
+  src/drt_structure_new/beaminteraction_submodel_evaluator_factory.cpp
+  src/drt_structure_new/beaminteraction_submodel_evaluator_generic.cpp
+  src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_structure_new/crosslinking_params.cpp
+  src/drt_structure_new/beaminteraction_submodel_evaluator_crosslinking.cpp
+  src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
   src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
@@ -1749,7 +1760,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_basedataio.cpp
   src/drt_structure_new/str_timint_basedataglobalstate.cpp
   src/drt_structure_new/str_timint_basedatasdyn.cpp
-  src/drt_structure_new/str_timint_databiopolynetdyn.cpp
   src/drt_structure_new/str_timint_explicit.cpp
   src/drt_structure_new/str_timint_implicit.cpp
   src/drt_structure_new/str_timint_implicitbase.cpp

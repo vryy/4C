@@ -47,9 +47,9 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 {
   // Set structure params interface pointer
   SetParamsInterfacePtr(params);
-  // Set statmech params interface pointer
+  // Set brwonian params interface pointer
   if (IsParamsInterface())
-    SetStatMechParamsInterfacePtr();
+    SetBrownianDynParamsInterfacePtr();
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -702,7 +702,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   //************ statmech periodic boundary conditions **********************
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnodecl);
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
@@ -1747,7 +1747,7 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(StatMechParamsInterfacePtr() != Teuchos::null)
+  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
     UnShiftNodePosition(disp,nnodecl);
 
   /****** update/compute key variables describing displacement and velocity state of this element *****/
@@ -2322,7 +2322,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces = StatMechParamsInterface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
 
   // my random number vector at current GP
   LINALG::Matrix<ndim,1> randnumvec(true);

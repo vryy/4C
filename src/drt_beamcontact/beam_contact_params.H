@@ -33,7 +33,7 @@ namespace BEAMINTERACTION {
     virtual ~BeamContactParams() {};
 
     //! initialize with the stuff coming from input file
-    void Init(const Teuchos::ParameterList& beam_contact_params_list);
+    void Init();
 
     //! setup member variables
     void Setup();

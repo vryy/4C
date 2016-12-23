@@ -13,9 +13,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_biopolynet/biopolynet_calc_utils.H"
-
-#include "../drt_inpar/inpar_statmech.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
 
 #include <Sacado.hpp>
 
@@ -25,12 +23,12 @@
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
 DRT::Element(id,owner),
 interface_ptr_(Teuchos::null),
-sm_interface_ptr_(Teuchos::null)
+browndyn_interface_ptr_(Teuchos::null)
 {
   // todo: this is a temporary hack, should of course be set from outside
-  for (unsigned int i=0; i<3; ++i)
+  for (unsigned int i=0; i<1; ++i)
   {
-    bspotposxi_.push_back(-0.5+i*0.5);
+    bspotposxi_.push_back(0.0);
     bspotstatus_[i] = -1;
   }
   // empty
@@ -104,9 +102,9 @@ void DRT::ELEMENTS::Beam3Base::SetParamsInterfacePtr(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::SetStatMechParamsInterfacePtr()
+void DRT::ELEMENTS::Beam3Base::SetBrownianDynParamsInterfacePtr()
 {
-  sm_interface_ptr_ = interface_ptr_->GetStatMechParamInterface();
+  browndyn_interface_ptr_ = interface_ptr_->GetBrownianDynParamInterface();
 
   return;
 }
@@ -120,9 +118,9 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsInt
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<STATMECH::ParamsInterface> DRT::ELEMENTS::Beam3Base::StatMechParamsInterfacePtr() const
+Teuchos::RCP<BROWNIANDYN::ParamsInterface> DRT::ELEMENTS::Beam3Base::BrownianDynParamsInterfacePtr() const
 {
-  return sm_interface_ptr_;
+  return browndyn_interface_ptr_;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -192,9 +190,9 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
    * (1) damping of translation orthogonal to axis,
    * (2) damping of rotation around its own axis */
 
-  gamma(0) = 2*PI*StatMechParamsInterface().GetEta();
-  gamma(1) = 4*PI*StatMechParamsInterface().GetEta();
-  gamma(2) = 4*PI*StatMechParamsInterface().GetEta() * std::sqrt(4*this->Iyy()/PI);
+  gamma(0) = 2*PI*BrownianDynParamsInterface().GetViscosity();
+  gamma(1) = 4*PI*BrownianDynParamsInterface().GetViscosity();
+  gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity() * std::sqrt(4*this->Iyy()/PI);
 }
 
 /*----------------------------------------------------------------------*
@@ -211,51 +209,41 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(Teuchos::ParameterList&    
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
 
   //velocity at upper boundary of domain
-  double uppervel = 0.0;
+//  double uppervel = 0.0;
 
   //default values for background velocity and its gradient
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
-  double time = -1.0;
-  double dt = 1000;
-  if (IsParamsInterface())
-  {
-    time = ParamsInterface().GetTotalTime();
-    dt = ParamsInterface().GetDeltaTime();
-  }
-  else
-  {
-    time = params.get<double>("total time",-1.0);
-    dt = params.get<double>("delta time");
-  }
-  double starttime = StatMechParamsInterface().GetStartTimeAction();
-  double shearamplitude = StatMechParamsInterface().GetShearAmplitude();
-  int curvenumber = StatMechParamsInterface().GetCurveNumber() - 1;
-  int dbcdispdir = StatMechParamsInterface().GetDbcDispDir() - 1;
-
-  Teuchos::RCP<std::vector<double> > periodlength = StatMechParamsInterface().GetPeriodLength();
-  INPAR::STATMECH::DBCType dbctype = StatMechParamsInterface().GetDbcType();
-  bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-     dbctype==INPAR::STATMECH::dbctype_affineshear||
-     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-    shearflow = true;
-
-  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
-  if(periodlength->at(0) > 0.0)
-    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 && dbcdispdir >= 0 )
-    {
-      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
-
-      //compute background velocity
-      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
-
-      //compute gradient of background velocity
-      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
-    }
+  // fixme: this needs to go somewhere else, outside element level
+//  double time = -1.0;
+//
+//  double shearamplitude = BrownianDynParamsInterface().GetShearAmplitude();
+//  int curvenumber = BrownianDynParamsInterface().GetCurveNumber() - 1;
+//  int dbcdispdir = BrownianDynParamsInterface().GetDbcDispDir() - 1;
+//
+//  Teuchos::RCP<std::vector<double> > periodlength = BrownianDynParamsInterface().GetPeriodLength();
+//  INPAR::STATMECH::DBCType dbctype = BrownianDynParamsInterface().GetDbcType();
+//  bool shearflow = false;
+//  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+//     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+//     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+//     dbctype==INPAR::STATMECH::dbctype_affineshear||
+//     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
+//    shearflow = true;
+//
+//  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
+//  if(periodlength->at(0) > 0.0)
+//    if(shearflow &&  curvenumber >=  0 && dbcdispdir >= 0 )
+//    {
+//      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+//
+//      //compute background velocity
+//      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
+//
+//      //compute gradient of background velocity
+//      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
+//    }
 }
 
 /*-----------------------------------------------------------------------------*
@@ -263,28 +251,14 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(Teuchos::ParameterList&    
  | periodic boundary conditions; if two nodes within one element are se-       |
  | parated by a periodic boundary, one of them is shifted such that the final  |
  | distance in R^3 is the same as the initial distance in the periodic         |
- | space; the shift affects computation on element level within that very      |
+ | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
-    const std::vector<double>& periodlength, unsigned int nnode) const
+void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
+    std::vector<double>& disp,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+    unsigned int nnode) const
 {
-  /* note: crosslinker are set only if both bindingspots of the filaments that are
-   * crosslinked lie inside the periodic bounding box. Therefore the crosslinker
-   * elements need the shifted configuration on element level (in contrary to the
-   * filament elements). As they were set in the bounding box they get not un-
-   * shifted here, which is correct. They only get shifted if during crosslinker
-   * diffusion one node exits the periodic bounding box.
-   *
-   * author Jonas Eichinger                                       08/16 */
-
-  // get dimension
-  const int ndim = 3;
-
-  // do nothing in case periodic boundary conditions are inactive
-  if(periodlength[0] <= 0.0)
-    return;
-
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
@@ -292,47 +266,35 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  for(unsigned int i=1;i<nnode;i++)
-    for(int dof= ndim - 1; dof > -1; dof--)
-    {
-      BIOPOLYNET::UTILS::PeriodicBoundaryUnShift1D(
-          disp[numdof*i+dof],
-          Nodes()[0]->X()[dof] + disp[numdof*0+dof],
-          periodlength[dof],
-          Nodes()[i]->X()[dof]);
-    }
-
-  // that's it
-  return;
-
-} // NodeShift()
+  for(unsigned int i = 1; i < nnode; ++i)
+    for( int dim = 0; dim < 3; ++dim )
+      periodic_boundingbox->UnShift1D( dim, disp[numdof*i+dim], Nodes()[0]->X()[dim] + disp[numdof*0+dim], Nodes()[i]->X()[dim]);
+}
 
 //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
                                         const unsigned int nnode) const
 {
-  this->UnShiftNodePosition(disp,*(StatMechParamsInterface().GetPeriodLength()),nnode);
+  this->UnShiftNodePosition(disp,BrownianDynParamsInterface().GetPeriodicBoundingBox(),nnode);
 }
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
-                                                   std::vector<double>&       disp,
-                                                   const int&                 bspotlocn,
-                                                   const std::vector<double>& periodlength) const
+void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
+                                                   std::vector<double>& disp,
+                                                   const int& bspotlocn,
+                                                   Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
 {
   // unshift node position to get correct position at xi
-  UnShiftNodePosition(disp,periodlength,NumCenterlineNodes());
+  UnShiftNodePosition(disp,periodic_boundingbox,NumCenterlineNodes());
 
   const double xi = bspotposxi_[bspotlocn];
   // get position
   GetPosAtXi(pos,xi,disp);
 
-  // check if xi lies outside the periodic box, if it does, shift it back in
-  BIOPOLYNET::UTILS::PeriodicBoundaryShift(pos,periodlength);
+  // check if pos at xi lies outside the periodic box, if it does, shift it back in
+  periodic_boundingbox->Shift3D(pos);
 
-  // that is it
   return;
-
 }
 
 /*--------------------------------------------------------------------------------------------*

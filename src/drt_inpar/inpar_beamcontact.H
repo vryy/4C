@@ -30,6 +30,14 @@ namespace INPAR
       bstr_gmshonly     ///< misuse of beam contact module for GMSH output
     };
 
+    /// Type of employed solving strategy
+    /// (this enum represents the input file parameter BEAMS_STRATEGY)
+    enum Modelevaluator
+    {
+      bstr_old,         ///<  use old beaminteraction model
+      bstr_standard     ///<  use new beamcontact submodel
+    };
+
     /// Application of a smoothed tangent field
     /// (this enum represents the input file parameter BEAMS_SMOOTHING)
     enum Smoothing

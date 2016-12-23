@@ -135,11 +135,13 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(
   // Average span between two triangles coincident with edge
   FAD Span_neighbours=(height_ref_master+height_ref_neighbour)/6;
 
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Penalty parameter
-  FAD curvature_penalty=StatMechParams.get<double>("CURV_PENALTY",0.0);
-  if (curvature_penalty==0)
-    dserror("Please enter a non-zero CURV_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  // Penalty parameter
+//  FAD curvature_penalty=StatMechParams.get<double>("CURV_PENALTY",0.0);
+//  if (curvature_penalty==0)
+//    dserror("Please enter a non-zero CURV_PENALTY");
+
+  FAD curvature_penalty = 0.0;
 
   // Full energy formulation
   FAD BehaviorFunctCurvature = (ThetaCurr-ThetaRef)*pow((this->GetRefEdgeLength()/Span_neighbours),0.5);
@@ -870,10 +872,12 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
                                                         LINALG::TMatrix<FAD,1,12> & ana_force_aux,
                                                         LINALG::TMatrix<FAD,12,12> & stiff_dummy)
 {
-  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  FAD line_penalty=StatMechParams.get<double>("LINE_PENALTY",0.0);
-  if (line_penalty==0)
-    dserror("Please enter a non-zero LINE_PENALTY");
+//  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+//  FAD line_penalty=StatMechParams.get<double>("LINE_PENALTY",0.0);
+//  if (line_penalty==0)
+//    dserror("Please enter a non-zero LINE_PENALTY");
+
+  FAD line_penalty = 0.0;
 
   FAD Edge_length_ref = GetEdgeLengthPrevTimeStep();
 

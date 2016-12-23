@@ -121,20 +121,6 @@ public:
   virtual inline const int& GetLocBSpotNum(const int& elenum) const {
     return bspotIds_[elenum].second; }
 
-  /*!
-  \brief Return involved processor IDs
-  */
-  virtual inline const std::set<int>& GetInvolvedProcs() const {
-    return involvedprocs_; }
-
-  /*!
-  \brief Set class variable storing involved processor IDs
-  */
-  virtual inline void SetInvolvedProcs(std::set<int>& involvedprocs) {
-    involvedprocs_.clear();
-    involvedprocs_ = involvedprocs;
-    return; }
-
   //! return position of first connection site
   inline const LINALG::TMatrix<double,3,1>& GetBindSpotPos1() const
     { return bspotpos1_; }
@@ -191,7 +177,7 @@ public:
 
   //! return appropriate instance of the desired class (acts as a simple factory)
   static Teuchos::RCP<BeamToBeamLinkage> Create();
-
+  void Print(std::ostream& out) const;
   //@}
 
 protected:
@@ -217,7 +203,7 @@ protected:
       dserror("Call Init() and Setup() first!");
   }
 
-  void Print(std::ostream& out) const;
+
 
 protected:
   //! @name member variables
@@ -236,9 +222,6 @@ private:
   //! unique identifiers for first [0] and second [1] binding spot:
   // each is a pair of element GID and local binding spot number
   std::vector<std::pair<int, int> > bspotIds_;
-
-  //! involved procs
-  std::set<int> involvedprocs_;
 
   //! current position of the two connection sites (a.k.a. binding spots)
   LINALG::Matrix<3,1> bspotpos1_;

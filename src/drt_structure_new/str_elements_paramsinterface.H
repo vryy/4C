@@ -22,12 +22,16 @@
 #include "../drt_lib/drt_elements_paramsinterface.H"    // base class
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enums
 
-#include "../drt_inpar/inpar_statmech.H"
 #include "Epetra_MultiVector.h"
 
 
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
+}
+}
 // forward declaration
-namespace STATMECH {
+namespace BROWNIANDYN {
   class ParamsInterface;
 }
 namespace STR {
@@ -91,7 +95,7 @@ namespace ELEMENTS {
 
     //! @name Model specific interfaces
     //! @{
-    virtual Teuchos::RCP<STATMECH::ParamsInterface> GetStatMechParamInterface() const = 0;
+    virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const = 0;
 
     //! get pointer to special parameter interface for beam elements
     virtual const Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
@@ -177,40 +181,26 @@ namespace ELEMENTS {
 } // namespace ELEMENTS
 } // namespace STR
 
-/*! \brief Parameter interface for statmech data exchange between integrator and structure (beam) elements*/
-namespace STATMECH {
+/*! \brief Parameter interface for brownian dynamic data exchange between integrator and structure (beam) elements
+*  \author eichinger */
+namespace BROWNIANDYN {
   class ParamsInterface
   {
     public:
     //! destructor
     virtual ~ParamsInterface() {};
 
-    //! get dirichlet boundary condtion type
-    virtual const INPAR::STATMECH::DBCType& GetDbcType() const = 0;
+    /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
+    virtual double const& GetViscosity() const = 0;
 
-    //! get vector holding the dimensions of the periodic box
-    virtual const Teuchos::RCP<std::vector<double> >& GetPeriodLength() const = 0;
-
-    //! get shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain
-    virtual const double& GetShearAmplitude() const = 0;
-
-    //! get background fluid viscosity
-    virtual const double& GetEta() const = 0;
-
-    //! get direction of applied dirchlet boundary conditions
-    virtual const int& GetDbcDispDir() const = 0;
-
-    //! get specified time curve number of imposed Dirichlet BCs
-    virtual const int& GetCurveNumber() const = 0;
-
-    //! get start time for action
-    virtual const double& GetStartTimeAction() const = 0;
+    //! get vector holding periodic bounding box object
+    virtual Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const = 0;
 
     //! get the current step length
     virtual const Teuchos::RCP< Epetra_MultiVector>& GetRandomForces() const= 0;
 
-  };  // class ParamsInterface
-} // namespace STATMECH
+  };
+}
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_ */

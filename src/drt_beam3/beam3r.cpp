@@ -20,7 +20,6 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_structure.H"
 
 DRT::ELEMENTS::Beam3rType DRT::ELEMENTS::Beam3rType::instance_;
@@ -954,7 +953,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     isinit_ = true;
 
     // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB");
+    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     // check input data
     if (xrefe.size() != 3*nnodecl)

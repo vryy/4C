@@ -25,7 +25,7 @@
 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_browniandyn.H"
 
 
 //#define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented

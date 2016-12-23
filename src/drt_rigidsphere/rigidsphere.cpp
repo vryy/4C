@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_browniandyn.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 

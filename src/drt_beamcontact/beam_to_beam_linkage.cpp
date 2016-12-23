@@ -174,8 +174,6 @@ void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
 
   // add eleids_
   AddtoPack(data,bspotIds_);
-  // add involved procs
-  AddtoPack(data,involvedprocs_);
   // bspotpos1_
   AddtoPack(data,bspotpos1_);
   // bspotpos2_
@@ -211,8 +209,6 @@ void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
 
   // eleids_
   ExtractfromPack(position,data,bspotIds_);
-  // involved procs
-  ExtractfromPack(position,data,involvedprocs_);
   // bspotpos1_
   ExtractfromPack(position,data,bspotpos1_);
   // bspotpos2_
@@ -263,7 +259,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
 
   // safety check until code is better tested for potential problems with periodic boundary conditions
   // **************************** DEBUG ****************************************
-  LINALG::Matrix<3,1> dist;
+  LINALG::Matrix<3,1> dist ( true );
   dist.Update(1.0,bspotpos[0],-1.0,bspotpos[1]);
   for (unsigned int i=0; i<3; ++i)
   {

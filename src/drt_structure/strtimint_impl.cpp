@@ -61,7 +61,6 @@
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_discsh3/discsh3.H"
-#include "../drt_structure_new/str_timint_databiopolynetdyn.H"
 #include "../solver_nonlin/nln_operator_base.H"
 #include "../solver_nonlin/nln_operator_factory.H"
 #include "../solver_nonlin/nln_problem.H"

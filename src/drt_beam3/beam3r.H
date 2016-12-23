@@ -30,7 +30,6 @@
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
 
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include "beam3_base.H"

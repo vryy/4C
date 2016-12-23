@@ -461,24 +461,32 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,
           "BEAMS_STRATEGY");
 
+  INPAR::BEAMCONTACT::Modelevaluator modelevaluator =
+      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Modelevaluator>(beamcontact,
+          "MODELEVALUATOR");
+
   // conditions for potential-based beam interaction
   std::vector<DRT::Condition*> beampotconditions(0);
   actdis_->GetCondition("BeamPotentialLineCharge",beampotconditions);
 
-  if (strategy != INPAR::BEAMCONTACT::bstr_none or beampotconditions.size())
-    modeltypes.insert(INPAR::STR::model_beam_interaction);
+  if ((strategy != INPAR::BEAMCONTACT::bstr_none or beampotconditions.size()) and
+      modelevaluator == INPAR::BEAMCONTACT::bstr_old)
+    modeltypes.insert(INPAR::STR::model_beam_interaction_old);
 
   // ---------------------------------------------------------------------------
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "STATMECHPROB"))
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
     modeltypes.insert(INPAR::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
-  // check for crosslinking in biopolymer networks
+  // check for beaminteraction (so far crosslinking and beamcontact)
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(), "CROSSLINKER"))
-    modeltypes.insert(INPAR::STR::model_crosslinking);
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CrosslinkingParams(), "CROSSLINKER") or
+      (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
+      DRT::Problem::Instance()->BeamContactParams(),"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none and
+      modelevaluator == INPAR::BEAMCONTACT::bstr_standard ) )
+    modeltypes.insert(INPAR::STR::model_beaminteraction);
 
   // hopefully we haven't forgotten anything
   return;

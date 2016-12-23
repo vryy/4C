@@ -17,7 +17,6 @@
 #include "str_timint_base.H"
 #include "str_dbc.H"
 #include "../drt_lib/drt_dserror.H"
-#include "str_dbc_biopolynet.H"
 
 // supported implicit time integrators
 #include "str_impl_statics.H"
@@ -140,14 +139,10 @@ Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(
 Teuchos::RCP<STR::Dbc>  STR::Factory::BuildDbc(
     const STR::TIMINT::BaseDataSDyn& datasdyn) const
 {
+  // if you want your model specific dbc object, check here if your model type is
+  // active ( datasdyn.GetModelTypes() )and build your own dbc object
   Teuchos::RCP<STR::Dbc> dbc = Teuchos::null;
-
-  const std::set<enum INPAR::STR::ModelType>& modeltypes = datasdyn.GetModelTypes();
-
-  if(modeltypes.find(INPAR::STR::model_browniandyn) != modeltypes.end())
-    dbc = Teuchos::rcp(new STR::DbcBioPolyNet());
-  else
-    dbc = Teuchos::rcp(new STR::Dbc());
+  dbc = Teuchos::rcp(new STR::Dbc());
 
   return dbc;
 }

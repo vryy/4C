@@ -54,6 +54,9 @@ namespace BINSTRATEGY
   {
   public:
 
+    /// standard constructor
+    BinningStrategy();
+
     /// constructor
     BinningStrategy(
       const Epetra_Comm& lcomm,  ///< local epetra communicator
@@ -74,14 +77,19 @@ namespace BINSTRATEGY
     /// destructor
     virtual ~BinningStrategy(){};
 
-    /// get binning discretization
-    virtual inline Teuchos::RCP<DRT::Discretization>& BinDiscret() {return bindis_;}
+    /// initialize binning strategy
+    virtual void Init( Teuchos::RCP<DRT::Discretization>& bindis,
+                       Teuchos::RCP<DRT::Discretization> const discret = Teuchos::null,
+                       Teuchos::RCP<Epetra_Vector> const disnp = Teuchos::null);
 
-    /// set binning discretization
-    virtual inline void SetBinDiscret(Teuchos::RCP<DRT::Discretization>& bindis) {
-      bindis_ = bindis;
-      return;
-    }
+    /// setup binning strategy
+    virtual void Setup();
+
+    /// fill bins into bin discretization
+    virtual void FillBinsIntoBinDiscretization( Teuchos::RCP<Epetra_Map> const& rowbins);
+
+    /// get binning discretization ( nodes = particles, elements = bins)
+    virtual inline Teuchos::RCP<DRT::Discretization>& BinDiscret() {return bindis_;}
 
     /// get dimension of particle problem
     virtual inline INPAR::PARTICLE::ParticleDim const& ParticleDim() const {return particle_dim_;}
@@ -120,7 +128,7 @@ namespace BINSTRATEGY
 
     /// beams (considering cut elements according to  are assigned to bins
     virtual void DistributeCutElesToBins(
-      Teuchos::RCP<DRT::Discretization> discret,           ///< discret of which the elements are distributed to bins
+      Teuchos::RCP<DRT::Discretization> const& discret,           ///< discret of which the elements are distributed to bins
       std::map<int, std::set<int> >& rowelesinbin,         ///< map of bins and assigned row elements
       Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null    ///< statevector holding current displacements of discret's nodes
       ) const;
@@ -153,10 +161,11 @@ namespace BINSTRATEGY
 
     /// weighted distribution of bins to procs according to number of nodes they contain
     virtual Teuchos::RCP<Epetra_Map> WeightedDistributionOfBinsToProcs(
-      std::vector<Teuchos::RCP<DRT::Discretization> >  discret,
-      std::vector<Teuchos::RCP<Epetra_Vector> >        disnp,
+      std::vector< Teuchos::RCP<DRT::Discretization> >&  discret,
+      std::vector< Teuchos::RCP<Epetra_Vector> >&        disnp,
       std::vector<std::map<int, std::vector<int> > > & nodesinbin,
-      bool repartition
+      double const& weight,
+      bool repartition = false
       ) const;
 
     /// element map with extended ghosting for master side of mortar problem is returned
@@ -200,14 +209,13 @@ namespace BINSTRATEGY
      );
 
     virtual void StandardDiscretizationGhosting(
-      Teuchos::RCP<DRT::Discretization> discret,
-      Teuchos::RCP<Epetra_Map>          rowbins,
-      Teuchos::RCP<Epetra_Vector>&      disnp,
-      Teuchos::RCP<Epetra_Map>&         stdelecolmap,
-      Teuchos::RCP<Epetra_Map>&         stdnodecolmap,
-      std::map<int, std::vector<int> >  nodesinbin
+      Teuchos::RCP<DRT::Discretization> const& discret,
+      Teuchos::RCP<Epetra_Map> const&          rowbins,
+      Teuchos::RCP<Epetra_Vector>&             disnp,
+      Teuchos::RCP<Epetra_Map>&                stdelecolmap,
+      Teuchos::RCP<Epetra_Map>&                stdnodecolmap,
+      std::map<int, std::vector<int> >         nodesinbin
       ) const;
-
 
     virtual void ExtendGhosting(
       std::vector<Teuchos::RCP<DRT::Discretization> > dis
@@ -228,9 +236,8 @@ namespace BINSTRATEGY
     virtual void CollectInformation(
       Teuchos::RCP<Epetra_Map> rowbins,
       std::map<int, std::vector<int> >& nodesinbin,
-      std::map<int, std::vector<int> >& mynodesinbin
+      std::map<int, std::vector<int> >& nodesinmybins
       ) const;
-
 
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
@@ -319,9 +326,6 @@ namespace BINSTRATEGY
         std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
         std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap) const;
 
-    /// build periodic boundary conditions
-    virtual void BuildPeriodicBC(Teuchos::RCP<std::vector<double> > periodlength);
-
     // create XAABB for discretizations and compute cutoff with largest element in discret
     void CreateXAABB(
       std::vector<Teuchos::RCP<DRT::Discretization> > discret,
@@ -330,14 +334,14 @@ namespace BINSTRATEGY
       );
 
     // compute max cutoff as largest element in discret
-    virtual void ComputeMaxCutoff(
+    virtual void ComputeMinCutoff(
       std::vector<Teuchos::RCP<DRT::Discretization> > discret,
       std::vector<Teuchos::RCP<Epetra_Vector> >disnp
       );
 
     /// bins are created based on XAABB and cutoff radius
     virtual void CreateBins(
-      Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
+      Teuchos::RCP<DRT::Discretization> dis = Teuchos::null   ///< underlying discret which can be used to compute bounding box
       );
 
     /// bins are created based on XAABB and cutoff radius
@@ -360,7 +364,7 @@ namespace BINSTRATEGY
     virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> discret,
                              Teuchos::RCP<Epetra_Vector>       disnp,
                              LINALG::Matrix<3,2>&              XAABB,
-                             bool                              setcutoff);
+                             bool                              setcutoff = false);
 
     /// build periodic boundary conditions
     virtual void BuildPeriodicBC();
@@ -404,11 +408,11 @@ namespace BINSTRATEGY
     //! @name miscellaneous stuff
     //@{
 
-    const int myrank_;    ///< myrank
+    int myrank_;    ///< myrank
 
     //@}
 
-  }; // BinningStrategy
+  };
 
   // class for comparing Teuchos::RCP<DRT::Node> in a std::set
   class Less
@@ -418,8 +422,8 @@ namespace BINSTRATEGY
     bool operator()(const Teuchos::RCP<ELEMENT>& first, const Teuchos::RCP<ELEMENT>& second) const { return first->Id() < second->Id(); }
   };
 
-} // namespace BINSTRATEGY
+}
 
 
 /*----------------------------------------------------------------------*/
-#endif  // BINNING_STRATEGY_H
+#endif

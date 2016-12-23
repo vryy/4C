@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_biopolynetdata.cpp
+\file str_model_evaluator_browniandyndata.cpp
 
-\brief Concrete implementation of the statmech parameter interface
+\brief Concrete implementation of the brownian dynamic parameter interface
 
 \maintainer Jonas Eichinger
 
@@ -17,43 +17,54 @@
 #include "str_model_evaluator_data.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "str_timint_base.H"
-#include "str_timint_databiopolynetdyn.H"
-#include "str_timint_databiopolynetdyn.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::StatMechData::StatMechData()
+STR::MODELEVALUATOR::BrownianDynData::BrownianDynData()
     : isinit_(false),
       issetup_(false),
-      smdyn_ptr_(Teuchos::null),
+      str_data_ptr_(Teuchos::null),
+      viscosity_(0.0),
+      kt_(0.0),
+      maxrandforce_(0.0),
+      timeintconstrandnumb_(0.0),
       randomforces_(Teuchos::null)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------*
- |  Init statmech data                         (public)  eichinger 06/16|
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::StatMechData::Init(
-    const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr,
-    const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr_)
+void STR::MODELEVALUATOR::BrownianDynData::Init(
+    const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr)
 {
   issetup_ = false;
 
-  smdyn_ptr_ = sdyn_ptr_->GetDataSMDynPtr();
+  str_data_ptr_ = str_data_ptr;
+
+  const Teuchos::ParameterList& brwondyn_params_list =
+      DRT::Problem::Instance()->BrownianDynamicsParams();
+
+  // viscosity
+  viscosity_ =  brwondyn_params_list.get<double> ("VISCOSITY");
+  // thermal energy
+  kt_ = brwondyn_params_list.get<double> ("KT");
+  // maximum random force
+  maxrandforce_ = brwondyn_params_list.get<double> ("MAXRANDFORCE");
+  // time intervall with constant random forces
+  timeintconstrandnumb_ = brwondyn_params_list.get<double> ("TIMEINTCONSTRANDFORCES");
 
   // set flag
   isinit_ = true;
 
   return;
 
-} // Init()
+}
 
 /*----------------------------------------------------------------------*
- |  Setup                                      (public)  eichinger 06/16|
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::StatMechData::Setup()
+void STR::MODELEVALUATOR::BrownianDynData::Setup()
 {
   CheckInit();
 
@@ -61,20 +72,19 @@ void STR::MODELEVALUATOR::StatMechData::Setup()
   issetup_ = true;
 
   return;
-} // Setup()
+}
 
 /*----------------------------------------------------------------------*
- |  Reszize Multivector with random forces     (public)  eichinger 06/16|
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::StatMechData::ResizeRandomForceMVector(
+void STR::MODELEVALUATOR::BrownianDynData::ResizeRandomForceMVector(
     Teuchos::RCP<DRT::Discretization> discret_ptr,
     int                               maxrandnumelement)
 {
   CheckInitSetup();
 
   // resize in case of new crosslinkers that were set and are now part of the discretization
-  randomforces_=
-      Teuchos::rcp( new Epetra_MultiVector(*(discret_ptr->ElementColMap()),maxrandnumelement,true) );
+  randomforces_= Teuchos::rcp( new Epetra_MultiVector(
+      *(discret_ptr->ElementColMap()),maxrandnumelement,true) );
 
   return;
-} // ResizeRandomForceMVector()
+}

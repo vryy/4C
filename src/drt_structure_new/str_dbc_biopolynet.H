@@ -18,7 +18,6 @@
 
 #include <Teuchos_RCP.hpp>
 #include "str_dbc.H"
-#include "../drt_inpar/inpar_statmech.H"
 
 
 // forward declarations
@@ -39,8 +38,8 @@ namespace LINALG
 
 namespace STR {
 namespace TIMINT {
-  class DataSMDyn;
-} // namespace TIMINT
+  class MeshFreeData;
+}
 
   class DbcBioPolyNet : public Dbc
   {
@@ -81,9 +80,6 @@ namespace TIMINT {
                                    Teuchos::RCP<Epetra_Vector>        vel,
                                    Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
-    /*! \brief signals whether or not to start DBC application according to given time
-     * \param params  (in)  Paramter list*/
-    bool DbcStart(Teuchos::ParameterList& params);
 
     /* \brief evaluate Dirichlet conditions*/
     void DoDirichletConditionPredefined(DRT::Condition&              cond,
@@ -179,7 +175,7 @@ namespace TIMINT {
   protected:
 
     //! statmech dynamics data container
-    Teuchos::RCP<const STR::TIMINT::DataSMDyn> smdyn_ptr_;
+    Teuchos::RCP<const STR::TIMINT::MeshFreeData> smdyn_ptr_;
 
     //! \brief vector of node sets for DBC application
     std::vector<std::vector<int> > dbcnodesets_;

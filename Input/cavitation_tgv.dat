@@ -21,6 +21,9 @@ RESTART                         0
 VERBOSITY                       Standard
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
+DEFINEBINSPER                   cutoff
+PERIODICONOFF                   1 1 0
+DEFINEXAABBPER                  input
 BOUNDINGBOX                     -0.05 -0.05 -0.0625 +0.05 +0.05 +0.0625
 CUTOFF_RADIUS                   5.0e-3
 ----------------------------------------------------------PARTICLE DYNAMIC
@@ -147,9 +150,6 @@ E 6 - 2 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 DVOL                            1
 //                              volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
-------------------------------------DESIGN PARTICLE PERIODIC BOUNDARY CONDITION
-DPARTICLE                       1
-E 1 - ONOFF 1 1 0 boundaries -0.05 0.05 -0.05 0.05 -0.0625 0.0625
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

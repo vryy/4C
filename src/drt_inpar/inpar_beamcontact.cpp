@@ -38,6 +38,14 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
                 bstr_gmshonly,bstr_gmshonly),
         &beamcontact);
 
+  setStringToIntegralParameter<int>("MODELEVALUATOR","old","Type of model evaluator",
+        tuple<std::string>("Old","old",
+                           "Standard", "standard"),
+        tuple<int>(
+                bstr_old, bstr_old,
+                bstr_standard, bstr_standard),
+        &beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                yesnotuple,yesnovalue,&beamcontact);
 
