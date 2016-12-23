@@ -307,7 +307,7 @@ void DRT::DiscretizationCombust::EvaluateEdgeBasedCombust(
       {
           for(std::size_t ib=0; ib<block_vec.size(); ib++)
             // here, the to fields are equal
-            systemmatrix->FEAssemble(-1, elemat_blocks[block_vec[ib]],
+            systemmatrix->FEAssemble(elemat_blocks[block_vec[ib]],
                                      patch_components_lm[block_vec[ib].first],
                                      patch_components_lmowner[block_vec[ib].first],
                                      patch_components_lm[block_vec[ib].second]);

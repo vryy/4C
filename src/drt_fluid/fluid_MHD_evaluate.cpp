@@ -608,9 +608,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
 
           // assembly to all parent dofs even if we just integrated
           // over a boundary element
-          int eid = curr->second->Id();
-
-          bndmat_->FEAssemble(eid,elematrix1,la[0].lm_,la[0].lmowner_,la[0].lm_);
+          bndmat_->FEAssemble(elematrix1,la[0].lm_,la[0].lmowner_,la[0].lm_);
           LINALG::Assemble(*bndres,elevector1,la[0].lm_,la[0].lmowner_);
         } // end loop geometry elements of this conditions
       }

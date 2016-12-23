@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file discsh3_line_evaluate.cpp
-\brief
+\brief line evaluation routines
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
+\maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15270
-</pre>
+
+\level 3
 
 *----------------------------------------------------------------------*/
 //#ifdef DISCSH3_H
@@ -541,7 +541,7 @@ void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
     {
       for(int j=0; j<NODDOF_DISCSH3; j++)
       {
-        systemmatrix->FEAssemble(-1, elemat_blocks[i*NODDOF_DISCSH3+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
+        systemmatrix->FEAssemble( elemat_blocks[i*NODDOF_DISCSH3+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
 
       }
     }

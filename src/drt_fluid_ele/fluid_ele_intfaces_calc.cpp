@@ -1,15 +1,13 @@
 /*!----------------------------------------------------------------------
 \file fluid_ele_intfaces_calc.cpp
-\brief
+\brief Integrate internal faces (stabilization) terms on an internal face element
 
-Integrate internal faces (stabilization) terms on an internal faces element
-
-<pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
-</pre>
+
+\level 2
 
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
@@ -305,7 +303,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 #if(1)
         for(int ij=0; ij<numdofpernode; ij++)
         {
-          systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
+          systemmatrix->FEAssemble(elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
         }
 #else // assemble only pressure block
         int ij=nsd;
@@ -318,10 +316,10 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
         {
           for(int j=0; j<nsd; j++)
           {
-            systemmatrix->FEAssemble(-1, elemat_blocks[i*nsd+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
+            systemmatrix->FEAssemble( elemat_blocks[i*nsd+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
-        systemmatrix->FEAssemble(-1, elemat_blocks[nsd*nsd], patch_components_lm[nsd], patch_components_lmowner[nsd], patch_components_lm[nsd]);
+        systemmatrix->FEAssemble( elemat_blocks[nsd*nsd], patch_components_lm[nsd], patch_components_lmowner[nsd], patch_components_lm[nsd]);
       }
       else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
       {
@@ -329,7 +327,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
         {
           for(int j=0; j<numdofpernode; j++)
           {
-            systemmatrix->FEAssemble(-1, elemat_blocks[i*numdofpernode+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
+            systemmatrix->FEAssemble( elemat_blocks[i*numdofpernode+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
       }

@@ -677,84 +677,72 @@ void LINALG::SparseMatrix::Assemble(
   return;
 }
 
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::FEAssemble(
-    int eid,
     const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
-  const int lrowdim = (int)lmrow.size();
-  const int lcoldim = (int)lmcol.size();
+  const int lrowdim = static_cast<int>( lmrow.size() );
+  const int lcoldim = static_cast<int>( lmcol.size() );
 #ifdef DEBUG
   if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
     dserror("Mismatch in dimensions");
 #endif
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
-
   const int myrank = fe_mat->Comm().MyPID();
 
-  if (Filled())
+  // loop rows of local matrix
+  for (int lrow=0; lrow<lrowdim; ++lrow)
   {
-    // no XFEM business see Assemble
-    // no column check because FE_Assemble can handle columns which are not on this proc
+    // check ownership of row
+    if (lmrowowner[lrow] != myrank) continue;
 
-    // loop rows of local matrix
-    std::vector<double> values(lcoldim);
-    for (int lrow=0; lrow<lrowdim; ++lrow)
+    const int rgid = lmrow[lrow];
+
+    for (int lcol=0; lcol<lcoldim; ++lcol)
     {
-      // check ownership of row
-      if (lmrowowner[lrow] != myrank) continue;
-
-      // check whether I have that global row
-      const int rgid = lmrow[lrow];
-
-      for (int lcol=0; lcol<lcoldim; ++lcol)
-      {
-        values[lcol] = Aele(lrow,lcol);
-      }
-      const int errone = fe_mat->SumIntoGlobalValues(1, &rgid, lcoldim, &lmcol[0], &values[0], Epetra_FECrsMatrix::COLUMN_MAJOR );
-      if (errone)
-        dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
-    } // for (int lrow=0; lrow<ldim; ++lrow)
-  }
-  else
-  {
-    // loop rows of local matrix
-    for (int lrow=0; lrow<lrowdim; ++lrow)
-    {
-      // check ownership of row
-      if (lmrowowner[lrow] != myrank) continue;
-
-      const int rgid = lmrow[lrow];
-
-      for (int lcol=0; lcol<lcoldim; ++lcol)
-      {
-        double val = Aele(lrow,lcol);
-        const int cgid = lmcol[lcol];
-
-        // Now that we do not rebuild the sparse mask in each step, we
-        // are bound to assemble the whole thing. Zeros included.
-        const int errone = fe_mat->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val, Epetra_FECrsMatrix::COLUMN_MAJOR );
-        if (errone>0)
-        {
-          int errtwo = fe_mat->InsertGlobalValues(1, &rgid, 1, &cgid, &val, Epetra_FECrsMatrix::COLUMN_MAJOR );
-          if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
-        }
-        else if (errone)
-          dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
-      } // for (int lcol=0; lcol<lcoldim; ++lcol)
-    } // for (int lrow=0; lrow<lrowdim; ++lrow)
+      double val = Aele(lrow,lcol);
+      const int cgid = lmcol[lcol];
+      FEAssemble ( val, rgid, cgid );
+    }
   }
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::FEAssemble(
+    const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmrow,
+    const std::vector<int>& lmcol)
+{
+  const int lrowdim = static_cast<int>( lmrow.size() );
+  const int lcoldim = static_cast<int>( lmcol.size() );
+#ifdef DEBUG
+  if ( lrowdim != Aele.M() || lcoldim != Aele.N() )
+    dserror("Mismatch in dimensions");
+#endif
 
+  Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
+
+  // loop rows of local matrix
+  for (int lrow=0; lrow<lrowdim; ++lrow)
+  {
+    const int rgid = lmrow[lrow];
+
+    for (int lcol=0; lcol<lcoldim; ++lcol)
+    {
+      double val = Aele(lrow,lcol);
+      const int cgid = lmcol[lcol];
+      FEAssemble ( val, rgid, cgid );
+    }
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -783,12 +771,12 @@ void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
   // SumIntoGlobalValues works for filled matrices as well!
   int errone = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val );
   // if value not already present , error > 0 then use insert method
-  if (errone>0)
+  if ( errone > 0 and not Filled() )
   {
     int errtwo = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->InsertGlobalValues(1, &rgid, 1, &cgid, &val );
-    if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+    if ( errtwo < 0 ) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
   }
-  else if (errone)
+  else if ( errone < 0 )
     dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
 }
 

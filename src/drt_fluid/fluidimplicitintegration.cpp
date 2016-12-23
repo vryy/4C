@@ -1126,11 +1126,10 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
 
         if (err) dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),actele->Id(),err);
       }
-      int eid = actele->Id();
       std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
       {
         // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-        sysmat->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+        sysmat->FEAssemble( strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
       }
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated

@@ -237,25 +237,39 @@ class SparseMatrix : public SparseMatrixBase
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
 
+    /// single value assemble used by BlockSparseMatrix
+    void Assemble(double val, int rgid, int cgid);
+
     /*!
-      Assemble method for an Epetra_FECrsMatrices.
-      This method is also able
-      to handle the assembly of nonlocal values.
+      Assemble method for an Epetra_FECrsMatrix.
+      This method is also able to handle the assembly of nonlocal values.
       It sets the doGlobalAssemble-flag to true and causes the
-      GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that FillComplete can be savely
+      GlobalAssemble() method to redistribute the non-local
+      values to their owning procs, such that FillComplete can be safely
       called on this matrix.
+
+      NOTE: This methods checks if rowowner == myrank. Only in this case
+      values are set. This is needed if the method is called in a loop over
+      column elements (which is the standard in baci) to avoid multiple same entries.
      */
     void FEAssemble(
-            int eid,
             const Epetra_SerialDenseMatrix& Aele,
             const std::vector<int>& lmrow,
             const std::vector<int>& lmrowowner,
             const std::vector<int>& lmcol);
 
-    /// single value assemble used by BlockSparseMatrix
-    void Assemble(double val, int rgid, int cgid);
-
+    /*!
+      Assemble method for an Epetra_FECrsMatrices.
+      This method is also able to handle the assembly of nonlocal values.
+      It sets the doGlobalAssemble-flag to true and causes the
+      GlobalAssemble() method to redistribute the non-local
+      values to their owning procs, such that FillComplete can be safely
+      called on this matrix.
+     */
+    void FEAssemble(
+            const Epetra_SerialDenseMatrix& Aele,
+            const std::vector<int>& lmrow,
+            const std::vector<int>& lmcol);
 
     /*!
       Assemble method for an Epetra_FECrsMatrices.

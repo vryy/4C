@@ -3328,7 +3328,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellMatrix(
 
     case INPAR::S2I::side_master:
     {
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix)->FEAssemble(-1,cellmatrix,la_master[0].lm_,std::vector<int>(la_master[0].lmowner_.size(),assembler_pid_master),la_cols[0].lm_);
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix)->FEAssemble(cellmatrix,la_master[0].lm_,std::vector<int>(la_master[0].lmowner_.size(),assembler_pid_master),la_cols[0].lm_);
       break;
     }
 

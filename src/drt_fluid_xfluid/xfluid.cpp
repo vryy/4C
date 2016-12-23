@@ -1007,14 +1007,14 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               std::vector<int> mypatchlmowner(patchlm.size(), myrank_);
               {
                 TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
-                coup_state->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+                coup_state->C_sx_->FEAssemble( couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
               }
 
               // assemble C_fs_ = Cuui
               std::vector<int> mylmowner(la[0].lmowner_.size(), myrank_);
               {
                 TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
-                coup_state->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+                coup_state->C_xs_->FEAssemble( couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
               }
 
               // assemble rhC_s_col = rhC_ui_col
@@ -1026,7 +1026,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             {
               // assemble C_ss_ = Cuiui
               std::vector<int> mypatchelementslmowner(patchelementslm.size(), myrank_);
-              coup_state->C_ss_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
+              coup_state->C_ss_->FEAssemble(C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
             }
 
           } // bcells.size() > 0
@@ -1034,15 +1034,13 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         //------------------------------------------------------------
         // Assemble matrix and vectors
 
-        int eid = actele->Id();
-
         // introduce an vector containing the rows for that values have to be communicated
         // REMARK: when assembling row elements also non-row rows have to be communicated
         std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
         {
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
           // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-          state_->sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+          state_->sysmat_->FEAssemble( strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
         }
         // REMARK:: call Assemble without lmowner
         // to assemble the residual_col vector on only row elements also column nodes have to be assembled
@@ -1085,8 +1083,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         if (err) dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),actele->Id(),err);
       }
 
-      int eid = actele->Id();
-
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated
       std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
@@ -1094,7 +1090,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
 
         // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-        state_->sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+        state_->sysmat_->FEAssemble( strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
       }
 
       // REMARK:: call Assemble without lmowner
