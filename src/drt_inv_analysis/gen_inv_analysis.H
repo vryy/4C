@@ -4,7 +4,7 @@
 
 \brief gen inv analysis
 
-\level 2
+\level 1
 
 \maintainer Sebastian Kehl
 */
@@ -164,6 +164,8 @@ private:
 
   double error_i_; //keeps the current error for the tolerance check depending on the update strategy
   double tol_;
+  int nodescentdirection_; // stores if inverse analysis does not longer
+  //converge (due to no descent direction) to stop the inverse analysis
 
   // Update Stratgy for mu
   enum INV_REG_UPDATE_STRATEGY
@@ -188,6 +190,7 @@ private:
 
   Epetra_SerialDenseVector p_;             // parameter vector
   Epetra_SerialDenseVector p_o_;           // parameters of the last step
+  Epetra_SerialDenseVector p_print_;       // output parameters
 
   /// @name Storage
   //@{
@@ -199,8 +202,6 @@ private:
   Epetra_SerialDenseVector error_grad_s_;
   //Epetra_SerialDenseMatrix ccurve_s_;
   //@}
-
-  int reset_out_count_;
 
   std::vector<std::set<int> > matset_;
 
@@ -263,7 +264,7 @@ public:
   void NPIntegrate();
 
   /// Output of Inverse Analysis
-  void PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p);
+  void PrintStorage(Epetra_SerialDenseVector delta_p);
   void PrintFile();
 
   // SetMaterialParameters for patch materials

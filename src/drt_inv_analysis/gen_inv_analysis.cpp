@@ -4,7 +4,7 @@
 
 \brief gen inv analysis
 
-\level 2
+\level 1
 
 \maintainer Sebastian Kehl
 */
@@ -89,7 +89,7 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
 {
   int myrank = dis->Comm().MyPID();
 
-  reset_out_count_=0;
+  nodescentdirection_=0;
 
   // input parameters inverse analysis
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
@@ -312,6 +312,7 @@ steps 25 nnodes 5
   // read material parameters from input file
   ReadInParameters();
   p_o_ = p_;
+  p_print_=p_;
 
   // Number of material parameters
   np_ = p_.Length();
@@ -421,6 +422,7 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_grad_o_,1,0);
     discret_->Comm().Broadcast(&error_grad_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
+    discret_->Comm().Broadcast(&nodescentdirection_,1,0);
 
     if(reg_update_ == grad_based)
       error_i_ = error_grad_;
@@ -428,7 +430,7 @@ void STR::GenInvAnalysis::Integrate()
       error_i_ = error_;
 
 
-  } while (error_i_>tol_ && numb_run_<max_itter);
+  } while (error_i_>tol_ && numb_run_<max_itter && !nodescentdirection_);
 
 
   // print results to file
@@ -587,13 +589,14 @@ void STR::GenInvAnalysis::NPIntegrate()
     gcomm->Broadcast(&error_grad_o_,1,0);
     gcomm->Broadcast(&error_grad_,1,0);
     gcomm->Broadcast(&numb_run_,1,0);
+    gcomm->Broadcast(&nodescentdirection_,1,0);
 
     if(reg_update_ == grad_based)
       error_i_ = error_grad_;
     else if(reg_update_ == res_based)
       error_i_ = error_;
 
-  } while (error_i_>tol_ && numb_run_<max_itter);
+  } while (error_i_>tol_ && numb_run_<max_itter && !nodescentdirection_);
 //printf("gmyrank %d reached this point\n",gmyrank); fflush(stdout); exit(0);
 
 
@@ -682,16 +685,25 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
       //update mu_ only if error in df/dp decreases
       if (error_grad_ < error_grad_o_)
         mu_ *= (error_grad_/error_grad_o_);
+
+      // update output of parameters
+      p_print_=p_;
+
       // update parameters
       for (int i=0;i<np_;i++)
-          p_[i] += delta_p[i];
+        p_[i] += delta_p[i];
     }
     else
+    {
       std::cout << "WARNING: MAT Params not updated! No descent direction" << std::endl;
+      nodescentdirection_=1;
+    }
   }
   else
   // res_based update
   {
+    // update output of parameters
+    p_print_=p_;
     // update params no matter what
     for (int i=0;i<np_;i++)
       p_[i] += delta_p[i];
@@ -704,7 +716,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
   // return cmatrix to previous size and zero out
   cmatrix.Shape(nmp_,np_+1);
 
-  PrintStorage(cmatrix, delta_p);
+  PrintStorage(delta_p);
 
   if (check_neg_params_) CheckOptStep();
 
@@ -914,7 +926,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
 
 /*----------------------------------------------------------------------*/
 /* only global proc 0 comes in here! mwgee 5/2012 */
-void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p)
+void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
 {
   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
@@ -965,6 +977,31 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
   error_grad_s_.Resize(numb_run_+1);
   error_grad_s_(numb_run_) = error_grad_;
 
+  // extended output of inverse analysis (birzle 12/2016)
+  // in last line: error and corresponding material parameters of current best fit
+  p_s_.Reshape(numb_run_+2,  np_);
+  error_s_.Resize(numb_run_+2);
+  error_grad_s_.Resize(numb_run_+2);
+  // if parameters are not updated, store parameters and error with lowest error
+  // (=second last parameter) in extra last line
+  if (nodescentdirection_)
+  {
+    for (int i=0; i<np_; i++)
+      p_s_(numb_run_+1, i)=p_print_(i);
+    error_s_(numb_run_+1) = error_s_(numb_run_-1);
+    error_grad_s_(numb_run_+1) = error_grad_s_(numb_run_-1);
+  }
+  // if graderror reached minimum or max number of iterations is reached
+  // or during inverse analysis
+  else
+  {
+    for (int i=0; i<np_; i++)
+      p_s_(numb_run_+1, i)=p_print_(i);
+    error_s_(numb_run_+1) = error_s_(numb_run_);
+    error_grad_s_(numb_run_+1) = error_grad_s_(numb_run_);
+  }
+
+
   // print error and parameter
   if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
   {
@@ -996,6 +1033,19 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
         printf("%10.3e", mu_s_(i));
         printf("\n");
       }
+
+      // print final parameters and error with lowest error
+      // in extra last line
+      int i=numb_run_+1;
+      printf("Error and parameters with lowest error:\n");
+      printf("Error: ");
+      printf("%10.3e", error_s_(i));
+      printf("\tGrad_error: ");
+      printf("%10.3e", error_grad_s_(i));
+      printf("\tParameter: ");
+      for (int j=0; j < delta_p.Length(); j++)
+        printf("%10.3e", p_s_(i, j));
+      printf("\n");
 
 // I don't like this printout, there is no legend. Also, its sorted in x and y
 // which is absolutely not guaranteed to be true upon input. So its potentially mixed!
@@ -1109,6 +1159,15 @@ void STR::GenInvAnalysis::PrintFile()
     fprintf(pFile, "%10.6f", mu_s_(i));
     fprintf(pFile, "\n");
   }
+  // print final parameters and error with lowest error
+  // in extra last line
+  int i=numb_run_;
+  fprintf(pFile, "%10.6f, ", error_s_(i));
+  fprintf(pFile, "%10.6f, ", error_grad_s_(i));
+  for (int j=0; j < np_; j++)
+    fprintf(pFile, "%10.6f, ", p_s_(i, j));
+  fprintf(pFile, "\n");
+
   fclose(pFile);
 
   numb_run_=numb_run_-1;
