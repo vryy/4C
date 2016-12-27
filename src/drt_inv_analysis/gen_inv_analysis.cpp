@@ -63,7 +63,6 @@
 #include "../linalg/linalg_solver.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_CrsMatrix.h"
-#include "inv_analysis.H"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -1840,7 +1839,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   if(subcomm != Teuchos::null)
   {
     // tell supporting procs that material parameters have to be set
-    int task[2] = {7, np_};
+    int task[2] = {6, np_};
     subcomm->Broadcast(task, 2, 0);
     // broadcast p_cur to the micro scale
     subcomm->Broadcast(&p_cur[0], np_, 0);

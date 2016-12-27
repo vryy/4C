@@ -1,10 +1,12 @@
 /*!----------------------------------------------------------------------
 \file microstatic_npsupport.cpp
 \brief Static control for  microstructural problems in case of multiscale
-analyses for supporting processors
+analysis for supporting processors
+
+\level 3
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -20,7 +22,6 @@ Maintainer: Lena Yoshihara
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_inv_analysis/inv_analysis.H"
 #include "../drt_inv_analysis/gen_inv_analysis.H"
 
 #include <hdf5.h>
@@ -164,33 +165,8 @@ void STRUMULTI::np_support_drt()
       dummymaterials[eleID]->InvAnaInit(eleowner,eleID);
       break;
     }
-    case 6:
-    {
-      // receive data from the master proc for inverse analysis
-      // Note: task[1] does not contain an element id in this case,
-      // it's the length of the vector that will be broadcast
-      int np = task[1];
-      Epetra_SerialDenseVector p_cur(np);
-      // receive the parameter vector
-      subcomm->Broadcast(&p_cur[0], np, 0);
-
-      // loop over all problem instances and set parameters accordingly
-      // Further work has to be done for parameter fitting on micro and macro scale
-      // due to the layout of p_cur
-      for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
-      {
-        std::set<int> mymatset;
-        std::set<int> myehmatset;
-        // broadcast sets within micro scale once per problem instance
-        LINALG::GatherAll<int>(mymatset, *subcomm);
-        LINALG::GatherAll<int>(myehmatset, *subcomm);
-
-        // material parameters are set for the current problem instance
-        STR::SetMaterialParameters(prob, p_cur, mymatset, myehmatset);
-      }
-      break;
-    }
-    case 7: // will replace case 6; this case is used when gen_inv_analysis is used with multi scale
+    // this case is used when gen_inv_analysis is used with multi scale
+    case 6: // replaces old case 6 of lung-inv_analysis with multi-scale (birzle 12/2016)
     {
       // receive data from the master proc for inverse analysis
       // Note: task[1] does not contain an element id in this case,

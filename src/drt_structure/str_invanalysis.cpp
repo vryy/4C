@@ -30,7 +30,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"
-#include "../drt_inv_analysis/inv_analysis.H"
 #include "../drt_inv_analysis/gen_inv_analysis.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_lib/drt_discret.H"
@@ -96,12 +95,7 @@ void STR::invanalysis()
 
   switch(DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
   {
-    case INPAR::STR::inv_lung:
-    {
-      STR::InvAnalysis ia(actdis,solver,output);
-      ia.Integrate();
-    }
-    break;
+// lung inverse analysis deleted (birzle 12/2016)
     case INPAR::STR::inv_generalized:
     {
       int ngroup = DRT::Problem::Instance()->GetNPGroup()->NumGroups();

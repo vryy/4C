@@ -1565,7 +1565,6 @@ set(OBJS_POST_DRT_VTK
 )
 set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/gen_inv_analysis.cpp
-  src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
   src/drt_inv_analysis/invana_cal_drt.cpp
 )

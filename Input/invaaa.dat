@@ -40,7 +40,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ------------------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS                    gen                           // lung gen none
+INV_ANALYSIS                    gen                           // gen none
 INV_INITREG                     1.0                           // initial regularization value (>0.0)
 INV_ALPHA                       1.0e-5                        // perturbation factors for forward finite difference
 INV_BETA                        1.0e-3                        // eps = alpha + beta * matparameter

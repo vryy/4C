@@ -285,4 +285,4 @@ public:
 
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_H_*/
+#endif /*GEN_INV_ANALYSIS_H_*/

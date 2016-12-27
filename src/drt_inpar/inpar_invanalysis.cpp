@@ -40,20 +40,11 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                "types of inverse analysis and on/off switch",
                                tuple<std::string>(
                                  "none",
-                                 "lung",
                                  "gen"),
                                tuple<int>(
                                  INPAR::STR::inv_none,
-                                 INPAR::STR::inv_lung,
                                  INPAR::STR::inv_generalized),
                                &iap);
-
-  DoubleParameter("MC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
-  DoubleParameter("MC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
-  DoubleParameter("MC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
-  DoubleParameter("MC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
-  DoubleParameter("MC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
-  DoubleParameter("MC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
@@ -82,10 +73,6 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                   &iap);
 
   setNumericStringParameter("INV_LIST","-1",
-                            "IDs of materials that have to be fitted",
-                            &iap);
-
-  setNumericStringParameter("INV_EH_LIST","-1",
                             "IDs of materials that have to be fitted",
                             &iap);
 

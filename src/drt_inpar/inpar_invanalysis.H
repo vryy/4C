@@ -2,8 +2,12 @@
 /*!
 \file inpar_invanalysis.H
 
+\brief Input parameters for inverse analysis
+
+\level 3
+
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -30,7 +34,6 @@ namespace INPAR
     enum InvAnalysisType
     {
       inv_none,          // no inverse analysis
-      inv_lung,          // sophies lung inverse analysis
       inv_generalized    // generalized inverse analysis
     };
     /// Update strategy for regularization parameter mu
