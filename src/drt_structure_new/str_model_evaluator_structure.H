@@ -286,6 +286,21 @@ namespace MODELEVALUATOR{
      *  \author hiermeier */
     Teuchos::RCP<Epetra_Vector> GetInertialForce();
 
+    /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
+     *         to the Teuchos::ParameterList
+     *
+     *  todo: This function is temporary! It converts back to the old
+     *  format using ParameterList to communicate with the element/materials.
+     *  We delete this function, as soon as the old structural time
+     *  integration is no longer supported and all elements use the data
+     *  interface class.
+     *
+     *  \date 12/16
+     *  \author seitz */
+    void ParamsInterface2ParameterList(
+        Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr,
+        Teuchos::ParameterList& params);
+
   private:
     //! @name pointers to the data container content
     //! @{

@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
 \file so_weg6_evaluate.cpp
 \brief
+\level 1
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15271
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -71,6 +72,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")       act = So_weg6::calc_global_gpstresses_map;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_weg6");
 
   // check for patient specific data

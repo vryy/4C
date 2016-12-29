@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5_evaluate.cpp
 \brief
+\level 1
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15271
@@ -70,6 +71,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
   else if (action=="postprocess_stress")                          act = So_pyramid5::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_pyramid5::multi_readrestart;
   else if (action=="multi_calc_dens")                             act = So_pyramid5::multi_calc_dens;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_pyramid5");
   // what should the element do
   switch(act)

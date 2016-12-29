@@ -1,9 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_q1p0hex8.H
+\file so_hex8p1j1.H
+\brief to be filled by the maintainer...
+\level 2
 
 <pre>
-Maintainer: Lena Wiechert
+\maintainer Lena Wiechert
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -286,6 +288,9 @@ public:
 
 
 private:
+
+  /** recover elementwise stored stuff */
+  void soh8P1J1_recover(const std::vector<double>& residual);
 
   // don't want = operator
   So_Hex8P1J1& operator = (const So_Hex8P1J1& old);

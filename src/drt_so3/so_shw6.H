@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_shw6.H
 \brief
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -186,6 +187,8 @@ private:
 
   //! number of EAS parameters (alphas), defined by 'EASType"
   int                                                 neas_;
+  // line search parameter (old step length)
+  double                                                                old_step_length_;
 
   //! reorder nodes to optimally align material space with parameter space
   bool optimal_parameterspace_map_;
@@ -281,6 +284,9 @@ private:
 
   //! Reorient wedge to optimally align material with parameter space
   int soshw6_findoptparmap();
+
+  //! recover condensed EAS variables
+  void soshw6_recover(const std::vector<double>& residual);
 
 }; // class So_shw6
 

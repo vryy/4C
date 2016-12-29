@@ -1,8 +1,9 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet_evaluate.cpp
-
+\brief to be filled by the maintainer
+\level 3
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -130,6 +131,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_reset_istep")             act = NStet::calc_struct_reset_istep;
   else if (action=="multi_calc_dens")                     act = NStet::multi_calc_dens;
   else if (action=="multi_readrestart")                   act = NStet::multi_readrestart;
+  else if (action=="calc_struct_recover")                 return 0;
   else dserror("Unknown type of action for NStet");
 
   // what should the element do

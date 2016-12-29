@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
-\file so_sh8_evaluate.cpp
-\brief
+\file so_sh18_evaluate.cpp
+\brief evaluation routines for sosh18 elements
+\level 3
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -17,6 +18,7 @@ Maintainer: Alexander Seitz
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 
 int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
@@ -83,6 +85,9 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     const INPAR::STR::StrainType iostrain   ///< strain output option
     )
 {
+  // get parameter interface
+  SetParamsInterfacePtr(params);
+
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18> xrefe;  // reference coord. of element
   LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18> xcurr;  // current  coord. of element
@@ -112,12 +117,13 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
   if (eas_)
   {
   // recover EAS **************************************
-    if (stiffmatrix)
-    {
-      feas_.Multiply(1.,Kad_,res_d,1.);
-      alpha_eas_inc_.Multiply(-1.,KaaInv_,feas_,0.);
-      alpha_eas_.Update(1.,alpha_eas_inc_,1.);
-    }
+    if (not IsParamsInterface())
+      if (stiffmatrix)
+      {
+        feas_.Multiply(1.,Kad_,res_d,1.);
+        alpha_eas_inc_.Multiply(-1.,KaaInv_,feas_,0.);
+        alpha_eas_.Update(1.,alpha_eas_inc_,1.);
+      }
     // recover EAS **************************************
 
     // prepare EAS***************************************
@@ -1474,3 +1480,35 @@ void DRT::ELEMENTS::So_sh18::Update()
   }
 }
 
+void DRT::ELEMENTS::So_sh18::Recover(const std::vector<double>& residual)
+{
+  if (not eas_)
+    return;
+
+  const double step_length   = StrParamsInterface().GetStepLength();
+  LINALG::Matrix<NUMDOF_SOH18,1> res_d;
+  for (int i=0; i<NUMDOF_SOH18; ++i)
+    res_d(i) = residual[i];
+
+  if (StrParamsInterface().IsDefaultStep())
+  {
+    // first, store the eas state of the previous accepted Newton step
+    StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+        num_eas,alpha_eas_.A(),Owner());
+
+    feas_.Multiply(1.,Kad_,res_d,1.);
+    alpha_eas_inc_.Multiply(-1.,KaaInv_,feas_,0.);
+    alpha_eas_.Update(step_length,alpha_eas_inc_,1.);
+  }
+  else
+  {
+    alpha_eas_.Update(-old_step_length_,alpha_eas_inc_,1.);
+    alpha_eas_inc_.Scale(step_length/old_step_length_);
+    alpha_eas_.Update(1.,alpha_eas_inc_,1.);
+  }
+  old_step_length_=step_length;
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      num_eas,alpha_eas_inc_.A(),alpha_eas_.A(),step_length,Owner());
+
+}

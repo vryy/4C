@@ -44,6 +44,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // get parameter interface
+  SetParamsInterfacePtr(params);
+
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
@@ -74,6 +77,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
+  else if (action=="calc_struct_recover")         act = So_hex8::calc_recover;
   else dserror("Unknown type of action for So_Sh8");
 
   // what should the element do
@@ -405,6 +409,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       }
     }
     break;
+    case calc_recover:
+      So_hex8::Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,
+          elevec1_epetra,elevec2_epetra,elevec3_epetra);
+      break;
     default:
       dserror("Unknown type of action for So_sh8");
       break;

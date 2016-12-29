@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_shw6_evaluate.cpp
 \brief
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -24,6 +25,7 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*
@@ -38,6 +40,9 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // get parameter interface
+  SetParamsInterfacePtr(params);
+
   LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat1(elemat1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_WEG6,1> elevec1(elevec1_epetra.A(),true);
@@ -62,6 +67,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = So_weg6::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = So_weg6::calc_struct_reset_istep;
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
+  else if (action=="calc_struct_recover")       act = So_weg6::calc_recover;
   else dserror("Unknown type of action for So_weg6");
 
   // what should the element do
@@ -256,6 +262,16 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
+    case calc_recover:
+    {
+      Teuchos::RCP<const Epetra_Vector> res  =
+          discretization.GetState("residual displacement");
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      soshw6_recover(myres);
+    }
+    break;
+
     default:
       dserror("Unknown type of action for Solid3");
   }
@@ -349,24 +365,27 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 
     // this is a line search step, i.e. the direction of the eas increments
     // has been calculated by a Newton step and now it is only scaled
-    if (params.isParameter("alpha_ls"))
+    if (not IsParamsInterface())
     {
-      double alpha_ls=params.get<double>("alpha_ls");
-      // undo step
-      eas_inc->Scale(-1.);
-      alpha->operator +=(*eas_inc);
-      // scale increment
-      eas_inc->Scale(-1.*alpha_ls);
-      // add reduced increment
-      alpha->operator +=(*eas_inc);
-    }
-    else
-    {
-      // add Kda . res_d to feas
-      LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick, NUMDOF_WEG6,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-      // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick,soshw6_easpoisthick,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
-      LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(1.,*alpha,1.,*eas_inc);
+      if (params.isParameter("alpha_ls"))
+      {
+        double alpha_ls=params.get<double>("alpha_ls");
+        // undo step
+        eas_inc->Scale(-1.);
+        alpha->operator +=(*eas_inc);
+        // scale increment
+        eas_inc->Scale(-1.*alpha_ls);
+        // add reduced increment
+        alpha->operator +=(*eas_inc);
+      }
+      else
+      {
+        // add Kda . res_d to feas
+        LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick, NUMDOF_WEG6,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+        // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+        LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick,soshw6_easpoisthick,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+        LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(1.,*alpha,1.,*eas_inc);
+      }
     }
     /* end of EAS Update ******************/
 
@@ -1212,4 +1231,42 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
+{
+  if (eastype_ == soshw6_easnone)
+    return;
 
+  LINALG::Matrix<NUMDOF_WEG6,1> disi(false);
+  for (int i = 0; i < NUMDOF_WEG6; ++i)
+    disi(i) = residual[i];
+
+  const double step_length   = StrParamsInterface().GetStepLength();
+
+  Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  Epetra_SerialDenseMatrix* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+  Epetra_SerialDenseMatrix* eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+  Epetra_SerialDenseMatrix* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  /* if it is a default step, we have to recover the condensed
+   * solution vectors */
+  if (StrParamsInterface().IsDefaultStep())
+  {
+    // first, store the eas state of the previous accepted Newton step
+    StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+        soshw6_easpoisthick,(*alpha)[0],Owner());
+
+    // add Kda . res_d to feas
+    LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick, NUMDOF_WEG6,1>(1.0, oldfeas->A(), 1.0, oldKda->A(), &(residual[0]));
+    // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick,soshw6_easpoisthick,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+    LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(1.,*alpha,1.,*eas_inc);
+  }
+  else
+  {
+    LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(1.,*alpha,step_length-old_step_length_,*eas_inc);
+  }
+  old_step_length_ = step_length;
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      soshw6_easpoisthick,(*eas_inc)[0],(*alpha)[0],step_length,Owner());
+}

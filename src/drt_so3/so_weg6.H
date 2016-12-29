@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_weg6.H
 \brief
+\level 1
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -366,7 +367,8 @@ protected:
     prestress_update,
     inversedesign_update,
     inversedesign_switch,
-    calc_global_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
+    calc_global_gpstresses_map, //! basically calc_struct_stress but with assembly of global gpstresses map
+    calc_recover
 
   };
 

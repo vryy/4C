@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
 \file so_hex20_evaluate.cpp
-\brief
+\brief 3D-serendipity element
+\level 1
 
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15271
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -71,6 +72,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
   else if (action=="postprocess_stress")                          act = So_hex20::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex20::multi_readrestart;
   else if (action=="multi_calc_dens")                             act = So_hex20::multi_calc_dens;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_hex20");
   // what should the element do
   switch(act)

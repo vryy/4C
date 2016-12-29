@@ -49,6 +49,13 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         100
 PREDICT                         ConstDis
 LOADLIN                         no
+INT_STRATEGY                    Standard
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = sosh18_thin_nonlineaer_pinched_hemisphere_dsg.xml
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

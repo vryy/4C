@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------*
 \file so_tet10_evaluate.cpp
 \brief quadratic nonlinear tetrahedron
+\level 1
 
 <pre>
-Maintainer: Jonas Biehler
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
@@ -69,6 +70,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_prestress_update")     act = So_tet10::prestress_update;
   else if (action=="calc_global_gpstresses_map")       act = So_tet10::calc_global_gpstresses_map;
   else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_tet10");
 
   // check for patient specific data

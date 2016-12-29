@@ -574,6 +574,11 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
   if (not p.INVALID_TEMPLATE_QUALIFIER
         isType< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> > ("interface"))
     dserror("The given parameter has the wrong type!");
+
+  // write data to the parameter list.
+  // this is about to go, once the old time integration is deleted
+  ParamsInterface2ParameterList(EvalDataPtr(),p);
+
   Discret().Evaluate(p, eval_mat[0], eval_mat[1],
       eval_vec[0], eval_vec[1], eval_vec[2]);
   Discret().ClearState();
@@ -860,3 +865,62 @@ void STR::MODELEVALUATOR::Structure::PostOutput()
 
   return;
 } // PostOutput()
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
+    Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr,
+    Teuchos::ParameterList& params)
+{
+  if (interface_ptr==Teuchos::null)
+    dserror("ParamsInterface pointer not set");
+
+  params.set<double>("delta time",interface_ptr->GetDeltaTime());
+  params.set<double>("total time",interface_ptr->GetTotalTime());
+  params.set<double>("timintfac_dis",interface_ptr->GetTimIntFactorDisp());
+  params.set<double>("timintfac_vel",interface_ptr->GetTimIntFactorVel());
+
+  DRT::ELEMENTS::ActionType act = interface_ptr->GetActionType();
+  std::string action;
+  switch(act)
+  {
+  case  DRT::ELEMENTS::struct_calc_linstiff                  :   action="calc_struct_linstiff"                 ;   break;
+  case  DRT::ELEMENTS::struct_calc_nlnstiff                  :   action="calc_struct_nlnstiff"                 ;   break;
+  case  DRT::ELEMENTS::struct_calc_internalforce             :   action="calc_struct_internalforce"            ;   break;
+  case  DRT::ELEMENTS::struct_calc_linstiffmass              :   action="calc_struct_linstiffmass"             ;   break;
+  case  DRT::ELEMENTS::struct_calc_nlnstiffmass              :   action="calc_struct_nlnstiffmass"             ;   break;
+  case  DRT::ELEMENTS::struct_calc_nlnstifflmass             :   action="calc_struct_nlnstifflmass"            ;   break;
+  case  DRT::ELEMENTS::struct_calc_nlnstiff_gemm             :   action="calc_struct_nlnstiff_gemm"            ;   break;
+  case  DRT::ELEMENTS::struct_calc_stress                    :   action="calc_struct_stress"                   ;   break;
+  case  DRT::ELEMENTS::struct_calc_eleload                   :   action="calc_struct_eleload"                  ;   break;
+  case  DRT::ELEMENTS::struct_calc_fsiload                   :   action="calc_struct_fsiload"                  ;   break;
+  case  DRT::ELEMENTS::struct_calc_update_istep              :   action="calc_struct_update_istep"             ;   break;
+  case  DRT::ELEMENTS::struct_calc_reset_istep               :   action="calc_struct_reset_istep"              ;   break;
+  case  DRT::ELEMENTS::struct_calc_store_istep               :   action="calc_struct_store_istep"              ;   break;
+  case  DRT::ELEMENTS::struct_calc_recover_istep             :   action="calc_struct_recover_istep"            ;   break;
+  case  DRT::ELEMENTS::struct_calc_reset_all                 :   action="calc_struct_reset_all"                ;   break;
+  case  DRT::ELEMENTS::struct_calc_energy                    :   action="calc_struct_energy"                   ;   break;
+  case  DRT::ELEMENTS::struct_calc_errornorms                :   action="calc_struct_errornorms"               ;   break;
+  case  DRT::ELEMENTS::multi_init_eas                        :   action="multi_eas_init"                       ;   break;
+  case  DRT::ELEMENTS::multi_set_eas                         :   action="multi_eas_set"                        ;   break;
+  case  DRT::ELEMENTS::multi_readrestart                     :   action="multi_readrestart"                    ;   break;
+  case  DRT::ELEMENTS::multi_calc_dens                       :   action="multi_calc_dens"                      ;   break;
+  case  DRT::ELEMENTS::struct_postprocess_stress             :   action="postprocess_stress"                   ;   break;
+  case  DRT::ELEMENTS::struct_update_prestress               :   action="calc_struct_prestress_update"         ;   break;
+  case  DRT::ELEMENTS::inversedesign_update                  :   action="calc_struct_inversedesign_update"     ;   break;
+  case  DRT::ELEMENTS::inversedesign_switch                  :   action="calc_struct_inversedesign_switch"     ;   break;
+  case  DRT::ELEMENTS::struct_calc_global_gpstresses_map     :   action="calc_global_gpstresses_map"           ;   break;
+  case  DRT::ELEMENTS::struct_interpolate_velocity_to_point  :   action="interpolate_velocity_to_given_point"  ;   break;
+  case  DRT::ELEMENTS::struct_calc_mass_volume               :   action="calc_struct_mass_volume"              ;   break;
+  case  DRT::ELEMENTS::struct_calc_recover                   :   action="calc_struct_recover"                  ;   break;
+  default                                                    :   action="unknown"                              ; break;
+  }
+  params.set<std::string>("action",action);
+
+  params.set<Teuchos::RCP<std::vector<char> > >("stress",interface_ptr->MutableStressDataPtr());
+  params.set<Teuchos::RCP<std::vector<char> > >("strain",interface_ptr->MutableStrainDataPtr());
+  params.set<Teuchos::RCP<std::vector<char> > >("plstrain",interface_ptr->MutablePlasticStrainDataPtr());
+  params.set<int>("iostress",   (int)interface_ptr->GetStressOutputType());
+  params.set<int>("iostrain",   (int)interface_ptr->GetStrainOutputType());
+  params.set<int>("ioplstrain", (int)interface_ptr->GetPlasticStrainOutputType());
+}

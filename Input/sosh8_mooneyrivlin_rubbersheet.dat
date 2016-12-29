@@ -1,8 +1,8 @@
 //
-// Maintainer: Moritz Frenzel
-// frenzel@lnm.mw.tum.de
+// Maintainer: Alexander Popp
+// popp@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15240
+// 089 - 289-15238
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -60,6 +60,13 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         20
+INT_STRATEGY                    Standard
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = sohex8_eas_new_struc.xml
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex18.cpp
-\brief
+\brief 18-node hexahedral (bi-quadratic linear)
+\level 1
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -345,6 +346,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_reset_istep")                     act = So_hex18::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_all")                       act = So_hex18::calc_struct_reset_all;
   else if (action=="postprocess_stress")                          act = So_hex18::postprocess_stress;
+  else if (action=="calc_struct_recover")                         act = So_hex18::calc_recover;
   else dserror("Unknown type of action for So_hex8: %s", action.c_str());
 
   // what should the element do
@@ -538,6 +540,16 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
       SolidMaterial()->ResetAll(NUMGPT_SOH18);
     }
     break;
+
+    case calc_recover:
+    {
+      Teuchos::RCP<const Epetra_Vector> res  =
+          discretization.GetState("residual displacement");
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Recover(myres);
+    }
+      break;
 
   //==================================================================================
   default:

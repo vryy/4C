@@ -72,6 +72,7 @@ PROBLEMTYP                      Structure
 RANDSEED                        -1
 RESTART                         0
 -------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1

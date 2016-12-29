@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex18.H
+\brief 18-node hexahedral (bi-quadratic linear)
+\level 1
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -362,6 +364,7 @@ protected:
     calc_struct_energy,       //!< compute internal energy
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     postprocess_stress,       //!< postprocess stresses
+    calc_recover
   };
 
   //! vector of inverses of the jacobian in material frame
@@ -414,6 +417,10 @@ protected:
   void Update(){/* do nothing */};
 
   //@}
+
+
+  /** recover elementwise stored stuff */
+  virtual void Recover(const std::vector<double>& residual){return;}
 
 private:
 

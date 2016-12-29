@@ -2,8 +2,9 @@
 /*!
 \file so_pyramid5fbar_evaluate.cpp
 \brief
+\level 2
 
-\maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15271
@@ -68,6 +69,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action=="multi_calc_dens")                             act = So_pyramid5fbar::multi_calc_dens;
   else if (action=="calc_struct_prestress_update")                act = So_pyramid5fbar::prestress_update;
   else if (action=="calc_struct_energy")                          act = So_pyramid5::calc_struct_energy;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_pyramid5fbar");
 
   // check for patient specific data

@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------*
 \file so_tet4av_evaluate.cpp
 \brief averaged nodal volume tet4
+\level 3
 \maintainer Alexander Seitz
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "so_tet4av.H"
@@ -62,6 +56,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_update_istep")         act = So_tet4av::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")          act = So_tet4av::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_all")            act = So_tet4av::calc_struct_reset_all;
+  else if (action=="calc_struct_recover") return 0;
   else dserror("Unknown type of action for So_tet4av");
 
 

@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet5_evaluate.cpp
+\brief to be filled by the maintainer
+\level 3
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -184,6 +186,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_reset_istep")             act = NStet5::calc_struct_reset_istep;
   else if (action=="multi_calc_dens")                     act = NStet5::multi_calc_dens;
   else if (action=="multi_readrestart")                   act = NStet5::multi_readrestart;
+  else if (action=="calc_struct_recover")                 return 0;
   else dserror("Unknown type of action for NStet5");
 
   // what should the element do
@@ -277,7 +280,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
             stress(0,j) += (*(*nodestress)(j))[lid];
             strain(0,j) += (*(*nodestrain)(j))[lid];
 
-	  }
+          }
         }
 
         for (int j=0; j<6; ++j)

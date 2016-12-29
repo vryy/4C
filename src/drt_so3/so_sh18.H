@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_sh18.H
+\brief a in-plane bi-quadratic solid-like 7-parameter shell
+\level 3
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -185,6 +187,7 @@ protected:
   LINALG::Matrix<num_eas,1> alpha_eas_last_timestep_;
   LINALG::Matrix<num_eas,1> alpha_eas_delta_over_last_timestep_;
   LINALG::Matrix<num_eas,1> alpha_eas_inc_;
+  double old_step_length_;
   // EAS stuff *****************************************************
 
   // DSG factors ***************************************************
@@ -279,6 +282,11 @@ protected:
       LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18>* stiffmatrix);
 
   void Update();
+
+
+  /** recover elementwise stored stuff */
+  virtual void Recover(const std::vector<double>& residual);
+
   //@}
 
 }; // class So_sh18

@@ -40,6 +40,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
@@ -47,9 +48,6 @@ RESTARTEVRY                     1
 TIMESTEP                        0.175
 NUMSTEP                         30
 MAXTIME                         7.0
-DAMPING                         Yes
-M_DAMP                          0.1
-K_DAMP                          0.1
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
@@ -57,19 +55,12 @@ MAXITER                         50
 MINITER                         2
 NLNSOL                          ptc
 PREDICT                         ConstVel
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-------------------------------------------------------SEMI-SMOOTH PLASTICITY
-SEMI_SMOOTH_CPL                 175
-STABILIZATION_S                 1.0
-NORMCOMBI_RESFPLASTCONSTR       And
-NORMCOMBI_DISPPLASTINCR         And
-TOLPLASTCONSTR                  1.e-8
-TOLDELTALP                      1.e-8
+------------------------------------------------------STRUCT NOX/Status Test
+XML File                        = plastic_necking_eas.xml
+---------------------------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

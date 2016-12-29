@@ -5,10 +5,10 @@
 \level 1
 
 <pre>
-\maintainer Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15271
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -72,7 +72,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
   else if (action=="postprocess_stress")                          act = So_hex27::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex27::multi_readrestart;
   else if (action=="multi_calc_dens")                             act = So_hex27::multi_calc_dens;
-  else dserror("Unknown type of action for So_hex27");
+  else if (action=="calc_struct_recover") return 0;
+  else dserror("Unknown type of action for So_hex27: %s",action.c_str());
   // what should the element do
   switch(act)
   {

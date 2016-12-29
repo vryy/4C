@@ -59,6 +59,13 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         50
+// INT_STRATEGY                    Standard
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = soshw6_thin_nonlinear_pinched_hemisphere.xml
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
