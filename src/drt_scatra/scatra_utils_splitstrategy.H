@@ -3,13 +3,15 @@
 \file scatra_utils_splitstrategy.H
 
 \brief  special assemble/split strategy for blockmatrices arising
-        wheni simulating electrochemical problems with ion transport
+        when simulating electrochemical problems with ion transport
+
+\level 2
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

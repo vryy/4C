@@ -2,11 +2,13 @@
 /*!
 \file elchmat.H
 
+\level 2
+
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
