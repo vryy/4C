@@ -15,21 +15,10 @@
 #ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
 
-#include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 
 // forward declaration
-class Epetra_Vector;
-class Epetra_Map;
-namespace LINALG {
-  class SparseOperator;
-}
-namespace Teuchos {
-  class ParameterList;
-}
-namespace PARTICLE
-{
+namespace PARTICLE {
   class ParticleHandler;
 }
 namespace IO {
@@ -54,14 +43,12 @@ namespace MODELEVALUATOR {
 }
 namespace BEAMINTERACTION {
 namespace SUBMODELEVALUATOR {
-  /*! \brief This is the abstract base class of all model evaluators
+  /*! \brief This is the abstract base class of all submodel evaluators for a beaminteraction problem
    *
-   *  This class summarizes the functionality which all model evaluators share
+   *  This class summarizes the functionality which all submodel evaluators share
    *  and/or have to implement. Look in the derived classes for examples. A minimal
-   *  example can be found at \ref STR::MODELEVALUATOR::PartitionedFSI.
-   *
-   *  \date 08/15
-   *  \author hiermeier */
+   *  example can be found at \ref BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking.
+   */
   class Generic
   {
   public:

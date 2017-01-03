@@ -15,57 +15,32 @@
 #define STR_MODEL_EVALUATOR_BEAMINTERACTION_H
 
 #include "str_model_evaluator_generic.H"        // base class
-#include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include "str_elements_paramsinterface.H"       // interface to the element evaluation
 #include "../drt_inpar/inpar_binstrategy.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include <Epetra_Comm.h>
-#include <Epetra_MpiComm.h>
 
-// Fixme get rid of this flag
-//#define BEAMTOBEAMCONTACT
 
 //forward declaration ...
 namespace ADAPTER
 {
   class Coupling;
-} // namespace ADAPTER
+}
 namespace FSI{
 namespace UTILS{
   class MatrixRowTransform;
 }
 }
-namespace DRT
-{
-  class Exporter;
-  class Element;
-  class Node;
-  class PackBuffer;
-}
-namespace MAT
-{
-  class CrosslinkerMat;
-}
 namespace LINALG {
   class SparseMatrix;
-  class SerialDenseVector;
-  class SerialDenseMatrix;
 }
 namespace PARTICLE
 {
   class ParticleHandler;
 }
 namespace BEAMINTERACTION {
-  class BeamContactParams;
-  class BeamToBeamLinkage;
-  class BeamToBeamInteraction;
 namespace SUBMODELEVALUATOR{
   class Generic;
 }
 }
-
 namespace STR{
 namespace MODELEVALUATOR{
 
@@ -196,11 +171,14 @@ namespace MODELEVALUATOR{
     /// update coupling adapter and matrix transformation object with new maps
     void UpdateCouplingAdapterAndMatrixTransformation();
 
-    /// transform force vector and stiffness matrix from Discret to ia_discret_
-    virtual void TransformForceAndStiff(
-        bool force = true,
-        bool stiff = true
-      );
+    /// transform force vector from ia_discret_ to Discret()
+    virtual void TransformForce();
+
+    /// transform stiffness matrix from ia_discret_ to Discret()
+    virtual void TransformStiff();
+
+    /// transform force vector and stiffness matrix from ia_discret_ to Discret()
+    virtual void TransformForceStiff();
 
     /// update states based on bindis after its redistribution
     virtual void UpdateMaps();

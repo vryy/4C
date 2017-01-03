@@ -14,12 +14,9 @@
 
 #include "beaminteraction_submodel_evaluator_generic.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
-#include "str_utils.H"
-
+#include "../drt_biopolynet/periodic_boundingbox.H"
 #include "../drt_lib/drt_dserror.H"
 
-#include <Epetra_Comm.h>
-#include <fenv.h>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

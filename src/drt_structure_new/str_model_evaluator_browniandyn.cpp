@@ -26,11 +26,13 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
 
 #include "../drt_io/io.H"
 

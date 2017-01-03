@@ -11,6 +11,10 @@
 */
 /*-----------------------------------------------------------*/
 
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
@@ -18,22 +22,16 @@
 #include "str_utils.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_particle/particle_handler.H"
-
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-
-#include <Epetra_Comm.h>
-#include <fenv.h>
-#include <Teuchos_TimeMonitor.hpp>
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_inpar/inpar_beamcontact.H"
-
+#include "../drt_beam3/beam3_base.H"
 #include "../drt_beamcontact/beam_contact_params.H"
 #include "../drt_beamcontact/beam_to_beam_interaction.H"
 
 
-#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -131,80 +129,55 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
-  LINALG::SerialDenseVector ele1force;
-  LINALG::SerialDenseVector ele2force;
+  std::vector< LINALG::SerialDenseVector > eleforce(2);
 
-  // resulting discrete force vectors (centerline DOFs only!) of the two interacting elements
-  LINALG::SerialDenseVector ele1force_centerlineDOFs;
-  LINALG::SerialDenseVector ele2force_centerlineDOFs;
+  // resulting discrete force vectors (centerline DOFs only!) of the two
+  // interacting elements
+  std::vector< LINALG::SerialDenseVector > eleforce_centerlineDOFs(2);
 
-  Epetra_SerialDenseMatrix dummystiff(0,0);
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > dummystiff;
+
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
 
   // Todo generalize this
-  const unsigned int numdof_centerline_ele1 = 6;
-  const unsigned int numdof_centerline_ele2 = 6;
+  std::vector<unsigned int> numdof_centerline_ele(2);
+  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
 
-  const unsigned int numdof_ele1 = 12;
-  const unsigned int numdof_ele2 = 12;
+  std::vector<unsigned int> numdof_ele(2);
+  numdof_ele[0] = numdof_ele[1] = 12;
 
-
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    ele1force_centerlineDOFs.Size(numdof_centerline_ele1);
-    ele2force_centerlineDOFs.Size(numdof_centerline_ele2);
+    elegids[0] = elepairptr->Element1()->Id();
+    elegids[1] = elepairptr->Element2()->Id();
 
-    elepairptr->Evaluate(
-        &ele1force_centerlineDOFs,
-        &ele2force_centerlineDOFs,
-        NULL,
-        NULL,
-        NULL,
-        NULL);
+    for(int i = 0; i < 2; ++i )
+      eleforce_centerlineDOFs[i].Size(numdof_centerline_ele[i]);
+
+    elepairptr->Evaluate( &eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
+        NULL, NULL,  NULL, NULL);
 
     // resize and clear values
-    ele1force.Size(numdof_ele1);
-    ele2force.Size(numdof_ele2);
+    for(int i = 0; i < 2; ++i )
+      eleforce[i].Size(numdof_ele[i]);
 
     // assemble force vector and stiffness matrix affecting the centerline DoFs only
     // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-    BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        ele1force_centerlineDOFs,
-        ele2force_centerlineDOFs,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        &ele1force,
-        &ele2force,
-        NULL,
-        NULL,
-        NULL,
-        NULL);
+    BIOPOLYNET::UTILS::AssembleCenterlineDofForceIntoElementForce(
+        eleforce_centerlineDOFs, eleforce);
 
     // Fixme
-    ele1force.Scale(-1.0);
-    ele2force.Scale(-1.0);
+    eleforce[0].Scale(-1.0);
+    eleforce[1].Scale(-1.0);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        ele1force,
-        ele2force,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        Teuchos::null);
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+        eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
   return true;
 }
@@ -216,84 +189,54 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   CheckInitSetup();
 
   // linearizations
-  LINALG::SerialDenseMatrix ele11stiff;
-  LINALG::SerialDenseMatrix ele12stiff;
-  LINALG::SerialDenseMatrix ele21stiff;
-  LINALG::SerialDenseMatrix ele22stiff;
-
-  Epetra_SerialDenseVector dummyforce(0);
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
 
   // linearizations (centerline DOFs only!)
-  LINALG::SerialDenseMatrix ele11stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele12stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele21stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele22stiff_centerlineDOFs;
+  std::vector< std::vector< LINALG::SerialDenseMatrix > > elestiff_centerlineDOFs ( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
+
+  std::vector< LINALG::SerialDenseVector > dummyforce;
+
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
 
   // Todo generalize this
-  const unsigned int numdof_centerline_ele1 = 6;
-  const unsigned int numdof_centerline_ele2 = 6;
+  std::vector<unsigned int> numdof_centerline_ele(2);
+  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
 
-  const unsigned int numdof_ele1 = 12;
-  const unsigned int numdof_ele2 = 12;
+  std::vector<unsigned int> numdof_ele(2);
+  numdof_ele[0] = numdof_ele[1] = 12;
 
-
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    ele11stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele1);
-    ele12stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele2);
-    ele21stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele1);
-    ele22stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele2);
+    elegids[0] = elepairptr->Element1()->Id();
+    elegids[1] = elepairptr->Element2()->Id();
 
-    elepairptr->Evaluate(
-        NULL,
-        NULL,
-        &ele11stiff_centerlineDOFs,
-        &ele12stiff_centerlineDOFs,
-        &ele21stiff_centerlineDOFs,
-        &ele22stiff_centerlineDOFs);
+    for(int i = 0; i < 2; ++i )
+      for(int j = 0; j < 2; ++j )
+        elestiff_centerlineDOFs[i][j].Shape(numdof_centerline_ele[i],numdof_centerline_ele[j]);
+
+    elepairptr->Evaluate( NULL,  NULL, &elestiff_centerlineDOFs[0][0],
+        &elestiff_centerlineDOFs[0][1], &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1]);
 
     // resize and clear values
-    ele11stiff.Shape(numdof_ele1,numdof_ele1);
-    ele12stiff.Shape(numdof_ele1,numdof_ele2);
-    ele21stiff.Shape(numdof_ele2,numdof_ele1);
-    ele22stiff.Shape(numdof_ele2,numdof_ele2);
+    for(int i = 0; i < 2; ++i )
+      for(int j = 0; j < 2; ++j )
+        elestiff[i][j].Shape(numdof_ele[i],numdof_ele[j]);
 
     // assemble force vector and stiffness matrix affecting the centerline DoFs only
     // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-    BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        dummyforce,
-        dummyforce,
-        ele11stiff_centerlineDOFs,
-        ele12stiff_centerlineDOFs,
-        ele21stiff_centerlineDOFs,
-        ele22stiff_centerlineDOFs,
-        NULL,
-        NULL,
-        &ele11stiff,
-        &ele12stiff,
-        &ele21stiff,
-        &ele22stiff);
+    BIOPOLYNET::UTILS::AssembleCenterlineDofStiffIntoElementStiff(
+        elestiff_centerlineDOFs, elestiff);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        dummyforce,
-        dummyforce,
-        ele11stiff,
-        ele12stiff,
-        ele21stiff,
-        ele22stiff,
-        Teuchos::null,
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+        elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
   }
   return true;
 }
@@ -305,101 +248,73 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
-  LINALG::SerialDenseVector ele1force;
-  LINALG::SerialDenseVector ele2force;
+  std::vector< LINALG::SerialDenseVector > eleforce(2);
+
+  // resulting discrete force vectors (centerline DOFs only!) of the two
+  // interacting elements
+  std::vector< LINALG::SerialDenseVector > eleforce_centerlineDOFs(2);
 
   // linearizations
-  LINALG::SerialDenseMatrix ele11stiff;
-  LINALG::SerialDenseMatrix ele12stiff;
-  LINALG::SerialDenseMatrix ele21stiff;
-  LINALG::SerialDenseMatrix ele22stiff;
-
-
-  // resulting discrete force vectors (centerline DOFs only!) of the two interacting elements
-  LINALG::SerialDenseVector ele1force_centerlineDOFs;
-  LINALG::SerialDenseVector ele2force_centerlineDOFs;
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
 
   // linearizations (centerline DOFs only!)
-  LINALG::SerialDenseMatrix ele11stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele12stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele21stiff_centerlineDOFs;
-  LINALG::SerialDenseMatrix ele22stiff_centerlineDOFs;
+  std::vector< std::vector< LINALG::SerialDenseMatrix > > elestiff_centerlineDOFs ( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
+
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
 
   // Todo generalize this
-  const unsigned int numdof_centerline_ele1 = 6;
-  const unsigned int numdof_centerline_ele2 = 6;
+  std::vector<unsigned int> numdof_centerline_ele(2);
+  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
 
-  const unsigned int numdof_ele1 = 12;
-  const unsigned int numdof_ele2 = 12;
+  std::vector<unsigned int> numdof_ele(2);
+  numdof_ele[0] = numdof_ele[1] = 12;
 
-
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    ele1force_centerlineDOFs.Size(numdof_centerline_ele1);
-    ele2force_centerlineDOFs.Size(numdof_centerline_ele2);
+    elegids[0] = elepairptr->Element1()->Id();
+    elegids[1] = elepairptr->Element2()->Id();
 
-    ele11stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele1);
-    ele12stiff_centerlineDOFs.Shape(numdof_centerline_ele1,numdof_centerline_ele2);
-    ele21stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele1);
-    ele22stiff_centerlineDOFs.Shape(numdof_centerline_ele2,numdof_centerline_ele2);
+    for(int i = 0; i < 2; ++i )
+    {
+      eleforce_centerlineDOFs[i].Size(numdof_centerline_ele[i]);
 
-    elepairptr->Evaluate(
-        &ele1force_centerlineDOFs,
-        &ele2force_centerlineDOFs,
-        &ele11stiff_centerlineDOFs,
-        &ele12stiff_centerlineDOFs,
-        &ele21stiff_centerlineDOFs,
-        &ele22stiff_centerlineDOFs);
+      for(int j = 0; j < 2; ++j )
+        elestiff_centerlineDOFs[i][j].Shape(numdof_centerline_ele[i],numdof_centerline_ele[j]);
+    }
+
+    elepairptr->Evaluate( &eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
+        &elestiff_centerlineDOFs[0][0], &elestiff_centerlineDOFs[0][1],
+        &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1] );
 
     // resize and clear values
-    ele1force.Size(numdof_ele1);
-    ele2force.Size(numdof_ele2);
+    for(int i = 0; i < 2; ++i )
+    {
+      eleforce[i].Size( numdof_ele[i] );
 
-    ele11stiff.Shape(numdof_ele1,numdof_ele1);
-    ele12stiff.Shape(numdof_ele1,numdof_ele2);
-    ele21stiff.Shape(numdof_ele2,numdof_ele1);
-    ele22stiff.Shape(numdof_ele2,numdof_ele2);
+      for(int j = 0; j < 2; ++j )
+        elestiff[i][j].Shape( numdof_ele[i], numdof_ele[j] );
+    }
 
     // assemble force vector and stiffness matrix affecting the centerline DoFs only
     // into element force vector and stiffness matrix ('all DoFs' format, as usual)
     BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        ele1force_centerlineDOFs,
-        ele2force_centerlineDOFs,
-        ele11stiff_centerlineDOFs,
-        ele12stiff_centerlineDOFs,
-        ele21stiff_centerlineDOFs,
-        ele22stiff_centerlineDOFs,
-        &ele1force,
-        &ele2force,
-        &ele11stiff,
-        &ele12stiff,
-        &ele21stiff,
-        &ele22stiff);
+        eleforce_centerlineDOFs, elestiff_centerlineDOFs, eleforce, elestiff );
 
     // Fixme
-    ele1force.Scale(-1.0);
-    ele2force.Scale(-1.0);
+    eleforce[0].Scale(-1.0);
+    eleforce[1].Scale(-1.0);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        Discret(),
-        elepairptr->Element1()->Id(),
-        elepairptr->Element2()->Id(),
-        ele1force,
-        ele2force,
-        ele11stiff,
-        ele12stiff,
-        ele21stiff,
-        ele22stiff,
-        BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+        elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
+        BeamInteractionDataStatePtr()->GetMutableStiff() );
   }
   return true;
 }

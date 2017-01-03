@@ -6,8 +6,6 @@
 
 \maintainer Jonas Eichinger
 
-\date Oct, 2016
-
 \level 3
 
 */
@@ -59,6 +57,7 @@ public:
   \brief shift node (if outside) back in box if periodic boundary conditions
   */
   void Shift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const X = LINALG::Matrix<3,1>( true ) ) const;
+
   /*! Check the distance to a reference point position (e.g. node of the
    * same element). If the distance is larger than half of the period
    * length, the point position has been shifted before.
@@ -78,7 +77,6 @@ public:
   */
   void UnShift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const& ref,
       LINALG::Matrix<3,1> const X = LINALG::Matrix<3,1>( true ) ) const;
-
 
   /*!
    \brief If necessary make the boundingbox larger to include this point as one of the corners of the box
@@ -105,7 +103,7 @@ public:
    */
   void Print();
 
-  double min( int const dim) const
+  double min( int const dim ) const
   {
     return box_(dim, 0);
   }
@@ -122,7 +120,7 @@ public:
     return box_(2, 0);
   }
 
-  double max( int const dim) const
+  double max( int const dim ) const
   {
     return box_(dim, 1);
   }

@@ -12,27 +12,29 @@
 /*-----------------------------------------------------------*/
 
 
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 #include "str_timint_basedataglobalstate.H"
 #include "str_utils.H"
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-
-#include <Epetra_Comm.h>
-#include <Teuchos_TimeMonitor.hpp>
-#include <fenv.h>
-
-#include "../drt_particle/particle_handler.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "crosslinking_params.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
+#include "../drt_beam3/beam3_base.H"
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_beamcontact/beam_to_beam_linkage.H"
 #include "../drt_biopolynet/crosslinker_node.H"
+#include "../drt_particle/particle_handler.H"
 
-#include <Epetra_FEVector.h>
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
@@ -107,60 +109,40 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
   CheckInitSetup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  LINALG::SerialDenseVector bspotforce1(6);
-  LINALG::SerialDenseVector bspotforce2(6);
+  std::vector< LINALG::SerialDenseVector > bspotforce( 2, LINALG::SerialDenseVector(6) );
 
   // resulting discrete element force vectors of the two parent elements
-  LINALG::SerialDenseVector ele1force;
-  LINALG::SerialDenseVector ele2force;
+  std::vector< LINALG::SerialDenseVector > eleforce(2);
 
-  Epetra_SerialDenseMatrix dummystiff(0,0);
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > dummystiff;
 
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
+
+  std::map< int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for ( iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    // zero out variables
-    bspotforce1.Zero();
-    bspotforce2.Zero();
+    for( int i = 0; i < 2; ++i )
+    {
+      elegids[i] = elepairptr->GetEleGid(i);
+      bspotforce[i].Zero();
+    }
 
     // evaluate beam linkage object to get forces and moments on binding spots
-    elepairptr->EvaluateForce(bspotforce1,bspotforce2);
+    elepairptr->EvaluateForce( bspotforce[0], bspotforce[1] );
 
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
-    BIOPOLYNET::UTILS::ApplyBpotForceStiffToParentElements(
-        Discret(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-        elepairptr,
-        bspotforce1,
-        bspotforce2,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        &ele1force,
-        &ele2force,
-        NULL,
-        NULL,
-        NULL,
-        NULL);
+    BIOPOLYNET::UTILS::ApplyBpotForceToParentElements( Discret(),
+        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr,
+        bspotforce, eleforce );
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        *DiscretPtr(),
-        elepairptr->GetEleGid(0),
-        elepairptr->GetEleGid(1),
-        ele1force,
-        ele2force,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        dummystiff,
-        BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        Teuchos::null);
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+        eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
 
   return true;
@@ -174,69 +156,45 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  LINALG::SerialDenseMatrix bspotstiff11(6,6);
-  LINALG::SerialDenseMatrix bspotstiff12(6,6);
-  LINALG::SerialDenseMatrix bspotstiff21(6,6);
-  LINALG::SerialDenseMatrix bspotstiff22(6,6);
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > bspotstiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>( 2, LINALG::SerialDenseMatrix(6,6) ) );
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
-  // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
-  LINALG::SerialDenseMatrix ele11stiff;
-  LINALG::SerialDenseMatrix ele12stiff;
-  LINALG::SerialDenseMatrix ele21stiff;
-  LINALG::SerialDenseMatrix ele22stiff;
+  // we can't handle this separately for both elements because there are entries which
+  // couple the two element stiffness blocks
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
 
-  Epetra_SerialDenseVector dummyforce(0);
+  std::vector< LINALG::SerialDenseVector > dummyforce;
+
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
   for ( iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    // zero out variables
-    bspotstiff11.Zero();
-    bspotstiff12.Zero();
-    bspotstiff21.Zero();
-    bspotstiff22.Zero();
+    for( int i = 0; i < 2; ++i )
+    {
+      elegids[i] = elepairptr->GetEleGid(i);
+
+      for( int j = 0; j< 2; ++j )
+        bspotstiff[i][j].Zero();
+    }
 
      // evaluate beam linkage object to get linearizations of forces and moments on binding spots
-    elepairptr->EvaluateStiff(
-        bspotstiff11,
-        bspotstiff12,
-        bspotstiff21,
-        bspotstiff22);
+    elepairptr->EvaluateStiff( bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0],
+        bspotstiff[1][1] );
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBpotForceStiffToParentElements(
-        Discret(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-        elepairptr,
-        dummyforce,
-        dummyforce,
-        bspotstiff11,
-        bspotstiff12,
-        bspotstiff21,
-        bspotstiff22,
-        NULL,
-        NULL,
-        &ele11stiff,
-        &ele12stiff,
-        &ele21stiff,
-        &ele22stiff);
+    BIOPOLYNET::UTILS::ApplyBpotStiffToParentElements( Discret(),
+        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        *DiscretPtr(),
-        elepairptr->GetEleGid(0),
-        elepairptr->GetEleGid(1),
-        dummyforce,
-        dummyforce,
-        ele11stiff,
-        ele12stiff,
-        ele21stiff,
-        ele22stiff,
-        Teuchos::null,
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+        elegids, dummyforce, elestiff, Teuchos::null,
         BeamInteractionDataStatePtr()->GetMutableStiff());
    }
 
@@ -249,86 +207,53 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 {
   CheckInitSetup();
 
-  Teuchos::RCP<Epetra_FEVector> fe_sysvec =
-      Teuchos::rcp(new Epetra_FEVector(*DiscretPtr()->DofRowMap()));
-
   // force and moment exerted on the two connection sites due to the mechanical connection
-  LINALG::SerialDenseVector bspotforce1(6);
-  LINALG::SerialDenseVector bspotforce2(6);
+  std::vector< LINALG::SerialDenseVector > bspotforce( 2, LINALG::SerialDenseVector(6) );
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  LINALG::SerialDenseMatrix bspotstiff11(6,6);
-  LINALG::SerialDenseMatrix bspotstiff12(6,6);
-  LINALG::SerialDenseMatrix bspotstiff21(6,6);
-  LINALG::SerialDenseMatrix bspotstiff22(6,6);
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > bspotstiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>( 2, LINALG::SerialDenseMatrix(6,6) ) );
 
   // resulting discrete element force vectors of the two parent elements
-  LINALG::SerialDenseVector ele1force;
-  LINALG::SerialDenseVector ele2force;
+  std::vector< LINALG::SerialDenseVector > eleforce(2);
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which couple the two element stiffness blocks
-  LINALG::SerialDenseMatrix ele11stiff;
-  LINALG::SerialDenseMatrix ele12stiff;
-  LINALG::SerialDenseMatrix ele21stiff;
-  LINALG::SerialDenseMatrix ele22stiff;
+  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
+      std::vector<LINALG::SerialDenseMatrix>(2) );
 
+  // element gids of interacting elements
+  std::vector<int> elegids(2);
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator iter;
-  for (iter=doublebondcl_.begin(); iter!=doublebondcl_.end(); ++iter)
+  for ( iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
+    for( int i = 0; i < 2; ++i )
+    {
+      elegids[i] = elepairptr->GetEleGid(i);
+      bspotforce[i].Zero();
 
-    // zero out variables
-    bspotforce1.Zero();
-    bspotforce2.Zero();
-    bspotstiff11.Zero();
-    bspotstiff12.Zero();
-    bspotstiff21.Zero();
-    bspotstiff22.Zero();
+      for( int j = 0; j< 2; ++j )
+        bspotstiff[i][j].Zero();
+    }
 
     // evaluate beam linkage object to get forces and moments on binding spots
-    elepairptr->EvaluateForceStiff(bspotforce1,
-                                   bspotforce2,
-                                   bspotstiff11,
-                                   bspotstiff12,
-                                   bspotstiff21,
-                                   bspotstiff22);
+    elepairptr->EvaluateForceStiff( bspotforce[0], bspotforce[1], bspotstiff[0][0],
+        bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1] );
 
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBpotForceStiffToParentElements(
-        Discret(),
+    BIOPOLYNET::UTILS::ApplyBpotForceStiffToParentElements( Discret(),
         BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-        elepairptr,
-        bspotforce1,
-        bspotforce2,
-        bspotstiff11,
-        bspotstiff12,
-        bspotstiff21,
-        bspotstiff22,
-        &ele1force,
-        &ele2force,
-        &ele11stiff,
-        &ele12stiff,
-        &ele21stiff,
-        &ele22stiff);
+        elepairptr, bspotforce, bspotstiff, eleforce, elestiff );
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
-        *DiscretPtr(),
-        elepairptr->GetEleGid(0),
-        elepairptr->GetEleGid(1),
-        ele1force,
-        ele2force,
-        ele11stiff,
-        ele12stiff,
-        ele21stiff,
-        ele22stiff,
-        BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+        eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
+        BeamInteractionDataStatePtr()->GetMutableStiff() );
   }
 
   return true;
@@ -386,16 +311,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateStepElement()
   // -------------------------------------------------------------------------
 
   // intended bonds of row crosslinker on myrank (key is clgid)
-  std::map<int, BindEventData > mybonds;
+  std::map< int, BindEventData > mybonds;
   // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
-  std::map<int, std::vector<BindEventData> > undecidedbonds;
+  std::map< int, std::vector<BindEventData> > undecidedbonds;
 
   // fill binding event maps
   FindPotentialBindingEvents( mybonds, undecidedbonds );
 
   // bind events where myrank only owns the elements, cl are taken care
   // of by their owner (key is clgid)
-  std::map<int, BindEventData > myelebonds;
+  std::map< int, BindEventData > myelebonds;
 
   // now each row owner of a linker gets requests, makes a random decision and
   // informs back its requesters
@@ -413,7 +338,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateStepElement()
 
 #ifdef DEBUG
   // safety check if a crosslinker got lost
-  if(BinDiscretPtr()->NumGlobalNodes()!=crosslinking_params_ptr_->NumCrosslink())
+  if( BinDiscretPtr()->NumGlobalNodes() != crosslinking_params_ptr_->NumCrosslink() )
     dserror("A crosslinker got lost, something went wrong.");
 #endif
 
@@ -751,7 +676,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreComputeCrosslinkerData
     CrosslinkerData& cldata = crosslinker_data_[i];
 
     // store positions
-    for(int dim=0; dim<3; ++dim)
+    for( int dim = 0; dim < 3; ++dim )
       cldata.clpos(dim) = crosslinker_i->X()[dim];
     // get current binding spot status of crosslinker
     cldata.clbspots = crosslinker_i->ClData()->GetClBSpotStatus();
@@ -784,8 +709,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreComputeBeamData()
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->lColElement(i));
 
 #ifdef DEBUG
-      if(beamele_i == NULL)
-        dserror("Dynamic cast to Beam3Base failed");
+    if( beamele_i == NULL )
+      dserror("Dynamic cast to Beam3Base failed");
 #endif
 
     // store data
@@ -838,10 +763,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
     DRT::Node *currcrosslinker = BinDiscretPtr()->lColNode( *icl );
 
 #ifdef DEBUG
-      if(currcrosslinker == NULL)
-        dserror("Dynamic cast to CrosslinkerNode failed");
-      if(currcrosslinker->NumElement() != 1)
-        dserror("More than one element for this crosslinker");
+    if( currcrosslinker == NULL )
+      dserror("Dynamic cast to CrosslinkerNode failed");
+    if( currcrosslinker->NumElement() != 1 )
+      dserror("More than one element for this crosslinker");
 #endif
 
     // get bin that contains this crosslinker (can only be one)
@@ -849,8 +774,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
     const int currbinId = CurrentBin->Id();
 
 #ifdef DEBUG
-      if(currbinId < 0 )
-        dserror(" negative bin id number %i ", currbinId );
+    if( currbinId < 0 )
+      dserror(" negative bin id number %i ", currbinId );
 #endif
 
     // if a bin has already been examined --> continue with next crosslinker
@@ -949,23 +874,23 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
   const int numbeams = beamvec.size();
   std::vector<int> randorder = BIOPOLYNET::UTILS::Permutation(numbeams);
   std::vector<int> ::const_iterator randiter;
-  for(randiter=randorder.begin(); randiter!=randorder.end();  ++randiter)
+  for( randiter = randorder.begin(); randiter != randorder.end();  ++randiter )
   {
     // get neighboring (nb) beam element
     DRT::ELEMENTS::Beam3Base* nbbeam =
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(beamvec[*randiter]);
 
 #ifdef DEBUG
-      if(nbbeam == NULL)
-        dserror("Dynamic cast to beam3base failed");
+    if(nbbeam == NULL)
+      dserror("Dynamic cast to beam3base failed");
 #endif
 
     // get pre computed data of current nbbeam
     BeamData const& beamdata_i = beam_data_[ nbbeam->LID() ];
 
 #ifdef DEBUG
-      if( nbbeam->LID() < 0 )
-        dserror("Beami lid < 0");
+    if( nbbeam->LID() < 0 )
+      dserror("Beami lid < 0");
 #endif
 
     if( cldata_i.clnumbond == 1 )
@@ -1059,9 +984,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
         }
       }
 
-
       // ---------------------------------------------------------------------
-      // if we came this far, we can add this potential binding event to its
+      // if we come this far, we can add this potential binding event to its
       // corresponding map
       // ---------------------------------------------------------------------
       BindEventData bindeventdata;
@@ -1085,7 +1009,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
       }
 
       // as we allow only one binding event for each cl in one time step,
-      // we are done here, if we made it so far (i.e met 1., 2., 3., 4. and 5. criterion)
+      // we are done here, if we made it so far (i.e met criteria 1. - 7.)
       return;
     }
   }
@@ -1128,9 +1052,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckCrosslinkOfAdjacentE
 
   // check if two considered eles share nodes
   for ( int i = 0; i < 2; ++i )
+  {
     if( nbbeam->NodeIds()[i] == occbspot_bnodegids.first ||
         nbbeam->NodeIds()[i] == occbspot_bnodegids.second)
       return true;
+  }
 
   return false;
 }
@@ -1149,7 +1075,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::IsDistanceOutOfBindingRan
 
   const double distance = dist_vec.Norm2();
 
-  if (distance < lowerbound or distance > upperbound)
+  if ( distance < lowerbound or distance > upperbound )
     return true;
   else
     return false;
@@ -1168,17 +1094,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::IsEnclosedAngleOfBSpotTan
   // direction vectors should be unit vectors since they come from triads, but anyway ...
   double cos_angle = direction1.Dot(direction2) / direction1.Norm2() / direction2.Norm2();
 
-  if (cos_angle>1.0)
+  if ( cos_angle > 1.0 )
     dserror("cos(angle) = %f > 1.0 ! restrict this to exact 1.0 to avoid NaN in "
-        "following call to std::acos",cos_angle);
+            "following call to std::acos",cos_angle);
 
   double angle = std::acos(cos_angle);
 
   // acos returns angle \in [0,\pi] but we always want the acute angle here
-  if (angle > 0.5*M_PI)
+  if ( angle > 0.5 * M_PI )
     angle = M_PI - angle;
 
-  if (angle < lowerbound or angle > upperbound)
+  if ( angle < lowerbound or angle > upperbound )
     return true;
   else
     return false;
@@ -1775,7 +1701,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateBeamBindingStatusAf
 
   // loop through all unbinding events on myrank
   std::vector<UnBindEventData>::const_iterator iter;
-  for(iter=unbindevent.begin(); iter!=unbindevent.end(); ++ iter)
+  for( iter = unbindevent.begin(); iter != unbindevent.end(); ++ iter )
   {
     // get data
     const int elegidtoupdate = iter->eletoupdate.first;
@@ -2172,7 +2098,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateCrosslinkerUnb
   CheckInit();
 
   ISendRecvAny( sendunbindevent, myrankunbindevent );
-
 }
 
 /*-----------------------------------------------------------------------------*
@@ -2386,7 +2311,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnPack(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrintAndCheckBineEventData(
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrintAndCheckBindEventData(
   BindEventData const& bindeventdata) const
 {
   CheckInit();

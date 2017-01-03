@@ -16,26 +16,14 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H_
 
 #include "beaminteraction_submodel_evaluator_generic.H"
-#include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include "str_elements_paramsinterface.H"       // interface to the element evaluation
 #include "../drt_inpar/inpar_binstrategy.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include <Epetra_Comm.h>
 #include <Epetra_MpiComm.h>
 
+
 // forward declaration
-class Epetra_FEVector;
-class Epetra_Vector;
-class Epetra_Map;
-namespace LINALG {
-  class SparseMatrix;
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}
-namespace MAT
-{
+namespace MAT {
   class CrosslinkerMat;
 }
 namespace DRT {
@@ -43,7 +31,6 @@ namespace DRT {
   class Element;
   class PackBuffer;
   class Node;
-  class Discretization;
 }
 namespace BEAMINTERACTION {
 class CrosslinkingParams;
@@ -54,6 +41,7 @@ namespace SUBMODELEVALUATOR {
   class Crosslinking : public Generic
   {
   public:
+
     //! constructor
     Crosslinking();
 
@@ -412,7 +400,7 @@ private:
     ) const;
 
     /// debug feature to check bindevent structs
-    virtual void PrintAndCheckBineEventData ( BindEventData const& bindeventdata ) const;
+    virtual void PrintAndCheckBindEventData ( BindEventData const& bindeventdata ) const;
 
     //! @}
 

@@ -16,18 +16,10 @@
 #ifndef STR_MODELEVALUATOR_BEAMINTERACTION_DATASTATE
 #define STR_MODELEVALUATOR_BEAMINTERACTION_DATASTATE
 
-#include "../drt_lib/drt_dserror.H"
-
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../drt_timestepping/timintmstep.H"
-
-#include <Teuchos_RCP.hpp>
 
 // forward declaration
 class Epetra_FEVector;
-class Epetra_Time;
-class Epetra_Comm;
 namespace LINALG {
   class SparseOperator;
   class SparseMatrix;
@@ -39,7 +31,6 @@ namespace ELEMENTS {
 }
 }
 namespace STR {
-  class ModelEvaluator;
 namespace MODELEVALUATOR {
 
   /** \brief Global state data container for the beaminteraction model
@@ -50,6 +41,7 @@ namespace MODELEVALUATOR {
   class BeamInteractionDataState
   {
   public:
+
     /// constructor
     BeamInteractionDataState();
 
@@ -92,7 +84,6 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       return myrank_;
     };
-
     ///@}
 
     /// @name search/interaction related stuff
@@ -158,7 +149,6 @@ namespace MODELEVALUATOR {
       return (*dis_)(0);
     }
 
-
     /// Return internal force \f$fint_{n}\f$
     Teuchos::RCP<const Epetra_FEVector> GetForceN() const
     {
@@ -181,7 +171,6 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       return stiff_;
     }
-
     ///@}
 
     /// @name Get mutable state variables (read and write access)
@@ -239,7 +228,6 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       return stiff_;
     }
-
     ///@}
 
   protected:
@@ -250,7 +238,6 @@ namespace MODELEVALUATOR {
 
     /// flag indicating if Setup() has been called
     bool issetup_;
-
     ///@}
 
   private:
@@ -270,7 +257,6 @@ namespace MODELEVALUATOR {
 
     //! extended ele to bin map
     std::map<int, std::set<int> > exteletobinmap_;
-
      ///@}
 
     /// @name Global state vectors
@@ -290,8 +276,8 @@ namespace MODELEVALUATOR {
 
     /// global internal force vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_FEVector> forcenp_;
-
     ///@}
+
     /// @name System matrices
     ///@{
     /// supposed to hold the entire jacobian (saddle point system if desired)

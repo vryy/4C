@@ -6,8 +6,6 @@
 
 \maintainer Jonas Eichinger
 
-\date Oct, 2016
-
 \level 3
 
 */

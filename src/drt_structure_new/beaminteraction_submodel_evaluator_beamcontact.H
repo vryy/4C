@@ -15,26 +15,14 @@
 #ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
 
-#include <Teuchos_RCP.hpp>
+
 #include "beaminteraction_submodel_evaluator_generic.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_binstrategy.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 
 //forward declaration ...
-class Epetra_Vector;
-class Epetra_Map;
-namespace DRT
-{
-  class Exporter;
+namespace DRT {
   class Element;
-  class Node;
-  class PackBuffer;
-}
-namespace LINALG {
-  class SparseMatrix;
-  class SerialDenseVector;
-  class SerialDenseMatrix;
 }
 namespace BEAMINTERACTION {
 class BeamContactParams;

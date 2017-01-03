@@ -13,30 +13,20 @@
 #include "str_model_evaluator_beaminteraction.H"
 #include "beaminteraction_submodel_evaluator_factory.H"
 
-#include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 #include "str_utils.H"
-#include "str_integrator.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
 
-#include <Epetra_Vector.h>
-#include <Epetra_Time.h>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_RCP.hpp>
-
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_crosslinking.H"
 
@@ -48,7 +38,10 @@
 
 #include "../drt_biopolynet/biopolynet_calc_utils.H"
 #include "../drt_biopolynet/crosslinker_node.H"
+#include "../drt_biopolynet/periodic_boundingbox.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -125,7 +118,6 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and particle handler
   // -------------------------------------------------------------------------
-  // create bindis_
   CreateBinDiscretization();
 
   // construct, init and setup particle handler and binning strategy
@@ -136,6 +128,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // distribute problem according to bin distribution to procs
   PartitionProblem();
 
+  // initialize submodel evaluators
   InitAndSetupSubModeEvaluators();
 
   issetup_ = true;
@@ -335,7 +328,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForce()
     dserror("update went wrong");
 
   // transformation from ia_discret to problem discret
-  TransformForceAndStiff(true, false);
+  TransformForce();
 
   return true;
 }
@@ -355,7 +348,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateStiff()
   if ( not ia_state_ptr_->GetMutableStiff()->Filled() )
     ia_state_ptr_->GetMutableStiff()->Complete();
 
-  TransformForceAndStiff(false, true);
+  TransformStiff();
 
   if ( not stiff_beaminteraction_->Filled() )
     stiff_beaminteraction_->Complete();
@@ -385,7 +378,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
   if (not ia_state_ptr_->GetMutableStiff()->Filled())
     ia_state_ptr_->GetMutableStiff()->Complete();
 
-  TransformForceAndStiff();
+  TransformForceStiff();
 
   if (not stiff_beaminteraction_->Filled())
     stiff_beaminteraction_->Complete();
@@ -513,7 +506,6 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();
-
 
   return;
 }
@@ -799,28 +791,40 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateDofMapOfVector(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::TransformForceAndStiff(
-    bool force,
-    bool stiff)
+void STR::MODELEVALUATOR::BeamInteraction::TransformForce()
 {
   CheckInit();
 
   TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
 
-  if( force )
-  {
-    // transform force vector to problem discret layout/distribution
-    force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
-  }
+  // transform force vector to problem discret layout/distribution
+  force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
+}
 
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
+{
+  CheckInit();
+
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
+
+  stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
-  if( stiff )
-  {
-    stiff_beaminteraction_->UnComplete();
-    // transform stiffness matrix to problem discret layout/distribution
-    (*siatransform_)( *ia_state_ptr_->GetMutableStiff(), 1.0,
-        ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false );
-  }
+  (*siatransform_)( *ia_state_ptr_->GetMutableStiff(), 1.0,
+      ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false );
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
+{
+  CheckInit();
+
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
+
+  TransformForce();
+  TransformStiff();
 }
 
 /*----------------------------------------------------------------------------*

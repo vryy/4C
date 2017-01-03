@@ -1737,6 +1737,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/beaminteraction_submodel_evaluator_factory.cpp
   src/drt_structure_new/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_biopolynet/biopolynet_calc_utils.cpp
   src/drt_structure_new/crosslinking_params.cpp
   src/drt_structure_new/beaminteraction_submodel_evaluator_crosslinking.cpp
   src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
