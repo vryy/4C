@@ -113,6 +113,7 @@
 #include "acoustic_sol.H"
 #include "activefiber.H"
 #include "biochemo_mechano_cell_activefiber.H"
+#include "biochemo_mechano_cell_passivefiber.H"
 #include "superelastic_sma.H"
 
 
@@ -903,11 +904,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ActiveFiber* params = static_cast<MAT::PAR::ActiveFiber*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_biochemomechano:
+  case INPAR::MAT::m_biochemomechano_active:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellActiveFiber(curmat));
     MAT::PAR::BioChemoMechanoCellActiveFiber* params = static_cast<MAT::PAR::BioChemoMechanoCellActiveFiber*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_biochemomechano_passive:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BioChemoMechanoCellPassiveFiber(curmat));
+    MAT::PAR::BioChemoMechanoCellPassiveFiber* params = static_cast<MAT::PAR::BioChemoMechanoCellPassiveFiber*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_superelast:

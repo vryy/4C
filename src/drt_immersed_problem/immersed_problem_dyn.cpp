@@ -644,6 +644,11 @@ void CellMigrationControlAlgorithm()
   if(cellstructure==Teuchos::null)
     dserror("dynamic cast from Structure to MultiphysicsStructureWrapperCellMigration failed");
 
+
+
+  ///////////////////////////////////////////////////////////////////////
+  // Set FSI Model Evaluator
+  ///////////////////////////////////////////////////////////////////////
   // set pointer to model evaluator in ssi specific wrapper
   cellstructure->GetFSIStructureWrapperPtr()->
       SetModelEvaluatorPtr(

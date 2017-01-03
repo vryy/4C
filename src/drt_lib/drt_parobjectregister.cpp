@@ -157,6 +157,7 @@
 #include "../drt_acou/acou_sol_ele.H"
 #include "../drt_mat/activefiber.H"
 #include "../drt_mat/biochemo_mechano_cell_activefiber.H"
+#include "../drt_mat/biochemo_mechano_cell_passivefiber.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_mat/maxwell_0d_acinus_NeoHookean.H"
@@ -364,6 +365,7 @@ std::string DRT::ParObjectList()
     << CONTACT::CoElementType::Instance().Name() << " "
     << MAT::ActiveFiberType::Instance().Name() << " "
     << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
+    << MAT::BioChemoMechanoCellPassiveFiberType::Instance().Name() << " "
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::Beam3rLin2LinkageType::Instance().Name() << " "
     ;

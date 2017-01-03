@@ -648,6 +648,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
+  src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
 )
 
 set(OBJS_DRT_PLASTIC_SSN

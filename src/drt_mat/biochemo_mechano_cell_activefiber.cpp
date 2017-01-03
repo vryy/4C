@@ -121,7 +121,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,matid);
 
   // pack history data
-  int histsize;
+  int histsize = -1;
   // if material is not initialized, i.e. start simulation, nothing to pack
   if (!Initialized())
   {
@@ -134,6 +134,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Pack(DRT::PackBuffer& data) const
   }
 
   AddtoPack(data,histsize);  // length of history vector(s)
+
   for (int var=0; var<histsize; ++var)
   {
     // insert history vectors to AddtoPack
@@ -179,7 +180,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // matid and recover params_
-  int matid;
+  int matid = -1;
   ExtractfromPack(position,data,matid);
   params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
@@ -194,7 +195,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
     }
 
   // history data
-  int histsize;
+  int histsize = -1;
   ExtractfromPack(position,data,histsize);
 
   // if system is not yet initialized, the history vectors have to be initialized
@@ -218,12 +219,10 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
   // unpack formation level eta
   etalast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> > );
   etacurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> > );
-//#ifdef option3
   etalastphi_ = Teuchos::rcp( new std::vector<LINALG::Matrix<nphi,1> > );
   etalastphisurf_ = Teuchos::rcp( new std::vector<LINALG::Matrix<nphi,1> > );
   etacurrphi_ = Teuchos::rcp( new std::vector<LINALG::Matrix<nphi,1> > );
   etacurrphisurf_ = Teuchos::rcp( new std::vector<LINALG::Matrix<nphi,1> > );
-//#endif
 
   Nfil_  = Teuchos::rcp( new std::vector<double> );
   rate_  = Teuchos::rcp( new std::vector<double> );
@@ -258,12 +257,11 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
     etalast_->push_back(tmp_matrix3x3);
 
 
-//#ifdef option3
     ExtractfromPack(position,data,tmp_matrix);
     etalastphi_->push_back(tmp_matrix);
     ExtractfromPack(position,data,tmp_matrix);
     etalastphisurf_->push_back(tmp_matrix);
-//#endif
+
 //    ExtractfromPack(position, data, tmp_matrix);
 //    sigmaomegaphilast_->push_back(tmp_matrix);
     ExtractfromPack(position, data, tmp_scalar);
@@ -288,13 +286,9 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
     strainratecurr_->push_back(tmp_matrix6x1);
     strainratecurrsurf_->push_back(tmp_matrix6x1);
     etacurr_->push_back(tmp_matrix3x3);
-//#ifdef option3
-//    LINALG::Matrix<nphi,1> tmp_matrix(true);
     etacurrphi_->push_back(tmp_matrix);
     etacurrphisurf_->push_back(tmp_matrix);
     ccurr_->push_back(tmp_scalar);
-//#endif
-    //sigmaomegaphicurr_->push_back(tmp_matrix);
   }
 
   // Unpack data of passive elastic material (these lines are copied from drt_element.cpp)
@@ -603,7 +597,7 @@ void MAT::BioChemoMechanoCellActiveFiber::ResetStep()
 {
   matpassive_->ResetStep();
 
-}  //ResetStep()
+} // ResetStep()
 
 
 /*----------------------------------------------------------------------*
@@ -612,7 +606,8 @@ void MAT::BioChemoMechanoCellActiveFiber::ResetStep()
  The stress response is decomposed into a passive and an active part:
      \sigma = \sigma_{passive} + \sigma_{active}
  */
-void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+void MAT::BioChemoMechanoCellActiveFiber::Evaluate(
+                           const LINALG::Matrix<3,3>* defgrd,
                            const LINALG::Matrix<6,1>* glstrain,
                            Teuchos::ParameterList& params,
                            LINALG::Matrix<6,1>* stress,
@@ -647,9 +642,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
   if (analyticalmaterialtangent)
     dserror("no analytical material tangent calculation possible for this material at the moment.");
-
-
-//  Teuchos::RCP<const Epetra_MultiVector> testphi = DRT::Problem::Instance()->GetDis("cell")->GetState("phinp");
 
 
   DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
@@ -734,12 +726,12 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   // Parameters for active constitutive model
 
   // Non-dimensional parameter governing the rate of formation of stress fibers
-  double kforwards =   params_->kforwards_;
+  double kforwards  =   params_->kforwards_;
   // Non-dimensional parameter governing the rate of dissociation of stress fibers
-  double kbackwards =  params_->kbackwards_;
-  double ratemax =   params_->ratemax_;
-  double Nmax = params_->nmax_;
-  double kstress = params_->kstress_;
+  double kbackwards =   params_->kbackwards_;
+  double ratemax    =   params_->ratemax_;
+  double Nmax       =   params_->nmax_;
+  double kstress    =   params_->kstress_;
 
   // Setup inverse of deformation gradient
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
@@ -754,11 +746,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   LINALG::Matrix<6,1> strainrate(true);
   // \dot{R} = \frac {R^n - R^{n-1}} {\Delta t}
   LINALG::Matrix<3,3> rotationrate(true);
-
-  // e = F^{-T} * E * F^{-1}
-  LINALG::Matrix<3,3> eastrain(true);
-
-  GLtoEA(*glstrain,invdefgrd,eastrain);
 
 
   SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,rotationrate,gp,dt);
@@ -804,452 +791,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   ////////////////////////////////////////////////////////////////////
   // Calculation of the active material    //
   ////////////////////////////////////////////////////////////////////
-
-#ifdef option1
- double fac1 = kforwards*cROCK/Nmax;
- double Dxx=0.;
- double Dyy=0.;
- double Dzz=0.;
-
-  // A x = b ----> x = A^(-1) b
-  LINALG::Matrix<3,3> A(true);
-  LINALG::Matrix<3,1> b(true);
-
-  A(0,0)= 1.0/dt+ fac1;
-  A(1,1)= 1.0/dt+ fac1;
-  A(2,2)= 1.0/dt+ fac1;
-  A(0,1)= fac1;
-  A(0,2)= fac1;
-  A(1,0)= fac1;
-  A(2,0)= fac1;
-  A(1,2)= fac1;
-  A(2,1)= fac1;
-  Dissociation(strainratefull(0,0),Dxx,kbackwards,ratemax);
-  Dissociation(strainratefull(1,1),Dyy,kbackwards,ratemax);
-  Dissociation(strainratefull(2,2),Dzz,kbackwards,ratemax);
-//  Dxx=0.;
-//  Dyy=0.;
-//  Dzz=0.;
-  b(0)=etalast(0,0)/dt+kforwards*cROCK-Dxx;
-  b(1)=etalast(1,1)/dt+kforwards*cROCK-Dyy;
-  b(2)=etalast(2,2)/dt+kforwards*cROCK-Dzz;
-  // compute inverse of A
-  LINALG::Matrix<3,3> Apinv(true);
-  double det = A.Determinant();
-  if (det < 1.0e-13){
-    // Compute Pseudo inverse of A
-    LINALG::Matrix<3,3> U(true);
-    LINALG::Matrix<3,3> Diag(true);
-    LINALG::Matrix<3,3> Vt(true);
-    //A = U * Diag * transpose(V)
-    LINALG::SVD(A,U,Diag,Vt);
-
-    LINALG::Matrix<3,3> OneByDiag(true);
-    for (int i=0; i<3; i++)
-    {
-    if (Diag(i,i)<1.0e-13)
-      OneByDiag(i,i)=0.;
-    else
-      OneByDiag(i,i)=1.0/Diag(i,i);
-    }
-    LINALG::Matrix<3,3> temp(true);
-    temp.MultiplyNT(OneByDiag,U);
-    Apinv.MultiplyTN(Vt,temp);
-  }
-  else{
-  Apinv.Invert(A);
-  }
-  etanewii.MultiplyNN(Apinv,b);
-  //  Check result:
-  LINALG::Matrix<3,1> tempvector(true);
-  tempvector.Clear();
-  LINALG::Matrix<3,1> res(true);
-  res.MultiplyNN(A,etanewii);
-  res.Update(1.0,b,-1.0);
-  double absres = abs(res(0))+abs(res(1))+abs(res(2));
-  if (absres>1.0e-12)
-      {
-    std::cout<<"res "<<res<<std::endl;
-    dserror("calculation of eta_(ii)^{n+1} went wrong");
-      }
-//  std::cout<<"A "<<A<<std::endl;
-//  std::cout<<"U "<<U<<std::endl;
-//  std::cout<<"Vt "<<Vt<<std::endl;
-//  std::cout<<"Sigma "<<Sigma<<std::endl;
-//  std::cout<<"OneBySigma "<<OneBySigma<<std::endl;
-//  std::cout<<"Apinv "<<Apinv<<std::endl;
-//  std::cout<<"b "<<b<<std::endl;
-//  std::cout<<"etanewii "<<etanewii<<std::endl;
-//    dserror("blub");
-  double time = params.get<double>("total time",-1.0);
-//  if (time<=dt)
-//  {
-//    for (int i=0; i<3; i++)
-//    {
-//     etanewii(i)=0.0;
-//    }
-//  }
-  double Nfil=0.;
-  for (int i=0; i<3; i++)
-  {
-   etanew(i,i)=etanewii(i);
-   Nfil += etanewii(i);
-   if (etanewii(i)<-1.0e-13)
-   {
-     std::cout<<"Dxx "<<Dxx<<std::endl;
-     std::cout<<"Dyy "<<Dyy<<std::endl;
-     std::cout<<"Dzz "<<Dzz<<std::endl;
-     std::cout<<"vector eta_{ii} "<<etanewii<<std::endl;
-     //dserror("eta_{ii}<0");
-   }
-  }
-//  LINALG::Matrix<3,3> temp(true);
-//  temp.Clear();
-//  temp.MultiplyNT(etanew,trafo);
-//  etanew.MultiplyNN(trafo,temp);
-
-  double Dp;
-  double Dn;
-
-  for (int i=0; i<3;i++)
-  {
-    for (int j=i+1; j<3; j++)
-    {
-      //if (i != j)
-      {
-        Dp=0.;
-        Dissociation(strainratefull(i,j),Dp,kbackwards,ratemax);
-        Dn=0.;
-        Dissociation((-1.0)*strainratefull(i,j),Dn,kbackwards,ratemax);
-        etanew(i,j) = dt*(kforwards*cROCK*(1-Nfil/Nmax)) + etalast(i,j) - dt*0.5*(Dp+Dp);
-        //etanew(i,j) = (-1.0)*etanew(i,j) ;
-        //etanew(i,j)=0.;
-        etanew(j,i) = etanew(i,j);
-        //printf("(%d,%d)", i, j);
-      }
-    }
-  }
-#endif
-
-#ifdef option2
-  double fac1 = kforwards*cROCK/Nmax;
-  LINALG::Matrix<6,6> A(true);
-  LINALG::Matrix<6,1> b(true);
-  LINALG::Matrix<6,1> c(true);
-  LINALG::Matrix<6,1> etanewvec(true);
-  LINALG::Matrix<6,1> etalastvec(true);
-
-
-  etalastvec(0) = etalast(0,0);
-  etalastvec(1) = etalast(1,1);
-  etalastvec(2) = etalast(2,2);
-  etalastvec(3) = etalast(0,1);
-  etalastvec(4) = etalast(1,2);
-  etalastvec(5) = etalast(0,2);
-
-  double D;
-  for (int i=0;i<6;i++){
-    A(i,i)= 1/dt+fac1;
-    for (int j=i+1;j<6;j++){
-        A(i,j)=fac1;
-        A(j,i)=fac1;
-    }
-    D=0.;
-    Dissociation(strainrate(i),D,kbackwards,ratemax);
-    //if (i>2){
-      b(i)=etalastvec(i)/dt+(kforwards*cROCK-D);
-    //}
-    //else{
-    //  b(i)=etalastvec(i)+(kforwards*cROCK-D);
-    //}
-  }
-  //LINALG::Matrix<6,6> Apinv(true);
-  //Apinv.Invert(A);
-  LINALG::Matrix<6,6> Ainv(true);
-  Ainv.Update(A);
-  LINALG::FixedSizeSerialDenseSolver<6,6> Ainversion;
-  Ainversion.SetMatrix(Ainv);
-  int err = Ainversion.Invert();
-  if(err != 0){
-    std::cout<<"A "<<A<<std::endl;
-    dserror("Inversion of 6x6 matrix failed with errorcode %d",err);
-  }
-
-
-
-  etanewvec.MultiplyNN(Ainv,b);
-  //  Check result:
-  LINALG::Matrix<6,1> tempvector(true);
-  //tempvector.Clear();
-  LINALG::Matrix<6,1> res(true);
-  res.MultiplyNN(A,etanewvec);
-  res.Update(1.0,b,-1.0);
-  double absres = abs(res(0))+abs(res(1))+abs(res(2))+abs(res(3))+abs(res(4))+abs(res(5));
-//  if (absres>(1.0e-12)/3)
-//      {
-//    std::cout<<"A "<<A<<std::endl;
-//    std::cout<<"Ainv "<<Ainv<<std::endl;
-//    std::cout<<"b "<<b<<std::endl;
-//    std::cout<<"res "<<res<<std::endl;
-//    dserror("calculation of eta_(ij)^(n+1) went wrong");
-//      }
-  etanew(0,0)=etanewvec(0);
-  etanew(1,1)=etanewvec(1);
-  etanew(2,2)=etanewvec(2);
-  etanew(0,1)=etanewvec(3);
-  etanew(1,0)=etanewvec(3);
-  etanew(1,2)=etanewvec(4);
-  etanew(2,1)=etanewvec(4);
-  etanew(0,2)=etanewvec(5);
-  etanew(2,0)=etanewvec(5);
-
-  double Nfil=0;
-  for (int i=0;i<6;i++){
-    if (i<3){
-      Nfil+=etanewvec(i);
-    }
-    Nfil += 2*etanewvec(i);
-  }
-  //Testing
-//  sigma(0)=strainrate(0);
-//  sigma(1)=strainrate(1);
-//  sigma(2)=strainrate(2);
-//  sigma(3)=strainrate(3);
-//  sigma(4)=strainrate(4);
-//  sigma(5)=strainrate(5);
-
-//  if (time<=dt){
-//      sigma(0)=0.2;
-//      sigma(1)=0.1;
-//      sigma(2)=0.0;
-//      sigma(3)=0.0;
-//      sigma(4)=0.0;
-//      sigma(5)=0.0;
-//
-//  }
-
-  double etadiff= (abs(etanew(0,1)-etanew(1,0))+abs(etanew(0,2)-etanew(2,0))+abs(etanew(1,2)-etanew(2,1)));
-      if (etadiff>1.0e-12)
-        dserror("eta not diagonal");
-  // Convert stress like 6x1-Voigt vector to 3x3 matrix
-
-      LINALG::Matrix<6,1> singstrain(true);
-      for (int i=0;i<6;i++){
-        if (strainrate(i)<0.0){
-          singstrain(i)=-1.0;
-        }
-        else
-          singstrain(i)=1.0;
-      }
-#endif
-
-// Newton Raphson loop (inkl. TraceBack) for finding cROCKused
-#ifdef option5
-      LINALG::Matrix<nphi,nphi> J(true);
-      LINALG::Matrix<nphi,1> f(true);
-      LINALG::Matrix<nphi,1> b(true);
-      LINALG::Matrix<nphi,1> etanewphi(true);
-      etanewphi.Update(1.0,etalastphi);
-      LINALG::Matrix<nphi,1> etanewphioldguess(true);
-      LINALG::Matrix<nphi,1> deltaetaphi(true);
-      LINALG::Matrix<nphi,1> strainratephi(true);
-      double rateaverage=0.0;
-      double cROCKusednew=0.0;
-      double cROCKusedold=0.0;
-      if (Scatra==1){
-          cROCKusedAtBrdyGP(cROCKusedold, params);
-//            if (time>3.0){
-//                std::cout<<"cROCKusedold "<<cROCKusedold<<std::endl;
-//            for (int gp =0;gp<8;gp++){
-//              cROCKusedold = clast_->at(gp);
-//               std::cout<<"cROCKusedold "<<cROCKusedold<<std::endl;
-//            }
-//            dserror("stop");}
-      }
-      else{
-        cROCKusedold = clast_->at(gp);
-      }
-      double deltaphi = 2.0*M_PI/((double)(nphi));
-
-      double kROCKeta = params_->kRockEta_;
-      double Nfilold=0.0;
-      for (int i=0; i<nphi; i++){
-        Nfilold+=etalastphi(i) * deltaphi;
-      }
-
-
-      double Nfil=0;
-      //double kforwards =   params_->kforwards_;
-      double  Dcouple = params_->DissCoupling_;
-      double Daverage=0.0;
-
-      double phi;
-      LINALG::Matrix<nphi,1> Diss(true);
-      LINALG::Matrix<2,1> m(true);
-      for (int i=0; i<nphi; i++)
-      {
-          phi  = deltaphi*(double)(i);
-          m(0) = cos(phi);
-          m(1) = sin(phi);
-
-      // Transform strain rate at each point to fiber strain rate in (phi) direction
-      strainratephi(i) =              strainrate(0) * m(0)*m(0)
-                                 +    strainrate(1) * m(1)*m(1)
-                                 + 2.*strainrate(3) * m(0)*m(1);
-
-      Dissociation(strainratephi(i),Diss(i),kbackwards,ratemax);
-      Daverage+=Diss(i)*deltaphi;
-      }
-      Daverage=Daverage/(2.0*M_PI);
-      int iter=0;
-
-      Nfil=0.0;
-      for (int i=0; i<nphi; i++){
-        Nfil+=etanewphi(i) * deltaphi;
-      }
-
-      for (int i =0; i<nphi;i++){
-      f(i)=(-1.0)*(etanewphi(i)-etalastphi(i))/dt
-          + kforwards*(cROCK - (cROCKusedold + 1.0 / kROCKeta *(Nfil-Nfilold)+ Dcouple * Daverage))*(1-Nfil/Nmax)-Diss(i);
-      }
-//      if (time>0.0){
-//        std::cout<<"f "<< f <<std::endl;
-//      }
-   double itertraceback=1.0;
-   double absvalue=f.Norm2();
-   while(absvalue>1.0e-9){
-      iter+=1;
-      //if (abs(etanewphi.MaxValue()-etanewphi.MinValue())>1.0e-10){
-      double fac = kforwards*(-1.0 / kROCKeta *deltaphi )*(1-Nfil/Nmax)
-                    + kforwards*(cROCK - (cROCKusedold + 1/kROCKeta*(Nfil-Nfilold) + Dcouple * Daverage) )*(-1.0)*deltaphi/Nmax;
-      for (int i=0; i<nphi; i++){
-        for (int j=i;j<nphi;j++){
-            J(i,j)= fac;
-            J(j,i)= fac;
-        }
-        J(i,i)=-1.0/dt + fac;
-      }// end for loop over phi (i.e. phi_i)
-
-
-      LINALG::Matrix<nphi,nphi> Jinv(true);
-      Jinv.Update(J);
-      LINALG::FixedSizeSerialDenseSolver<nphi,nphi> Jinversion;
-      Jinversion.SetMatrix(Jinv);
-      int err = Jinversion.Invert();
-      if(err != 0){
-//        LINALG::Matrix<nphi,nphi> U(true);
-//        LINALG::Matrix<nphi,nphi> Diag(true);
-//        LINALG::Matrix<nphi,nphi> Vt(true);
-//        //A = U * Diag * transpose(V)
-//        LINALG::SVD(J,U,Diag,Vt);
-//
-//        LINALG::Matrix<nphi,nphi> OneByDiag(true);
-//        for (int i=0; i<nphi; i++)
-//        {
-//        if (Diag(i,i)<1.0e-13)
-//          OneByDiag(i,i)=0.;
-//        else
-//          OneByDiag(i,i)=1.0/Diag(i,i);
-//        }
-//        LINALG::Matrix<nphi,nphi> temp(true);
-//        temp.MultiplyNT(OneByDiag,U);
-//        Jinv.MultiplyTN(Vt,temp);
-
-        std::cout<<"J "<< J <<std::endl;
-//        std::cout<<"absvalue "<< absvalue <<std::endl;
-//        std::cout<<"f "<< f <<std::endl;
-        dserror("Inversion of (nphi)x(nphi) matrix failed with errorcode %d",err);
-      }
-      deltaetaphi.MultiplyNN(Jinv,f);
-      deltaetaphi.Scale(-1.0);
-//      }
-//      else{
-//        std::cout<<"in scalar" <<std::endl;
-//        double Jsc=0;
-//        Jsc=-etanewphi(0)/dt + kforwards*(-1.0 / kROCKeta *2.0*M_PI )*(1-Nfil/Nmax)
-//            + kforwards*(cROCK - (cROCKusedold + 1/kROCKeta*(Nfil-Nfilold)))*(-1.0)*2.0*M_PI/Nmax;
-//        for (int i=0; i<nphi; i++){
-//          deltaetaphi(i)=-1.0/Jsc * f(i);
-//        }
-//      }
-      etanewphioldguess(true);
-      etanewphioldguess.Update(1.0,etanewphi);
-//      if (time>0.0){
-//        std::cout<<"etanewphioldguess"<< etanewphioldguess <<std::endl;
-//        std::cout<<"etanewphi"<< etanewphi <<std::endl;
-//      }
-      etanewphi.Update(1.0,deltaetaphi,1.0);
-      Nfil=0.0;
-      for (int i=0; i<nphi; i++){
-        Nfil+=etanewphi(i) * deltaphi;
-      }
-      for (int i=0; i<nphi; i++){
-        f(i)=(-1.0)*(etanewphi(i)-etalastphi(i))/dt
-            + kforwards*(cROCK - (cROCKusedold + 1.0 / kROCKeta *(Nfil-Nfilold)+ Dcouple * Daverage))*(1-Nfil/Nmax)-Diss(i);
-      }
-
-      itertraceback=1.0;
-      while(absvalue < f.Norm2()) {
-        etanewphi.Update(1.0,etanewphioldguess,0.0);
-
-        itertraceback=itertraceback/2.0;
-        etanewphi.Update(itertraceback,deltaetaphi,1.0);
-        if (time>0.0){
-          //std::cout<<"f in traceback"<< f <<std::endl;
-          //std::cout<<"etanewphi"<< etanewphi <<std::endl;
-        }
-        Nfil=0.0;
-        for (int i=0; i<nphi; i++){
-          Nfil+=etanewphi(i) * deltaphi;
-        }
-        for (int i=0; i<nphi; i++){
-          f(i)=(-1.0)*(etanewphi(i)-etalastphi(i))/dt
-              + kforwards*(cROCK - (cROCKusedold + 1.0 / kROCKeta *(Nfil-Nfilold) + Dcouple * Daverage ))*(1-Nfil/Nmax)-Diss(i);
-        }
-        if (itertraceback<1.0e-4){
-          std::cout<<"deltaetaphi "<< deltaetaphi <<std::endl;
-          std::cout<<"f "<< f <<std::endl;
-          dserror("local loop trace back did not find smaller abs(f)");
-        }
-      }
-      absvalue = f.Norm2();
-
-      if (iter>12){
-        std::cout<<"f "<< f <<std::endl;
-        std::cout<<"etanewphi "<< etanewphi <<std::endl;
-        dserror("local loop did not converge");
-      }
-//      if (time>0.0){
-//        std::cout<<"f "<< f <<std::endl;
-//        //std::cout<<"abs(etanewphi.MaxValue()-etanewphi.MinValue()) "<< abs(etanewphi.MaxValue()-etanewphi.MinValue()) <<std::endl;
-//        //std::cout<<"etanewphi "<< etanewphi <<std::endl;
-//        //std::cout<<"Diss "<< Diss <<std::endl;
-//        //std::cout<<"strainratephi "<< strainratephi<<std::endl;
-//      }
-      }
-
-
-   cROCKusednew = cROCKusedold + 1/kROCKeta * (Nfil -Nfilold) + Dcouple * Daverage;
-
-   for (int i=0; i<nphi; i++){
-     phi  = deltaphi*(double)(i);
-     m(0) = cos(phi);
-     m(1) = sin(phi);
-     etanew(0,0) += etanewphi(i) * deltaphi * m(0)*m(0); // eta_11
-     etanew(1,1) += etanewphi(i) * deltaphi * m(1)*m(1); // eta_22
-     etanew(0,1) += etanewphi(i) * deltaphi * m(0)*m(1); // eta_12 = eta_21
-   }
-   etanew(1,0)= etanew(0,1);
-   etanew.Scale(1.0/M_PI);
-   if (time>0.0){
-    // std::cout<<"iter "<< iter<<std::endl;
-   //dserror("stop");
-   }
-      rateaverage=kforwards*(cROCK-cROCKusednew)*(1-Nfil/Nmax)-Daverage;
-
-#endif
-
-#ifdef option3
   const std::string MyIntMethod =   params_->myintmethod_;
 
   LINALG::Matrix<nphi,nphi> A(true);
@@ -1499,7 +1040,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
     // Calculate amount of stress fibers in certain direction
 
   }// End Gauss Quadratur 2D
-  //#endif
+
   else if (MyIntMethod=="3DGauss"){
     // Choose 1D integration rule for each dimension
     // N.B. nphi is the total number of integration points in 3DGauss routine.
@@ -1674,7 +1215,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
     dserror("Choose one of the following integration Methods for internal material law evaluation: 2DTrapez, 2DGauss, 3DGauss");
   }
 
-#endif
 double Nfilrate=0.0;
 if (Scatra!=1){
 
@@ -1693,8 +1233,6 @@ if (time>0.0){
   double valueActin;
   value = (-1.0)*kROCKeta*Nfilrate*detF;
   valueActin = (-1.0)*kActin*Nfilrate*detF;
-//  if (kROCKeta==1.0)
-//    {value = -1.0e-10;}
 
   rates->ReplaceGlobalValue(eleGID,gp,value);
   ratesActin->ReplaceGlobalValue(eleGID,gp,valueActin);
@@ -1757,7 +1295,6 @@ if (time>0.0){
       nsfver_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
       nsfdiagup_->at(gp) = deltaphi*(etanewphi(2)+etanewphi(3) +etanewphi(12)+ etanewphi(13))/Nfil;
       nsfdiagdown_->at(gp) = deltaphi*(etanewphi(7)+etanewphi(8) +etanewphi(17)+ etanewphi(18))/Nfil;
-      // nsfdiag_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
     }
     else
     {
@@ -1765,7 +1302,6 @@ if (time>0.0){
       nsfver_->at(gp) = 0.0;
       nsfdiagup_->at(gp) = 0.0;
       nsfdiagdown_->at(gp) = 0.0;
-      // nsfdiag_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
     }
 
 
@@ -1776,9 +1312,7 @@ if (time>0.0){
 
   // Update history only when accessed due to material evaluation NOT via Scatra Boundary Dependent Surface Integral
     if (Scatra !=1){
-      //etacurr_->at(gp) = contractionrateaverage;
       etacurrphi_->at(gp) = etanewphi;
-      //ccurr_->at(gp)=cROCKusednew;
       ccurr_->at(gp)=contractionrateaverage;
       Nfil_ ->at(gp) = Nfil;
       rate_->at(gp) = Nfilrate;
@@ -2252,7 +1786,7 @@ void MAT::BioChemoMechanoCellActiveFiber::CauchytoPK2(
   LINALG::Matrix<6,1> sigma)
 {
   // calculate the Jacobi-determinant
-  double detF = defgrd.Determinant();   // const???
+  double detF = defgrd.Determinant();
 
   // Convert stress like 6x1-Voigt vector to 3x3 matrix
   cauchystress(0,0) = sigma(0);
@@ -2336,35 +1870,6 @@ void MAT::BioChemoMechanoCellActiveFiber::PK2toCauchy(
   cauchystress(5) = sigma(0,2);
 
 }  // PK2toCauchy()
-
-
-///*----------------------------------------------------------------------*
-// | pull back of spatial stresses                           rauch  01/16 |
-// *----------------------------------------------------------------------*/
-void MAT::BioChemoMechanoCellActiveFiber::GLtoEA(
-  LINALG::Matrix<6,1> glstrain,
-  LINALG::Matrix<3,3> invdefgrd,
-  LINALG::Matrix<3,3>& eastrain)    // muss noch initialisiert werden
-{
-  // Convert strain like 6x1-Voigt vector to 3x3 matrix
-  LINALG::Matrix<3,3> greenlagrange(true);
-  greenlagrange(0,0) = glstrain(0);
-  greenlagrange(0,1) = 0.5*glstrain(3);            // 0.5???
-  greenlagrange(0,2) = 0.5*glstrain(5);            // 0.5???
-  greenlagrange(1,0) = greenlagrange(0,1);
-  greenlagrange(1,1) = glstrain(1);
-  greenlagrange(1,2) = 0.5*glstrain(4);            //0.5???
-  greenlagrange(2,0) = greenlagrange(0,2);
-  greenlagrange(2,1) = greenlagrange(1,2);
-  greenlagrange(2,2) = glstrain(2);
-
-
-  // e = F^{-T} * E * F^{-1}
-  LINALG::Matrix<3,3> temp(true);
-  temp.MultiplyTN(invdefgrd,greenlagrange);
-  eastrain.MultiplyNT(temp,invdefgrd);
-
-}  // GLtoEA
 
 
 /*----------------------------------------------------------------------*

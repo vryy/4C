@@ -16,7 +16,6 @@
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-#define option3
 
 // total (!) number of integration points, i.e. in 3D we have nphi/ntheta integration points in phi direction
 #define nphi 20
@@ -111,8 +110,9 @@ namespace MAT
    *
    *   Exemplary Input Line:
    *
-   *    MAT 1 MAT_CELLCONTRACTION DENS 1.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 10.0 NMAX 1.0 KSTRESS 1.0
+   *    MAT 1 MAT_BIOCHEMOMECHANO_ACTIVE DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 200.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3.183098862 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez
    *
+   * See also test immersed_cell_biochemo_mechano_pureContraction_dashpot_h8.
    *
    * \date 12/2016
    * \author rauch (rauch@lnm.mw.tum.de)
@@ -168,7 +168,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biochemomechano; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biochemomechano_active; }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
@@ -197,12 +197,13 @@ namespace MAT
     virtual void ResetStep();
 
     /// Evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
-                          const LINALG::Matrix<6,1>* glstrain, ///< green lagrange strain
-                          Teuchos::ParameterList& params,      ///< parameter list
-                          LINALG::Matrix<6,1>* stress,         ///< 2nd PK-stress
-                          LINALG::Matrix<6,6>* cmat,           ///< material stiffness matrix
-                          const int eleGID                     ///< global id of element
+    virtual void Evaluate(
+        const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
+        const LINALG::Matrix<6,1>* glstrain, ///< green lagrange strain
+        Teuchos::ParameterList& params,      ///< parameter list
+        LINALG::Matrix<6,1>* stress,         ///< 2nd PK-stress
+        LINALG::Matrix<6,6>* cmat,           ///< material stiffness matrix
+        const int eleGID                     ///< global id of element
                           );
 
     /// Return density
@@ -355,12 +356,6 @@ namespace MAT
         LINALG::Matrix<6,1>& cauchystess     ///< passive spatial stress
      );
 
-    /// Convert material strain to spatial strain
-    void GLtoEA(
-        LINALG::Matrix<6,1> glstrain,
-        LINALG::Matrix<3,3> invdefgrd,
-        LINALG::Matrix<3,3>& eastrain
-     );
 
     /// Transformation of strain rate tensor in (omega,phi) direction
     void TransformStrainRate(

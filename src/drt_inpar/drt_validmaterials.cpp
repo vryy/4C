@@ -2717,9 +2717,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     // biochemo-mechano coupled active stress fiber formation for cells
     {
       Teuchos::RCP<MaterialDefinition> m
-        = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO",
+        = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_ACTIVE",
                                               "biochemo-mechano coupled active stress fiber formation for cells",
-                                               INPAR::MAT::m_biochemomechano));
+                                               INPAR::MAT::m_biochemomechano_active));
 
           AddNamedReal(m,"DENS","Density");
           AddNamedInt(m,"IDMATPASSIVE","number of passive material in input file: MAT IDMATPASSIVE ...");
@@ -2732,6 +2732,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
           AddNamedReal(m,"KSTRESS","proportionality constant between Acto-Mysion-Activation and stress");
           AddNamedReal(m,"SOURCE","Constant for the Source for Stress-dependent Surface Scatra Condition");
           AddNamedString(m,"METHOD","Method for evaluating the material specific integral","2DGauss");
+          AppendMaterialDefinition(matlist,m);
+    }
+
+    /*----------------------------------------------------------------------*/
+    // biochemo-mechano coupled passive fiber formation for cells
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO_PASSIVE",
+                                              "biochemo-mechano coupled cytoskeleton formation for cells",
+                                               INPAR::MAT::m_biochemomechano_passive));
+
+          AddNamedInt(m,"IDMATELAST","number of elastic material in input file");
+          AddNamedReal(m,"VISC","Viscosity mu of isotropic viscous part 2*mu*I");
+
           AppendMaterialDefinition(matlist,m);
     }
 
