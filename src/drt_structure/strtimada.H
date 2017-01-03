@@ -2,9 +2,10 @@
 /*!
 \file strtimada.H
 \brief Time step adaptivity front-end for structural dynamics
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -131,6 +132,13 @@ namespace STR
      * This is the key method here, i.e. the time integration algorithm.
      */
     int Integrate();
+
+    /*! Finalize the class initialization
+     * Merge() and ResizeMStep() need to be called after(!) both Init()
+     * and Setup() have been called on both the marching time integrator
+     * and the auxiliary time integrator if existing (popp 01/2017).
+     */
+    virtual void Init(Teuchos::RCP<TimInt>& sti) = 0;
 
     /*! \brief Make one step with auxiliary scheme
      *

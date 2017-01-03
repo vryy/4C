@@ -1,11 +1,11 @@
-/*----------------------------------------------------------------------*/
+/*======================================================================*/
 /*!
 \file strtimada.cpp
-
 \brief Time step adaptivity front-end for structural dynamics
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -130,6 +130,10 @@ STR::TimAda::TimAda
 /* Integrate adaptively in time */
 int STR::TimAda::Integrate()
 {
+  // finalize initialization
+  // (only relevant if an auxiliary time integrator is used)
+  Init(sti_);
+
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
     dserror("This combination is not implemented ... Richardson's extrapolation ... Yoshida technique ...");

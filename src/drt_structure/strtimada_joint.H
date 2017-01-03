@@ -140,14 +140,18 @@ namespace STR
         ada_ = ada_orderequal;
       }
 
-      // merge
-      sta_->Merge(*sti);
-
-      // we have to call Setup() after the merge
+      // setup
       sta_->Setup();
 
-      // resize multi-step quantities
-      sta_->ResizeMStep();
+      // Actually, we would like to call Merge() and ResizeMStep() now and in the
+      // past we have done this right here. However, this requires that both Init()
+      // and Setup() have already been called on both(!) the marching time integrator
+      // and the auxiliary time integrator. Since Setup() has not yet been called
+      // for the marching time integrator, we must postpone Merge() and ResizeMStep()
+      // to a later point. They can now be found in the new Init() function below,
+      // which is called at the beginning of Integrate(). [popp 01/2017]
+      //sta_->Merge(*sti);
+      //sta_->ResizeMStep();
 
       return;
     }
@@ -159,6 +163,22 @@ namespace STR
 
     //! @name Actions
     //@{
+
+    /*! Finalize the class initialization
+    * Merge() and ResizeMStep() need to be called after(!) both Init()
+    * and Setup() have been called on both the marching time integrator
+    * and the auxiliary time integrator (popp 01/2017).
+    */
+    void Init(Teuchos::RCP<TimInt>& sti)
+    {
+      // merge
+      sta_->Merge(*sti);
+
+      // resize multi-step quantities
+      sta_->ResizeMStep();
+
+      return;
+    }
 
     /*! \brief Make one step with auxiliary scheme
      *
