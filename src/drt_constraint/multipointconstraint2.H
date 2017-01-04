@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint2.H
-
 \brief Basic constraint class, dealing with multi point constraints
-
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -25,8 +25,6 @@ namespace UTILS
   /*!
   \brief This class can handle twodimensional multi point constraints. It is derived from the basic constraint class
   and reimplements the evaluate routine.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class MPConstraint2 : public MPConstraint
   {

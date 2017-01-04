@@ -1,14 +1,14 @@
 /*!----------------------------------------------------------------------
- \file multipointconstraint3penalty.cpp
+\file multipointconstraint3penalty.cpp
+\brief Basic constraint class, dealing with multi point constraints
+\level 2
+<pre>
 
- \brief Basic constraint class, dealing with multi point constraints
- <pre>
- Maintainer: Thomas Kloeppel
- kloeppel@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/Members/kloeppel
- 089 - 289-15257
- </pre>
-
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
  *----------------------------------------------------------------------*/
 
 
@@ -54,7 +54,7 @@ MPConstraint
       {
         absconstraint_[condID]=false;
       }
-      
+
     }
 
     int startID=0;
@@ -71,7 +71,7 @@ MPConstraint
       newdofset=Teuchos::null;
       (discriter->second)->FillComplete();
     }
-    
+
     int nummyele=0;
     int numele=eletocondID_.size();
     if (!actdisc_->Comm().MyPID())
@@ -107,7 +107,7 @@ void UTILS::MPConstraint3Penalty::Initialize(const double& time)
       activecons_.find(condID)->second = true;
       if (actdisc_->Comm().MyPID() == 0)
       {
-        std::cout << "Encountered another active condition (Id = " << condID 
+        std::cout << "Encountered another active condition (Id = " << condID
             << ")  for restart time t = "<< time << std::endl;
       }
     }
@@ -133,7 +133,7 @@ void UTILS::MPConstraint3Penalty::Initialize
 )
 {
   const double time = params.get("total time",-1.0);
-  
+
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
@@ -151,29 +151,27 @@ void UTILS::MPConstraint3Penalty::Initialize
     default:
       dserror("Constraint/monitor is not an multi point constraint!");
     }
-      
+
     EvaluateError(constraintdis_.find(condID)->second, params, initerror_, true);
-    
+
     activecons_.find(condID)->second=true;
     if (actdisc_->Comm().MyPID()==0)
     {
       std::cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << std::endl;
-      
     }
 //    std::cout << "initial error "<< *initerror_<<std::endl;
   }
 }
-    
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Evaluate
-( 
-    Teuchos::ParameterList& params, 
+(
+    Teuchos::ParameterList& params,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, 
-    Teuchos::RCP<Epetra_Vector> systemvector2, 
+    Teuchos::RCP<Epetra_Vector> systemvector1,
+    Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
 
@@ -188,15 +186,15 @@ void UTILS::MPConstraint3Penalty::Evaluate
     default:
       dserror("Constraint/monitor is not an multi point constraint!");
   }
-  
+
   acterror_->Scale(0.0);
   std::map<int, Teuchos::RCP<DRT::Discretization> > ::iterator discriter;
   for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
-    
+
     EvaluateError(discriter->second, params, acterror_);
-  
+
 //    std::cout << "current error "<< *acterror_<<std::endl;
-  
+
   switch (Type())
   {
   case mpcnodeonplane3d:
@@ -218,9 +216,9 @@ void UTILS::MPConstraint3Penalty::Evaluate
  *-----------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition
 (
-    Teuchos::RCP<DRT::Discretization> actdisc, 
+    Teuchos::RCP<DRT::Discretization> actdisc,
     std::vector<DRT::Condition*> constrcondvec,
-    const std::string& discret_name, 
+    const std::string& discret_name,
     const std::string& element_name,
     int& startID
 )
@@ -364,11 +362,11 @@ std::map<int, Teuchos::RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::C
 void UTILS::MPConstraint3Penalty::EvaluateConstraint
 (
     Teuchos::RCP<DRT::Discretization> disc,
-    Teuchos::ParameterList& params, 
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, 
+    Teuchos::ParameterList& params,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, 
-    Teuchos::RCP<Epetra_Vector> systemvector2, 
+    Teuchos::RCP<Epetra_Vector> systemvector1,
+    Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3
 )
 {
@@ -443,8 +441,8 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         if (time<0.0) usetime = false;
         if (curvenum>=0 && usetime)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        
-        
+
+
         double diff = (curvefac*(*initerror_)[eid]-(*acterror_)[eid]);
         elematrix1.Scale(diff);
         for(int i=0; i<eledim; i++)
@@ -465,7 +463,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
 void UTILS::MPConstraint3Penalty::EvaluateError
 (
     Teuchos::RCP<DRT::Discretization> disc,
-    Teuchos::ParameterList& params, 
+    Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector,
     bool init
 )
@@ -527,7 +525,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
         std::cout << "Encountered a new active penalty mp condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
     }
-    
+
     Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
     acterrdist->Export(*systemvector,*errorexport_,Add);
     systemvector->Import(*acterrdist,*errorimport_,Insert);

@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file constraintsolver.H
-
-\brief Class containing direct solver and uzawa algorithm to solve linear system.
-
+\brief Class containing Uzawa algorithm to solve linear system.
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -42,8 +42,6 @@ namespace UTILS
 {
   /*!
   \brief Class containing uzawa algorithm to solve linear system.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class ConstraintSolver
   {
@@ -143,7 +141,7 @@ private:
       const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
-    
+
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
@@ -157,7 +155,7 @@ private:
       const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
-    
+
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */

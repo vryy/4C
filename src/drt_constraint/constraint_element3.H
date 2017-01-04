@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
 \file constraint_element3.H
-
+\brief A 3D constraint element with no physics attached
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -60,9 +62,6 @@ private:
 };
 
 /*!
-\brief A 3D constraint element with no physics attached
-
-\author tk (kloeppel@lnm.mw.tum.de)
 */
 class ConstraintElement3 : public DRT::Element
 {

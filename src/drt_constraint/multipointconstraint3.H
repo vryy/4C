@@ -1,11 +1,14 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint3.H
-
 \brief Basic constraint class, dealing with multi point constraints
-
-\maintainer Marc Hirschvogel
-
 \level 2
+<pre>
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -23,8 +26,6 @@ namespace UTILS
   /*!
   \brief This pure virtual class can handle multi point constraints in 3D.
   It is derived from the basic multipointconstraint class.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class MPConstraint3 : public UTILS::MPConstraint
   {

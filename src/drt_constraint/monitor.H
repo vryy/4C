@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file monitor.H
-
-\brief Basic monitor class, dealing with monitor boundary conditions
-
+\brief Basic constraint class, dealing with constraints living on boundaries
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -35,9 +35,6 @@ namespace LINALG
 namespace UTILS
 {
   /*!
-  \brief Basic monitor class, dealing with monitor boundary conditions.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class Monitor
 

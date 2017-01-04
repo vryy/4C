@@ -38,8 +38,6 @@ namespace UTILS
   /*!
   \brief Basic constraint class, dealing with constraint and monitor boundary conditions.
   This class cannot handle multi point constraints, they will be dealt with by a derived class.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class Constraint
 

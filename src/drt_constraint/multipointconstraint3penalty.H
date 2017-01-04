@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint3penalty.H
-
 \brief Basic constraint class, dealing with multi point constraints
-
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -26,8 +26,6 @@ namespace UTILS
   /*!
   \brief This class can handle multi point constraints in 3D.
   It is derived from the basic multipointconstraint class.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class MPConstraint3Penalty : public UTILS::MPConstraint
   {
@@ -41,14 +39,14 @@ namespace UTILS
         Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
         const std::string& CondName ///< Name of condition to create constraint from
     );
-    
+
     /// unused
     void Initialize
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     );
-    
+
     /// initialization routine called by the manager ctor
     void Initialize
     (

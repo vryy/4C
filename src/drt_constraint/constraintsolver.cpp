@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file constraintsolver.cpp
-
-\brief Class containing uzawa algorithm to solve linear system.
-
+\brief Class containing Uzawa algorithm to solve linear system.
+\level 2
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
+
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/

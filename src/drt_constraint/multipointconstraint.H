@@ -1,11 +1,14 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint.H
-
 \brief Basic constraint class, dealing with multi point constraints
-
 \level 2
+<pre>
 
-\maintainer Thomas Kloeppel
+\maintainer Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -22,8 +25,6 @@ namespace UTILS
   /*!
   \brief This pure virtual class is the common interface for multi point constraints.
   It is derived from the basic constraint class.
-
-  \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class MPConstraint : public Constraint
   {
