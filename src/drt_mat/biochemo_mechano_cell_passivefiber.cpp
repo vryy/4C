@@ -546,18 +546,15 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
     // (F^{-1}*\sigma*F^{-T}) * (dJ/dC) :
     // (F^{-1} \sigma F^{-T}) dyad 0.5*C^{-1} (dyadic product to obtain 4-Tensor)
-    tempmat2.Clear();
     tempmat2.MultiplyNT(tempmat1,invdefgrd);
     MAT::ElastSymTensorMultiply(auxvoigt,0.5,tempmat2,Cinv,0.0);
     Setup4Tensor(tens2,auxvoigt);
 
     // (d F^{-1}/dC) * \sigma * F^{-T} =
     // (d sqrt(C)^{-1} / dC) * R^{T} * \sigma * F^{-T}
-    tempmat1.Clear();
-    tempmat2.Clear();
     tempmat1.MultiplyNT(visc_stress_cauchy_mat,invdefgrd);
     tempmat2.MultiplyTN(R,tempmat2);
-    MultFourTensorMatrix(tens3,tempmat2,dsqrtCinvdC_Tensor);
+    MultFourTensorMatrix(tens3,tempmat2,dsqrtCinvdC_Tensor,false);
 
     /////////////////////////////////////////////////////////////////////
     // velocity gradient with respect to right cauchy-green
@@ -574,8 +571,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
     // F^{-1} [\dot F  (d F^{-1} / dC)] F^{-T}
     // F^{-1} {[F^dot * [d sqrt(C)^{-1} / dC] * R^{T}]} F^{-T}
-    tempmat1.Clear();
-    tempmat2.Clear();
     tempmat1.MultiplyNN(invdefgrd,defgrdrate);
     tempmat2.MultiplyTN(R,invdefgrdtrans);
     MultMatrixFourTensor(auxtens,tempmat1,dsqrtCinvdC_Tensor,false);
@@ -583,8 +578,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
     // F^{-1} [(d\dotF / dC) F^{-1}] F^{-T} =
     // 1/dt F^{-1} R (d sqrt(C) / dC) F^{-1} F^{-T}
-    tempmat1.Clear();
-    tempmat2.Clear();
     tempmat1.MultiplyNN(invdefgrd,R);
     tempmat1.Scale(1.0/(theta*dt));
     tempmat2.MultiplyNN(invdefgrd,invdefgrdtrans);
@@ -593,8 +586,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
     // F^{-1} [ (d F^{-T} / dC) \dot F^T ] F^{-T}
     // F^{-1} {R [d sqrt(C)^{-1} / dC] \dot F^T} F^{-T}
-    tempmat1.Clear();
-    tempmat2.Clear();
     tempmat1.MultiplyNN(invdefgrd,R);
     tempmat2.MultiplyTN(defgrdrate,invdefgrdtrans);
     MultMatrixFourTensor(auxtens,tempmat1,dsqrtCinvdC_Tensor,true);
@@ -602,8 +593,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
     // F^{-1} [ F^{-T} (d\dotF^T / dC) ] F^{-T} =
     // 1/dt F^{-1} [ F^{-T} (d sqrt(C) / dC) R^T] F^{-T}
-    tempmat1.Clear();
-    tempmat2.Clear();
     tempmat1.MultiplyNN(invdefgrd,invdefgrdtrans);
     tempmat1.Scale(1.0/(theta*dt));
     tempmat2.MultiplyTN(R,invdefgrdtrans);
@@ -654,7 +643,7 @@ if (params_->analyticalmaterialtangent_)
  *----------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::SetupRates(
     LINALG::Matrix<3,3> defgrd,
-    LINALG::Matrix<3,3> invdefgrd,
+    LINALG::Matrix<3,3>& invdefgrd,
     Teuchos::ParameterList& params,
     LINALG::Matrix<3,3>& defgrdrate,
     LINALG::Matrix<3,3>& R,
@@ -713,8 +702,8 @@ void MAT::BioChemoMechanoCellPassiveFiber::CauchytoPK2(
   LINALG::Matrix<6,1>& Sactive,
   LINALG::Matrix<3,3>& cauchystress,
   LINALG::Matrix<3,3> defgrd,
-  LINALG::Matrix<3,3> invdefgrd,
-  LINALG::Matrix<6,1> sigma)
+  LINALG::Matrix<3,3>& invdefgrd,
+  LINALG::Matrix<6,1>& sigma)
 {
   // calculate the Jacobi-determinant
   const double detF = defgrd.Determinant();
@@ -776,10 +765,9 @@ bool MAT::BioChemoMechanoCellPassiveFiber::VisData(
  *-------------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::Setup4Tensor(
     double FourTensor[3][3][3][3],
-    LINALG::Matrix<6,6> VoigtMatrix
+    LINALG::Matrix<6,6>& VoigtMatrix
 )
 {
-  Clear4Tensor(FourTensor);
   // Setup 4-Tensor from 6x6 Voigt matrix
   // Voigt matrix has to be the representative of a 4 tensor with
   // at least minor symmetries.
@@ -892,7 +880,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::Clear4Tensor(double FourTensor[3][3][
  *------------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::MultMatrixFourTensor(
     double FourTensorResult[3][3][3][3],
-    const LINALG::Matrix<3,3> Matrix,    // B^i_m
+    const LINALG::Matrix<3,3>& Matrix,    // B^i_m
     const double FourTensor[3][3][3][3], // A^mjkl
     const bool clearresulttensor
     )
@@ -914,7 +902,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::MultMatrixFourTensor(
  *------------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::MultFourTensorMatrix(
     double FourTensorResult[3][3][3][3],
-    LINALG::Matrix<3,3> Matrix,    // B^m_l
+    LINALG::Matrix<3,3>& Matrix,    // B^m_l
     double FourTensor[3][3][3][3], // A^ijkm
     bool clearresulttensor
     )
@@ -1036,7 +1024,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::MatrixRoot3x3(LINALG::Matrix<3,3>& Ma
  |  matrix root derivative of a symmetric 3x3 matrix                      rauch  07/14 |
  *-------------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::MatrixRootDerivativeSym3x3(
-    const LINALG::Matrix<3,3> MatrixIn,
+    const LINALG::Matrix<3,3>& MatrixIn,
     LINALG::Matrix<6,6>& MatrixRootDeriv)
 {
   double Norm=MatrixIn.Norm2();
@@ -1190,7 +1178,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::MatrixRootDerivativeSym3x3(
  *------------------------------------------------------------------------------------------*/
 void MAT::BioChemoMechanoCellPassiveFiber::MatrixInverseOfRootDerivative(
     double MatrixRootDerivative[3][3][3][3],
-    const LINALG::Matrix<3,3> MatrixRootInverse,
+    const LINALG::Matrix<3,3>& MatrixRootInverse,
     double result[3][3][3][3])
 {
   double temp[3][3][3][3] = {{{{0.}}}};

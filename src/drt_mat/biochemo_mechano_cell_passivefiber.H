@@ -217,7 +217,7 @@ namespace MAT
     /// Setup defgrd rate, rotation tensor, strain rate and rotation rate
     void SetupRates(
         LINALG::Matrix<3,3> defgrd,
-        LINALG::Matrix<3,3> invdefgrd,
+        LINALG::Matrix<3,3>& invdefgrd,
         Teuchos::ParameterList& params,
         LINALG::Matrix<3,3>& defgrdrate,
         LINALG::Matrix<3,3>& R,
@@ -232,14 +232,14 @@ namespace MAT
         LINALG::Matrix<6,1>& Sactive,      ///< active material stress
         LINALG::Matrix<3,3>& cauchystress, ///< cauchy stress in matrix notation
         LINALG::Matrix<3,3> defgrd,        ///< deformation gradient
-        LINALG::Matrix<3,3> invdefgrd,     ///< inverse deformation gradient
-        LINALG::Matrix<6,1> sigma          ///< active spatial stress
+        LINALG::Matrix<3,3>& invdefgrd,     ///< inverse deformation gradient
+        LINALG::Matrix<6,1>& sigma          ///< active spatial stress
      );
 
     /// Setup 4-Tensor from 6x6 Voigt notation
     void Setup4Tensor(
         double FourTensor[3][3][3][3],
-        LINALG::Matrix<6,6> VoigtMatrix
+        LINALG::Matrix<6,6>& VoigtMatrix
     );
 
     /// Set every tensor value to zero
@@ -248,7 +248,7 @@ namespace MAT
     /// Multiply Matrix(3,3) * 4-Tensor
     void MultMatrixFourTensor(
         double FourTensorResult[3][3][3][3],
-        const LINALG::Matrix<3,3> Matrix,
+        const LINALG::Matrix<3,3>& Matrix,
         const double FourTensor[3][3][3][3],
         const bool clearresulttensor = false
     );
@@ -256,7 +256,7 @@ namespace MAT
     /// Multiply Matrix(3,3) * 4-Tensor
     void MultFourTensorMatrix(
         double FourTensorResult[3][3][3][3],
-        LINALG::Matrix<3,3> Matrix,
+        LINALG::Matrix<3,3>& Matrix,
         double FourTensor[3][3][3][3],
         bool clearresulttensor = false
     );
@@ -273,14 +273,14 @@ namespace MAT
 
     /// Calculate derivative of the root of a symmetric 3x3 matrix
     void MatrixRootDerivativeSym3x3(
-        const LINALG::Matrix<3,3> MatrixIn,
+        const LINALG::Matrix<3,3>& MatrixIn,
         LINALG::Matrix<6,6>& MatrixRootDeriv);
 
     /// d sqrt(C)^{-1} / dC = -sqrt(C)^{-1}*(d sqrt(C)/dC)*sqrt(C)^{-1} =
     /// - MatrixRootInverse * MatrixRootDerivative * MatrixRootInverse
     void MatrixInverseOfRootDerivative(
         double MatrixRootDerivative[3][3][3][3],
-        const LINALG::Matrix<3,3> MatrixRootInverse,
+        const LINALG::Matrix<3,3>& MatrixRootInverse,
         double Result[3][3][3][3]
         );
 
