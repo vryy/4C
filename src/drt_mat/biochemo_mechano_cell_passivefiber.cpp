@@ -11,7 +11,9 @@
 
 #include "biochemo_mechano_cell_passivefiber.H"
 
-#include "../drt_mat/matpar_bundle.H"
+#include "material_service.H"
+#include "matpar_bundle.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -27,10 +29,14 @@ MAT::PAR::BioChemoMechanoCellPassiveFiber::BioChemoMechanoCellPassiveFiber(
   mu_(matdata->GetDouble("VISC")),
   analyticalmaterialtangent_(true)
 {
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),"MATERIALTANGENT"))
-    analyticalmaterialtangent_ = false;
-  else
-    analyticalmaterialtangent_ = true;
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  if(problem->ProblemType() == prb_immersed_cell){
+    if(DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"),"MATERIALTANGENT"))
+      analyticalmaterialtangent_ = false; }
+  else {
+    if(DRT::INPUT::IntegralValue<int>(problem->StructuralDynamicParams(),"MATERIALTANGENT"))
+      analyticalmaterialtangent_ = false; }
 }
 
 
@@ -97,33 +103,33 @@ void MAT::BioChemoMechanoCellPassiveFiber::Pack(DRT::PackBuffer& data) const
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-    AddtoPack(data,matid);
+  AddtoPack(data,matid);
 
-    // pack history data
-    int histsize = -1;
-    // if material is not initialized, i.e. start simulation, nothing to pack
-    if (!Initialized())
-    {
-      histsize = 0;
-    }
-    else
-    {
-      // if material is initialized (restart): size equates number of gausspoints
-      histsize = histdefgrdlast_->size();
-    }
+  // pack history data
+  int histsize = -1;
+  // if material is not initialized, i.e. start simulation, nothing to pack
+  if (!Initialized())
+  {
+    histsize = 0;
+  }
+  else
+  {
+    // if material is initialized (restart): size equates number of gausspoints
+    histsize = histdefgrdlast_->size();
+  }
 
-    AddtoPack(data,histsize);  // length of history vector(s)
+  AddtoPack(data,histsize);  // length of history vector(s)
 
-    for (int var=0; var<histsize; ++var)
-    {
-      // insert history vectors to AddtoPack
-      AddtoPack(data,histdefgrdlast_->at(var));
-    }
+  for (int var=0; var<histsize; ++var)
+  {
+    // insert history vectors to AddtoPack
+    AddtoPack(data,histdefgrdlast_->at(var));
+  }
 
-    // Pack data of elastic material
-    if (matelast_!=Teuchos::null) {
-      matelast_->Pack(data);
-    }
+  // Pack data of elastic material
+  if (matelast_!=Teuchos::null) {
+    matelast_->Pack(data);
+  }
 
   return;
 
@@ -303,7 +309,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
                            LINALG::Matrix<6,6>* cmat,
                            const int eleGID)
 {
-
   // get gauss point number
   const int gp = params.get<int>("gp",-1);
   if (gp == -1)   dserror("no Gauss point number provided in material");
@@ -311,8 +316,14 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   double dt = params.get<double>("delta time",-1.0);
   if (dt == -1.0) dserror("no time step size provided in material");
 
+
   // copy deformation gradient in histroy variable
   histdefgrdcurr_->at(gp) = *defgrd;
+
+
+  // calc the viscosity tensor
+  const double viscosity = params_->mu_;
+
 
   // setup inverse of deformation gradient
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
@@ -329,8 +340,8 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   // calc the rates
   SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,rotationrate,gp,dt);
 
-  // calc the viscosity tensor
-  const double viscosity = params_->mu_;
+
+
   // temporary viscous stress tensor
   LINALG::Matrix<6,1> visc_stress_cauchy;
   // calc viscous stress contribution
@@ -345,17 +356,293 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   // Transform Cauchy stress to PK2 stress
   // S = J * F^{-1} \sigma F^{-T}
   LINALG::Matrix<NUM_STRESS_3D,1> visc_stress_PK2(true); //6x1
-  LINALG::Matrix<3,3> visc_stress_cauchy_mat(true); //3x3
+  LINALG::Matrix<3,3> visc_stress_cauchy_mat(true);      //3x3
   CauchytoPK2(visc_stress_PK2,visc_stress_cauchy_mat,*defgrd,invdefgrd,visc_stress_cauchy);
 
-  // temporary viscous material tangent
-  LINALG::Matrix<6,6> visc_cmat;
+
+  /////////////////////////////////////////////////////////////////
+  // Calculate constitutive tensor
+  //
+  //  Cmat = 2*dS/dC =
+  //
+  //   d ( J * F^{-1} * \sigma * F^{-T} )
+  //  ------------------------------------   =
+  //   d               C
+  //
+  // dJ/dC * F^{-1} * \sigma * F^{-T}  +
+  //
+  // J * (d F^{-1}/dC) * \sigma * F^{-T}  +
+  //
+  // J * F^{-1} * (d \sigma / dC) * F^{-T}  +
+  //
+  // J * F^{-1} * \sigma * (d F^{-T} / dC)
+  //
+  //
+  /////////////////////////////////////////////////////////////////
+
+  // viscous part of material tangent
+  LINALG::Matrix<6,6> visc_cmat(true);
+
+  if (params_->analyticalmaterialtangent_)
+  {
+    // Jacobi Determinant
+    const double detF = defgrd->Determinant();
+
+    // theta is hard coded to be 1.0 (backward-euler)
+    const double theta = 1.0;
+
+    // Right-Cauchy-Green tensor(3x3): C = F^{T} * F
+    LINALG::Matrix<3,3> C(true);
+    C.MultiplyTN(*defgrd,*defgrd);
+    // Inverse of C: C^{-1}
+    LINALG::Matrix<3,3> Cinv(C);
+    Cinv.Invert();
+    // Root of C: \sqrt{C}
+    LINALG::Matrix<3,3> RootC(C);
+    MatrixRoot3x3(RootC);
+    // Inverse of sqrt(C): \sqrt(C)^{-1}
+    LINALG::Matrix<3,3> RootCInv(RootC);
+    RootCInv.Invert();
+
+    // Derivative of \sqrt{C} with respect to C: DerviC =  d sqrt(C) / d C
+    LINALG::Matrix<6,6> dsqrtCdC(true);// 6x6 Voigt matrix
+    double dsqrtCdC_Tensor[3][3][3][3] = {{{{0.}}}};
+    double dsqrtCinvdC_Tensor[3][3][3][3] = {{{{0.}}}};
+    MatrixRootDerivativeSym3x3(C,dsqrtCdC);
+    Setup4Tensor(dsqrtCdC_Tensor,dsqrtCdC);// 3x3x3x3 Tensor
+    // -sqrt(C)^{-1}*(d sqrt(C)/dC)*sqrt(C)^{-1}
+    MatrixInverseOfRootDerivative(
+        dsqrtCdC_Tensor,   // d sqrt(C)/dC
+        RootCInv,          // sqrt(C)^{-1}
+        dsqrtCinvdC_Tensor // result
+        );
+
+//    ///////////////////////////////////
+//    // FD for d sqrt{C}^{-1}/ d C
+//    ///////////////////////////////////
+//    double delta    = 1e-08;
+//    double invdelta = 1e+08;
+//    LINALG::Matrix<3,3> Ccopy(C);
+//    LINALG::Matrix<3,3> RootCcopy(true);
+//    LINALG::Matrix<3,3> RootCcopy2(true);
+//    LINALG::Matrix<3,3> InvRootCcopy(true);
+//    LINALG::Matrix<3,3> InvRootCcopy2(true);
+//
+//    double dsqrtCinvdC_Tensor_fd[3][3][3][3]  = {{{{0.}}}};
+//    double dsqrtCdC_Tensor_fd[3][3][3][3]     = {{{{0.}}}};
+//
+//    for(int k=0;k<3;++k)
+//    {
+//      for(int l=0;l<3;++l)
+//      {
+//        // toggle C_kl with positive direction
+//        Ccopy(k,l)+=delta/2.0;
+//        if(l != k)
+//          Ccopy(l,k)+=delta/2.0;
+//
+//        // calc root of toggled copy of C
+//        RootCcopy.Update(Ccopy);
+//        MatrixRoot3x3(RootCcopy);
+//        // calc inverse
+//        InvRootCcopy.Update(RootCcopy);
+//        InvRootCcopy.Invert();
+//
+//        // toggle C_kl with negative direction
+//        Ccopy(k,l)-=delta;
+//        if(l != k)
+//          Ccopy(l,k)-=delta;
+//
+//        // calc root of toggled copy of C
+//        RootCcopy2.Update(Ccopy);
+//        MatrixRoot3x3(RootCcopy2);
+//        // calc inverse
+//        InvRootCcopy2.Update(RootCcopy2);
+//        InvRootCcopy2.Invert();
+//
+//        // finite difference
+//        InvRootCcopy.Update(-1.0,InvRootCcopy2,1.0);
+//        InvRootCcopy.Scale(invdelta);
+//
+//        RootCcopy.Update(-1.0,RootCcopy2,1.0);
+//        RootCcopy.Scale(invdelta);
+//
+//        // fill 4-Tensor
+//        for(int i=0;i<3;++i)
+//        {
+//          for (int j=0;j<3;++j)
+//          {
+//            dsqrtCinvdC_Tensor_fd [i][j][k][l] = InvRootCcopy(i,j);
+//            dsqrtCdC_Tensor_fd [i][j][k][l]    = RootCcopy(i,j);
+//          } // j loop
+//        } // i loop
+//
+//        // reset Ccopy
+//        Ccopy.Update(C);
+//
+//      } // l loop
+//    } // k loop
+
+//    //////////////
+//    // FD CHECK //
+//    //////////////
+//    for (int i=0; i<3; i++)
+//      for (int j=0; j<3; j++)
+//        for (int k=0; k<3; k++)
+//          for (int l=0; l<3; l++)
+//            if(abs(dsqrtCinvdC_Tensor[i][j][k][l])-abs(dsqrtCinvdC_Tensor_fd[i][j][k][l])>(delta*5.0))
+//            {
+//              std::cout<<"dsqrt(C)^{-1}/dC = "<<dsqrtCinvdC_Tensor[i][j][k][l]<<" Approx = "<<dsqrtCinvdC_Tensor_fd[i][j][k][l]<<" at ijkl="<<i<<j<<k<<l<<" err ="<<abs(dsqrtCinvdC_Tensor[i][j][k][l])-abs(dsqrtCinvdC_Tensor_fd[i][j][k][l])<<std::endl;
+//            }
+
+//    //////////////
+//    // FD CHECK //
+//    //////////////
+//    for (int i=0; i<3; i++)
+//      for (int j=0; j<3; j++)
+//        for (int k=0; k<3; k++)
+//          for (int l=0; l<3; l++)
+//            if(abs(dsqrtCdC_Tensor[i][j][k][l])-abs(dsqrtCdC_Tensor_fd[i][j][k][l])>(delta*5.0))
+//            {
+//              std::cout<<"dsqrt(C)/dC = "<<dsqrtCdC_Tensor[i][j][k][l]<<" Approx = "<<dsqrtCdC_Tensor_fd[i][j][k][l]<<" at ijkl="<<i<<j<<k<<l<<" err ="<<abs(dsqrtCdC_Tensor[i][j][k][l])-abs(dsqrtCdC_Tensor_fd[i][j][k][l])<<std::endl;
+//            }
+
+
+    // Setup transposed matrices
+    LINALG::Matrix<3,3> Rtrans(true);
+    Rtrans.UpdateT(R);
+    LINALG::Matrix<3,3> rotationratetrans(true);
+    rotationratetrans.UpdateT(rotationrate);
+    LINALG::Matrix<3,3> defgrdratetrans(true);
+    defgrdratetrans.UpdateT(defgrdrate);
+    LINALG::Matrix<3,3> invdefgrdtrans(true);
+    invdefgrdtrans.UpdateT(invdefgrd);
+
+    // 3x3x3x3 Tensor auxiliary variables
+    double tens1[3][3][3][3] = {{{{0.}}}};
+    double tens2[3][3][3][3] = {{{{0.}}}};
+    double tens3[3][3][3][3] = {{{{0.}}}};
+    double tens4[3][3][3][3] = {{{{0.}}}};
+    double tens5[3][3][3][3] = {{{{0.}}}};
+    double tens6[3][3][3][3] = {{{{0.}}}};
+    double tens7[3][3][3][3] = {{{{0.}}}};
+    double tens_final[3][3][3][3] = {{{{0.}}}};
+    double auxtens[3][3][3][3] = {{{{0.}}}};
+    // 3x3 matrix auxiliary variables
+    LINALG::Matrix<3,3> tempmat1(true);
+    LINALG::Matrix<3,3> tempmat2(true);
+    // 6x6 matrix auxiliary variables
+    LINALG::Matrix<6,6> auxvoigt(true);
+
+    // F^{-1} * \sigma
+    tempmat1.MultiplyNN(invdefgrd,visc_stress_cauchy_mat);
+
+    // F^{-1} * \sigma * R
+    tempmat2.MultiplyNN(tempmat1,R);
+
+    // F^{-1} * \sigma * (dF^{-T}/ dC) =
+    // F^{-1} * \sigma * R * (d sqrt(C)^{-1} / dC) =
+    // F^{-1} * \sigma * R * (-sqrt(C)^{-1}*(d sqrt(C)/dC)*sqrt(C)^{-1})
+    MultMatrixFourTensor(tens1,tempmat2,dsqrtCinvdC_Tensor,false);
+
+    // (F^{-1}*\sigma*F^{-T}) * (dJ/dC) :
+    // (F^{-1} \sigma F^{-T}) dyad 0.5*C^{-1} (dyadic product to obtain 4-Tensor)
+    tempmat2.Clear();
+    tempmat2.MultiplyNT(tempmat1,invdefgrd);
+    MAT::ElastSymTensorMultiply(auxvoigt,0.5,tempmat2,Cinv,0.0);
+    Setup4Tensor(tens2,auxvoigt);
+
+    // (d F^{-1}/dC) * \sigma * F^{-T} =
+    // (d sqrt(C)^{-1} / dC) * R^{T} * \sigma * F^{-T}
+    tempmat1.Clear();
+    tempmat2.Clear();
+    tempmat1.MultiplyNT(visc_stress_cauchy_mat,invdefgrd);
+    tempmat2.MultiplyTN(R,tempmat2);
+    MultFourTensorMatrix(tens3,tempmat2,dsqrtCinvdC_Tensor);
+
+    /////////////////////////////////////////////////////////////////////
+    // velocity gradient with respect to right cauchy-green
+    // d d / d C = d 0.5*(l+l^T) / dC
+    //
+    // l   = \dot F F^{-1}
+    // l^T = F^{-T} \dot F^T
+    //
+    // dl / dC = (d\dotF / dC)F^{-1}  +  \dot F (dF^{-1} / dC)
+    //
+    // dl^T / dC = (dF^{-T} / dC) \dot F^T  +  F^{-T} (d \dot F^T / dC)
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    // F^{-1} [\dot F  (d F^{-1} / dC)] F^{-T}
+    // F^{-1} {[F^dot * [d sqrt(C)^{-1} / dC] * R^{T}]} F^{-T}
+    tempmat1.Clear();
+    tempmat2.Clear();
+    tempmat1.MultiplyNN(invdefgrd,defgrdrate);
+    tempmat2.MultiplyTN(R,invdefgrdtrans);
+    MultMatrixFourTensor(auxtens,tempmat1,dsqrtCinvdC_Tensor,false);
+    MultFourTensorMatrix(tens4,tempmat2,auxtens,false);
+
+    // F^{-1} [(d\dotF / dC) F^{-1}] F^{-T} =
+    // 1/dt F^{-1} R (d sqrt(C) / dC) F^{-1} F^{-T}
+    tempmat1.Clear();
+    tempmat2.Clear();
+    tempmat1.MultiplyNN(invdefgrd,R);
+    tempmat1.Scale(1.0/(theta*dt));
+    tempmat2.MultiplyNN(invdefgrd,invdefgrdtrans);
+    MultMatrixFourTensor(auxtens,tempmat1,dsqrtCdC_Tensor,true);
+    MultFourTensorMatrix(tens5,tempmat2,auxtens,false);
+
+    // F^{-1} [ (d F^{-T} / dC) \dot F^T ] F^{-T}
+    // F^{-1} {R [d sqrt(C)^{-1} / dC] \dot F^T} F^{-T}
+    tempmat1.Clear();
+    tempmat2.Clear();
+    tempmat1.MultiplyNN(invdefgrd,R);
+    tempmat2.MultiplyTN(defgrdrate,invdefgrdtrans);
+    MultMatrixFourTensor(auxtens,tempmat1,dsqrtCinvdC_Tensor,true);
+    MultFourTensorMatrix(tens6,tempmat2,auxtens,false);
+
+    // F^{-1} [ F^{-T} (d\dotF^T / dC) ] F^{-T} =
+    // 1/dt F^{-1} [ F^{-T} (d sqrt(C) / dC) R^T] F^{-T}
+    tempmat1.Clear();
+    tempmat2.Clear();
+    tempmat1.MultiplyNN(invdefgrd,invdefgrdtrans);
+    tempmat1.Scale(1.0/(theta*dt));
+    tempmat2.MultiplyTN(R,invdefgrdtrans);
+    MultMatrixFourTensor(auxtens,tempmat1,dsqrtCdC_Tensor,true);
+    MultFourTensorMatrix(tens7,tempmat2,auxtens,false);
+
+
+    for (int i=0; i<3; i++)
+      for (int j=0; j<3; j++)
+        for (int k=0; k<3; k++)
+          for (int l=0; l<3; l++)
+            auxtens[i][j][k][l] = tens4[i][j][k][l] + tens5[i][j][k][l] + tens6[i][j][k][l] + tens7[i][j][k][l];
+
+
+    // FINALLY SUM IT ALL UP
+
+    // put together viscous constitutive tensor
+    for (int i=0; i<3; i++)
+      for (int j=0; j<3; j++)
+        for (int k=0; k<3; k++)
+          for (int l=0; l<3; l++)
+            tens_final[i][j][k][l] = tens1[i][j][k][l]  + tens2[i][j][k][l] + tens3[i][j][k][l] + auxtens[i][j][k][l]*viscosity;
+
+    // convert tensor to voigt notation
+    Setup6x6VoigtMatrix(visc_cmat,tens_final);
+
+    // every part of the linearization needs to be scaled with 2*J
+    // this factor has been neglected in the single terms.
+    visc_cmat.Scale(2.0*detF);
+
+  } // if analyticalmaterialtangent
 
   // Evaluate elastic stress and material tangent
   matelast_->Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 
   // sum up total stress
 stress->Update(1.0,visc_stress_PK2,1.0);
+if (params_->analyticalmaterialtangent_)
+  cmat->Update(1.0,visc_cmat,1.0);
 
   return;
 } // MAT::BioChemoMechanoCellPassiveFiber::Evaluate
@@ -400,6 +687,22 @@ void MAT::BioChemoMechanoCellPassiveFiber::SetupRates(
   strainrate(5) = velgradient(0,2) + velgradient(2,0);
   strainrate.Scale(0.5);
 
+  // this means a lot of computational cost.
+  // we do this only if analytical material tangent is requested.
+  if (params_->analyticalmaterialtangent_)
+  {
+    // Rate of rotation tensor (!= skew part w of velocity gradient l, see Holzapfel S.99)
+    // Determine rotation tensor R from F (F=R*U) -> polar decomposition of displacement based F
+    LINALG::Matrix<3,3> Q(true);
+    LINALG::Matrix<3,3> S(true);
+    LINALG::Matrix<3,3> VT(true);
+
+    // Calculate rotcurr from defgrd
+    // Singular Value Decomposition,analogously to micromaterial_evaluate.cpp lines 81ff
+    LINALG::SVD<3,3>(defgrd,Q,S,VT);
+    R.MultiplyNN(Q,VT);
+  }
+
 }  // SetupRates
 
 
@@ -414,7 +717,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::CauchytoPK2(
   LINALG::Matrix<6,1> sigma)
 {
   // calculate the Jacobi-determinant
-  double detF = defgrd.Determinant();   // const???
+  const double detF = defgrd.Determinant();
 
   // Convert stress like 6x1-Voigt vector to 3x3 matrix
   cauchystress(0,0) = sigma(0);
@@ -465,4 +768,463 @@ bool MAT::BioChemoMechanoCellPassiveFiber::VisData(
     int eleID)
 {
   return matelast_->VisData(name, data, numgp, eleID);
+}
+
+
+/*-------------------------------------------------------------------------------------*
+ |  Setup 4-Tensor from 6x6 Voigt notation                                rauch  07/14 |
+ *-------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::Setup4Tensor(
+    double FourTensor[3][3][3][3],
+    LINALG::Matrix<6,6> VoigtMatrix
+)
+{
+  Clear4Tensor(FourTensor);
+  // Setup 4-Tensor from 6x6 Voigt matrix
+  // Voigt matrix has to be the representative of a 4 tensor with
+  // at least minor symmetries.
+  FourTensor[0][0][0][0] = VoigtMatrix(0,0);//C1111
+  FourTensor[0][0][1][1] = VoigtMatrix(0,1);//C1122
+  FourTensor[0][0][2][2] = VoigtMatrix(0,2);//C1133
+  FourTensor[0][0][0][1] = VoigtMatrix(0,3);//C1112
+  FourTensor[0][0][1][0] = VoigtMatrix(0,3);//C1121
+  FourTensor[0][0][1][2] = VoigtMatrix(0,4);//C1123
+  FourTensor[0][0][2][1] = VoigtMatrix(0,4);//C1132
+  FourTensor[0][0][0][2] = VoigtMatrix(0,5);//C1113
+  FourTensor[0][0][2][0] = VoigtMatrix(0,5);//C1131
+
+  FourTensor[1][1][0][0] = VoigtMatrix(1,0);//C2211
+  FourTensor[1][1][1][1] = VoigtMatrix(1,1);//C2222
+  FourTensor[1][1][2][2] = VoigtMatrix(1,2);//C2233
+  FourTensor[1][1][0][1] = VoigtMatrix(1,3);//C2212
+  FourTensor[1][1][1][0] = VoigtMatrix(1,3);//C2221
+  FourTensor[1][1][1][2] = VoigtMatrix(1,4);//C2223
+  FourTensor[1][1][2][1] = VoigtMatrix(1,4);//C2232
+  FourTensor[1][1][0][2] = VoigtMatrix(1,5);//C2213
+  FourTensor[1][1][2][0] = VoigtMatrix(1,5);//C2231
+
+  FourTensor[2][2][0][0] = VoigtMatrix(2,0);//C3311
+  FourTensor[2][2][1][1] = VoigtMatrix(2,1);//C3322
+  FourTensor[2][2][2][2] = VoigtMatrix(2,2);//C3333
+  FourTensor[2][2][0][1] = VoigtMatrix(2,3);//C3312
+  FourTensor[2][2][1][0] = VoigtMatrix(2,3);//C3321
+  FourTensor[2][2][1][2] = VoigtMatrix(2,4);//C3323
+  FourTensor[2][2][2][1] = VoigtMatrix(2,4);//C3332
+  FourTensor[2][2][0][2] = VoigtMatrix(2,5);//C3313
+  FourTensor[2][2][2][0] = VoigtMatrix(2,5);//C3331
+
+  FourTensor[0][1][0][0] = VoigtMatrix(3,0);
+  FourTensor[1][0][0][0] = VoigtMatrix(3,0);//C1211 = C2111
+  FourTensor[0][1][1][1] = VoigtMatrix(3,1);
+  FourTensor[1][0][1][1] = VoigtMatrix(3,1);//C1222 = C2122
+  FourTensor[0][1][2][2] = VoigtMatrix(3,2);
+  FourTensor[1][0][2][2] = VoigtMatrix(3,2);//C1233 = C2133
+  FourTensor[0][1][0][1] = VoigtMatrix(3,3);
+  FourTensor[1][0][0][1] = VoigtMatrix(3,3);//C1212 = C2112
+  FourTensor[0][1][1][0] = VoigtMatrix(3,3);
+  FourTensor[1][0][1][0] = VoigtMatrix(3,3);//C1221 = C2121
+  FourTensor[0][1][1][2] = VoigtMatrix(3,4);
+  FourTensor[1][0][1][2] = VoigtMatrix(3,4);//C1223 = C2123
+  FourTensor[0][1][2][1] = VoigtMatrix(3,4);
+  FourTensor[1][0][2][1] = VoigtMatrix(3,4);//C1232 = C2132
+  FourTensor[0][1][0][2] = VoigtMatrix(3,5);
+  FourTensor[1][0][0][2] = VoigtMatrix(3,5);//C1213 = C2113
+  FourTensor[0][1][2][0] = VoigtMatrix(3,5);
+  FourTensor[1][0][2][0] = VoigtMatrix(3,5);//C1231 = C2131
+
+  FourTensor[1][2][0][0] = VoigtMatrix(4,0);
+  FourTensor[2][1][0][0] = VoigtMatrix(4,0);//C2311 = C3211
+  FourTensor[1][2][1][1] = VoigtMatrix(4,1);
+  FourTensor[2][1][1][1] = VoigtMatrix(4,1);//C2322 = C3222
+  FourTensor[1][2][2][2] = VoigtMatrix(4,2);
+  FourTensor[2][1][2][2] = VoigtMatrix(4,2);//C2333 = C3233
+  FourTensor[1][2][0][1] = VoigtMatrix(4,3);
+  FourTensor[2][1][0][1] = VoigtMatrix(4,3);//C2312 = C3212
+  FourTensor[1][2][1][0] = VoigtMatrix(4,3);
+  FourTensor[2][1][1][0] = VoigtMatrix(4,3);//C2321 = C3221
+  FourTensor[1][2][1][2] = VoigtMatrix(4,4);
+  FourTensor[2][1][1][2] = VoigtMatrix(4,4);//C2323 = C3223
+  FourTensor[1][2][2][1] = VoigtMatrix(4,4);
+  FourTensor[2][1][2][1] = VoigtMatrix(4,4);//C2332 = C3232
+  FourTensor[1][2][0][2] = VoigtMatrix(4,5);
+  FourTensor[2][1][0][2] = VoigtMatrix(4,5);//C2313 = C3213
+  FourTensor[1][2][2][0] = VoigtMatrix(4,5);
+  FourTensor[2][1][2][0] = VoigtMatrix(4,5);//C2331 = C3231
+
+  FourTensor[0][2][0][0] = VoigtMatrix(5,0);
+  FourTensor[2][0][0][0] = VoigtMatrix(5,0);//C1311 = C3111
+  FourTensor[0][2][1][1] = VoigtMatrix(5,1);
+  FourTensor[2][0][1][1] = VoigtMatrix(5,1);//C1322 = C3122
+  FourTensor[0][2][2][2] = VoigtMatrix(5,2);
+  FourTensor[2][0][2][2] = VoigtMatrix(5,2);//C1333 = C3133
+  FourTensor[0][2][0][1] = VoigtMatrix(5,3);
+  FourTensor[2][0][0][1] = VoigtMatrix(5,3);//C1312 = C3112
+  FourTensor[0][2][1][0] = VoigtMatrix(5,3);
+  FourTensor[2][0][1][0] = VoigtMatrix(5,3);//C1321 = C3121
+  FourTensor[0][2][1][2] = VoigtMatrix(5,4);
+  FourTensor[2][0][1][2] = VoigtMatrix(5,4);//C1323 = C3123
+  FourTensor[0][2][2][1] = VoigtMatrix(5,4);
+  FourTensor[2][0][2][1] = VoigtMatrix(5,4);//C1332 = C3132
+  FourTensor[0][2][0][2] = VoigtMatrix(5,5);
+  FourTensor[2][0][0][2] = VoigtMatrix(5,5);//C1313 = C3113
+  FourTensor[0][2][2][0] = VoigtMatrix(5,5);
+  FourTensor[2][0][2][0] = VoigtMatrix(5,5);//C1331 = C3131
+
+}  // Setup4Tensor()
+
+
+/*------------------------------------------------------------------------------------*
+ |  Set every value of 4-Tensor(3x3x3x3) to zero                         rauch  07/14 |
+ *------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::Clear4Tensor(double FourTensor[3][3][3][3])
+{
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      for (int k=0; k<3; k++)
+        for (int l=0; l<3; l++)
+          FourTensor[i][j][k][l] = 0.0;
+
+}  // Clear4Tensor()
+
+
+/*------------------------------------------------------------------------------------*
+ |  Multiply: Matrix(3x3) * 4-Tensor(3x3x3x3)                            rauch  07/14 |
+ *------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::MultMatrixFourTensor(
+    double FourTensorResult[3][3][3][3],
+    const LINALG::Matrix<3,3> Matrix,    // B^i_m
+    const double FourTensor[3][3][3][3], // A^mjkl
+    const bool clearresulttensor
+    )
+{
+  if(clearresulttensor)
+    Clear4Tensor(FourTensorResult);
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      for (int k=0; k<3; k++)
+        for (int l=0; l<3; l++)
+          for (int m=0; m<3; m++)
+            FourTensorResult[i][j][k][l] += Matrix(i,m) * FourTensor[m][j][k][l]; // C^ijkl = B^i_m * A^mjkl
+
+}  // MultMatrixFourTensor()
+
+
+/*------------------------------------------------------------------------------------*
+ |  Multiply: 4-Tensor(3x3x3x3) * Matrix(3,3)                            rauch  07/14 |
+ *------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::MultFourTensorMatrix(
+    double FourTensorResult[3][3][3][3],
+    LINALG::Matrix<3,3> Matrix,    // B^m_l
+    double FourTensor[3][3][3][3], // A^ijkm
+    bool clearresulttensor
+    )
+{
+  if(clearresulttensor)
+    Clear4Tensor(FourTensorResult);
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      for (int k=0; k<3; k++)
+        for (int l=0; l<3; l++)
+          for (int m=0; m<3; m++)
+            FourTensorResult[i][j][k][l] += FourTensor[i][j][k][m] * Matrix(m,l); // C^ijkl = A^ijkm B_ml
+
+}  // MultMatrixFourTensor()
+
+
+/*------------------------------------------------------------------------------------------*
+ |  Setup 6x6 matrix in Voigt notation from 4-Tensor                           rauch  07/14 |
+ *------------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::Setup6x6VoigtMatrix(
+    LINALG::Matrix<6,6>& VoigtMatrix,
+    double FourTensor[3][3][3][3]
+)
+{
+///*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)               0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
+//    [      C2211                 C2222                C2233                0.5*(C2212+C2221)               0.5*(C2223+C2232)                0.5*(C2213+C2231)      ]
+//    [      C3311                 C3322                C3333                0.5*(C3312+C3321)               0.5*(C3323+C3332)                0.5*(C3313+C3331)      ]
+//    [0.5*(C1211+C2111)    0.5*(C1222+C2122)    0.5*(C1233+C2133)    0.5*(C1212+C2112+C1221+C2121)    0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)]
+//    [0.5*(C2311+C3211)    0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)    0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)]
+//    [0.5*(C1322+C3122)    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
+
+  // Setup 4-Tensor from 6x6 Voigt matrix
+  VoigtMatrix(0,0) = FourTensor[0][0][0][0]; //C1111
+  VoigtMatrix(0,1) = FourTensor[0][0][1][1]; //C1122
+  VoigtMatrix(0,2) = FourTensor[0][0][2][2]; //C1133
+  VoigtMatrix(0,3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]); //0.5*(C1112+C1121)
+  VoigtMatrix(0,4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]); //0.5*(C1123+C1132)
+  VoigtMatrix(0,5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]); //0.5*(C1113+C1131)
+
+  VoigtMatrix(1,0) = FourTensor[1][1][0][0]; //C2211
+  VoigtMatrix(1,1) = FourTensor[1][1][1][1]; //C2222
+  VoigtMatrix(1,2) = FourTensor[1][1][2][2]; //C2233
+  VoigtMatrix(1,3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]); //0.5*(C2212+C2221)
+  VoigtMatrix(1,4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]); //0.5*(C2223+C2232)
+  VoigtMatrix(1,5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]); //0.5*(C2213+C2231)
+
+  VoigtMatrix(2,0) = FourTensor[2][2][0][0]; //C3311
+  VoigtMatrix(2,1) = FourTensor[2][2][1][1]; //C3322
+  VoigtMatrix(2,2) = FourTensor[2][2][2][2]; //C3333
+  VoigtMatrix(2,3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]); //0.5*(C3312+C3321)
+  VoigtMatrix(2,4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]); //0.5*(C3323+C3332)
+  VoigtMatrix(2,5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]); //0.5*(C3313+C3331)
+
+  VoigtMatrix(3,0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]); //0.5*(C1211+C2111)
+  VoigtMatrix(3,1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]); //0.5*(C1222+C2122)
+  VoigtMatrix(3,2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]); //0.5*(C1233+C2133)
+  VoigtMatrix(3,3) = 0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] + FourTensor[0][1][1][0] + FourTensor[1][0][1][0]); //0.5*(C1212+C2112+C1221+C2121)
+  VoigtMatrix(3,4) = 0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] + FourTensor[0][1][2][1] + FourTensor[1][0][2][1]); //0.5*(C1223+C2123+C1232+C2132)
+  VoigtMatrix(3,5) = 0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] + FourTensor[0][1][2][0] + FourTensor[1][0][2][0]); //0.5*(C1213+C2113+C1231+C2131)
+
+  VoigtMatrix(4,0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]); //0.5*(C2311+C3211)
+  VoigtMatrix(4,1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]); //0.5*(C2322+C3222)
+  VoigtMatrix(4,2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]); //0.5*(C2333+C3233)
+  VoigtMatrix(4,3) = 0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] + FourTensor[1][2][1][0] + FourTensor[2][1][1][0]); //0.5*(C2312+C3212+C2321+C3221)
+  VoigtMatrix(4,4) = 0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] + FourTensor[1][2][2][1] + FourTensor[2][1][2][1]); //0.5*(C2323+C3223+C2332+C3232)
+  VoigtMatrix(4,5) = 0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] + FourTensor[1][2][2][0] + FourTensor[2][1][2][0]); //0.5*(C2313+C3213+C2331+C3231)
+
+  VoigtMatrix(5,0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]); //0.5*(C1311+C3111)
+  VoigtMatrix(5,1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]); //0.5*(C1322+C3122)
+  VoigtMatrix(5,2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]); //0.5*(C1333+C3133)
+  VoigtMatrix(5,3) = 0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] + FourTensor[0][2][1][0] + FourTensor[2][0][1][0]); //0.5*(C1312+C3112+C1321+C3121)
+  VoigtMatrix(5,4) = 0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] + FourTensor[0][2][2][1] + FourTensor[2][0][2][1]); //0.5*(C1323+C3123+C1332+C3132)
+  VoigtMatrix(5,5) = 0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] + FourTensor[0][2][2][0] + FourTensor[2][0][2][0]); //0.5*(C1313+C3113+C1331+C3131)
+
+}  // Setup6x6VoigtMatrix()
+
+
+/*---------------------------------------------------------------*
+ |  matrix root                                     rauch  07/14 |
+ *---------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::MatrixRoot3x3(LINALG::Matrix<3,3>& MatrixInOut)
+{
+  double Norm=MatrixInOut.Norm2();
+  // direct calculation for zero-matrix
+  if (Norm==0.)
+  {
+    MatrixInOut.Clear();
+    return;
+  }
+  else
+  {
+    LINALG::Matrix<3,3> EV(MatrixInOut);
+    LINALG::Matrix<3,3> EW;
+
+    // MatixInOut = EV * EW * EV^{-1}
+    LINALG::SYEV(EV,EW,EV);
+
+    // sqrt(MatrixInOut) = EV * sqrt(EW) * EVT
+    // loop over all eigenvalues
+    for (int a=0; a<3; a++)
+      EW(a,a)=sqrt(EW(a,a));
+
+    MatrixInOut.Clear();
+
+    // temp = sqrt(EW) * EVT
+    LINALG::Matrix<3,3> temp;
+    temp.MultiplyNT(EW,EV);
+
+    // sqrt(MatrixInOut) = EV * sqrt(EW) * EV^{-1} = EV * temp
+    MatrixInOut.MultiplyNN(EV,temp);
+  }
+
+  return;
+
+}  // MatrixRoot3x3()
+
+
+/*-------------------------------------------------------------------------------------*
+ |  matrix root derivative of a symmetric 3x3 matrix                      rauch  07/14 |
+ *-------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::MatrixRootDerivativeSym3x3(
+    const LINALG::Matrix<3,3> MatrixIn,
+    LINALG::Matrix<6,6>& MatrixRootDeriv)
+{
+  double Norm=MatrixIn.Norm2();
+
+  LINALG::Matrix<6,6> id4sharp(true);               // souza S.31 eq. (2.110)???
+  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
+  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+
+  // direct calculation for zero-matrix
+  if (Norm==0.)
+  {
+    MatrixRootDeriv = id4sharp;
+    dserror("d sqrt(C)/ d C not defined for C==0");
+    return;
+  }
+
+  else
+  {
+    double EWtolerance=1.e-12;    // see souza S.737 Remark A.2
+
+    LINALG::Matrix<3,3> EV(MatrixIn);
+    LINALG::Matrix<3,3> EW;
+    LINALG::SYEV(EV,EW,EV);
+
+    MatrixRootDeriv.Clear();
+    // souza eq. (A.52)
+    // note: EW stored in ascending order
+
+    //  d X^2 / d X  =  1/2 * (  delta_jk X_lj + delta_il X_kj
+    //                         + delta_jl X_ik + delta_kj X_il )    souza eq. (A.46)
+    //
+    // y_i = sqrt(x_i)
+    // dy_i / dx_j = delta_ij 1/(2*sqrt(x_i))
+
+    LINALG::Matrix<3,3> id2(true);
+    for (int i=0; i<3; i++)
+      id2(i,i) =1.0 ;
+    //  // --------------------------------- switch by number of equal eigenvalues
+
+    if (abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance ) // ------------------ x_a == x_b == x_c
+    {
+      // calculate derivative
+      MatrixRootDeriv = id4sharp;
+      MatrixRootDeriv.Scale(1.0/(2.0*sqrt(EW(0,0))));
+    }
+
+    else if ( ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) ||
+        ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
+    {
+      // scalar factors
+      double s1=0.0;
+      double s2=0.0;
+      double s3=0.0;
+      double s4=0.0;
+      double s5=0.0;
+      double s6=0.0;
+
+      int a=0;
+      int c=0;
+
+      // switch which two EW are equal
+      if ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
+      {
+        a=2;
+        c=0;
+      }
+      else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance) // ------------------ x_a != x_b == x_c
+      {
+        a=0;
+        c=2;
+      }
+      else
+        dserror("you should not end up here");
+
+      // in souza eq. (A.53):
+      s1 = ( sqrt(EW(a,a)) - sqrt(EW(c,c)) ) / ( pow( EW(a,a) - EW(c,c),2.0 ) )  -  (1.0/(2.0*sqrt(EW(c,c)))) / (EW(a,a)-EW(c,c));
+      s2 = 2.0 * EW(c,c) * (sqrt(EW(a,a))-sqrt(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0)) - (EW(a,a)+EW(c,c))/(EW(a,a)-EW(c,c)) * (1.0/(2.0*sqrt(EW(c,c))));
+      s3 = 2.0 * (sqrt(EW(a,a))-sqrt(EW(c,c)))/(pow(EW(a,a)-EW(c,c),3.0)) - ((1.0/(2.0*sqrt(EW(a,a)))) + (1.0/(2.0*sqrt(EW(c,c)))))/(pow(EW(a,a)-EW(c,c),2.0));
+      s4 = EW(c,c)*s3;
+      s5 = s4;
+      s6 = EW(c,c)*EW(c,c) * s3;
+
+      // calculate derivative
+      // + s_1 (d X^2 / d X)
+      MAT::AddToCmatDerivTensorSquare(MatrixRootDeriv,s1,MatrixIn,1.);
+      // - s_2 I_s
+      MatrixRootDeriv.Update(-s2,id4sharp,1.);
+      // - s_3 (X \dyad X)
+      MAT::ElastSymTensorMultiply(MatrixRootDeriv,-1.*s3,MatrixIn,MatrixIn,1.);
+      // + s_4 (X \dyad I)
+      MAT::ElastSymTensorMultiply(MatrixRootDeriv,s4,MatrixIn,id2,1.);
+      // + s_5 (I \dyad X)
+      MAT::ElastSymTensorMultiply(MatrixRootDeriv,s5,id2,MatrixIn,1.);
+      // - s_6 (I \dyad I)
+      MAT::ElastSymTensorMultiply(MatrixRootDeriv,-1.*s6,id2,id2,1.);
+
+    }
+
+    else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------- x_a != x_b != x_c
+    {
+      for (int a=0; a<3; a++) // loop over all eigenvalues
+      {
+                             // a=0 || a=1 || a=2
+        int b = (a+1)%3;     // b=1 || b=2 || b=0     even (cyclic) permutations of (a,b,c)
+        int c = (a+2)%3;     // c=2 || c=0 || c=1
+
+        LINALG::Matrix<3,1> ea;
+        LINALG::Matrix<3,1> eb;
+        LINALG::Matrix<3,1> ec;
+        for (int i=0; i<3; i++)
+        {
+          ea(i) = EV(i,a);
+          eb(i) = EV(i,b);
+          ec(i) = EV(i,c);
+        }
+        LINALG::Matrix<3,3> Ea;
+        Ea.MultiplyNT(ea,ea);     // souza S.26 eq. (2.63)
+        LINALG::Matrix<3,3> Eb;
+        Eb.MultiplyNT(eb,eb);
+        LINALG::Matrix<3,3> Ec;
+        Ec.MultiplyNT(ec,ec);
+
+        double fac = sqrt(EW(a,a)) / ( (EW(a,a)-EW(b,b)) * (EW(a,a)-EW(c,c)) );
+
+        // calculate derivative
+        // + d X^2 / d X
+        MAT::AddToCmatDerivTensorSquare(MatrixRootDeriv,fac,MatrixIn,1.);
+        // - (x_b + x_c) I_s
+        MatrixRootDeriv.Update(-1.*(EW(b,b)+EW(c,c))*fac,id4sharp,1.);
+        // - [(x_a - x_b) + (x_a - x_c)] (E_a \dyad E_a)
+        MAT::ElastSymTensorMultiply(MatrixRootDeriv,-1.*fac * ( (EW(a,a)-EW(b,b)) + (EW(a,a)-EW(c,c)) ),Ea,Ea,1.);
+        // - (x_b - x_c) (E_b \dyad E_b)
+        MAT::ElastSymTensorMultiply(MatrixRootDeriv,-1.*fac * (EW(b,b) - EW(c,c)),Eb,Eb,1.);
+        // + (x_b - x_c) (E_c \dyad E_c)
+        MAT::ElastSymTensorMultiply(MatrixRootDeriv,fac * (EW(b,b) - EW(c,c)),Ec,Ec,1.);
+        // dy / dx_a (E_a \dyad E_a)
+        MAT::ElastSymTensorMultiply(MatrixRootDeriv,1.0/(2.0*sqrt(EW(a,a))),Ea,Ea,1.);
+      } // end loop over all eigenvalues
+
+    }
+
+    else dserror("you should not end up here.");
+  }
+
+  return;
+}  // MatrixRootDerivativeSym3x3()
+
+
+/*------------------------------------------------------------------------------------------*
+ |  Get the real derivative of the inverse of the square root.                 rauch  07/14 |
+ *------------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::MatrixInverseOfRootDerivative(
+    double MatrixRootDerivative[3][3][3][3],
+    const LINALG::Matrix<3,3> MatrixRootInverse,
+    double result[3][3][3][3])
+{
+  double temp[3][3][3][3] = {{{{0.}}}};
+
+  // -sqrt(C)^{-1}_ij (d sqrt(C)/dC)_klmn sqrt(C)^{-1}_qp =
+  // B_ilmp = -sqrt(C)^{-1}_ij (d sqrt(C)/dC)_jlmq sqrt(C)^{-1}_qp
+  for(int i=0;i<3;++i)
+    for(int l=0;l<3;++l)
+      for(int m=0;m<3;++m)
+        for(int n=0;n<3;++n)
+          for(int j=0;j<3;++j)
+            temp[i][l][m][n] += -MatrixRootInverse(i,j)*MatrixRootDerivative[j][l][m][n];
+
+  for(int i=0;i<3;++i)
+    for(int l=0;l<3;++l)
+      for(int m=0;m<3;++m)
+        for(int p=0;p<3;++p)
+          for(int q=0;q<3;++q)
+            result[i][l][m][p] += temp[i][l][m][q] * MatrixRootInverse(q,p);
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------*
+ |  Print Four Tensor                                                          rauch  07/14 |
+ *------------------------------------------------------------------------------------------*/
+void MAT::BioChemoMechanoCellPassiveFiber::PrintFourTensor(
+    double FourTensor[3][3][3][3]
+                                            )
+{
+  for(int i=0;i<3;++i)
+    for(int j=0;j<3;++j)
+      for(int k=0;k<3;++k)
+        for(int l=0;l<3;++l)
+          std::cout<<"ELEMENT "<<i<<j<<k<<l<<" : "<<FourTensor[i][j][k][l]<<std::endl;
+  return;
 }

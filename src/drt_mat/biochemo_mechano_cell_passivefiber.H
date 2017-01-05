@@ -229,12 +229,63 @@ namespace MAT
 
     /// Convert spatial stress to material stress
     void CauchytoPK2(
-        LINALG::Matrix<6,1>& Sactive, ///< active material stress
+        LINALG::Matrix<6,1>& Sactive,      ///< active material stress
         LINALG::Matrix<3,3>& cauchystress, ///< cauchy stress in matrix notation
-        LINALG::Matrix<3,3> defgrd,   ///< deformation gradient
-        LINALG::Matrix<3,3> invdefgrd,///< inverse deformation gradient
-        LINALG::Matrix<6,1> sigma     ///< active spatial stress
+        LINALG::Matrix<3,3> defgrd,        ///< deformation gradient
+        LINALG::Matrix<3,3> invdefgrd,     ///< inverse deformation gradient
+        LINALG::Matrix<6,1> sigma          ///< active spatial stress
      );
+
+    /// Setup 4-Tensor from 6x6 Voigt notation
+    void Setup4Tensor(
+        double FourTensor[3][3][3][3],
+        LINALG::Matrix<6,6> VoigtMatrix
+    );
+
+    /// Set every tensor value to zero
+    void Clear4Tensor(double FourTensor[3][3][3][3]);
+
+    /// Multiply Matrix(3,3) * 4-Tensor
+    void MultMatrixFourTensor(
+        double FourTensorResult[3][3][3][3],
+        const LINALG::Matrix<3,3> Matrix,
+        const double FourTensor[3][3][3][3],
+        const bool clearresulttensor = false
+    );
+
+    /// Multiply Matrix(3,3) * 4-Tensor
+    void MultFourTensorMatrix(
+        double FourTensorResult[3][3][3][3],
+        LINALG::Matrix<3,3> Matrix,
+        double FourTensor[3][3][3][3],
+        bool clearresulttensor = false
+    );
+
+
+    /// Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
+    void Setup6x6VoigtMatrix(
+        LINALG::Matrix<6,6>& VoigtMatrix,
+        double FourTensor[3][3][3][3]
+    );
+
+    /// Calculate root of a 3x3 matrix (symmetric or non-symmetric)
+    void MatrixRoot3x3(LINALG::Matrix<3,3>& MatrixInOut);
+
+    /// Calculate derivative of the root of a symmetric 3x3 matrix
+    void MatrixRootDerivativeSym3x3(
+        const LINALG::Matrix<3,3> MatrixIn,
+        LINALG::Matrix<6,6>& MatrixRootDeriv);
+
+    /// d sqrt(C)^{-1} / dC = -sqrt(C)^{-1}*(d sqrt(C)/dC)*sqrt(C)^{-1} =
+    /// - MatrixRootInverse * MatrixRootDerivative * MatrixRootInverse
+    void MatrixInverseOfRootDerivative(
+        double MatrixRootDerivative[3][3][3][3],
+        const LINALG::Matrix<3,3> MatrixRootInverse,
+        double Result[3][3][3][3]
+        );
+
+    /// print four tensor
+    void PrintFourTensor(double FourTensor[3][3][3][3]);
 
   }; // class BioChemoMechanoCellPassiveFiber
   } // namespace MAT

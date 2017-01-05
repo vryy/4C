@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file activefiber.H
-\brief
+
+\brief active fiber material for cell contractibility
+
+\level 3
 
  This file contains routines for a local material law that contains active
  fiber formation and orientation for the modeling of living cells
@@ -19,11 +22,8 @@
   | !!! ATTENTION !!! Many major mistakes in literature that were corrected here !!!!  |
   |____________________________________________________________________________________|
 
-
- Based on student's work by Jonas Eichinger 2014
-
 <pre>
-Maintainer: Andreas Rauch
+\maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
@@ -367,7 +367,9 @@ namespace MAT
     void MatrixRoot3x3(LINALG::Matrix<3,3>& MatrixInOut);
 
     /// Calculate derivative of the root of a symmetric 3x3 matrix
-    void MatrixRootDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixRootDeriv);
+    void MatrixRootDerivativeSym3x3(
+        const LINALG::Matrix<3,3> MatrixIn,
+        LINALG::Matrix<6,6>& MatrixRootDeriv);
 
     /// Transpose four tensor wrt to basis vectors 1 and 2
     void TransposeFourTensor12(
