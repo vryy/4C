@@ -222,7 +222,6 @@ namespace MAT
         LINALG::Matrix<3,3>& defgrdrate,
         LINALG::Matrix<3,3>& R,
         LINALG::Matrix<6,1>& strainrate,
-        LINALG::Matrix<3,3>& rotationrate,
         const int& gp,
         const double& dt
     );

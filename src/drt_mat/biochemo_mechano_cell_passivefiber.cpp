@@ -332,13 +332,11 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   // \dot{F} = \frac {F^n - F^{n-1}} {\Delta t}
   LINALG::Matrix<3,3> defgrdrate(true);
   // R = F * U^{-1}
-  LINALG::Matrix<3,3> R(true);
+  LINALG::Matrix<3,3> R;
   // \dot{\epsilon} = d = 0.5 * (\dot{F}F^{-1} + (\dot{F}F^{-1})^{T}
-  LINALG::Matrix<6,1> strainrate(true);
-  // \dot{R} = \frac {R^n - R^{n-1}} {\Delta t}
-  LINALG::Matrix<3,3> rotationrate(true);
+  LINALG::Matrix<6,1> strainrate;
   // calc the rates
-  SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,rotationrate,gp,dt);
+  SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,gp,dt);
 
 
 
@@ -381,7 +379,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   /////////////////////////////////////////////////////////////////
 
   // viscous part of material tangent
-  LINALG::Matrix<6,6> visc_cmat(true);
+  LINALG::Matrix<6,6> visc_cmat;
 
   if (params_->analyticalmaterialtangent_)
   {
@@ -392,7 +390,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
     const double theta = 1.0;
 
     // Right-Cauchy-Green tensor(3x3): C = F^{T} * F
-    LINALG::Matrix<3,3> C(true);
+    LINALG::Matrix<3,3> C;
     C.MultiplyTN(*defgrd,*defgrd);
     // Inverse of C: C^{-1}
     LINALG::Matrix<3,3> Cinv(C);
@@ -508,13 +506,11 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
 
 
     // Setup transposed matrices
-    LINALG::Matrix<3,3> Rtrans(true);
+    LINALG::Matrix<3,3> Rtrans;
     Rtrans.UpdateT(R);
-    LINALG::Matrix<3,3> rotationratetrans(true);
-    rotationratetrans.UpdateT(rotationrate);
-    LINALG::Matrix<3,3> defgrdratetrans(true);
+    LINALG::Matrix<3,3> defgrdratetrans;
     defgrdratetrans.UpdateT(defgrdrate);
-    LINALG::Matrix<3,3> invdefgrdtrans(true);
+    LINALG::Matrix<3,3> invdefgrdtrans;
     invdefgrdtrans.UpdateT(invdefgrd);
 
     // 3x3x3x3 Tensor auxiliary variables
@@ -528,10 +524,10 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
     double tens_final[3][3][3][3] = {{{{0.}}}};
     double auxtens[3][3][3][3] = {{{{0.}}}};
     // 3x3 matrix auxiliary variables
-    LINALG::Matrix<3,3> tempmat1(true);
-    LINALG::Matrix<3,3> tempmat2(true);
+    LINALG::Matrix<3,3> tempmat1;
+    LINALG::Matrix<3,3> tempmat2;
     // 6x6 matrix auxiliary variables
-    LINALG::Matrix<6,6> auxvoigt(true);
+    LINALG::Matrix<6,6> auxvoigt;
 
     // F^{-1} * \sigma
     tempmat1.MultiplyNN(invdefgrd,visc_stress_cauchy_mat);
@@ -648,7 +644,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::SetupRates(
     LINALG::Matrix<3,3>& defgrdrate,
     LINALG::Matrix<3,3>& R,
     LINALG::Matrix<6,1>& strainrate,
-    LINALG::Matrix<3,3>& rotationrate,
     const int& gp,
     const double& dt)
 {
@@ -662,7 +657,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::SetupRates(
   defgrdrate.Scale(1.0/dt);
 
   // Calculate velocity gradient l = \dot{F}F^{-1}
-  LINALG::Matrix<3,3> velgradient(true);
+  LINALG::Matrix<3,3> velgradient;
   velgradient.MultiplyNN(defgrdrate,invdefgrd);
 
   // Rate of strain/symmetric part of velocity gradient
