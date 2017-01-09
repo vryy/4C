@@ -1,0 +1,343 @@
+//
+// Maintainer: Magnus Winter
+// winter@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15236
+//
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Urquiza square (NxN) [-1.0,1.0]x[-1.0,1.0]
+
+Analytic solution to a rotational flow in 2D for the Oseen equation.
+Used for the analysis in the paper of Winter, Schott and Wall (2017)
+
+A Mesh-surface cut is made on the fluid background mesh.
+----------------------------------------------------------------PROBLEM SIZE
+DIM                             3
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Fluid_XFEM
+RESTART                         0
+SHAPEFCT                        Polynomial
+--------------------------------------------------------------------------IO
+OUTPUT_GMSH                     No
+OUTPUT_BIN                      No
+STRUCT_DISP                     Yes
+FLUID_SOL                       Yes
+FILESTEPS                       1000
+STDOUTEVRY                      1
+WRITE_TO_SCREEN                 Yes
+---------------------------------------------------------------FLUID DYNAMIC
+PHYSICAL_TYPE                   Oseen
+OSEENFIELDFUNCNO                1
+LINEAR_SOLVER                   1
+TIMEINTEGR                      One_Step_Theta
+NONLINITER                      fixed_point_like
+PREDICTOR                       steady_state
+CONVCHECK                       L_2_norm
+INITIALFIELD                    field_by_function
+STARTFUNCNO                     1
+CONVFORM                        convective
+CALCERROR                       byfunct
+CALCERRORFUNCNO                 1
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+RESULTSEVRY                     1
+RESTARTEVRY                     0
+NUMSTEP                         1
+ITEMAX                          3
+TIMESTEP                        1.0
+MAXTIME                         1.0
+THETA                           1.0
+CONVTOL                         1e-12
+GMSH_OUTPUT                     No
+GEOMETRY                        box
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+STABTYPE                        edge_based
+INCONSISTENT                    No
+TDS                             quasistatic
+TRANSIENT                       no_transient
+PSPG                            No
+SUPG                            No
+GRAD_DIV                        No
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
+CHARELELENGTH_U                 streamlength
+CHARELELENGTH_PC                volume_equivalent_diameter
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         div_jump_std_eos
+EOS_DEFINITION_TAU              Schott_Massing_Burman_DAngelo_Zunino
+EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
+PRES_KRYLOV_2Dz                 yes
+----------------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT                  No
+GMSH_DEBUG_OUT_SCREEN           No
+GMSH_SOL_OUT                    No
+GMSH_EOS_OUT                    no
+GMSH_DISCRET_OUT                No
+GMSH_CUT_OUT                    No
+MAX_NUM_DOFSETS                 3
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
+--------------------------------------------------------------XFLUID DYNAMIC
+------------------------------------------------XFLUID DYNAMIC/STABILIZATION
+COUPLING_METHOD                 Nitsche
+VISC_ADJOINT_SYMMETRY           no
+NIT_STAB_FAC                    10.0
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
+IS_PSEUDO_2D                    yes
+MASS_CONSERVATION_SCALING       full
+CONV_STAB_SCALING               abs_inflow
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_TRANSIENT_STAB    yes
+GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
+GHOST_PENALTY_2nd_STAB          yes
+GHOST_PENALTY_2nd_FAC           0.05
+GHOST_PENALTY_PRESSURE_2nd_FAC  0.05
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
+SOLVER                          Aztec_MSR                     //Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-14                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1500                          // max iterations
+AZSUB                           1500                          // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fluid_Solver_Large_Systems
+SOLVER                          Aztec_MSR                     //Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          MLFLUID2                      //ILU //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+IFPACKGFILL                     4                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-14                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1500                          // max iterations
+AZSUB                           1500                          // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           //ILU // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           //ILU // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+----------------------------------------------------------------------FUNCT1
+//Velocity and Derivative of Urquiza-box-flow
+FUNCT1 URQUIZABOXFLOW LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+----------------------------------------------------------------------FUNCT2
+//Traction at interface of Urquiza-box-flow
+FUNCT2 URQUIZABOXFLOW_TRACTION LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+----------------------------------------------------------------------FUNCT3
+//Bodyforce for the Urquiza-box-flow
+FUNCT3 URQUIZABOXFLOW_FORCE LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+----------------------------------------------------------RESULT DESCRIPTION
+//Node                          3154
+XFLUID DIS fluid NODE 3153 QUANTITY velx VALUE -4.86832838832661902e-02 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 3153 QUANTITY vely VALUE -1.17683296123413839e+00 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 3153 QUANTITY velz VALUE 0.0 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 3153 QUANTITY pressure VALUE  8.44182925175578358e-01 TOLERANCE 1e-13
+// Node 18338
+XFLUID DIS fluid NODE 18337 QUANTITY velx VALUE -1.93017969728688538e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 18337 QUANTITY vely VALUE  2.30307843434444909e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 18337 QUANTITY velz VALUE 0.0 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 18337 QUANTITY pressure VALUE  5.00196376118947628e-01 TOLERANCE 1e-13
+// Node 2812
+XFLUID DIS fluid NODE 2811 QUANTITY velx VALUE -3.11100324361698044e-01 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 2811 QUANTITY vely VALUE  5.62994483050885703e-06 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 2811 QUANTITY velz VALUE 0.0 TOLERANCE 1e-14
+XFLUID DIS fluid NODE 2811 QUANTITY pressure VALUE -3.12547635934679827e-03 TOLERANCE 1e-13
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         8
+NDLINE                          12
+NDSURF                          8
+NDVOL                           2
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            1
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 3 3 0 0 0 0 Live Mid
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL                            1
+//                              volume
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
+DSURF                           1
+E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-------------------------------------DESIGN XFEM NAVIER SLIP SURF CONDITIONS
+DSURF                           1
+E 7 - COUPLINGID 1 EVALTYPE funct_gausspoint ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_CURVE 0 SLIP_FUNCT 0
+---------------------------------DESIGN XFEM ROBIN DIRICHLET SURF CONDITIONS
+DSURF                           1
+E 7 - COUPLINGID 1 ROBIN_DIRICHLET_ID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 1 1 0
+-----------------------------------DESIGN XFEM ROBIN NEUMANN SURF CONDITIONS
+DSURF                           1
+E 7 - COUPLINGID 1 ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
+DSURF                           2
+E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL                            1
+//                              fluid_volume
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+CORNER fluid x- y- z+ DNODE 1
+CORNER fluid x- y- z- DNODE 2
+CORNER fluid x- y+ z- DNODE 3
+CORNER fluid x- y+ z+ DNODE 4
+CORNER fluid x+ y- z+ DNODE 5
+CORNER fluid x+ y- z- DNODE 6
+CORNER fluid x+ y+ z- DNODE 7
+CORNER fluid x+ y+ z+ DNODE 8
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+EDGE fluid y+ z+ DLINE 1
+EDGE fluid y- z+ DLINE 2
+EDGE fluid y- z- DLINE 3
+EDGE fluid y+ z- DLINE 4
+EDGE fluid x- y+ DLINE 5
+EDGE fluid x- z+ DLINE 6
+EDGE fluid x- y- DLINE 7
+EDGE fluid x- z- DLINE 8
+EDGE fluid x+ y+ DLINE 9
+EDGE fluid x+ z+ DLINE 10
+EDGE fluid x+ y- DLINE 11
+EDGE fluid x+ z- DLINE 12
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+SIDE fluid y+ DSURFACE 1
+SIDE fluid y- DSURFACE 2
+SIDE fluid x- DSURFACE 3
+SIDE fluid x+ DSURFACE 4
+SIDE fluid z+ DSURFACE 5
+SIDE fluid z- DSURFACE 6
+//x-
+NODE 2 DSURFACE 7
+NODE 6 DSURFACE 7
+NODE 7 DSURFACE 7
+NODE 3 DSURFACE 7
+//y-
+NODE 9 DSURFACE 7
+NODE 13 DSURFACE 7
+NODE 6 DSURFACE 7
+NODE 2 DSURFACE 7
+//x+
+NODE 12 DSURFACE 7
+NODE 16 DSURFACE 7
+NODE 13 DSURFACE 7
+NODE 9 DSURFACE 7
+//y+
+NODE 3 DSURFACE 7
+NODE 7 DSURFACE 7
+NODE 16 DSURFACE 7
+NODE 12 DSURFACE 7
+//Outer                         surfaces
+//x-
+NODE 1 DSURFACE 8
+NODE 5 DSURFACE 8
+NODE 8 DSURFACE 8
+NODE 4 DSURFACE 8
+//y-
+NODE 10 DSURFACE 8
+NODE 14 DSURFACE 8
+NODE 5 DSURFACE 8
+NODE 1 DSURFACE 8
+//x+
+NODE 11 DSURFACE 8
+NODE 10 DSURFACE 8
+NODE 14 DSURFACE 8
+NODE 15 DSURFACE 8
+//y+
+NODE 4 DSURFACE 8
+NODE 11 DSURFACE 8
+NODE 15 DSURFACE 8
+NODE 8 DSURFACE 8
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+VOLUME fluid DVOL 1
+NODE 1 DVOL 2
+NODE 2 DVOL 2
+NODE 3 DVOL 2
+NODE 4 DVOL 2
+NODE 5 DVOL 2
+NODE 6 DVOL 2
+NODE 7 DVOL 2
+NODE 8 DVOL 2
+NODE 9 DVOL 2
+NODE 10 DVOL 2
+NODE 11 DVOL 2
+NODE 12 DVOL 2
+NODE 13 DVOL 2
+NODE 14 DVOL 2
+NODE 15 DVOL 2
+NODE 16 DVOL 2
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -2.5 -2.5 0.2
+NODE 2 COORD -1.0 -1.0 0.2
+NODE 3 COORD -1.0 1.0 0.2
+NODE 4 COORD -2.5 2.5 0.2
+NODE 5 COORD -2.5 -2.5 -0.2
+NODE 6 COORD -1.0 -1.0 -0.2
+NODE 7 COORD -1.0 1.0 -0.2
+NODE 8 COORD -2.5 2.5 -0.2
+NODE 9 COORD 1.0 -1.0 0.2
+NODE 10 COORD 2.5 -2.5 0.2
+NODE 11 COORD 2.5 2.5 0.2
+NODE 12 COORD 1.0 1.0 0.2
+NODE 13 COORD 1.0 -1.0 -0.2
+NODE 14 COORD 2.5 -2.5 -0.2
+NODE 15 COORD 2.5 2.5 -0.2
+NODE 16 COORD 1.0 1.0 -0.2
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 6 5 4 3 7 8 MAT 2 KINEM nonlinear EAS none
+2 SOLIDH8 HEX8 1 10 14 5 2 9 13 6 MAT 2 KINEM nonlinear EAS none
+3 SOLIDH8 HEX8 9 10 14 13 12 11 15 16 MAT 2 KINEM nonlinear EAS none
+4 SOLIDH8 HEX8 3 12 16 7 11 15 8 4 MAT 2 KINEM nonlinear EAS none
+----------------------------------------------------------------FLUID DOMAIN
+LOWER_BOUND                     -1.6 -1.6 -.04
+UPPER_BOUND                     1.6 1.6 .04
+INTERVALS                       40 40 1
+ELEMENTS                        FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+PARTITION                       auto
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
+-------------------------------------------------------------------------END
+//                              END
+//Points                                                       //Points //Points west ( 1,2,3,4 5,6,7,8 )
+//Points                                                       //Points //Points east ( 9,10,11,12 13,14,15,16 )
+//ROTATIONZ                     0.25
+//TRANSLATION                                                  //TRANSLATION //TRANSLATION 0.0 0.0 0.0

@@ -1715,7 +1715,7 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     }
     else
     {
-#if DEBUGCUTLIBRARY
+#ifdef DEBUGCUTLIBRARY
       std::cout << GREEN << "Passed Element Volume Test!" << END_COLOR << std::endl;
 #endif
     }

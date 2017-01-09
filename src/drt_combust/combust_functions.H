@@ -21,10 +21,18 @@
 namespace DRT
 {
   class Discretization;
+
+  namespace INPUT {
+    class LineDefinition;
+  }
+
 }
 
 namespace COMBUST
 {
+  void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  bool CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
+                               std::vector<Teuchos::RCP<DRT::UTILS::Function> >* function_);
 
   /// initial level-set field for two merging bubbles
   class BubbleFunction : public DRT::UTILS::Function

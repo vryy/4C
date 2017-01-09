@@ -43,6 +43,8 @@ void PrintFunctionDatHeader()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+
   DRT::INPUT::LineDefinition linelin;
   linelin
     .AddNamedInt("FUNCT")
@@ -191,116 +193,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedDouble("CYLINDER_3D")
     ;
 
-  DRT::INPUT::LineDefinition zalesaksdisk;
-  zalesaksdisk
-    .AddNamedInt("FUNCT")
-    .AddTag("ZALESAKSDISK")
-    ;
-
-  DRT::INPUT::LineDefinition circularflame2;
-  circularflame2
-    .AddNamedInt("FUNCT")
-    .AddTag("CIRCULARFLAME2")
-    ;
-
-  DRT::INPUT::LineDefinition circularflame3;
-  circularflame3
-    .AddNamedInt("FUNCT")
-    .AddTag("CIRCULARFLAME3")
-    ;
-
-  DRT::INPUT::LineDefinition circularflame4;
-  circularflame4
-    .AddNamedInt("FUNCT")
-    .AddTag("CIRCULARFLAME4")
-    ;
-
-  DRT::INPUT::LineDefinition dambreakobstacle;
-  dambreakobstacle
-    .AddNamedInt("FUNCT")
-    .AddTag("DAMBREAKOBSTACLE")
-    ;
-
-  DRT::INPUT::LineDefinition collapsingwatercolumn;
-  collapsingwatercolumn
-    .AddNamedInt("FUNCT")
-    .AddTag("COLLAPSINGWATERCOLUMN")
-    ;
-
-  DRT::INPUT::LineDefinition collapsingwatercolumncoarse;
-  collapsingwatercolumncoarse
-    .AddNamedInt("FUNCT")
-    .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
-    ;
-
-  DRT::INPUT::LineDefinition impactfunction;
-  impactfunction
-    .AddNamedInt("FUNCT")
-    .AddTag("IMPACTDROP")
-    ;
-
-  DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
-  gerstenbergerforwardfacingstep
-    .AddNamedInt("FUNCT")
-    .AddTag("FORWARDFACINGSTEP")
-    ;
-
-  DRT::INPUT::LineDefinition sliplengthlevelsetmanipulator;
-  sliplengthlevelsetmanipulator
-    .AddNamedInt("FUNCT")
-    .AddTag("SLIPLENGTHFUNCTION")
-    ;
-
-  DRT::INPUT::LineDefinition movinglevelsetcylinder;
-  movinglevelsetcylinder
-    .AddNamedInt("FUNCT")
-    .AddTag("MOVINGLEVELSETCYLINDER")
-    .AddNamedDoubleVector("ORIGIN",3)
-    .AddNamedDouble("RADIUS")
-    .AddNamedDoubleVector("DIRECTION",3)
-    .AddNamedDouble("DISTANCE")
-    .AddNamedDouble("MAXSPEED")
-    ;
-
-  DRT::INPUT::LineDefinition taylorcouetteflow;
-  taylorcouetteflow
-    .AddNamedInt("FUNCT")
-    .AddTag("TAYLORCOUETTEFLOW")
-    .AddNamedDouble("RADIUS_I")
-    .AddNamedDouble("RADIUS_O")
-    .AddNamedDouble("VEL_THETA_I")
-    .AddNamedDouble("VEL_THETA_O")
-    .AddNamedDouble("SLIPLENGTH_I")
-    .AddNamedDouble("SLIPLENGTH_O")
-    .AddNamedDouble("TRACTION_THETA_I")
-    .AddNamedDouble("TRACTION_THETA_O")
-    .AddNamedDouble("VISCOSITY")
-    ;
-
-  DRT::INPUT::LineDefinition bubbles;
-  bubbles
-    .AddNamedInt("FUNCT")
-    .AddTag("BUBBLES")
-    ;
-
-  DRT::INPUT::LineDefinition oraclesgfunc;
-  oraclesgfunc
-    .AddNamedInt("FUNCT")
-    .AddTag("ORACLESGFUNC")
-    ;
-
-  DRT::INPUT::LineDefinition rotatingcone;
-  rotatingcone
-    .AddNamedInt("FUNCT")
-    .AddTag("ROTATINGCONE")
-    ;
-
-  DRT::INPUT::LineDefinition levelsetcuttest;
-  levelsetcuttest
-    .AddNamedInt("FUNCT")
-    .AddTag("LEVELSETCUTTEST")
-    ;
-
   DRT::INPUT::LineDefinition controlledrotation;
   controlledrotation
     .AddNamedInt("FUNCT")
@@ -384,7 +276,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+  //Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
   lines->Add(linelin);
   lines->Add(linequad);
   lines->Add(radiuslin);
@@ -406,22 +298,33 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(womersley);
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
-  lines->Add(zalesaksdisk);
-  lines->Add(circularflame2);
-  lines->Add(circularflame3);
-  lines->Add(circularflame4);
-  lines->Add(dambreakobstacle);
-  lines->Add(collapsingwatercolumn);
-  lines->Add(collapsingwatercolumncoarse);
-  lines->Add(impactfunction);
-  lines->Add(gerstenbergerforwardfacingstep);
-  lines->Add(sliplengthlevelsetmanipulator);
-  lines->Add(movinglevelsetcylinder);
-  lines->Add(taylorcouetteflow);
-  lines->Add(bubbles);
-  lines->Add(oraclesgfunc);
-  lines->Add(rotatingcone);
-  lines->Add(levelsetcuttest);
+
+//  //COMBUST functions
+//  lines->Add(zalesaksdisk);
+//  lines->Add(circularflame2);
+//  lines->Add(circularflame3);
+//  lines->Add(circularflame4);
+//  lines->Add(dambreakobstacle);
+//  lines->Add(collapsingwatercolumn);
+//  lines->Add(collapsingwatercolumncoarse);
+//  lines->Add(impactfunction);
+//  lines->Add(bubbles);
+//  lines->Add(oraclesgfunc);
+//  lines->Add(rotatingcone);
+//  lines->Add(levelsetcuttest);
+
+//  //Xfluid-functions
+//  lines->Add(gerstenbergerforwardfacingstep);
+//  lines->Add(sliplengthlevelsetmanipulator);
+//  lines->Add(movinglevelsetcylinder);
+//  lines->Add(movinglevelsettorus);
+//  lines->Add(movinglevelsettorusvelocity);
+//  lines->Add(movinglevelsettorussliplength);
+//  lines->Add(taylorcouetteflow);
+//  lines->Add(urquizaboxflow);
+//  lines->Add(urquizaboxflowforce);
+//  lines->Add(urquizaboxflowtraction);
+
   lines->Add(controlledrotation);
   lines->Add(accelerationprofile);
   lines->Add(ramptovalue);
@@ -431,6 +334,10 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(varexpr);
   lines->Add(componentexpr);
   lines->Add(expr);
+
+  COMBUST::CombustValidFunctionLines(lines);
+  DRT::UTILS::XfluidValidFunctionLines(lines);
+
   return lines;
 }
 
@@ -708,133 +615,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         expr << "16*(" << um << ")*y*z*((" << h << ")-y)*((" << h << ")-z) / ((" << h << ")^4)";
         functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), 0, 0, 0)));
       }
-      else if (function->HaveNamed("ZALESAKSDISK"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ZalesaksDiskFunction()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME2"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame2Function()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME3"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame3Function()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME4"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame4Function()));
-      }
-      else if (function->HaveNamed("DAMBREAKOBSTACLE"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::DamBreakObstacle()));
-      }
-      else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunction()));
-      }
-      else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunctionCoarse()));
-      }
-      else if (function->HaveNamed("IMPACTDROP"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ImpactFunction()));
-      }
-      else if (function->HaveNamed("BUBBLES"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::BubbleFunction()));
-      }
-      else if (function->HaveNamed("ORACLESGFUNC"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ORACLESGFunction()));
-      }
-      else if (function->HaveNamed("ROTATINGCONE"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::RotatingConeFunction()));
-      }
-      else if (function->HaveNamed("LEVELSETCUTTEST"))
-      {
-        functions_.push_back(Teuchos::rcp(new COMBUST::LevelSetCutTestFunction()));
-      }
-      else if (function->HaveNamed("FORWARDFACINGSTEP"))
-      {
-        functions_.push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-      }
-      else if (function->HaveNamed("SLIPLENGTHFUNCTION"))
-      {
-        functions_.push_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
-      }
-      else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
-      {
-        std::vector<double> origin;
-        function->ExtractDoubleVector("ORIGIN",origin);
-
-        double radius;
-        function->ExtractDouble("RADIUS",radius);
-
-        std::vector<double> direction;
-        function->ExtractDoubleVector("DIRECTION",direction);
-
-        double distance;
-        function->ExtractDouble("DISTANCE",distance);
-
-        double maxspeed;
-        function->ExtractDouble("MAXSPEED",maxspeed);
-
-        functions_.push_back(Teuchos::rcp(new MovingLevelSetCylinder( &origin, radius, &direction, distance, maxspeed)));
-      }
-      else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
-      {
-
-        double radius_i;
-        function->ExtractDouble("RADIUS_I",radius_i);
-        double radius_o;
-        function->ExtractDouble("RADIUS_O",radius_o);
-
-        double vel_theta_i;
-        function->ExtractDouble("VEL_THETA_I",vel_theta_i);
-        double vel_theta_o;
-        function->ExtractDouble("VEL_THETA_O",vel_theta_o);
-
-        double sliplength_i;
-        function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
-        double sliplength_o;
-        function->ExtractDouble("SLIPLENGTH_O",sliplength_o);
-
-        double traction_theta_i;
-        function->ExtractDouble("TRACTION_THETA_I",traction_theta_i);
-        double traction_theta_o;
-        function->ExtractDouble("TRACTION_THETA_O",traction_theta_o);
-
-        double viscosity;
-        function->ExtractDouble("VISCOSITY",viscosity);
-
-        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i,
-                                                                 radius_o,
-                                                                 vel_theta_i,
-                                                                 vel_theta_o,
-                                                                 sliplength_i,
-                                                                 sliplength_o,
-                                                                 traction_theta_i,
-                                                                 traction_theta_o,
-                                                                 viscosity)));
-
-
-//        double radius_i;
-//        function->ExtractDouble("RADIUS_I",radius_i);
-//        double radius_o;
-//        function->ExtractDouble("RADIUS_O",radius_o);
-//
-//        double vel_theta_i;
-//        function->ExtractDouble("VEL_THETA_I",vel_theta_i);
-//        double vel_theta_o;
-//        function->ExtractDouble("VEL_THETA_O",vel_theta_o);
-//
-//        double sliplength_i;
-//        function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
-//
-//        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i, radius_o, vel_theta_i, vel_theta_o, sliplength_i)));
-      }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {
         std::string fileName;
@@ -932,6 +712,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
         functions_.push_back(vecfunc);
       }
+      else if (COMBUST::CombustFunctionHaveNamed(function, &functions_));
+      else if (DRT::UTILS::XfluidFunctionHaveNamed(function, &functions_));
       else
         dserror("unrecognized function");
     }

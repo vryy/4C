@@ -42,7 +42,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTASTEPS                     0
 THETA                           1.0

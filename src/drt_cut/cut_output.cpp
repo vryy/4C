@@ -736,9 +736,16 @@ void GEO::CUT::OUTPUT::GmshVector( std::ofstream & file, LINALG::Matrix<3,1> coo
   {
     double norm2 = vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2];
     double norm = sqrt(norm2);
-    vector[0] = vector[0]/norm;
-    vector[1] = vector[1]/norm;
-    vector[2] = vector[2]/norm;
+    if(norm > 1e-15){
+      vector[0] = vector[0]/norm;
+      vector[1] = vector[1]/norm;
+      vector[2] = vector[2]/norm;
+    }
+    else{
+      vector[0] = 0.0;
+      vector[1] = 0.0;
+      vector[2] = 0.0;
+    }
   }
   GmshWriteCoords( file , vector, to_local, ele);
   file << "};\n";

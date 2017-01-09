@@ -20,6 +20,9 @@
 #include "../drt_lib/standardtypes_cpp.H"
 
 
+#include "../drt_lib/drt_linedefinition.H"
+
+
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 01/14 |
  *----------------------------------------------------------------------*/
@@ -402,82 +405,6 @@ double COMBUST::CollapsingWaterColumnFunctionCoarse::Evaluate(int index, const d
   return distance;
 }
 
-///*----------------------------------------------------------------------*
-// | constructor                                          rasthofer 04/10 |
-// *----------------------------------------------------------------------*/
-//COMBUST::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() :
-//Function()
-//{
-//}
-//
-///*----------------------------------------------------------------------*
-// | evaluation of xfluid level set test case             winter    09/14 |
-// *----------------------------------------------------------------------*/
-//double COMBUST::GerstenbergerForwardfacingStep::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-//{
-//  //  //cube_Gerstenberger:
-//  //  //1.6x1.6
-//  //  //=========================================================
-//
-//  double xp_corner[2];
-//  double distance = 0.0;
-//
-//  xp_corner[0]=0.75;
-//  xp_corner[1]=0.75;
-//
-//  double xtmp=-(xp_corner[0]-xp[0]);
-//  double ytmp=-(xp[1]-xp_corner[1]);
-//
-//  if(xtmp<ytmp)
-//    distance = -xtmp;
-//  else
-//    distance = -ytmp;
-//
-//  //  //1.6x1.6 (collapsing water column from the right)
-//  //  //=========================================================
-//  //  radius = 0.375; //0.375
-//  //
-//  //  xp_corner[0]=0.75;
-//  //  xp_corner[1]=0.75;
-//  //
-//  ////  double totallength_x=1.6;
-//  //
-//  ////  xp_center[0]= (xp_corner[0]+radius) + totallength_x;
-//  //  xp_center[0]= xp_corner[0]+radius;
-//  //  xp_center[1]= xp_corner[1]-radius;
-//  //
-//  ////  xp_center[0]=xp_corner[0]-radius;
-//  ////  xp_center[1]=xp_corner[1]-radius;
-//  //
-//  //  if (xp[0] >=xp_center[0] and xp[1] >= xp_center[1])
-//  //  {
-//  //     distance = xp[1]-xp_corner[1];
-//  //  }
-//  //  else if (xp[0] <=xp_center[0] and xp[1] <= xp_center[1] and !(xp[0]==xp_center[0] and xp[1]==xp_center[1]))
-//  //  {
-//  //      distance= -(xp[0]-xp_corner[0]);
-//  //  }
-//  //  else if (xp[0] > xp_center[0] and xp[1] < xp_center[1])
-//  //  {
-//  //      if(xp[1]>(xp_corner[1]+(xp[0]-xp_corner[0])))
-//  //      {
-//  //          distance = - fabs(xp_corner[1] - xp[1]);
-//  //      }
-//  //      else
-//  //      {
-//  //          distance = - fabs(xp_corner[0] - xp[0]);
-//  //      }
-//  //  }
-//  //  else
-//  //  {
-//  //      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
-//  //  }
-//    //=========================================================
-//
-//  return distance;
-//}
-
-
 /*----------------------------------------------------------------------*
  | constructor                                              henke 10/11 |
  *----------------------------------------------------------------------*/
@@ -694,4 +621,155 @@ double COMBUST::ImpactFunction::Evaluate(int index, const double* xp, double t, 
     dserror("Initial level-set field for merging bubbles could not be set correctly!");
 
   return distance;
+}
+
+void COMBUST::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+
+  DRT::INPUT::LineDefinition zalesaksdisk;
+  zalesaksdisk
+    .AddNamedInt("FUNCT")
+    .AddTag("ZALESAKSDISK")
+    ;
+
+  DRT::INPUT::LineDefinition circularflame2;
+  circularflame2
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME2")
+    ;
+
+  DRT::INPUT::LineDefinition circularflame3;
+  circularflame3
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME3")
+    ;
+
+  DRT::INPUT::LineDefinition circularflame4;
+  circularflame4
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME4")
+    ;
+
+  DRT::INPUT::LineDefinition dambreakobstacle;
+  dambreakobstacle
+    .AddNamedInt("FUNCT")
+    .AddTag("DAMBREAKOBSTACLE")
+    ;
+
+  DRT::INPUT::LineDefinition collapsingwatercolumn;
+  collapsingwatercolumn
+    .AddNamedInt("FUNCT")
+    .AddTag("COLLAPSINGWATERCOLUMN")
+    ;
+
+  DRT::INPUT::LineDefinition collapsingwatercolumncoarse;
+  collapsingwatercolumncoarse
+    .AddNamedInt("FUNCT")
+    .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
+    ;
+
+  DRT::INPUT::LineDefinition impactfunction;
+  impactfunction
+    .AddNamedInt("FUNCT")
+    .AddTag("IMPACTDROP")
+    ;
+
+  DRT::INPUT::LineDefinition bubbles;
+  bubbles
+    .AddNamedInt("FUNCT")
+    .AddTag("BUBBLES")
+    ;
+
+  DRT::INPUT::LineDefinition oraclesgfunc;
+  oraclesgfunc
+    .AddNamedInt("FUNCT")
+    .AddTag("ORACLESGFUNC")
+    ;
+
+  DRT::INPUT::LineDefinition rotatingcone;
+  rotatingcone
+    .AddNamedInt("FUNCT")
+    .AddTag("ROTATINGCONE")
+    ;
+
+  DRT::INPUT::LineDefinition levelsetcuttest;
+  levelsetcuttest
+    .AddNamedInt("FUNCT")
+    .AddTag("LEVELSETCUTTEST")
+    ;
+
+  lines->Add(zalesaksdisk);
+  lines->Add(circularflame2);
+  lines->Add(circularflame3);
+  lines->Add(circularflame4);
+  lines->Add(dambreakobstacle);
+  lines->Add(collapsingwatercolumn);
+  lines->Add(collapsingwatercolumncoarse);
+  lines->Add(impactfunction);
+  lines->Add(bubbles);
+  lines->Add(oraclesgfunc);
+  lines->Add(rotatingcone);
+  lines->Add(levelsetcuttest);
+
+}
+
+bool COMBUST::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
+                                         std::vector<Teuchos::RCP<DRT::UTILS::Function> >* functions_)
+{
+  bool found_combust_name=true;
+
+  if (function->HaveNamed("ZALESAKSDISK"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::ZalesaksDiskFunction()));
+  }
+  else if (function->HaveNamed("CIRCULARFLAME2"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame2Function()));
+  }
+  else if (function->HaveNamed("CIRCULARFLAME3"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame3Function()));
+  }
+  else if (function->HaveNamed("CIRCULARFLAME4"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame4Function()));
+  }
+  else if (function->HaveNamed("DAMBREAKOBSTACLE"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::DamBreakObstacle()));
+  }
+  else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunction()));
+  }
+  else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunctionCoarse()));
+  }
+  else if (function->HaveNamed("IMPACTDROP"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::ImpactFunction()));
+  }
+  else if (function->HaveNamed("BUBBLES"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::BubbleFunction()));
+  }
+  else if (function->HaveNamed("ORACLESGFUNC"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::ORACLESGFunction()));
+  }
+  else if (function->HaveNamed("ROTATINGCONE"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::RotatingConeFunction()));
+  }
+  else if (function->HaveNamed("LEVELSETCUTTEST"))
+  {
+    functions_->push_back(Teuchos::rcp(new COMBUST::LevelSetCutTestFunction()));
+  }
+  else
+  {
+    found_combust_name=false;
+  }
+
+  return found_combust_name;
 }
