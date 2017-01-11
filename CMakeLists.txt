@@ -1957,6 +1957,7 @@ set(OBJS_DRT_CARDIOVASCULAR0D
   src/drt_cardiovascular0d/cardiovascular0d_4elementwindkessel.cpp
   src/drt_cardiovascular0d/cardiovascular0d_arterialproxdist.cpp
   src/drt_cardiovascular0d/cardiovascular0d_syspulcirculation.cpp
+  src/drt_cardiovascular0d/cardiovascularrespiratory0d_syspulperiphcirculation.cpp
 )
 
 set(OBJS_DRT_CONSTRAINT

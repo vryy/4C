@@ -35,6 +35,7 @@
 #include "cardiovascular0d_arterialproxdist.H"
 #include "cardiovascular0d_resulttest.H"
 #include "cardiovascular0d_syspulcirculation.H"
+#include "cardiovascularrespiratory0d_syspulperiphcirculation.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
@@ -99,8 +100,10 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   cardvasc0d_4elementwindkessel_=Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"Cardiovascular0D4ElementWindkesselStructureCond",currentID));
   cardvasc0d_arterialproxdist_=Teuchos::rcp(new Cardiovascular0DArterialProxDist(actdisc_,"Cardiovascular0DArterialProxDistStructureCond",currentID));
   cardvasc0d_syspulcirculation_=Teuchos::rcp(new Cardiovascular0DSysPulCirculation(actdisc_,"Cardiovascular0DSysPulCirculationStructureCond",currentID));
+  cardvascrespir0d_syspulperiphcirculation_=Teuchos::rcp(new CardiovascularRespiratory0DSysPulPeriphCirculation(actdisc_,"CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",currentID));
 
-  havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_syspulcirculation_->HaveCardiovascular0D());
+  havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
+      or cardvasc0d_syspulcirculation_->HaveCardiovascular0D() or cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D());
 
   if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
   {
@@ -122,7 +125,23 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     numCardiovascular0DID_ = 16;
   }
 
-  if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D() or cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
+  if (cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
+  {
+    cardvasc0d_model_ = cardvascrespir0d_syspulperiphcirculation_;
+    // set number of degrees of freedom
+    switch (cardvasc0d_model_->GetRespiratoryModel())
+    {
+      case INPAR::CARDIOVASCULAR0D::none:
+        numCardiovascular0DID_ = 34;
+      break;
+      case INPAR::CARDIOVASCULAR0D::standard:
+        numCardiovascular0DID_ = 82;
+      break;
+    }
+  }
+
+  if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
+      or cardvasc0d_syspulcirculation_->HaveCardiovascular0D() or cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
   {
     cardiovascular0ddofset_ = Teuchos::rcp(new Cardiovascular0DDofSet());
     cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0);
@@ -290,7 +309,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
 
-  // evaluate current volume only
+  // evaluate current 3D volume only
   cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, v_np_red, Teuchos::null, Teuchos::null);
 
   // import into vol vector at end-point
@@ -470,6 +489,26 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
         }
       }
     }
+
+    if (cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
+    {
+      for (unsigned int j = 0; j < cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition().size(); ++j)
+      {
+        DRT::Condition& cond = *(cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition()[j]);
+        int id_cardvasc0d = cond.GetInt("id");
+
+        if (id_strcoupcond == id_cardvasc0d)
+        {
+          const std::string* conditiontype =
+              cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition()[j]->Get<std::string>("type");
+          if (*conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
+          if (*conditiontype == "ventricle_right") newval[0] = -(*actpres)[27];
+          if (*conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
+          if (*conditiontype == "atrium_right") newval[0] = -(*actpres)[24];
+          if (*conditiontype == "dummy") newval[0] = 0.;
+        }
+      }
+    }
     coupcond->Add("val",newval);
 
 
@@ -570,7 +609,6 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
       printf("q_ar_sys: %10.16e \n",(*cv0ddof_m_red)[5]);
       printf("p_ven_sys: %10.16e \n",(*cv0ddof_m_red)[6]);
       printf("q_ven_sys: %10.16e \n",(*cv0ddof_m_red)[7]);
-      printf("V_v_l: %10.16e \n",(*v_m_red)[2]);
       printf("p_at_r: %10.16e \n",(*cv0ddof_m_red)[8]);
       printf("q_vin_r: %10.16e \n",(*cv0ddof_m_red)[9]);
       printf("q_vout_r: %10.16e \n",(*cv0ddof_m_red)[10]);
@@ -579,14 +617,133 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
       printf("q_ar_pul: %10.16e \n",(*cv0ddof_m_red)[13]);
       printf("p_ven_pul: %10.16e \n",(*cv0ddof_m_red)[14]);
       printf("q_ven_pul: %10.16e \n",(*cv0ddof_m_red)[15]);
-      printf("V_v_r: %10.16e \n",(*v_m_red)[10]);
-      // compartment volumes which do not contribute to model - only for postprocessing reasons!
+      // print volumes (no state variables)
       printf("V_at_l: %10.16e \n",(*v_m_red)[0]);
+      printf("V_v_l: %10.16e \n",(*v_m_red)[2]);
       printf("V_ar_sys: %10.16e \n",(*v_m_red)[4]);
       printf("V_ven_sys: %10.16e \n",(*v_m_red)[6]);
       printf("V_at_r: %10.16e \n",(*v_m_red)[8]);
+      printf("V_v_r: %10.16e \n",(*v_m_red)[10]);
       printf("V_ar_pul: %10.16e \n",(*v_m_red)[12]);
       printf("V_ven_pul: %10.16e \n",(*v_m_red)[14]);
+    }
+
+    if (cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
+    {
+      printf("p_at_l: %10.16e \n",(*cv0ddof_m_red)[0]);
+      printf("q_vin_l: %10.16e \n",(*cv0ddof_m_red)[1]);
+      printf("q_vout_l: %10.16e \n",(*cv0ddof_m_red)[2]);
+      printf("p_v_l: %10.16e \n",(*cv0ddof_m_red)[3]);
+      printf("p_ar_sys: %10.16e \n",(*cv0ddof_m_red)[4]);
+      printf("q_ar_sys: %10.16e \n",(*cv0ddof_m_red)[5]);
+      printf("p_arperi_sys: %10.16e \n",(*cv0ddof_m_red)[6]);
+      printf("q_arspl_sys: %10.16e \n",(*cv0ddof_m_red)[7]);
+      printf("q_arespl_sys: %10.16e \n",(*cv0ddof_m_red)[8]);
+      printf("q_armsc_sys: %10.16e \n",(*cv0ddof_m_red)[9]);
+      printf("q_arcer_sys: %10.16e \n",(*cv0ddof_m_red)[10]);
+      printf("q_arcor_sys: %10.16e \n",(*cv0ddof_m_red)[11]);
+      printf("p_venspl_sys: %10.16e \n",(*cv0ddof_m_red)[12]);
+      printf("q_venspl_sys: %10.16e \n",(*cv0ddof_m_red)[13]);
+      printf("p_venespl_sys: %10.16e \n",(*cv0ddof_m_red)[14]);
+      printf("q_venespl_sys: %10.16e \n",(*cv0ddof_m_red)[15]);
+      printf("p_venmsc_sys: %10.16e \n",(*cv0ddof_m_red)[16]);
+      printf("q_venmsc_sys: %10.16e \n",(*cv0ddof_m_red)[17]);
+      printf("p_vencer_sys: %10.16e \n",(*cv0ddof_m_red)[18]);
+      printf("q_vencer_sys: %10.16e \n",(*cv0ddof_m_red)[19]);
+      printf("p_vencor_sys: %10.16e \n",(*cv0ddof_m_red)[20]);
+      printf("q_vencor_sys: %10.16e \n",(*cv0ddof_m_red)[21]);
+      printf("p_ven_sys: %10.16e \n",(*cv0ddof_m_red)[22]);
+      printf("q_ven_sys: %10.16e \n",(*cv0ddof_m_red)[23]);
+      printf("p_at_r: %10.16e \n",(*cv0ddof_m_red)[24]);
+      printf("q_vin_r: %10.16e \n",(*cv0ddof_m_red)[25]);
+      printf("q_vout_r: %10.16e \n",(*cv0ddof_m_red)[26]);
+      printf("p_v_r: %10.16e \n",(*cv0ddof_m_red)[27]);
+      printf("p_ar_pul: %10.16e \n",(*cv0ddof_m_red)[28]);
+      printf("q_ar_pul: %10.16e \n",(*cv0ddof_m_red)[29]);
+      printf("p_cap_pul: %10.16e \n",(*cv0ddof_m_red)[30]);
+      printf("q_cap_pul: %10.16e \n",(*cv0ddof_m_red)[31]);
+      printf("p_ven_pul: %10.16e \n",(*cv0ddof_m_red)[32]);
+      printf("q_ven_pul: %10.16e \n",(*cv0ddof_m_red)[33]);
+      // print volumes (no state variables)
+      printf("V_at_l: %10.16e \n",(*v_m_red)[0]);
+      printf("V_v_l: %10.16e \n",(*v_m_red)[2]);
+      printf("V_ar_sys: %10.16e \n",(*v_m_red)[4]);
+      printf("V_arperi_sys: %10.16e \n",(*v_m_red)[6]);
+      printf("V_venspl_sys: %10.16e \n",(*v_m_red)[12]);
+      printf("V_venespl_sys: %10.16e \n",(*v_m_red)[14]);
+      printf("V_venmsc_sys: %10.16e \n",(*v_m_red)[16]);
+      printf("V_vencer_sys: %10.16e \n",(*v_m_red)[18]);
+      printf("V_vencor_sys: %10.16e \n",(*v_m_red)[20]);
+      printf("V_ven_sys: %10.16e \n",(*v_m_red)[22]);
+      printf("V_at_r: %10.16e \n",(*v_m_red)[24]);
+      printf("V_v_r: %10.16e \n",(*v_m_red)[26]);
+      printf("V_ar_pul: %10.16e \n",(*v_m_red)[28]);
+      printf("V_cap_pul: %10.16e \n",(*v_m_red)[30]);
+      printf("V_ven_pul: %10.16e \n",(*v_m_red)[32]);
+
+      if(cardvasc0d_model_->GetRespiratoryModel())
+      {
+        // 0D lung
+        printf("V_alv: %10.16e \n",(*cv0ddof_m_red)[34]);
+        printf("q_alv: %10.16e \n",(*cv0ddof_m_red)[35]);
+        printf("p_alv: %10.16e \n",(*cv0ddof_m_red)[36]);
+        printf("fCO2_alv: %10.16e \n",(*cv0ddof_m_red)[37]);
+        printf("fO2_alv: %10.16e \n",(*cv0ddof_m_red)[38]);
+        // (auxiliary) incoming systemic capillary fluxes
+        printf("q_arspl_sys_in: %10.16e \n",(*cv0ddof_m_red)[39]);
+        printf("q_arespl_sys_in: %10.16e \n",(*cv0ddof_m_red)[40]);
+        printf("q_armsc_sys_in: %10.16e \n",(*cv0ddof_m_red)[41]);
+        printf("q_arcer_sys_in: %10.16e \n",(*cv0ddof_m_red)[42]);
+        printf("q_arcor_sys_in: %10.16e \n",(*cv0ddof_m_red)[43]);
+        // the partial pressures
+        printf("ppCO2_at_r: %10.16e \n",(*cv0ddof_m_red)[44]);
+        printf("ppO2_at_r: %10.16e \n",(*cv0ddof_m_red)[45]);
+        printf("ppCO2_v_r: %10.16e \n",(*cv0ddof_m_red)[46]);
+        printf("ppO2_v_r: %10.16e \n",(*cv0ddof_m_red)[47]);
+        printf("ppCO2_ar_pul: %10.16e \n",(*cv0ddof_m_red)[48]);
+        printf("ppO2_ar_pul: %10.16e \n",(*cv0ddof_m_red)[49]);
+        printf("ppCO2_cap_pul: %10.16e \n",(*cv0ddof_m_red)[50]);
+        printf("ppO2_cap_pul: %10.16e \n",(*cv0ddof_m_red)[51]);
+        printf("ppCO2_ven_pul: %10.16e \n",(*cv0ddof_m_red)[52]);
+        printf("ppO2_ven_pul: %10.16e \n",(*cv0ddof_m_red)[53]);
+        printf("ppCO2_at_l: %10.16e \n",(*cv0ddof_m_red)[54]);
+        printf("ppO2_at_l: %10.16e \n",(*cv0ddof_m_red)[55]);
+        printf("ppCO2_v_l: %10.16e \n",(*cv0ddof_m_red)[56]);
+        printf("ppO2_v_l: %10.16e \n",(*cv0ddof_m_red)[57]);
+        printf("ppCO2_ar_sys: %10.16e \n",(*cv0ddof_m_red)[58]);
+        printf("ppO2_ar_sys: %10.16e \n",(*cv0ddof_m_red)[59]);
+        printf("ppCO2_arspl_sys: %10.16e \n",(*cv0ddof_m_red)[60]);
+        printf("ppO2_arspl_sys: %10.16e \n",(*cv0ddof_m_red)[61]);
+        printf("ppCO2_arespl_sys: %10.16e \n",(*cv0ddof_m_red)[62]);
+        printf("ppO2_arespl_sys: %10.16e \n",(*cv0ddof_m_red)[63]);
+        printf("ppCO2_armsc_sys: %10.16e \n",(*cv0ddof_m_red)[64]);
+        printf("ppO2_armsc_sys: %10.16e \n",(*cv0ddof_m_red)[65]);
+        printf("ppCO2_arcer_sys: %10.16e \n",(*cv0ddof_m_red)[66]);
+        printf("ppO2_arcer_sys: %10.16e \n",(*cv0ddof_m_red)[67]);
+        printf("ppCO2_arcor_sys: %10.16e \n",(*cv0ddof_m_red)[68]);
+        printf("ppO2_arcor_sys: %10.16e \n",(*cv0ddof_m_red)[69]);
+        printf("ppCO2_venspl_sys: %10.16e \n",(*cv0ddof_m_red)[70]);
+        printf("ppO2_venspl_sys: %10.16e \n",(*cv0ddof_m_red)[71]);
+        printf("ppCO2_venespl_sys: %10.16e \n",(*cv0ddof_m_red)[72]);
+        printf("ppO2_venespl_sys: %10.16e \n",(*cv0ddof_m_red)[73]);
+        printf("ppCO2_venmsc_sys: %10.16e \n",(*cv0ddof_m_red)[74]);
+        printf("ppO2_venmsc_sys: %10.16e \n",(*cv0ddof_m_red)[75]);
+        printf("ppCO2_vencer_sys: %10.16e \n",(*cv0ddof_m_red)[76]);
+        printf("ppO2_vencer_sys: %10.16e \n",(*cv0ddof_m_red)[77]);
+        printf("ppCO2_vencor_sys: %10.16e \n",(*cv0ddof_m_red)[78]);
+        printf("ppO2_vencor_sys: %10.16e \n",(*cv0ddof_m_red)[79]);
+        printf("ppCO2_ven_sys: %10.16e \n",(*cv0ddof_m_red)[80]);
+        printf("ppO2_ven_sys: %10.16e \n",(*cv0ddof_m_red)[81]);
+
+        if(enhanced_output_)
+        {
+          // oxygen saturations (no state variables - stored in volume vector for convenience!)
+          printf("SO2_ar_pul: %10.16e \n",(*v_m_red)[49]);
+          printf("SO2_ar_sys: %10.16e \n",(*v_m_red)[59]);
+        }
+
+      }
+
     }
 
     printf("total time: %10.16e \n",totaltime_);

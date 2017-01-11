@@ -175,6 +175,7 @@ public:
     Cardiovascular0D4ElementWindkessel_Structure,
     Cardiovascular0DArterialProxDist_Structure,
     Cardiovascular0DSysPulCirculation_Structure,
+    CardiovascularRespiratory0DSysPulPeriphCirculation_Structure,
     Cardiovascular0DStructureCoupling,
     ImpedanceCond,
     Impedance_Calb_Cond,

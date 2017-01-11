@@ -117,32 +117,213 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   DoubleParameter("L_ven_pul",0.0,"pulmonary venous inertance",&cardvasc0dsyspulcirc);
 
   // intital conditions
-  DoubleParameter("q_v_in_l_0",0.0,"initial left ventricular in-flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vin_l_0",0.0,"initial left ventricular in-flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_at_l_0",0.0,"initial left atrial pressure",&cardvasc0dsyspulcirc);
-  DoubleParameter("q_v_out_l_0",0.0,"initial left ventricular out-flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vout_l_0",0.0,"initial left ventricular out-flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_v_l_0",0.0,"initial left ventricular pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("p_ar_sys_0",0.0,"initial systemic arterial pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("q_ar_sys_0",0.0,"initial systemic arterial flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_ven_sys_0",0.0,"initial systemic venous pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("q_ven_sys_0",0.0,"initial systemic venous flux",&cardvasc0dsyspulcirc);
-
-  DoubleParameter("q_v_in_r_0",0.0,"initial right ventricular in-flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vin_r_0",0.0,"initial right ventricular in-flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_at_r_0",0.0,"initial right atrial pressure",&cardvasc0dsyspulcirc);
-  DoubleParameter("q_v_out_r_0",0.0,"initial right ventricular out-flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vout_r_0",0.0,"initial right ventricular out-flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_v_r_0",0.0,"initial right ventricular pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("p_ar_pul_0",0.0,"initial pulmonary arterial pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("q_ar_pul_0",0.0,"initial pulmonary arterial flux",&cardvasc0dsyspulcirc);
   DoubleParameter("p_ven_pul_0",0.0,"initial pulmonary venous pressure",&cardvasc0dsyspulcirc);
   DoubleParameter("q_ven_pul_0",0.0,"initial pulmonary venous flux",&cardvasc0dsyspulcirc);
-  // volumes - only for postprocessing matters!
-  DoubleParameter("V_at_l_0",0.0,"initial volume of left 0D atrium - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_v_l_0",0.0,"initial volume of left 0D ventricle - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_ar_sys_0",0.0,"initial volume of systemic arteries and capillaries - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_ven_sys_0",0.0,"initial volume of systemic veins - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_at_r_0",0.0,"initial volume of right 0D atrium - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_v_r_0",0.0,"initial volume of right 0D ventricle - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_ar_pul_0",0.0,"initial volume of pulmonary arteries and capillaries - only for postprocessing matters!",&cardvasc0dsyspulcirc);
-  DoubleParameter("V_ven_pul_0",0.0,"initial volume of pulmonary veins - only for postprocessing matters!",&cardvasc0dsyspulcirc);
+
+  // unstressed volumes - only for postprocessing matters!
+  DoubleParameter("V_at_l_u",0.0,"unstressed volume of left 0D atrium",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_v_l_u",0.0,"unstressed volume of left 0D ventricle",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_ar_sys_u",0.0,"unstressed volume of systemic arteries and capillaries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_ven_sys_u",100.0e3,"unstressed volume of systemic veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_at_r_u",0.0,"unstressed volume of right 0D atrium",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_v_r_u",0.0,"unstressed volume of right 0D ventricle",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_ar_pul_u",0.0,"unstressed volume of pulmonary arteries and capillaries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_ven_pul_u",120.0e3,"unstressed volume of pulmonary veins",&cardvasc0dsyspulcirc);
+
+
+
+  // parameters for extended sys pul circulation including periphery
+  DoubleParameter("C_arspl_sys",0.0,"systemic arterial splanchnic compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_arspl_sys",0.0,"systemic arterial splanchnic resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_arespl_sys",0.0,"systemic arterial extra-splanchnic compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_arespl_sys",0.0,"systemic arterial extra-splanchnic resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_armsc_sys",0.0,"systemic arterial muscular compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_armsc_sys",0.0,"systemic arterial muscular resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_arcer_sys",0.0,"systemic arterial cerebral compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_arcer_sys",0.0,"systemic arterial cerebral resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_arcor_sys",0.0,"systemic arterial coronary compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_arcor_sys",0.0,"systemic arterial coronary resistance",&cardvasc0dsyspulcirc);
+
+  DoubleParameter("C_venspl_sys",0.0,"systemic venous splanchnic compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_venspl_sys",0.0,"systemic venous splanchnic resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_venespl_sys",0.0,"systemic venous extra-splanchnic compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_venespl_sys",0.0,"systemic venous extra-splanchnic resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_venmsc_sys",0.0,"systemic venous muscular compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_venmsc_sys",0.0,"systemic venous muscular resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_vencer_sys",0.0,"systemic venous cerebral compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_vencer_sys",0.0,"systemic venous cerebral resistance",&cardvasc0dsyspulcirc);
+  DoubleParameter("C_vencor_sys",0.0,"systemic venous coronary compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_vencor_sys",0.0,"systemic venous coronary resistance",&cardvasc0dsyspulcirc);
+
+  DoubleParameter("C_cap_pul",0.0,"pulmonary capillary compliance",&cardvasc0dsyspulcirc);
+  DoubleParameter("R_cap_pul",0.0,"pulmonary capillary resistance",&cardvasc0dsyspulcirc);
+
+  // initial conditions for extended sys pul circulation including periphery
+  DoubleParameter("p_arperi_sys_0",0.0,"initial systemic peripheral arterial pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_arspl_sys_0",0.0,"initial systemic arterial splanchnic flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_arespl_sys_0",0.0,"initial systemic arterial extra-splanchnic flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_armsc_sys_0",0.0,"initial systemic arterial muscular flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_arcer_sys_0",0.0,"initial systemic arterial cerebral flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_arcor_sys_0",0.0,"initial systemic arterial coronary flux",&cardvasc0dsyspulcirc);
+
+  DoubleParameter("p_venspl_sys_0",0.0,"initial systemic venous splanchnic pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_venspl_sys_0",0.0,"initial systemic venous splanchnic flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("p_venespl_sys_0",0.0,"initial systemic venous extra-splanchnic pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_venespl_sys_0",0.0,"initial systemic venous extra-splanchnic flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("p_venmsc_sys_0",0.0,"initial systemic venous muscular pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_venmsc_sys_0",0.0,"initial systemic venous muscular flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("p_vencer_sys_0",0.0,"initial systemic venous cerebral pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vencer_sys_0",0.0,"initial systemic venous cerebral flux",&cardvasc0dsyspulcirc);
+  DoubleParameter("p_vencor_sys_0",0.0,"initial systemic venous coronary pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_vencor_sys_0",0.0,"initial systemic venous coronary flux",&cardvasc0dsyspulcirc);
+
+  DoubleParameter("p_cap_pul_0",0.0,"initial pulmonary capillary pressure",&cardvasc0dsyspulcirc);
+  DoubleParameter("q_cap_pul_0",0.0,"initial pulmonary capillary flux",&cardvasc0dsyspulcirc);
+
+
+  // unstressed volumes
+  // default values according to Ursino et al. Am J Physiol Heart Circ Physiol (2000), in mm^3
+  DoubleParameter("V_arspl_sys_u",274.4e3,"unstressed volume of systemic splanchnic arteries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_arespl_sys_u",134.64e3,"unstressed volume of systemic extra-splanchnic arteries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_armsc_sys_u",105.8e3,"unstressed volume of systemic muscular arteries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_arcer_sys_u",72.13e3,"unstressed volume of systemic cerebral arteries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_arcor_sys_u",24.0e3,"unstressed volume of systemic coronary arteries",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_venspl_sys_u",1121.0e3,"unstressed volume of systemic splanchnic veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_venespl_sys_u",550.0e3,"unstressed volume of systemic extra-splanchnic veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_venmsc_sys_u",432.14e3,"unstressed volume of systemic muscular veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_vencer_sys_u",294.64e3,"unstressed volume of systemic cerebral veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_vencor_sys_u",98.21e3,"unstressed volume of systemic coronary veins",&cardvasc0dsyspulcirc);
+  DoubleParameter("V_cap_pul_u",123.0e3,"unstressed volume of pulmonary capillaries",&cardvasc0dsyspulcirc);
+
+
+
+
+
+  Teuchos::ParameterList& cardvascrespir0d = cardvasc0dstruct.sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS",false,"");
+
+  setStringToIntegralParameter<int>("RESPIRATORY_MODEL","None","",
+                                 tuple<std::string>(
+                                   "None",
+                                   "Standard"),
+                                 tuple<int>(
+                                   INPAR::CARDIOVASCULAR0D::none,
+                                   INPAR::CARDIOVASCULAR0D::standard),
+                                 &cardvascrespir0d);
+
+
+  DoubleParameter("L_alv",0.0,"alveolar inertance",&cardvascrespir0d);
+  DoubleParameter("R_alv",0.0,"alveolar resistance",&cardvascrespir0d);
+  DoubleParameter("E_alv",0.0,"alveolar elastance",&cardvascrespir0d);
+
+  DoubleParameter("V_lung_tidal",0.4e6,"tidal volume (the total volume of inspired air, in a single breath)",&cardvascrespir0d);
+  DoubleParameter("V_lung_dead",0.15e6,"dead space volume",&cardvascrespir0d);
+  DoubleParameter("V_lung_u",0.0,"unstressed lung volume (volume of the lung when it is fully collapsed outside the body)",&cardvascrespir0d);
+
+  IntParameter("U_t_curve",-1,"time-varying, prescribed pleural pressure curve driven by diaphragm",&cardvascrespir0d);
+  DoubleParameter("U_m",0.0,"in-breath pressure",&cardvascrespir0d);
+
+  DoubleParameter("fCO2_ext",0.03,"atmospheric CO2 gas fraction",&cardvascrespir0d);
+  DoubleParameter("fO2_ext",0.21,"atmospheric O2 gas fraction",&cardvascrespir0d);
+
+  DoubleParameter("kappa_CO2",0.0,"diffusion coefficient for CO2 across the hemato-alveolar membrane, in molar value / (time * pressure)",&cardvascrespir0d);
+  DoubleParameter("kappa_O2",0.0,"diffusion coefficient for O2 across the hemato-alveolar membrane, in molar value / (time * pressure)",&cardvascrespir0d);
+
+  // should be 22.4 liters per mol !
+  // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
+  // i.e. if you have kg - mm - s - mmol, its 22.4e3 mm^3 / mmol
+  DoubleParameter("V_m_gas",22.4e3,"molar volume of an ideal gas",&cardvascrespir0d);
+
+  DoubleParameter("alpha_CO2",0.0,"CO2 solubility constant, in molar value / (volume * pressure)",&cardvascrespir0d);
+  DoubleParameter("alpha_O2",0.0,"O2 solubility constant, in molar value / (volume * pressure)",&cardvascrespir0d);
+
+  DoubleParameter("c_Hb",0.0,"hemoglobin concentration of the blood, in molar value / volume",&cardvascrespir0d);
+
+
+  DoubleParameter("M_CO2_arspl",0.0,"splanchnic metabolic rate of CO2 production",&cardvascrespir0d);
+  DoubleParameter("M_O2_arspl",0.0,"splanchnic metabolic rate of O2 consumption",&cardvascrespir0d);
+  DoubleParameter("M_CO2_arespl",0.0,"extra-splanchnic metabolic rate of CO2 production",&cardvascrespir0d);
+  DoubleParameter("M_O2_arespl",0.0,"extra-splanchnic metabolic rate of O2 consumption",&cardvascrespir0d);
+  DoubleParameter("M_CO2_armsc",0.0,"muscular metabolic rate of CO2 production",&cardvascrespir0d);
+  DoubleParameter("M_O2_armsc",0.0,"muscular metabolic rate of O2 consumption",&cardvascrespir0d);
+  DoubleParameter("M_CO2_arcer",0.0,"cerebral metabolic rate of CO2 production",&cardvascrespir0d);
+  DoubleParameter("M_O2_arcer",0.0,"cerebral metabolic rate of O2 consumption",&cardvascrespir0d);
+  DoubleParameter("M_CO2_arcor",0.0,"coronary metabolic rate of CO2 production",&cardvascrespir0d);
+  DoubleParameter("M_O2_arcor",0.0,"coronary metabolic rate of O2 consumption",&cardvascrespir0d);
+
+  DoubleParameter("V_tissspl",1.0,"splanchnic tissue volume",&cardvascrespir0d);
+  DoubleParameter("V_tissespl",1.0,"extra-splanchnic tissue volume",&cardvascrespir0d);
+  DoubleParameter("V_tissmsc",1.0,"muscular tissue volume",&cardvascrespir0d);
+  DoubleParameter("V_tisscer",1.0,"cerebral tissue volume",&cardvascrespir0d);
+  DoubleParameter("V_tisscor",1.0,"coronary tissue volume",&cardvascrespir0d);
+
+
+  // initial conditions for respiratory model
+  DoubleParameter("V_alv_0",-1.0,"initial alveolar volume",&cardvascrespir0d);
+  DoubleParameter("q_alv_0",0.0,"initial alveolar flux",&cardvascrespir0d);
+  DoubleParameter("p_alv_0",-1.0,"initial alveolar pressure",&cardvascrespir0d);
+
+  DoubleParameter("fCO2_alv_0",0.05263,"initial alveolar CO2 fraction",&cardvascrespir0d);
+  DoubleParameter("fO2_alv_0",0.1368,"initial alveolar O2 fraction",&cardvascrespir0d);
+
+  DoubleParameter("q_arspl_sys_in_0",0.0,"initial arterial splanchnic in-flux",&cardvascrespir0d);
+  DoubleParameter("q_arsspl_sys_in_0",0.0,"initial arterial extra-splanchnic in-flux",&cardvascrespir0d);
+  DoubleParameter("q_armsc_sys_in_0",0.0,"initial arterial muscular in-flux",&cardvascrespir0d);
+  DoubleParameter("q_arcer_sys_in_0",0.0,"initial arterial cerebral in-flux",&cardvascrespir0d);
+  DoubleParameter("q_arcor_sys_in_0",0.0,"initial arterial coronary in-flux",&cardvascrespir0d);
+
+  DoubleParameter("ppCO2_at_r_0",1.0,"initial right atrial CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_at_r_0",1.0,"initial right atrial O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_v_r_0",1.0,"initial right ventricular CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_v_r_0",1.0,"initial right ventricular O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_ar_pul_0",1.0,"initial pulmonary arterial CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_ar_pul_0",1.0,"initial pulmonary arterial O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_cap_pul_0",1.0,"initial pulmonary capillary CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_cap_pul_0",1.0,"initial pulmonary capillary O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_ven_pul_0",1.0,"initial pulmonary venous CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_ven_pul_0",1.0,"initial pulmonary venous O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_at_l_0",1.0,"initial left atrial CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_at_l_0",1.0,"initial left atrial O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_v_l_0",1.0,"initial left ventricular CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_v_l_0",1.0,"initial left ventricular O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_ar_sys_0",1.0,"initial systemic arterial CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_ar_sys_0",1.0,"initial systemic arterial O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_arspl_sys_0",1.0,"initial systemic arterial splanchnic CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_arspl_sys_0",1.0,"initial systemic arterial splanchnic O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_arespl_sys_0",1.0,"initial systemic arterial extra-splanchnic CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_arespl_sys_0",1.0,"initial systemic arterial extra-splanchnic O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_armsc_sys_0",1.0,"initial systemic arterial muscular CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_armsc_sys_0",1.0,"initial systemic arterial muscular O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_arcer_sys_0",1.0,"initial systemic arterial cerebral CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_arcer_sys_0",1.0,"initial systemic arterial cerebral O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_arcor_sys_0",1.0,"initial systemic arterial coronary CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_arcor_sys_0",1.0,"initial systemic arterial coronary O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_venspl_sys_0",1.0,"initial systemic venous splanchnic CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_venspl_sys_0",1.0,"initial systemic venous splanchnic O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_venespl_sys_0",1.0,"initial systemic venous extra-splanchnic CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_venespl_sys_0",1.0,"initial systemic venous extra-splanchnic O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_venmsc_sys_0",1.0,"initial systemic venous muscular CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_venmsc_sys_0",1.0,"initial systemic venous muscular O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_vencer_sys_0",1.0,"initial systemic venous cerebral CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_vencer_sys_0",1.0,"initial systemic venous cerebral O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_vencor_sys_0",1.0,"initial systemic venous coronary CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_vencor_sys_0",1.0,"initial systemic venous coronary O2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppCO2_ven_sys_0",1.0,"initial systemic venous CO2 partial pressure",&cardvascrespir0d);
+  DoubleParameter("ppO2_ven_sys_0",1.0,"initial systemic venous O2 partial pressure",&cardvascrespir0d);
+
 
 }
 
@@ -229,6 +410,27 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(std::vector<Teuchos::RCP<DRT::I
                                                                                        false)));
 
   condlist.push_back(cardiovascular0dsyspulcirculationcond);
+
+  /*--------------------------------------------------------------------*/
+  // Monolithic coupling of structure and a full closed-loop 0D cardiovascular flow model (closed-loop circulatory system model)
+  // mhv 02/15
+
+  Teuchos::RCP<ConditionDefinition> cardiovascularrespiratory0dsyspulperiphcirculationcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION CONDITIONS",
+                                         "CardiovascularRespiratory0DSysPulCirculationPeriphStructureCond",
+                                         "Surface cardiovascular respiratory 0D sys pul circulation periph condition",
+                                         DRT::Condition::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond,"id");
+  cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("TYPE")));
+  cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(Teuchos::rcp(new StringConditionComponent("type", "ventricle_left",
+                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right","dummy"),
+                                                                                       Teuchos::tuple<std::string>("ventricle_left","ventricle_right","atrium_left","atrium_right","dummy"),
+                                                                                       false)));
+
+  condlist.push_back(cardiovascularrespiratory0dsyspulperiphcirculationcond);
 
 
   /*--------------------------------------------------------------------*/

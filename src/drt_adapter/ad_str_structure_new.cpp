@@ -348,14 +348,18 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   std::vector<DRT::Condition*> cardiovasc0dcond_4elementwindkessel(0);
   std::vector<DRT::Condition*> cardiovasc0dcond_arterialproxdist(0);
   std::vector<DRT::Condition*> cardiovasc0dcond_syspulcirculation(0);
+  std::vector<DRT::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
   actdis_->GetCondition("Cardiovascular0D4ElementWindkesselStructureCond",cardiovasc0dcond_4elementwindkessel);
   actdis_->GetCondition("Cardiovascular0DArterialProxDistStructureCond",
       cardiovasc0dcond_arterialproxdist);
   actdis_->GetCondition("Cardiovascular0DSysPulCirculationStructureCond",
+      cardiovascrespir0dcond_syspulperiphcirculation);
+  actdis_->GetCondition("CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
       cardiovasc0dcond_syspulcirculation);
   if (cardiovasc0dcond_4elementwindkessel.size() or
       cardiovasc0dcond_arterialproxdist.size() or
-      cardiovasc0dcond_syspulcirculation.size())
+      cardiovasc0dcond_syspulcirculation.size() or
+      cardiovascrespir0dcond_syspulperiphcirculation.size())
     modeltypes.insert(INPAR::STR::model_cardiovascular0d);
 
   // ---------------------------------------------------------------------------

@@ -78,6 +78,11 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
     ventricle_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(artvensyspulpar,"VENTRICLE_MODEL");
 
+    // set respiratory model - just needed for CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
+    Teuchos::ParameterList respirpar =
+            DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS");
+    respiratory_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(respirpar,"RESPIRATORY_MODEL");
+
     std::vector<int> wkID(cardiovascular0dcond_.size());
     for (unsigned int i=0; i<cardiovascular0dcond_.size(); i++)
     {
@@ -85,7 +90,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     }
 
     // safety checks for closed-loop vascular model
-    if(cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
+    if(cardiovascular0dtype_ == cardvasc0d_syspulcirculation or cardiovascular0dtype_ == cardvascrespir0d_syspulperiphcirculation)
     {
       std::vector<const std::string*> condtype(cardiovascular0dcond_.size());
       for (unsigned int i=0; i<cardiovascular0dcond_.size(); i++)
@@ -205,6 +210,8 @@ UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::GetCardio
     return cardvasc0d_arterialproxdist;
   else if (name=="Cardiovascular0DSysPulCirculationStructureCond")
     return cardvasc0d_syspulcirculation;
+  else if (name=="CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond")
+    return cardvascrespir0d_syspulperiphcirculation;
   return none;
 }
 
@@ -264,6 +271,8 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     break;
   case cardvasc0d_syspulcirculation:
     break;
+  case cardvascrespir0d_syspulperiphcirculation:
+    break;
   case none:
     return;
   default:
@@ -272,9 +281,13 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
   const int offsetID = params.get<int>("OffsetID");
 
-  std::vector<int> gindex_syspulcoupled(16);
-  gindex_syspulcoupled[0] = offsetID;
-  for (int j = 1; j < 16; j++) gindex_syspulcoupled[j] = gindex_syspulcoupled[0]+j;
+  std::vector<int> gindex_syspulcirculation(16);
+  gindex_syspulcirculation[0] = offsetID;
+  for (int j = 1; j < 16; j++) gindex_syspulcirculation[j] = gindex_syspulcirculation[0]+j;
+
+  std::vector<int> gindex_syspulperiphcirculation(34);
+  gindex_syspulperiphcirculation[0] = offsetID;
+  for (int j = 1; j < 34; j++) gindex_syspulperiphcirculation[j] = gindex_syspulperiphcirculation[0]+j;
 
   // loop over cardiovascular0d structure coupling conditions
   /* here we do tge loop to assemble the offdiagonal stiffness block dfext/dcvdof (0,1 block)
@@ -426,11 +439,30 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           {
             // get the type of the corresponding cardiovascular0D condition
             const std::string* conditiontype = cardiovascular0dcond_[j]->Get<std::string>("type");
-            if (*conditiontype == "ventricle_left") colvec[0]=gindex_syspulcoupled[3];
-            if (*conditiontype == "ventricle_right") colvec[0]=gindex_syspulcoupled[11];
-            if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulcoupled[0];
-            if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulcoupled[8];
-            if (*conditiontype == "dummy") colvec[0]=gindex_syspulcoupled[0];
+            if (*conditiontype == "ventricle_left") colvec[0]=gindex_syspulcirculation[3];
+            if (*conditiontype == "ventricle_right") colvec[0]=gindex_syspulcirculation[11];
+            if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulcirculation[0];
+            if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulcirculation[8];
+            if (*conditiontype == "dummy") colvec[0]=gindex_syspulcirculation[0];
+          }
+        }
+      }
+        break;
+      case cardvascrespir0d_syspulperiphcirculation:
+      {
+        for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
+        {
+          DRT::Condition& cond = *(cardiovascular0dcond_[j]);
+          int id_cardvasc0d = cond.GetInt("id");
+          if (coupcondID == id_cardvasc0d)
+          {
+            // get the type of the corresponding cardiovascular0D condition
+            const std::string* conditiontype = cardiovascular0dcond_[j]->Get<std::string>("type");
+            if (*conditiontype == "ventricle_left") colvec[0]=gindex_syspulperiphcirculation[3];
+            if (*conditiontype == "ventricle_right") colvec[0]=gindex_syspulperiphcirculation[27];
+            if (*conditiontype == "atrium_left") colvec[0]=gindex_syspulperiphcirculation[0];
+            if (*conditiontype == "atrium_right") colvec[0]=gindex_syspulperiphcirculation[24];
+            if (*conditiontype == "dummy") colvec[0]=gindex_syspulperiphcirculation[0];
           }
         }
       }

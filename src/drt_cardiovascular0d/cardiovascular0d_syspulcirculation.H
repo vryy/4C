@@ -12,10 +12,15 @@
             089 - 289-10363
 </pre>
 
-A full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
-(DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS)
-(detailed fully in Hirschvogel, Bassilious, Jagschies, Wildhirt, Gee, "A monolithic 3D-0D coupled closed-loop model of the heart and
-the vascular system: Experiment-based parameter estimation for patient-specific cardiac mechanics", IJNMBE, 2016)
+A closed-loop cardiovascular model with 0D bi-resistive cardiac valve laws and lumped parameter models
+for the systemic and pulmonary circulation;
+heart can either be fully 3D, partly 3D (only ventricles, atria 0D elastance models) or fully 0D
+(elastance models for ventricles and atria)
+specification: DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS
+
+detailed fully in Hirschvogel, Bassilious, Jagschies, Wildhirt, Gee, "A monolithic 3D-0D coupled
+closed-loop model of the heart and the vascular system: Experiment-based parameter estimation for
+patient-specific cardiac mechanics", IJNMBE, 2016
 
 The residual vector reads:
 
@@ -158,15 +163,15 @@ namespace UTILS
     double R_ven_pul_; ///< pulmonary venous resistance
     double L_ven_pul_; ///< pulmonary venous inertance
 
-    // 0D volumes - for post-processing only, since all 0D equations are formulated in terms of fluxes!
-    double V_v_l_0_; ///< dead left ventricular volume (at zero pressure) (for 0D ventricles)
-    double V_at_l_0_; ///< dead left atrial volume (at zero pressure) (for 0D atria)
-    double V_ar_sys_0_; ///< initial systemic arterial volume
-    double V_ven_sys_0_; ///< initial systemic venous volume
-    double V_v_r_0_; ///< dead right ventricular volume (at zero pressure) (for 0D ventricles)
-    double V_at_r_0_; ///< dead right atrial volume (at zero pressure) (for 0D atria)
-    double V_ar_pul_0_; ///< initial pulmonary arterial volume
-    double V_ven_pul_0_; ///< initial pulmonary venous volume
+    // unstressed 0D volumes - for post-processing only, since all 0D equations are formulated in terms of fluxes!
+    double V_v_l_u_; ///< unstressed left ventricular volume (for 0D ventricles)
+    double V_at_l_u_; ///< unstressed left atrial volume (for 0D atria)
+    double V_ar_sys_u_; ///< unstressed systemic arterial volume
+    double V_ven_sys_u_; ///< unstressed systemic venous volume
+    double V_v_r_u_; ///< dead right ventricular volume (at zero pressure) (for 0D ventricles)
+    double V_at_r_u_; ///< dead right atrial volume (at zero pressure) (for 0D atria)
+    double V_ar_pul_u_; ///< unstressed pulmonary arterial volume
+    double V_ven_pul_u_; ///< unstressed pulmonary venous volume
 
     // don't want = operator, cctor and destructor
 

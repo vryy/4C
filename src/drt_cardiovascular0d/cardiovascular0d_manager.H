@@ -342,6 +342,11 @@ namespace UTILS
       return cardvasc0d_syspulcirculation_;
     }
 
+    Teuchos::RCP<Cardiovascular0D> GetCardvascRespir0DSysPulPeriphCirculation()
+    {
+      return cardvascrespir0d_syspulperiphcirculation_;
+    }
+
   private:
 
     // don't want = operator, cctor and destructor
@@ -384,6 +389,7 @@ namespace UTILS
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
+    Teuchos::RCP<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called

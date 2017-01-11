@@ -81,14 +81,14 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(Teuc
   R_ven_pul_ = artvensyspulpar.get("R_ven_pul",0.0);
   L_ven_pul_ = artvensyspulpar.get("L_ven_pul",0.0);
 
-  V_v_l_0_ = artvensyspulpar.get("V_v_l_0",0.0);
-  V_at_l_0_ = artvensyspulpar.get("V_at_l_0",0.0);
-  V_ar_sys_0_ = artvensyspulpar.get("V_ar_sys_0",0.0);
-  V_ven_sys_0_ = artvensyspulpar.get("V_ven_sys_0",0.0);
-  V_v_r_0_ = artvensyspulpar.get("V_v_r_0",0.0);
-  V_at_r_0_ = artvensyspulpar.get("V_at_r_0",0.0);
-  V_ar_pul_0_ = artvensyspulpar.get("V_ar_pul_0",0.0);
-  V_ven_pul_0_ = artvensyspulpar.get("V_ven_pul_0",0.0);
+  V_v_l_u_ = artvensyspulpar.get("V_v_l_u",0.0);
+  V_at_l_u_ = artvensyspulpar.get("V_at_l_u",0.0);
+  V_ar_sys_u_ = artvensyspulpar.get("V_ar_sys_u",0.0);
+  V_ven_sys_u_ = artvensyspulpar.get("V_ven_sys_u",0.0);
+  V_v_r_u_ = artvensyspulpar.get("V_v_r_u",0.0);
+  V_at_r_u_ = artvensyspulpar.get("V_at_r_u",0.0);
+  V_ar_pul_u_ = artvensyspulpar.get("V_ar_pul_u",0.0);
+  V_ven_pul_u_ = artvensyspulpar.get("V_ven_pul_u",0.0);
 
 
 }
@@ -208,6 +208,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
   double V_at_l_np = 0.;
   double V_at_r_np = 0.;
 
+  double R_atvalve_l = 0.;
+  double R_arvalve_l = 0.;
+  double R_atvalve_r = 0.;
+  double R_arvalve_r = 0.;
+
   if (assvec1 or assvec2 or assvec4 or assvec5)
   {
     //extract values of dof vector at t_{n+1}
@@ -267,6 +272,18 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
       break;
     }
 
+    if (p_v_l_np < p_at_l_np) R_atvalve_l = R_atvalve_min_l_;
+    if (p_v_l_np >= p_at_l_np) R_atvalve_l = R_atvalve_max_l_;
+
+    if (p_v_l_np < p_ar_sys_np) R_arvalve_l = R_arvalve_max_l_;
+    if (p_v_l_np >= p_ar_sys_np) R_arvalve_l = R_arvalve_min_l_;
+
+    if (p_v_r_np < p_at_r_np) R_atvalve_r = R_atvalve_min_r_;
+    if (p_v_r_np >= p_at_r_np) R_atvalve_r = R_atvalve_max_r_;
+
+    if (p_v_r_np < p_ar_pul_np) R_arvalve_r = R_arvalve_max_r_;
+    if (p_v_r_np >= p_ar_pul_np) R_arvalve_r = R_arvalve_min_r_;
+
     df_np[1]  = 0.;
     df_np[3]  = 0.;
     df_np[4]  = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np);
@@ -283,12 +300,10 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
 
     f_np[0] = -q_ven_pul_np + q_vin_l_np;
     //atrioventricular valve - mitral
-    if (p_v_l_np < p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_min_l_ - q_vin_l_np;
-    if (p_v_l_np >= p_at_l_np) f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_max_l_ - q_vin_l_np;
+    f_np[1] = (p_at_l_np-p_v_l_np)/R_atvalve_l - q_vin_l_np;
     f_np[2] = -q_vin_l_np + q_vout_l_np;
     //semilunar valve - aortic
-    if (p_v_l_np < p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_max_l_ - q_vout_l_np;
-    if (p_v_l_np >= p_ar_sys_np) f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_min_l_ - q_vout_l_np;
+    f_np[3] = (p_v_l_np-p_ar_sys_np)/R_arvalve_l - q_vout_l_np;
     f_np[4] = -q_vout_l_np + q_ar_sys_np;
     f_np[5] = (p_ven_sys_np - p_ar_sys_np + Z_ar_sys_ * q_vout_l_np)/R_ar_sys_ + q_ar_sys_np;
     f_np[6] = -q_ar_sys_np + q_ven_sys_np;
@@ -296,12 +311,10 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
 
     f_np[8] = -q_ven_sys_np + q_vin_r_np;
     //atrioventricular valve - tricuspid
-    if (p_v_r_np < p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_min_r_ - q_vin_r_np;
-    if (p_v_r_np >= p_at_r_np) f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_max_r_ - q_vin_r_np;
+    f_np[9] = (p_at_r_np-p_v_r_np)/R_atvalve_r - q_vin_r_np;
     f_np[10] = -q_vin_r_np + q_vout_r_np;
     //semilunar valve - pulmonary
-    if (p_v_r_np < p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_max_r_ - q_vout_r_np;
-    if (p_v_r_np >= p_ar_pul_np) f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_min_r_ - q_vout_r_np;
+    f_np[11] = (p_v_r_np-p_ar_pul_np)/R_arvalve_r - q_vout_r_np;
     f_np[12] = -q_vout_r_np + q_ar_pul_np;
     f_np[13] = (p_ven_pul_np - p_ar_pul_np + Z_ar_pul_ * q_vout_r_np)/R_ar_pul_ + q_ar_pul_np;
     f_np[14] = -q_ar_pul_np + q_ven_pul_np;
@@ -345,20 +358,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
 
     //atrioventricular valve - mitral
     wkstiff(1,1) = -theta;
-    if (p_v_l_np < p_at_l_np) wkstiff(1,0) = theta/R_atvalve_min_l_;
-    if (p_v_l_np >= p_at_l_np) wkstiff(1,0) = theta/R_atvalve_max_l_;
-    if (p_v_l_np < p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_min_l_;
-    if (p_v_l_np >= p_at_l_np) wkstiff(1,3) = -theta/R_atvalve_max_l_;
+    wkstiff(1,0) = theta/R_atvalve_l;
+    wkstiff(1,3) = -theta/R_atvalve_l;
 
     //ventricular mass balance - left
     wkstiff(2,2) = theta;
     wkstiff(2,1) = -theta;
 
     //semilunar valve - aortic
-    if (p_v_l_np < p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_max_l_;
-    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,3) = theta/R_arvalve_min_l_;
-    if (p_v_l_np < p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_max_l_;
-    if (p_v_l_np >= p_ar_sys_np) wkstiff(3,4) = -theta/R_arvalve_min_l_;
+    wkstiff(3,3) = theta/R_arvalve_l;
+    wkstiff(3,4) = -theta/R_arvalve_l;
     wkstiff(3,2) = -theta;
 
     //arterial mass balance - systemic
@@ -389,20 +398,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
 
     //atrioventricular valve - tricuspid
     wkstiff(9,9) = -theta;
-    if (p_v_r_np < p_at_r_np) wkstiff(9,8) = theta/R_atvalve_min_r_;
-    if (p_v_r_np >= p_at_r_np) wkstiff(9,8) = theta/R_atvalve_max_r_;
-    if (p_v_r_np < p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_min_r_;
-    if (p_v_r_np >= p_at_r_np) wkstiff(9,11) = -theta/R_atvalve_max_r_;
+    wkstiff(9,8) = theta/R_atvalve_r;
+    wkstiff(9,11) = -theta/R_atvalve_r;
 
     //ventricular mass balance - right
     wkstiff(10,10) = theta;
     wkstiff(10,9) = -theta;
 
     //semilunar valve - pulmonary
-    if (p_v_r_np < p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_max_r_;
-    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,11) = theta/R_arvalve_min_r_;
-    if (p_v_r_np < p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_max_r_;
-    if (p_v_r_np >= p_ar_pul_np) wkstiff(11,12) = -theta/R_arvalve_min_r_;
+    wkstiff(11,11) = theta/R_arvalve_r;
+    wkstiff(11,12) = -theta/R_arvalve_r;
     wkstiff(11,10) = -theta;
 
     //arterial mass balance - pulmonary
@@ -479,26 +484,26 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
     if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d)
     {
       // 0D left atrial volume
-      (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_0_;
+      (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_u_;
       // 0D right atrial volume
-      (*sysvec5)[8] = p_at_r_np/E_at_r_np + V_at_r_0_;
+      (*sysvec5)[8] = p_at_r_np/E_at_r_np + V_at_r_u_;
     }
     if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
     {
       // 0D left ventricular volume
-      (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_0_;
+      (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_u_;
       // 0D right ventricular volume
-      (*sysvec5)[10] = p_v_r_np/E_v_r_np + V_v_r_0_;
+      (*sysvec5)[10] = p_v_r_np/E_v_r_np + V_v_r_u_;
     }
     // systemic arterial compartment volume
-    (*sysvec5)[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np) + V_ar_sys_0_;
+    (*sysvec5)[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np) + V_ar_sys_u_;
     // systemic venous compartment volume
-    (*sysvec5)[6] = C_ven_sys_ * p_ven_sys_np + V_ven_sys_0_;
+    (*sysvec5)[6] = C_ven_sys_ * p_ven_sys_np + V_ven_sys_u_;
 
     // pulmonary arterial compartment volume
-    (*sysvec5)[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np) + V_ar_pul_0_;
+    (*sysvec5)[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np) + V_ar_pul_u_;
     // pulmonary venous compartment volume
-    (*sysvec5)[14] = C_ven_pul_ * p_ven_pul_np + V_ven_pul_0_;
+    (*sysvec5)[14] = C_ven_pul_ * p_ven_pul_np + V_ven_pul_u_;
 
   }
 
@@ -627,16 +632,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(
       DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
 
   const double p_at_l_0 = artvensyspulpar.get("p_at_l_0",0.0);
-  const double q_v_in_l_0 = artvensyspulpar.get("q_v_in_l_0",0.0);
-  const double q_v_out_l_0 = artvensyspulpar.get("q_v_out_l_0",0.0);
+  const double q_vin_l_0 = artvensyspulpar.get("q_vin_l_0",0.0);
+  const double q_vout_l_0 = artvensyspulpar.get("q_vout_l_0",0.0);
   const double p_v_l_0 = artvensyspulpar.get("p_v_l_0",0.0);
   const double p_ar_sys_0 = artvensyspulpar.get("p_ar_sys_0",0.0);
   const double q_ar_sys_0 = artvensyspulpar.get("q_ar_sys_0",0.0);
   const double p_ven_sys_0 = artvensyspulpar.get("p_ven_sys_0",0.0);
   const double q_ven_sys_0 = artvensyspulpar.get("q_ven_sys_0",0.0);
   const double p_at_r_0 = artvensyspulpar.get("p_at_r_0",0.0);
-  const double q_v_in_r_0 = artvensyspulpar.get("q_v_in_r_0",0.0);
-  const double q_v_out_r_0 = artvensyspulpar.get("q_v_out_r_0",0.0);
+  const double q_vin_r_0 = artvensyspulpar.get("q_vin_r_0",0.0);
+  const double q_vout_r_0 = artvensyspulpar.get("q_vout_r_0",0.0);
   const double p_v_r_0 = artvensyspulpar.get("p_v_r_0",0.0);
   const double p_ar_pul_0 = artvensyspulpar.get("p_ar_pul_0",0.0);
   const double q_ar_pul_0= artvensyspulpar.get("q_ar_pul_0",0.0);
@@ -644,16 +649,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(
   const double q_ven_pul_0 = artvensyspulpar.get("q_ven_pul_0",0.0);
 
   int err1 = sysvec2->SumIntoGlobalValues(1,&p_at_l_0,&gindex[0]);
-  int err2 = sysvec2->SumIntoGlobalValues(1,&q_v_in_l_0,&gindex[1]);
-  int err3 = sysvec2->SumIntoGlobalValues(1,&q_v_out_l_0,&gindex[2]);
+  int err2 = sysvec2->SumIntoGlobalValues(1,&q_vin_l_0,&gindex[1]);
+  int err3 = sysvec2->SumIntoGlobalValues(1,&q_vout_l_0,&gindex[2]);
   int err4 = sysvec2->SumIntoGlobalValues(1,&p_v_l_0,&gindex[3]);
   int err5 = sysvec2->SumIntoGlobalValues(1,&p_ar_sys_0,&gindex[4]);
   int err6 = sysvec2->SumIntoGlobalValues(1,&q_ar_sys_0,&gindex[5]);
   int err7 = sysvec2->SumIntoGlobalValues(1,&p_ven_sys_0,&gindex[6]);
   int err8 = sysvec2->SumIntoGlobalValues(1,&q_ven_sys_0,&gindex[7]);
   int err9 = sysvec2->SumIntoGlobalValues(1,&p_at_r_0,&gindex[8]);
-  int err10 = sysvec2->SumIntoGlobalValues(1,&q_v_in_r_0,&gindex[9]);
-  int err11 = sysvec2->SumIntoGlobalValues(1,&q_v_out_r_0,&gindex[10]);
+  int err10 = sysvec2->SumIntoGlobalValues(1,&q_vin_r_0,&gindex[9]);
+  int err11 = sysvec2->SumIntoGlobalValues(1,&q_vout_r_0,&gindex[10]);
   int err12 = sysvec2->SumIntoGlobalValues(1,&p_v_r_0,&gindex[11]);
   int err13 = sysvec2->SumIntoGlobalValues(1,&p_ar_pul_0,&gindex[12]);
   int err14 = sysvec2->SumIntoGlobalValues(1,&q_ar_pul_0,&gindex[13]);

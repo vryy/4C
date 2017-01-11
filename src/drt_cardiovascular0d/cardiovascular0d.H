@@ -54,7 +54,8 @@ namespace UTILS
       none,
       cardvasc0d_4elementwindkessel,
       cardvasc0d_arterialproxdist,
-      cardvasc0d_syspulcirculation
+      cardvasc0d_syspulcirculation,
+      cardvascrespir0d_syspulperiphcirculation
     };
 
     /*!
@@ -141,6 +142,11 @@ namespace UTILS
       return cardiovascular0dstructcoupcond_;
     }
 
+    INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel GetRespiratoryModel()
+    {
+      return respiratory_model_;
+    }
+
     //! Evaluate Cardiovascular0D conditions and assemble the results
     void EvaluateDStructDp
     (
@@ -156,6 +162,7 @@ namespace UTILS
     Cardiovascular0DType cardiovascular0dtype_; ///< Cardiovascular0D type
     INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel atrium_model_;
     INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
+    INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
     std::map<int,double>  inittimes_; ///< map with times at which Cardiovascular0D is supposed to become active
     std::map<int,bool> activecons_; ///< map with indicator if Cardiovascular0Ds are active
     //! gaussian integration to be used

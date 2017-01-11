@@ -44,6 +44,12 @@ namespace CARDIOVASCULAR0D
     ventr_structure_3d
   };
 
+  enum Cardvasc0DRespiratoryModel
+  {
+    none,
+    standard
+  };
+
   /// set the 0Dcardiovascular parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

@@ -59,6 +59,7 @@ private:
   bool havecardio_4elementwindkessel_;
   bool havecardio_arterialproxdist_;
   bool havecardio_syspulcirculation_;
+  bool havecardiorespir_syspulperiphcirculation_;
 
 };
 
