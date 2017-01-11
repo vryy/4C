@@ -417,8 +417,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(std::vector<Teuchos::RCP<DRT::I
 
   Teuchos::RCP<ConditionDefinition> cardiovascularrespiratory0dsyspulperiphcirculationcond =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION CONDITIONS",
-                                         "CardiovascularRespiratory0DSysPulCirculationPeriphStructureCond",
-                                         "Surface cardiovascular respiratory 0D sys pul circulation periph condition",
+                                         "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
+                                         "Surface 0D cardiovascular respiratory sys-pul periph circulation condition",
                                          DRT::Condition::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure,
                                          true,
                                          DRT::Condition::Surface));
