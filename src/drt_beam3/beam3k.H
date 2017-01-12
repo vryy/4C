@@ -513,6 +513,33 @@ public:
     return;
   }
 
+  /** \brief get element local indices of those Dofs that are used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 12/16 */
+  virtual inline void CenterlineDofIndicesOfElement(std::vector<unsigned int>& centerlinedofindices) const
+  {
+    if (rotvec_)
+      dserror("The logic of this implementation does not apply for Beam3k with rotation vector Dofs! "
+          "Be careful and find a solution to convert force/stiffness contributions to tangent Dofs "
+          "automatically and apply them consistently to rotvec Dofs");
+
+    const unsigned int nnodecl = this->NumCenterlineNodes();
+    centerlinedofindices.resize(6*nnodecl,0);
+
+    for (unsigned int inodecl=0; inodecl<nnodecl; ++inodecl)
+      for (unsigned int idof=0; idof<6; ++idof)
+        centerlinedofindices[6*inodecl+idof] = 7*inodecl+idof;
+  }
+
+  /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual void ExtractCenterlineDofValuesFromElementStateVector(
+      const std::vector<double>& dofvec,
+      std::vector<double>&       dofvec_centerline,
+      bool                       add_reference_values=false) const;
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   virtual int HowManyRandomNumbersINeed() const;
@@ -734,8 +761,10 @@ private:
 
   //! extract those Dofs relevant for centerline-interpolation from total state vector
   template<unsigned int nnodecl, unsigned int vpernode, typename T>
-  void ExtractCenterlineDofValues(const std::vector<T>&           dofvec,
-                                  LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const;
+  void ExtractCenterlineDofValuesFromElementStateVector(
+      const std::vector<T>&                    dofvec,
+      LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline,
+      bool                                     add_reference_values=false) const;
 
   //! add reference positions and tangents to (centerline) displacement state vector
   template<unsigned int nnodecl, unsigned int vpernode, typename T>

@@ -223,13 +223,16 @@ namespace LARGEROTATIONS
   void directionstotriad(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,3>& R);
 
   //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
-  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
+//  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
 
   //!this is a templated version of the method declared above in order to also handle
   //!the datatype FAD which is needed for automatic differentiation
-  template<typename T>
-  void quaternionproduct(const LINALG::TMatrix<T,4,1>& q1,const LINALG::TMatrix<T,4,1>& q2,LINALG::TMatrix<T,4,1>& q12)
+  template<class T1, class T2, class T3>
+  void quaternionproduct(const T1& q1, const T2& q2, T3& q12)
   {
+    dsassert( q12.M()==4 and q12.N()==1 and q1.M()==4 and q1.N()==1 and q2.M()==4 and q2.N()==1,
+        "size mismatch: expected 4x1 vector for quaternion" );
+
     q12(0) = q2(3)*q1(0) + q1(3)*q2(0) + q2(1)*q1(2) - q1(1)*q2(2);
     q12(1) = q2(3)*q1(1) + q1(3)*q2(1) + q2(2)*q1(0) - q1(2)*q2(0);
     q12(2) = q2(3)*q1(2) + q1(3)*q2(2) + q2(0)*q1(1) - q1(0)*q2(1);

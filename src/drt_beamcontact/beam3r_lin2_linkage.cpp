@@ -178,7 +178,7 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForce(
 
   LINALG::SerialDenseVector force(12,true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1,double>(
+  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1>(
       disp_totlag_centerline,
       Qnode,
       NULL,
@@ -213,7 +213,7 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateStiff(
 
   LINALG::SerialDenseMatrix stiffmat(12,12,true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1,double>(
+  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1>(
       disp_totlag_centerline,
       Qnode,
       &stiffmat,
@@ -257,7 +257,7 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForceStiff(
   LINALG::SerialDenseVector force(12,true);
   LINALG::SerialDenseMatrix stiffmat(12,12,true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1,double>(
+  linkele_->CalcInternalAndInertiaForcesAndStiff<2,2,1>(
       disp_totlag_centerline,
       Qnode,
       &stiffmat,

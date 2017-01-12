@@ -719,4 +719,28 @@ void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac)
   return;
 }
 
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::ExtractCenterlineDofValuesFromElementStateVector(
+    const std::vector<double>& dofvec,
+    std::vector<double>&       dofvec_centerline,
+    bool                       add_reference_values) const
+{
+  const unsigned int& nnodecl = this->NumNode();
 
+  if (dofvec.size() != 6*nnodecl)
+    dserror("size mismatch: expected %d values for element state vector and got %d",
+        6*nnodecl, dofvec.size());
+
+  dofvec_centerline.resize(3*nnodecl,0.0);
+
+  // extract values for DOFs relevant for centerline interpolation (i.e. position DoFs)
+  for (unsigned int dim=0; dim<3; ++dim)
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      dofvec_centerline[3*node+dim] = dofvec[6*node+dim];
+
+      if (add_reference_values)
+        dofvec_centerline[3*node+dim] += Nodes()[node]->X()[dim];
+    }
+}

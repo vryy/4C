@@ -700,6 +700,29 @@ public:
     return;
   }
 
+  /** \brief get element local indices of those Dofs that are used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 12/16 */
+  virtual inline void CenterlineDofIndicesOfElement(std::vector<unsigned int>& centerlinedofindices) const
+  {
+    const unsigned int nnodecl = this->NumCenterlineNodes();
+    centerlinedofindices.resize(3*nnodecl,0);
+
+    for (unsigned int inodecl=0; inodecl<nnodecl; ++inodecl)
+      for (unsigned int idim=0; idim<3; ++idim)
+        centerlinedofindices[3*inodecl+idim] = 6*inodecl+idim;
+  }
+
+  /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual void ExtractCenterlineDofValuesFromElementStateVector(
+      const std::vector<double>& dofvec,
+      std::vector<double>&       dofvec_centerline,
+      bool                       add_reference_values=false) const;
+
   //@}
 
 private:

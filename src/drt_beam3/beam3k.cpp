@@ -1142,7 +1142,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
     // we can extract tangent vectors only from total rotation vectors
     std::vector<double> disp_totlag(disp);
     AddRefValuesDisp(disp_totlag);
-    this->ExtractCenterlineDofValues<2,2,double>(disp_totlag,disp_totlag_centerline);
+    this->ExtractCenterlineDofValuesFromElementStateVector<2,2,double>(disp_totlag,disp_totlag_centerline);
   }
   else if (disp.size() == 12)
   {
@@ -1229,9 +1229,28 @@ std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& 
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
+    const std::vector<double>& dofvec,
+    std::vector<double>&       dofvec_centerline,
+    bool                       add_reference_values) const
+{
+  if (dofvec.size() != 15)
+    dserror("size mismatch: expected 15 values for element state vector and got %d", dofvec.size());
+
+  dofvec_centerline.resize(12,0.0);
+
+  // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
+  LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
+  this->ExtractCenterlineDofValuesFromElementStateVector<2,2,double>(dofvec,dofvec_centerline_fixedsize,add_reference_values);
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues(const std::vector<T>&                   dofvec,
-                                                      LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
+    const std::vector<T>&                    dofvec,
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline,
+    bool                                     add_reference_values) const
 {
   // nnodecl: number of nodes used for interpolation of centerline
   // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
@@ -1283,6 +1302,9 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues(const std::vector<T>&    
     }
   }
 
+  if (add_reference_values)
+    AddRefValuesDispCenterline<nnodecl,vpernode,T>(dofvec_centerline);
+
 }
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -1295,7 +1317,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpern
     {
       dofvec_centerline(3*vpernode*node+dim) += Nodes()[node]->X()[dim];
 
-      // have Hermite interpolation? then update tangent DOFs as well
+      // Hermite interpolation: update tangent DOFs as well
       if(vpernode==2)
         dofvec_centerline(3*vpernode*node+3+dim) += T0_[node](dim);
     }
@@ -1426,12 +1448,14 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 }
 
 // explicit template instantiations
-template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2,2,Sacado::Fad::DFad<double> >
+template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2,2,Sacado::Fad::DFad<double> >
                                               (const std::vector<Sacado::Fad::DFad<double> >&,
-                                               LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&) const;
-template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValues<2,2,double>
+                                               LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                               bool) const;
+template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2,2,double>
                                               (const std::vector<double>&,
-                                               LINALG::TMatrix<double,12,1>&) const;
+                                               LINALG::TMatrix<double,12,1>&,
+                                               bool) const;
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2,2,Sacado::Fad::DFad<double> >
                                               (LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&) const;
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2,2,double>

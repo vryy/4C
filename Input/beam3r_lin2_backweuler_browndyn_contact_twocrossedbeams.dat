@@ -40,11 +40,10 @@ MAXITER                50
 NEGLECTINERTIA         yes
 MASSLIN                rotations
 ----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty
-MODELEVALUATOR                  standard
 BEAMS_BTBPENALTYPARAM           1e3
-BEAMS_BTBLINEPENALTYPARAM       2e4
-BEAMS_NEWGAP                    No
+BEAMS_BTBLINEPENALTYPARAM       0.0
 BEAMS_SEGCON                    Yes
 BEAMS_PERPSHIFTANGLE1           10
 BEAMS_PERPSHIFTANGLE2           30
@@ -56,24 +55,21 @@ BEAMS_PENALTYLAW                LinPosQuadPen
 BEAMS_PENREGPARAM_G0            0.002
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
+// needed for old beam_contact_manager only
 BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
-// needed for beam_contact_manager
-BEAMS_ADDITEXT                  Yes
-BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------MESHFREE
 TYPE                   Particle
 DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
-PERIODICONOFF          0 0 0
 DEFINEXAABBPER         input
 BOUNDINGBOX            0 0 0 15 15 15
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB           yes
-VISCOSITY              0.001                 // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
-KT                     0.0            // thermal energy
+VISCOSITY              0.001
+KT                     0.0
 -----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

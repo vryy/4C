@@ -85,6 +85,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
   // note: LIN2 refers to linear Lagrange interpolation of centerline AND triad field
   defs["LINE2"]
     .AddIntVector("LINE2",2)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -99,6 +100,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["LIN2"]
     .AddIntVector("LIN2",2)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -114,6 +116,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
   // note: LIN3 refers to quadratic Lagrange interpolation of centerline AND triad field
   defs["LINE3"]
     .AddIntVector("LINE3",3)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -128,6 +131,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -143,6 +147,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
   // note: LIN4 refers to cubic Lagrange interpolation of centerline AND triad field
   defs["LINE4"]
     .AddIntVector("LINE4",4)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -157,6 +162,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["LIN4"]
     .AddIntVector("LIN4",4)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -172,6 +178,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
   // note: LIN5 refers to quartic Lagrange interpolation of centerline AND triad field
   defs["LINE5"]
     .AddIntVector("LINE5",5)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -186,6 +193,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["LIN5"]
     .AddIntVector("LIN5",5)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -202,6 +210,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
    *       LIN2 refers to linear Lagrange interpolation of the triad field*/
   defs["HERM2LINE2"]
     .AddIntVector("HERM2LINE2",2)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -216,6 +225,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["HERM2LIN2"]
     .AddIntVector("HERM2LIN2",2)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -232,6 +242,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
    *       LIN3 refers to quadratic Lagrange interpolation of the triad field*/
   defs["HERM2LINE3"]
     .AddIntVector("HERM2LINE3",3)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -246,6 +257,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["HERM2LIN3"]
     .AddIntVector("HERM2LIN3",3)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -262,6 +274,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
    *       LIN4 refers to cubic Lagrange interpolation of the triad field*/
   defs["HERM2LINE4"]
     .AddIntVector("HERM2LINE4",4)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -276,6 +289,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["HERM2LIN4"]
     .AddIntVector("HERM2LIN4",4)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -292,6 +306,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
    *       LIN5 refers to quartic Lagrange interpolation of the triad field*/
   defs["HERM2LINE5"]
     .AddIntVector("HERM2LINE5",5)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -306,6 +321,7 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
 
   defs["HERM2LIN5"]
     .AddIntVector("HERM2LIN5",5)
+    .AddOptionalTag("FAD")
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -420,7 +436,8 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner) :
- DRT::ELEMENTS::Beam3Base(id,owner),
+DRT::ELEMENTS::Beam3Base(id,owner),
+useFAD_(false),
 centerline_hermite_(false),
 isinit_(false),
 statmechprob_(false),
@@ -454,6 +471,7 @@ inertscalerot2_(1.0)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  DRT::ELEMENTS::Beam3Base(old),
+ useFAD_(old.useFAD_),
  centerline_hermite_(old.centerline_hermite_),
  isinit_(old.isinit_),
  statmechprob_(old.statmechprob_),
@@ -594,6 +612,7 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,nodeJ_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_);
+  AddtoPack(data,useFAD_);
   AddtoPack(data,centerline_hermite_);
   AddtoPack(data,isinit_);
   AddtoPack(data,statmechprob_);
@@ -669,6 +688,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,nodeJ_);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
+  useFAD_ = ExtractInt(position,data);
   centerline_hermite_ = ExtractInt(position,data);
   isinit_ = ExtractInt(position,data);
   statmechprob_ = ExtractInt(position,data);
@@ -1489,7 +1509,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(LINALG::Matrix<3,1>&       pos,
   if (disp.size() == 3*numnodalvalues*nnodecl)
     disp_centerline = disp;
   else if (disp.size() == 3*numnodalvalues*nnodecl+3*nnodetriad)
-    ExtractCenterlineDofValues(disp,disp_centerline);
+    ExtractCenterlineDofValuesFromElementStateVector(disp,disp_centerline);
   else
     dserror("size mismatch: expected either %d values for disp_centerline or "
         "%d values for full disp state vector of this element and got %d",
@@ -1904,10 +1924,109 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 }
 
 /*------------------------------------------------------------------------------------------------------------*
+ | update (total) displacement vector and set nodal triads (as quaternions)                        grill 03/16|
  *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(
+    const std::vector<double>&               disp,
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+    std::vector<LINALG::TMatrix<T,4,1> >&    Q_i)
+{
+  // nnodetriad: number of nodes used for interpolation of triad field
+  // nnodecl: number of nodes used for interpolation of centerline
+  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
+  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+
+  // get current values of translational nodal DOFs in total Lagrangean manner (initial value + disp)
+  // rotational DOFs need different handling, depending on whether FAD is used or not (see comment below)
+  ExtractCenterlineDofValuesFromElementStateVector<nnodecl,vpernode,T>(disp,disp_totlag_centerline);
+  AddRefValuesDispCenterline<nnodecl,vpernode,T>(disp_totlag_centerline);
+
+  // get current displacement values of rotational DOFs (i.e. relative rotation with respect to reference config)
+  std::vector<LINALG::TMatrix<double,3,1> > disptheta;
+  disptheta.resize(nnodetriad);
+  ExtractRotVecDofValues<nnodetriad,nnodecl,vpernode,double>(disp,disptheta);
+
+  for (unsigned int node=0; node<nnodetriad; ++node)
+    for (unsigned int dim=0; dim<3; ++dim)
+      dispthetanewnode_[node](dim)=disptheta[node](dim);
+
+  // rotational displacement at a certain node in quaternion form
+  LINALG::Matrix<4,1> deltaQ;
+  // initial nodal rotation vector in quaternion form
+  LINALG::Matrix<4,1> Q0;
+
+  // Compute current nodal triads
+  GetNodalTriadsFromDispTheta<nnodetriad,T>(disptheta,Q_i);
+
+  for (unsigned int node=0; node<nnodetriad; ++node)
+  {
+    // copy quaternions of nodal triads to class variable
+    for (unsigned int i=0; i<4; ++i)
+       Qnewnode_[node](i) = FADUTILS::CastToDouble( Q_i[node](i) );
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
+    LINALG::TMatrix<FAD,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+    std::vector<LINALG::TMatrix<FAD,4,1> >&    Q_i) const
+{
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  // set differentiation variables for FAD: translational DOFs
+  for (int dim=0; dim<3; ++dim)
+  {
+    for (unsigned int node=0; node<nnodecl; ++node)
+    {
+      disp_totlag_centerline(dofperclnode*node+dim).diff(dofpercombinode*node+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
+
+      // have Hermite interpolation? then set tangent DOFs as well
+      if(vpernode==2)
+        disp_totlag_centerline(dofperclnode*node+3+dim).diff(dofpercombinode*node+6+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
+    }
+  }
+
+  // rotation vector theta at a specific node in a total Lagrangean manner (with respect to global reference coordinate system)
+  std::vector<LINALG::TMatrix<FAD,3,1> > theta_totlag_i(nnodetriad);
+
+  // compute nodal quaternions based on multiplicative increments of rotational DOFs
+  for (unsigned int node=0; node<nnodetriad; ++node)
+  {
+    // compute physical total angle theta_totlag
+    LARGEROTATIONS::quaterniontoangle(Q_i[node],theta_totlag_i[node]);
+  }
+
+  // set differentiation variables for FAD: rotational DOFs
+  for (unsigned int dim=0; dim<3; ++dim)
+  {
+    for (unsigned int node=0; node<nnodecl; ++node)
+      theta_totlag_i[node](dim).diff(dofpercombinode*node+3+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
+
+    for (unsigned int node=nnodecl; node<nnodetriad; ++node)
+      theta_totlag_i[node](dim).diff(dofperclnode*nnodecl+dofpertriadnode*node+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
+  }
+
+  /* Attention: although the nodal quaternions Q_i have already been computed correctly, we need the following step
+   *            in order to track the dependency of subsequently calculated quantities via FAD */
+  for (unsigned int node=0; node<nnodetriad; ++node)
+  {
+    Q_i[node].PutScalar(0.0);
+    LARGEROTATIONS::angletoquaternion(theta_totlag_i[node],Q_i[node]);
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>&            dofvec,
-                                                       LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
+    const std::vector<double>&               dofvec,
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline,
+    bool                                     add_reference_values) const
 {
   // nnodecl: number of nodes used for interpolation of centerline
   // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
@@ -1932,46 +2051,71 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>
         dofvec_centerline(3*vpernode*node+3+dim) = dofvec[dofpercombinode*node+6+dim];
     }
   }
+
+  if (add_reference_values)
+    AddRefValuesDispCenterline<nnodecl,vpernode,T>(dofvec_centerline);
 }
 
-/*------------------------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues(const std::vector<double>& dofvec,
-                                                       std::vector<double>&       dofvec_centerline) const
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
+    const std::vector<double>& dofvec,
+    std::vector<double>&       dofvec_centerline,
+    bool                       add_reference_values) const
 {
-  switch (this->NumCenterlineNodes())
+  const unsigned int vpernode = this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int nnodecl = this->NumCenterlineNodes();
+
+  dofvec_centerline.resize(3*vpernode*nnodecl,0.0);
+
+  switch (nnodecl)
   {
     case 2:
     {
-      if (this->HermiteCenterlineInterpolation())
+      if (vpernode==2)
       {
         // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
         LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-        this->ExtractCenterlineDofValues<2,2,double>(dofvec,dofvec_centerline_fixedsize);
+        this->ExtractCenterlineDofValuesFromElementStateVector<2,2,double>(
+            dofvec,
+            dofvec_centerline_fixedsize,
+            add_reference_values);
       }
       else
       {
         LINALG::Matrix<6,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-        this->ExtractCenterlineDofValues<2,1,double>(dofvec,dofvec_centerline_fixedsize);
+        this->ExtractCenterlineDofValuesFromElementStateVector<2,1,double>(
+            dofvec,
+            dofvec_centerline_fixedsize,
+            add_reference_values);
       }
       break;
     }
     case 3:
     {
       LINALG::Matrix<9,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<3,1,double>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValuesFromElementStateVector<3,1,double>(
+          dofvec,
+          dofvec_centerline_fixedsize,
+          add_reference_values);
       break;
     }
     case 4:
     {
       LINALG::Matrix<12,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<4,1,double>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValuesFromElementStateVector<4,1,double>(
+          dofvec,
+          dofvec_centerline_fixedsize,
+          add_reference_values);
       break;
     }
     case 5:
     {
       LINALG::Matrix<15,1> dofvec_centerline_fixedsize(&dofvec_centerline[0],true);
-      this->ExtractCenterlineDofValues<5,1,double>(dofvec,dofvec_centerline_fixedsize);
+      this->ExtractCenterlineDofValuesFromElementStateVector<5,1,double>(
+          dofvec,
+          dofvec_centerline_fixedsize,
+          add_reference_values);
       break;
     }
     default:
@@ -2073,10 +2217,11 @@ void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& do
 
 }
 
-/*------------------------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
+void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& dofvec_centerline) const
 {
   for (unsigned int dim=0; dim<3; ++dim)
     for (unsigned int node=0; node<nnodecl; ++node)
@@ -2084,7 +2229,7 @@ void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpern
       dofvec_centerline(3*vpernode*node+dim) += Nodes()[node]->X()[dim];
 
       // have Hermite interpolation? then update tangent DOFs as well
-      if(vpernode==2)
+      if (vpernode==2)
         dofvec_centerline(3*vpernode*node+3+dim) += Trefnode_[node](dim);
     }
 
@@ -2093,8 +2238,9 @@ void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(LINALG::TMatrix<T,3*vpern
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, typename T>
-void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(const std::vector<LINALG::TMatrix<T,3,1> >& disptheta,
-                                                        std::vector<LINALG::TMatrix<T,4,1> >&       Qnode) const
+void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
+    const std::vector<LINALG::TMatrix<double,3,1> >& disptheta,
+    std::vector<LINALG::TMatrix<T,4,1> >&            Qnode) const
 {
   // initial nodal rotation vector in quaternion form
   LINALG::Matrix<4,1> Q0;
@@ -2112,7 +2258,7 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(const std::vector<LINALG
     LARGEROTATIONS::quaternionproduct(Q0,deltaQ,Qnode[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
-    Qnode[node].Scale(1.0/Qnode[node].Norm2());
+    Qnode[node].Scale(1.0/ FADUTILS::VectorNorm<4>( Qnode[node]) );
   }
 
 }
@@ -2201,16 +2347,85 @@ template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,5,1>(const std::ve
                                                                    const std::vector<double>&);
 template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,2,2>(const std::vector<double>&,
                                                                    const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<2,1,double>(const std::vector<double>&,
-                                                                           LINALG::TMatrix<double,6,1>&) const;
-template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<3,1,double>(const std::vector<double>&,
-                                                                           LINALG::TMatrix<double,9,1>&) const;
-template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<4,1,double>(const std::vector<double>&,
-                                                                           LINALG::TMatrix<double,12,1>&) const;
-template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<5,1,double>(const std::vector<double>&,
-                                                                           LINALG::TMatrix<double,15,1>&) const;
-template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValues<2,2,double>(const std::vector<double>&,
-                                                                           LINALG::TMatrix<double,12,1>&) const;
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<2,2,1,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,6,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<3,3,1,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,9,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<4,4,1,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,12,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<5,5,1,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,15,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<2,2,2,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,12,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<3,2,2,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,12,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<4,2,2,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,12,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<5,2,2,double>(const std::vector<double>&,
+                                                           LINALG::TMatrix<double,12,1>&,
+                                                           std::vector<LINALG::TMatrix<double,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<2,2,1,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,6,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<3,3,1,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,9,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<4,4,1,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<5,5,1,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,15,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<2,2,2,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<3,2,2,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<4,2,2,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads<5,2,2,Sacado::Fad::DFad<double> >(const std::vector<double>&,
+                                                           LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+                                                           std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&);
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<2,2,1>(LINALG::TMatrix<FAD,6,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<3,3,1>(LINALG::TMatrix<FAD,9,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<4,4,1>(LINALG::TMatrix<FAD,12,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<5,5,1>(LINALG::TMatrix<FAD,15,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<2,2,2>(LINALG::TMatrix<FAD,12,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<3,2,2>(LINALG::TMatrix<FAD,12,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<4,2,2>(LINALG::TMatrix<FAD,12,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables<5,2,2>(LINALG::TMatrix<FAD,12,1>&,
+                                                           std::vector<LINALG::TMatrix<FAD,4,1> >&) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector<2,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,6,1>&,
+                                                                           bool) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector<3,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,9,1>&,
+                                                                           bool) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector<4,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,12,1>&,
+                                                                           bool) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector<5,1,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,15,1>&,
+                                                                           bool) const;
+template void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector<2,2,double>(const std::vector<double>&,
+                                                                           LINALG::TMatrix<double,12,1>&,
+                                                                           bool) const;
 template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<2,2,1,double>(const std::vector<double>&,
                                                                           std::vector<LINALG::TMatrix<double,3,1> >&) const;
 template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<2,2,2,double>(const std::vector<double>&,

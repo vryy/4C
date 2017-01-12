@@ -98,55 +98,63 @@ void BEAMINTERACTION::BeamContactParams::Init()
   if (BTB_point_penalty_param_ < 0.0)
     dserror("beam-to-beam point penalty parameter must not be negative!");
 
-  /****************************************************************************/
-  BTB_line_penalty_param_ =
-      beam_contact_params_list.get<double>("BEAMS_BTBLINEPENALTYPARAM");
 
-  if (BTB_line_penalty_param_ < 0.0)
-    dserror("beam-to-beam line penalty parameter must not be negative!");
+  // input parameters required for all-angle-beam contact formulation ...
+  if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_SEGCON") )
+  {
+    /****************************************************************************/
+    BTB_line_penalty_param_ =
+        beam_contact_params_list.get<double>("BEAMS_BTBLINEPENALTYPARAM");
 
-  /****************************************************************************/
-  // Todo find more verbose and expressive naming
-  // note: conversion from degrees (input parameter) to radians (class variable) done here!
-  BTB_perp_shifting_angle1_ =
-      beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
-  BTB_perp_shifting_angle2_ =
-      beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE2")/180.0*M_PI;
+    if (BTB_line_penalty_param_ < 0.0)
+      dserror("You chose all-angle-beam contact algorithm: thus, beam-to-beam line"
+          " penalty parameter must not be negative!");
 
-  BTB_parallel_shifting_angle1_ =
-      beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE1")/180.0*M_PI;
-  BTB_parallel_shifting_angle2_ =
-      beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
+    /****************************************************************************/
+    // Todo find more verbose and expressive naming
+    // note: conversion from degrees (input parameter) to radians (class variable) done here!
+    BTB_perp_shifting_angle1_ =
+        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+    BTB_perp_shifting_angle2_ =
+        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE2")/180.0*M_PI;
 
-  if (BTB_perp_shifting_angle1_ < 0.0 or
-      BTB_perp_shifting_angle2_ < 0.0 or
-      BTB_parallel_shifting_angle1_ < 0.0 or
-      BTB_parallel_shifting_angle2_ < 0.0)
-    dserror("Shifting angles for beam-to-beam contact fade must be >= 0°");
+    BTB_parallel_shifting_angle1_ =
+        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE1")/180.0*M_PI;
+    BTB_parallel_shifting_angle2_ =
+        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
 
-  if (BTB_perp_shifting_angle1_ > 0.5*M_PI or
-      BTB_perp_shifting_angle2_ > 0.5*M_PI or
-      BTB_parallel_shifting_angle1_ > 0.5*M_PI or
-      BTB_parallel_shifting_angle2_ > 0.5*M_PI)
-    dserror("Shifting angles for beam-to-beam contact fade must be <= 90°");
+    if (BTB_perp_shifting_angle1_ < 0.0 or
+        BTB_perp_shifting_angle2_ < 0.0 or
+        BTB_parallel_shifting_angle1_ < 0.0 or
+        BTB_parallel_shifting_angle2_ < 0.0)
+      dserror("You chose all-angle-beam contact algorithm: thus, shifting angles for"
+          " beam-to-beam contact fade must be >= 0°");
 
-  if (BTB_parallel_shifting_angle2_ <= BTB_perp_shifting_angle1_)
-    dserror("No angle overlap between large-angle and small-angle contact!");
+    if (BTB_perp_shifting_angle1_ > 0.5*M_PI or
+        BTB_perp_shifting_angle2_ > 0.5*M_PI or
+        BTB_parallel_shifting_angle1_ > 0.5*M_PI or
+        BTB_parallel_shifting_angle2_ > 0.5*M_PI)
+      dserror("You chose all-angle-beam contact algorithm: thus, Shifting angles for"
+          " beam-to-beam contact fade must be <= 90°");
 
-  /****************************************************************************/
-  // note: conversion from degrees (input parameter) to radians (class variable) done here!
-  segangle_ =
-      beam_contact_params_list.get<double>("BEAMS_SEGANGLE")/180.0*M_PI;
+    if (BTB_parallel_shifting_angle2_ <= BTB_perp_shifting_angle1_)
+      dserror("No angle overlap between large-angle and small-angle contact!");
 
-  if (segangle_ <= 0.0)
-    dserror("Segmentation angle must be greater than zero!");
+    /****************************************************************************/
+    // note: conversion from degrees (input parameter) to radians (class variable) done here!
+    segangle_ =
+        beam_contact_params_list.get<double>("BEAMS_SEGANGLE")/180.0*M_PI;
 
-  /****************************************************************************/
-  num_integration_intervals_ =
-      beam_contact_params_list.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
+    if (segangle_ <= 0.0)
+      dserror("Segmentation angle must be greater than zero!");
 
-  if (num_integration_intervals_ <= 0)
-    dserror("Number of integration intervals must be greater than zero!");
+    /****************************************************************************/
+    num_integration_intervals_ =
+        beam_contact_params_list.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
+
+    if (num_integration_intervals_ <= 0)
+      dserror("Number of integration intervals must be greater than zero!");
+  }
 
   /****************************************************************************/
   // Todo check need and usage of this parameter
@@ -166,8 +174,10 @@ void BEAMINTERACTION::BeamContactParams::Init()
     dserror("BEAMS_NEWGAP currently not supported!");
 
   /****************************************************************************/
+  // for the time being only allow all-angle-beam contact formulation ...
   if (not DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_SEGCON") )
-    dserror("only all-angle-beam-contact formulation (BEAMS_SEGCON) supported!");
+    dserror("only all-angle-beam contact (BEAMS_SEGCON) formulation tested yet"
+        " in new beam interaction framework!");
 
   /****************************************************************************/
   if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_DEBUG") )

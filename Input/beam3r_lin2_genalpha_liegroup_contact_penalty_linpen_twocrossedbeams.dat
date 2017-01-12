@@ -1,5 +1,5 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ==================================================================
 General Data File CCARAT
@@ -7,11 +7,7 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 First 3D beam contact example with beam3r elements and penalty approach
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        38
-NODES                           40
 DIM                             3
-MATERIALS                       1
-NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
@@ -23,27 +19,18 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     10
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         10
 MAXTIME                         1
-DAMPING                         No
-M_DAMP                          0
-K_DAMP                          0
 PREDICT                         ConstDis
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-10
@@ -59,17 +46,41 @@ GAMMA                           1.0
 ALPHA_M                         0.5
 ALPHA_F                         0.5
 ----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           1e+06
-BEAMS_NEWGAP                    No
-BEAMS_SMOOTHING                 None
+BEAMS_BTBLINEPENALTYPARAM       0.0
 BEAMS_PENALTYLAW                LinPen
-BEAMS_OCTREE                    none
+BEAMS_NEWGAP                    No
+BEAMS_SEGCON                    Yes
+BEAMS_PERPSHIFTANGLE1           20
+BEAMS_PERPSHIFTANGLE2           21
+BEAMS_PARSHIFTANGLE1            20
+BEAMS_PARSHIFTANGLE2            21
+BEAMS_SEGANGLE                  1.0
+BEAMS_NUMINTEGRATIONINTERVAL    1
+
+// needed for beam_contact_manager only
+BEAMS_MAXDISISCALEFAC           -1.0
+BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   1
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -3 -3 -3 3 3 3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          2

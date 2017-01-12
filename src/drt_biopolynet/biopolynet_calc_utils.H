@@ -99,23 +99,13 @@ void FEAssembleEleForceStiffIntoSystemVectorMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void AssembleCenterlineDofForceIntoElementForce(
-    std::vector< LINALG::SerialDenseVector > const& eleforce_centerlineDOFs,
-    std::vector< LINALG::SerialDenseVector >&       eleforce);
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void AssembleCenterlineDofStiffIntoElementStiff(
-    std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elestiff_centerlineDOFs,
-    std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff);
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void AssembleCenterlineDofForceStiffIntoElementForceStiff(
-    std::vector< LINALG::SerialDenseVector > const& eleforce_centerlineDOFs,
+    DRT::Discretization const&                                     discret,
+    std::vector<int> const&                                        elegid,
+    std::vector< LINALG::SerialDenseVector > const&                eleforce_centerlineDOFs,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elestiff_centerlineDOFs,
-    std::vector< LINALG::SerialDenseVector >& eleforce,
-    std::vector< std::vector< LINALG::SerialDenseMatrix > >& elestiff);
+    std::vector< LINALG::SerialDenseVector >*                      eleforce,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >*       elestiff);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

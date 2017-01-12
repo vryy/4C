@@ -195,63 +195,84 @@ void FEAssembleEleForceStiffIntoSystemVectorMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void AssembleCenterlineDofForceIntoElementForce(
-    std::vector< LINALG::SerialDenseVector > const& eleforce_centerlineDOFs,
-    std::vector< LINALG::SerialDenseVector >&       eleforce
-  )
+void AssembleCenterlineDofForceStiffIntoElementForceStiff(
+    DRT::Discretization const&                                     discret,
+    std::vector<int> const&                                        elegid,
+    std::vector< LINALG::SerialDenseVector > const&                eleforce_centerlineDOFs,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elestiff_centerlineDOFs,
+    std::vector< LINALG::SerialDenseVector >*                      eleforce,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >*       elestiff)
 {
-  // Todo generalize this method
+  std::vector<unsigned int> numdof_ele(2);
+  std::vector< std::vector<unsigned int> > ele_centerlinedofindices(2);
+
+  for (unsigned int iele=0; iele<2; ++iele)
+  {
+    DRT::Element* ele = discret.gElement(elegid[iele]);
+
+    DRT::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // Todo implement method in DRT::Element or find alternative way of doing this
+    // find out the elements' number of Dofs (=dimension of element vector/matrices)
+    std::vector<int> lmrow;
+    std::vector<int> dummy1, dummy2;
+
+    ele->LocationVector(discret,lmrow,dummy1,dummy2);
+    numdof_ele[iele] = lmrow.size();
+
+    beamele->CenterlineDofIndicesOfElement(ele_centerlinedofindices[iele]);
+  }
+
 
   // assemble centerline DOF values correctly into element DOFvec vectors/matrices
-  for ( unsigned int i = 0; i < 2; ++i )
+  if (eleforce != NULL)
   {
-    for ( unsigned int idof = 0; idof < 3; ++idof )
+    for (unsigned int iele=0; iele<2; ++iele)
     {
-      eleforce[i](idof)   = eleforce_centerlineDOFs[i](idof);
-      eleforce[i](6+idof) = eleforce_centerlineDOFs[i](3+idof);
+      // resize and clear variable
+      ((*eleforce)[iele]).Size(numdof_ele[iele]);
+
+      // safety check: dimensions
+      if ((unsigned int) eleforce_centerlineDOFs[iele].RowDim() != ele_centerlinedofindices[iele].size())
+        dserror("size mismatch! need to assemble %d values of centerline-Dof based "
+            "force vector into element vector but only got %d element-local Dof indices",
+            eleforce_centerlineDOFs[iele].RowDim(), ele_centerlinedofindices[iele].size());
+
+      // Todo maybe use a more general 'SerialDenseAssemble' method here
+      for (unsigned int idof=0; idof<ele_centerlinedofindices[iele].size(); ++idof)
+        ((*eleforce)[iele])(ele_centerlinedofindices[iele][idof]) = eleforce_centerlineDOFs[iele](idof);
     }
   }
-}
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void AssembleCenterlineDofStiffIntoElementStiff(
-    std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elestiff_centerlineDOFs,
-    std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff
-  )
-{
-  // Todo generalize this method
-
-  // assemble centerline DOF values correctly into element DOFvec vectors/matrices
-  for ( unsigned int i = 0; i < 2; ++i )
+  if (elestiff != NULL)
   {
-    for ( unsigned int j = 0; j < 2; ++j )
+    for (unsigned int iele=0; iele<2; ++iele)
     {
-      for ( unsigned int idof = 0; idof < 3; ++idof )
+      for (unsigned int jele=0; jele<2; ++jele)
       {
-        for ( unsigned int jdof = 0; jdof < 3; ++jdof )
-        {
-          elestiff[i][j]( idof, jdof )         = elestiff_centerlineDOFs[i][j]( idof, jdof );
-          elestiff[i][j]( 6 + idof, jdof )     = elestiff_centerlineDOFs[i][j]( 3 + idof, jdof );
-          elestiff[i][j]( idof, 6 + jdof )     = elestiff_centerlineDOFs[i][j]( idof, 3 + jdof );
-          elestiff[i][j]( 6 + idof, 6 + jdof ) = elestiff_centerlineDOFs[i][j]( 3 + idof, 3 + jdof );
-        }
+        // resize and clear variable
+        ((*elestiff)[iele][jele]).Shape(numdof_ele[iele],numdof_ele[jele]);
+
+        // safety check: dimensions
+        if ((unsigned int) elestiff_centerlineDOFs[iele][jele].RowDim() != ele_centerlinedofindices[iele].size())
+          dserror("size mismatch! need to assemble %d row values of centerline-Dof based "
+              "stiffness matrix into element matrix but only got %d element-local Dof indices",
+              elestiff_centerlineDOFs[iele][jele].RowDim(), ele_centerlinedofindices[iele].size());
+
+        if ((unsigned int) elestiff_centerlineDOFs[iele][jele].ColDim() != ele_centerlinedofindices[jele].size())
+          dserror("size mismatch! need to assemble %d column values of centerline-Dof based "
+              "stiffness matrix into element matrix but only got %d element-local Dof indices",
+              elestiff_centerlineDOFs[iele][jele].ColDim(), ele_centerlinedofindices[jele].size());
+
+        for (unsigned int idof=0; idof<ele_centerlinedofindices[iele].size(); ++idof)
+          for (unsigned int jdof=0; jdof<ele_centerlinedofindices[jele].size(); ++jdof)
+            ((*elestiff)[iele][jele])(ele_centerlinedofindices[iele][idof],ele_centerlinedofindices[jele][jdof]) =
+                elestiff_centerlineDOFs[iele][jele](idof,jdof);
       }
     }
   }
-}
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void AssembleCenterlineDofForceStiffIntoElementForceStiff(
-    std::vector< LINALG::SerialDenseVector > const& eleforce_centerlineDOFs,
-    std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elestiff_centerlineDOFs,
-    std::vector< LINALG::SerialDenseVector >& eleforce,
-    std::vector< std::vector< LINALG::SerialDenseMatrix > >& elestiff
-  )
-{
-  AssembleCenterlineDofForceIntoElementForce( eleforce_centerlineDOFs, eleforce );
-  AssembleCenterlineDofStiffIntoElementStiff( elestiff_centerlineDOFs, elestiff );
 }
 
 /*----------------------------------------------------------------------------*

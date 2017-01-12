@@ -1,5 +1,5 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ============================================================================
 General Data File CCARAT
@@ -18,21 +18,15 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
+STRUCT_DISP                     Yes
 FILESTEPS                       1000
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-RESULTSEVRY                     1000
-RESTARTEVRY                     1000
+RESULTSEVRY                     1
+RESTARTEVRY                     10
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         230
@@ -44,17 +38,15 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         30
-LOADLIN                         Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           1.0e5
 BEAMS_BTBLINEPENALTYPARAM       5.0e6
-BEAMS_NEWGAP                    No
 BEAMS_SEGCON                    Yes
-BEAMS_DEBUG                     Yes
 BEAMS_PERPSHIFTANGLE1           10
 BEAMS_PERPSHIFTANGLE2           30
 BEAMS_PARSHIFTANGLE1            10
@@ -65,10 +57,26 @@ BEAMS_PENALTYLAW                LinPosQuadPen
 BEAMS_PENREGPARAM_G0            0.005
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
-BEAMS_MAXDISISCALEFAC           0.3
-BEAMS_MAXDELTADISSCALEFAC       500.0
+
+// needed for beam_contact_manager only
+BEAMS_DEBUG                     No //Yes
+BEAMS_MAXDISISCALEFAC           -1.0
+BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   5
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -5 -5 -5 5 5 5
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         5
 NDLINE                          0

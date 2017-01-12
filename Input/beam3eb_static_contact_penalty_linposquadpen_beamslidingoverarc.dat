@@ -1,5 +1,5 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ==================================================================
 General Data File CCARAT
@@ -7,11 +7,7 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 test case that tests element segmentation in combination with large-angle-contact
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        4
-NODES                           6
 DIM                             3
-MATERIALS                       1
-NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 --------------------------------------------------------------DISCRETISATION
@@ -22,14 +18,8 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -41,9 +31,6 @@ DIVERCONT                       stop
 TIMESTEP                        0.1
 NUMSTEP                         18
 MAXTIME                         1.8
-DAMPING                         No
-M_DAMP                          0
-K_DAMP                          0
 PREDICT                         TangDis
 TOLRES                          1.0E-7
 TOLDISP                         1.0E-7
@@ -62,28 +49,43 @@ ALPHA_F                         0.5
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM CONTACT
-BEAMS_STRATEGY                  Penalty //Chosen beam contact strategy: penalty, none (default)
-BEAMS_BTBPENALTYPARAM           10000.0 //Penalty parameter for large-angle beam-to-beam contact
-BEAMS_BTBLINEPENALTYPARAM       0.0 //Penalty parameter for small-angle beam-to-beam contact
-BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)
-BEAMS_SEGCON                    Yes //Apply segment-based contact (beam3contact.cpp) or element-based contact (beam3contactnew.cpp)
-BEAMS_DEBUG                     Yes //This flag can be used for testing purposes. When it is switched on, some sanity checks are not performed
-BEAMS_PERPSHIFTANGLE1           0.001 //Lower shift angle (in degrees) for penalty scaling of large-angle-contact
-BEAMS_PERPSHIFTANGLE2           0.01  //Upper shift angle (in degrees) for penalty scaling of large-angle-contact
-BEAMS_PARSHIFTANGLE1            0.19  //Lower shift angle (in degrees) for penalty scaling of small-angle-contact
-BEAMS_PARSHIFTANGLE2            0.20  //Upper shift angle (in degrees) for penalty scaling of small-angle-contact
-BEAMS_SEGANGLE                  1.0 //Maximal angle deviation needed for contact search segmentation
-BEAMS_NUMINTEGRATIONINTERVAL    10 //Number of integration intervals per element
-BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3r elements)
-BEAMS_PENALTYLAW                LinPosQuadPen //Penalty Law: LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+MODELEVALUATOR                  Standard
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           10000.0
+BEAMS_BTBLINEPENALTYPARAM       0.0
+
+BEAMS_SEGCON                    Yes
+BEAMS_PERPSHIFTANGLE1           0.001
+BEAMS_PERPSHIFTANGLE2           0.01
+BEAMS_PARSHIFTANGLE1            0.19
+BEAMS_PARSHIFTANGLE2            0.20
+BEAMS_SEGANGLE                  1.0
+BEAMS_NUMINTEGRATIONINTERVAL    10
+BEAMS_PENALTYLAW                LinPosQuadPen
 BEAMS_PENREGPARAM_G0            0.001
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
-BEAMS_MAXDISISCALEFAC           0.1 //limit maximal allowed iterative displacement increment (=residual displacement) to a value of BEAMS_MAXDISISCALEFAC*Cross-section_radius (Default: 1.0)
-BEAMS_MAXDELTADISSCALEFAC       500.0 //limit maximal displacement per time step to BEAMS_MAXDELTADISSCALEFAC*Cross-section_radius (Default: -1.0=off)
-BEAMS_OCTREE                    none //octree search
-BEAMS_ADDITEXT                  Yes //Application of additive bounding box extrusion factor (Default: Yes); No -> Multiplicative extrision factor
-BEAMS_EXTVAL                    2.0 //Extrusion factor of bounding boxes
+
+
+// needed for beam_contact_manager only
+BEAMS_DEBUG                     No //Yes
+BEAMS_MAXDISISCALEFAC           -1.0
+BEAMS_MAXDELTADISSCALEFAC       -1.0
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    2.0
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   5
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -5 -5 -5 5 5 5
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          0

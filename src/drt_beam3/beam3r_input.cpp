@@ -35,6 +35,9 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   else
     centerline_hermite_=false;
 
+  // read whether automatic differentiation via Sacado::Fad package shall be used
+  useFAD_ = linedef->HaveNamed("FAD") ? true : false;
+
   // read number of material model and cross-section specs
   int material = 0;
   linedef->ExtractInt("MAT",material);

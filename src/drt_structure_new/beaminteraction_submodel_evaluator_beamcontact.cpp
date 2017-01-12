@@ -56,6 +56,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_contact_params_ptr_->Init();
   beam_contact_params_ptr_->Setup();
 
+  // Todo really needed here? maybe find better place
+  // ensure that contact is evaluated correctly at beginning of first time step (initial overlap)
+  nearby_elements_map_.clear();
+  FindAndStoreNeighboringElements();
+  CreateBeamToBeamContactElementPairs();
+
   // set flag
   issetup_ = true;
 }
@@ -71,55 +77,42 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    std::vector<double> ele1disp;
-    BIOPOLYNET::UTILS::GetCurrentElementDis(Discret(), elepairptr->Element1(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(),ele1disp);
+    std::vector<const DRT::Element*> element_ptr(2);
 
-    const DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(elepairptr->Element1());
+    element_ptr[0] = elepairptr->Element1();
+    element_ptr[1] = elepairptr->Element2();
 
-    unsigned int numcenterlinenodes = beamele1->NumCenterlineNodes();
-    unsigned int numnodalvalues =
-        beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+    // element Dof values relevant for centerline interpolation
+    std::vector< std::vector<double> > element_centerline_dofvec_absolutevalues(2);
 
-    // Todo use LINALG::SerialDenseVector
-    Epetra_SerialDenseVector ele1_centerline_dofvec(3*numcenterlinenodes*numnodalvalues);
-
-    // ToDo safety check
-    if (numcenterlinenodes!= 2 or numnodalvalues != 1)
-      dserror("stop here and do your homework! generalize this method for all types of beams");
-
-    LINALG::Matrix<3,1> nodalpos;
-
-    for (unsigned int inode=0; inode<numcenterlinenodes; ++inode)
+    for (unsigned int ielement=0; ielement<2; ++ielement)
     {
-      nodalpos.Clear();
-      beamele1->GetPosAtXi(nodalpos,-1.0+2*inode/(numcenterlinenodes-1),ele1disp);
+      std::vector<double> eledispvec;
 
-      for (unsigned int idim=0; idim<3; ++idim)
-        ele1_centerline_dofvec(3*numnodalvalues*inode+idim) = nodalpos(idim);
+      // extract the Dof values of this element from displacement vector
+      BIOPOLYNET::UTILS::GetCurrentElementDis(
+          Discret(),
+          element_ptr[ielement],
+          BeamInteractionDataStatePtr()->GetMutableDisColNp(),
+          eledispvec);
+
+      const DRT::ELEMENTS::Beam3Base* beam_element_ptr =
+          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element_ptr[ielement]);
+
+      // get the current absolute values for those Dofs relevant for centerline interpolation
+      // initial values are added by element itself
+      beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
+          eledispvec,
+          element_centerline_dofvec_absolutevalues[ielement],
+          true);
     }
 
-    std::vector<double> ele2disp;
-    BIOPOLYNET::UTILS::GetCurrentElementDis(Discret(), elepairptr->Element2(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(),ele2disp);
-
-    const DRT::ELEMENTS::Beam3Base* beamele2 =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(elepairptr->Element2());
-
-    Epetra_SerialDenseVector ele2_centerline_dofvec(3*numcenterlinenodes*numnodalvalues);
-
-    for (unsigned int inode=0; inode<numcenterlinenodes; ++inode)
-    {
-      nodalpos.Clear();
-      beamele2->GetPosAtXi(nodalpos,-1.0+2*inode/(numcenterlinenodes-1),ele2disp);
-
-      for (unsigned int idim=0; idim<3; ++idim)
-        ele2_centerline_dofvec(3*numnodalvalues*inode+idim) = nodalpos(idim);
-    }
-
-    elepairptr->ResetState(ele1_centerline_dofvec,ele2_centerline_dofvec);
+    // update the Dof values in the interaction element pair object
+    elepairptr->ResetState(
+        element_centerline_dofvec_absolutevalues[0],
+        element_centerline_dofvec_absolutevalues[1]);
   }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -140,44 +133,48 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   // element gids of interacting elements
   std::vector<int> elegids(2);
 
-  // Todo generalize this
-  std::vector<unsigned int> numdof_centerline_ele(2);
-  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
+  // are non-zero force values returned which need assembly?
+  bool pair_is_active = false;
 
-  std::vector<unsigned int> numdof_ele(2);
-  numdof_ele[0] = numdof_ele[1] = 12;
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    elegids[0] = elepairptr->Element1()->Id();
-    elegids[1] = elepairptr->Element2()->Id();
+    pair_is_active = elepairptr->Evaluate(
+        &eleforce_centerlineDOFs[0],
+        &eleforce_centerlineDOFs[1],
+        NULL,
+        NULL,
+        NULL,
+        NULL);
 
-    for(int i = 0; i < 2; ++i )
-      eleforce_centerlineDOFs[i].Size(numdof_centerline_ele[i]);
+    if (pair_is_active)
+    {
+      elegids[0] = elepairptr->Element1()->Id();
+      elegids[1] = elepairptr->Element2()->Id();
 
-    elepairptr->Evaluate( &eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
-        NULL, NULL,  NULL, NULL);
+      // assemble force vector affecting the centerline DoFs only
+      // into element force vector ('all DoFs' format, as usual)
+      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+          Discret(),
+          elegids,
+          eleforce_centerlineDOFs,
+          dummystiff,
+          &eleforce,
+          NULL);
 
-    // resize and clear values
-    for(int i = 0; i < 2; ++i )
-      eleforce[i].Size(numdof_ele[i]);
+      // Fixme
+      eleforce[0].Scale(-1.0);
+      eleforce[1].Scale(-1.0);
 
-    // assemble force vector and stiffness matrix affecting the centerline DoFs only
-    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-    BIOPOLYNET::UTILS::AssembleCenterlineDofForceIntoElementForce(
-        eleforce_centerlineDOFs, eleforce);
+      // assemble the contributions into force vector class variable
+      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+          eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
+    }
 
-    // Fixme
-    eleforce[0].Scale(-1.0);
-    eleforce[1].Scale(-1.0);
-
-    // assemble the contributions into force vector class variable
-    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
-        eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
   return true;
 }
@@ -201,42 +198,44 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   // element gids of interacting elements
   std::vector<int> elegids(2);
 
-  // Todo generalize this
-  std::vector<unsigned int> numdof_centerline_ele(2);
-  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
+  // are non-zero stiffness values returned which need assembly?
+  bool pair_is_active = false;
 
-  std::vector<unsigned int> numdof_ele(2);
-  numdof_ele[0] = numdof_ele[1] = 12;
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
 
-    elegids[0] = elepairptr->Element1()->Id();
-    elegids[1] = elepairptr->Element2()->Id();
+    pair_is_active = elepairptr->Evaluate(
+        NULL,
+        NULL,
+        &elestiff_centerlineDOFs[0][0],
+        &elestiff_centerlineDOFs[0][1],
+        &elestiff_centerlineDOFs[1][0],
+        &elestiff_centerlineDOFs[1][1]);
 
-    for(int i = 0; i < 2; ++i )
-      for(int j = 0; j < 2; ++j )
-        elestiff_centerlineDOFs[i][j].Shape(numdof_centerline_ele[i],numdof_centerline_ele[j]);
+    if (pair_is_active)
+    {
+      elegids[0] = elepairptr->Element1()->Id();
+      elegids[1] = elepairptr->Element2()->Id();
 
-    elepairptr->Evaluate( NULL,  NULL, &elestiff_centerlineDOFs[0][0],
-        &elestiff_centerlineDOFs[0][1], &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1]);
+      // assemble stiffness matrix affecting the centerline DoFs only
+      // into element stiffness matrix ('all DoFs' format, as usual)
+      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+          Discret(),
+          elegids,
+          dummyforce,
+          elestiff_centerlineDOFs,
+          NULL,
+          &elestiff);
 
-    // resize and clear values
-    for(int i = 0; i < 2; ++i )
-      for(int j = 0; j < 2; ++j )
-        elestiff[i][j].Shape(numdof_ele[i],numdof_ele[j]);
+      // assemble the contributions into force vector class variable
+      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+          elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
+    }
 
-    // assemble force vector and stiffness matrix affecting the centerline DoFs only
-    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-    BIOPOLYNET::UTILS::AssembleCenterlineDofStiffIntoElementStiff(
-        elestiff_centerlineDOFs, elestiff);
-
-    // assemble the contributions into force vector class variable
-    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
-        elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
   }
   return true;
 }
@@ -265,12 +264,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   // element gids of interacting elements
   std::vector<int> elegids(2);
 
-  // Todo generalize this
-  std::vector<unsigned int> numdof_centerline_ele(2);
-  numdof_centerline_ele[0] = numdof_centerline_ele[1] = 6;
+  // are non-zero stiffness values returned which need assembly?
+  bool pair_is_active = false;
 
-  std::vector<unsigned int> numdof_ele(2);
-  numdof_ele[0] = numdof_ele[1] = 12;
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
@@ -280,42 +276,44 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
     elegids[0] = elepairptr->Element1()->Id();
     elegids[1] = elepairptr->Element2()->Id();
 
-    for(int i = 0; i < 2; ++i )
-    {
-      eleforce_centerlineDOFs[i].Size(numdof_centerline_ele[i]);
+    pair_is_active = elepairptr->Evaluate(
+        &eleforce_centerlineDOFs[0],
+        &eleforce_centerlineDOFs[1],
+        &elestiff_centerlineDOFs[0][0],
+        &elestiff_centerlineDOFs[0][1],
+        &elestiff_centerlineDOFs[1][0],
+        &elestiff_centerlineDOFs[1][1] );
 
-      for(int j = 0; j < 2; ++j )
-        elestiff_centerlineDOFs[i][j].Shape(numdof_centerline_ele[i],numdof_centerline_ele[j]);
+    if (pair_is_active)
+    {
+      elegids[0] = elepairptr->Element1()->Id();
+      elegids[1] = elepairptr->Element2()->Id();
+
+      // assemble force vector and stiffness matrix affecting the centerline DoFs only
+      // into element force vector and stiffness matrix ('all DoFs' format, as usual)
+      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+          Discret(),
+          elegids,
+          eleforce_centerlineDOFs,
+          elestiff_centerlineDOFs,
+          &eleforce,
+          &elestiff);
+
+      // Fixme
+      eleforce[0].Scale(-1.0);
+      eleforce[1].Scale(-1.0);
+
+      // assemble the contributions into force vector class variable
+      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
+      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+          elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
+          BeamInteractionDataStatePtr()->GetMutableStiff() );
     }
 
-    elepairptr->Evaluate( &eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
-        &elestiff_centerlineDOFs[0][0], &elestiff_centerlineDOFs[0][1],
-        &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1] );
-
-    // resize and clear values
-    for(int i = 0; i < 2; ++i )
-    {
-      eleforce[i].Size( numdof_ele[i] );
-
-      for(int j = 0; j < 2; ++j )
-        elestiff[i][j].Shape( numdof_ele[i], numdof_ele[j] );
-    }
-
-    // assemble force vector and stiffness matrix affecting the centerline DoFs only
-    // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-    BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-        eleforce_centerlineDOFs, elestiff_centerlineDOFs, eleforce, elestiff );
-
-    // Fixme
-    eleforce[0].Scale(-1.0);
-    eleforce[1].Scale(-1.0);
-
-    // assemble the contributions into force vector class variable
-    // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
-        elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff() );
   }
+
+//  PrintActiveBeamToBeamContactSet(std::cout);
+
   return true;
 }
 
@@ -343,10 +341,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement()
 {
   CheckInitSetup();
 
+//  PrintActiveBeamToBeamContactSet(std::cout);
+
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamToBeamContactElementPairs();
-
 
 }
 
@@ -481,16 +480,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     const int elegid = nearbyeleiter->first;
     const DRT::Element* firsteleptr = DiscretPtr()->gElement(elegid);
 
+    const DRT::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(firsteleptr);
+
+    // at the moment, both elements of a beam contact pair must be of same type Todo
+    const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
+    const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+
     std::set<DRT::Element*>::const_iterator secondeleiter;
     for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
     {
       const DRT::Element* secondeleptr = *secondeleiter;
 
-      const unsigned int numnodes = 2;
-      const unsigned int numnodalvalues =1;
-
       Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> newbeaminteractionpair =
-          BEAMINTERACTION::BeamToBeamInteraction::Create(numnodes,numnodalvalues);
+          BEAMINTERACTION::BeamToBeamInteraction::Create(numnodes_centerline,numnodalvalues);
 
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_,
@@ -527,7 +530,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     PrintActiveBeamToBeamContactSet( std::ostream& out ) const
 {
-  out << "\n    Active BeamToBeam Contact Set:------------------------------------------------\n";
+  out << "\n    Active BeamToBeam Contact Set (PID " << GState().GetMyRank() << "):-----------------------------------------\n";
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;

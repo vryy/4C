@@ -591,6 +591,46 @@ public:
     return;
   }
 
+  /** \brief get element local indices of those Dofs that are used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 12/16 */
+  virtual inline void CenterlineDofIndicesOfElement(std::vector<unsigned int>& centerlinedofindices) const
+  {
+    centerlinedofindices.resize(12,0);
+
+    for (unsigned int idof=0; idof<12; ++idof)
+      centerlinedofindices[idof] = idof;
+  }
+
+  /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual inline void ExtractCenterlineDofValuesFromElementStateVector(
+      const std::vector<double>& dofvec,
+      std::vector<double>&       dofvec_centerline,
+      bool                       add_reference_values=false) const
+  {
+    if (dofvec.size() != 12)
+      dserror("size mismatch: expected 12 values for element state vector and got %d", dofvec.size());
+
+    dofvec_centerline.resize(12,0.0);
+    std::copy(dofvec.begin(), dofvec.end(), dofvec_centerline.begin());
+
+    if (add_reference_values)
+    {
+      for (unsigned int dim=0; dim<3; ++dim)
+        for (unsigned int node=0; node<2; ++node)
+        {
+          dofvec_centerline[6*node+dim] += Nodes()[node]->X()[dim];
+
+          // Hermite interpolation: add reference values for tangent DOFs as well
+          dofvec_centerline[6*node+3+dim] += Tref_[node](dim);
+        }
+    }
+  }
+
 private:
 
   //! vector storing the internal force vector

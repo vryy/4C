@@ -354,23 +354,25 @@ double BEAMCONTACT::CalcPointLineDist( LINALG::TMatrix<double,3,1>& rline_a,  //
 /*----------------------------------------------------------------------*
  |  Calculate angle enclosed by two vectors a and b          meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcAngle(LINALG::TMatrix<double,3,1> a, LINALG::TMatrix<double,3,1> b)
+double BEAMCONTACT::CalcAngle(
+    LINALG::TMatrix<double,3,1> a,
+    LINALG::TMatrix<double,3,1> b)
 {
 
   if(FADUTILS::VectorNorm<3>(a)<1.0e-12 or FADUTILS::VectorNorm<3>(b)<1.0e-12)
     dserror("Can not determine angle for zero vector!");
 
-  double scalarproduct=fabs(FADUTILS::ScalarProduct(a,b)/(FADUTILS::VectorNorm<3>(a)*FADUTILS::VectorNorm<3>(b)));
+  double scalarproduct=std::fabs(FADUTILS::ScalarProduct(a,b)/(FADUTILS::VectorNorm<3>(a)*FADUTILS::VectorNorm<3>(b)));
   double angle=0.0;
 
   if(scalarproduct<1.0)
-    angle=acos(scalarproduct); //returns an angle \in [0;pi/2] since scalarproduct \in [0;1.0]
+    angle=std::acos(scalarproduct); //returns an angle \in [0;pi/2] since scalarproduct \in [0;1.0]
   else
-    angle=0; //This step is necessary due to round-off errors. However, the derivative information of the FAD quantity gets lost here!
+    angle=0.0; //This step is necessary due to round-off errors. However, the derivative information of the FAD quantity gets lost here!
 
   //We want an angle \in [0;pi/2] in each case:
   if (angle>M_PI/2.0)
-    dserror("Something went wrong here, angle should be in the intervall [0;pi/2]!");
+    dserror("Something went wrong here, angle should be in the interval [0;pi/2]!");
 
   return angle;
 }

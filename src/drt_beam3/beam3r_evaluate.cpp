@@ -699,7 +699,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     Epetra_SerialDenseVector* force,
     Epetra_SerialDenseVector* inertia_force)
 {
-  //************ statmech periodic boundary conditions **********************
+  //************ periodic boundary conditions **********************
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
@@ -707,15 +707,17 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
    * style, i.e. initial values + displacements */
-  LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+  LINALG::TMatrix<double,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
 
   // quaternions of all nodal triads
-  std::vector<LINALG::TMatrix<FADordouble,4,1> > Qnode(nnodetriad);
+  std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
 
-  // update disp_totlag
-  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,FADordouble>(disp,disp_totlag_centerline,Qnode);
+  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(
+      disp,
+      disp_totlag_centerline,
+      Qnode);
 
-  CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,FADordouble>(
+  CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode>(
       disp_totlag_centerline,
       Qnode,
       stiffmatrix,
@@ -726,14 +728,97 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
+    LINALG::TMatrix<double,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+    std::vector<LINALG::TMatrix<double,4,1> >&    Qnode,
+    Epetra_SerialDenseMatrix*                     stiffmatrix,
+    Epetra_SerialDenseMatrix*                     massmatrix,
+    Epetra_SerialDenseVector*                     force,
+    Epetra_SerialDenseVector*                     inertia_force)
+{
+  const unsigned int numdofelement = 3*vpernode*nnodecl + 3*nnodetriad;
+
+  if (not useFAD_)
+  {
+    // internal force vector
+    LINALG::TMatrix<double, numdofelement, 1> internal_force(true);
+
+    CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,double>(
+        disp_totlag_centerline,
+        Qnode,
+        stiffmatrix,
+        massmatrix,
+        internal_force,
+        inertia_force);
+
+    if (force != NULL)
+    {
+      for (unsigned int i=0; i<numdofelement; ++i)
+        (*force)(i) = internal_force(i);
+      // Todo check this alternative
+//      std::copy(&internal_force[0], &internal_force[numdofelement], force);
+      // maybe even set view on Epetra_SerialDenseVector force
+    }
+  }
+  else
+  {
+    // internal force vector
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, numdofelement, 1> internal_force(true);
+
+    /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
+     * style, i.e. initial values + displacements */
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3*vpernode*nnodecl,1> disp_totlag_centerline_FAD;
+
+    for (unsigned int i=0; i<3*vpernode*nnodecl; ++i)
+      disp_totlag_centerline_FAD(i) = disp_totlag_centerline(i);
+
+    // quaternions of all nodal triads
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> > Qnode_FAD(nnodetriad);
+
+    for (unsigned int inode=0; inode<nnodetriad; ++inode)
+      for (unsigned int j=0; j<4; ++j)
+        Qnode_FAD[inode](j) = Qnode[inode](j);
+
+    SetAutomaticDifferentiationVariables<nnodetriad,nnodecl,vpernode>(
+        disp_totlag_centerline_FAD,
+        Qnode_FAD);
+
+    CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,Sacado::Fad::DFad<double> >(
+        disp_totlag_centerline_FAD,
+        Qnode_FAD,
+        NULL,
+        massmatrix,
+        internal_force,
+        inertia_force);
+
+    if (force != NULL)
+    {
+      for (unsigned int i=0; i<numdofelement; ++i)
+        (*force)(i)= FADUTILS::CastToDouble(internal_force(i));
+    }
+
+    if (stiffmatrix != NULL)
+    {
+      CalcStiffmatAutomaticDifferentiation<nnodetriad,nnodecl,vpernode>(
+          *stiffmatrix,
+          Qnode,
+          internal_force);
+    }
+  }
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
-    LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<T,4,1> >&    Qnode,
-    Epetra_SerialDenseMatrix*                stiffmatrix,
-    Epetra_SerialDenseMatrix*                massmatrix,
-    Epetra_SerialDenseVector*                force,
-    Epetra_SerialDenseVector*                inertia_force)
+    LINALG::TMatrix<T,3*vpernode*nnodecl,1>&                disp_totlag_centerline,   // Todo think about adding const qualifiers here
+    std::vector<LINALG::TMatrix<T,4,1> >&                   Qnode,
+    Epetra_SerialDenseMatrix*                               stiffmatrix,
+    Epetra_SerialDenseMatrix*                               massmatrix,
+    LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force,
+    Epetra_SerialDenseVector*                               inertia_force)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -748,15 +833,12 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   const int dofpertriadnode = 3;
   const int dofpercombinode = dofperclnode+dofpertriadnode;
 
-  // internal force vector
-  LINALG::TMatrix<FADordouble, dofperclnode*nnodecl+dofpertriadnode*nnodetriad, 1> f_int(true);
-
   // reference triad Lambda_r and corresponding quaternion Q_r
-  LINALG::TMatrix<FADordouble,3,3> Lambda_r(true);
-  LINALG::TMatrix<FADordouble,4,1> Q_r(true);
+  LINALG::TMatrix<T,3,3> Lambda_r(true);
+  LINALG::TMatrix<T,4,1> Q_r(true);
 
   // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> Phi_IJ(true);
+  LINALG::TMatrix<T,3,1> Phi_IJ(true);
 
   // clear internal (elastic) energy
   Eint_=0.0;
@@ -764,38 +846,38 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   //**************************************** nodal quantities *******************************************
 
   // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
-  std::vector<LINALG::TMatrix<FADordouble,3,1> > Psi_li(nnodetriad);
+  std::vector<LINALG::TMatrix<T,3,1> > Psi_li(nnodetriad);
 
   //*************************** physical quantities evaluated at a certain GP ***************************
 
   // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> r_s;
+  LINALG::TMatrix<T,3,1> r_s;
   // spin matrix related to vector r_s
-  LINALG::TMatrix<FADordouble,3,3> r_s_hat;
+  LINALG::TMatrix<T,3,3> r_s_hat;
   // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> Psi_l;
+  LINALG::TMatrix<T,3,1> Psi_l;
   /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length parameter
    * at a certain Gauss point according to (3.11), Jelenic 1999*/
-  LINALG::TMatrix<FADordouble,3,1> Psi_l_s;
+  LINALG::TMatrix<T,3,1> Psi_l_s;
   // triad at GP
-  LINALG::TMatrix<FADordouble,3,3> Lambda;
+  LINALG::TMatrix<T,3,3> Lambda;
 
   // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> K;
+  LINALG::TMatrix<T,3,1> K;
   // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> Gamma;
+  LINALG::TMatrix<T,3,1> Gamma;
 
   // convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> stressN;
-  LINALG::TMatrix<FADordouble,3,1> stressM;
-  LINALG::TMatrix<FADordouble,3,3> CN;
-  LINALG::TMatrix<FADordouble,3,3> CM;
+  LINALG::TMatrix<T,3,1> stressN;
+  LINALG::TMatrix<T,3,1> stressM;
+  LINALG::TMatrix<T,3,3> CN;
+  LINALG::TMatrix<T,3,3> CM;
 
   // spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> stressn;
-  LINALG::TMatrix<FADordouble,3,1> stressm;
-  LINALG::TMatrix<FADordouble,3,3> cn;
-  LINALG::TMatrix<FADordouble,3,3> cm;
+  LINALG::TMatrix<T,3,1> stressn;
+  LINALG::TMatrix<T,3,1> stressm;
+  LINALG::TMatrix<T,3,3> cn;
+  LINALG::TMatrix<T,3,3> cm;
 
   //********************************** (generalized) shape functions ************************************
   /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
@@ -813,27 +895,22 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   // same for the derivatives
   std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i_xi;
 
-  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
-  std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
-
-  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at a certain Gauss point according to (3.19), Jelenic 1999
-  std::vector<LINALG::TMatrix<double,3,3> > Itildeprime(nnodetriad);
 
   /*************************** update/compute quantities valid for entire element **********************
    *****************************************************************************************************/
 
   // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion<FADordouble>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
+  CalcRefQuaternion<T>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
   LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
 
   // setup constitutive matrices
-  GetConstitutiveMatrices<FADordouble>(CN,CM);
+  GetConstitutiveMatrices<T>(CN,CM);
 
   /* compute nodal local rotations according to (3.8), Jelenic 1999
    * this is done individually for each node in order to avoid function argument std::vector<LINALG::TMatrix<...> >
    * a function with this argument type cannot be called with an argument of type std::vector<LINALG::Matrix<...> > (needed e.g. in SetUpReferenceGeometry) */
   for (unsigned int node=0; node<nnodetriad; ++node)
-    CalcPsi_li<FADordouble>(Qnode[node],Q_r,Psi_li[node]);
+    CalcPsi_li<T>(Qnode[node],Q_r,Psi_li[node]);
 
   /******************************* elasticity: compute fint and stiffmatrix ****************************
    *****************************************************************************************************/
@@ -860,23 +937,23 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_force.qwgt[numgp];
 
-    Calc_r_s<nnodecl,vpernode,FADordouble>(disp_totlag_centerline, H_i_xi[numgp], jacobiGPelastf_[numgp], r_s);
+    Calc_r_s<nnodecl,vpernode,T>(disp_totlag_centerline, H_i_xi[numgp], jacobiGPelastf_[numgp], r_s);
 
-    Calc_Psi_l<nnodetriad,FADordouble>(Psi_li, I_i[numgp], Psi_l);
-    Calc_Lambda<FADordouble>(Psi_l,Q_r,Lambda);
+    Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[numgp], Psi_l);
+    Calc_Lambda<T>(Psi_l,Q_r,Lambda);
 
     // compute spin matrix related to vector rprime for later use
-    LARGEROTATIONS::computespin<FADordouble>(r_s_hat,r_s);
+    LARGEROTATIONS::computespin<T>(r_s_hat,r_s);
 
     // compute material strains Gamma and K
-    computeGamma<FADordouble>(r_s,Lambda,GammarefGP_[numgp],Gamma);
+    computeGamma<T>(r_s,Lambda,GammarefGP_[numgp],Gamma);
 
     // compute material stresses by multiplying strains with constitutive matrix
     stressN.Multiply(CN,Gamma);
 
     /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      * between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<FADordouble>(Lambda,stressN,CN,stressn,cn);
+    pushforward<T>(Lambda,stressN,CN,stressn,cn);
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
      * to single blocks of matrix in eq. (4.3)*/
@@ -888,174 +965,40 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
        *       which can be computed from I_i_xi by multiplication with the inverse determinant: I^{i'}=I_i_s=I_i_xi*(dxi/ds) */
       for (int k=0; k<3; ++k)
       {
-        f_int(dofpercombinode*node+k) += H_i_xi[numgp](vpernode*node)*stressn(k)*wgt;
+        internal_force(dofpercombinode*node+k) += H_i_xi[numgp](vpernode*node)*stressn(k)*wgt;
         if (centerline_hermite_)
-          f_int(dofpercombinode*node+6+k) += H_i_xi[numgp](vpernode*node+1)*stressn(k)*wgt;
+          internal_force(dofpercombinode*node+6+k) += H_i_xi[numgp](vpernode*node+1)*stressn(k)*wgt;
       }
 
       // lower left block
       for (int i=0; i<3; ++i)
         for (int j=0; j<3; ++j)
-          f_int(dofpercombinode*node+3+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
+          internal_force(dofpercombinode*node+3+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
     }
     for (unsigned int node=nnodecl; node<nnodetriad; ++node)    // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower left block
       for (int i=0; i<3; ++i)
         for (int j=0; j<3; ++j)
-          f_int(dofperclnode*nnodecl+dofpertriadnode*node+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
+          internal_force(dofperclnode*nnodecl+dofpertriadnode*node+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
     }
-
-#ifndef BEAM3RAUTOMATICDIFF
 
     if (stiffmatrix != NULL)
     {
-      computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[numgp]);
-
-      /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
-       * to single blocks of matrix in eq. (4.7).
-       * note: again, jacobi factor cancels out in terms whith I^{i'}=I_i_s=I_i_xi*(dxi/ds) (see comment above)
-       *       but be careful: Itildeprime and rprime are indeed derivatives with respect to arc-length parameter in reference configuration s */
-
-      // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
-      LINALG::Matrix<3,3> auxmatrix1;
-      LINALG::Matrix<3,3> auxmatrix2;
-      LINALG::Matrix<3,3> auxmatrix3;
-
-      for (unsigned int nodei=0; nodei<nnodecl; nodei++)
-      {
-        for (unsigned int nodej=0; nodej<nnodecl; nodej++)
-        {
-          // upper left block
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-            {
-              (*stiffmatrix)(dofpercombinode*nodei+i,dofpercombinode*nodej+j) += H_i_xi[numgp](vpernode*nodei)*H_i_xi[numgp](vpernode*nodej)*cn(i,j)*wgt/jacobiGPelastf_[numgp];
-              if (centerline_hermite_)
-              {
-                (*stiffmatrix)(dofpercombinode*nodei+6+i,dofpercombinode*nodej+j) += H_i_xi[numgp](vpernode*nodei+1)*H_i_xi[numgp](vpernode*nodej)*cn(i,j)*wgt/jacobiGPelastf_[numgp];
-                (*stiffmatrix)(dofpercombinode*nodei+i,dofpercombinode*nodej+6+j) += H_i_xi[numgp](vpernode*nodei)*H_i_xi[numgp](vpernode*nodej+1)*cn(i,j)*wgt/jacobiGPelastf_[numgp];
-                (*stiffmatrix)(dofpercombinode*nodei+6+i,dofpercombinode*nodej+6+j) += H_i_xi[numgp](vpernode*nodei+1)*H_i_xi[numgp](vpernode*nodej+1)*cn(i,j)*wgt/jacobiGPelastf_[numgp];
-              }
-            }
-
-          // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i instead of I^j
-          auxmatrix2.Multiply(r_s_hat,cn);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix1 -= auxmatrix2;
-          auxmatrix1.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-            {
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi[numgp](vpernode*nodej)*wgt;
-              if (centerline_hermite_)
-                (*stiffmatrix)(dofpercombinode*nodei+3+i,dofpercombinode*nodej+6+j) += auxmatrix1(i,j)*H_i_xi[numgp](vpernode*nodej+1)*wgt;
-            }
-
-          // upper right block
-          auxmatrix2.Multiply(cn,r_s_hat);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
-
-          auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-            {
-              (*stiffmatrix)(dofpercombinode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix3(i,j)*H_i_xi[numgp](vpernode*nodei)*wgt;
-              if (centerline_hermite_)
-                (*stiffmatrix)(dofpercombinode*nodei+6+i,dofpercombinode*nodej+3+j) += auxmatrix3(i,j)*H_i_xi[numgp](vpernode*nodei+1)*wgt;
-            }
-
-          // lower right block
-          // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
-
-          auxmatrix3.Multiply(r_s_hat,auxmatrix1);
-          auxmatrix3.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobiGPelastf_[numgp]*wgt;
-
-        }
-        for (unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)    // this loop is only entered in case of nnodetriad>nnodecl
-        {
-          // upper right block
-          auxmatrix2.Multiply(cn,r_s_hat);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
-
-          auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-            {
-              (*stiffmatrix)(dofpercombinode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix3(i,j)*H_i_xi[numgp](vpernode*nodei)*wgt;
-              if (centerline_hermite_)
-                (*stiffmatrix)(dofpercombinode*nodei+6+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix3(i,j)*H_i_xi[numgp](vpernode*nodei+1)*wgt;
-            }
-
-          // lower right block
-          // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
-
-          auxmatrix3.Multiply(r_s_hat,auxmatrix1);
-          auxmatrix3.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobiGPelastf_[numgp]*wgt;
-        }
-      }
-      for (unsigned int nodei=nnodecl; nodei<nnodetriad; nodei++)    // this loop is only entered in case of nnodetriad>nnodecl
-      {
-        for (unsigned int nodej=0; nodej<nnodecl; nodej++)
-        {
-          // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i instead of I^j
-          auxmatrix2.Multiply(r_s_hat,cn);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix1 -= auxmatrix2;
-          auxmatrix1.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-            {
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi[numgp](vpernode*nodej)*wgt;
-              if (centerline_hermite_)
-                (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+6+j) += auxmatrix1(i,j)*H_i_xi[numgp](vpernode*nodej+1)*wgt;
-            }
-
-          // lower right block
-          // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
-          auxmatrix2.Multiply(cn,r_s_hat);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
-
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
-
-          auxmatrix3.Multiply(r_s_hat,auxmatrix1);
-          auxmatrix3.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobiGPelastf_[numgp]*wgt;
-
-        }
-        for (unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)
-        {
-          // lower right block
-          // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
-          auxmatrix2.Multiply(cn,r_s_hat);
-          LARGEROTATIONS::computespin(auxmatrix1,stressn);
-          auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
-
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
-
-          auxmatrix3.Multiply(r_s_hat,auxmatrix1);
-          auxmatrix3.Scale(I_i[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobiGPelastf_[numgp]*wgt;
-        }
-      }
-
-    } // if (stiffmatrix != NULL)
-#endif
+      CalcStiffmatAnalyticForceContributions<nnodetriad,nnodecl,vpernode>(
+          *stiffmatrix,
+          stressn,
+          cn,
+          r_s_hat,
+          Psi_l,
+          Phi_IJ,
+          Lambda_r,
+          Psi_li,
+          I_i[numgp],
+          H_i_xi[numgp],
+          wgt,
+          jacobiGPelastf_[numgp]);
+    }
 
 
     // add elastic energy from forces at this GP
@@ -1064,7 +1007,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
       Eint_ += 0.5 * FADUTILS::CastToDouble(Gamma(dim)) * FADUTILS::CastToDouble(stressN(dim)) *jacobiGPelastf_[numgp]*wgt;
     }
 
-  }//for(int numgp=0; numgp < gausspoints_elast_force.nquad; numgp++)
+  }
 
 
   //************************* residual and stiffmatrix contributions from moments ***********************
@@ -1088,12 +1031,12 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_moment.qwgt[numgp];
 
-    Calc_Psi_l<nnodetriad,FADordouble>(Psi_li, I_i[numgp], Psi_l);
-    Calc_Psi_l_s<nnodetriad,FADordouble>(Psi_li, I_i_xi[numgp], jacobiGPelastm_[numgp], Psi_l_s);
-    Calc_Lambda<FADordouble>(Psi_l,Q_r,Lambda);
+    Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[numgp], Psi_l);
+    Calc_Psi_l_s<nnodetriad,T>(Psi_li, I_i_xi[numgp], jacobiGPelastm_[numgp], Psi_l_s);
+    Calc_Lambda<T>(Psi_l,Q_r,Lambda);
 
     // compute material curvature K
-    computeK<FADordouble>(Psi_l,Psi_l_s,KrefGP_[numgp],K);
+    computeK<T>(Psi_l,Psi_l_s,KrefGP_[numgp],K);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
     double Kmax = std::sqrt(FADUTILS::CastToDouble(K(1))*FADUTILS::CastToDouble(K(1)) + FADUTILS::CastToDouble(K(2))*FADUTILS::CastToDouble(K(2)) );
@@ -1105,7 +1048,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
     /* compute spatial stresses and constitutive matrix from material ones according to Jelenic 1999, page 148, paragraph
      * between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<FADordouble>(Lambda,stressM,CM,stressm,cm);
+    pushforward<T>(Lambda,stressM,CM,stressm,cm);
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
      * to single blocks of matrix in eq. (4.3)*/
@@ -1113,110 +1056,32 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     {
       // lower right block
       for (int i=0; i<3; ++i)
-        f_int(dofpercombinode*node+3+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
+        internal_force(dofpercombinode*node+3+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
     }
     for (unsigned int node=nnodecl; node<nnodetriad; ++node)    // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower right block
       for (int i=0; i<3; ++i)
-        f_int(dofperclnode*nnodecl+dofpertriadnode*node+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
+        internal_force(dofperclnode*nnodecl+dofpertriadnode*node+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
     }
 
-#ifndef BEAM3RAUTOMATICDIFF
 
     if (stiffmatrix != NULL)
     {
-      computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[numgp]);
-      computeItildeprime<nnodetriad,double>(Psi_l,Psi_l_s,Itildeprime,Phi_IJ,Lambda_r,Psi_li,I_i[numgp],I_i_xi[numgp],jacobiGPelastm_[numgp]);
-
-      /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7)*/
-
-      // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
-      LINALG::Matrix<3,3> auxmatrix1;
-      LINALG::Matrix<3,3> auxmatrix2;
-
-      for(unsigned int nodei=0; nodei<nnodecl; nodei++)
-      {
-        for(unsigned int nodej=0; nodej<nnodecl; nodej++)
-        {
-          // lower right block
-          // first summand
-          auxmatrix1.Multiply(cm,Itildeprime[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
-
-          // second summand
-          LARGEROTATIONS::computespin(auxmatrix2,stressm);
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
-        }
-        for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)    // this loop is only entered in case of nnodetriad>nnodecl
-        {
-          // lower right block
-          // first summand
-          auxmatrix1.Multiply(cm,Itildeprime[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
-
-          // second summand
-          LARGEROTATIONS::computespin(auxmatrix2,stressm);
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
-        }
-      }
-
-      for(unsigned int nodei=nnodecl; nodei<nnodetriad; nodei++)    // this loop is only entered in case of nnodetriad>nnodecl
-      {
-        for(unsigned int nodej=0; nodej<nnodecl; nodej++)
-        {
-          // lower right block
-          // first summand
-          auxmatrix1.Multiply(cm,Itildeprime[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
-
-          // second summand
-          LARGEROTATIONS::computespin(auxmatrix2,stressm);
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
-        }
-        for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)
-        {
-          // lower right block
-          // first summand
-          auxmatrix1.Multiply(cm,Itildeprime[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
-
-          // second summand
-          LARGEROTATIONS::computespin(auxmatrix2,stressm);
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
-          auxmatrix1.Scale(I_i_xi[numgp](nodei));
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
-        }
-      }
-
-    }//if (stiffmatrix != NULL)
-#endif
+      CalcStiffmatAnalyticMomentContributions<nnodetriad,nnodecl,vpernode>(
+          *stiffmatrix,
+          stressm,
+          cm,
+          Psi_l,
+          Psi_l_s,
+          Phi_IJ,
+          Lambda_r,
+          Psi_li,
+          I_i[numgp],
+          I_i_xi[numgp],
+          wgt,
+          jacobiGPelastm_[numgp]);
+    }
 
     // add elastic energy from moments at this GP
     for(int dim=0; dim<3; dim++)
@@ -1224,175 +1089,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
       Eint_ += 0.5 * FADUTILS::CastToDouble(K(dim)) * FADUTILS::CastToDouble(stressM(dim)) *jacobiGPelastm_[numgp]*wgt;
     }
 
-  }//for(int numgp=0; numgp < gausspoints_elast_moment.nquad; numgp++)
-
-  if(force!=NULL)
-  {
-    for (unsigned int i=0; i<dofperclnode*nnodecl+dofpertriadnode*nnodetriad; i++)
-    {
-      (*force)(i)= FADUTILS::CastToDouble(f_int(i));
-    }
   }
 
-#ifdef BEAM3RAUTOMATICDIFF
-
-  if (stiffmatrix != NULL)
-  {
-    // compute stiffness matrix with FAD
-    for (unsigned int i=0; i<dofperclnode*nnodecl+dofpertriadnode*nnodetriad; i++)
-    {
-      for (unsigned int j=0; j<dofperclnode*nnodecl+dofpertriadnode*nnodetriad; j++)
-      {
-        (*stiffmatrix)(i,j)=f_int(i).dx(j);
-      }
-    }
-
-    /* we need to transform the stiffmatrix because its entries are derivatives with respect to additive rotational increments
-     * we want a stiffmatrix containing derivatives with respect to multiplicative rotational increments
-     * therefore apply a trafo matrix to all those 3x3 blocks in stiffmatrix which correspond to derivation with respect to rotational DOFs
-     * the trafo matrix is simply the T-Matrix (see Jelenic1999, (2.4)): \Delta_{mult} \vec \theta_{inode} = \mat T(\vec \theta_{inode} * \Delta_{addit} \vec \theta_{inode}*/
-
-    LINALG::TMatrix<FAD,3,3> tempmat(true);
-    LINALG::TMatrix<FAD,3,3> newstiffmat(true);
-    LINALG::TMatrix<FAD,3,3> Tmat(true);
-    LINALG::TMatrix<FAD,3,1> theta_totlag_j(true);
-
-    for (unsigned int jnode=0; jnode<nnodecl; jnode++)
-    {
-      // compute physical total angle theta_totlag
-      LARGEROTATIONS::quaterniontoangle(Q_i[jnode],theta_totlag_j);
-
-      // compute Tmatrix of theta_totlag_i
-      Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
-
-      for (unsigned int inode=0; inode<nnodecl; inode++)
-      {
-        // block1: derivative of nodal positions with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+i,dofpercombinode*jnode+3+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofpercombinode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j).val();
-
-        // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j).val();
-
-        // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
-        if(centerline_hermite_)
-        {
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j);
-
-          newstiffmat.Clear();
-          newstiffmat.MultiplyNN(tempmat,Tmat);
-
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j).val();
-        }
-
-      }
-      for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
-      {
-        // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j).val();
-
-      }
-    }
-
-    for (unsigned int jnode=nnodecl; jnode<nnodetriad; jnode++)    // this loop is only entered in case of nnodetriad>nnodecl
-    {
-      // compute physical total angle theta_totlag
-      LARGEROTATIONS::quaterniontoangle(Q_i[jnode],theta_totlag_j);
-
-      // compute Tmatrix of theta_totlag_i
-      Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
-
-      for (unsigned int inode=0; inode<nnodecl; inode++)
-      {
-        // block1: derivative of nodal positions with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j).val();
-
-        // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j).val();
-
-        // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
-        if(centerline_hermite_)
-        {
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              tempmat(i,j) = (*stiffmatrix)(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
-
-          newstiffmat.Clear();
-          newstiffmat.MultiplyNN(tempmat,Tmat);
-
-          for (int i=0; i<3; ++i)
-            for (int j=0; j<3; ++j)
-              (*stiffmatrix)(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j).val();
-        }
-
-      }
-      for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)
-      {
-        // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            tempmat(i,j) = (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
-
-        newstiffmat.Clear();
-        newstiffmat.MultiplyNN(tempmat,Tmat);
-
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
-            (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j).val();
-
-      }
-    }
-
-  }
-#endif
 
 
   /******************************* inertia: compute fint and massmatrix ********************************
@@ -1471,13 +1169,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // Calculate current centerline position at gauss points (needed for element intern time integration)
     for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
       Calc_r<nnodecl,vpernode,double>(
-          FADUTILS::CastToDouble<FADordouble,3*vpernode*nnodecl,1>(disp_totlag_centerline),
+          FADUTILS::CastToDouble<T,3*vpernode*nnodecl,1>(disp_totlag_centerline),
           H_i[gp],
           rnewGPmass_[gp]);
 
     Ekin_=0.0;
     L_=0.0;
     P_=0.0;
+
+    // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
+    std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
 
     for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
     {
@@ -1490,8 +1191,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
       LINALG::Matrix<3,1> dL(true);
 
       // update quaternions at GPs for exact Gauss quadrature
-      Calc_Psi_l<nnodetriad,FADordouble>(Psi_li, I_i[gp], Psi_l);
-      Calc_Qgauss<double>(FADUTILS::CastToDouble<FADordouble,3,1>(Psi_l),FADUTILS::CastToDouble<FADordouble,4,1>(Q_r),QnewGPmass_[gp]);
+      Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[gp], Psi_l);
+      Calc_Qgauss<double>(FADUTILS::CastToDouble<T,3,1>(Psi_l),FADUTILS::CastToDouble<T,4,1>(Q_r),QnewGPmass_[gp]);
       computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[gp]);
 
       Lambdanewmass.Clear();
@@ -1502,7 +1203,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
       // rotation between last converged position and current position expressed as a quaternion
       LINALG::Matrix<4,1>  deltaQ(true);
-      LARGEROTATIONS::quaternionproduct<double>(LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]),QnewGPmass_[gp],deltaQ);
+      LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]),QnewGPmass_[gp],deltaQ);
 
       // spatial rotation between last converged position and current position expressed as a three element rotation vector
       LINALG::Matrix<3,1> deltatheta(true);
@@ -1728,6 +1429,461 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
+    Epetra_SerialDenseMatrix&                              stiffmatrix,
+    const LINALG::TMatrix<double,3,1>&                     stressn,
+    const LINALG::TMatrix<double,3,3>&                     cn,
+    const LINALG::TMatrix<double,3,3>&                     r_s_hat,
+    const LINALG::TMatrix<double,3,1>&                     Psi_l,
+    const LINALG::TMatrix<double,3,1>&                     Phi_IJ,
+    const LINALG::TMatrix<double,3,3>&                     Lambda_r,
+    const std::vector<LINALG::TMatrix<double,3,1> >&       Psi_li,
+    const LINALG::TMatrix<double,1,nnodetriad>&            I_i,
+    const LINALG::TMatrix<double,1,vpernode*nnodecl>&      H_i_xi,
+    const double                                           wgt,
+    const double                                           jacobifactor) const
+{
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
+   * to single blocks of matrix in eq. (4.7).
+   * note: again, jacobi factor cancels out in terms whith I^{i'}=I_i_s=I_i_xi*(dxi/ds) (see comment above)
+   *       but be careful: Itildeprime and rprime are indeed derivatives with respect to arc-length parameter in reference configuration s */
+
+  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+
+  computeItilde<nnodetriad,double>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i);
+
+  // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
+  LINALG::TMatrix<double,3,3> auxmatrix1;
+  LINALG::TMatrix<double,3,3> auxmatrix2;
+  LINALG::TMatrix<double,3,3> auxmatrix3;
+
+  for (unsigned int nodei=0; nodei<nnodecl; nodei++)
+  {
+    for (unsigned int nodej=0; nodej<nnodecl; nodej++)
+    {
+      // upper left block
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          stiffmatrix(dofpercombinode*nodei+i,dofpercombinode*nodej+j) += H_i_xi(vpernode*nodei)*H_i_xi(vpernode*nodej)*cn(i,j)*wgt/jacobifactor;
+          if (centerline_hermite_)
+          {
+            stiffmatrix(dofpercombinode*nodei+6+i,dofpercombinode*nodej+j) += H_i_xi(vpernode*nodei+1)*H_i_xi(vpernode*nodej)*cn(i,j)*wgt/jacobifactor;
+            stiffmatrix(dofpercombinode*nodei+i,dofpercombinode*nodej+6+j) += H_i_xi(vpernode*nodei)*H_i_xi(vpernode*nodej+1)*cn(i,j)*wgt/jacobifactor;
+            stiffmatrix(dofpercombinode*nodei+6+i,dofpercombinode*nodej+6+j) += H_i_xi(vpernode*nodei+1)*H_i_xi(vpernode*nodej+1)*cn(i,j)*wgt/jacobifactor;
+          }
+        }
+
+      // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i instead of I^j
+      auxmatrix2.Multiply(r_s_hat,cn);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix1 -= auxmatrix2;
+      auxmatrix1.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej)*wgt;
+          if (centerline_hermite_)
+            stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+6+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej+1)*wgt;
+        }
+
+      // upper right block
+      auxmatrix2.Multiply(cn,r_s_hat);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
+
+      auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          stiffmatrix(dofpercombinode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei)*wgt;
+          if (centerline_hermite_)
+            stiffmatrix(dofpercombinode*nodei+6+i,dofpercombinode*nodej+3+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei+1)*wgt;
+        }
+
+      // lower right block
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
+
+      auxmatrix3.Multiply(r_s_hat,auxmatrix1);
+      auxmatrix3.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
+
+    }
+    for (unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)    // this loop is only entered in case of nnodetriad>nnodecl
+    {
+      // upper right block
+      auxmatrix2.Multiply(cn,r_s_hat);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
+
+      auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          stiffmatrix(dofpercombinode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei)*wgt;
+          if (centerline_hermite_)
+            stiffmatrix(dofpercombinode*nodei+6+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei+1)*wgt;
+        }
+
+      // lower right block
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
+
+      auxmatrix3.Multiply(r_s_hat,auxmatrix1);
+      auxmatrix3.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
+    }
+  }
+  for (unsigned int nodei=nnodecl; nodei<nnodetriad; nodei++)    // this loop is only entered in case of nnodetriad>nnodecl
+  {
+    for (unsigned int nodej=0; nodej<nnodecl; nodej++)
+    {
+      // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i instead of I^j
+      auxmatrix2.Multiply(r_s_hat,cn);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix1 -= auxmatrix2;
+      auxmatrix1.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej)*wgt;
+          if (centerline_hermite_)
+            stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+6+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej+1)*wgt;
+        }
+
+      // lower right block
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
+      auxmatrix2.Multiply(cn,r_s_hat);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
+
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
+
+      auxmatrix3.Multiply(r_s_hat,auxmatrix1);
+      auxmatrix3.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
+
+    }
+    for (unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)
+    {
+      // lower right block
+      // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
+      auxmatrix2.Multiply(cn,r_s_hat);
+      LARGEROTATIONS::computespin(auxmatrix1,stressn);
+      auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
+
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);  // term in parantheses is the same as in upper right block but with opposite sign (note '-=' below)
+
+      auxmatrix3.Multiply(r_s_hat,auxmatrix1);
+      auxmatrix3.Scale(I_i(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
+    }
+  }
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
+    Epetra_SerialDenseMatrix&                        stiffmatrix,
+    const LINALG::TMatrix<double,3,1>&               stressm,
+    const LINALG::TMatrix<double,3,3>&               cm,
+    const LINALG::TMatrix<double,3,1>&               Psi_l,
+    const LINALG::TMatrix<double,3,1>&               Psi_l_s,
+    const LINALG::TMatrix<double,3,1>&               Phi_IJ,
+    const LINALG::TMatrix<double,3,3>&               Lambda_r,
+    const std::vector<LINALG::TMatrix<double,3,1> >& Psi_li,
+    const LINALG::TMatrix<double,1,nnodetriad>&      I_i,
+    const LINALG::TMatrix<double,1,nnodetriad>&      I_i_xi,
+    const double                                     wgt,
+    const double                                     jacobifactor) const
+{
+  const int dofperclnode = 3*vpernode;
+  const int dofpertriadnode = 3;
+  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7)*/
+
+  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+
+  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at a certain Gauss point according to (3.19), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,3> > Itildeprime(nnodetriad);
+
+  computeItilde<nnodetriad,double>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i);
+  computeItildeprime<nnodetriad,double>(Psi_l,Psi_l_s,Itildeprime,Phi_IJ,Lambda_r,Psi_li,I_i,I_i_xi,jacobifactor);
+
+  // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
+  LINALG::TMatrix<double,3,3> auxmatrix1;
+  LINALG::TMatrix<double,3,3> auxmatrix2;
+
+  for(unsigned int nodei=0; nodei<nnodecl; nodei++)
+  {
+    for(unsigned int nodej=0; nodej<nnodecl; nodej++)
+    {
+      // lower right block
+      // first summand
+      auxmatrix1.Multiply(cm,Itildeprime[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
+
+      // second summand
+      LARGEROTATIONS::computespin(auxmatrix2,stressm);
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
+    }
+    for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)    // this loop is only entered in case of nnodetriad>nnodecl
+    {
+      // lower right block
+      // first summand
+      auxmatrix1.Multiply(cm,Itildeprime[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
+
+      // second summand
+      LARGEROTATIONS::computespin(auxmatrix2,stressm);
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
+    }
+  }
+
+  for(unsigned int nodei=nnodecl; nodei<nnodetriad; nodei++)    // this loop is only entered in case of nnodetriad>nnodecl
+  {
+    for(unsigned int nodej=0; nodej<nnodecl; nodej++)
+    {
+      // lower right block
+      // first summand
+      auxmatrix1.Multiply(cm,Itildeprime[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
+
+      // second summand
+      LARGEROTATIONS::computespin(auxmatrix2,stressm);
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
+    }
+    for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)
+    {
+      // lower right block
+      // first summand
+      auxmatrix1.Multiply(cm,Itildeprime[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
+
+      // second summand
+      LARGEROTATIONS::computespin(auxmatrix2,stressm);
+      auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
+      auxmatrix1.Scale(I_i_xi(nodei));
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
+    Epetra_SerialDenseMatrix&                                                      stiffmatrix,
+    const std::vector<LINALG::TMatrix<double,4,1> >&                               Qnode,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3*vpernode*nnodecl+3*nnodetriad, 1> forcevec
+    ) const
+{
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
+
+  // compute stiffness matrix with FAD
+  for (unsigned int i=0; i<dofperclnode*nnodecl+dofpertriadnode*nnodetriad; i++)
+  {
+    for (unsigned int j=0; j<dofperclnode*nnodecl+dofpertriadnode*nnodetriad; j++)
+    {
+      stiffmatrix(i,j) = forcevec(i).dx(j);
+    }
+  }
+
+  /* we need to transform the stiffmatrix because its entries are derivatives with respect to additive rotational increments
+   * we want a stiffmatrix containing derivatives with respect to multiplicative rotational increments
+   * therefore apply a trafo matrix to all those 3x3 blocks in stiffmatrix which correspond to derivation with respect to rotational DOFs
+   * the trafo matrix is simply the T-Matrix (see Jelenic1999, (2.4)): \Delta_{mult} \vec \theta_{inode} = \mat T(\vec \theta_{inode} * \Delta_{addit} \vec \theta_{inode}*/
+
+  LINALG::TMatrix<double,3,3> tempmat(true);
+  LINALG::TMatrix<double,3,3> newstiffmat(true);
+  LINALG::TMatrix<double,3,3> Tmat(true);
+  LINALG::TMatrix<double,3,1> theta_totlag_j(true);
+
+  for (unsigned int jnode=0; jnode<nnodecl; jnode++)
+  {
+    // compute physical total angle theta_totlag
+    LARGEROTATIONS::quaterniontoangle(Qnode[jnode],theta_totlag_j);
+
+    // compute Tmatrix of theta_totlag_i
+    Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
+
+    for (unsigned int inode=0; inode<nnodecl; inode++)
+    {
+      // block1: derivative of nodal positions with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofpercombinode*inode+i,dofpercombinode*jnode+3+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
+
+      // block2: derivative of nodal theta with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
+
+      // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
+      if(centerline_hermite_)
+      {
+        for (int i=0; i<3; ++i)
+          for (int j=0; j<3; ++j)
+            tempmat(i,j) = stiffmatrix(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j);
+
+        newstiffmat.Clear();
+        newstiffmat.MultiplyNN(tempmat,Tmat);
+
+        for (int i=0; i<3; ++i)
+          for (int j=0; j<3; ++j)
+            stiffmatrix(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
+      }
+
+    }
+    for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
+    {
+      // block2: derivative of nodal theta with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
+
+    }
+  }
+
+  for (unsigned int jnode=nnodecl; jnode<nnodetriad; jnode++)    // this loop is only entered in case of nnodetriad>nnodecl
+  {
+    // compute physical total angle theta_totlag
+    LARGEROTATIONS::quaterniontoangle(Qnode[jnode],theta_totlag_j);
+
+    // compute Tmatrix of theta_totlag_i
+    Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
+
+    for (unsigned int inode=0; inode<nnodecl; inode++)
+    {
+      // block1: derivative of nodal positions with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
+
+      // block2: derivative of nodal theta with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
+
+      // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
+      if(centerline_hermite_)
+      {
+        for (int i=0; i<3; ++i)
+          for (int j=0; j<3; ++j)
+            tempmat(i,j) = stiffmatrix(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
+
+        newstiffmat.Clear();
+        newstiffmat.MultiplyNN(tempmat,Tmat);
+
+        for (int i=0; i<3; ++i)
+          for (int j=0; j<3; ++j)
+            stiffmatrix(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
+      }
+
+    }
+    for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)
+    {
+      // block2: derivative of nodal theta with respect to theta (rotational DOFs)
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          tempmat(i,j) = stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
+
+      newstiffmat.Clear();
+      newstiffmat.MultiplyNN(tempmat,Tmat);
+
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+          stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
+
+    }
+  }
+
+}
+
 /*------------------------------------------------------------------------------------------------------------*
  | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics      grill 06/16|
  *------------------------------------------------------------------------------------------------------------*/
@@ -1765,7 +1921,7 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(disp,disp_totlag_centerline,Q_i);
 
   // update current values of centerline (i.e. translational) velocity
-  ExtractCenterlineDofValues<nnodecl,vpernode,double>(vel,vel_centerline);
+  ExtractCenterlineDofValuesFromElementStateVector<nnodecl,vpernode,double>(vel,vel_centerline);
 
   /****** compute and assemble force and stiffness contributions from viscous damping and stochastic forces *****/
 
@@ -1778,99 +1934,6 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   // add stochastic forces and (if required) resulting stiffness
   EvaluateStochasticForces<nnodecl,vpernode,3,3>(params,disp_totlag_centerline,stiffmatrix,force);
 
-}
-
-/*------------------------------------------------------------------------------------------------------------*
- | update (total) displacement vector and set nodal triads (as quaternions)                        grill 03/16|
- *------------------------------------------------------------------------------------------------------------*/
-template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<double>&               disp,
-                                                           LINALG::TMatrix<T,3*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                                           std::vector<LINALG::TMatrix<T,4,1> >&    Q_i)
-{
-  // nnodetriad: number of nodes used for interpolation of triad field
-  // nnodecl: number of nodes used for interpolation of centerline
-  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
-  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
-
-  // get current values of translational nodal DOFs in total Lagrangean manner (initial value + disp)
-  // rotational DOFs need different handling, depending on whether FAD is used or not (see comment below)
-  ExtractCenterlineDofValues<nnodecl,vpernode,T>(disp,disp_totlag_centerline);
-  AddRefValuesDispCenterline<nnodecl,vpernode,T>(disp_totlag_centerline);
-
-  // get current displacement values of rotational DOFs (i.e. relative rotation with respect to reference config)
-  std::vector<LINALG::TMatrix<double,3,1> > disptheta;
-  disptheta.resize(nnodetriad);
-  ExtractRotVecDofValues<nnodetriad,nnodecl,vpernode,double>(disp,disptheta);
-
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    for (unsigned int dim=0; dim<3; ++dim)
-      dispthetanewnode_[node](dim)=disptheta[node](dim);
-
-  // rotational displacement at a certain node in quaternion form
-  LINALG::Matrix<4,1> deltaQ;
-  // initial nodal rotation vector in quaternion form
-  LINALG::Matrix<4,1> Q0;
-
-  // Compute current nodal triads
-  GetNodalTriadsFromDispTheta<nnodetriad,T>(disptheta,Q_i);
-
-  for (unsigned int node=0; node<nnodetriad; ++node)
-  {
-    // copy quaternions of nodal triads to TMatrix FADordouble
-    for (unsigned int i=0; i<4; ++i)
-       Qnewnode_[node](i) = Q_i[node](i);
-  }
-
-#ifdef BEAM3RAUTOMATICDIFF
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
-
-  // set differentiation variables for FAD: translational DOFs
-  for (int dim=0; dim<3; ++dim)
-  {
-    for (unsigned int node=0; node<nnodecl; ++node)
-    {
-      disp_totlag_centerline(dofperclnode*node+dim).diff(dofpercombinode*node+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
-
-      // have Hermite interpolation? then set tangent DOFs as well
-      if(vpernode==2)
-        disp_totlag_centerline(dofperclnode*node+3+dim).diff(dofpercombinode*node+6+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
-    }
-  }
-
-  // rotation vector theta at a specific node in a total Lagrangean manner (with respect to global reference coordinate system)
-  std::vector<LINALG::TMatrix<FAD,3,1> > theta_totlag_i(nnodetriad);
-
-  // compute nodal quaternions based on multiplicative increments of rotational DOFs
-  for (unsigned int node=0; node<nnodetriad; ++node)
-  {
-    // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Q_i[node],theta_totlag_i[node]);
-  }
-
-  // set differentiation variables for FAD: rotational DOFs
-  for (unsigned int dim=0; dim<3; ++dim)
-  {
-    for (unsigned int node=0; node<nnodecl; ++node)
-      theta_totlag_i[node](dim).diff(dofpercombinode*node+3+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
-
-    for (unsigned int node=nnodecl; node<nnodetriad; ++node)
-      theta_totlag_i[node](dim).diff(dofperclnode*nnodecl+dofpertriadnode*node+dim, dofperclnode*nnodecl+dofpertriadnode*nnodetriad);
-  }
-
-  /* Attention: although the nodal quaternions Q_i have already been computed correctly, we need the following step
-   *            in order to track the dependency of subsequently calculated quantities via FAD */
-  for (unsigned int node=0; node<nnodetriad; ++node)
-  {
-    Q_i[node].PutScalar(0.0);
-    LARGEROTATIONS::angletoquaternion(theta_totlag_i[node],Q_i[node]);
-  }
-
-#endif //#ifndef BEAM3RAUTOMATICDIFF
-
-  return;
 }
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -1957,14 +2020,14 @@ int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed() const
 #endif
 }
 
-/*-----------------------------------------------------------------------------------------------------------*
- | computes rotational damping forces and stiffness (public)                                    cyron   10/09|
- *----------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
-void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&          params,  //!<parameter list
-                                              const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
-                                              Epetra_SerialDenseMatrix*                stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector*                force)  //!< element internal force vector
+void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
+    Teuchos::ParameterList&                          params,  //!<parameter list
+    const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
+    Epetra_SerialDenseMatrix*                        stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector*                        force)  //!< element internal force vector
 {
   const unsigned int dofperclnode = 3*vpernode;
   const unsigned int dofpertriadnode = 3;
@@ -2028,7 +2091,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
     CalcPsi_li(Qnode[node],Q_r,Psi_li[node]);
 
 
-  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points         // ToDo cleanup of auxiliary variables, comments, double-check linearization !!!
+  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
   {
     // update quaternions at GPs for exact Gauss quadrature
     Calc_Psi_l<nnodetriad>(Psi_li, I_i[gp], Psi_l);
@@ -2071,13 +2134,15 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
       {
         //loop over three dimensions in line direction
         for (unsigned int idim=0; idim<ndim; idim++)
-          (*force)(dofpercombinode*inode+3+idim) += g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+          (*force)(dofpercombinode*inode+3+idim) +=
+              g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
       }
       for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)
       {
         //loop over three dimensions in line direction
         for (unsigned int idim=0; idim<ndim; idim++)
-          (*force)(dofperclnode*nnodecl+dofpertriadnode*inode+idim) += g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+          (*force)(dofperclnode*nnodecl+dofpertriadnode*inode+idim) +=
+              g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
       }
     }
 
@@ -2087,7 +2152,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
 
       // compute matrix gamma(2) * g_1 \otimes g_1 * \omega * Tmat
       LINALG::Matrix<3,3> g1g1gammaTmat;
-      g1g1gammaTmat.Multiply(g1g1gamma,LARGEROTATIONS::Tmatrix(deltatheta));      // ToDo: check this term: why do we need this Tmatrix? should be multiplicative increment anyway?!
+      g1g1gammaTmat.Multiply(g1g1gamma,LARGEROTATIONS::Tmatrix(deltatheta));
 
       // compute spin matrix S(\omega)
       LINALG::Matrix<3,3> Sofomega;
@@ -2110,7 +2175,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
       sum += g1g1gammaSofomega;
       sum -= Sofg1g1gammaomega;
 
-      // loop over first nnodecl line nodes
+      // loop over first nnodecl row nodes
       for (unsigned int inode=0; inode<nnodecl; inode++)
       {
         // loop over first nnodecl column nodes
@@ -2118,11 +2183,12 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
         {
           auxmatrix.Multiply(sum,Itilde[jnode]);
 
-          // loop over three dimensions in line and column direction
+          // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofpercombinode*jnode+3+jdim) += auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofpercombinode*jnode+3+jdim) +=
+                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
             }
 
         }
@@ -2130,11 +2196,12 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
         {
           auxmatrix.Multiply(sum,Itilde[jnode]);
 
-          // loop over three dimensions in line and column direction
+          // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) += auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
+                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
             }
         }
       }
@@ -2145,11 +2212,12 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
         {
           auxmatrix.Multiply(sum,Itilde[jnode]);
 
-          // loop over three dimensions in line and column direction
+          // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofpercombinode*jnode+3+jdim) += auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofpercombinode*jnode+3+jdim) +=
+                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
             }
 
         }
@@ -2157,11 +2225,12 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(Teuchos::ParameterList&   
         {
           auxmatrix.Multiply(sum,Itilde[jnode]);
 
-          // loop over three dimensions in line and column direction
+          // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) += auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
+                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
             }
         }
       }
@@ -2350,7 +2419,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   for (int gp=0; gp < gausspoints.nquad; gp++)
   {
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnodecl,vpernode,FADordouble>(disp_totlag_centerline, H_i_xi[gp], jacobiGPdampstoch_[gp], r_s);
+    Calc_r_s<nnodecl,vpernode,double>(disp_totlag_centerline, H_i_xi[gp], jacobiGPdampstoch_[gp], r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim=0; idim<ndim; idim++)
@@ -2414,3 +2483,442 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   } // end: loop GPs
 
 }
+
+
+// explicit template instantiations
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2>(
+    Teuchos::ParameterList&,
+    std::vector<double>&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1>(
+    LINALG::TMatrix<double,6,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1>(
+    LINALG::TMatrix<double,9,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1>(
+    LINALG::TMatrix<double,15,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseVector*,
+    Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1,double>(
+    LINALG::TMatrix<double,6,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,12,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1,double>(
+    LINALG::TMatrix<double,9,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,18,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1,double>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,24,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1,double>(
+    LINALG::TMatrix<double,15,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,30,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2,double>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,18,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2,double>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,21,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2,double>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,24,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2,double>(
+    LINALG::TMatrix<double,12,1>&,
+    std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,27,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,6,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,9,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,15,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,30,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,21,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&,
+    Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2,Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,27,1>&,
+    Epetra_SerialDenseVector*);
+
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2,2,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,2>&,
+    const LINALG::TMatrix<double,1,2>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3,3,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,3>&,
+    const LINALG::TMatrix<double,1,3>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4,4,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,4>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5,5,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,5>&,
+    const LINALG::TMatrix<double,1,5>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,2>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,3>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,4>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,5>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2,2,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,2>&,
+    const LINALG::TMatrix<double,1,2>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3,3,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,3>&,
+    const LINALG::TMatrix<double,1,3>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4,4,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,4>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5,5,1>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,5>&,
+    const LINALG::TMatrix<double,1,5>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,2>&,
+    const LINALG::TMatrix<double,1,2>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,3>&,
+    const LINALG::TMatrix<double,1,3>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,4>&,
+    const LINALG::TMatrix<double,1,4>&,
+    const double,
+    const double) const;
+template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5,2,2>(
+    Epetra_SerialDenseMatrix&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,1>&,
+    const LINALG::TMatrix<double,3,3>&,
+    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LINALG::TMatrix<double,1,5>&,
+    const LINALG::TMatrix<double,1,5>&,
+    const double,
+    const double) const;

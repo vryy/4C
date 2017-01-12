@@ -202,7 +202,8 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
 
   // displacement vector according to periodic boundary conditions
   std::vector< Teuchos::RCP<Epetra_Vector> > disnp(1);
-  disnp[0] = ia_state_ptr_->GetMutableDisNp();
+  disnp[0] = Teuchos::rcp(new Epetra_Vector( *ia_discret_->DofColMap() ) );
+  LINALG::Export( *ia_state_ptr_->GetMutableDisNp(), *disnp[0] );
 
   // nodes, that are owned by a proc, are distributed to the bins of this proc
   std::vector< std::map<int, std::vector<int> > > nodesinbin(1);
@@ -308,6 +309,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   ia_state_ptr_->GetMutableForceNp()->PutScalar(0.0);
   stiff_beaminteraction_->Zero();
   ia_state_ptr_->GetMutableStiff()->Zero();
+
+  // update gidmap_ and exporter in matrix transform object
+  // Note: we need this in every evaluation call (i.e. every iteration) because a change
+  //       in the active set of element pairs changes the entries of the used coarse
+  //       system stiffness matrix (because we only assemble non-zero values).
+  //       Therefore, the graph of the matrix changes and also the required gidmap
+  //       (even in computation with one processor)
+  UpdateCouplingAdapterAndMatrixTransformation();
 }
 
 /*----------------------------------------------------------------------------*
@@ -472,9 +481,6 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
   // update maps of state vectors and matrices
   UpdateMaps();
-
-  // reset transformation
-  UpdateCouplingAdapterAndMatrixTransformation();
 
   // submodel loop
   for ( me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter )
@@ -795,7 +801,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformForce()
 {
   CheckInit();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::TransformForce");
 
   // transform force vector to problem discret layout/distribution
   force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
@@ -807,7 +813,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
 {
   CheckInit();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::TransformStiff");
 
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
@@ -820,8 +826,6 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
 void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
 {
   CheckInit();
-
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::Crosslinking::TransformForceAndStiff");
 
   TransformForce();
   TransformStiff();

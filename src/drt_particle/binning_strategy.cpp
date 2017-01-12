@@ -38,6 +38,8 @@
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dofset_independent.H"
 
+#include "../drt_beam3/beam3_base.H"    // needed in GetCurrentNodePos
+
 #include "binning_strategy.H"
 
 
@@ -891,9 +893,16 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
   // node, are ghosted
   Teuchos::RCP<Epetra_CrsGraph> initgraph = discret->BuildNodeGraph();
 
+  // Todo introduced this export to column map due to special handling of
+  //      beam nodes without own position DoFs in GetCurrentNodePos()
+  Teuchos::RCP<Epetra_Vector> disnp_col =
+      Teuchos::rcp(new Epetra_Vector( *discret->DofColMap() ) );
+  if( disnp != Teuchos::null)
+    LINALG::Export( *disnp, *disnp_col );
+
   // distribute nodes, that are owned by a proc, to the bins of this proc
   if(nodesinbin.empty())
-    DistributeNodesToBins( discret, nodesinbin, disnp);
+    DistributeNodesToBins( discret, nodesinbin, disnp_col);
 
   std::map<int, std::vector<int> > nodesinmybins;
   // gather information of bin content from other procs (bin is owned by
@@ -2274,9 +2283,30 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
   double* currpos
   ) const
 {
+  // Todo make this nicer
+  // the problem is that we might have nodes without position DoFs
+  // (e.g. for beam elements with 'interior' nodes that are only used for
+  // triad interpolation)
+  // instead of the node position itself, we return the position of the
+  // first node of the  element here (for the sake of binning)
+
+  // standard case
+  DRT::Node const* node_with_position_Dofs = node;
+
+  const DRT::Element* element = node->Elements()[0];
+  const DRT::ELEMENTS::Beam3Base* beamelement =
+      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+
+  // if the node does not have position DoFs, we return the position of the first
+  // node of the corresponding element
+  if (beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
+  {
+    node_with_position_Dofs = beamelement->Nodes()[0];
+  }
+
   if(disnp!=Teuchos::null)
   {
-    const int gid = discret->Dof(node, 0);
+    const int gid = discret->Dof(node_with_position_Dofs, 0);
     const int lid = disnp->Map().LID(gid);
     if( lid < 0 )
       dserror("Your displacement is incomplete (need to be based on a column map"
@@ -2284,13 +2314,13 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
               "each proc does (usually) not own all nodes of his row elements ");
     for(int dim=0; dim<3; ++dim)
     {
-      currpos[dim] = node->X()[dim] + (*disnp)[lid+dim];
+      currpos[dim] = node_with_position_Dofs->X()[dim] + (*disnp)[lid+dim];
     }
   }
   else
   {
     for(int dim=0; dim<3; ++dim)
-      currpos[dim] = node->X()[dim];
+      currpos[dim] = node_with_position_Dofs->X()[dim];
   }
 
   return;

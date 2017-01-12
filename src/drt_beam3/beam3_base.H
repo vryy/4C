@@ -197,6 +197,12 @@ public:
    *  \date 07/16 */
   virtual void TangentLengthDofIndices(std::vector<int>& tangnormdofs, const DRT::Node& node) const = 0;
 
+  /** \brief get element local indices of those Dofs that are used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 12/16 */
+  virtual void CenterlineDofIndicesOfElement(std::vector<unsigned int>& centerlinedofindices) const = 0;
+
   /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
    *
    *  \author grill
@@ -274,6 +280,14 @@ public:
                                    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
                                    const unsigned int         nnode) const;
 
+  /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
+   *
+   *  \author grill
+   *  \date 11/16 */
+  virtual void ExtractCenterlineDofValuesFromElementStateVector(
+      const std::vector<double>& dofvec,
+      std::vector<double>&       dofvec_centerline,
+      bool                       add_reference_values=false) const = 0;
 
 protected:
   /** \brief get access to the interface

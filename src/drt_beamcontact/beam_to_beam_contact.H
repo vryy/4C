@@ -74,7 +74,8 @@ public:
 
   //! @name Public evaluation methods
   /*!
-  \brief Evaluate this contact element pair
+  \brief Evaluate this contact element pair, return value indicates whether pair is active,
+         i.e. non-zero values for force and stiffmat are returned
   */
   virtual bool Evaluate(
       LINALG::SerialDenseVector* forcevec1,
@@ -88,8 +89,8 @@ public:
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
   */
   virtual void ResetState(
-      const Epetra_SerialDenseVector& centerline_dofvec_ele1,
-      const Epetra_SerialDenseVector& centerline_dofvec_ele2);
+      const std::vector<double>& centerline_dofvec_ele1,
+      const std::vector<double>& centerline_dofvec_ele2);
 
   /** \brief print information about this beam contact element pair to screen
    *

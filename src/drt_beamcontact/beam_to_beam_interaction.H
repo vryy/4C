@@ -12,16 +12,6 @@
 #ifndef BEAMTOBEAMINTERACTION_H
 #define BEAMTOBEAMINTERACTION_H
 
-//#include "../linalg/linalg_fixedsizematrix.H"
-//#include "../linalg/linalg_sparsematrix.H"
-//#include "beam3contact_defines.H"
-//#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
-//#include "../drt_lib/standardtypes_cpp.H"
-
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-
 #include <Teuchos_RCP.hpp>
 
 //forward declaration ...
@@ -74,7 +64,8 @@ public:
 
   //! @name Public evaluation methods
   /*!
-  \brief Evaluate this contact element pair
+  \brief Evaluate this contact element pair, return value indicates whether pair is active,
+         i.e. non-zero values for force and stiffmat are returned
   */
   virtual bool Evaluate(
       LINALG::SerialDenseVector* forcevec1,
@@ -93,8 +84,8 @@ public:
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
   */
   virtual void ResetState(
-      const Epetra_SerialDenseVector& centerline_dofvec_ele1,
-      const Epetra_SerialDenseVector& centerline_dofvec_ele2)=0;
+      const std::vector<double>& centerline_dofvec_ele1,
+      const std::vector<double>& centerline_dofvec_ele2)=0;
 
   //@}
 

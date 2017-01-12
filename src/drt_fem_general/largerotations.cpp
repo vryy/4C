@@ -403,13 +403,13 @@ LINALG::Matrix<4,1> LARGEROTATIONS::inversequaternion(const LINALG::Matrix<4,1>&
  |explanation: if q1 and q2 correspond to the rotation matrices R1 and R2, respectively, the compound|
  |rotation R12 = R2*R1 corresponds to the compound quaternion q12 = q2*q1          (public)cyron02/09|
  *---------------------------------------------------------------------------------------------------*/
-void LARGEROTATIONS::quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12)
-{
-  q12(0) = q2(3)*q1(0) + q1(3)*q2(0) + q2(1)*q1(2) - q1(1)*q2(2);
-  q12(1) = q2(3)*q1(1) + q1(3)*q2(1) + q2(2)*q1(0) - q1(2)*q2(0);
-  q12(2) = q2(3)*q1(2) + q1(3)*q2(2) + q2(0)*q1(1) - q1(0)*q2(1);
-  q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
-} //LARGEROTATIONS::quaternionproduct
+//void LARGEROTATIONS::quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12)
+//{
+//  q12(0) = q2(3)*q1(0) + q1(3)*q2(0) + q2(1)*q1(2) - q1(1)*q2(2);
+//  q12(1) = q2(3)*q1(1) + q1(3)*q2(1) + q2(2)*q1(0) - q1(2)*q2(0);
+//  q12(2) = q2(3)*q1(2) + q1(3)*q2(2) + q2(0)*q1(1) - q1(0)*q2(1);
+//  q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
+//} //LARGEROTATIONS::quaternionproduct
 
 /*---------------------------------------------------------------------------------------------------*
  |computing the rotation angle theta which rotates the given unit direction vector d1 into the given |

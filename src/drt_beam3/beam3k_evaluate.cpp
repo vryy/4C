@@ -1746,13 +1746,17 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
   SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
 
   LINALG::TMatrix<FAD,nnode*vpernode*ndim,1> disp_totlag_centerlineDOFs_only(true);
-  ExtractCenterlineDofValues<nnode,vpernode,FAD>(disp_totlag_centerline,disp_totlag_centerlineDOFs_only);
+  ExtractCenterlineDofValuesFromElementStateVector<nnode,vpernode,FAD>(
+      disp_totlag_centerline,
+      disp_totlag_centerlineDOFs_only);
 
   // export current velocity state of element to fixed size matrix
   LINALG::Matrix<nnode*vpernode*ndim,1> vel_centerline(true);
 
   // update current values of centerline (i.e. translational) velocity
-  ExtractCenterlineDofValues<nnode,vpernode,double>(vel,vel_centerline);
+  ExtractCenterlineDofValuesFromElementStateVector<nnode,vpernode,double>(
+      vel,
+      vel_centerline);
 
   // Evaluation of force vectors and stiffness matrices
 
@@ -1768,6 +1772,8 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
   if (rotvec_==true)
   {
+    dserror("Beam3k: Calculation of Brownian forces not tested yet for ROTVEC, "
+        "i.e. parametrization of triads via nodal rotation vectors");
     ApplyRotVecTrafo(disp_totlag_centerline,f_int);
   }
 
