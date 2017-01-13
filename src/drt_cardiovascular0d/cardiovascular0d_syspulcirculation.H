@@ -136,10 +136,14 @@ namespace UTILS
     double R_arvalve_min_r_; ///< minimum pulmonary valve resistance
     double R_atvalve_max_r_; ///< maximum tricuspid valve resistance
     double R_atvalve_min_r_; ///< minimum tricuspid valve resistance
-    int Atrium_act_curve_l_; ///< left atrial activation curve (for 0D atria)
-    int Atrium_act_curve_r_; ///< right atrial activation curve (for 0D atria)
-    int Ventricle_act_curve_l_; ///< left ventricular activation curve (for 0D ventricles)
-    int Ventricle_act_curve_r_; ///< right ventricular activation curve (for 0D ventricles)
+    int Atrium_act_curve_l_; ///< left atrial activation curve (ONLY for 0D atria!)
+    int Atrium_act_curve_r_; ///< right atrial activation curve (ONLY for 0D atria!)
+    int Ventricle_act_curve_l_; ///< left ventricular activation curve (ONLY for 0D ventricles!)
+    int Ventricle_act_curve_r_; ///< right ventricular activation curve (ONLY for 0D ventricles!)
+    int Atrium_prescr_curve_l_; ///< left atrial volume prescription curve (ONLY for prescribed atrial volumes!)
+    int Atrium_prescr_curve_r_; ///< right atrial volume prescription curve (ONLY for prescribed atrial volumes!)
+    int Ventricle_prescr_curve_l_; ///< left ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)
+    int Ventricle_prescr_curve_r_; ///< right ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)
     double E_at_max_l_; ///< maximum left atrial elastance (for 0D atria)
     double E_at_min_l_; ///< minimum left atrial elastance (for 0D atria)
     double E_at_max_r_; ///< maximum right atrial elastance (for 0D atria)

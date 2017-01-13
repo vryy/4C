@@ -73,13 +73,17 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   setStringToIntegralParameter<int>("ATRIUM_MODEL","0D","",
                                  tuple<std::string>(
                                    "0D",
-                                   "3D"),
+                                   "3D",
+                                   "prescribed"),
                                  tuple<int>(
                                    INPAR::CARDIOVASCULAR0D::atr_elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::atr_structure_3d),
+                                   INPAR::CARDIOVASCULAR0D::atr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::atr_prescribed),
                                  &cardvasc0dsyspulcirc);
-  IntParameter("Atrium_act_curve_l",-1,"0D left atrium activation curve",&cardvasc0dsyspulcirc);
-  IntParameter("Atrium_act_curve_r",-1,"0D right atrium activation curve",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_act_curve_l",-1,"left atrial activation curve (ONLY for 0D atria!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_act_curve_r",-1,"right atrial activation curve (ONLY for 0D atria!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_curve_l",-1,"left atrial volume prescription curve (ONLY for prescribed atrial volumes!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_curve_r",-1,"right atrial volume prescription curve (ONLY for prescribed atrial volumes!)",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_max_l",0.0,"0D maximum left atrial elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_min_l",0.0,"0D baseline left atrial elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_max_r",0.0,"0D maximum right atrial elastance",&cardvasc0dsyspulcirc);
@@ -88,13 +92,17 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   setStringToIntegralParameter<int>("VENTRICLE_MODEL","3D","",
                                  tuple<std::string>(
                                    "3D",
-                                   "0D"),
+                                   "0D",
+                                   "prescribed"),
                                  tuple<int>(
                                    INPAR::CARDIOVASCULAR0D::ventr_structure_3d,
-                                   INPAR::CARDIOVASCULAR0D::ventr_elastance_0d),
+                                   INPAR::CARDIOVASCULAR0D::ventr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::ventr_prescribed),
                                  &cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_act_curve_l",-1,"0D left ventricular activation curve",&cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_act_curve_r",-1,"0D right ventricular activation curve",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_act_curve_l",-1,"left ventricular activation curve (ONLY for 0D ventricles!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_act_curve_r",-1,"right ventricular activation curve (ONLY for 0D ventricles!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_curve_l",-1,"left ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_curve_r",-1,"right ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_max_l",0.0,"0D maximum left ventricular elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_min_l",0.0,"0D baseline left ventricular elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_max_r",0.0,"0D maximum right ventricular elastance",&cardvasc0dsyspulcirc);

@@ -72,7 +72,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
     //if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size()) dserror("Coupling conditions do not match cardiovascular0d conditions!");
 
-    // set model used for atria - just needed for CARDIOVASCULAR 0D SYS-PUL CIRCULATION model
+    // set model used for atria - just needed for CARDIOVASCULAR 0D SYS-PUL CIRCULATION or CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
     Teuchos::ParameterList artvensyspulpar =
         DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
     atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
@@ -97,7 +97,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       {
         condtype[i] = cardiovascular0dcond_[i]->Get<std::string>("type");
 
-        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d)
+        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
         {
           if (*condtype[i] == "atrium_left" or *condtype[i] == "atrium_right")
             dserror("Set ATRIUM_MODEL to '3D' if you want to couple the 0D vascular system to a 3D atrial structure!");
@@ -107,6 +107,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       switch (atrium_model_)
       {
         case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
+        case INPAR::CARDIOVASCULAR0D::atr_prescribed:
         {
           if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_structure_3d)
           {
@@ -121,7 +122,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
             else
               dserror("You need 2 conditions (left + right ventricle)!");
           }
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
           {
             if (cardiovascular0dcond_.size() == 1)
             {
