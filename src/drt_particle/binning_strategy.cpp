@@ -895,10 +895,12 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
 
   // Todo introduced this export to column map due to special handling of
   //      beam nodes without own position DoFs in GetCurrentNodePos()
-  Teuchos::RCP<Epetra_Vector> disnp_col =
-      Teuchos::rcp(new Epetra_Vector( *discret->DofColMap() ) );
-  if( disnp != Teuchos::null)
+  Teuchos::RCP<Epetra_Vector> disnp_col = Teuchos::null;
+  if ( discret->HaveDofs() and disnp != Teuchos::null)
+  {
+    disnp_col = Teuchos::rcp(new Epetra_Vector( *discret->DofColMap() ) );
     LINALG::Export( *disnp, *disnp_col );
+  }
 
   // distribute nodes, that are owned by a proc, to the bins of this proc
   if(nodesinbin.empty())
